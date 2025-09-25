@@ -635,12 +635,12 @@
         "trader": {
           "type": "string"
         },
-        "input": {
+        "max_input": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "description": "Total allowed debits from the trader by denom, enforced at end only."
+          "description": "End-of-tx debit caps per denom (vector cap). Missing denom implies 0."
         },
         "legs": {
           "type": "array",
@@ -656,8 +656,7 @@
           },
           "description": "Final minimum outputs required per denom after aggregation."
         }
-      },
-      "description": "Single-pool swap.\n\n- `input` denom must be one of the pool reserves; `out_denom` must be the\n  other.\n- `minimum_out_amount` is an sdk.Int string; the swap fails if the computed\n  output is less than this value after fees."
+      }
     },
     "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse": {
       "type": "object",
@@ -828,6 +827,10 @@
           "format": "uint64"
         },
         "swap_in": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "title": "One of swap_in or swap_out must be set; both allowed for rate constraint"
+        },
+        "swap_out": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
         }
       }

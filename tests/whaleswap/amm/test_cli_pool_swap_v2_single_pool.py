@@ -56,7 +56,7 @@ def test_pool_swap_v2_single_pool(chainnet, generate_account, faucet, register_n
         "tx",
         "whaleswap",
         "swap",
-        "--input",
+        "--max-input",
         "100udys",
         "--legs",
         legs,

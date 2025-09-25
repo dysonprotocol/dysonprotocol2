@@ -166,18 +166,17 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "PoolSwap",
-					Use:       "swap --input <coin> [--input <coin> ...] --legs '<json>' [--min-output <coin> ...]",
+					Use:       "swap --max-input <coin> [--max-input <coin> ...] --legs '<json>' [--min-output <coin> ...]",
 					Short:     "Aggregate multi-leg swaps across pools with end-of-tx settlement",
-					Long: "Execute an aggregated swap defined by arbitrary legs. No pre-escrow occurs; caps in --input are enforced only at the end. " +
+					Long: "Execute an aggregated swap defined by arbitrary legs. No pre-escrow occurs; caps in --max-input are enforced only at the end. " +
 						"Legs may reuse pools, form cycles, and are simulated on pool snapshots; fees accrue per pool. Final minimums are checked via --min-output coins.\n\n" +
-						"--legs accepts a JSON array of legs, each with pool_id and swap_in coin object, e.g. \n" +
-						"  --legs '[{\"pool_id\":1,\"swap_in\":{\"denom\":\"udys\",\"amount\":\"100\"}}]'.\n" +
-						"--input provides per-denom debit caps applied at the end (repeatable). --min-output provides final required credits (repeatable).",
-					Example: "dysond tx whaleswap swap --input 100udys --legs '[{\"pool_id\":1,\"swap_in\":{\"denom\":\"udys\",\"amount\":\"100\"}}]' --min-output 90ufoo\n" +
-						"dysond tx whaleswap swap --input 100udys --input 50ufoo --legs '[{\"pool_id\":1,\"swap_in\":{\"denom\":\"udys\",\"amount\":\"100\"}},{\"pool_id\":2,\"swap_in\":{\"denom\":\"ufoo\",\"amount\":\"50\"}}]' --min-output 120ubar",
+						"--legs accepts either a JSON array or multiple flags. Each leg may specify swap_in (exact-in), swap_out (exact-out), or both (rate constraint).\n" +
+						"Example leg: '{\"pool_id\":1,\"swap_in\":{\"denom\":\"udys\",\"amount\":\"100\"}}' or '{\"pool_id\":1,\"swap_out\":{\"denom\":\"ufoo\",\"amount\":\"90\"}}'.",
+					Example: "dysond tx whaleswap swap --max-input 100udys --legs '[{\"pool_id\":1,\"swap_in\":{\"denom\":\"udys\",\"amount\":\"100\"}}]' --min-output 90ufoo\n" +
+						"dysond tx whaleswap swap --max-input 100udys --max-input 50ufoo --legs '[{\"pool_id\":1,\"swap_in\":{\"denom\":\"udys\",\"amount\":\"100\"}},{\"pool_id\":2,\"swap_out\":{\"denom\":\"ubar\",\"amount\":\"120\"}}]'",
 					FlagOptions: map[string]*autocliv1.FlagOptions{
-						"input":      {Name: "input", Usage: "Per-denom debit cap (repeatable), e.g. 100udys"},
-						"legs":       {Name: "legs", Usage: "JSON array of legs: [{\"pool_id\":N,\"swap_in\":{\"denom\":\"...\",\"amount\":\"...\"}}]"},
+						"max_input":  {Name: "max-input", Usage: "Per-denom debit cap (repeatable), e.g. 100udys"},
+						"legs":       {Name: "legs", Usage: "JSON array or repeated flag of legs allowing swap_in and/or swap_out"},
 						"min_output": {Name: "min-output", Usage: "Final minimum credits (repeatable), e.g. 90ufoo"},
 					},
 				},

@@ -8,13 +8,13 @@
                     "trader": {
                         "type": "string"
                     },
-                    "input": {
+                    "max_input": {
                         "items": {
                             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Total allowed debits from the trader by denom, enforced at end only."
+                        "description": "End-of-tx debit caps per denom (vector cap). Missing denom implies 0."
                     },
                     "legs": {
                         "items": {
@@ -35,8 +35,7 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Pool Swap",
-                "description": "Single-pool swap. - `input` denom must be one of the pool reserves; `out_denom` must be the   other. - `minimum_out_amount` is an sdk.Int string; the swap fails if the computed   output is less than this value after fees."
+                "title": "Msg Pool Swap"
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {
@@ -58,6 +57,11 @@
                         "type": "string"
                     },
                     "swap_in": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "One of swap_in or swap_out must be set; both allowed for rate constraint"
+                    },
+                    "swap_out": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false
                     }

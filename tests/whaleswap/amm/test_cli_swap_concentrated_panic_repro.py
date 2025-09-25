@@ -70,7 +70,7 @@ def test_concentrated_swap_does_not_panic(
         "tx",
         "whaleswap",
         "swap",
-        "--input",
+        "--max-input",
         "900udys",
         "--legs",
         legs,
