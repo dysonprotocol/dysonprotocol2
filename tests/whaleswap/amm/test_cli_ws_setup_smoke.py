@@ -10,9 +10,9 @@ def test_ws_setup_env_balances(chainnet, ws_setup_env):
     dysond = chainnet[0]
     env = ws_setup_env
 
-    a1 = env["acc1"]["addr"] if isinstance(env["acc1"], dict) else env["acc1"]["addr"]
-    a2 = env["acc2"]["addr"] if isinstance(env["acc2"], dict) else env["acc2"]["addr"]
-    a3 = env["acc3"]["addr"] if isinstance(env["acc3"], dict) else env["acc3"]["addr"]
+    a1 = env["acc1"]["addr"]
+    a2 = env["acc2"]["addr"]
+    a3 = env["acc3"]["addr"]
 
     denoms = env["denoms"]
     ldenoms = env["liquid_denoms"]

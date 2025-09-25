@@ -939,6 +939,27 @@ def _walk_ast_forbidding_nodes(tree, filename):
             )
             self.generic_visit(node)
 
+        def visit_Assert(self, node):
+            # Forbid boolean 'or' within assert expressions
+            for sub in ast.walk(node.test):
+                if isinstance(sub, ast.BoolOp) and isinstance(sub.op, ast.Or):
+                    errors.append(
+                        f"{filename}:{node.lineno} - use of 'or' in assert is disallowed"
+                    )
+                    break
+            # Forbid any() within assert expressions
+            for sub in ast.walk(node.test):
+                if (
+                    isinstance(sub, ast.Call)
+                    and isinstance(sub.func, ast.Name)
+                    and sub.func.id == "any"
+                ):
+                    errors.append(
+                        f"{filename}:{node.lineno} - use of 'any' in assert is disallowed"
+                    )
+                    break
+            self.generic_visit(node)
+
         # forbid "wait_for_timeout" attribute in playwright
         def visit_Attribute(self, node):
             if (
@@ -986,6 +1007,8 @@ def pytest_collection_finish(session):
     - time.sleep
     - wait_for_timeout
     - sleep
+    - 'or' in assert expressions
+    - 'any' in assert expressions
 
     For any of these constructs, the test will fail with a clear error message.
     Utility functions and fixtures (like this one) are exempt from this check.
