@@ -166,13 +166,20 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "PoolSwap",
-					Use:       "swap --pool-id=<id> --input=<amountdenom> --minimum-out-amount=<amount> --out-denom=<denom>",
-					Short:     "Swap against a single pool",
-					Long: "Execute a single-pool swap.\n\n" +
-						"Fees: the pool accrues swap fees to FeesEarned (LPs).\n" +
-						"v3 (band set) uses sqrt-price integration within [Pmin,Pmax]; out is truncated to integers; post-swap price must remain within the band.\n" +
-						"To route across multiple pools, include multiple swap messages in the same tx or call the module multiple times from a script.",
-					Example: "dysond tx whaleswap swap --pool-id=1 --input=100udys --minimum-out-amount=90 --out-denom=ufoo",
+					Use:       "swap --input <coin> [--input <coin> ...] --legs '<json>' [--min-output <coin> ...]",
+					Short:     "Aggregate multi-leg swaps across pools with end-of-tx settlement",
+					Long: "Execute an aggregated swap defined by arbitrary legs. No pre-escrow occurs; caps in --input are enforced only at the end. " +
+						"Legs may reuse pools, form cycles, and are simulated on pool snapshots; fees accrue per pool. Final minimums are checked via --min-output coins.\n\n" +
+						"--legs accepts a JSON array of legs, each with pool_id and swap_in coin object, e.g. \n" +
+						"  --legs '[{\"pool_id\":1,\"swap_in\":{\"denom\":\"udys\",\"amount\":\"100\"}}]'.\n" +
+						"--input provides per-denom debit caps applied at the end (repeatable). --min-output provides final required credits (repeatable).",
+					Example: "dysond tx whaleswap swap --input 100udys --legs '[{\"pool_id\":1,\"swap_in\":{\"denom\":\"udys\",\"amount\":\"100\"}}]' --min-output 90ufoo\n" +
+						"dysond tx whaleswap swap --input 100udys --input 50ufoo --legs '[{\"pool_id\":1,\"swap_in\":{\"denom\":\"udys\",\"amount\":\"100\"}},{\"pool_id\":2,\"swap_in\":{\"denom\":\"ufoo\",\"amount\":\"50\"}}]' --min-output 120ubar",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"input":      {Name: "input", Usage: "Per-denom debit cap (repeatable), e.g. 100udys"},
+						"legs":       {Name: "legs", Usage: "JSON array of legs: [{\"pool_id\":N,\"swap_in\":{\"denom\":\"...\",\"amount\":\"...\"}}]"},
+						"min_output": {Name: "min-output", Usage: "Final minimum credits (repeatable), e.g. 90ufoo"},
+					},
 				},
 				{
 					RpcMethod: "ConvertToLiquid",

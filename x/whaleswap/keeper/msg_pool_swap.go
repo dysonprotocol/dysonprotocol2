@@ -10,6 +10,7 @@ import (
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 func (k Keeper) PoolSwap(ctx context.Context, msg *whaleswapv1.MsgPoolSwap) (*whaleswapv1.MsgPoolSwapResponse, error) {
@@ -18,257 +19,281 @@ func (k Keeper) PoolSwap(ctx context.Context, msg *whaleswapv1.MsgPoolSwap) (*wh
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid trader: %s", err.Error())
 	}
-	trader := sdk.AccAddress(traderBz)
+	_ = sdk.AccAddress(traderBz)
 
-	if !msg.Input.Amount.IsPositive() {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "input amount must be > 0")
-	}
-	// single pool swap; enforce non-zero id
-	if msg.PoolId == 0 {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool_id required")
+	if len(msg.Legs) == 0 {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "legs must be non-empty")
 	}
 
-	if err := k.bank.SendCoinsFromAccountToModule(ctx, trader, whaleswap.ModuleName, sdk.NewCoins(msg.Input)); err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "failed to escrow input %s for trader %s", msg.Input.String(), msg.Trader)
-	}
+	// Build end-of-tx debit caps per denom
+	caps := sdk.NewCoins(msg.Input...)
 
-	currentDenom := msg.Input.Denom
-	currentAmount := msg.Input.Amount
+	// module delta per denom: amount>0 means module receives; amount<0 means module pays
+	deltaByDenom := map[string]math.Int{}
 
-	pool, gerr := k.PoolsMap.Get(ctx, msg.PoolId)
-	if gerr != nil {
-		return nil, cosmossdkerrors.Wrapf(gerr, "pool not found: %d", msg.PoolId)
-	}
-
-	if len(pool.Coins) != 2 {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves")
-	}
-	// two-coin pool in canonical order
-	// reserves used inline below; avoid precomputing
-	// legacy r1/r2 no longer used in v2 path; concentrated path recomputes from bands
-
-	// Parse fee once; default 0
-	fee := math.LegacyNewDec(0)
-	if pool.FeePct != "" {
-		f, ferr := math.LegacyNewDecFromStr(pool.FeePct)
-		if ferr != nil {
-			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool fee_pct: "+ferr.Error())
+	// Simulate each leg against pool snapshots, update pools and record trades
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	t := sdkCtx.BlockTime()
+	for _, leg := range msg.Legs {
+		if leg.PoolId == 0 {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool_id required")
 		}
-		fee = f
-	}
-	one := math.LegacyNewDec(1)
-
-	var outAmt math.Int
-	var outDenom string
-
-	if currentDenom != pool.Coins[0].Denom && currentDenom != pool.Coins[1].Denom {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "input denom %s not in pool %d", currentDenom, msg.PoolId)
-	}
-
-	if len(pool.MinPrice) == 2 {
-		// concentrated swap approximation using sqrt-price integration
-		sa, sb, err := k.bandSqrt(pool)
-		if err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to compute band sqrt prices")
+		inCoin := leg.SwapIn
+		if inCoin.Denom == "" || !inCoin.Amount.IsPositive() {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap_in must be > 0 with denom")
 		}
-		sp, err := k.poolSqrtPrice(pool, pool.Coins[0].Denom, pool.Coins[1].Denom)
-		if err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to compute current sqrt price")
+		pool, gerr := k.PoolsMap.Get(ctx, leg.PoolId)
+		if gerr != nil {
+			return nil, cosmossdkerrors.Wrapf(gerr, "pool not found: %d", leg.PoolId)
 		}
-		Lcur, _, _, err := k.liquidityForReserves(pool)
-		if err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "invalid pool liquidity")
+		if len(pool.Coins) != 2 {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves")
 		}
-		if !Lcur.IsPositive() {
-			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool liquidity")
-		}
-		effIn := math.LegacyNewDecFromInt(currentAmount).Mul(one.Sub(fee))
-		// track fees earned = input - effIn
-		feeInt := currentAmount.Sub(effIn.TruncateInt())
-		if feeInt.IsPositive() {
-			fees := sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(currentDenom, feeInt))
-			pool.FeesEarned = fees
-		}
-		// use current liquidity Lcur directly
-		L := Lcur
-		if currentDenom == pool.Coins[0].Denom {
-			// token0 (coin A) in: price moves DOWN within band
-			// 1/sp' = 1/sp + dX/L  => sp' = 1 / (1/sp + dX/L)
-			invSpPrime := math.LegacyOneDec().Quo(sp).Add(effIn.Quo(L))
-			if invSpPrime.LTE(math.LegacyZeroDec()) {
-				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "insufficient liquidity")
+		// Parse fee once per leg from current pool state
+		fee := math.LegacyNewDec(0)
+		if pool.FeePct != "" {
+			f, ferr := math.LegacyNewDecFromStr(pool.FeePct)
+			if ferr != nil {
+				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool fee_pct: "+ferr.Error())
 			}
-			spPrime, err := k.sqrtPrice(math.LegacyOneDec().Quo(invSpPrime))
-			if err != nil {
-				return nil, cosmossdkerrors.Wrap(err, "failed to compute next sqrt price")
-			}
-			if spPrime.LT(sa) {
-				spPrime = sa
-			}
-			// out = L * (sp - sp')
-			outDec := L.Mul(sp.Sub(spPrime))
-			outAmt = outDec.TruncateInt()
-		} else {
-			// token1 (coin B) in: price moves UP within band
-			// sp' = sp + dY/L
-			spPrime := sp.Add(effIn.Quo(L))
-			if spPrime.GT(sb) {
-				spPrime = sb
-			}
-			// out = L * (1/sp - 1/sp')
-			outDec := L.Mul(math.LegacyOneDec().Quo(sp).Sub(math.LegacyOneDec().Quo(spPrime)))
-			outAmt = outDec.TruncateInt()
+			fee = f
 		}
-		if !outAmt.IsPositive() {
-			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap output too small")
-		}
-		// Update integer reserves approximately; prevent zeroing any reserve
-		if currentDenom == pool.Coins[0].Denom {
-			new0 := pool.Coins[0].Amount.Add(currentAmount)
-			new1 := pool.Coins[1].Amount.Sub(outAmt)
-			if !new1.IsPositive() {
-				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap would deplete quote reserve to zero")
-			}
-			pool.Coins = sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, new0), sdk.NewCoin(pool.Coins[1].Denom, new1))
-			outDenom = pool.Coins[1].Denom
-		} else {
-			new0 := pool.Coins[0].Amount.Sub(outAmt)
-			new1 := pool.Coins[1].Amount.Add(currentAmount)
-			if !new0.IsPositive() {
-				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap would deplete base reserve to zero")
-			}
-			pool.Coins = sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, new0), sdk.NewCoin(pool.Coins[1].Denom, new1))
-			outDenom = pool.Coins[0].Denom
-		}
-		// Sanity band check post-swap
-		// Cross-multiplication band checks: rQuote/rBase within [minQuote/minBase, maxQuote/maxBase]
-		rBase := pool.Coins[0].Amount
-		rQuote := pool.Coins[1].Amount
-		denomA, denomB := pool.Coins[0].Denom, pool.Coins[1].Denom
-		minBase := pool.MinPrice.AmountOf(denomA)
-		minQuote := pool.MinPrice.AmountOf(denomB)
-		maxBase := pool.MaxPrice.AmountOf(denomA)
-		maxQuote := pool.MaxPrice.AmountOf(denomB)
-		if rQuote.Mul(minBase).LT(rBase.Mul(minQuote)) {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "resulting price below band after swap")
-		}
-		if rQuote.Mul(maxBase).GT(rBase.Mul(maxQuote)) {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "resulting price above band after swap")
-		}
-	} else {
-		// v2 constant product path
-		inputIdx := 0
-		if currentDenom != pool.Coins[0].Denom {
+		one := math.LegacyNewDec(1)
+
+		// Validate input denom is in pool and compute out denom index
+		inputIdx := -1
+		if inCoin.Denom == pool.Coins[0].Denom {
+			inputIdx = 0
+		} else if inCoin.Denom == pool.Coins[1].Denom {
 			inputIdx = 1
+		} else {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "input denom %s not in pool %d", inCoin.Denom, leg.PoolId)
 		}
 		outputIdx := 1 - inputIdx
 
-		rIn := math.LegacyNewDecFromInt(pool.Coins[inputIdx].Amount)
-		rOut := math.LegacyNewDecFromInt(pool.Coins[outputIdx].Amount)
+		var outAmt math.Int
+		var outDenom string
 
-		effIn := math.LegacyNewDecFromInt(currentAmount).Mul(one.Sub(fee))
-		feeInt := currentAmount.Sub(effIn.TruncateInt())
-		if feeInt.IsPositive() {
-			fees := sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(currentDenom, feeInt))
-			pool.FeesEarned = fees
-		}
-		// out = rOut - K / (rIn + effIn)
-		kDec := rIn.Mul(rOut)
-		q := kDec.Quo(rIn.Add(effIn)).Ceil()
-		outDec := rOut.Sub(q)
-		outAmt = outDec.TruncateInt()
-		if !outAmt.IsPositive() {
-			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap output too small")
-		}
-		// Update reserves: add input, subtract output; prevent zeroing any reserve
-		newIn := pool.Coins[inputIdx].Amount.Add(currentAmount)
-		newOut := pool.Coins[outputIdx].Amount.Sub(outAmt)
-		if !newOut.IsPositive() {
-			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap would deplete output reserve to zero")
-		}
-		if inputIdx == 0 {
-			pool.Coins = sdk.NewCoins(
-				sdk.NewCoin(pool.Coins[0].Denom, newIn),
-				sdk.NewCoin(pool.Coins[1].Denom, newOut),
-			)
+		if len(pool.MinPrice) == 2 {
+			// concentrated liquidity path
+			sa, sb, err := k.bandSqrt(pool)
+			if err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "failed to compute band sqrt prices")
+			}
+			sp, err := k.poolSqrtPrice(pool, pool.Coins[0].Denom, pool.Coins[1].Denom)
+			if err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "failed to compute current sqrt price")
+			}
+			Lcur, _, _, err := k.liquidityForReserves(pool)
+			if err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "invalid pool liquidity")
+			}
+			if !Lcur.IsPositive() {
+				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool liquidity")
+			}
+			effIn := math.LegacyNewDecFromInt(inCoin.Amount).Mul(one.Sub(fee))
+			feeInt := inCoin.Amount.Sub(effIn.TruncateInt())
+			if feeInt.IsPositive() {
+				fees := sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(inCoin.Denom, feeInt))
+				pool.FeesEarned = fees
+			}
+			L := Lcur
+			if inputIdx == 0 {
+				invSpPrime := math.LegacyOneDec().Quo(sp).Add(effIn.Quo(L))
+				if invSpPrime.LTE(math.LegacyZeroDec()) {
+					return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "insufficient liquidity")
+				}
+				spPrime, err := k.sqrtPrice(math.LegacyOneDec().Quo(invSpPrime))
+				if err != nil {
+					return nil, cosmossdkerrors.Wrap(err, "failed to compute next sqrt price")
+				}
+				if spPrime.LT(sa) {
+					spPrime = sa
+				}
+				outDec := L.Mul(sp.Sub(spPrime))
+				outAmt = outDec.TruncateInt()
+			} else {
+				spPrime := sp.Add(effIn.Quo(L))
+				if spPrime.GT(sb) {
+					spPrime = sb
+				}
+				outDec := L.Mul(math.LegacyOneDec().Quo(sp).Sub(math.LegacyOneDec().Quo(spPrime)))
+				outAmt = outDec.TruncateInt()
+			}
+			if !outAmt.IsPositive() {
+				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap output too small")
+			}
+			if inputIdx == 0 {
+				new0 := pool.Coins[0].Amount.Add(inCoin.Amount)
+				new1 := pool.Coins[1].Amount.Sub(outAmt)
+				if !new1.IsPositive() {
+					return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap would deplete quote reserve to zero")
+				}
+				pool.Coins = sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, new0), sdk.NewCoin(pool.Coins[1].Denom, new1))
+				outDenom = pool.Coins[1].Denom
+			} else {
+				new0 := pool.Coins[0].Amount.Sub(outAmt)
+				new1 := pool.Coins[1].Amount.Add(inCoin.Amount)
+				if !new0.IsPositive() {
+					return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap would deplete base reserve to zero")
+				}
+				pool.Coins = sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, new0), sdk.NewCoin(pool.Coins[1].Denom, new1))
+				outDenom = pool.Coins[0].Denom
+			}
+			// Band check post swap
+			rBase := pool.Coins[0].Amount
+			rQuote := pool.Coins[1].Amount
+			denomA, denomB := pool.Coins[0].Denom, pool.Coins[1].Denom
+			minBase := pool.MinPrice.AmountOf(denomA)
+			minQuote := pool.MinPrice.AmountOf(denomB)
+			maxBase := pool.MaxPrice.AmountOf(denomA)
+			maxQuote := pool.MaxPrice.AmountOf(denomB)
+			if rQuote.Mul(minBase).LT(rBase.Mul(minQuote)) {
+				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "resulting price below band after swap")
+			}
+			if rQuote.Mul(maxBase).GT(rBase.Mul(maxQuote)) {
+				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "resulting price above band after swap")
+			}
 		} else {
-			pool.Coins = sdk.NewCoins(
-				sdk.NewCoin(pool.Coins[0].Denom, newOut),
-				sdk.NewCoin(pool.Coins[1].Denom, newIn),
-			)
+			// constant product path
+			rIn := math.LegacyNewDecFromInt(pool.Coins[inputIdx].Amount)
+			rOut := math.LegacyNewDecFromInt(pool.Coins[outputIdx].Amount)
+			effIn := math.LegacyNewDecFromInt(inCoin.Amount).Mul(one.Sub(fee))
+			feeInt := inCoin.Amount.Sub(effIn.TruncateInt())
+			if feeInt.IsPositive() {
+				fees := sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(inCoin.Denom, feeInt))
+				pool.FeesEarned = fees
+			}
+			kDec := rIn.Mul(rOut)
+			q := kDec.Quo(rIn.Add(effIn)).Ceil()
+			outDec := rOut.Sub(q)
+			outAmt = outDec.TruncateInt()
+			if !outAmt.IsPositive() {
+				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap output too small")
+			}
+			newIn := pool.Coins[inputIdx].Amount.Add(inCoin.Amount)
+			newOut := pool.Coins[outputIdx].Amount.Sub(outAmt)
+			if !newOut.IsPositive() {
+				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap would deplete output reserve to zero")
+			}
+			if inputIdx == 0 {
+				pool.Coins = sdk.NewCoins(
+					sdk.NewCoin(pool.Coins[0].Denom, newIn),
+					sdk.NewCoin(pool.Coins[1].Denom, newOut),
+				)
+				outDenom = pool.Coins[1].Denom
+			} else {
+				pool.Coins = sdk.NewCoins(
+					sdk.NewCoin(pool.Coins[0].Denom, newOut),
+					sdk.NewCoin(pool.Coins[1].Denom, newIn),
+				)
+				outDenom = pool.Coins[0].Denom
+			}
 		}
-		outDenom = pool.Coins[outputIdx].Denom
+
+		// Persist pool changes and emit per-leg events
+		pool.NumTrades += 1
+		if err := k.updatePool(ctx, &pool); err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to update pool %d after swap", pool.PoolId)
+		}
+		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPoolSwap{PoolId: pool.PoolId}); err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventPoolSwap")
+		}
+
+		// Accumulate module delta and record trade (safe map accumulation)
+		if v, ok := deltaByDenom[inCoin.Denom]; ok {
+			deltaByDenom[inCoin.Denom] = v.Add(inCoin.Amount)
+		} else {
+			deltaByDenom[inCoin.Denom] = inCoin.Amount
+		}
+		if v, ok := deltaByDenom[outDenom]; ok {
+			deltaByDenom[outDenom] = v.Sub(outAmt)
+		} else {
+			deltaByDenom[outDenom] = outAmt.Neg()
+		}
+
+		tradeId, terr := k.tradeSeq.Next(ctx)
+		if terr != nil {
+			return nil, cosmossdkerrors.Wrap(terr, "failed to allocate trade id")
+		}
+		trade := whaleswapv1.Trade{
+			TradeId:   tradeId,
+			OfferId:   0,
+			Taker:     msg.Trader,
+			Height:    uint64(sdkCtx.BlockHeight()),
+			Timestamp: &t,
+			Sent:      inCoin,
+			Received:  sdk.NewCoin(outDenom, outAmt),
+			PoolId:    pool.PoolId,
+			AuctionId: 0,
+		}
+		if err := k.TradesMap.Set(ctx, tradeId, trade); err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "failed to save trade")
+		}
+		if err := k.TradesByPoolIndex.Set(ctx, collections.Join(pool.PoolId, tradeId), tradeId); err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to index trade by pool")
+		}
+		if err := k.TradesByTakerIndex.Set(ctx, collections.Join(msg.Trader, tradeId), tradeId); err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to index trade by taker")
+		}
+		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventTradeRecorded{TradeId: tradeId, OfferId: 0, PoolId: pool.PoolId, AuctionId: 0}); err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventTradeRecorded")
+		}
 	}
 
-	// persist and emit pool update
-	pool.NumTrades += 1
-	if err := k.updatePool(ctx, &pool); err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "failed to update pool %d after swap", pool.PoolId)
+	// Derive debits (trader -> module) and credits (module -> trader) from module deltas
+	requiredDebits := sdk.NewCoins()
+	credits := sdk.NewCoins()
+	for denom, modAmt := range deltaByDenom {
+		if modAmt.IsZero() {
+			continue
+		}
+		if modAmt.IsPositive() {
+			// module receives => trader must pay this denom
+			need := modAmt
+			capAmt := caps.AmountOf(denom)
+			if capAmt.IsZero() || capAmt.LT(need) {
+				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "debit exceeds cap for %s: need %s <= cap %s", denom, need.String(), capAmt.String())
+			}
+			requiredDebits = requiredDebits.Add(sdk.NewCoin(denom, need))
+			continue
+		}
+		if modAmt.IsNegative() {
+			// module pays => trader receives this denom
+			credits = credits.Add(sdk.NewCoin(denom, modAmt.Abs()))
+		}
 	}
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPoolSwap{PoolId: pool.PoolId}); err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventPoolSwap")
+	// Enforce min_output
+	for _, m := range msg.MinOutput {
+		got := credits.AmountOf(m.Denom)
+		if got.LT(m.Amount) {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_output not met for %s: got %s < %s", m.Denom, got.String(), m.Amount.String())
+		}
 	}
 
-	currentDenom = outDenom
-	currentAmount = outAmt
+	// Single aggregated move: trader <-> module
+	inputs := []banktypes.Input{}
+	outputs := []banktypes.Output{}
+	traderBech := msg.Trader
+	moduleBech := k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String()
+	if !requiredDebits.IsZero() {
+		inputs = append(inputs, banktypes.Input{Address: traderBech, Coins: requiredDebits})
+		outputs = append(outputs, banktypes.Output{Address: moduleBech, Coins: requiredDebits})
+	}
+	if !credits.IsZero() {
+		inputs = append(inputs, banktypes.Input{Address: moduleBech, Coins: credits})
+		outputs = append(outputs, banktypes.Output{Address: traderBech, Coins: credits})
+	}
+	if len(inputs) == 0 || len(outputs) == 0 {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "no inputs or outputs for pool swap move")
+	}
+	if err := k.wsMoveCoins(ctx, inputs, outputs); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "move coins failed")
+	}
 
-	// Validate minimum_output
-	if msg.MinimumOutput.Denom == "" {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "minimum_output.denom required")
-	}
-	if currentDenom != msg.MinimumOutput.Denom {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "output denom %s != expected %s", currentDenom, msg.MinimumOutput.Denom)
-	}
-	if msg.MinimumOutput.Amount.IsNegative() {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "minimum_output.amount must be >= 0")
-	}
-	if currentAmount.LT(msg.MinimumOutput.Amount) {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "output %s below minimum %s", currentAmount.String(), msg.MinimumOutput.Amount.String())
-	}
-
-	if err := k.bank.SendCoinsFromModuleToAccount(ctx, whaleswap.ModuleName, trader, sdk.NewCoins(sdk.NewCoin(currentDenom, currentAmount))); err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "failed to send output %s to trader %s", sdk.NewCoin(currentDenom, currentAmount).String(), msg.Trader)
-	}
 	if err := k.AssertAMMInvariants(ctx); err != nil {
-		return nil, cosmossdkerrors.Wrapf(err,
-			"AMM invariant after PoolSwap: pool_id=%d in=%s out=%s newR=(%s,%s)",
-			pool.PoolId,
-			sdk.NewCoin(msg.Input.Denom, msg.Input.Amount).String(),
-			sdk.NewCoin(currentDenom, currentAmount).String(),
-			sdk.NewCoin(pool.Coins[0].Denom, pool.Coins[0].Amount).String(),
-			sdk.NewCoin(pool.Coins[1].Denom, pool.Coins[1].Amount).String(),
-		)
+		return nil, cosmossdkerrors.Wrap(err, "AMM invariant after aggregated PoolSwap")
 	}
-	// After successful settlement and invariants: record Trade and emit event
-	tradeId, terr := k.tradeSeq.Next(ctx)
-	if terr != nil {
-		return nil, cosmossdkerrors.Wrap(terr, "failed to allocate trade id")
-	}
-	sdkCtx = sdk.UnwrapSDKContext(ctx)
-	t := sdkCtx.BlockTime()
-	trade := whaleswapv1.Trade{
-		TradeId:   tradeId,
-		OfferId:   0,
-		Taker:     msg.Trader,
-		Height:    uint64(sdkCtx.BlockHeight()),
-		Timestamp: &t,
-		Sent:      msg.Input,
-		Received:  sdk.NewCoin(currentDenom, currentAmount),
-		PoolId:    pool.PoolId,
-		AuctionId: 0,
-	}
-	if err := k.TradesMap.Set(ctx, tradeId, trade); err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "failed to save trade")
-	}
-	if err := k.TradesByPoolIndex.Set(ctx, collections.Join(pool.PoolId, tradeId), tradeId); err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "failed to index trade by pool")
-	}
-	if err := k.TradesByTakerIndex.Set(ctx, collections.Join(msg.Trader, tradeId), tradeId); err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "failed to index trade by taker")
-	}
-	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventTradeRecorded{TradeId: tradeId, OfferId: 0, PoolId: pool.PoolId, AuctionId: 0}); err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventTradeRecorded")
-	}
-	return &whaleswapv1.MsgPoolSwapResponse{AmountOut: sdk.NewCoin(currentDenom, currentAmount)}, nil
+
+	return &whaleswapv1.MsgPoolSwapResponse{AmountOut: credits}, nil
 }

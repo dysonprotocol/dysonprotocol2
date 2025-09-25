@@ -8,18 +8,29 @@
                     "trader": {
                         "type": "string"
                     },
-                    "pool_id": {
-                        "type": "string",
-                        "description": "target pool id to execute the swap against"
-                    },
                     "input": {
-                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
-                    },
-                    "minimum_output": {
-                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
                         "additionalProperties": false,
-                        "description": "Minimum output coin (denom and amount). The swap fails if the computed output coin's denom differs or its amount is less than this value."
+                        "type": "array",
+                        "description": "Total allowed debits from the trader by denom, enforced at end only."
+                    },
+                    "legs": {
+                        "items": {
+                            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.SwapLeg"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Arbitrary set of swap legs; order does not need to be contiguous by denom."
+                    },
+                    "min_output": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Final minimum outputs required per denom after aggregation."
                     }
                 },
                 "additionalProperties": false,
@@ -40,6 +51,20 @@
                 "type": "object",
                 "title": "Coin",
                 "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.whaleswap.v1.SwapLeg": {
+                "properties": {
+                    "pool_id": {
+                        "type": "string"
+                    },
+                    "swap_in": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Swap Leg"
             }
         }
     },
@@ -50,8 +75,11 @@
             "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse": {
                 "properties": {
                     "amount_out": {
-                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
                     }
                 },
                 "additionalProperties": false,

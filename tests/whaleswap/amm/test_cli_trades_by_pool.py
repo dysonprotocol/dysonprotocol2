@@ -56,15 +56,19 @@ def test_trades_by_pool_lists_swaps_pagination(
     # Swap 1: udys -> custom denom
     in1 = f"100udys"
     out1 = denom
+    # parse amount/denom explicitly
+    amt1 = "".join([c for c in in1 if c.isdigit()])
+    den1 = in1[len(amt1) :]
+    legs1 = json.dumps({"pool_id": pool_id, "swap_in": {"denom": den1, "amount": amt1}})
     swap1 = dysond(
         "tx",
         "whaleswap",
         "swap",
-        "--pool-id",
-        str(pool_id),
         "--input",
         in1,
-        "--minimum-output",
+        "--legs",
+        legs1,
+        "--min-output",
         f"1{out1}",
         "--from",
         taker_name,
@@ -74,15 +78,18 @@ def test_trades_by_pool_lists_swaps_pagination(
     # Swap 2: custom denom -> udys
     in2 = f"20{denom}"
     out2 = "udys"
+    amt2 = "".join([c for c in in2 if c.isdigit()])
+    den2 = in2[len(amt2) :]
+    legs2 = json.dumps({"pool_id": pool_id, "swap_in": {"denom": den2, "amount": amt2}})
     swap2 = dysond(
         "tx",
         "whaleswap",
         "swap",
-        "--pool-id",
-        str(pool_id),
         "--input",
         in2,
-        "--minimum-output",
+        "--legs",
+        legs2,
+        "--min-output",
         f"1{out2}",
         "--from",
         taker_name,

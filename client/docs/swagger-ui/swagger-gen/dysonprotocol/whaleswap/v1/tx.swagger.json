@@ -635,17 +635,26 @@
         "trader": {
           "type": "string"
         },
-        "pool_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "target pool id to execute the swap against"
-        },
         "input": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "description": "Total allowed debits from the trader by denom, enforced at end only."
         },
-        "minimum_output": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "description": "Minimum output coin (denom and amount). The swap fails if the computed\noutput coin's denom differs or its amount is less than this value."
+        "legs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.SwapLeg"
+          },
+          "description": "Arbitrary set of swap legs; order does not need to be contiguous by denom."
+        },
+        "min_output": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "description": "Final minimum outputs required per denom after aggregation."
         }
       },
       "description": "Single-pool swap.\n\n- `input` denom must be one of the pool reserves; `out_denom` must be the\n  other.\n- `minimum_out_amount` is an sdk.Int string; the swap fails if the computed\n  output is less than this value after fees."
@@ -654,7 +663,10 @@
       "type": "object",
       "properties": {
         "amount_out": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
         }
       }
     },
@@ -805,6 +817,18 @@
         "minimum_bid_percent_increase": {
           "type": "string",
           "description": "minimum_bid_percent_increase specifies the minimum percent increase\nrequired over the current valuation for a new bid to be accepted."
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.SwapLeg": {
+      "type": "object",
+      "properties": {
+        "pool_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "swap_in": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
         }
       }
     },

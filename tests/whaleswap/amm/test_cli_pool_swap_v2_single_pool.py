@@ -49,15 +49,18 @@ def test_pool_swap_v2_single_pool(chainnet, generate_account, faucet, register_n
     [trader_name, trader_addr] = generate_account("amm_trader")
     faucet(trader_addr, amount=1_000_000)
 
+    legs = json.dumps(
+        {"pool_id": pool_id, "swap_in": {"denom": "udys", "amount": "100"}}
+    )
     swap = dysond(
         "tx",
         "whaleswap",
         "swap",
-        "--pool-id",
-        str(pool_id),
         "--input",
         "100udys",
-        "--minimum-output",
+        "--legs",
+        legs,
+        "--min-output",
         f"1{name}",
         "--from",
         trader_name,
