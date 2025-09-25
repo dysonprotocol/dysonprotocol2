@@ -413,7 +413,7 @@ def node_ready(chainnet):
     poll_until_condition(
         _ready,
         timeout=3,
-        poll_interval=0.1,
+        poll_interval=0.3,
         error_message="Node did not produce blocks",
     )
 

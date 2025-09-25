@@ -1,6 +1,7 @@
 package dysvm
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -11,10 +12,10 @@ import (
 	"github.com/kluctl/go-embed-python/python"
 )
 
-func Exec(msgJSON, scriptJSON, attachedMsgResultsJSON, headerInfoJSON, port string) (string, error) {
+func Exec(ctx context.Context, msgJSON, scriptJSON, attachedMsgResultsJSON, headerInfoJSON, port string) (string, error) {
 	if os.Getenv("DYSLANG_SERVER") == "1" {
 		// Route through long-running server
-		return getServer().Exec(msgJSON, scriptJSON, attachedMsgResultsJSON, headerInfoJSON, port)
+		return getServer(ctx).Exec(ctx, msgJSON, scriptJSON, attachedMsgResultsJSON, headerInfoJSON, port)
 	}
 	var lib *embed_util.EmbeddedFiles
 	ep, err := python.NewEmbeddedPython("dyslang")
@@ -43,9 +44,9 @@ func Exec(msgJSON, scriptJSON, attachedMsgResultsJSON, headerInfoJSON, port stri
 
 }
 
-func Benchmark(iterations int, details bool) (string, error) {
+func Benchmark(ctx context.Context, iterations int, details bool) (string, error) {
 	if os.Getenv("DYSLANG_SERVER") == "1" {
-		return getServer().Benchmark(iterations, details)
+		return getServer(ctx).Benchmark(ctx, iterations, details)
 	}
 	var lib *embed_util.EmbeddedFiles
 	ep, err := python.NewEmbeddedPython("dyslang")
@@ -79,9 +80,9 @@ func Benchmark(iterations int, details bool) (string, error) {
 	return string(out), runErr
 }
 
-func Wsgi(port, scriptName, scriptJSON, blockInfoJSON, httpreq string) (string, error) {
+func Wsgi(ctx context.Context, port, scriptName, scriptJSON, blockInfoJSON, httpreq string) (string, error) {
 	if os.Getenv("DYSLANG_SERVER") == "1" {
-		return getServer().Wsgi(port, scriptName, scriptJSON, blockInfoJSON, httpreq)
+		return getServer(ctx).Wsgi(ctx, port, scriptName, scriptJSON, blockInfoJSON, httpreq)
 	}
 	var lib *embed_util.EmbeddedFiles
 	ep, err := python.NewEmbeddedPython("dyslang")
@@ -113,9 +114,9 @@ func Wsgi(port, scriptName, scriptJSON, blockInfoJSON, httpreq string) (string, 
 
 }
 
-func DysFormat(code string) (string, error) {
+func DysFormat(ctx context.Context, code string) (string, error) {
 	if os.Getenv("DYSLANG_SERVER") == "1" {
-		return getServer().DysFormat(code)
+		return getServer(ctx).DysFormat(ctx, code)
 	}
 	var lib *embed_util.EmbeddedFiles
 	ep, err := python.NewEmbeddedPython("dyslang")
@@ -148,9 +149,9 @@ func DysFormat(code string) (string, error) {
 	return string(out), nil
 }
 
-func ExtractFunctionSchema(scriptJSON, blockInfoJSON, port, executorAddress, scriptName string) (string, error) {
+func ExtractFunctionSchema(ctx context.Context, scriptJSON, blockInfoJSON, port, executorAddress, scriptName string) (string, error) {
 	if os.Getenv("DYSLANG_SERVER") == "1" {
-		return getServer().ExtractFunctionSchema(scriptJSON, blockInfoJSON, port, executorAddress, scriptName)
+		return getServer(ctx).ExtractFunctionSchema(ctx, scriptJSON, blockInfoJSON, port, executorAddress, scriptName)
 	}
 	var lib *embed_util.EmbeddedFiles
 	ep, err := python.NewEmbeddedPython("dyslang")

@@ -45,7 +45,7 @@ func (k Keeper) UpdateScript(ctx context.Context, msg *scripttypes.MsgUpdateScri
 	}
 
 	// Format the code with black before setting it
-	formattedCode, err := dysvm.DysFormat(msg.Code)
+	formattedCode, err := dysvm.DysFormat(ctx, msg.Code)
 	if err != nil {
 		k.Logger(sdkCtx).Error("failed to format code with dys_format", "error", err)
 		return nil, cosmossdkerrors.Wrap(err, "failed to format code")
@@ -216,7 +216,7 @@ func (k Keeper) CreateNewScript(ctx context.Context, msg *scripttypes.MsgCreateN
 	}
 
 	// Format the code with black before setting it and deriving address
-	formattedCode, err := dysvm.DysFormat(msg.Code)
+	formattedCode, err := dysvm.DysFormat(ctx, msg.Code)
 	if err != nil {
 		k.Logger(sdkCtx).Error("failed to format code with dys_format", "error", err)
 		return nil, cosmossdkerrors.Wrap(err, "failed to format code")

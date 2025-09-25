@@ -271,7 +271,7 @@ Examples:
 			}
 
 			// Call the benchmark function with iterations and details parameters
-			output, err := dysvm.Benchmark(iterations, details)
+			output, err := dysvm.Benchmark(context.Background(), iterations, details)
 			if err != nil {
 				return fmt.Errorf("benchmark failed: %w", err)
 			}

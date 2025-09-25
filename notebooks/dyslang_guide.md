@@ -83,10 +83,10 @@ assert 'balance' in json_result, "Balance not found in the result"
 print(json.dumps(json_result['balance'], indent=2))
 ```
 
-    {"result":"{\"result\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"denom\":\"udys\",\"amount\":\"8625848635\"}},\"stdout\":\"\",\"exception\":null,\"nodes_called\":23,\"gas_limit\":18446744073709551615,\"script_gas_consumed\":1013342,\"cumsize\":6563}","attached_message_results":[]}
+    {"result":"{\"result\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"denom\":\"udys\",\"amount\":\"8402041924\"}},\"stdout\":\"\",\"exception\":null,\"nodes_called\":23,\"gas_limit\":18446744073709551615,\"script_gas_consumed\":1013342,\"cumsize\":6563}","attached_message_results":[]}
     {
       "denom": "udys",
-      "amount": "8625848635"
+      "amount": "8402041924"
     }
 
 
@@ -147,13 +147,13 @@ assert 'bob_balance' in json_result, "Bob's balance not found in the result"
 print(json.dumps(json_result, indent=2))
 ```
 
-    {"result":"{\"result\":{\"alice_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"denom\":\"udys\",\"amount\":\"8625848635\"}},\"bob_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"denom\":\"udys\",\"amount\":\"10000000000\"}}},\"stdout\":\"\",\"exception\":null,\"nodes_called\":39,\"gas_limit\":18446744073709551615,\"script_gas_consumed\":1023235,\"cumsize\":15345}","attached_message_results":[]}
+    {"result":"{\"result\":{\"alice_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"denom\":\"udys\",\"amount\":\"8402041924\"}},\"bob_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"denom\":\"udys\",\"amount\":\"10000000000\"}}},\"stdout\":\"\",\"exception\":null,\"nodes_called\":39,\"gas_limit\":18446744073709551615,\"script_gas_consumed\":1023235,\"cumsize\":15345}","attached_message_results":[]}
     {
       "alice_balance": {
         "@type": "/cosmos.bank.v1beta1.QueryBalanceResponse",
         "balance": {
           "denom": "udys",
-          "amount": "8625848635"
+          "amount": "8402041924"
         }
       },
       "bob_balance": {
@@ -475,9 +475,9 @@ print(f"- Time: {block_info['time']}")
 ```
 
     Block Information:
-    - Height: 518
+    - Height: 511
     - Chain ID: chain-a
-    - Time: 2025-09-24T22:34:17.383414Z
+    - Time: 2025-09-25T00:24:21.395212Z
 
 
 ## Transaction Data
@@ -541,7 +541,7 @@ for m, r in zip(results['attached_messages'], results['attached_msg_results']):
     print(f"Result: {r}")
 ```
 
-    {"result":"{\"result\":{\"attached_messages\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\",\"amount\":[{\"denom\":\"udys\",\"amount\":\"12\"}]},{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\",\"amount\":[{\"denom\":\"udys\",\"amount\":\"34\"}]}],\"attached_msg_results\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"},{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"}]},\"stdout\":\"\",\"exception\":null,\"nodes_called\":18,\"gas_limit\":18446744073709551615,\"script_gas_consumed\":1057404,\"cumsize\":12601}","attached_message_results":[{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"},{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"}]}
+    {"result":"{\"result\":{\"attached_messages\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\",\"amount\":[{\"denom\":\"udys\",\"amount\":\"12\"}]},{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\",\"amount\":[{\"denom\":\"udys\",\"amount\":\"34\"}]}],\"attached_msg_results\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"},{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"}]},\"stdout\":\"\",\"exception\":null,\"nodes_called\":18,\"gas_limit\":18446744073709551615,\"script_gas_consumed\":1057410,\"cumsize\":12601}","attached_message_results":[{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"},{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"}]}
     {'attached_messages': [{'@type': '/cosmos.bank.v1beta1.MsgSend', 'from_address': 'dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej', 'to_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'amount': [{'denom': 'udys', 'amount': '12'}]}, {'@type': '/cosmos.bank.v1beta1.MsgSend', 'from_address': 'dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej', 'to_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'amount': [{'denom': 'udys', 'amount': '34'}]}], 'attached_msg_results': [{'@type': '/cosmos.bank.v1beta1.MsgSendResponse'}, {'@type': '/cosmos.bank.v1beta1.MsgSendResponse'}]}
     Message: {'@type': '/cosmos.bank.v1beta1.MsgSend', 'from_address': 'dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej', 'to_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'amount': [{'denom': 'udys', 'amount': '12'}]}
     Result: {'@type': '/cosmos.bank.v1beta1.MsgSendResponse'}
@@ -598,16 +598,16 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
 ```
 
     {
-      "height": "519",
-      "txhash": "4FA3D11272C1A79E5A26F699AFA4CEE17A8D0474ECAA3D3602898673360B7C28",
+      "height": "512",
+      "txhash": "506DA66FDF10FA3B1313EF82117108FAE9F5AB135891A7F88753E5875FDBEAF7",
       "codespace": "",
       "code": 0,
-      "data": "12C2010A282F6479736F6E70726F746F636F6C2E7363726970742E76312E4D736745786563526573706F6E73651295010A92017B22726573756C74223A7B226576656E745F656D6974746564223A747275657D2C227374646F7574223A22222C22657863657074696F6E223A6E756C6C2C226E6F6465735F63616C6C6564223A31372C226761735F6C696D6974223A31303030303030302C227363726970745F6761735F636F6E73756D6564223A313033393833332C2263756D73697A65223A323431367D",
+      "data": "12C2010A282F6479736F6E70726F746F636F6C2E7363726970742E76312E4D736745786563526573706F6E73651295010A92017B22726573756C74223A7B226576656E745F656D6974746564223A747275657D2C227374646F7574223A22222C22657863657074696F6E223A6E756C6C2C226E6F6465735F63616C6C6564223A31372C226761735F6C696D6974223A31303030303030302C227363726970745F6761735F636F6E73756D6564223A313033393838382C2263756D73697A65223A323431367D",
       "raw_log": "",
       "logs": [],
       "info": "",
       "gas_wanted": "10000000",
-      "gas_used": "1039833",
+      "gas_used": "1039888",
       "tx": null,
       "timestamp": "",
       "events": [
@@ -616,7 +616,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
           "attributes": [
             {
               "key": "acc_seq",
-              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/86",
+              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/131",
               "index": true
             }
           ]
@@ -626,7 +626,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
           "attributes": [
             {
               "key": "signature",
-              "value": "TPC3SXbCgr8KIf3O8g+whIzTlXJ9IeQWt38rRDnSOm5S2mTAYiyWISj8qvCAiynnLowiP6eJkQ4rws9WuPTaFw==",
+              "value": "ZGecA3aFGA8oSlqe91k91hU8bZ/rssLG6+sacPaKfOc/K9p+Rdyc9sfc8uphPR/UXvtZZcd9nh8mg41pVOUMIA==",
               "index": true
             }
           ]
@@ -726,7 +726,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
             },
             {
               "key": "response",
-              "value": "{\"result\":\"{\\\"result\\\":{\\\"event_emitted\\\":true},\\\"stdout\\\":\\\"\\\",\\\"exception\\\":null,\\\"nodes_called\\\":17,\\\"gas_limit\\\":10000000,\\\"script_gas_consumed\\\":1039833,\\\"cumsize\\\":2416}\",\"attached_message_results\":[]}",
+              "value": "{\"result\":\"{\\\"result\\\":{\\\"event_emitted\\\":true},\\\"stdout\\\":\\\"\\\",\\\"exception\\\":null,\\\"nodes_called\\\":17,\\\"gas_limit\\\":10000000,\\\"script_gas_consumed\\\":1039888,\\\"cumsize\\\":2416}\",\"attached_message_results\":[]}",
               "index": true
             },
             {
@@ -750,8 +750,8 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
     }
     {
       "tx": {
-        "acc_seq": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/86",
-        "signature": "TPC3SXbCgr8KIf3O8g+whIzTlXJ9IeQWt38rRDnSOm5S2mTAYiyWISj8qvCAiynnLowiP6eJkQ4rws9WuPTaFw=="
+        "acc_seq": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/131",
+        "signature": "ZGecA3aFGA8oSlqe91k91hU8bZ/rssLG6+sacPaKfOc/K9p+Rdyc9sfc8uphPR/UXvtZZcd9nh8mg41pVOUMIA=="
       },
       "message": {
         "action": "/dysonprotocol.script.v1.MsgExec",
@@ -769,7 +769,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
         "executor_address": "\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\"",
         "function_name": "\"emit_test_event\"",
         "request": "{\"executor_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"script_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"script_name\":\"\",\"extra_code\":\"\\nfrom dys import emit_event\\n\\ndef emit_test_event():\\n    # Emit a custom event, none is a success or an exception is raised\\n    emit_event(\\\"payment_processed\\\", \\\"success\\\")\\n    emit_event(\\\"foo\\\", '123123')\\n    return {\\\"event_emitted\\\": True}\\n\",\"function_name\":\"emit_test_event\",\"args\":\"\",\"kwargs\":\"\",\"attached_messages\":[]}",
-        "response": "{\"result\":\"{\\\"result\\\":{\\\"event_emitted\\\":true},\\\"stdout\\\":\\\"\\\",\\\"exception\\\":null,\\\"nodes_called\\\":17,\\\"gas_limit\\\":10000000,\\\"script_gas_consumed\\\":1039833,\\\"cumsize\\\":2416}\",\"attached_message_results\":[]}",
+        "response": "{\"result\":\"{\\\"result\\\":{\\\"event_emitted\\\":true},\\\"stdout\\\":\\\"\\\",\\\"exception\\\":null,\\\"nodes_called\\\":17,\\\"gas_limit\\\":10000000,\\\"script_gas_consumed\\\":1039888,\\\"cumsize\\\":2416}\",\"attached_message_results\":[]}",
         "script_address": "\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\"",
         "script_name": "\"\"",
         "msg_index": "0"

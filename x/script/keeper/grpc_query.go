@@ -390,7 +390,7 @@ func (k Keeper) FunctionSchema(ctx context.Context, req *scripttypes.QueryFuncti
 	}
 
 	// Call VM to extract schema
-	schemaJSON, runErr := dysvm.ExtractFunctionSchema(string(scriptJSON), string(headerJSON), port, req.ExecutorAddress, req.ScriptName)
+	schemaJSON, runErr := dysvm.ExtractFunctionSchema(ctx, string(scriptJSON), string(headerJSON), port, req.ExecutorAddress, req.ScriptName)
 	if runErr != nil {
 		return nil, cosmossdkerrors.Wrapf(runErr, "failed to extract function schema: %s, %s", runErr.Error(), schemaJSON)
 	}

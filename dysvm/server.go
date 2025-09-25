@@ -40,12 +40,12 @@ var (
 	serverInst *PythonServer
 )
 
-func getServer() *PythonServer {
+func getServer(ctx context.Context) *PythonServer {
 	serverOnce.Do(func() {
 		serverInst = &PythonServer{
 			client: &http.Client{Timeout: 10 * time.Second},
 		}
-		err := serverInst.ensureStarted(context.Background())
+		err := serverInst.ensureStarted(ctx)
 		if err != nil {
 			fmt.Printf("failed to ensure dyslang server is started: %s\n", err)
 		}
@@ -67,6 +67,7 @@ func (s *PythonServer) ensureStarted(ctx context.Context) error {
 		resp, err := s.client.Do(req)
 		if err == nil && resp != nil && resp.StatusCode == 200 {
 			_ = resp.Body.Close()
+			fmt.Printf("existing server healthy\n")
 			return nil
 		}
 		if resp != nil {
@@ -74,6 +75,7 @@ func (s *PythonServer) ensureStarted(ctx context.Context) error {
 		}
 		// Existing server unhealthy; reset and start a new one below
 		s.baseURL = ""
+		fmt.Printf("existing server unhealthy; resetting and starting a new one\n")
 
 	}
 
@@ -131,7 +133,7 @@ func (s *PythonServer) ensureStarted(ctx context.Context) error {
 
 GOT_PORT:
 	s.baseURL = fmt.Sprintf("http://%s:%s", host, discoveredPort)
-
+	fmt.Printf("dyslang server started on %s\n", s.baseURL)
 	// Wait for health
 	deadline = time.Now().Add(5 * time.Second)
 	for time.Now().Before(deadline) {
@@ -196,8 +198,8 @@ func (s *PythonServer) request(ctx context.Context, path string, payload any) (j
 }
 
 // Exec via server
-func (s *PythonServer) Exec(msgJSON, scriptJSON, attachedMsgResultsJSON, headerInfoJSON, port string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (s *PythonServer) Exec(ctx context.Context, msgJSON, scriptJSON, attachedMsgResultsJSON, headerInfoJSON, port string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	res, err := s.request(ctx, "/exec_script", map[string]any{
 		"msg_json":                  msgJSON,
@@ -217,7 +219,7 @@ func (s *PythonServer) Exec(msgJSON, scriptJSON, attachedMsgResultsJSON, headerI
 	return out, nil
 }
 
-func (s *PythonServer) Wsgi(port, scriptName, scriptJSON, blockInfoJSON, httpreq string) (string, error) {
+func (s *PythonServer) Wsgi(ctx context.Context, port, scriptName, scriptJSON, blockInfoJSON, httpreq string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	res, err := s.request(ctx, "/run_wsgi", map[string]any{
@@ -237,8 +239,8 @@ func (s *PythonServer) Wsgi(port, scriptName, scriptJSON, blockInfoJSON, httpreq
 	return out, nil
 }
 
-func (s *PythonServer) Benchmark(iterations int, details bool) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (s *PythonServer) Benchmark(ctx context.Context, iterations int, details bool) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	res, err := s.request(ctx, "/run_benchmark", map[string]any{
 		"iterations": iterations,
@@ -254,8 +256,8 @@ func (s *PythonServer) Benchmark(iterations int, details bool) (string, error) {
 	return out, nil
 }
 
-func (s *PythonServer) DysFormat(code string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (s *PythonServer) DysFormat(ctx context.Context, code string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	res, err := s.request(ctx, "/dys_format", map[string]any{
 		"code": code,
@@ -274,8 +276,8 @@ func (s *PythonServer) DysFormat(code string) (string, error) {
 	return out, nil
 }
 
-func (s *PythonServer) ExtractFunctionSchema(scriptJSON, blockInfoJSON, port, executorAddress, scriptName string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (s *PythonServer) ExtractFunctionSchema(ctx context.Context, scriptJSON, blockInfoJSON, port, executorAddress, scriptName string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	res, err := s.request(ctx, "/extract_function_schema", map[string]any{
 		"script_json":      scriptJSON,

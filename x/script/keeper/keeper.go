@@ -278,7 +278,9 @@ func (k Keeper) execScript(sdkCtx sdk.Context, scriptCtx *ExecScriptContext) (*E
 		return nil, err
 	}
 
-	out, runErr := dysvm.Exec(string(msgJSON),
+	out, runErr := dysvm.Exec(
+		sdk.WrapSDKContext(depthCtx),
+		string(msgJSON),
 		string(scriptJSON),
 		attachedMsgResultsJSON,
 		string(headerInfoJSON),
@@ -690,7 +692,7 @@ func (k Keeper) RunWeb(ctx context.Context, scriptAddress string, scriptName str
 		}
 	}()
 
-	out, err := dysvm.Wsgi(port, name, string(scriptJSON), string(headerInfoJSON), httpreq)
+	out, err := dysvm.Wsgi(ctx, port, name, string(scriptJSON), string(headerInfoJSON), httpreq)
 
 	if err != nil {
 		return "", cosmossdkerrors.Wrapf(err, "error running script: %s", string(out))

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"dysonprotocol.com/dysvm"
@@ -37,7 +38,10 @@ func main() {
 	headerInfoJSON := `{"Height":48032,"Hash":"bQsQcbehZBNQJ+G1g1PRruQgkzBC027A9GfYhp5UjcQ=","Time":"2025-01-19T08:17:59Z","AppHash":"RWh3CJ9RED+tTdhi57N8u9TKYfm5wbkiAlRI3kMQICU=","ChainID":"demo"}`
 
 	// func Exec(msgJSON, scriptJSON, attachedMsgResultsJSON, headerInfoJSON, port string) (string, error) {
-	out, err := dysvm.Exec(msgJSON, scriptJSON, attachedMsgResultsJSON, headerInfoJSON, "0")
+	out, err := dysvm.Exec(
+
+		context.Background(),
+		msgJSON, scriptJSON, attachedMsgResultsJSON, headerInfoJSON, "0")
 
 	fmt.Println("out: ", out)
 	fmt.Println("err: ", err)
