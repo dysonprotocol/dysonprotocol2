@@ -168,7 +168,7 @@
                         "type": "string",
                         "description": "Subscription expiry timestamp (unix seconds)"
                     },
-                    "triger_count": {
+                    "trigger_count": {
                         "type": "string",
                         "description": "total number of triggers so far (field name per requirement)"
                     },

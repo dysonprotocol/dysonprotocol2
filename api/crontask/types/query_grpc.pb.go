@@ -28,7 +28,6 @@ const (
 	Query_Metrics_FullMethodName                = "/dysonprotocol.crontask.v1.Query/Metrics"
 	Query_SubscriptionByID_FullMethodName       = "/dysonprotocol.crontask.v1.Query/SubscriptionByID"
 	Query_SubscriptionsByCreator_FullMethodName = "/dysonprotocol.crontask.v1.Query/SubscriptionsByCreator"
-	Query_SubscriptionsByStatus_FullMethodName  = "/dysonprotocol.crontask.v1.Query/SubscriptionsByStatus"
 	Query_SubscriptionsAll_FullMethodName       = "/dysonprotocol.crontask.v1.Query/SubscriptionsAll"
 )
 
@@ -58,8 +57,6 @@ type QueryClient interface {
 	SubscriptionByID(ctx context.Context, in *QuerySubscriptionByIDRequest, opts ...grpc.CallOption) (*QuerySubscriptionByIDResponse, error)
 	// SubscriptionsByCreator returns subscriptions for a creator
 	SubscriptionsByCreator(ctx context.Context, in *QuerySubscriptionsByCreatorRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error)
-	// SubscriptionsByStatus returns subscriptions for a status
-	SubscriptionsByStatus(ctx context.Context, in *QuerySubscriptionsByStatusRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error)
 	// SubscriptionsAll returns all subscriptions
 	SubscriptionsAll(ctx context.Context, in *QuerySubscriptionsAllRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error)
 }
@@ -162,16 +159,6 @@ func (c *queryClient) SubscriptionsByCreator(ctx context.Context, in *QuerySubsc
 	return out, nil
 }
 
-func (c *queryClient) SubscriptionsByStatus(ctx context.Context, in *QuerySubscriptionsByStatusRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QuerySubscriptionsResponse)
-	err := c.cc.Invoke(ctx, Query_SubscriptionsByStatus_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *queryClient) SubscriptionsAll(ctx context.Context, in *QuerySubscriptionsAllRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(QuerySubscriptionsResponse)
@@ -208,8 +195,6 @@ type QueryServer interface {
 	SubscriptionByID(context.Context, *QuerySubscriptionByIDRequest) (*QuerySubscriptionByIDResponse, error)
 	// SubscriptionsByCreator returns subscriptions for a creator
 	SubscriptionsByCreator(context.Context, *QuerySubscriptionsByCreatorRequest) (*QuerySubscriptionsResponse, error)
-	// SubscriptionsByStatus returns subscriptions for a status
-	SubscriptionsByStatus(context.Context, *QuerySubscriptionsByStatusRequest) (*QuerySubscriptionsResponse, error)
 	// SubscriptionsAll returns all subscriptions
 	SubscriptionsAll(context.Context, *QuerySubscriptionsAllRequest) (*QuerySubscriptionsResponse, error)
 	mustEmbedUnimplementedQueryServer()
@@ -248,9 +233,6 @@ func (UnimplementedQueryServer) SubscriptionByID(context.Context, *QuerySubscrip
 }
 func (UnimplementedQueryServer) SubscriptionsByCreator(context.Context, *QuerySubscriptionsByCreatorRequest) (*QuerySubscriptionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubscriptionsByCreator not implemented")
-}
-func (UnimplementedQueryServer) SubscriptionsByStatus(context.Context, *QuerySubscriptionsByStatusRequest) (*QuerySubscriptionsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SubscriptionsByStatus not implemented")
 }
 func (UnimplementedQueryServer) SubscriptionsAll(context.Context, *QuerySubscriptionsAllRequest) (*QuerySubscriptionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubscriptionsAll not implemented")
@@ -438,24 +420,6 @@ func _Query_SubscriptionsByCreator_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_SubscriptionsByStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QuerySubscriptionsByStatusRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).SubscriptionsByStatus(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_SubscriptionsByStatus_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).SubscriptionsByStatus(ctx, req.(*QuerySubscriptionsByStatusRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Query_SubscriptionsAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QuerySubscriptionsAllRequest)
 	if err := dec(in); err != nil {
@@ -516,10 +480,6 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SubscriptionsByCreator",
 			Handler:    _Query_SubscriptionsByCreator_Handler,
-		},
-		{
-			MethodName: "SubscriptionsByStatus",
-			Handler:    _Query_SubscriptionsByStatus_Handler,
 		},
 		{
 			MethodName: "SubscriptionsAll",

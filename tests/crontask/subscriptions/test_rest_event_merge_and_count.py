@@ -145,8 +145,8 @@ def emit_evt():
     assert sub_list, f"no subscriptions found: {subs}"
     sub = sub_list[0]
     assert (
-        int(sub.get("triger_count", "0")) >= 2
-    ), f"trigger_count not incremented: {sub}"
+        int(sub.get("trigger_count", "0")) >= 2
+    ), f"trigger_count not incremented: {json.dumps(sub, indent=2)}"
 
     # Verify creator-specific pagination returns at least one result and respects limit
     creator_resp = requests.get(

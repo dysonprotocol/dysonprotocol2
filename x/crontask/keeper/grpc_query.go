@@ -251,26 +251,5 @@ func (k Keeper) QueryParams(ctx context.Context, req *crontasktypes.QueryParamsR
 	return q.Params(ctx, req)
 }
 
-func (q queryServer) SubscriptionsByStatus(ctx context.Context, req *crontasktypes.QuerySubscriptionsByStatusRequest) (*crontasktypes.QuerySubscriptionsResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid request")
-	}
-
-	subs, pageRes, err := query.CollectionFilteredPaginate(
-		ctx,
-		q.k.Subscriptions,
-		req.Pagination,
-		func(_ uint64, sub crontasktypes.Subscription) (bool, error) {
-			return sub.Status == req.Status, nil
-		},
-		func(_ uint64, sub crontasktypes.Subscription) (*crontasktypes.Subscription, error) {
-			copy := sub
-			return &copy, nil
-		},
-	)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "failed to paginate subscriptions by status")
-	}
-
-	return &crontasktypes.QuerySubscriptionsResponse{Subscriptions: subs, Pagination: pageRes}, nil
-}
+// Note: SubscriptionsByStatus RPC is not currently defined in the proto. If needed,
+// add it to `proto/dysonprotocol/crontask/v1/query.proto` before reintroducing here.

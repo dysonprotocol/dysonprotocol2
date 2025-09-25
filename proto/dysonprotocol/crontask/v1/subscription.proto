@@ -46,7 +46,7 @@ message Subscription {
   int64 expiry_timestamp = 12;
 
   // total number of triggers so far (field name per requirement)
-  uint64 triger_count = 13;
+  uint64 trigger_count = 13;
 
   // Overrides for created crontasks
   int64 task_scheduled_timestamp = 14;

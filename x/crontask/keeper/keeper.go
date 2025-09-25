@@ -641,7 +641,7 @@ func (k Keeper) HandleBlockEvents(ctx sdk.Context, allEvents []abci.Event) {
 					}
 					break
 				}
-				sub.TrigerCount++
+				sub.TriggerCount++
 			}
 		}
 

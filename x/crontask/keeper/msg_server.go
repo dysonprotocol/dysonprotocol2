@@ -98,7 +98,7 @@ func (k Keeper) CreateSubscription(ctx context.Context, msg *crontasktypes.MsgCr
 		TaskGasLimit:   msg.TaskGasLimit,
 		TaskGasFee:     msg.TaskGasFee,
 		Status:         "enabled",
-		TrigerCount:    0,
+		TriggerCount:   0,
 	}
 	// Set expiry to now + max_subscription_duration
 	sdkNow := sdkCtx.BlockTime()

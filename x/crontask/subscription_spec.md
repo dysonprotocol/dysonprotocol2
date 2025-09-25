@@ -18,7 +18,7 @@
     - status string = 11 (“enabled” | “disabled” | “error” | “expired”)
     - status_message string = 12
     - expiry_timestamp int64 = 13  (subscription lifetime)
-    - triger_count uint64 = 14
+    - trigger_count uint64 = 14
     - task_scheduled_timestamp int64 = 15  (default Task.scheduled_timestamp override)
     - task_expiry_timestamp int64 = 16  (default Task.expiry_timestamp override)
     - task_gas_price cosmos.base.v1beta1.DecCoin = 17  (optional override; else computed)
@@ -56,7 +56,7 @@
             - TaskGasFee: S.task_gas_fee
             - TaskGasPrice: if S.task_gas_price set, use it; else compute from fee/limit
             - Msgs: one MsgExec(executor=S.creator, script=S.script_address, function, args, kwargs merged with {"event": normalized_event})
-          - Increment S.triger_count; persist; emit Triggered event.
+          - Increment S.trigger_count; persist; emit Triggered event.
   - Before matching, for all enabled subs:
     - If subscription expiry_timestamp <= now, set status=“expired”.
     - If balance < task_gas_fee, set status=“disabled”, status_message.
@@ -97,7 +97,7 @@ I'll update the protos to rename EventSubscription to Subscription, add new fiel
 
 What I implemented:
 - Protos
-  - Renamed to `Subscription` with fields: `event_type`, `filter`, `status`, `status_message`, `expiry_timestamp`, `triger_count`, `task_scheduled_timestamp`, `task_expiry_timestamp`, `task_gas_price`, plus existing fields. All wired in `subscription.proto`.
+  - Renamed to `Subscription` with fields: `event_type`, `filter`, `status`, `status_message`, `expiry_timestamp`, `trigger_count`, `task_scheduled_timestamp`, `task_expiry_timestamp`, `task_gas_price`, plus existing fields. All wired in `subscription.proto`.
   - Added `max_expiry_delta` to `crontask.Params` in `crontask.proto`.
   - Renamed Msgs/Queries:
     - Msgs: `CreateSubscription`, `DeleteSubscription`, `RenewSubscription`.
@@ -121,7 +121,7 @@ Next I’ll:
 
 Changes:
 - Protos
-  - `Subscription` fields now include: `event_type`, `status`, `status_message`, `expiry_timestamp`, `triger_count`, `task_scheduled_timestamp`, `task_expiry_timestamp`, `task_gas_price`, plus existing fields. All string fields will get length validation in ValidateBasic in the next pass.
+  - `Subscription` fields now include: `event_type`, `status`, `status_message`, `expiry_timestamp`, `trigger_count`, `task_scheduled_timestamp`, `task_expiry_timestamp`, `task_gas_price`, plus existing fields. All string fields will get length validation in ValidateBasic in the next pass.
   - Added `max_expiry_delta` to `crontask.Params` and set default (7 days) with validation.
   - Msgs renamed/added: `CreateSubscription`, `DeleteSubscription`, `RenewSubscription`.
   - Queries renamed: `SubscriptionByID`, `SubscriptionsByCreator`, `SubscriptionsAll`.
@@ -129,7 +129,7 @@ Changes:
   - Storage and types now use `Subscription`.
   - Msg server handlers for create/delete/renew implemented and wired; create/renew charge fees and set status/expiry accordingly.
   - Event handler signature updated: `HandleBlockEventsWithTypes(ctx, eventsByType, eventTypesSeen)`. It:
-    - Iterates enabled subs, pre-disables if no balance, matches events by `event_type` and GJSON `filter`, creates tasks, increments `triger_count`.
+    - Iterates enabled subs, pre-disables if no balance, matches events by `event_type` and GJSON `filter`, creates tasks, increments `trigger_count`.
 - Baseapp
   - internalFinalizeBlock now aggregates events into `map[event_type][]events` and builds `eventTypesSeen` sorted; forwards via new sink method.
   - Sink interface and setter adjusted.

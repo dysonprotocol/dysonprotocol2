@@ -109,7 +109,6 @@
       {"type":"file","name":"dysonprotocol.crontask.v1.SubscriptionByID.json"},
       {"type":"file","name":"dysonprotocol.crontask.v1.SubscriptionsAll.json"},
       {"type":"file","name":"dysonprotocol.crontask.v1.SubscriptionsByCreator.json"},
-      {"type":"file","name":"dysonprotocol.crontask.v1.SubscriptionsByStatus.json"},
       {"type":"file","name":"dysonprotocol.crontask.v1.TaskByID.json"},
       {"type":"file","name":"dysonprotocol.crontask.v1.TasksAll.json"},
       {"type":"file","name":"dysonprotocol.crontask.v1.TasksByAddress.json"},
@@ -375,5 +374,5 @@
     ]}
   ]}
 ,
-  {"type":"report","directories":3,"files":369}
+  {"type":"report","directories":3,"files":368}
 ]

@@ -179,70 +179,6 @@
         ]
       }
     },
-    "/dysonprotocol/crontask/v1/subscriptions/status/{status}": {
-      "get": {
-        "summary": "SubscriptionsByStatus returns subscriptions for a status",
-        "operationId": "dysonprotocol.crontask.v1.QuerySubscriptionsByStatusRequest",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/dysonprotocol.crontask.v1.QuerySubscriptionsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/grpc.gateway.runtime.Error"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "status",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "pagination.key",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "byte"
-          },
-          {
-            "name": "pagination.offset",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "pagination.limit",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "pagination.count_total",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "pagination.reverse",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
-          }
-        ],
-        "tags": [
-          "Query"
-        ]
-      }
-    },
     "/dysonprotocol/crontask/v1/subscriptions/{subscription_id}": {
       "get": {
         "summary": "SubscriptionByID returns a subscription by id",
@@ -820,7 +756,7 @@
           "format": "int64",
           "title": "Subscription expiry timestamp (unix seconds)"
         },
-        "triger_count": {
+        "trigger_count": {
           "type": "string",
           "format": "uint64",
           "title": "total number of triggers so far (field name per requirement)"
