@@ -13,9 +13,9 @@ def ws_setup_env(chainnet, generate_account, faucet):
     """
     Single-tx dyslang setup for whaleswap tests:
     - register 1 name
-    - mint 3 denoms name/coin/a, name/coin/b, name/coin/c with 120 units each
-    - convert 60 units of each to liquid (keep 60 solid, 60 liquid)
-    - distribute to three accounts: for each denom, send 20 solid and 20 liquid to each
+    - mint 3 denoms name/coin/a, name/coin/b, name/coin/c with 1800 units each
+    - convert 900 units of each to liquid (keep 900 solid, 900 liquid)
+    - distribute to three accounts: for each denom, send 300 solid and 300 liquid to each
 
     Returns dict with keys: owner_name, owner_addr, acc1, acc2, acc3, name, denoms, liquid_denoms
     """
@@ -76,40 +76,40 @@ def setup(name, salt, acc1, acc2, acc3):
     # Compute mint fee = ceil(sum(units) * mint_fee_per_coin)
     params = _query({"@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"})["params"]
     fee_per = float(params["mint_fee_per_coin"]) if params.get("mint_fee_per_coin") else 0.0
-    total_units = 120 * 3
+    total_units = 1800 * 3
     fee = int(-(-total_units * fee_per // 1))
 
-    # Mint 120 units of each denom to owner
+    # Mint 1800 units of each denom to owner
     _msg({
         "@type": "/dysonprotocol.nameservice.v1.MsgMintCoins",
         "name_destination": owner,
         "amount": [
-            {"denom": denoms[0], "amount": "120"},
-            {"denom": denoms[1], "amount": "120"},
-            {"denom": denoms[2], "amount": "120"},
+            {"denom": denoms[0], "amount": "1800"},
+            {"denom": denoms[1], "amount": "1800"},
+            {"denom": denoms[2], "amount": "1800"},
         ],
         "mint_fee": {"denom": "udys", "amount": str(fee)},
     })
 
-    # Convert 60 units of each denom to liquid (wrap)
+    # Convert 900 units of each denom to liquid (wrap)
     for d in denoms:
         _msg({
             "@type": "/dysonprotocol.whaleswap.v1.MsgConvertToLiquid",
             "caller": owner,
             "denom": d,
-            "amount": "60",
+            "amount": "900",
         })
 
     # Helper to build liquid denom
     def L(solid):
         return "whaleswap.dys/coins/" + solid
 
-    # Distribute 20 solid + 20 liquid for each denom to each of the 3 accounts
+    # Distribute 300 solid + 300 liquid for each denom to each of the 3 accounts
     for r in [acc1, acc2, acc3]:
         sends = []
         for d in denoms:
-            sends.append({"denom": d, "amount": "20"})
-            sends.append({"denom": L(d), "amount": "20"})
+            sends.append({"denom": d, "amount": "300"})
+            sends.append({"denom": L(d), "amount": "300"})
         # Coins array must be sorted by denom for Cosmos SDK validation
         sends = sorted(sends, key=lambda x: x["denom"]) 
         _msg({

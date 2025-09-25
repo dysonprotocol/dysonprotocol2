@@ -21,9 +21,9 @@ def test_ws_setup_env_balances(chainnet, ws_setup_env):
         bm = _bal_map(dysond, addr)
         for d in denoms:
             assert (
-                bm.get(d, 0) == 20  # Always assert exact amounts
-            ), f"missing 20 solid of {d} for {addr}: {json.dumps(bm, indent=2)}"
+                bm.get(d, 0) == 300
+            ), f"missing 300 solid of {d} for {addr}: {json.dumps(bm, indent=2)}"
         for ld in ldenoms:
             assert (
-                bm.get(ld, 0) == 20  # Always assert exact amounts
-            ), f"missing 20 liquid of {ld} for {addr}: {json.dumps(bm, indent=2)}"
+                bm.get(ld, 0) == 300
+            ), f"missing 300 liquid of {ld} for {addr}: {json.dumps(bm, indent=2)}"
