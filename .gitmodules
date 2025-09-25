@@ -18,3 +18,6 @@
 	path = dysvm/python-build-standalone
 	url = https://github.com/astral-sh/python-build-standalone.git
 
+[submodule "cosmos-sdk"]
+	path = cosmos-sdk
+	url = https://github.com/dysonprotocol/cosmos-sdk
