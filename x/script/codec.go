@@ -107,6 +107,7 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		// nameservice
 		&nameservicetypes.QueryResolveNameRequest{}, &nameservicetypes.QueryResolveNameResponse{},
 		&nameservicetypes.QueryParamsRequest{}, &nameservicetypes.QueryParamsResponse{},
+		&nameservicetypes.QueryComputeHashRequest{}, &nameservicetypes.QueryComputeHashResponse{},
 
 		// storage
 		&storagetypes.QueryStorageGetRequest{}, &storagetypes.QueryStorageGetResponse{},

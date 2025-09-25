@@ -36,7 +36,7 @@ const (
 // Query defines the gRPC querier service.
 type QueryClient interface {
 	// ComputeHash computes the hash for a name, salt, and committer address
-	ComputeHash(ctx context.Context, in *ComputeHashRequest, opts ...grpc.CallOption) (*ComputeHashResponse, error)
+	ComputeHash(ctx context.Context, in *QueryComputeHashRequest, opts ...grpc.CallOption) (*QueryComputeHashResponse, error)
 	// ResolveName resolves a name to address or returns the address if already
 	// valid
 	ResolveName(ctx context.Context, in *QueryResolveNameRequest, opts ...grpc.CallOption) (*QueryResolveNameResponse, error)
@@ -62,9 +62,9 @@ func NewQueryClient(cc grpc.ClientConnInterface) QueryClient {
 	return &queryClient{cc}
 }
 
-func (c *queryClient) ComputeHash(ctx context.Context, in *ComputeHashRequest, opts ...grpc.CallOption) (*ComputeHashResponse, error) {
+func (c *queryClient) ComputeHash(ctx context.Context, in *QueryComputeHashRequest, opts ...grpc.CallOption) (*QueryComputeHashResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ComputeHashResponse)
+	out := new(QueryComputeHashResponse)
 	err := c.cc.Invoke(ctx, Query_ComputeHash_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -149,7 +149,7 @@ func (c *queryClient) QueryBidsForNFT(ctx context.Context, in *QueryBidsForNFTRe
 // Query defines the gRPC querier service.
 type QueryServer interface {
 	// ComputeHash computes the hash for a name, salt, and committer address
-	ComputeHash(context.Context, *ComputeHashRequest) (*ComputeHashResponse, error)
+	ComputeHash(context.Context, *QueryComputeHashRequest) (*QueryComputeHashResponse, error)
 	// ResolveName resolves a name to address or returns the address if already
 	// valid
 	ResolveName(context.Context, *QueryResolveNameRequest) (*QueryResolveNameResponse, error)
@@ -175,7 +175,7 @@ type QueryServer interface {
 // pointer dereference when methods are called.
 type UnimplementedQueryServer struct{}
 
-func (UnimplementedQueryServer) ComputeHash(context.Context, *ComputeHashRequest) (*ComputeHashResponse, error) {
+func (UnimplementedQueryServer) ComputeHash(context.Context, *QueryComputeHashRequest) (*QueryComputeHashResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ComputeHash not implemented")
 }
 func (UnimplementedQueryServer) ResolveName(context.Context, *QueryResolveNameRequest) (*QueryResolveNameResponse, error) {
@@ -221,7 +221,7 @@ func RegisterQueryServer(s grpc.ServiceRegistrar, srv QueryServer) {
 }
 
 func _Query_ComputeHash_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ComputeHashRequest)
+	in := new(QueryComputeHashRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -233,7 +233,7 @@ func _Query_ComputeHash_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: Query_ComputeHash_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).ComputeHash(ctx, req.(*ComputeHashRequest))
+		return srv.(QueryServer).ComputeHash(ctx, req.(*QueryComputeHashRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

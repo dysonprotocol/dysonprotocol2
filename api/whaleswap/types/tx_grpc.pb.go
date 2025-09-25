@@ -24,6 +24,7 @@ const (
 	Msg_AddLiquidity_FullMethodName     = "/dysonprotocol.whaleswap.v1.Msg/AddLiquidity"
 	Msg_RemoveLiquidity_FullMethodName  = "/dysonprotocol.whaleswap.v1.Msg/RemoveLiquidity"
 	Msg_PoolSwap_FullMethodName         = "/dysonprotocol.whaleswap.v1.Msg/PoolSwap"
+	Msg_MakeTrade_FullMethodName        = "/dysonprotocol.whaleswap.v1.Msg/MakeTrade"
 	Msg_ConvertToLiquid_FullMethodName  = "/dysonprotocol.whaleswap.v1.Msg/ConvertToLiquid"
 	Msg_ConvertToSolid_FullMethodName   = "/dysonprotocol.whaleswap.v1.Msg/ConvertToSolid"
 	Msg_MakeOffer_FullMethodName        = "/dysonprotocol.whaleswap.v1.Msg/MakeOffer"
@@ -69,6 +70,8 @@ type MsgClient interface {
 	AddLiquidity(ctx context.Context, in *MsgAddLiquidity, opts ...grpc.CallOption) (*MsgAddLiquidityResponse, error)
 	RemoveLiquidity(ctx context.Context, in *MsgRemoveLiquidity, opts ...grpc.CallOption) (*MsgRemoveLiquidityResponse, error)
 	PoolSwap(ctx context.Context, in *MsgPoolSwap, opts ...grpc.CallOption) (*MsgPoolSwapResponse, error)
+	// Mixed operations: combine orderbook takes and pool swaps in one tx
+	MakeTrade(ctx context.Context, in *MsgMakeTrade, opts ...grpc.CallOption) (*MsgMakeTradeResponse, error)
 	// Wrapping (liquid conversions)
 	ConvertToLiquid(ctx context.Context, in *MsgConvertToLiquid, opts ...grpc.CallOption) (*MsgConvertToLiquidResponse, error)
 	ConvertToSolid(ctx context.Context, in *MsgConvertToSolid, opts ...grpc.CallOption) (*MsgConvertToSolidResponse, error)
@@ -135,6 +138,16 @@ func (c *msgClient) PoolSwap(ctx context.Context, in *MsgPoolSwap, opts ...grpc.
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MsgPoolSwapResponse)
 	err := c.cc.Invoke(ctx, Msg_PoolSwap_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) MakeTrade(ctx context.Context, in *MsgMakeTrade, opts ...grpc.CallOption) (*MsgMakeTradeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgMakeTradeResponse)
+	err := c.cc.Invoke(ctx, Msg_MakeTrade_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -256,6 +269,8 @@ type MsgServer interface {
 	AddLiquidity(context.Context, *MsgAddLiquidity) (*MsgAddLiquidityResponse, error)
 	RemoveLiquidity(context.Context, *MsgRemoveLiquidity) (*MsgRemoveLiquidityResponse, error)
 	PoolSwap(context.Context, *MsgPoolSwap) (*MsgPoolSwapResponse, error)
+	// Mixed operations: combine orderbook takes and pool swaps in one tx
+	MakeTrade(context.Context, *MsgMakeTrade) (*MsgMakeTradeResponse, error)
 	// Wrapping (liquid conversions)
 	ConvertToLiquid(context.Context, *MsgConvertToLiquid) (*MsgConvertToLiquidResponse, error)
 	ConvertToSolid(context.Context, *MsgConvertToSolid) (*MsgConvertToSolidResponse, error)
@@ -292,6 +307,9 @@ func (UnimplementedMsgServer) RemoveLiquidity(context.Context, *MsgRemoveLiquidi
 }
 func (UnimplementedMsgServer) PoolSwap(context.Context, *MsgPoolSwap) (*MsgPoolSwapResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PoolSwap not implemented")
+}
+func (UnimplementedMsgServer) MakeTrade(context.Context, *MsgMakeTrade) (*MsgMakeTradeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MakeTrade not implemented")
 }
 func (UnimplementedMsgServer) ConvertToLiquid(context.Context, *MsgConvertToLiquid) (*MsgConvertToLiquidResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConvertToLiquid not implemented")
@@ -424,6 +442,24 @@ func _Msg_PoolSwap_Handler(srv interface{}, ctx context.Context, dec func(interf
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).PoolSwap(ctx, req.(*MsgPoolSwap))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_MakeTrade_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgMakeTrade)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).MakeTrade(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_MakeTrade_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).MakeTrade(ctx, req.(*MsgMakeTrade))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -598,6 +634,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PoolSwap",
 			Handler:    _Msg_PoolSwap_Handler,
+		},
+		{
+			MethodName: "MakeTrade",
+			Handler:    _Msg_MakeTrade_Handler,
 		},
 		{
 			MethodName: "ConvertToLiquid",

@@ -31236,13 +31236,6 @@ definitions:
       is_current_highest:
         type: boolean
     title: BidWithNFTStatus augments a BidRecord with current on-chain NFT status
-  dysonprotocol.nameservice.v1.ComputeHashResponse:
-    type: object
-    properties:
-      hex_hash:
-        type: string
-        title: hex_hash is the computed hash as a hex string
-    title: ComputeHashResponse contains the computed hash as a hex string
   dysonprotocol.nameservice.v1.DenomDetails:
     type: object
     properties:
@@ -31600,6 +31593,13 @@ definitions:
                    repeated Bar results = 1;
                    PageResponse page = 2;
            }
+  dysonprotocol.nameservice.v1.QueryComputeHashResponse:
+    type: object
+    properties:
+      hex_hash:
+        type: string
+        title: hex_hash is the computed hash as a hex string
+    title: ComputeHashResponse contains the computed hash as a hex string
   dysonprotocol.nameservice.v1.QueryDenomByNameResponse:
     type: object
     properties:

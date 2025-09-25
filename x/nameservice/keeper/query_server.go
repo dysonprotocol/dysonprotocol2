@@ -16,7 +16,7 @@ import (
 var _ types.QueryServer = Keeper{}
 
 // ComputeHash implements the Query/ComputeHash gRPC method
-func (k Keeper) ComputeHash(c context.Context, req *types.ComputeHashRequest) (*types.ComputeHashResponse, error) {
+func (k Keeper) ComputeHash(c context.Context, req *types.QueryComputeHashRequest) (*types.QueryComputeHashResponse, error) {
 	if req.Name == "" {
 		return nil, status.Error(codes.InvalidArgument, "name cannot be empty")
 	}
@@ -32,7 +32,7 @@ func (k Keeper) ComputeHash(c context.Context, req *types.ComputeHashRequest) (*
 	// Use the common hash function
 	hexhash := k.ComputeNameRegistrationHash(req.Name, req.Committer, req.Salt)
 
-	return &types.ComputeHashResponse{
+	return &types.QueryComputeHashResponse{
 		HexHash: hexhash,
 	}, nil
 }

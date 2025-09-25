@@ -206,6 +206,39 @@
         ]
       }
     },
+    "dysonprotocol.whaleswap.v1.MsgMakeTrade": {
+      "post": {
+        "summary": "Mixed operations: combine orderbook takes and pool swaps in one tx",
+        "operationId": "dysonprotocol.whaleswap.v1.MsgMakeTrade",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgMakeTradeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgMakeTrade"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
     "dysonprotocol.whaleswap.v1.MsgOpenAuction": {
       "post": {
         "summary": "Auctions",
@@ -604,6 +637,46 @@
         }
       }
     },
+    "dysonprotocol.whaleswap.v1.MsgMakeTrade": {
+      "type": "object",
+      "properties": {
+        "trader": {
+          "type": "string"
+        },
+        "max_input": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "End-of-tx debit caps per denom for the trader"
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TradeOperation"
+          },
+          "title": "Mixed operations processed in-order"
+        },
+        "min_output": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Final trader minimum outputs per denom after aggregation"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.MsgMakeTradeResponse": {
+      "type": "object",
+      "properties": {
+        "amount_out": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        }
+      }
+    },
     "dysonprotocol.whaleswap.v1.MsgOpenAuction": {
       "type": "object",
       "properties": {
@@ -847,6 +920,18 @@
           "description": "units to take (sdk.Int string). If empty, take full remaining."
         }
       }
+    },
+    "dysonprotocol.whaleswap.v1.TradeOperation": {
+      "type": "object",
+      "properties": {
+        "swap": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.SwapLeg"
+        },
+        "take": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TakeItem"
+        }
+      },
+      "description": "TradeOperation allows mixing pool swap legs and orderbook takes."
     },
     "google.protobuf.Any": {
       "type": "object",

@@ -17,7 +17,7 @@ option go_package = "dysonprotocol.com/x/nameservice/types";
 service Query {
 
   // ComputeHash computes the hash for a name, salt, and committer address
-  rpc ComputeHash(ComputeHashRequest) returns (ComputeHashResponse) {
+  rpc ComputeHash(QueryComputeHashRequest) returns (QueryComputeHashResponse) {
     option (google.api.http).get = "/dysonprotocol/nameservice/v1/compute_hash";
   }
 
@@ -69,8 +69,8 @@ service Query {
   }
 }
 
-// ComputeHashRequest is a request to compute the hash for a name and salt
-message ComputeHashRequest {
+// QueryComputeHashRequest is a request to compute the hash for a name and salt
+message QueryComputeHashRequest {
   // name is the name to compute the hash for
   string name = 1;
   // salt is the salt to use for the hash computation
@@ -80,7 +80,7 @@ message ComputeHashRequest {
 }
 
 // ComputeHashResponse contains the computed hash as a hex string
-message ComputeHashResponse {
+message QueryComputeHashResponse {
   // hex_hash is the computed hash as a hex string
   string hex_hash = 1;
 }
