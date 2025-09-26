@@ -7,11 +7,15 @@ import (
 	whaleswap "dysonprotocol.com/x/whaleswap"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 var _ whaleswapv1.QueryServer = Keeper{}
 
 func (k Keeper) Offer(ctx context.Context, req *whaleswapv1.QueryOfferRequest) (*whaleswapv1.QueryOfferResponse, error) {
+	if req == nil || req.OfferId == 0 {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "offer_id required")
+	}
 	offer, err := k.OffersMap.Get(ctx, req.OfferId)
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "offer not found: %d", req.OfferId)

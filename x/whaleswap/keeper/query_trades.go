@@ -20,14 +20,14 @@ func (k Keeper) TradesByOffer(ctx context.Context, req *whaleswapv1.QueryTradesB
 	}
 	offerID := req.OfferId
 	var trades []*whaleswapv1.Trade
-	results, pageRes, err := query.CollectionPaginate(
+	results, pageRes, err := query.CollectionFilteredPaginate(
 		ctx,
 		k.TradesMap,
 		req.Pagination,
-		func(key uint64, value whaleswapv1.Trade) (*whaleswapv1.Trade, error) {
-			if offerID != 0 && value.OfferId != offerID {
-				return nil, nil
-			}
+		func(_ uint64, value whaleswapv1.Trade) (bool, error) {
+			return value.OfferId == offerID, nil
+		},
+		func(_ uint64, value whaleswapv1.Trade) (*whaleswapv1.Trade, error) {
 			v := value
 			return &v, nil
 		},

@@ -478,11 +478,11 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 			takerCredits = takerCredits.Add(c)
 		}
 	}
+	// First pass: compute nettable per denom and reduce trader credits accordingly
 	for _, want := range makerWants {
 		denom := want.Denom
 		wantAmt := want.Amount
 		credit := takerCredits.AmountOf(denom)
-		// net portion
 		nettable := credit
 		if wantAmt.LT(credit) {
 			nettable = wantAmt
@@ -492,6 +492,47 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 				outputsByAddr[traderBech] = coins.Sub(sdk.NewCoin(denom, nettable))
 				if outputsByAddr[traderBech].IsZero() {
 					delete(outputsByAddr, traderBech)
+				}
+			}
+			// Also reduce module inputs for this denom by the same nettable amount (caps to available),
+			// because those trader credits were funded by module (AMM or escrow) and have been netted away.
+			if mcoins, ok := inputsByAddr[moduleBech]; ok {
+				mAmt := mcoins.AmountOf(denom)
+				use := nettable
+				if mAmt.LT(use) {
+					use = mAmt
+				}
+				if use.IsPositive() {
+					inputsByAddr[moduleBech] = inputsByAddr[moduleBech].Sub(sdk.NewCoin(denom, use))
+					if inputsByAddr[moduleBech].IsZero() {
+						delete(inputsByAddr, moduleBech)
+					}
+				}
+			}
+			// Also reduce makers' wants by the same nettable amount across all makers
+			remain := nettable
+			for addr, coins := range outputsByAddr {
+				if addr == traderBech || addr == moduleBech {
+					continue
+				}
+				// find available amount for denom at this maker row
+				avail := coins.AmountOf(denom)
+				if avail.IsZero() {
+					continue
+				}
+				use := avail
+				if remain.LT(avail) {
+					use = remain
+				}
+				if use.IsPositive() {
+					outputsByAddr[addr] = outputsByAddr[addr].Sub(sdk.NewCoin(denom, use))
+					if outputsByAddr[addr].IsZero() {
+						delete(outputsByAddr, addr)
+					}
+					remain = remain.Sub(use)
+					if remain.IsZero() {
+						break
+					}
 				}
 			}
 		}

@@ -1,10 +1,16 @@
 import json
+from decimal import Decimal, ROUND_CEILING
+
+from tests.whaleswap.amm.normalize_events import normalize_events
+from tests.whaleswap.amm.parse_amounts_multi import sum_transfers_for_addr
 
 
 def _mint(dysond, owner, denom, units):
     params = dysond("query", "nameservice", "params")
-    from decimal import Decimal, ROUND_CEILING
-
+    assert isinstance(params, dict), json.dumps(params, indent=2)
+    assert "params" in params and isinstance(params["params"], dict), json.dumps(
+        params, indent=2
+    )
     fee_per = Decimal(params["params"]["mint_fee_per_coin"])  # e.g., 0.01
     fee = int((Decimal(units) * fee_per).to_integral_value(rounding=ROUND_CEILING))
     res = dysond(
@@ -18,7 +24,8 @@ def _mint(dysond, owner, denom, units):
         "--from",
         owner,
     )
-    assert res.get("code", 1) == 0, f"mint failed: {json.dumps(res, indent=2)}"
+    assert isinstance(res, dict), json.dumps(res, indent=2)
+    assert res["code"] == 0, json.dumps(res, indent=2)
 
 
 def _create_pool(dysond, owner, denom_x, amt_x, denom_y, amt_y):
@@ -35,19 +42,13 @@ def _create_pool(dysond, owner, denom_x, amt_x, denom_y, amt_y):
         "--from",
         owner,
     )
-    assert tx.get("code", 1) == 0, f"create-pool failed: {json.dumps(tx, indent=2)}"
-    evs = [
-        e
-        for e in tx.get("events", [])
-        if e.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
-    ]
-    pid = int(
-        str(
-            [a for a in evs[0].get("attributes", []) if a.get("key") == "pool_id"][0][
-                "value"
-            ]
-        ).strip('"')
-    )
+    assert isinstance(tx, dict), json.dumps(tx, indent=2)
+    assert tx["code"] == 0, json.dumps(tx, indent=2)
+    assert "events" in tx and isinstance(tx["events"], list), json.dumps(tx, indent=2)
+    ev = normalize_events(tx["events"])
+    et = "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    assert et in ev and len(ev[et]) == 1, json.dumps(ev, indent=2)
+    pid = int(ev[et][0]["pool_id"])
     return pid
 
 
@@ -68,21 +69,16 @@ def test_route_cycle_profit_no_inputs(
     C = register_name(dysond, creator, creator_addr, "1000udys")
 
     # Skewed pools to bias each edge favorably
-    # AB: small A, large B
     ab_id = _create_pool(dysond, creator, A, 100, B, 100000)
-    # BC: small B, large C
     bc_id = _create_pool(dysond, creator, B, 100, C, 100000)
-    # CA: small C, very large A
     ca_id = _create_pool(dysond, creator, C, 100, A, 110000)
 
     # Record trader balances before
     before = dysond("query", "bank", "balances", trader_addr)
-    bal_before = {
-        b.get("denom"): int(b.get("amount")) for b in before.get("balances", [])
-    }
-    a0 = bal_before.get(A, 0)
-    b0 = bal_before.get(B, 0)
-    c0 = bal_before.get(C, 0)
+    assert isinstance(before, dict) and isinstance(
+        before["balances"], list
+    ), json.dumps(before, indent=2)
+    pre = {row["denom"]: int(row["amount"]) for row in before["balances"]}
 
     # Legs for circular route; no inputs provided
     leg_ab = json.dumps({"pool_id": ab_id, "swap_in": {"denom": A, "amount": "10"}})
@@ -104,39 +100,38 @@ def test_route_cycle_profit_no_inputs(
         "--from",
         trader,
     )
-    assert tx.get("code", 1) == 0, f"cycle swap failed: {json.dumps(tx, indent=2)}"
+    assert isinstance(tx, dict), json.dumps(tx, indent=2)
+    assert tx["code"] == 0, json.dumps(tx, indent=2)
+    assert "events" in tx and isinstance(tx["events"], list), json.dumps(tx, indent=2)
 
-    # Expect at least 3 trades recorded
-    evs = [
-        e
-        for e in tx.get("events", [])
-        if e.get("type") == "dysonprotocol.whaleswap.v1.EventTradeRecorded"
-    ]
-    assert len(evs) >= 3, f"expected >=3 trades: {json.dumps(tx, indent=2)}"
+    ev = normalize_events(tx["events"])
+    et = "dysonprotocol.whaleswap.v1.EventPoolSwap"
+    assert et in ev and len(ev[et]) == 3, json.dumps(ev, indent=2)
+    et = "dysonprotocol.whaleswap.v1.EventTradeRecorded"
+    assert et in ev and len(ev[et]) == 3, json.dumps(ev, indent=2)
 
-    # No trader debits: ensure no coin_spent by trader address
-    spent = [e for e in tx.get("events", []) if e.get("type") == "coin_spent"]
-    trader_spent = [
-        attrs.get("amount", "")
-        for e in spent
-        for attrs in [{a.get("key"): a.get("value") for a in e.get("attributes", [])}]
-        if attrs.get("spender") == trader_addr
-    ]
-    assert (
-        not trader_spent
-    ), f"unexpected trader debits: {trader_spent}\n{json.dumps(tx, indent=2)}"
+    # Exact net flows from transfer events
+    debits, credits = sum_transfers_for_addr(tx, trader_addr)
+    assert isinstance(debits, list) and isinstance(credits, list), json.dumps(
+        [debits, credits], indent=2
+    )
+    assert debits == [], json.dumps([debits, credits], indent=2)
+    cred_map = {A: 0, B: 0, C: 0}
+    for amt, den in credits:
+        cred_map[den] = cred_map[den] + int(amt)
 
-    # Balances after: at least one profit; specifically A should increase due to --min-output 1A
     after = dysond("query", "bank", "balances", trader_addr)
-    bal_after = {
-        b.get("denom"): int(b.get("amount")) for b in after.get("balances", [])
-    }
-    a1 = bal_after.get(A, 0)
-    b1 = bal_after.get(B, 0)
-    c1 = bal_after.get(C, 0)
+    assert isinstance(after, dict) and isinstance(after["balances"], list), json.dumps(
+        after, indent=2
+    )
+    post = {row["denom"]: int(row["amount"]) for row in after["balances"]}
 
-    assert (
-        a1 > a0
-    ), f"no profit in A: before={a0} after={a1} tx={json.dumps(tx, indent=2)}"
-    # Optional: ensure no denom decreased
-    assert b1 >= b0 and c1 >= c0, f"unexpected debits: B {b0}->{b1}, C {c0}->{c1}"
+    targets = [A, B, C]
+    pre_z = {d: 0 for d in targets} | pre
+    post_z = {d: 0 for d in targets} | post
+    for d in targets:
+        delta = post_z[d] - pre_z[d]
+        exp = cred_map[d]
+        assert (
+            delta == exp
+        ), f"{d} delta mismatch: got {delta}, expected {exp}; transfers={json.dumps([debits, credits], indent=2)}"

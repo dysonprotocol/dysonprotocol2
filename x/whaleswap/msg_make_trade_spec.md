@@ -437,3 +437,27 @@ These functions are shared across MakeTrade, and (in the second phase) will also
 - Outcome: all three use the same helpers. PoolSwap/TakeOffer will then be thin orchestration wrappers (just like MakeTrade).
 
 This spec preserves original functions as references, while delivering a clean MakeTrade and a clear path to unify PoolSwap/TakeOffer to the same core helpers.
+
+## TODO
+[1 tool called]
+
+- qs-nil-guards [completed]: Harden all Query handlers with nil/empty and required-field guards.
+  - Idea: For every keeper Query(ctx, req) method, add req == nil defaults and early validation (e.g., offer_id/pool_id required). Return ErrInvalidRequest or ErrNotFound. Update imports for sdkerrors as needed.
+
+- qs-nil-tests [pending]: Add table-driven tests for nil/empty requests across all Query endpoints.
+  - Idea: Unit tests calling keeper methods directly with nil req and zero IDs; assert explicit errors (no panics). Optionally, CLI-level smoke via dysond query with missing args to ensure graceful errors.
+
+- qs-trades-offer-flake [in_progress]: Investigate intermittent trades-by-offer panic in full suite.
+  - Idea: Add structured logging around query entry points to confirm req values; verify Autocli path never passes nil; ensure pagination defaults; run the single test repeatedly and whole suite with -vv to catch timing/order effects.
+
+- qs-error-consistency [pending]: Normalize query error types to ErrInvalidRequest/ErrNotFound uniformly.
+  - Idea: Sweep query handlers and replace fmt.Errorf or generic wraps with sdkerrors.ErrInvalidRequest/ErrNotFound wraps for consistent API semantics.
+
+- qs-e2e-offer-trades [pending]: Add e2e test: make-offer + make-trade then trades-by-offer returns single trade.
+  - Idea: Similar to test_cli_events_indexing_trades but explicitly also query offer and trade endpoints, verifying fields and types, and ensuring no panics.
+
+- amm-suite-run [pending]: Run entire tests/whaleswap/amm suite and triage remaining failures.
+  - Idea: Execute full suite, record any failing cases, isolate by -k, and fix deterministically.
+
+- docs-guard-pattern [pending]: Document nil-guard pattern in keeper query code comments and dev docs.
+  - Idea: Add a short section in module docs or comments showing the guard template and required fields for each query.

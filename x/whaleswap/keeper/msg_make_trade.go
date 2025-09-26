@@ -115,17 +115,76 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		return nil, err
 	}
 
-	// Enforce caps: sum inputsByAddr[trader] per denom ≤ caps (zero if unspecified)
+	// Self-net trader debits and credits by denom to allow circular profit without explicit debits.
+	// Keep totals balanced by subtracting the same amount from the module's symmetric entries.
+	{
+		trIn := inputsByAddr[traderBech]
+		trOut := outputsByAddr[traderBech]
+		modIn := outputsByAddr[moduleBech] // module receives when trader pays
+		modOut := inputsByAddr[moduleBech] // module pays when trader receives
+		// Build union of denoms present in trader in/out
+		seen := map[string]struct{}{}
+		for _, c := range trIn {
+			seen[c.Denom] = struct{}{}
+		}
+		for _, c := range trOut {
+			seen[c.Denom] = struct{}{}
+		}
+		for d := range seen {
+			inAmt := trIn.AmountOf(d)
+			outAmt := trOut.AmountOf(d)
+			var n math.Int
+			if inAmt.LT(outAmt) {
+				n = inAmt
+			} else {
+				n = outAmt
+			}
+			if n.IsPositive() {
+				if inputsByAddr[traderBech].AmountOf(d).IsPositive() {
+					inputsByAddr[traderBech] = inputsByAddr[traderBech].Sub(sdk.NewCoin(d, n))
+					if inputsByAddr[traderBech].IsZero() {
+						delete(inputsByAddr, traderBech)
+					}
+				}
+				if outputsByAddr[traderBech].AmountOf(d).IsPositive() {
+					outputsByAddr[traderBech] = outputsByAddr[traderBech].Sub(sdk.NewCoin(d, n))
+					if outputsByAddr[traderBech].IsZero() {
+						delete(outputsByAddr, traderBech)
+					}
+				}
+				if modIn.AmountOf(d).IsPositive() {
+					outputsByAddr[moduleBech] = outputsByAddr[moduleBech].Sub(sdk.NewCoin(d, n))
+					if outputsByAddr[moduleBech].IsZero() {
+						delete(outputsByAddr, moduleBech)
+					}
+				}
+				if modOut.AmountOf(d).IsPositive() {
+					inputsByAddr[moduleBech] = inputsByAddr[moduleBech].Sub(sdk.NewCoin(d, n))
+					if inputsByAddr[moduleBech].IsZero() {
+						delete(inputsByAddr, moduleBech)
+					}
+				}
+			}
+		}
+	}
+
+	// Enforce caps on NET debits per denom: need = max(0, inputs[trader]-outputs[trader])
 	traderInputs := inputsByAddr[traderBech]
+	traderOutputs := outputsByAddr[traderBech]
+	// Build a quick map of input amounts by denom for iteration
 	for _, c := range traderInputs {
-		capAmt := caps.AmountOf(c.Denom)
-		if capAmt.IsZero() || capAmt.LT(c.Amount) {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "debit exceeds cap for %s: need %s <= cap %s", c.Denom, c.Amount.String(), capAmt.String())
+		outAmt := traderOutputs.AmountOf(c.Denom)
+		need := c.Amount.Sub(outAmt)
+		if need.IsPositive() {
+			capAmt := caps.AmountOf(c.Denom)
+			if capAmt.IsZero() || capAmt.LT(need) {
+				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "debit exceeds cap for %s: need %s <= cap %s", c.Denom, need.String(), capAmt.String())
+			}
 		}
 	}
 
 	// Enforce min_output on trader credits
-	traderOutputs := outputsByAddr[traderBech]
+	traderOutputs = outputsByAddr[traderBech]
 	for _, m := range msg.MinOutput {
 		got := traderOutputs.AmountOf(m.Denom)
 		if got.LT(m.Amount) {
@@ -146,8 +205,17 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 			outputs = append(outputs, banktypes.Output{Address: addr, Coins: coins})
 		}
 	}
-	if len(inputs) == 0 || len(outputs) == 0 {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "no inputs or outputs for make-trade move")
+	if len(inputs) == 0 && len(outputs) == 0 {
+		// No settlement required after full netting and coverage: still burn any liquid outputs
+		// destined for the module and assert invariants before returning success.
+		if err := k.tradeBurnModuleLiquid(ctx, outputsByAddr); err != nil {
+			return nil, err
+		}
+		if err := k.AssertAMMInvariants(ctx); err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "AMM invariant after MakeTrade")
+		}
+		traderOutputs = outputsByAddr[traderBech]
+		return &whaleswapv1.MsgMakeTradeResponse{AmountOut: traderOutputs}, nil
 	}
 	if err := k.wsMoveCoins(ctx, inputs, outputs); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "move coins failed")
