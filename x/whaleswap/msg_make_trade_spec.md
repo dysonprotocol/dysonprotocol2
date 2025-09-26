@@ -85,6 +85,8 @@
 
 - Tests
   - Mix: take-first-then-swap and swap-first-then-take; verify same end result
+  - Netting: two complementary takes result in credits-only for taker (no debits)
+  - Coverage (pass): if taker lacks solid B but holds sufficient liquid B, taker-liquid covers wants; taker receives unit have; maker receives unit want; module burns taker-liquid
   - Caps/min-output across mixed ops enforced at end
   - Circular-profit legs plus offer netting (no trader debits)
   - Exact-out leg + order take nets within min_output constraints
@@ -214,6 +216,7 @@
 
 - Transfer parsing
   - `sum_transfers_for_addr(tx, addr)` now uses `normalize_events` for stable extraction of `transfer` events.
+  - Tests assert exact event-derived counts against wallet deltas to avoid false positives.
 
 - Impact
   - The parity test `test_cli_parity_swap_then_take_vs_take_then_swap.py` was refactored to use these utilities and assertions; it passes.
