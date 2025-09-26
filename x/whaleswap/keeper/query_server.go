@@ -47,13 +47,21 @@ func (k Keeper) Metrics(ctx context.Context, _ *whaleswapv1.QueryMetricsRequest)
 		}
 		return false, nil
 	})
-	// Liquid coins currently in module account: filter by prefix
+	// Liquid-backing remainder: module solids minus (amm + escrowOffers + auctions + pfand)
 	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
 	actual := k.bank.SpendableCoins(ctx, moduleAddr)
-	liquid := sdk.NewCoins()
+	parts := sdk.NewCoins().Add(amm...).Add(escrowOffers...).Add(auctionCoins...).Add(pfand...)
+	actualSolids := sdk.NewCoins()
 	for _, c := range actual {
-		if k.isLiquidDenom(c.Denom) && c.Amount.IsPositive() {
-			liquid = liquid.Add(c)
+		if !k.isLiquidDenom(c.Denom) && c.Amount.IsPositive() {
+			actualSolids = actualSolids.Add(c)
+		}
+	}
+	liquidBacking := sdk.NewCoins()
+	for _, c := range actualSolids {
+		rem := c.Amount.Sub(parts.AmountOf(c.Denom))
+		if rem.IsPositive() {
+			liquidBacking = liquidBacking.Add(sdk.NewCoin(c.Denom, rem))
 		}
 	}
 	// num_trades by iterating trades map (sequence may include gaps)
@@ -68,7 +76,7 @@ func (k Keeper) Metrics(ctx context.Context, _ *whaleswapv1.QueryMetricsRequest)
 		EscrowedOfferCoins:   escrowOffers,
 		EscrowedPfand:        pfand,
 		EscrowedAuctionCoins: auctionCoins,
-		EscrowedLiquidCoins:  liquid,
+		EscrowedLiquidCoins:  liquidBacking,
 		FeesEarned:           fees,
 	}
 	return &whaleswapv1.QueryMetricsResponse{Metrics: m}, nil

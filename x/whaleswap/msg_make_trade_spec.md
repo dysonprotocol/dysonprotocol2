@@ -197,6 +197,27 @@
   - Problem: malformed `--op` entries.
   - Solution: strong validation with helpful errors; allow multiple `--op` flags or a JSON array.
 
+### Test Parsing Discipline and Event Normalization (added)
+
+- Event normalization utility
+  - Implemented `tests/whaleswap/amm/normalize_events.py` with deep JSON parsing for event values, recursively handling nested JSON.
+  - Provides `normalize_events(events)` that returns a map of event type → list of normalized attribute dicts.
+
+- Assert-first parsing rule in tests
+  - Replace `.get()` fallbacks with stepwise assertions on structure and types to catch failures precisely.
+  - Example (EventOfferCreated):
+    - `assert 'events' in tx`
+    - `evdict = normalize_events(tx['events'])`
+    - `assert 'dysonprotocol.whaleswap.v1.EventOfferCreated' in evdict`
+    - `rows = evdict['dysonprotocol.whaleswap.v1.EventOfferCreated']; assert len(rows) == 1`
+    - `offer_id = rows[0]['offer_id']; assert isinstance(offer_id, int)`
+
+- Transfer parsing
+  - `sum_transfers_for_addr(tx, addr)` now uses `normalize_events` for stable extraction of `transfer` events.
+
+- Impact
+  - The parity test `test_cli_parity_swap_then_take_vs_take_then_swap.py` was refactored to use these utilities and assertions; it passes.
+
 
 # New spec
 
@@ -320,6 +341,39 @@ Here’s a precise, implementation-ready spec to (re)build MakeTrade cleanly, us
     - Must burn liquid that arrives to module (nameservice burn).
   - `wsMoveCoins(ctx, inputs, outputs) error`:
     - Validations: non-empty, totals match; send Inputs to module then module to Outputs.
+
+### Metrics & Invariants (clarified)
+
+- TradeMetrics: Introduced a telemetry model and query to make invariants observable and debuggable.
+  - `TradeMetrics` (in `whaleswap.proto`) includes:
+    - `num_trades`
+    - `escrowed_pool_coins` (sum of pool reserves)
+    - `escrowed_offer_coins` (sum of remaining_have for non-liquid offers)
+    - `escrowed_auction_coins` (sum of auction sell escrows)
+    - `escrowed_pfand` (sum of pfand_locked across open liquid-have offers)
+    - `fees_earned` (sum across pools; informational)
+    - `escrowed_liquid_coins` (solid liquid-backing remainder; see below)
+  - Query:
+    - `rpc Metrics(QueryMetricsRequest) returns (QueryMetricsResponse)`
+    - Autocli: `dysond query whaleswap metrics`
+
+- Liquid-backing semantics:
+  - `escrowed_liquid_coins` reports the solid-denom backing required for minted liquid balances after accounting for other components.
+  - Computation: `backing = actual_module_solids − (escrowed_pool_coins + escrowed_offer_coins + escrowed_auction_coins + escrowed_pfand)` per denom.
+  - Rationale: When pfand and AMM use denoms like `udys`, backing must be derived as a partition of module solids rather than via raw liquid counts.
+
+- Invariant redesign:
+  - The module balance invariant now asserts exact equality:
+    - `module_balances == escrowed_pool + escrowed_offers + escrowed_auctions + escrowed_pfand + escrowed_liquid_backing` (per denom)
+  - Failure message includes a breakdown: `(amm, escrow, auction, pfand, liquid_backing)`.
+  - Avoids false failures when pfand denom overlaps with AMM reserves by separating components explicitly.
+
+- MakeTrade post-conditions:
+  - After single-settlement and liquid burn, call unified invariants (`AssertInvariants`) to validate AMM and orderbook accounting.
+
+- Tests added:
+  - `test_cli_metrics_liquid_backing_smoke.py`: verifies `escrowed_liquid_coins == 900` per base denom after setup and module holds no liquid.
+  - PFAND release on close (existing): now passes with invariant redesign.
 
 These functions are shared across MakeTrade, and (in the second phase) will also be used by PoolSwap and TakeOffer by refactoring them to orchestrate the same helpers rather than re-implementing logic.
 
