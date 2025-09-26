@@ -24,7 +24,7 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid trader: %s", err.Error())
 	}
 
-	// Caps per denom (vector)
+	// Caps per denom (vector). If unspecified, treat as zero (no debits allowed).
 	caps := sdk.NewCoins(msg.MaxInput...)
 
 	// Aggregators
@@ -115,7 +115,7 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		return nil, err
 	}
 
-	// Enforce caps: sum inputsByAddr[trader] per denom ≤ caps
+	// Enforce caps: sum inputsByAddr[trader] per denom ≤ caps (zero if unspecified)
 	traderInputs := inputsByAddr[traderBech]
 	for _, c := range traderInputs {
 		capAmt := caps.AmountOf(c.Denom)

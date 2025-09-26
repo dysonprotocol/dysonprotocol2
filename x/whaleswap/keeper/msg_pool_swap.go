@@ -25,7 +25,7 @@ func (k Keeper) PoolSwap(ctx context.Context, msg *whaleswapv1.MsgPoolSwap) (*wh
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "legs must be non-empty")
 	}
 
-	// Build end-of-tx debit caps per denom (vector cap)
+	// Build end-of-tx debit caps per denom (vector cap). Unspecified denoms have zero cap.
 	caps := sdk.NewCoins(msg.MaxInput...)
 
 	// module delta per denom: amount>0 means module receives; amount<0 means module pays
@@ -364,6 +364,16 @@ func (k Keeper) PoolSwap(ctx context.Context, msg *whaleswapv1.MsgPoolSwap) (*wh
 			}
 		}
 
+		// Enforce rate constraint (when both swap_in and swap_out provided)
+		if hasIn && hasOut {
+			if leg.SwapOut.Denom != outDenom {
+				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "swap_out denom %s doesn't match computed %s", leg.SwapOut.Denom, outDenom)
+			}
+			if !outAmt.Equal(leg.SwapOut.Amount) {
+				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "computed out %s != required %s", outAmt.String(), leg.SwapOut.Amount.String())
+			}
+		}
+
 		// Persist pool changes and emit per-leg events
 		pool.NumTrades += 1
 		if err := k.updatePool(ctx, &pool); err != nil {
@@ -402,15 +412,6 @@ func (k Keeper) PoolSwap(ctx context.Context, msg *whaleswapv1.MsgPoolSwap) (*wh
 		}
 		if err := k.TradesMap.Set(ctx, tradeId, trade); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to save trade")
-			// If both swap_in and swap_out provided, enforce rate constraint
-			if hasIn && hasOut {
-				if leg.SwapOut.Denom != outDenom {
-					return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "swap_out denom %s doesn't match computed %s", leg.SwapOut.Denom, outDenom)
-				}
-				if outAmt.LT(leg.SwapOut.Amount) {
-					return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "computed out %s < required %s", outAmt.String(), leg.SwapOut.Amount.String())
-				}
-			}
 		}
 		if err := k.TradesByPoolIndex.Set(ctx, collections.Join(pool.PoolId, tradeId), tradeId); err != nil {
 			return nil, cosmossdkerrors.Wrapf(err, "failed to index trade by pool")

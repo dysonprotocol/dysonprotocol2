@@ -196,3 +196,187 @@
 - CLI/JSON op parsing
   - Problem: malformed `--op` entries.
   - Solution: strong validation with helpful errors; allow multiple `--op` flags or a JSON array.
+
+
+# New spec
+
+Here’s a precise, implementation-ready spec to (re)build MakeTrade cleanly, using the existing PoolSwap and TakeOffer logic as the source of truth, with a path to unify all three.
+
+### Goals
+- Implement MsgMakeTrade that can mix pool swap legs and orderbook take items in any order.
+- Aggregate all effects and do one settlement via wsMoveCoins at the end.
+- Enforce per-denom max_input (caps) over aggregated debits; enforce min_output over aggregated credits.
+- Keep PoolSwap and TakeOffer as-is for now (reference), but structure MakeTrade using extracted helpers so all three can converge onto the same core functions next.
+
+### Message and CLI
+- Protobuf: already defined; keep as is.
+  - MsgMakeTrade: trader, repeated max_input, repeated operations (oneof swap or take), repeated min_output.
+  - TradeOperation: oneof swap (SwapLeg) or take (TakeItem).
+  - SwapLeg: pool_id, optional swap_in, optional swap_out (support in-only, out-only, or both with equality constraint).
+- Autocli: already in place. No change required.
+
+### Data Flow and Aggregators
+- Aggregators:
+  - deltaByDenom map[string]Int for AMM module deltas only (positive: module receives; negative: module pays).
+  - inputsByAddr map[string]Coins and outputsByAddr map[string]Coins for orderbook-style settlement.
+- At the end:
+  - Convert AMM deltas into inputs/outputs under trader and module accounts.
+  - Net orderbook flows and cover deficits as needed.
+  - Enforce caps and min_output.
+  - Execute single wsMoveCoins(inputs, outputs).
+  - Burn module-held liquid.
+  - Check AMM invariants.
+
+### Validation Rules
+- Common:
+  - operations must be non-empty.
+  - trader must decode as a valid bech32 address.
+- SwapLeg:
+  - pool_id > 0 and pool exists with exactly two reserves.
+  - Must specify swap_in or swap_out (or both).
+  - If swap_in provided: denom must be one of pool coins; exact-in math applies.
+  - If swap_out provided: denom must be one of pool coins; exact-out math applies.
+  - If both provided: swap_out denom must match computed output denom AND computed out amount must equal exactly swap_out.amount.
+  - V2 math: constant product + per-leg fee, exact-in/out as implemented in PoolSwap.
+  - V3 math: band checks and fee; respect min/max price band; ensure liquidity > 0; exact-in/out as implemented in PoolSwap.
+- TakeItem:
+  - offer_id must exist and be open; remaining_units positive.
+  - take_units parsed; must be positive and ≤ remaining_units.
+  - Update offer remaining units, have/want amounts; close if units go to zero; release pfand only once on close.
+- Caps and min_output:
+  - Caps apply only to trader’s final debits (inputsByAddr[trader]).
+  - min_output applies only to trader’s final credits (outputsByAddr[trader]).
+
+### Algorithm for MakeTrade (Keeper.MakeTrade)
+1. Validate msg (trader, operations non-empty).
+2. Build caps = Coins(msg.MaxInput...).
+3. Initialize aggregators:
+   - deltaByDenom := map[string]Int{}
+   - inputsByAddr := map[string]Coins{}
+   - outputsByAddr := map[string]Coins{}
+4. For each operation in msg.Operations in order:
+   - If swap:
+     - Call tradeApplySwapLeg(ctx, msg.Trader, leg) -> (inCoin, outCoin, err)
+       - This function must:
+         - Load pool, apply v2 or v3 math with fee.
+         - Enforce exact equality when both swap_in and swap_out provided (already fixed).
+         - Update pool reserves and fees.
+         - Emit EventPoolSwap.
+         - Record Trade and emit EventTradeRecorded.
+         - Return the actual in/out coins.
+     - Accumulate AMM delta:
+       - deltaByDenom[inCoin.Denom] += inCoin.Amount
+       - deltaByDenom[outCoin.Denom] -= outCoin.Amount
+   - If take:
+     - Call tradeApplyTakeItem(ctx, msg.Trader, item) -> (maker, makerWant, takerRecv, makerLiqIn, pfandReleased, err)
+       - This function must:
+         - Validate and update the offer; handle unit arithmetic and pfand release on close.
+         - Persist trade and emit EventTradeRecorded and EventOfferTaken.
+         - Return contributions:
+           - makerWant: credit owed to maker (solid denom)
+           - takerRecv: credit owed to trader (solid denom or decoded base if maker’s have is liquid)
+           - makerLiqIn: liquid denom the maker must pay into the module (for burn)
+           - pfandReleased: solid credit to the trader on full close
+     - Accumulate orderbook flows:
+       - addOut(maker, makerWant)
+       - addOut(trader, takerRecv)
+       - if makerLiqIn.Amount > 0: addIn(maker, makerLiqIn) (module will burn; see below)
+       - if pfandReleased.Amount > 0: addOut(trader, pfandReleased)
+5. Convert AMM deltaByDenom to inputs/outputs:
+   - For each denom, modAmt:
+     - If modAmt > 0: addIn(trader, modAmt denom), addOut(module, modAmt denom).
+     - If modAmt < 0: addIn(module, |modAmt| denom), addOut(trader, |modAmt| denom).
+6. Net and cover orderbook flows:
+   - tradeNetAndCover(ctx, traderBech, inputsByAddr, outputsByAddr):
+     - Net trader’s solid credits against maker wants by denom.
+     - Cover remaining wants from trader solid, then trader liquid (whaleswap.dys/coins/<solid>).
+     - If trader still short, cover with module’s solid (validate sufficiency or error).
+     - Ensure any liquid inputs to module are mirrored to module outputs for burn.
+7. Enforce caps: For inputsByAddr[trader], require amount ≤ caps for each denom. On violation, error “debit exceeds cap for <denom>: need <amount> <= cap <cap>”.
+8. Enforce min_output: For outputsByAddr[trader], require amount ≥ requested for each denom in min_output. On violation, error “min_output not met for <denom>: got <got> < <need>”.
+9. Build single settlement:
+   - inputs := []banktypes.Input from inputsByAddr (skip empty)
+   - outputs := []banktypes.Output from outputsByAddr (skip empty)
+   - Require both non-empty (“no inputs or outputs for make-trade move”).
+   - Call wsMoveCoins(ctx, inputs, outputs).
+10. Burn module liquid:
+    - tradeBurnModuleLiquid(ctx, outputsByAddr) to burn any whaleswap.dys/coins/<solid> delivered to module.
+11. Invariants:
+    - AssertAMMInvariants(ctx) to ensure AMM consistency post-aggregation.
+12. Response:
+    - Return MsgMakeTradeResponse{AmountOut: outputsByAddr[trader]}.
+
+### Helper Functions (Unification Targets)
+- Already present and should be the only place with business logic:
+  - `tradeApplySwapLeg(ctx, trader, leg) (in sdk.Coin, out sdk.Coin, err error)`:
+    - Must be identical in math and validations to PoolSwap (v2 & v3), including exact-equality rate constraint when both provided.
+    - Emits EventPoolSwap, records Trade, emits EventTradeRecorded.
+  - `tradeApplyTakeItem(ctx, taker, item) (maker string, makerWant sdk.Coin, takerRecv sdk.Coin, makerLiqIn sdk.Coin, pfandReleased sdk.Coin, err error)`:
+    - Must be identical to TakeOffer logic: units math, closing, pfand.
+    - Emits EventTradeRecorded, EventOfferTaken; updates offer and indexes.
+  - `tradeNetAndCover(ctx, traderBech, inputsByAddr, outputsByAddr) error`:
+    - Must implement solid credits netting, coverage from trader solid → trader liquid → module solid; enforce module sufficiency.
+  - `tradeBurnModuleLiquid(ctx, outputsByAddr) error`:
+    - Must burn liquid that arrives to module (nameservice burn).
+  - `wsMoveCoins(ctx, inputs, outputs) error`:
+    - Validations: non-empty, totals match; send Inputs to module then module to Outputs.
+
+These functions are shared across MakeTrade, and (in the second phase) will also be used by PoolSwap and TakeOffer by refactoring them to orchestrate the same helpers rather than re-implementing logic.
+
+### Error Text Uniformity (do not change)
+- “operations must be non-empty”
+- “swap leg invalid”
+- “input denom %s not in pool %d”
+- “output denom %s not in pool %d”
+- “swap_out must be > 0”
+- “exact-out equals/exceeds reserve”
+- “insufficient liquidity for exact-out”
+- “resulting price below band after swap”
+- “resulting price above band after swap”
+- “computed out %s != required %s”
+- “debit exceeds cap for %s: need %s <= cap %s”
+- “min_output not met for %s: got %s < %s”
+- “no inputs or outputs for make-trade move”
+
+### Events
+- For each swap leg:
+  - EventPoolSwap, EventTradeRecorded
+- For each take:
+  - EventTradeRecorded, EventOfferTaken
+- Settlement uses standard bank events (coin_spent/received/transfer) via wsMoveCoins.
+- All event attribute values are JSON-encoded strings (tests must json.loads values).
+
+### Settlement Semantics
+- Exactly one multisend via wsMoveCoins per MakeTrade.
+- No pre-escrow.
+- If settlement fails, entire tx fails and all state updates rollback (SDK semantics).
+
+### Tests to Add/Ensure (under `./tests/whaleswap/amm/`)
+- make_trade_rate_constraint_pass_fail (already added; now passing)
+- pool_swap_rate_constraint_pass_fail (added; passing)
+- v2 exact-in/out happy and infeasible via MakeTrade
+- v3 exact-in/out happy and capacity/band boundary via MakeTrade
+- caps enforcement: single and multi-denom; exact error text
+- min_output vector pass and fail; exact error text
+- swap→take vs take→swap equivalence test (same final balances)
+- netting reduces debits across two takes (show lower trader debit vs no netting)
+- two makers with multi-take and single settlement
+- liquid-have offer: ensure makerLiqIn is burned; PFAND release aggregates into trader outputs
+- module coverage success and module insufficient fail (exact error)
+- reused pools, 3-leg cycle profit (credits only, no trader debits)
+- duplicate max-input/min-output flags normalized and enforced
+- v3 exact-out rounding step and impossible fail text
+- invariants hold after MakeTrade
+- 50 small ops complete within a tx (large batch gas but not timing out)
+
+### Phase 2 (refactor to unify all three)
+- Update `MsgPoolSwap` handler to:
+  - For each leg: call tradeApplySwapLeg for math and events
+  - Use deltaByDenom → convert to inputs/outputs like MakeTrade
+  - Enforce caps (msg.MaxInput) and min_output; single wsMoveCoins; invariants
+- Update `MsgTakeOffer` handler to:
+  - For each item: call tradeApplyTakeItem and accumulate into inputs/outputs
+  - Net, cover, single wsMoveCoins, burn liquid, invariants
+- Outcome: all three use the same helpers. PoolSwap/TakeOffer will then be thin orchestration wrappers (just like MakeTrade).
+
+This spec preserves original functions as references, while delivering a clean MakeTrade and a clear path to unify PoolSwap/TakeOffer to the same core helpers.

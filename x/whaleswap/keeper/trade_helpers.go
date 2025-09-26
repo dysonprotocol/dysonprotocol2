@@ -287,6 +287,16 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 		}
 	}
 
+	// Enforce rate constraint when both swap_in and swap_out are provided
+	if hasIn && hasOut {
+		if leg.SwapOut.Denom != outDenom {
+			return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "swap_out denom %s doesn't match computed %s", leg.SwapOut.Denom, outDenom)
+		}
+		if !outAmt.Equal(leg.SwapOut.Amount) {
+			return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "computed out %s != required %s", outAmt.String(), leg.SwapOut.Amount.String())
+		}
+	}
+
 	// Persist pool and emit events
 	pool.NumTrades += 1
 	if err := k.updatePool(ctx, &pool); err != nil {
@@ -420,6 +430,12 @@ func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whal
 	}
 	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventOfferTaken{OfferId: offer.OfferId, TradeId: tradeId}); err != nil {
 		return "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, err
+	}
+	// Parity with standalone TakeOffer: emit EventPfandReleased on close
+	if pfandReleased.IsValid() && pfandReleased.Amount.IsPositive() {
+		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPfandReleased{Amount: pfandReleased}); err != nil {
+			return "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, err
+		}
 	}
 
 	// Aggregator contributions

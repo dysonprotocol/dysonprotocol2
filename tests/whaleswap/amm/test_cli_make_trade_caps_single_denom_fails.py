@@ -23,11 +23,18 @@ def test_make_trade_caps_single_denom_fails(chainnet, ws_setup_env):
         "auto",
     )
     assert txp.get("code", 1) == 0, f"create-pool failed: {json.dumps(txp, indent=2)}"
+    ev_pc = [
+        e
+        for e in txp.get("events", [])
+        if e.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    attrs = {a.get("key"): a.get("value") for a in ev_pc[0].get("attributes", [])}
+    pid = int(json.loads(attrs["pool_id"]))
 
     # Request exact-out 5b but cap a at 1 to force cap failure
     op = {
         "swap": {
-            "pool_id": 1,
+            "pool_id": pid,
             "swap_out": {"denom": b, "amount": "5"},
         }
     }

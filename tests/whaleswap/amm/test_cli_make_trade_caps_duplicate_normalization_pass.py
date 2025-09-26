@@ -1,24 +1,33 @@
 import json
 
 
-def test_make_trade_v2_exact_out_infeasible_fails(chainnet, ws_setup_env):
+def _parse_pool_id_attr(attrs):
+    raw = attrs["pool_id"]
+    val = json.loads(raw)
+    pid = int(val)
+    assert pid > 0
+    return pid
+
+
+def test_make_trade_caps_duplicate_normalization_pass(chainnet, ws_setup_env):
     dysond = chainnet[0]
     env = ws_setup_env
+
     a = env["denoms"][0]
     b = env["denoms"][1]
-    taker_name = env["acc2"]["name"]
+    taker = env["acc1"]["name"]
 
-    # Create v2 pool a/b with 10/10 from acc2
+    # Create v2 pool a/b
     txp = dysond(
         "tx",
         "whaleswap",
         "create-pool",
         "--coins",
-        f"10{a}",
+        f"20{a}",
         "--coins",
-        f"10{b}",
+        f"20{b}",
         "--from",
-        taker_name,
+        taker,
         "--gas",
         "auto",
     )
@@ -28,29 +37,30 @@ def test_make_trade_v2_exact_out_infeasible_fails(chainnet, ws_setup_env):
         for e in txp.get("events", [])
         if e.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
     ]
-    attrs = {a.get("key"): a.get("value") for a in ev_pc[0].get("attributes", [])}
-    pid = int(json.loads(attrs["pool_id"]))
+    pid = _parse_pool_id_attr(
+        {a.get("key"): a.get("value") for a in ev_pc[0].get("attributes", [])}
+    )
 
-    # Request b out equal to reserve (10) to trigger exact-out equals/exceeds reserve
+    # Exact-in 10a; cap normalized client-side to 11a (no duplicates), should pass
     op = {
         "swap": {
             "pool_id": pid,
-            "swap_out": {"denom": b, "amount": "10"},
+            "swap_in": {"denom": a, "amount": "10"},
         }
     }
-    out = dysond(
+    tx = dysond(
         "tx",
         "whaleswap",
         "make-trade",
         "--max-input",
-        f"100000{a}",
+        f"11{a}",
         "--op",
         json.dumps(op),
         "--from",
-        taker_name,
+        taker,
         "--gas",
         "auto",
-        raw=True,
     )
-    low = (out or "").lower()
-    assert "exact-out equals/exceeds reserve" in low, f"Unexpected error: {out}"
+    assert (
+        tx.get("code", 1) == 0
+    ), f"duplicate max-input normalization pass failed: {json.dumps(tx, indent=2)}"

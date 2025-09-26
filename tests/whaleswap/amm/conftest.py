@@ -8,7 +8,7 @@ def _rand_name():
     return "".join(random.choices(string.ascii_lowercase, k=6)) + ".dys"
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def ws_setup_env(chainnet, generate_account, faucet):
     """
     Single-tx dyslang setup for whaleswap tests:

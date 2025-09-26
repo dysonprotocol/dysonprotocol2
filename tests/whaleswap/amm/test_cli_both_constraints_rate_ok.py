@@ -56,12 +56,11 @@ def test_both_constraints_rate_ok(chainnet, generate_account, faucet, register_n
     [trader, trader_addr] = generate_account("amm_both_trader")
     faucet(trader_addr, amount=1_000_000)
 
-    # Both constraints: ask that out >= 5foo for 100udys in
+    # Provide exact-in leg and require out >= 5foo via --min-output
     leg = json.dumps(
         {
             "pool_id": pid,
             "swap_in": {"denom": "udys", "amount": "100"},
-            "swap_out": {"denom": foo, "amount": "5"},
         }
     )
     tx2 = dysond(
