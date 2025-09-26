@@ -147,6 +147,7 @@
       {"type":"file","name":"dysonprotocol.whaleswap.v1.Auctions.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.AuctionsByPairPriceRange.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.AuctionsBySeller.json"},
+      {"type":"file","name":"dysonprotocol.whaleswap.v1.Metrics.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.Offer.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.Offers.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.OffersBest.json"},
@@ -375,5 +376,5 @@
     ]}
   ]}
 ,
-  {"type":"report","directories":3,"files":369}
+  {"type":"report","directories":3,"files":370}
 ]

@@ -152,6 +152,12 @@ service Query {
     option (google.api.http).get =
         "/dysonprotocol/whaleswap/v1/auctions/by_pair_price";
   }
+
+  // Metrics returns a breakdown of module-expected balances by subsystem
+  // and summary counters for invariants and monitoring.
+  rpc Metrics(QueryMetricsRequest) returns (QueryMetricsResponse) {
+    option (google.api.http).get = "/dysonprotocol/whaleswap/v1/metrics";
+  }
 }
 
 message QueryParamsRequest {}
@@ -332,3 +338,6 @@ message QueryAuctionsByPairPriceRangeRequest {
   string max_price = 4 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
   cosmos.base.query.v1beta1.PageRequest pagination = 5;
 }
+
+message QueryMetricsRequest {}
+message QueryMetricsResponse { TradeMetrics metrics = 1; }

@@ -297,6 +297,29 @@
         ]
       }
     },
+    "/dysonprotocol/whaleswap/v1/metrics": {
+      "get": {
+        "summary": "Metrics returns a breakdown of module-expected balances by subsystem\nand summary counters for invariants and monitoring.",
+        "operationId": "dysonprotocol.whaleswap.v1.QueryMetricsRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryMetricsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "Query"
+        ]
+      }
+    },
     "/dysonprotocol/whaleswap/v1/offers": {
       "get": {
         "summary": "Unified offers listing with optional filters and pagination",
@@ -1554,6 +1577,14 @@
         }
       }
     },
+    "dysonprotocol.whaleswap.v1.QueryMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TradeMetrics"
+        }
+      }
+    },
     "dysonprotocol.whaleswap.v1.QueryOfferResponse": {
       "type": "object",
       "properties": {
@@ -1710,6 +1741,58 @@
         }
       },
       "description": "Trade captures a single fill of an offer.\n\n- `sent` is the coin paid by the taker (want-denom), and `received` is the\n  coin delivered by the module (have-denom or base of liquid-have)."
+    },
+    "dysonprotocol.whaleswap.v1.TradeMetrics": {
+      "type": "object",
+      "properties": {
+        "num_trades": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "escrowed_pool_coins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Sum of reserves across all AMM pools"
+        },
+        "escrowed_offer_coins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Sum of remaining_have over all open non-liquid offers"
+        },
+        "escrowed_pfand": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Sum of pfand_locked over all open liquid-have offers"
+        },
+        "escrowed_auction_coins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Sum of auction sell escrows over all open auctions"
+        },
+        "escrowed_liquid_coins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Any liquid coins currently held by the module (should generally be zero)"
+        },
+        "fees_earned": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Sum of fees_earned across all pools (accounted inside pool reserves)"
+        }
+      },
+      "description": "TradeMetrics reports the expected whaleswap module balances broken down by\nsubsystem, and summary counters useful for monitoring and invariants."
     },
     "google.protobuf.Any": {
       "type": "object",

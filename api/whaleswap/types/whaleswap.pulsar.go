@@ -4236,6 +4236,1238 @@ func (x *fastReflection_AuctionRecord) ProtoMethods() *protoiface.Methods {
 	}
 }
 
+var _ protoreflect.List = (*_TradeMetrics_2_list)(nil)
+
+type _TradeMetrics_2_list struct {
+	list *[]*v1beta1.Coin
+}
+
+func (x *_TradeMetrics_2_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_TradeMetrics_2_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_TradeMetrics_2_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_TradeMetrics_2_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_TradeMetrics_2_list) AppendMutable() protoreflect.Value {
+	v := new(v1beta1.Coin)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_TradeMetrics_2_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_TradeMetrics_2_list) NewElement() protoreflect.Value {
+	v := new(v1beta1.Coin)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_TradeMetrics_2_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_TradeMetrics_3_list)(nil)
+
+type _TradeMetrics_3_list struct {
+	list *[]*v1beta1.Coin
+}
+
+func (x *_TradeMetrics_3_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_TradeMetrics_3_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_TradeMetrics_3_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_TradeMetrics_3_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_TradeMetrics_3_list) AppendMutable() protoreflect.Value {
+	v := new(v1beta1.Coin)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_TradeMetrics_3_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_TradeMetrics_3_list) NewElement() protoreflect.Value {
+	v := new(v1beta1.Coin)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_TradeMetrics_3_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_TradeMetrics_4_list)(nil)
+
+type _TradeMetrics_4_list struct {
+	list *[]*v1beta1.Coin
+}
+
+func (x *_TradeMetrics_4_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_TradeMetrics_4_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_TradeMetrics_4_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_TradeMetrics_4_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_TradeMetrics_4_list) AppendMutable() protoreflect.Value {
+	v := new(v1beta1.Coin)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_TradeMetrics_4_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_TradeMetrics_4_list) NewElement() protoreflect.Value {
+	v := new(v1beta1.Coin)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_TradeMetrics_4_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_TradeMetrics_5_list)(nil)
+
+type _TradeMetrics_5_list struct {
+	list *[]*v1beta1.Coin
+}
+
+func (x *_TradeMetrics_5_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_TradeMetrics_5_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_TradeMetrics_5_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_TradeMetrics_5_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_TradeMetrics_5_list) AppendMutable() protoreflect.Value {
+	v := new(v1beta1.Coin)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_TradeMetrics_5_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_TradeMetrics_5_list) NewElement() protoreflect.Value {
+	v := new(v1beta1.Coin)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_TradeMetrics_5_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_TradeMetrics_6_list)(nil)
+
+type _TradeMetrics_6_list struct {
+	list *[]*v1beta1.Coin
+}
+
+func (x *_TradeMetrics_6_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_TradeMetrics_6_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_TradeMetrics_6_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_TradeMetrics_6_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_TradeMetrics_6_list) AppendMutable() protoreflect.Value {
+	v := new(v1beta1.Coin)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_TradeMetrics_6_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_TradeMetrics_6_list) NewElement() protoreflect.Value {
+	v := new(v1beta1.Coin)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_TradeMetrics_6_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_TradeMetrics_7_list)(nil)
+
+type _TradeMetrics_7_list struct {
+	list *[]*v1beta1.Coin
+}
+
+func (x *_TradeMetrics_7_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_TradeMetrics_7_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_TradeMetrics_7_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_TradeMetrics_7_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_TradeMetrics_7_list) AppendMutable() protoreflect.Value {
+	v := new(v1beta1.Coin)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_TradeMetrics_7_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_TradeMetrics_7_list) NewElement() protoreflect.Value {
+	v := new(v1beta1.Coin)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_TradeMetrics_7_list) IsValid() bool {
+	return x.list != nil
+}
+
+var (
+	md_TradeMetrics                        protoreflect.MessageDescriptor
+	fd_TradeMetrics_num_trades             protoreflect.FieldDescriptor
+	fd_TradeMetrics_escrowed_pool_coins    protoreflect.FieldDescriptor
+	fd_TradeMetrics_escrowed_offer_coins   protoreflect.FieldDescriptor
+	fd_TradeMetrics_escrowed_pfand         protoreflect.FieldDescriptor
+	fd_TradeMetrics_escrowed_auction_coins protoreflect.FieldDescriptor
+	fd_TradeMetrics_escrowed_liquid_coins  protoreflect.FieldDescriptor
+	fd_TradeMetrics_fees_earned            protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_dysonprotocol_whaleswap_v1_whaleswap_proto_init()
+	md_TradeMetrics = File_dysonprotocol_whaleswap_v1_whaleswap_proto.Messages().ByName("TradeMetrics")
+	fd_TradeMetrics_num_trades = md_TradeMetrics.Fields().ByName("num_trades")
+	fd_TradeMetrics_escrowed_pool_coins = md_TradeMetrics.Fields().ByName("escrowed_pool_coins")
+	fd_TradeMetrics_escrowed_offer_coins = md_TradeMetrics.Fields().ByName("escrowed_offer_coins")
+	fd_TradeMetrics_escrowed_pfand = md_TradeMetrics.Fields().ByName("escrowed_pfand")
+	fd_TradeMetrics_escrowed_auction_coins = md_TradeMetrics.Fields().ByName("escrowed_auction_coins")
+	fd_TradeMetrics_escrowed_liquid_coins = md_TradeMetrics.Fields().ByName("escrowed_liquid_coins")
+	fd_TradeMetrics_fees_earned = md_TradeMetrics.Fields().ByName("fees_earned")
+}
+
+var _ protoreflect.Message = (*fastReflection_TradeMetrics)(nil)
+
+type fastReflection_TradeMetrics TradeMetrics
+
+func (x *TradeMetrics) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_TradeMetrics)(x)
+}
+
+func (x *TradeMetrics) slowProtoReflect() protoreflect.Message {
+	mi := &file_dysonprotocol_whaleswap_v1_whaleswap_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_TradeMetrics_messageType fastReflection_TradeMetrics_messageType
+var _ protoreflect.MessageType = fastReflection_TradeMetrics_messageType{}
+
+type fastReflection_TradeMetrics_messageType struct{}
+
+func (x fastReflection_TradeMetrics_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_TradeMetrics)(nil)
+}
+func (x fastReflection_TradeMetrics_messageType) New() protoreflect.Message {
+	return new(fastReflection_TradeMetrics)
+}
+func (x fastReflection_TradeMetrics_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_TradeMetrics
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_TradeMetrics) Descriptor() protoreflect.MessageDescriptor {
+	return md_TradeMetrics
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_TradeMetrics) Type() protoreflect.MessageType {
+	return _fastReflection_TradeMetrics_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_TradeMetrics) New() protoreflect.Message {
+	return new(fastReflection_TradeMetrics)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_TradeMetrics) Interface() protoreflect.ProtoMessage {
+	return (*TradeMetrics)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_TradeMetrics) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.NumTrades != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.NumTrades)
+		if !f(fd_TradeMetrics_num_trades, value) {
+			return
+		}
+	}
+	if len(x.EscrowedPoolCoins) != 0 {
+		value := protoreflect.ValueOfList(&_TradeMetrics_2_list{list: &x.EscrowedPoolCoins})
+		if !f(fd_TradeMetrics_escrowed_pool_coins, value) {
+			return
+		}
+	}
+	if len(x.EscrowedOfferCoins) != 0 {
+		value := protoreflect.ValueOfList(&_TradeMetrics_3_list{list: &x.EscrowedOfferCoins})
+		if !f(fd_TradeMetrics_escrowed_offer_coins, value) {
+			return
+		}
+	}
+	if len(x.EscrowedPfand) != 0 {
+		value := protoreflect.ValueOfList(&_TradeMetrics_4_list{list: &x.EscrowedPfand})
+		if !f(fd_TradeMetrics_escrowed_pfand, value) {
+			return
+		}
+	}
+	if len(x.EscrowedAuctionCoins) != 0 {
+		value := protoreflect.ValueOfList(&_TradeMetrics_5_list{list: &x.EscrowedAuctionCoins})
+		if !f(fd_TradeMetrics_escrowed_auction_coins, value) {
+			return
+		}
+	}
+	if len(x.EscrowedLiquidCoins) != 0 {
+		value := protoreflect.ValueOfList(&_TradeMetrics_6_list{list: &x.EscrowedLiquidCoins})
+		if !f(fd_TradeMetrics_escrowed_liquid_coins, value) {
+			return
+		}
+	}
+	if len(x.FeesEarned) != 0 {
+		value := protoreflect.ValueOfList(&_TradeMetrics_7_list{list: &x.FeesEarned})
+		if !f(fd_TradeMetrics_fees_earned, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_TradeMetrics) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.num_trades":
+		return x.NumTrades != uint64(0)
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_pool_coins":
+		return len(x.EscrowedPoolCoins) != 0
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_offer_coins":
+		return len(x.EscrowedOfferCoins) != 0
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_pfand":
+		return len(x.EscrowedPfand) != 0
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_auction_coins":
+		return len(x.EscrowedAuctionCoins) != 0
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_liquid_coins":
+		return len(x.EscrowedLiquidCoins) != 0
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.fees_earned":
+		return len(x.FeesEarned) != 0
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.TradeMetrics"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.TradeMetrics does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_TradeMetrics) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.num_trades":
+		x.NumTrades = uint64(0)
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_pool_coins":
+		x.EscrowedPoolCoins = nil
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_offer_coins":
+		x.EscrowedOfferCoins = nil
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_pfand":
+		x.EscrowedPfand = nil
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_auction_coins":
+		x.EscrowedAuctionCoins = nil
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_liquid_coins":
+		x.EscrowedLiquidCoins = nil
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.fees_earned":
+		x.FeesEarned = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.TradeMetrics"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.TradeMetrics does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_TradeMetrics) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.num_trades":
+		value := x.NumTrades
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_pool_coins":
+		if len(x.EscrowedPoolCoins) == 0 {
+			return protoreflect.ValueOfList(&_TradeMetrics_2_list{})
+		}
+		listValue := &_TradeMetrics_2_list{list: &x.EscrowedPoolCoins}
+		return protoreflect.ValueOfList(listValue)
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_offer_coins":
+		if len(x.EscrowedOfferCoins) == 0 {
+			return protoreflect.ValueOfList(&_TradeMetrics_3_list{})
+		}
+		listValue := &_TradeMetrics_3_list{list: &x.EscrowedOfferCoins}
+		return protoreflect.ValueOfList(listValue)
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_pfand":
+		if len(x.EscrowedPfand) == 0 {
+			return protoreflect.ValueOfList(&_TradeMetrics_4_list{})
+		}
+		listValue := &_TradeMetrics_4_list{list: &x.EscrowedPfand}
+		return protoreflect.ValueOfList(listValue)
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_auction_coins":
+		if len(x.EscrowedAuctionCoins) == 0 {
+			return protoreflect.ValueOfList(&_TradeMetrics_5_list{})
+		}
+		listValue := &_TradeMetrics_5_list{list: &x.EscrowedAuctionCoins}
+		return protoreflect.ValueOfList(listValue)
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_liquid_coins":
+		if len(x.EscrowedLiquidCoins) == 0 {
+			return protoreflect.ValueOfList(&_TradeMetrics_6_list{})
+		}
+		listValue := &_TradeMetrics_6_list{list: &x.EscrowedLiquidCoins}
+		return protoreflect.ValueOfList(listValue)
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.fees_earned":
+		if len(x.FeesEarned) == 0 {
+			return protoreflect.ValueOfList(&_TradeMetrics_7_list{})
+		}
+		listValue := &_TradeMetrics_7_list{list: &x.FeesEarned}
+		return protoreflect.ValueOfList(listValue)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.TradeMetrics"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.TradeMetrics does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_TradeMetrics) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.num_trades":
+		x.NumTrades = value.Uint()
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_pool_coins":
+		lv := value.List()
+		clv := lv.(*_TradeMetrics_2_list)
+		x.EscrowedPoolCoins = *clv.list
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_offer_coins":
+		lv := value.List()
+		clv := lv.(*_TradeMetrics_3_list)
+		x.EscrowedOfferCoins = *clv.list
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_pfand":
+		lv := value.List()
+		clv := lv.(*_TradeMetrics_4_list)
+		x.EscrowedPfand = *clv.list
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_auction_coins":
+		lv := value.List()
+		clv := lv.(*_TradeMetrics_5_list)
+		x.EscrowedAuctionCoins = *clv.list
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_liquid_coins":
+		lv := value.List()
+		clv := lv.(*_TradeMetrics_6_list)
+		x.EscrowedLiquidCoins = *clv.list
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.fees_earned":
+		lv := value.List()
+		clv := lv.(*_TradeMetrics_7_list)
+		x.FeesEarned = *clv.list
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.TradeMetrics"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.TradeMetrics does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_TradeMetrics) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_pool_coins":
+		if x.EscrowedPoolCoins == nil {
+			x.EscrowedPoolCoins = []*v1beta1.Coin{}
+		}
+		value := &_TradeMetrics_2_list{list: &x.EscrowedPoolCoins}
+		return protoreflect.ValueOfList(value)
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_offer_coins":
+		if x.EscrowedOfferCoins == nil {
+			x.EscrowedOfferCoins = []*v1beta1.Coin{}
+		}
+		value := &_TradeMetrics_3_list{list: &x.EscrowedOfferCoins}
+		return protoreflect.ValueOfList(value)
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_pfand":
+		if x.EscrowedPfand == nil {
+			x.EscrowedPfand = []*v1beta1.Coin{}
+		}
+		value := &_TradeMetrics_4_list{list: &x.EscrowedPfand}
+		return protoreflect.ValueOfList(value)
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_auction_coins":
+		if x.EscrowedAuctionCoins == nil {
+			x.EscrowedAuctionCoins = []*v1beta1.Coin{}
+		}
+		value := &_TradeMetrics_5_list{list: &x.EscrowedAuctionCoins}
+		return protoreflect.ValueOfList(value)
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_liquid_coins":
+		if x.EscrowedLiquidCoins == nil {
+			x.EscrowedLiquidCoins = []*v1beta1.Coin{}
+		}
+		value := &_TradeMetrics_6_list{list: &x.EscrowedLiquidCoins}
+		return protoreflect.ValueOfList(value)
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.fees_earned":
+		if x.FeesEarned == nil {
+			x.FeesEarned = []*v1beta1.Coin{}
+		}
+		value := &_TradeMetrics_7_list{list: &x.FeesEarned}
+		return protoreflect.ValueOfList(value)
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.num_trades":
+		panic(fmt.Errorf("field num_trades of message dysonprotocol.whaleswap.v1.TradeMetrics is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.TradeMetrics"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.TradeMetrics does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_TradeMetrics) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.num_trades":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_pool_coins":
+		list := []*v1beta1.Coin{}
+		return protoreflect.ValueOfList(&_TradeMetrics_2_list{list: &list})
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_offer_coins":
+		list := []*v1beta1.Coin{}
+		return protoreflect.ValueOfList(&_TradeMetrics_3_list{list: &list})
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_pfand":
+		list := []*v1beta1.Coin{}
+		return protoreflect.ValueOfList(&_TradeMetrics_4_list{list: &list})
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_auction_coins":
+		list := []*v1beta1.Coin{}
+		return protoreflect.ValueOfList(&_TradeMetrics_5_list{list: &list})
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_liquid_coins":
+		list := []*v1beta1.Coin{}
+		return protoreflect.ValueOfList(&_TradeMetrics_6_list{list: &list})
+	case "dysonprotocol.whaleswap.v1.TradeMetrics.fees_earned":
+		list := []*v1beta1.Coin{}
+		return protoreflect.ValueOfList(&_TradeMetrics_7_list{list: &list})
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.TradeMetrics"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.TradeMetrics does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_TradeMetrics) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in dysonprotocol.whaleswap.v1.TradeMetrics", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_TradeMetrics) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_TradeMetrics) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_TradeMetrics) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_TradeMetrics) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*TradeMetrics)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.NumTrades != 0 {
+			n += 1 + runtime.Sov(uint64(x.NumTrades))
+		}
+		if len(x.EscrowedPoolCoins) > 0 {
+			for _, e := range x.EscrowedPoolCoins {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.EscrowedOfferCoins) > 0 {
+			for _, e := range x.EscrowedOfferCoins {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.EscrowedPfand) > 0 {
+			for _, e := range x.EscrowedPfand {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.EscrowedAuctionCoins) > 0 {
+			for _, e := range x.EscrowedAuctionCoins {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.EscrowedLiquidCoins) > 0 {
+			for _, e := range x.EscrowedLiquidCoins {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.FeesEarned) > 0 {
+			for _, e := range x.FeesEarned {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*TradeMetrics)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.FeesEarned) > 0 {
+			for iNdEx := len(x.FeesEarned) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.FeesEarned[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x3a
+			}
+		}
+		if len(x.EscrowedLiquidCoins) > 0 {
+			for iNdEx := len(x.EscrowedLiquidCoins) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.EscrowedLiquidCoins[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x32
+			}
+		}
+		if len(x.EscrowedAuctionCoins) > 0 {
+			for iNdEx := len(x.EscrowedAuctionCoins) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.EscrowedAuctionCoins[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x2a
+			}
+		}
+		if len(x.EscrowedPfand) > 0 {
+			for iNdEx := len(x.EscrowedPfand) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.EscrowedPfand[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x22
+			}
+		}
+		if len(x.EscrowedOfferCoins) > 0 {
+			for iNdEx := len(x.EscrowedOfferCoins) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.EscrowedOfferCoins[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x1a
+			}
+		}
+		if len(x.EscrowedPoolCoins) > 0 {
+			for iNdEx := len(x.EscrowedPoolCoins) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.EscrowedPoolCoins[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x12
+			}
+		}
+		if x.NumTrades != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.NumTrades))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*TradeMetrics)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: TradeMetrics: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: TradeMetrics: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NumTrades", wireType)
+				}
+				x.NumTrades = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.NumTrades |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EscrowedPoolCoins", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.EscrowedPoolCoins = append(x.EscrowedPoolCoins, &v1beta1.Coin{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.EscrowedPoolCoins[len(x.EscrowedPoolCoins)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EscrowedOfferCoins", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.EscrowedOfferCoins = append(x.EscrowedOfferCoins, &v1beta1.Coin{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.EscrowedOfferCoins[len(x.EscrowedOfferCoins)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EscrowedPfand", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.EscrowedPfand = append(x.EscrowedPfand, &v1beta1.Coin{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.EscrowedPfand[len(x.EscrowedPfand)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EscrowedAuctionCoins", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.EscrowedAuctionCoins = append(x.EscrowedAuctionCoins, &v1beta1.Coin{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.EscrowedAuctionCoins[len(x.EscrowedAuctionCoins)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 6:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EscrowedLiquidCoins", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.EscrowedLiquidCoins = append(x.EscrowedLiquidCoins, &v1beta1.Coin{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.EscrowedLiquidCoins[len(x.EscrowedLiquidCoins)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 7:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field FeesEarned", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.FeesEarned = append(x.FeesEarned, &v1beta1.Coin{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.FeesEarned[len(x.FeesEarned)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
 // Code generated by protoc-gen-go. DO NOT EDIT.
 // versions:
 // 	protoc-gen-go v1.27.0
@@ -4701,6 +5933,97 @@ func (x *AuctionRecord) GetSeller() string {
 	return ""
 }
 
+// TradeMetrics reports the expected whaleswap module balances broken down by
+// subsystem, and summary counters useful for monitoring and invariants.
+type TradeMetrics struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NumTrades uint64 `protobuf:"varint,1,opt,name=num_trades,json=numTrades,proto3" json:"num_trades,omitempty"`
+	// Sum of reserves across all AMM pools
+	EscrowedPoolCoins []*v1beta1.Coin `protobuf:"bytes,2,rep,name=escrowed_pool_coins,json=escrowedPoolCoins,proto3" json:"escrowed_pool_coins,omitempty"`
+	// Sum of remaining_have over all open non-liquid offers
+	EscrowedOfferCoins []*v1beta1.Coin `protobuf:"bytes,3,rep,name=escrowed_offer_coins,json=escrowedOfferCoins,proto3" json:"escrowed_offer_coins,omitempty"`
+	// Sum of pfand_locked over all open liquid-have offers
+	EscrowedPfand []*v1beta1.Coin `protobuf:"bytes,4,rep,name=escrowed_pfand,json=escrowedPfand,proto3" json:"escrowed_pfand,omitempty"`
+	// Sum of auction sell escrows over all open auctions
+	EscrowedAuctionCoins []*v1beta1.Coin `protobuf:"bytes,5,rep,name=escrowed_auction_coins,json=escrowedAuctionCoins,proto3" json:"escrowed_auction_coins,omitempty"`
+	// Any liquid coins currently held by the module (should generally be zero)
+	EscrowedLiquidCoins []*v1beta1.Coin `protobuf:"bytes,6,rep,name=escrowed_liquid_coins,json=escrowedLiquidCoins,proto3" json:"escrowed_liquid_coins,omitempty"`
+	// Sum of fees_earned across all pools (accounted inside pool reserves)
+	FeesEarned []*v1beta1.Coin `protobuf:"bytes,7,rep,name=fees_earned,json=feesEarned,proto3" json:"fees_earned,omitempty"`
+}
+
+func (x *TradeMetrics) Reset() {
+	*x = TradeMetrics{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dysonprotocol_whaleswap_v1_whaleswap_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *TradeMetrics) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TradeMetrics) ProtoMessage() {}
+
+// Deprecated: Use TradeMetrics.ProtoReflect.Descriptor instead.
+func (*TradeMetrics) Descriptor() ([]byte, []int) {
+	return file_dysonprotocol_whaleswap_v1_whaleswap_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *TradeMetrics) GetNumTrades() uint64 {
+	if x != nil {
+		return x.NumTrades
+	}
+	return 0
+}
+
+func (x *TradeMetrics) GetEscrowedPoolCoins() []*v1beta1.Coin {
+	if x != nil {
+		return x.EscrowedPoolCoins
+	}
+	return nil
+}
+
+func (x *TradeMetrics) GetEscrowedOfferCoins() []*v1beta1.Coin {
+	if x != nil {
+		return x.EscrowedOfferCoins
+	}
+	return nil
+}
+
+func (x *TradeMetrics) GetEscrowedPfand() []*v1beta1.Coin {
+	if x != nil {
+		return x.EscrowedPfand
+	}
+	return nil
+}
+
+func (x *TradeMetrics) GetEscrowedAuctionCoins() []*v1beta1.Coin {
+	if x != nil {
+		return x.EscrowedAuctionCoins
+	}
+	return nil
+}
+
+func (x *TradeMetrics) GetEscrowedLiquidCoins() []*v1beta1.Coin {
+	if x != nil {
+		return x.EscrowedLiquidCoins
+	}
+	return nil
+}
+
+func (x *TradeMetrics) GetFeesEarned() []*v1beta1.Coin {
+	if x != nil {
+		return x.FeesEarned
+	}
+	return nil
+}
+
 var File_dysonprotocol_whaleswap_v1_whaleswap_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_whaleswap_v1_whaleswap_proto_rawDesc = []byte{
@@ -4841,10 +6164,59 @@ var file_dysonprotocol_whaleswap_v1_whaleswap_proto_rawDesc = []byte{
 	0x6f, 0x6d, 0x12, 0x30, 0x0a, 0x06, 0x73, 0x65, 0x6c, 0x6c, 0x65, 0x72, 0x18, 0x06, 0x20, 0x01,
 	0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41,
 	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x06, 0x73, 0x65,
-	0x6c, 0x6c, 0x65, 0x72, 0x42, 0x25, 0x5a, 0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c,
-	0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x6c, 0x6c, 0x65, 0x72, 0x22, 0x90, 0x06, 0x0a, 0x0c, 0x54, 0x72, 0x61, 0x64, 0x65, 0x4d, 0x65,
+	0x74, 0x72, 0x69, 0x63, 0x73, 0x12, 0x1d, 0x0a, 0x0a, 0x6e, 0x75, 0x6d, 0x5f, 0x74, 0x72, 0x61,
+	0x64, 0x65, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x6e, 0x75, 0x6d, 0x54, 0x72,
+	0x61, 0x64, 0x65, 0x73, 0x12, 0x7b, 0x0a, 0x13, 0x65, 0x73, 0x63, 0x72, 0x6f, 0x77, 0x65, 0x64,
+	0x5f, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x63, 0x6f, 0x69, 0x6e, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28,
+	0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e,
+	0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x30, 0xc8, 0xde,
+	0x1f, 0x00, 0xaa, 0xdf, 0x1f, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73,
+	0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x52, 0x11,
+	0x65, 0x73, 0x63, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x50, 0x6f, 0x6f, 0x6c, 0x43, 0x6f, 0x69, 0x6e,
+	0x73, 0x12, 0x7d, 0x0a, 0x14, 0x65, 0x73, 0x63, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x5f, 0x6f, 0x66,
+	0x66, 0x65, 0x72, 0x5f, 0x63, 0x6f, 0x69, 0x6e, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32,
+	0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31,
+	0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00,
+	0xaa, 0xdf, 0x1f, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b,
+	0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x52, 0x12, 0x65, 0x73,
+	0x63, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x43, 0x6f, 0x69, 0x6e, 0x73,
+	0x12, 0x72, 0x0a, 0x0e, 0x65, 0x73, 0x63, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x5f, 0x70, 0x66, 0x61,
+	0x6e, 0x64, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43,
+	0x6f, 0x69, 0x6e, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xaa, 0xdf, 0x1f, 0x28, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e,
+	0x43, 0x6f, 0x69, 0x6e, 0x73, 0x52, 0x0d, 0x65, 0x73, 0x63, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x50,
+	0x66, 0x61, 0x6e, 0x64, 0x12, 0x81, 0x01, 0x0a, 0x16, 0x65, 0x73, 0x63, 0x72, 0x6f, 0x77, 0x65,
+	0x64, 0x5f, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x63, 0x6f, 0x69, 0x6e, 0x73, 0x18,
+	0x05, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62,
+	0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e,
+	0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xaa, 0xdf, 0x1f, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x43, 0x6f, 0x69,
+	0x6e, 0x73, 0x52, 0x14, 0x65, 0x73, 0x63, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x41, 0x75, 0x63, 0x74,
+	0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x12, 0x7f, 0x0a, 0x15, 0x65, 0x73, 0x63, 0x72,
+	0x6f, 0x77, 0x65, 0x64, 0x5f, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x5f, 0x63, 0x6f, 0x69, 0x6e,
+	0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f,
+	0x69, 0x6e, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xaa, 0xdf, 0x1f, 0x28, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x43,
+	0x6f, 0x69, 0x6e, 0x73, 0x52, 0x13, 0x65, 0x73, 0x63, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x4c, 0x69,
+	0x71, 0x75, 0x69, 0x64, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x12, 0x6c, 0x0a, 0x0b, 0x66, 0x65, 0x65,
+	0x73, 0x5f, 0x65, 0x61, 0x72, 0x6e, 0x65, 0x64, 0x18, 0x07, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19,
+	0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62,
+	0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xaa,
+	0xdf, 0x1f, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f,
+	0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x52, 0x0a, 0x66, 0x65, 0x65,
+	0x73, 0x45, 0x61, 0x72, 0x6e, 0x65, 0x64, 0x42, 0x25, 0x5a, 0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77,
+	0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -4859,37 +6231,44 @@ func file_dysonprotocol_whaleswap_v1_whaleswap_proto_rawDescGZIP() []byte {
 	return file_dysonprotocol_whaleswap_v1_whaleswap_proto_rawDescData
 }
 
-var file_dysonprotocol_whaleswap_v1_whaleswap_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_dysonprotocol_whaleswap_v1_whaleswap_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_dysonprotocol_whaleswap_v1_whaleswap_proto_goTypes = []interface{}{
 	(*Pool)(nil),                  // 0: dysonprotocol.whaleswap.v1.Pool
 	(*OfferData)(nil),             // 1: dysonprotocol.whaleswap.v1.OfferData
 	(*Trade)(nil),                 // 2: dysonprotocol.whaleswap.v1.Trade
 	(*AuctionRecord)(nil),         // 3: dysonprotocol.whaleswap.v1.AuctionRecord
-	(*v1beta1.Coin)(nil),          // 4: cosmos.base.v1beta1.Coin
-	(*timestamppb.Timestamp)(nil), // 5: google.protobuf.Timestamp
+	(*TradeMetrics)(nil),          // 4: dysonprotocol.whaleswap.v1.TradeMetrics
+	(*v1beta1.Coin)(nil),          // 5: cosmos.base.v1beta1.Coin
+	(*timestamppb.Timestamp)(nil), // 6: google.protobuf.Timestamp
 }
 var file_dysonprotocol_whaleswap_v1_whaleswap_proto_depIdxs = []int32{
-	4,  // 0: dysonprotocol.whaleswap.v1.Pool.coins:type_name -> cosmos.base.v1beta1.Coin
-	4,  // 1: dysonprotocol.whaleswap.v1.Pool.min_price:type_name -> cosmos.base.v1beta1.Coin
-	4,  // 2: dysonprotocol.whaleswap.v1.Pool.max_price:type_name -> cosmos.base.v1beta1.Coin
-	5,  // 3: dysonprotocol.whaleswap.v1.Pool.created:type_name -> google.protobuf.Timestamp
-	5,  // 4: dysonprotocol.whaleswap.v1.Pool.updated:type_name -> google.protobuf.Timestamp
-	4,  // 5: dysonprotocol.whaleswap.v1.Pool.fees_earned:type_name -> cosmos.base.v1beta1.Coin
-	5,  // 6: dysonprotocol.whaleswap.v1.OfferData.updated_timestamp:type_name -> google.protobuf.Timestamp
-	4,  // 7: dysonprotocol.whaleswap.v1.OfferData.initial_have:type_name -> cosmos.base.v1beta1.Coin
-	4,  // 8: dysonprotocol.whaleswap.v1.OfferData.initial_want:type_name -> cosmos.base.v1beta1.Coin
-	4,  // 9: dysonprotocol.whaleswap.v1.OfferData.remaining_have:type_name -> cosmos.base.v1beta1.Coin
-	4,  // 10: dysonprotocol.whaleswap.v1.OfferData.remaining_want:type_name -> cosmos.base.v1beta1.Coin
-	4,  // 11: dysonprotocol.whaleswap.v1.OfferData.pfand_locked:type_name -> cosmos.base.v1beta1.Coin
-	5,  // 12: dysonprotocol.whaleswap.v1.Trade.timestamp:type_name -> google.protobuf.Timestamp
-	4,  // 13: dysonprotocol.whaleswap.v1.Trade.sent:type_name -> cosmos.base.v1beta1.Coin
-	4,  // 14: dysonprotocol.whaleswap.v1.Trade.received:type_name -> cosmos.base.v1beta1.Coin
-	4,  // 15: dysonprotocol.whaleswap.v1.AuctionRecord.sell:type_name -> cosmos.base.v1beta1.Coin
-	16, // [16:16] is the sub-list for method output_type
-	16, // [16:16] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	5,  // 0: dysonprotocol.whaleswap.v1.Pool.coins:type_name -> cosmos.base.v1beta1.Coin
+	5,  // 1: dysonprotocol.whaleswap.v1.Pool.min_price:type_name -> cosmos.base.v1beta1.Coin
+	5,  // 2: dysonprotocol.whaleswap.v1.Pool.max_price:type_name -> cosmos.base.v1beta1.Coin
+	6,  // 3: dysonprotocol.whaleswap.v1.Pool.created:type_name -> google.protobuf.Timestamp
+	6,  // 4: dysonprotocol.whaleswap.v1.Pool.updated:type_name -> google.protobuf.Timestamp
+	5,  // 5: dysonprotocol.whaleswap.v1.Pool.fees_earned:type_name -> cosmos.base.v1beta1.Coin
+	6,  // 6: dysonprotocol.whaleswap.v1.OfferData.updated_timestamp:type_name -> google.protobuf.Timestamp
+	5,  // 7: dysonprotocol.whaleswap.v1.OfferData.initial_have:type_name -> cosmos.base.v1beta1.Coin
+	5,  // 8: dysonprotocol.whaleswap.v1.OfferData.initial_want:type_name -> cosmos.base.v1beta1.Coin
+	5,  // 9: dysonprotocol.whaleswap.v1.OfferData.remaining_have:type_name -> cosmos.base.v1beta1.Coin
+	5,  // 10: dysonprotocol.whaleswap.v1.OfferData.remaining_want:type_name -> cosmos.base.v1beta1.Coin
+	5,  // 11: dysonprotocol.whaleswap.v1.OfferData.pfand_locked:type_name -> cosmos.base.v1beta1.Coin
+	6,  // 12: dysonprotocol.whaleswap.v1.Trade.timestamp:type_name -> google.protobuf.Timestamp
+	5,  // 13: dysonprotocol.whaleswap.v1.Trade.sent:type_name -> cosmos.base.v1beta1.Coin
+	5,  // 14: dysonprotocol.whaleswap.v1.Trade.received:type_name -> cosmos.base.v1beta1.Coin
+	5,  // 15: dysonprotocol.whaleswap.v1.AuctionRecord.sell:type_name -> cosmos.base.v1beta1.Coin
+	5,  // 16: dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_pool_coins:type_name -> cosmos.base.v1beta1.Coin
+	5,  // 17: dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_offer_coins:type_name -> cosmos.base.v1beta1.Coin
+	5,  // 18: dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_pfand:type_name -> cosmos.base.v1beta1.Coin
+	5,  // 19: dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_auction_coins:type_name -> cosmos.base.v1beta1.Coin
+	5,  // 20: dysonprotocol.whaleswap.v1.TradeMetrics.escrowed_liquid_coins:type_name -> cosmos.base.v1beta1.Coin
+	5,  // 21: dysonprotocol.whaleswap.v1.TradeMetrics.fees_earned:type_name -> cosmos.base.v1beta1.Coin
+	22, // [22:22] is the sub-list for method output_type
+	22, // [22:22] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_dysonprotocol_whaleswap_v1_whaleswap_proto_init() }
@@ -4946,6 +6325,18 @@ func file_dysonprotocol_whaleswap_v1_whaleswap_proto_init() {
 				return nil
 			}
 		}
+		file_dysonprotocol_whaleswap_v1_whaleswap_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*TradeMetrics); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -4953,7 +6344,7 @@ func file_dysonprotocol_whaleswap_v1_whaleswap_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_dysonprotocol_whaleswap_v1_whaleswap_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

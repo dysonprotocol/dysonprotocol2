@@ -42,6 +42,7 @@ const (
 	Query_AuctionsBySeller_FullMethodName         = "/dysonprotocol.whaleswap.v1.Query/AuctionsBySeller"
 	Query_AuctionByNFT_FullMethodName             = "/dysonprotocol.whaleswap.v1.Query/AuctionByNFT"
 	Query_AuctionsByPairPriceRange_FullMethodName = "/dysonprotocol.whaleswap.v1.Query/AuctionsByPairPriceRange"
+	Query_Metrics_FullMethodName                  = "/dysonprotocol.whaleswap.v1.Query/Metrics"
 )
 
 // QueryClient is the client API for Query service.
@@ -114,6 +115,9 @@ type QueryClient interface {
 	// redeemable sell-coin amount. It is designed for UI discovery and may be
 	// more expensive than index-backed queries.
 	AuctionsByPairPriceRange(ctx context.Context, in *QueryAuctionsByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryAuctionsResponse, error)
+	// Metrics returns a breakdown of module-expected balances by subsystem
+	// and summary counters for invariants and monitoring.
+	Metrics(ctx context.Context, in *QueryMetricsRequest, opts ...grpc.CallOption) (*QueryMetricsResponse, error)
 }
 
 type queryClient struct {
@@ -354,6 +358,16 @@ func (c *queryClient) AuctionsByPairPriceRange(ctx context.Context, in *QueryAuc
 	return out, nil
 }
 
+func (c *queryClient) Metrics(ctx context.Context, in *QueryMetricsRequest, opts ...grpc.CallOption) (*QueryMetricsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryMetricsResponse)
+	err := c.cc.Invoke(ctx, Query_Metrics_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility.
@@ -424,6 +438,9 @@ type QueryServer interface {
 	// redeemable sell-coin amount. It is designed for UI discovery and may be
 	// more expensive than index-backed queries.
 	AuctionsByPairPriceRange(context.Context, *QueryAuctionsByPairPriceRangeRequest) (*QueryAuctionsResponse, error)
+	// Metrics returns a breakdown of module-expected balances by subsystem
+	// and summary counters for invariants and monitoring.
+	Metrics(context.Context, *QueryMetricsRequest) (*QueryMetricsResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -502,6 +519,9 @@ func (UnimplementedQueryServer) AuctionByNFT(context.Context, *QueryAuctionByNFT
 }
 func (UnimplementedQueryServer) AuctionsByPairPriceRange(context.Context, *QueryAuctionsByPairPriceRangeRequest) (*QueryAuctionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuctionsByPairPriceRange not implemented")
+}
+func (UnimplementedQueryServer) Metrics(context.Context, *QueryMetricsRequest) (*QueryMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Metrics not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 func (UnimplementedQueryServer) testEmbeddedByValue()               {}
@@ -938,6 +958,24 @@ func _Query_AuctionsByPairPriceRange_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_Metrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryMetricsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Metrics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_Metrics_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Metrics(ctx, req.(*QueryMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1036,6 +1074,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AuctionsByPairPriceRange",
 			Handler:    _Query_AuctionsByPairPriceRange_Handler,
+		},
+		{
+			MethodName: "Metrics",
+			Handler:    _Query_Metrics_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

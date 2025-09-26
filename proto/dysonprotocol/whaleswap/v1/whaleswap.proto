@@ -103,3 +103,40 @@ message AuctionRecord {
   string bid_denom = 5;
   string seller = 6 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 }
+
+// TradeMetrics reports the expected whaleswap module balances broken down by
+// subsystem, and summary counters useful for monitoring and invariants.
+message TradeMetrics {
+  uint64 num_trades = 1;
+  // Sum of reserves across all AMM pools
+  repeated cosmos.base.v1beta1.Coin escrowed_pool_coins = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  // Sum of remaining_have over all open non-liquid offers
+  repeated cosmos.base.v1beta1.Coin escrowed_offer_coins = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  // Sum of pfand_locked over all open liquid-have offers
+  repeated cosmos.base.v1beta1.Coin escrowed_pfand = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  // Sum of auction sell escrows over all open auctions
+  repeated cosmos.base.v1beta1.Coin escrowed_auction_coins = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  // Solid backing for liquid supply: for each liquid denom whaleswap.dys/coins/X,
+  // this reports the required backing amount on solid denom X.
+  repeated cosmos.base.v1beta1.Coin escrowed_liquid_coins = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  // Sum of fees_earned across all pools (accounted inside pool reserves)
+  repeated cosmos.base.v1beta1.Coin fees_earned = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+}
