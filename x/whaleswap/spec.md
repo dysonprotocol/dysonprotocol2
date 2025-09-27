@@ -14,6 +14,7 @@ Non-goals (initial cut): on-chain scripting hooks, cross-chain.
 - Mint fee semantics: nameservice skips fees when destination is the module account; module mints to itself then forwards. Direct user mints (if any) still owe fees.
 - Liquid denom format: `whaleswap.dys/coins/<solid>` (no base64). Shares: `whaleswap.dys/pools/{pool_id}`.
 - Single-pool swaps only. Multi-hop is achieved by multiple messages in one tx.
+- Per-leg XOR rule: each SwapLeg must specify exactly one of swap_in or swap_out (not both). Use message-level max_input (vector caps) and min_output (vector guarantees) to assert end-of-tx constraints across legs.
 - Authority: module account must control `whaleswap.dys` root for mint/burn/class ops.
 - Orderbook settlement uses TAKE_ALL-only with a single aggregated multi-send via an internal whaleswap helper (`wsMoveCoins`); liquid inputs collected at the module are burned post-settlement.
 
@@ -163,6 +164,7 @@ Swaps (any user)
       - For token2→token1, symmetric with price moving down: dye = dy*(1-fee_pct), dxe = floor(L * (1/sp' - 1/sp)).
       - Reject if resulting price exits band.
   - Require out_denom match and amount ≥ minimum_out_amount; send to caller.
+  - Per-leg XOR rule: SwapLegs accept exact-in (swap_in) or exact-out (swap_out), but not both together; combine with message-level max_input/min_output for symmetric guarantees.
 
 Pool configuration updates (only owner)
 - Msg: UpdatePoolConfig(pool_id, fee_pct?, min_price?, max_price?)

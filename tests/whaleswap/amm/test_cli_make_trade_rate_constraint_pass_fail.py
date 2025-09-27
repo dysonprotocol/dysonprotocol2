@@ -56,9 +56,8 @@ def test_make_trade_rate_constraint_pass_fail(chainnet, ws_setup_env):
         {a.get("key"): a.get("value") for a in ev_pc[0].get("attributes", [])}
     )
 
-    # PASS: swap_in 10a, swap_out <= achievable b (e.g., 9b)
-    pre = _bal_map(dysond, taddr)
-    op_pass = {
+    # XOR invalid: swap_in + swap_out must fail within MakeTrade
+    op_both = {
         "swap": {
             "pool_id": pid,
             "swap_in": {"denom": a, "amount": "10"},
@@ -72,42 +71,26 @@ def test_make_trade_rate_constraint_pass_fail(chainnet, ws_setup_env):
         "--max-input",
         f"50{a}",
         "--op",
-        json.dumps(op_pass),
+        json.dumps(op_both),
         "--from",
         taker,
         "--gas",
-        "auto",
+        "200000",
+        "--yes",
     )
+    assert isinstance(tx1, dict), f"non-dict tx response: {tx1}"
     assert (
-        tx1.get("code", 1) == 0
-    ), f"rate-constraint pass failed: {json.dumps(tx1, indent=2)}"
-    transfers = [e for e in tx1.get("events", []) if e.get("type") == "transfer"]
-    rows = [
-        {a.get("key"): a.get("value") for a in e.get("attributes", [])}
-        for e in transfers
-    ]
-    debits = [
-        _parse_amount_coin(r.get("amount", "0"))
-        for r in rows
-        if r.get("sender") == taddr
-    ]
-    credits = [
-        _parse_amount_coin(r.get("amount", "0"))
-        for r in rows
-        if r.get("recipient") == taddr
-    ]
-    in_a = sum([amt for (amt, den) in debits if den == a])
-    out_b = sum([amt for (amt, den) in credits if den == b])
-    post = _bal_map(dysond, taddr)
-    assert in_a == 10, f"expected debit 10{a}, got {in_a}{a}"
+        tx1.get("code", 0) != 0
+    ), f"expected XOR failure, got success: {json.dumps(tx1, indent=2)}"
+    raw_log = tx1.get("raw_log", "")
+    assert isinstance(
+        raw_log, str
+    ), f"raw_log not a string: {json.dumps(tx1, indent=2)}"
     assert (
-        pre[a] - post.get(a, 0) == in_a
-    ), f"a mismatch: pre={pre[a]} post={post.get(a,0)} in={in_a}"
-    assert (
-        post.get(b, 0) - pre.get(b, 0) == out_b
-    ), f"b mismatch: pre={pre.get(b,0)} post={post.get(b,0)} out={out_b}"
+        "cannot both be set" in raw_log.lower()
+    ), f"unexpected error: {json.dumps(tx1, indent=2)}"
 
-    # FAIL: swap_in 10a, swap_out > achievable (e.g., 11b)
+    # FAIL: both provided must fail (any amounts)
     out = dysond(
         "tx",
         "whaleswap",
@@ -130,7 +113,7 @@ def test_make_trade_rate_constraint_pass_fail(chainnet, ws_setup_env):
         "200000",
         "--yes",
     )
-    # Must fail with keeper error, and include the exact rate-constraint message
+    # Must fail with XOR error text
     assert isinstance(out, dict), f"non-dict tx response: {out}"
     assert (
         out.get("code", 0) != 0
@@ -140,5 +123,5 @@ def test_make_trade_rate_constraint_pass_fail(chainnet, ws_setup_env):
         raw_log, str
     ), f"raw_log not a string: {json.dumps(out, indent=2)}"
     assert (
-        "computed out " in raw_log.lower()
+        "cannot both be set" in raw_log.lower()
     ), f"unexpected error: {json.dumps(out, indent=2)}"

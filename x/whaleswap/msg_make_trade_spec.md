@@ -67,7 +67,7 @@
 
 - Validation and semantics
   - Operations processed strictly in provided order; state (pools/offers) updates between ops
-  - SwapLeg supports exact-in, exact-out, or both (rate constraint) as implemented
+- SwapLeg supports exact-in or exact-out per leg (XOR). If both are provided, the leg is invalid. Use message-level max_input (caps) and min_output (guarantees) for symmetric, end-of-tx constraints across the entire trade.
   - TakeItem uses existing take semantics, including PFAND and liquid-have handling
   - max_input caps apply only to trader debits (no effect on maker/module)
   - min_output applies only to trader credits
@@ -236,7 +236,7 @@ Here’s a precise, implementation-ready spec to (re)build MakeTrade cleanly, us
 - Protobuf: already defined; keep as is.
   - MsgMakeTrade: trader, repeated max_input, repeated operations (oneof swap or take), repeated min_output.
   - TradeOperation: oneof swap (SwapLeg) or take (TakeItem).
-  - SwapLeg: pool_id, optional swap_in, optional swap_out (support in-only, out-only, or both with equality constraint).
+- SwapLeg: pool_id, optional swap_in, optional swap_out (support in-only or out-only; both not allowed).
 - Autocli: already in place. No change required.
 
 ### Data Flow and Aggregators
@@ -257,10 +257,10 @@ Here’s a precise, implementation-ready spec to (re)build MakeTrade cleanly, us
   - trader must decode as a valid bech32 address.
 - SwapLeg:
   - pool_id > 0 and pool exists with exactly two reserves.
-  - Must specify swap_in or swap_out (or both).
+  - Must specify exactly one of swap_in or swap_out (XOR).
   - If swap_in provided: denom must be one of pool coins; exact-in math applies.
   - If swap_out provided: denom must be one of pool coins; exact-out math applies.
-  - If both provided: swap_out denom must match computed output denom AND computed out amount must equal exactly swap_out.amount.
+  - If both provided: reject ErrInvalidRequest (use message-level caps/guarantees for symmetric constraints).
   - V2 math: constant product + per-leg fee, exact-in/out as implemented in PoolSwap.
   - V3 math: band checks and fee; respect min/max price band; ensure liquidity > 0; exact-in/out as implemented in PoolSwap.
 - TakeItem:

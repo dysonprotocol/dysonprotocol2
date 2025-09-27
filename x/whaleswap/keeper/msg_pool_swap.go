@@ -63,6 +63,9 @@ func (k Keeper) PoolSwap(ctx context.Context, msg *whaleswapv1.MsgPoolSwap) (*wh
 		// Determine orientation and target(s)
 		hasIn := leg.SwapIn.Denom != "" && leg.SwapIn.Amount.IsPositive()
 		hasOut := leg.SwapOut.Denom != "" && leg.SwapOut.Amount.IsPositive()
+		if hasIn && hasOut {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap_in and swap_out cannot both be set; specify exactly one per leg and use message-level max_input/min_output for global constraints")
+		}
 		inputIdx := -1
 		outputIdx := -1
 		var targetOutAmt math.Int

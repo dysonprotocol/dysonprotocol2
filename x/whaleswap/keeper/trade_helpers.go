@@ -39,6 +39,9 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 
 	hasIn := leg.SwapIn.Denom != "" && leg.SwapIn.Amount.IsPositive()
 	hasOut := leg.SwapOut.Denom != "" && leg.SwapOut.Amount.IsPositive()
+	if hasIn && hasOut {
+		return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap_in and swap_out cannot both be set; specify exactly one per leg and use message-level max_input/min_output for global constraints")
+	}
 	if !hasIn && !hasOut {
 		return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "leg requires swap_in or swap_out")
 	}
