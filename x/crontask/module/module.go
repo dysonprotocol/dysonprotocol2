@@ -58,6 +58,12 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 
 // ValidateGenesis performs genesis state validation for the crontask module.
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config sdkclient.TxEncodingConfig, bz json.RawMessage) error {
+	// Treat empty or missing data as default genesis for consistency with the
+	// appmodule.HasGenesis path.
+	if len(bz) == 0 || string(bz) == "{}" {
+		def := types.NewGenesisState()
+		return types.ValidateGenesis(def)
+	}
 	var data types.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", crontask.ModuleName, err)

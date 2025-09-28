@@ -558,7 +558,7 @@ func (k Keeper) HandleBlockEvents(ctx sdk.Context, allEvents []abci.Event) {
 		k.Logger.Error("failed to marshal normalized block events", "err", err)
 		return
 	}
-	k.Logger.Info("HandleBlockEvents", "jsonNormalized", string(jsonNormalized))
+	//k.Logger.Info("HandleBlockEvents", "jsonNormalized", string(jsonNormalized))
 
 	// Iterate enabled subscriptions via ByStatus index
 	it, err := k.Subscriptions.Indexes.ByStatus.MatchExact(ctx, "enabled")
@@ -614,9 +614,9 @@ func (k Keeper) HandleBlockEvents(ctx sdk.Context, allEvents []abci.Event) {
 		}
 
 		// Apply subscription filter against array of normalized events; schedule for each match
-		k.Logger.Info("HandleBlockEvents", "sub.Filter", sub.Filter)
+		//k.Logger.Info("HandleBlockEvents", "sub.Filter", sub.Filter)
 		res := gjson.GetBytes(jsonNormalized, sub.Filter)
-		k.Logger.Info("HandleBlockEvents", "res", res.String())
+		//k.Logger.Info("HandleBlockEvents", "res", res.String())
 		if res.Exists() {
 			var matches []gjson.Result
 			if res.IsArray() {

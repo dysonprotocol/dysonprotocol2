@@ -785,7 +785,8 @@ def setup(config_file, force):
             client_toml_obj = tomlkit.parse(client_toml_path.read_text())
             client_toml_obj["chain-id"] = cid
             client_toml_obj["keyring-backend"] = "test"
-            client_toml_obj["node"] = f"tcp://localhost:{node_ports['rpc']}"
+            # Force IPv4 to avoid ::1 resolution issues on localhost
+            client_toml_obj["node"] = f"tcp://127.0.0.1:{node_ports['rpc']}"
             client_toml_path.write_text(tomlkit.dumps(client_toml_obj))
 
             # Configure app.toml for this node
@@ -1017,6 +1018,7 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs):
     cfg = json.loads(Path(config_file).read_text())
     bin_path = cfg["dysond_bin"]
     procs = []
+    node_procs = []  # track per-node proc/cmd/home for auto-restart on upgrade
     log_files = []  # Track log files for cleanup
     hermes_started = False
     stop_event = threading.Event()
@@ -1059,22 +1061,38 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs):
                 click.echo(
                     f"Starting {chain['chain_id']}/{node['moniker']} (logs will appear below)"
                 )
-                p = subprocess.Popen(
-                    [bin_path, "start", "--home", node["home"], *extra_args],
-                    preexec_fn=os.setsid,
+                cmd = [bin_path, "start", "--home", node["home"], *extra_args]
+                p = subprocess.Popen(cmd, preexec_fn=os.setsid)
+                click.echo(
+                    f"[chainnet] started node {chain['chain_id']}/{node['moniker']} pid={p.pid} home={node['home']}"
                 )
             else:
                 # Output logs to files (current behavior)
                 log_path = os.path.join(node["home"], "node.log")
                 log_file = open(log_path, "w")
                 log_files.append(log_file)
+                cmd = [bin_path, "start", "--home", node["home"], *extra_args]
                 p = subprocess.Popen(
-                    [bin_path, "start", "--home", node["home"], *extra_args],
+                    cmd,
                     preexec_fn=os.setsid,
                     stdout=log_file,
                     stderr=log_file,
                 )
+                click.echo(
+                    f"[chainnet] started node {chain['chain_id']}/{node['moniker']} pid={p.pid} home={node['home']} (logs at {log_path})"
+                )
             procs.append(p)
+            node_procs.append(
+                {
+                    "proc": p,
+                    "cmd": cmd,
+                    "home": node["home"],
+                    "moniker": node["moniker"],
+                    "chain_id": chain["chain_id"],
+                    "restart_count": 0,
+                    "seen_upgrade_markers": [],
+                }
+            )
 
     hcfg = Path(cfg["base_dir"]) / "hermes" / "config.toml"
     if hcfg.exists() and shutil.which("hermes"):
@@ -1197,6 +1215,80 @@ Stopping all nodes!
             stop_event.set()
             return
 
+    # Enforce a minimum stale timeout to avoid false positives during upgrades
+    if no_blocks_timeout and no_blocks_timeout < 60:
+        no_blocks_timeout = 60
+
+    # Supervise node processes and auto-restart on upgrade-needed halts
+    def supervise_nodes():
+        import time
+
+        click.echo(f"[chainnet] supervisor started for {len(node_procs)} node(s)")
+        while not stop_event.is_set():
+            for entry in list(node_procs):
+                ret = entry["proc"].poll()
+                # Proactively restart when upgrade marker appears even if process hasn't exited yet
+                if ret is None:
+                    upgrade_info = os.path.join(
+                        entry["home"], "data", "upgrade-info.json"
+                    )
+                    if os.path.exists(upgrade_info):
+                        marker_key = None
+                        try:
+                            with open(upgrade_info, "r") as f:
+                                info = json.load(f)
+                            name = str(info.get("name", "")).strip()
+                            height = str(info.get("height", "")).strip()
+                            marker_key = f"{name}:{height}"
+                        except Exception:
+                            try:
+                                marker_key = f"mtime:{os.path.getmtime(upgrade_info)}"
+                            except Exception:
+                                marker_key = "unknown"
+
+                        if marker_key not in entry.get("seen_upgrade_markers", []):
+                            click.echo(
+                                f"[chainnet] detected upgrade marker while running: {upgrade_info}; forcing restart to apply upgrade"
+                            )
+                            try:
+                                os.killpg(os.getpgid(entry["proc"].pid), signal.SIGTERM)
+                            except Exception:
+                                pass
+                            entry.setdefault("seen_upgrade_markers", []).append(
+                                marker_key
+                            )
+                            # Process will exit shortly; normal restart path will handle it
+                            continue
+                if ret is not None:
+                    click.echo(
+                        f"[chainnet] node exited pid={entry['proc'].pid} rc={ret} chain={entry['chain_id']} moniker={entry['moniker']} home={entry['home']}"
+                    )
+                    upgrade_info = os.path.join(
+                        entry["home"], "data", "upgrade-info.json"
+                    )
+                    if os.path.exists(upgrade_info):
+                        click.echo(
+                            f"[chainnet] detected upgrade marker: {upgrade_info}"
+                        )
+                        new_proc = subprocess.Popen(entry["cmd"], preexec_fn=os.setsid)
+                        procs.append(new_proc)
+                        entry["proc"] = new_proc
+                        entry["restart_count"] += 1
+                        click.echo(
+                            f"[chainnet] restarted node chain={entry['chain_id']} moniker={entry['moniker']} new_pid={new_proc.pid} restarts={entry['restart_count']}"
+                        )
+                        continue
+                    # Not an upgrade-triggered exit; stop all
+                    click.echo(
+                        f"[chainnet] node exit without upgrade-info; stopping all"
+                    )
+                    stop_event.set()
+                    return
+            time.sleep(0.5)
+
+    t_super = threading.Thread(target=supervise_nodes, daemon=True)
+    t_super.start()
+
     if no_blocks_timeout:
         t = threading.Thread(
             target=monitor_blocks, args=(no_blocks_timeout,), daemon=True
@@ -1211,17 +1303,20 @@ Stopping all nodes!
     signal.signal(signal.SIGTERM, handle_signal)
 
     try:
-        for p in procs:
-            if p.args[0] == bin_path:
-                while True:
-                    if stop_event.is_set():
-                        cleanup_processes()
-                        sys.exit(1)
-                    ret = p.poll()
-                    if ret is not None:
-                        break
-                    time.sleep(0.5)
-    except Exception as e:
+        while True:
+            if stop_event.is_set():
+                cleanup_processes()
+                sys.exit(1)
+            # stay alive while at least one node process is running
+            any_running = False
+            for entry in node_procs:
+                if entry["proc"].poll() is None:
+                    any_running = True
+                    break
+            if not any_running:
+                break
+            time.sleep(0.5)
+    except Exception:
         cleanup_processes()
         raise
 

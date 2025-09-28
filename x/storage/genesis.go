@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"fmt"
+
 	"dysonprotocol.com/x/storage/types"
 	gogoprotoany "github.com/cosmos/gogoproto/types/any"
 )
@@ -26,10 +28,16 @@ func ValidateGenesisState(s types.GenesisState) error {
 	}
 
 	// Validate entries
+	seen := make(map[string]struct{})
 	for _, entry := range s.Entries {
 		if entry.Index == "" {
 			return ErrEmptyIndex
 		}
+		key := entry.Owner + "/" + entry.Index
+		if _, dup := seen[key]; dup {
+			return fmt.Errorf("duplicate storage entry for %s", key)
+		}
+		seen[key] = struct{}{}
 	}
 	return nil
 }

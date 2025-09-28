@@ -3,7 +3,9 @@ package keeper
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
+	script "dysonprotocol.com/x/script"
 	"dysonprotocol.com/x/script/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 )
@@ -12,6 +14,10 @@ func (k Keeper) InitGenesis(ctx context.Context, cdc codec.JSONCodec, data json.
 	var genesisState types.GenesisState
 	err := cdc.UnmarshalJSON(data, &genesisState)
 	if err != nil {
+		return err
+	}
+
+	if err := script.ValidateGenesis(&genesisState); err != nil {
 		return err
 	}
 
@@ -48,8 +54,7 @@ func (k Keeper) ExportGenesis(ctx context.Context, _ codec.JSONCodec) (*types.Ge
 	for ; scriptRange.Valid(); scriptRange.Next() {
 		value, err := scriptRange.Value()
 		if err != nil {
-			// Skip entries that can't be read (shouldn't happen)
-			continue
+			return nil, fmt.Errorf("failed to read script during export: %w", err)
 		}
 		scripts = append(scripts, &value)
 	}

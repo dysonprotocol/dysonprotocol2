@@ -107,16 +107,20 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			restPath = "/" + segments[1]
 		}
 
-		// Require the address_or_name to be a name ending in .dys and strip it for public host mapping
+		// Accept either a name ending in .dys or a dys21... address
 		idLower := strings.ToLower(id)
-		if !strings.HasSuffix(idLower, ".dys") {
-			http.Error(w, "address_or_name must end with .dys", http.StatusBadRequest)
+		publicID := ""
+		if strings.HasSuffix(idLower, ".dys") {
+			publicID = strings.TrimSuffix(idLower, ".dys")
+		} else if strings.HasPrefix(idLower, "dys2") {
+			publicID = idLower
+		} else {
+			http.Error(w, "address_or_name must end with .dys or be a dys2… address", http.StatusBadRequest)
 			return
 		}
-		id = strings.TrimSuffix(idLower, ".dys")
 
 		// Map back to public host using template
-		publicHost := strings.ReplaceAll(h.publicHostTemplate, "{address_or_name}", id)
+		publicHost := strings.ReplaceAll(h.publicHostTemplate, "{address_or_name}", publicID)
 		// 307 redirect to //{publicHost}{restPath}[?query] (relative protocol to all https or http)
 		target := "//" + publicHost + restPath
 		if req.URL.RawQuery != "" {

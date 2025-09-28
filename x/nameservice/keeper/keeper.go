@@ -512,5 +512,9 @@ func (k Keeper) ExportGenesis(ctx context.Context) (*nameservicev1.GenesisState,
 		Params:      k.GetParams(ctx),
 		Commitments: commitments,
 	}
+	// NOTE: Additional reverse-index or bid-ledger state is derived from other
+	// modules and internal activity. We intentionally do not persist these in
+	// genesis and instead rebuild them during InitGenesis to keep genesis minimal
+	// and deterministic.
 	return gs, nil
 }

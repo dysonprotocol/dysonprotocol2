@@ -162,8 +162,6 @@ func (am AppModule) ValidateGenesis(cdc codec.JSONCodec, config sdkclient.TxEnco
 
 // InitGenesis performs genesis initialization for the script module.
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) {
-	var genesisState scripttypes.GenesisState
-	cdc.MustUnmarshalJSON(data, &genesisState)
 	if err := am.keeper.InitGenesis(ctx, cdc, data); err != nil {
 		panic(err)
 	}

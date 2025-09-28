@@ -11,15 +11,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 
-	sdkclient "github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	nameservice "dysonprotocol.com/x/nameservice"
 	"dysonprotocol.com/x/nameservice/keeper"
-	"dysonprotocol.com/x/nameservice/types"
 	nameservicev1 "dysonprotocol.com/x/nameservice/types"
 )
 
@@ -63,14 +60,14 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
 	var data nameservicev1.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
-		return fmt.Errorf("failed to unmarshal %s genesis state: %w", govtypes.ModuleName, err)
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", nameservice.ModuleName, err)
 	}
 
 	return nameservicev1.ValidateGenesis(&data)
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the nameservice module.
-func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx sdkclient.Context, mux *gwruntime.ServeMux) {
+func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwruntime.ServeMux) {
 	if err := nameservicev1.RegisterQueryHandlerClient(context.Background(), mux, nameservicev1.NewQueryClient(clientCtx)); err != nil {
 		panic(err)
 	}
@@ -102,7 +99,7 @@ func (am AppModule) Name() string {
 
 // RegisterInterfaces registers the nameservice module's interface types
 func (am AppModule) RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
-	types.RegisterInterfaces(registry)
+	nameservicev1.RegisterInterfaces(registry)
 }
 
 // RegisterServices registers module services.
@@ -125,6 +122,12 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.
 		if err := am.keeper.SetCommitment(ctx, commitment); err != nil {
 			panic(fmt.Errorf("failed to set nameservice commitment %s: %w", commitment.Hexhash, err))
 		}
+	}
+
+	// Rebuild derived reverse indexes from existing on-chain data to ensure
+	// they are present after import.
+	if err := am.keeper.EnsureNamesClassExists(ctx); err != nil {
+		panic(fmt.Errorf("failed to ensure names class: %w", err))
 	}
 }
 
@@ -167,7 +170,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
-func (AppModule) RegisterGRPCGatewayRoutes(clientCtx sdkclient.Context, mux *gwruntime.ServeMux) {
+func (AppModule) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwruntime.ServeMux) {
 	if err := nameservicev1.RegisterQueryHandlerClient(context.Background(), mux, nameservicev1.NewQueryClient(clientCtx)); err != nil {
 		panic(err)
 	}
