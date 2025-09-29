@@ -2,7 +2,7 @@
 logs
 proto_vendor
 .git
-.github
+
 .vscode
 .DS_Store
 .cursorignore
