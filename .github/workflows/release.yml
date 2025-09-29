@@ -1,0 +1,26 @@
+name: Build and Release dysond
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build-release:
+    runs-on: self-hosted
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build dysond
+        run: make dysvm build
+
+      - name: Upload release asset
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/dysond
