@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
@@ -28,8 +28,8 @@ var (
 	_ module.AppModuleBasic        = AppModuleBasic{}
 	_ module.AppModule             = AppModule{}
 	_ module.HasServices           = AppModule{}
-	_ module.HasGenesis            = AppModule{}
 	_ appmodule.AppModule          = AppModule{}
+	_ appmodule.HasGenesis         = AppModule{}
 	_ appmodule.HasEndBlocker      = AppModule{}
 	_ autocliv1.HasCustomTxCommand = AppModule{}
 )
@@ -87,9 +87,8 @@ type AppModule struct {
 	cdc      codec.Codec
 	registry cdctypes.InterfaceRegistry
 
-	keeper     keeper.Keeper
-	bankKeeper storage.BankKeeper
-	accKeeper  storage.AccountKeeper
+	keeper    keeper.Keeper
+	accKeeper storage.AccountKeeper
 }
 
 // NewAppModule creates a new AppModule object
@@ -110,34 +109,7 @@ func (am AppModule) Name() string {
 	return storage.ModuleName
 }
 
-// DefaultGenesis returns default genesis state as raw bytes for the storage module.
-func (am AppModule) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
-	return cdc.MustMarshalJSON(storage.DefaultGenesis())
-}
-
-// ValidateGenesis performs genesis state validation for the storage module.
-func (am AppModule) ValidateGenesis(cdc codec.JSONCodec, config sdkclient.TxEncodingConfig, bz json.RawMessage) error {
-	var data storagetypes.GenesisState
-	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
-		return fmt.Errorf("failed to unmarshal %s genesis state: %w", storage.ModuleName, err)
-	}
-	return storage.ValidateGenesisState(data)
-}
-
-// ExportGenesis returns the exported genesis state as raw bytes for the storage module.
-func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
-	gs := am.keeper.ExportGenesis(ctx)
-	return cdc.MustMarshalJSON(gs)
-}
-
-// InitGenesis initializes the storage module's state from a genesis state.
-func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, bz json.RawMessage) {
-	var data storagetypes.GenesisState
-	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
-		panic(fmt.Errorf("failed to unmarshal %s genesis state: %w", storage.ModuleName, err))
-	}
-	am.keeper.InitGenesis(ctx, &data)
-}
+// Removed legacy module.HasGenesis methods in favor of core appmodule.HasGenesis
 
 // RegisterInterfaces registers the group module's interface types
 func (AppModule) RegisterInterfaces(registrar cdctypes.InterfaceRegistry) {
@@ -148,6 +120,92 @@ func (AppModule) RegisterInterfaces(registrar cdctypes.InterfaceRegistry) {
 func (am AppModule) RegisterServices(configurator module.Configurator) {
 	storagetypes.RegisterMsgServer(configurator.MsgServer(), am.keeper)
 	storagetypes.RegisterQueryServer(configurator.QueryServer(), am.keeper)
+}
+
+// --- Core API genesis (appmodule.HasGenesis) ---
+
+// ValidateGenesis implements appmodule.HasGenesis using the core API
+func (am AppModule) ValidateGenesis(source appmodule.GenesisSource) error {
+	reader, err := source(storage.ModuleName)
+	if err != nil {
+		return fmt.Errorf("failed to get genesis source for %s: %w", storage.ModuleName, err)
+	}
+
+	var gs *storagetypes.GenesisState
+	if reader == nil {
+		// no data provided – validate defaults
+		def := storage.NewGenesisState()
+		return storage.ValidateGenesisState(*def)
+	}
+	defer func(rc io.ReadCloser) { _ = rc.Close() }(reader)
+
+	tmp := storagetypes.GenesisState{}
+	if err := json.NewDecoder(reader).Decode(&tmp); err != nil {
+		if err == io.EOF {
+			def := storage.NewGenesisState()
+			return storage.ValidateGenesisState(*def)
+		}
+		return fmt.Errorf("failed to decode %s genesis for validation: %w", storage.ModuleName, err)
+	}
+	gs = &tmp
+	return storage.ValidateGenesisState(*gs)
+}
+
+// InitGenesis implements appmodule.HasGenesis using the core API
+func (am AppModule) InitGenesis(ctx context.Context, source appmodule.GenesisSource) error {
+	reader, err := source(storage.ModuleName)
+	if err != nil {
+		return fmt.Errorf("failed to get genesis source for %s: %w", storage.ModuleName, err)
+	}
+
+	var gs *storagetypes.GenesisState
+	if reader == nil {
+		gs = storage.NewGenesisState()
+	} else {
+		defer func(rc io.ReadCloser) { _ = rc.Close() }(reader)
+		tmp := storagetypes.GenesisState{}
+		if err := json.NewDecoder(reader).Decode(&tmp); err != nil {
+			if err == io.EOF {
+				gs = storage.NewGenesisState()
+			} else {
+				return fmt.Errorf("failed to decode %s genesis: %w", storage.ModuleName, err)
+			}
+		} else {
+			gs = &tmp
+		}
+	}
+
+	am.keeper.InitGenesis(ctx, gs)
+	return nil
+}
+
+// DefaultGenesis implements appmodule.HasGenesis using the core API
+func (am AppModule) DefaultGenesis(target appmodule.GenesisTarget) error {
+	writer, err := target(storage.ModuleName)
+	if err != nil {
+		return fmt.Errorf("failed to get writer for %s genesis: %w", storage.ModuleName, err)
+	}
+	defer func(w io.WriteCloser) { _ = w.Close() }(writer)
+	enc := json.NewEncoder(writer)
+	if err := enc.Encode(storage.DefaultGenesis()); err != nil {
+		return fmt.Errorf("failed to encode %s default genesis: %w", storage.ModuleName, err)
+	}
+	return nil
+}
+
+// ExportGenesis implements appmodule.HasGenesis using the core API
+func (am AppModule) ExportGenesis(ctx context.Context, target appmodule.GenesisTarget) error {
+	gs := am.keeper.ExportGenesis(ctx)
+	writer, err := target(storage.ModuleName)
+	if err != nil {
+		return fmt.Errorf("failed to get writer for %s export: %w", storage.ModuleName, err)
+	}
+	defer func(w io.WriteCloser) { _ = w.Close() }(writer)
+	enc := json.NewEncoder(writer)
+	if err := enc.Encode(gs); err != nil {
+		return fmt.Errorf("failed to encode %s export: %w", storage.ModuleName, err)
+	}
+	return nil
 }
 
 // RegisterMigrations registers module migrations

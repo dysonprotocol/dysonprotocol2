@@ -27,10 +27,7 @@ func (k Keeper) CreateSubscription(ctx context.Context, msg *crontasktypes.MsgCr
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	// Enforce minimum stake per subscription (across all subscriptions)
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to load params")
-	}
+	params := k.GetParams(ctx)
 	if params.MinStakePerSubscription.Denom != "" && params.MinStakePerSubscription.Amount.IsPositive() {
 		// Count all subscriptions for this creator (any status) via ByCreator index
 		it, err := k.Subscriptions.Indexes.ByCreator.MatchExact(ctx, msg.Creator)
@@ -152,10 +149,7 @@ func (k Keeper) RenewSubscription(ctx context.Context, msg *crontasktypes.MsgRen
 		return nil, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "only creator can renew subscription")
 	}
 	// Enforce minimum stake per subscription (proxy via bank balance) before renewing
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to load params")
-	}
+	params := k.GetParams(ctx)
 	if params.MinStakePerSubscription.Denom != "" && params.MinStakePerSubscription.Amount.IsPositive() {
 		// Count all current subscriptions for creator and multiply requirement via ByCreator index
 		it, err := k.Subscriptions.Indexes.ByCreator.MatchExact(ctx, sub.Creator)
@@ -235,13 +229,10 @@ func (k Keeper) CreateTask(ctx context.Context, msg *crontasktypes.MsgCreateTask
 	// Get module parameters
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to get module params")
-	}
+	params := k.GetParams(ctx)
 
 	// Validate addresses
-	_, err = sdk.AccAddressFromBech32(msg.Creator)
+	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address: %s", msg.Creator)
 	}

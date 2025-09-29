@@ -300,11 +300,12 @@ def test_verify_tx_fails_on_bad_data(chainnet, generate_account, faucet):
         assert isinstance(
             verify_result, str
         ), f"Expected error string, got dict: {verify_result}"
+        print(f"tampered_signature_verify_result: {verify_result}")
+        # Assert exact message
+        expected = """rpc error: code = unauthenticated desc = rpc error: code = unauthenticated desc = signature [0] verification failed (make sure the --chain-id="", --account-number=0, and --sequence=0): unable to verify single signer signature: unauthorized"""
         assert (
-            "verification failed" in verify_result.lower()
-            or "invalid signature" in verify_result.lower()
-            or "unauthorized" in verify_result.lower()
-        ), f"Unexpected error message: {verify_result}"
+            verify_result.strip().lower() == expected
+        ), f"Expected '{expected}', got: {verify_result}"
 
         # Test 2: Tampered message data - change the data field after signing
         print("Test 2: Testing with tampered message data...")
@@ -319,11 +320,10 @@ def test_verify_tx_fails_on_bad_data(chainnet, generate_account, faucet):
         assert isinstance(
             verify_result, str
         ), f"Expected error string, got dict: {verify_result}"
-        assert (
-            "verification failed" in verify_result.lower()
-            or "invalid signature" in verify_result.lower()
-            or "unauthorized" in verify_result.lower()
-        ), f"Unexpected error message: {verify_result}"
+        print(f"tampered_message_verify_result: {verify_result}")
+        lower = verify_result.strip().lower()
+        expected = 'rpc error: code = unauthenticated desc = rpc error: code = unauthenticated desc = signature [0] verification failed (make sure the --chain-id="", --account-number=0, and --sequence=0): unable to verify single signer signature: unauthorized'
+        assert lower == expected, f"Expected '{expected}', got: {verify_result}"
 
         # Test 3: Wrong signer address - change the signer field after signing
         print("Test 3: Testing with wrong signer address...")
@@ -338,13 +338,10 @@ def test_verify_tx_fails_on_bad_data(chainnet, generate_account, faucet):
         assert isinstance(
             verify_result, str
         ), f"Expected error string, got dict: {verify_result}"
-        assert (
-            "verification failed" in verify_result.lower()
-            or "invalid signature" in verify_result.lower()
-            or "signer mismatch" in verify_result.lower()
-            or "unauthorized" in verify_result.lower()
-            or "does not match" in verify_result.lower()
-        ), f"Unexpected error message: {verify_result}"
+        print(f"wrong_signer_verify_result: {verify_result}")
+        lower = verify_result.strip().lower()
+        expected = f"rpc error: code = invalidargument desc = rpc error: code = invalidargument desc = signature does not match its respective signer; expected: {bob_address}, got: {alice_address}: invalid request"
+        assert lower == expected, f"Expected '{expected}' in error: {verify_result}"
 
         # Test 4: Malformed JSON - missing required fields
         print("Test 4: Testing with malformed transaction (missing signatures)...")
@@ -371,13 +368,9 @@ def test_verify_tx_fails_on_bad_data(chainnet, generate_account, faucet):
         assert isinstance(
             verify_result, str
         ), f"Expected error string, got dict: {verify_result}"
-        assert (
-            "failed to parse" in verify_result.lower()
-            or "invalid transaction" in verify_result.lower()
-            or "missing required field" in verify_result.lower()
-            or "panic" in verify_result.lower()
-            or "nil pointer" in verify_result.lower()
-        ), f"Unexpected error message: {verify_result}"
+        lower = verify_result.strip().lower()
+        expected = "rpc error: code = unknown desc = runtime error: invalid memory address or nil pointer dereference: panic"
+        assert lower == expected, f"Expected '{expected}' in error: {verify_result}"
 
         # Test 5: Empty/Invalid signature
         print("Test 5: Testing with empty signature...")
@@ -392,12 +385,9 @@ def test_verify_tx_fails_on_bad_data(chainnet, generate_account, faucet):
         assert isinstance(
             verify_result, str
         ), f"Expected error string, got dict: {verify_result}"
-        assert (
-            "verification failed" in verify_result.lower()
-            or "invalid signature" in verify_result.lower()
-            or "empty signature" in verify_result.lower()
-            or "unauthorized" in verify_result.lower()
-        ), f"Unexpected error message: {verify_result}"
+        lower = verify_result.strip().lower()
+        expected = 'rpc error: code = unauthenticated desc = rpc error: code = unauthenticated desc = signature [0] verification failed (make sure the --chain-id="", --account-number=0, and --sequence=0): unable to verify single signer signature: unauthorized'
+        assert lower == expected, f"Expected '{expected}' in error: {verify_result}"
 
         # Test 6: Invalid base64 signature
         print("Test 6: Testing with invalid base64 signature...")
@@ -412,11 +402,9 @@ def test_verify_tx_fails_on_bad_data(chainnet, generate_account, faucet):
         assert isinstance(
             verify_result, str
         ), f"Expected error string, got dict: {verify_result}"
-        assert (
-            "failed to decode" in verify_result.lower()
-            or "invalid signature" in verify_result.lower()
-            or "base64" in verify_result.lower()
-        ), f"Unexpected error message: {verify_result}"
+        lower = verify_result.strip().lower()
+        expected = "failed to decode"
+        assert expected in lower, f"Expected '{expected}' in error: {verify_result}"
 
         # Test 7: Completely invalid JSON
         print("Test 7: Testing with completely invalid JSON...")
@@ -544,8 +532,10 @@ def test_script_governance_param_update_and_storage_history(chainnet):
     }
     # The proposal ID seems to be in voting_period_start now
     # Try both old and new attribute names for compatibility
-    proposal_id = attrs_by_key.get("proposal_id") or attrs_by_key.get(
-        "voting_period_start"
+    proposal_id = (
+        attrs_by_key.get("proposal_id")
+        if "proposal_id" in attrs_by_key
+        else attrs_by_key.get("voting_period_start")
     )
     assert proposal_id, f"Could not find proposal ID in attributes: {attrs_by_key}"
     print(f"Submitted proposal ID: {proposal_id}")
@@ -709,14 +699,14 @@ def query_heights(heights):
         # Handle string result from block query (extract JSON part)
         json_data = block_result
         # Parse JSON if result is a string
-        json_start = (isinstance(block_result, str) and block_result.find("{")) or -1
+        json_start = block_result.find("{") if isinstance(block_result, str) else -1
         assert (
-            json_start == -1 or json_start >= 0
+            json_start != -2
         ), f"No JSON found in block query response: {block_result}"
         json_data = (
-            isinstance(block_result, str)
-            and json.loads(block_result[json_start:].strip())
-            or block_result
+            json.loads(block_result[json_start:].strip())
+            if isinstance(block_result, str)
+            else block_result
         )
 
         # Debug: print the structure to understand the response format
@@ -736,11 +726,11 @@ def query_heights(heights):
         def block_height_increased():
             result = dysond_bin("query", "block")
             # Parse JSON from string result
-            json_start = (isinstance(result, str) and result.find("{")) or -1
+            json_start = result.find("{") if isinstance(result, str) else -1
             json_data = (
-                isinstance(result, str)
-                and json.loads(result[json_start:].strip())
-                or result
+                json.loads(result[json_start:].strip())
+                if isinstance(result, str)
+                else result
             )
             new_height = int(
                 json_data.get(
@@ -761,7 +751,7 @@ def query_heights(heights):
             "query", "storage", "get", script_address, "--index", "test_history"
         )
         # Print result based on type
-        result_type = isinstance(current_storage_result, str) and "string" or "dict"
+        result_type = "string" if isinstance(current_storage_result, str) else "dict"
         print(f"Current storage query returned {result_type}: {current_storage_result}")
 
         # Step 5: Query the stored data using the query function
@@ -1179,10 +1169,12 @@ def normal_function():
     assert exec_result.get("code", 0) != 0, "Expected script execution to fail"
     # The error message is in the raw_log field
     raw_log = exec_result.get("raw_log", "")
-    assert (
-        "Defining function with the name '__init__' is forbidden" in raw_log
-        or "Defining function with the name \\'__init__\\' is forbidden" in raw_log
-    ), f"Unexpected error in raw_log: {raw_log}"
+    _variants = [
+        "Defining function with the name '__init__' is forbidden",
+        "Defining function with the name '__init__' is forbidden",
+    ]
+    present = [v for v in _variants if v in raw_log]
+    assert len(present) > 0, f"Unexpected error in raw_log: {raw_log}"
 
     # Test 2: Defining a class with a name starting with "__"
     print("Test 2: Testing class definition with dunder name...")
@@ -1232,10 +1224,9 @@ def test_function():
     assert exec_result.get("code", 0) != 0, "Expected script execution to fail"
     # The error message is in the raw_log field
     raw_log = exec_result.get("raw_log", "")
-    assert (
-        "Defining class with the name '__SpecialClass' is forbidden" in raw_log
-        or "Defining class with the name \\'__SpecialClass\\' is forbidden" in raw_log
-    ), f"Unexpected error in raw_log: {raw_log}"
+    normalized = raw_log.replace("\\'", "'")
+    expected = "Defining class with the name '__SpecialClass' is forbidden"
+    assert expected in normalized, f"Unexpected error in raw_log: {raw_log}"
 
     # Test 3: Calling a function with a name starting with "__"
     print("Test 3: Testing function call with dunder name...")
@@ -1283,10 +1274,12 @@ def test_call():
     assert exec_result.get("code", 0) != 0, "Expected script execution to fail"
     # The error message is in the raw_log field
     raw_log = exec_result.get("raw_log", "")
-    assert (
-        "Calling function '__import__' is forbidden" in raw_log
-        or "Calling function \\'__import__\\' is forbidden" in raw_log
-    ), f"Unexpected error in raw_log: {raw_log}"
+    _variants = [
+        "Calling function '__import__' is forbidden",
+        "Calling function '__import__' is forbidden",
+    ]
+    present = [v for v in _variants if v in raw_log]
+    assert len(present) > 0, f"Unexpected error in raw_log: {raw_log}"
 
     # Test 4: Calling a method with a name starting with "__"
     print("Test 4: Testing method call with dunder name...")
@@ -1341,11 +1334,12 @@ def test_method_call():
     # The error message is in the raw_log field
     raw_log = exec_result.get("raw_log", "")
     # Methods with dunder names are caught during class definition as "Defining function"
-    assert (
-        "Defining function with the name '__special_method__' is forbidden" in raw_log
-        or "Defining function with the name \\'__special_method__\\' is forbidden"
-        in raw_log
-    ), f"Unexpected error in raw_log: {raw_log}"
+    _variants = [
+        "Defining function with the name '__special_method__' is forbidden",
+        "Defining function with the name '__special_method__' is forbidden",
+    ]
+    present = [v for v in _variants if v in raw_log]
+    assert len(present) > 0, f"Unexpected error in raw_log: {raw_log}"
 
     # Test 5: Valid script without dunder names should work
     print("Test 5: Testing valid script without dunder names...")
@@ -1636,19 +1630,15 @@ def valid_function():
         assert (
             failed_as_expected
         ), f"Expected {test_name} to fail but it succeeded: {exec_result}"
+        _prefixes = [
+            "Defining function with the name",
+            "Defining class with the name",
+            "Assigning to variable",
+        ]
+        hits = [p for p in _prefixes if p in exception_msg]
+        assert len(hits) > 0, f"Unexpected error for {test_name}: {exception_msg}"
         assert (
-            (
-                "Defining function with the name" in exception_msg
-                and "is forbidden" in exception_msg
-            )
-            or (
-                "Defining class with the name" in exception_msg
-                and "is forbidden" in exception_msg
-            )
-            or (
-                "Assigning to variable" in exception_msg
-                and "is forbidden" in exception_msg
-            )
+            "is forbidden" in exception_msg
         ), f"Unexpected error for {test_name}: {exception_msg}"
 
         print(f"✓ {test_name} correctly blocked")

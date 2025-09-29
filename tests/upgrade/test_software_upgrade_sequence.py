@@ -59,9 +59,9 @@ def _calc_plan_offset_blocks(dysond) -> int:
     params = dysond("query", "gov", "params")["params"]
     # expedited_voting_period like "5s"; default block time ~0.6s per chainnet config
     exp_s = int(params["expedited_voting_period"].removesuffix("s") or "5")
-    blocks_for_vote = (exp_s + 0) / 0.6
+    blocks_for_vote = (exp_s + 0) / 0.5
     # add small margin for commit + restart
-    return int(blocks_for_vote + 4.0 + 0.9999)
+    return int(blocks_for_vote + 7)
 
 
 def _wait_passed(dysond, proposal_id: str):
@@ -73,7 +73,7 @@ def _wait_passed(dysond, proposal_id: str):
             "PROPOSAL_STATUS_FAILED",
         ],
         timeout=10,
-        poll_interval=1,
+        poll_interval=0.2,
     )
     proposal_json = dysond("query", "gov", "proposal", proposal_id)
     status = proposal_json["proposal"]["status"]
@@ -104,7 +104,7 @@ def _wait_applied(dysond, name: str, target_height: int):
         print(f"applied: {ap}")
         return isinstance(ap, dict) and int(ap.get("height", "0")) >= target_height
 
-    poll_until_condition(_applied, timeout=15, poll_interval=0.5)
+    poll_until_condition(_applied, timeout=15, poll_interval=0.2)
 
 
 def _assert_current_plan(dysond, name: str, height: int):

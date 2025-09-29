@@ -236,11 +236,7 @@ func (q queryServer) Params(ctx context.Context, req *crontasktypes.QueryParamsR
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
-	params, err := q.k.GetParams(ctx)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "failed to get params")
-	}
-
+	params := q.k.GetParams(ctx)
 	return &crontasktypes.QueryParamsResponse{Params: &params}, nil
 }
 

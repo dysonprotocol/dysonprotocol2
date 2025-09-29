@@ -95,6 +95,7 @@ func (k Keeper) GetParams(ctx context.Context) (params storagev1.Params) {
 	params, err := k.params.Get(ctx)
 	if err != nil {
 		// If params don't exist, return defaults
+		k.Logger(sdk.UnwrapSDKContext(ctx)).Error("GetParams: failed to load params; returning defaults", "err", err)
 		return storagev1.DefaultParams()
 	}
 	return params

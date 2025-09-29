@@ -303,9 +303,13 @@ def test_nameservice_e2e(chainnet, generate_account, faucet):
     nfts = dysond_bin("query", "nft", "nfts", name)
     assert "nfts" in nfts, "No NFTs found in the main collection"
     assert len(nfts["nfts"]) > 0, "Main collection is empty"
-    assert any(
-        n["id"] == nft_id for n in nfts["nfts"]
-    ), f"NFT {nft_id} not found in main collection"
+    assert isinstance(
+        nfts["nfts"], list
+    ), f"Expected list for nfts['nfts'], got {type(nfts.get('nfts'))}"
+    nft_ids = [n.get("id") for n in nfts["nfts"]]
+    assert (
+        nft_id in nft_ids
+    ), f"NFT {nft_id} not found in main collection. IDs: {nft_ids}"
     print(f"Verified {len(nfts['nfts'])} NFTs exist in main collection")
 
     # Step 7: NFT Metadata Management
@@ -831,9 +835,15 @@ def test_nameservice_e2e(chainnet, generate_account, faucet):
         if not has_dys
         else None
     )
-    assert (
-        not has_dys or fund_result is None or fund_result["code"] == 0
-    ), "Failed to fund Charlie's account" + (
+    expected_fund_called = not has_dys
+    actual_fund_called = fund_result is not None
+    assert actual_fund_called == expected_fund_called, (
+        f"Funding call mismatch. has_dys={has_dys}, expected_fund_called={expected_fund_called}, "
+        f"fund_result={fund_result}"
+    )
+    expected_code = 0 if expected_fund_called else None
+    actual_code = None if fund_result is None else fund_result.get("code")
+    assert actual_code == expected_code, "Failed to fund Charlie's account: " + (
         fund_result.get("raw_log", "") if fund_result else ""
     )
     print("Funded Charlie's account with 200udys") if not has_dys else None
@@ -1428,9 +1438,12 @@ def test_max_depth_exceeded(chainnet, generate_account, faucet, register_name):
 
     # Test that resolution fails with max depth exceeded
     resolution = dysond_bin("query", "nameservice", "resolve", names[0])
-    # Should return error in response instead of successful resolution
-    assert "error" in resolution or "exceeded maximum depth" in str(
-        resolution
+    # Should return a string error message
+    assert isinstance(
+        resolution, str
+    ), f"Expected string error, got {type(resolution)}: {resolution}"
+    assert (
+        "exceeded maximum depth" in resolution
     ), f"Expected depth error, got: {resolution}"
     print(f"✓ Max depth protection: chain of {len(names)} names")
 

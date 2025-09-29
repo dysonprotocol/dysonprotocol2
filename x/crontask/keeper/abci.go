@@ -19,10 +19,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 	k.Logger.Info("Current block time", "unix_time", currentTime)
 
 	// Get module parameters to access BlockGasLimit
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get module params: %w", err)
-	}
+	params := k.GetParams(ctx)
 
 	// Track how many tasks we selected this block (diagnostics)
 	var selectedCount int = 0
@@ -552,10 +549,7 @@ func (k Keeper) safeInvokeMsg(ctx context.Context, msg sdk.Msg) (result sdk.Msg,
 // removeOldTasks deletes terminal-state tasks (DONE, FAILED, EXPIRED) whose
 // execution/expiry timestamps are older than the configured CleanUpTime.
 func (k Keeper) removeOldTasks(ctx context.Context, currentTime int64) error {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get params: %w", err)
-	}
+	params := k.GetParams(ctx)
 
 	// If CleanUpTime is zero, feature disabled.
 	if params.CleanUpTime == 0 {

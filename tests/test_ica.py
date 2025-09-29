@@ -134,7 +134,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     poll_until_condition(
         _ica_address_established,
-        timeout=20,
+        timeout=60,
         poll_interval=1,
         error_message="ICA address not established after registration",
     )

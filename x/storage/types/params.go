@@ -55,21 +55,12 @@ func validateMaxStorageSize(maxStorageSize uint64) error {
 }
 
 func validateStorageStakeMultiple(storageStakeMultiple string) error {
-	// Parse the string as a decimal to validate format
-	_, err := math.LegacyNewDecFromStr(storageStakeMultiple)
-	if err != nil {
-		return fmt.Errorf("invalid storage_stake_multiple: %s, must be a valid decimal number", storageStakeMultiple)
-	}
-
-	// Parse as LegacyDec to check for negative values
 	dec, err := math.LegacyNewDecFromStr(storageStakeMultiple)
 	if err != nil {
 		return fmt.Errorf("invalid storage_stake_multiple: %s, must be a valid decimal number", storageStakeMultiple)
 	}
-
 	if dec.IsNegative() {
 		return fmt.Errorf("storage_stake_multiple must not be negative, got: %s", storageStakeMultiple)
 	}
-
 	return nil
 }

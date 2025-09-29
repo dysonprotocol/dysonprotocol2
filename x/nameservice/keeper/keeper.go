@@ -213,6 +213,7 @@ func (k Keeper) GetParams(ctx context.Context) (params nameservicev1.Params) {
 	params, err := k.params.Get(ctx)
 	if err != nil {
 		// If params don't exist, return defaults
+		k.Logger.Info("GetParams: failed to load params; returning defaults", "err", err)
 		return nameservicev1.DefaultParams()
 	}
 	return params
@@ -222,18 +223,6 @@ func (k Keeper) GetParams(ctx context.Context) (params nameservicev1.Params) {
 func (k Keeper) SetParams(ctx context.Context, params nameservicev1.Params) error {
 	if err := params.Validate(); err != nil {
 		return err
-	}
-	// Check if store service is accessible
-	if k.storeService == nil {
-		k.Logger.Error("SetParams: Store service is nil, cannot set params")
-		return fmt.Errorf("store service is nil, cannot set parameters")
-	}
-
-	// Additional check to ensure store is initialized
-	store := k.storeService.OpenKVStore(ctx)
-	if store == nil {
-		k.Logger.Error("SetParams: Failed to open KV store, store is nil")
-		return fmt.Errorf("failed to open KV store, store is nil")
 	}
 	return k.params.Set(ctx, params)
 }

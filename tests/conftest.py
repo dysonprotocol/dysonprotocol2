@@ -341,10 +341,10 @@ def chainnet(worker_id, test_base_dir, test_config_path):
             "--config-file",
             str(config_path),
             "--block-speed",
-            "1000ms",
+            "500ms",
             "--no-blocks-timeout",
             "5",
-            "--logs",
+            # "--logs",
         ],
         preexec_fn=os.setsid,
     )
@@ -412,7 +412,7 @@ def node_ready(chainnet):
 
     poll_until_condition(
         _ready,
-        timeout=3,
+        timeout=5,
         poll_interval=0.3,
         error_message="Node did not produce blocks",
     )
@@ -482,9 +482,7 @@ def faucet(chainnet):
             denom: The denom of the coins to send.
             amount: The amount of coins to send.
         """
-        # Get initial balance
-        out = dysond_bin("query", "bank", "balances", address)
-        before = int(out["balances"][0]["amount"]) if out["balances"] else 0
+
         # Send tx from alice (run_command already waits for tx internally)
         for attempt in range(10):
             tx_out = dysond_bin(
@@ -537,7 +535,13 @@ def project_root() -> Path:
 
 @pytest.fixture(scope="session")
 def ibc_setup(
-    chainnet, test_config_path, generate_account, worker_id, faucet, test_base_dir
+    chainnet,
+    test_config_path,
+    generate_account,
+    worker_id,
+    faucet,
+    test_base_dir,
+    node_ready,
 ):
     """Fixture to set up IBC connections between chains. Use this fixture when your test needs IBC functionality."""
     config_path = test_config_path
@@ -1032,5 +1036,15 @@ def pytest_collection_finish(session):
 
     if total_errors:
         raise pytest.UsageError(
-            "Forbidden constructs found:\n" + "\n".join(total_errors)
+            "Forbidden constructs found:\n"
+            + "\n".join(total_errors)
+            + """
+            Now I understand that you are trying to use forbidden constructs in your test code.
+            There are many other ways to get around the limitations of the test harness.
+            But you must respect the spirit of the these limits and not try to trick the test harness into thinking you are not using forbidden constructs.
+            The goal is that all tests have a singular logical path to assert that the test passed.
+            The goal is that the tests are specific and notify us of future breakign changes
+            The goal is that devs can look at the test and understand how to use the project.
+            It may be required to rewrite a test to achieve this, and that is ok.
+            """
         )

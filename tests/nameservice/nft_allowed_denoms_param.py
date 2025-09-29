@@ -289,10 +289,8 @@ def test_nft_allowed_denoms_param(chainnet, generate_account, faucet, register_n
         bidder_name,
     )
     assert res["code"] != 0, f"Expected place-bid with disallowed denom to fail"
-    assert (
-        "allowed denoms" in res["raw_log"].lower()
-        or "valuation" in res["raw_log"].lower()
-    )
+    raw = res.get("raw_log", "").lower()
+    assert "allowed denoms" in raw, f"Expected allowed denoms error, got: {raw}"
 
     # ------------------------------------------------------------------
     # Scenario 3 – Update Params to add a custom denom and verify behaviour
@@ -403,8 +401,8 @@ def test_nft_allowed_denoms_param(chainnet, generate_account, faucet, register_n
         bidder_name,
     )
     assert res["code"] != 0, f"Expected place-bid with wrong denom to fail"
-    # Check the error is about denom mismatch
-    assert "denom" in res["raw_log"].lower() or "valuation" in res["raw_log"].lower()
+    raw = res.get("raw_log", "").lower()
+    assert "denom" in raw, f"Expected denom mismatch error, got: {raw}"
 
     # Bid with custom denom should succeed
     dysond(

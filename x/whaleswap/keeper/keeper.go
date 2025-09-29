@@ -214,7 +214,8 @@ func (k Keeper) GetAuthority() string { return k.authority }
 func (k Keeper) GetParams(ctx context.Context) (p whaleswapv1.Params) {
 	p, err := k.params.Get(ctx)
 	if err != nil {
-		return whaleswapv1.Params{}
+		k.logger.Error("GetParams: failed to load params; returning defaults", "err", err)
+		return whaleswapv1.DefaultParams()
 	}
 	return p
 }

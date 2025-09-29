@@ -799,7 +799,7 @@ def test_storage_invalid_extract_and_filter(chainnet, generate_account, faucet):
         "json",
     )
     entries = list_res.get("entries", [])
-    assert entries == [] or len(entries) == 0, f"Expected empty list, got {entries}"
+    assert entries == [], f"Expected empty list, got {entries}"
 
 
 def test_storage_extract_filter_too_long(chainnet, generate_account, faucet):
@@ -920,9 +920,10 @@ def test_storage_delete_empty_prefix(chainnet, generate_account, faucet):
     assert isinstance(
         delete_result, str
     ), "Expected CLI error string for missing indexes"
+    expected_substring = "must specify at least one index with --indexes"
     assert (
-        "indexes" in delete_result.lower() or "must specify" in delete_result
-    ), f"Expected validation error for missing indexes, got: {delete_result}"
+        expected_substring in delete_result
+    ), f"Expected CLI validation error '{expected_substring}', got: {delete_result}"
 
 
 def test_storage_pagination_comprehensive(chainnet, generate_account, faucet):

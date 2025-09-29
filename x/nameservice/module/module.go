@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -26,10 +27,10 @@ const ConsensusVersion = 1
 var (
 	_ module.AppModuleBasic = AppModuleBasic{}
 
-	_ module.HasGenesis  = AppModule{}
 	_ module.HasServices = AppModule{}
 
 	_ appmodule.AppModule     = AppModule{}
+	_ appmodule.HasGenesis    = AppModule{}
 	_ appmodule.HasEndBlocker = AppModule{}
 )
 
@@ -108,52 +109,93 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	nameservicev1.RegisterQueryServer(cfg.QueryServer(), &am.keeper)
 }
 
-// InitGenesis performs genesis initialization for the gov module. It returns
-// no validator updates.
-func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) {
-	var genesisState nameservicev1.GenesisState
-	cdc.MustUnmarshalJSON(data, &genesisState)
-	if err := am.keeper.SetParams(ctx, genesisState.Params); err != nil {
-		panic(fmt.Errorf("failed to set nameservice parameters: %w", err))
+// Core API genesis (appmodule.HasGenesis)
+func (am AppModule) ValidateGenesis(source appmodule.GenesisSource) error {
+	reader, err := source(nameservice.ModuleName)
+	if err != nil {
+		return fmt.Errorf("failed to get genesis source for %s: %w", nameservice.ModuleName, err)
 	}
+	if reader == nil {
+		def := nameservicev1.DefaultGenesis()
+		return nameservicev1.ValidateGenesis(def)
+	}
+	defer func(rc io.ReadCloser) { _ = rc.Close() }(reader)
+	var gs nameservicev1.GenesisState
+	if err := json.NewDecoder(reader).Decode(&gs); err != nil {
+		if err == io.EOF {
+			def := nameservicev1.DefaultGenesis()
+			return nameservicev1.ValidateGenesis(def)
+		}
+		return fmt.Errorf("failed to decode %s genesis: %w", nameservice.ModuleName, err)
+	}
+	return nameservicev1.ValidateGenesis(&gs)
+}
 
-	// Initialize commitments
-	for _, commitment := range genesisState.Commitments {
-		if err := am.keeper.SetCommitment(ctx, commitment); err != nil {
-			panic(fmt.Errorf("failed to set nameservice commitment %s: %w", commitment.Hexhash, err))
+func (am AppModule) InitGenesis(ctx context.Context, source appmodule.GenesisSource) error {
+	reader, err := source(nameservice.ModuleName)
+	if err != nil {
+		return fmt.Errorf("failed to get genesis source for %s: %w", nameservice.ModuleName, err)
+	}
+	var gs *nameservicev1.GenesisState
+	if reader == nil {
+		def := nameservicev1.DefaultGenesis()
+		gs = def
+	} else {
+		defer func(rc io.ReadCloser) { _ = rc.Close() }(reader)
+		tmp := nameservicev1.GenesisState{}
+		if err := json.NewDecoder(reader).Decode(&tmp); err != nil {
+			if err == io.EOF {
+				gs = nameservicev1.DefaultGenesis()
+			} else {
+				return fmt.Errorf("failed to decode %s genesis: %w", nameservice.ModuleName, err)
+			}
+		} else {
+			gs = &tmp
 		}
 	}
 
-	// Rebuild derived reverse indexes from existing on-chain data to ensure
-	// they are present after import.
-	if err := am.keeper.EnsureNamesClassExists(ctx); err != nil {
-		panic(fmt.Errorf("failed to ensure names class: %w", err))
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if err := am.keeper.SetParams(sdkCtx, gs.Params); err != nil {
+		return fmt.Errorf("failed to set nameservice parameters: %w", err)
 	}
+	for _, commitment := range gs.Commitments {
+		if err := am.keeper.SetCommitment(sdkCtx, commitment); err != nil {
+			return fmt.Errorf("failed to set nameservice commitment %s: %w", commitment.Hexhash, err)
+		}
+	}
+	if err := am.keeper.EnsureNamesClassExists(sdkCtx); err != nil {
+		return fmt.Errorf("failed to ensure names class: %w", err)
+	}
+	return nil
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the nameservice module.
-func (AppModule) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
-	return cdc.MustMarshalJSON(nameservicev1.DefaultGenesis())
+func (am AppModule) DefaultGenesis(target appmodule.GenesisTarget) error {
+	writer, err := target(nameservice.ModuleName)
+	if err != nil {
+		return fmt.Errorf("failed to get writer for %s genesis: %w", nameservice.ModuleName, err)
+	}
+	defer func(w io.WriteCloser) { _ = w.Close() }(writer)
+	return json.NewEncoder(writer).Encode(nameservicev1.DefaultGenesis())
 }
 
 // ValidateGenesis performs genesis state validation for the nameservice module.
-func (AppModule) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
-	var data nameservicev1.GenesisState
-	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
-		return fmt.Errorf("failed to unmarshal %s genesis state: %w", nameservice.ModuleName, err)
-	}
-	return nameservicev1.ValidateGenesis(&data)
-}
+// removed legacy ValidateGenesis
 
 // ExportGenesis returns the exported genesis state as raw bytes for the gov
 // ExportGenesis returns the exported genesis state as raw bytes for the gov
 // module.
-func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
+func (am AppModule) ExportGenesis(ctx context.Context, target appmodule.GenesisTarget) error {
 	gs, err := am.keeper.ExportGenesis(ctx)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	return cdc.MustMarshalJSON(gs)
+	writer, err := target(nameservice.ModuleName)
+	if err != nil {
+		return fmt.Errorf("failed to get writer for %s export: %w", nameservice.ModuleName, err)
+	}
+	defer func(w io.WriteCloser) { _ = w.Close() }(writer)
+	return json.NewEncoder(writer).Encode(gs)
 }
 
 // RegisterMigrations registers module migrations

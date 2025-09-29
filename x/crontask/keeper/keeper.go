@@ -349,17 +349,17 @@ func (k Keeper) SetParams(ctx context.Context, params crontasktypes.Params) erro
 }
 
 // GetParams gets the crontask module parameters
-func (k Keeper) GetParams(ctx context.Context) (crontasktypes.Params, error) {
+func (k Keeper) GetParams(ctx context.Context) crontasktypes.Params {
 	params, err := k.Params.Get(ctx)
 	if err != nil {
-		// For collections.ErrNotFound, return empty params similar to SDK modules
 		if errors.Is(err, collections.ErrNotFound) {
-			return crontasktypes.DefaultParams(), nil
+			k.Logger.Error("GetParams: params not found; returning defaults")
+			return crontasktypes.DefaultParams()
 		}
-		// For any other error, propagate it upward
-		return crontasktypes.Params{}, err
+		k.Logger.Error("GetParams: failed to load params; returning defaults", "err", err)
+		return crontasktypes.DefaultParams()
 	}
-	return params, nil
+	return params
 }
 
 // GetModuleParams returns the current module parameters

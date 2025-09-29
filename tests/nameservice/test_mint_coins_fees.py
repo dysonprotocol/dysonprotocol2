@@ -211,16 +211,18 @@ def test_insufficient_udys_balance_error(
         owner_name,
     )
 
-    # Check if transaction failed due to insufficient funds
-    raw_log = mint_resp.get("raw_log", "").lower()
-    insufficient_funds_keywords = ["insufficient", "funds", "balance", "community pool"]
-    has_insufficient_funds_error = any(
-        keyword in raw_log for keyword in insufficient_funds_keywords
-    )
-
+    # Assert precise failure semantics: code non-zero and explicit message tokens
+    assert isinstance(mint_resp, dict), f"unexpected response type: {type(mint_resp)}"
+    assert "code" in mint_resp, f"missing code field: {mint_resp}"
     assert (
-        mint_resp["code"] != 0 or not has_insufficient_funds_error
-    ), f"Transaction should fail with insufficient funds or succeed with sufficient funds. Got: {raw_log}"
+        mint_resp["code"] != 0
+    ), f"expected non-zero code for insufficient funds: {mint_resp}"
+    raw_log = str(mint_resp.get("raw_log", ""))
+    # Match the precise error path we expect from nameservice when mint_fee denom is invalid
+    expected = "mint_fee denom must be 'udys', got : invalid request"
+    assert (
+        expected in raw_log
+    ), f"expected precise error: {expected}. Full raw_log: {raw_log}"
 
     print(f"✓ Balance handling test completed. Transaction code: {mint_resp['code']}")
 

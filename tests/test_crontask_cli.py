@@ -215,21 +215,11 @@ def test_delete_task(chainnet, generate_account):
     task_result = dysond_bin(
         "query", "crontask", "task-by-id", "--task-id", str(task_id)
     )
-
-    # Task should be deleted - expect either "key not found" string or empty task dict
-    task_deleted = isinstance(task_result, str) and "key not found" in task_result
-    task_empty = isinstance(task_result, dict) and not task_result.get("task", {})
-
-    # Verify the task is no longer scheduled (either deleted or has different status)
-    assert (
-        task_deleted
-        or task_empty
-        or (
-            isinstance(task_result, dict)
-            and task_result.get("task", {}).get("status") != "SCHEDULED"
-        )
-    ), f"Task should not remain SCHEDULED after deletion, got: {task_result}"
-    print(f"Task {task_id} successfully deleted or status changed")
+    assert isinstance(
+        task_result, str
+    ), f"Expected string error on deleted task, got {type(task_result)}: {task_result}"
+    assert "key not found" in task_result, f"'key not found' not in: {task_result}"
+    print(f"Task {task_id} successfully deleted")
 
 
 def test_task_execution(chainnet, generate_account, faucet):
@@ -1005,17 +995,15 @@ def test_done_tasks_are_cleaned_up(
         )
 
         # Task deleted - not done yet
-        task_deleted = isinstance(task_result, str) and "key not found" in task_result
-        task_exists = isinstance(task_result, dict)
+        assert isinstance(
+            task_result, dict
+        ), f"Expected dict response during execution, got {type(task_result)}: {task_result}"
 
-        # Ensure response is valid format
-        assert task_exists or task_deleted, f"Unexpected response format: {task_result}"
-
-        # Return False if deleted, otherwise check status
-        is_done = task_exists and task_result.get("task", {}).get("status") == "DONE"
+        # Return False unless explicitly DONE
+        is_done = task_result.get("task", {}).get("status") == "DONE"
 
         # Print status for debugging
-        task_data = task_result.get("task", {}) and task_result or task_result
+        task_data = task_result if not isinstance(task_result, dict) else task_result
         print(f"Task {task_id} status check: DONE={is_done}, data={task_data}")
 
         return is_done

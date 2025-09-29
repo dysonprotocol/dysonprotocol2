@@ -31,13 +31,21 @@ func (p Params) Validate() error {
 		return fmt.Errorf("pfand_per_offer denom must be set when amount > 0")
 	}
 	if p.ValuationFeePct != "" {
-		if _, err := math.LegacyNewDecFromStr(p.ValuationFeePct); err != nil {
+		dec, err := math.LegacyNewDecFromStr(p.ValuationFeePct)
+		if err != nil {
 			return fmt.Errorf("invalid valuation_fee_pct: %v", err)
+		}
+		if dec.IsNegative() || dec.GTE(math.LegacyNewDec(1)) {
+			return fmt.Errorf("valuation_fee_pct must be in [0,1)")
 		}
 	}
 	if p.MinimumBidPercentIncrease != "" {
-		if _, err := math.LegacyNewDecFromStr(p.MinimumBidPercentIncrease); err != nil {
+		dec, err := math.LegacyNewDecFromStr(p.MinimumBidPercentIncrease)
+		if err != nil {
 			return fmt.Errorf("invalid minimum_bid_percent_increase: %v", err)
+		}
+		if dec.IsNegative() || dec.GTE(math.LegacyNewDec(1)) {
+			return fmt.Errorf("minimum_bid_percent_increase must be in [0,1)")
 		}
 	}
 	return nil

@@ -34,10 +34,16 @@ def test_move_nft_success(chainnet, generate_account, faucet, register_name):
     assert save_resp["code"] == 0, save_resp.get("raw_log")
 
     # verify EventClassSaved emitted
-    assert any(
-        ev.get("type", "").endswith("EventClassSaved")
-        for ev in save_resp.get("events", [])
-    ), "EventClassSaved event missing"
+    event_types = [ev.get("type", "") for ev in save_resp.get("events", [])]
+    print(f"Emitted event types: {event_types}")
+    assert isinstance(
+        event_types, list
+    ), f"Expected list of event types, got {type(event_types)}"
+    assert len(event_types) >= 1, f"Expected at least one event, got: {event_types}"
+    expected_event = "dysonprotocol.nameservice.v1.EventClassSaved"
+    assert (
+        expected_event in event_types
+    ), f"Expected '{expected_event}' not found in: {event_types}"
 
     # mint nft
     nft_id = "nft1"

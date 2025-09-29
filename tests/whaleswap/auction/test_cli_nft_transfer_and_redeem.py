@@ -77,7 +77,7 @@ def test_nft_transfer_then_redeem_new_owner_old_owner_fails(
     ), f"move-nft unexpectedly succeeded: {json.dumps(mv, indent=2)}"
     raw_log = str(mv.get("raw_log", "")).lower()
     assert (
-        "unauthorized" in raw_log or "not owner" in raw_log
+        "unauthorized" in raw_log
     ), f"unexpected move-nft error: {json.dumps(mv, indent=2)}"
 
     # Seller remains the owner; redeem succeeds for seller

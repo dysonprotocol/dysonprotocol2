@@ -4,35 +4,50 @@ import string
 
 
 def _rand_suffix(n=8):
-    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=n))
+    return "".join(random.choices(string.ascii_lowercase + string.digits, k=n))
 
 
 def test_storage_get_by_name_success(chainnet, generate_account, faucet, register_name):
     dysond = chainnet[0]
 
     # Create owner account and fund
-    owner_name, owner_addr = generate_account("owner_name_query", faucet_amount=1_000_000)
+    owner_name, owner_addr = generate_account(
+        "owner_name_query", faucet_amount=1_000_000
+    )
     faucet(owner_addr)
 
     # Register a nameservice name and point it to the owner's address
     ns_name = register_name(dysond, owner_name, owner_addr)
     set_dest = dysond(
-        "tx", "nameservice", "set-destination",
-        "--name", ns_name,
-        "--destination", owner_addr,
-        "--from", owner_name,
+        "tx",
+        "nameservice",
+        "set-destination",
+        "--name",
+        ns_name,
+        "--destination",
+        owner_addr,
+        "--from",
+        owner_name,
     )
-    assert isinstance(set_dest, dict) and set_dest.get("code") == 0, f"set-destination failed: {set_dest}"
+    assert (
+        isinstance(set_dest, dict) and set_dest.get("code") == 0
+    ), f"set-destination failed: {set_dest}"
 
     # Write a storage entry under the owner's address
     key = f"ns_storage_key_{_rand_suffix()}"
     value = "hello-ns"
     tx = dysond(
-        "tx", "storage", "set",
-        "--from", owner_name,
-        "--index", key,
-        "--data", value,
-        "--gas", "auto",
+        "tx",
+        "storage",
+        "set",
+        "--from",
+        owner_name,
+        "--index",
+        key,
+        "--data",
+        value,
+        "--gas",
+        "auto",
     )
     assert tx.get("code") == 0, f"storage set failed: {tx}"
 
@@ -56,6 +71,14 @@ def test_storage_get_by_name_errors(chainnet):
     bogus_name = f"nonexistent-{_rand_suffix()}.dys"
     res = dysond("query", "storage", "get", bogus_name, "--index", "nope")
 
-    # For errors, the test harness returns a raw string; validate message content
-    assert isinstance(res, str), f"Expected error string for nonexistent name, got: {type(res)}"
-    assert "failed to resolve owner" in res or "name not found" in res, f"Unexpected error: {res}"
+    # Print actual error for precise assertion update
+    print(f"Actual error: {res}")
+
+    # Stepwise assertions: type, shape, equality
+    assert isinstance(
+        res, str
+    ), f"Expected error string for nonexistent name, got: {type(res)}"
+
+    # Accept either layer by matching the exact inner error substring
+    expected = "name not found: " + bogus_name
+    assert expected in res, f"Expected '{expected}' not found in: {res}"
