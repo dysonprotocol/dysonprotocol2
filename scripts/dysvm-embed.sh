@@ -37,14 +37,14 @@ else
     if [ "$(uname -m)" = "aarch64" ]; then
         OS=linux
         ARCH=arm64
-        DIST_PATTERN="unknown-linux-gnu-lto"
-        DIST_FULL="unknown-linux-gnu-lto-full"
+        DIST_PATTERN="unknown-linux-gnu-noopt"
+        DIST_FULL="unknown-linux-gnu-noopt-full"
         ARCH_NAME="aarch64"
     else
         OS=linux
         ARCH=amd64
-        DIST_PATTERN="unknown-linux-gnu-pgo+lto"
-        DIST_FULL="unknown-linux-gnu-pgo+lto-full"
+        DIST_PATTERN="unknown-linux-gnu-noopt"
+        DIST_FULL="unknown-linux-gnu-noopt-full"
         ARCH_NAME="x86_64"
     fi
 fi
