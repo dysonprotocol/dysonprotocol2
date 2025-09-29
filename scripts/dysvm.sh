@@ -53,7 +53,7 @@ check_python() {
     done
     
     if [ -z "$python_cmd" ]; then
-        echo "Error: Python 3.11+ not found"
+        echo "Error: Python 3.12+ not found"
         return 1
     fi
     
