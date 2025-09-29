@@ -52,7 +52,7 @@ fi
 
 echo "Preparing custom Python for go-embed-python..."
 # Create a unique, writable working directory to avoid permission issues
-PREPARE_DIR=$(mktemp -d "${TEMP_BASE%/}/python-download")
+PREPARE_DIR=$(mktemp -d "${TEMP_BASE%/}/python-download.XXXXXX")
 
 # Prepare the filenames - pattern must match actual filename in dist directory
 # The file pattern shown in your ls output is different from what you had in the script
