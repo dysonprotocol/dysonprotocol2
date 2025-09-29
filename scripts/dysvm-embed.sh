@@ -11,7 +11,8 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 DYSVM_DIR="$REPO_ROOT/dysvm"
 PYTHON_BUILD_STANDALONE_DIR="$DYSVM_DIR/python-build-standalone"
 GO_EMBED_PYTHON_DIR="$DYSVM_DIR/go-embed-python"
-TEMP_DIR="/tmp"
+# Prefer TMPDIR when set (CI often sets this); fallback to /tmp
+TEMP_BASE="${TMPDIR:-/tmp}"
 
 # Python version for DYSVM
 PYTHON_VERSION="3.12.11"
@@ -23,13 +24,13 @@ if [ "$(uname -s)" = "Darwin" ]; then
     if [ "$(uname -m)" = "arm64" ]; then
         OS=darwin
         ARCH=arm64
-        DIST_PATTERN="apple-darwin-pgo+lto"
+        DIST_PATTERN="apple-darwin-noopt"
         DIST_FULL="apple-darwin-pgo+lto-full"
         ARCH_NAME="aarch64"
     else
         OS=darwin
         ARCH=amd64
-        DIST_PATTERN="apple-darwin-pgo+lto"
+        DIST_PATTERN="apple-darwin-noopt"
         DIST_FULL="apple-darwin-pgo+lto-full"
         ARCH_NAME="x86_64"
     fi
@@ -38,19 +39,20 @@ else
         OS=linux
         ARCH=arm64
         DIST_PATTERN="unknown-linux-gnu-noopt"
-        DIST_FULL="unknown-linux-gnu-noopt-full"
+        DIST_FULL="unknown-linux-gnu-lto-full"
         ARCH_NAME="aarch64"
     else
         OS=linux
         ARCH=amd64
         DIST_PATTERN="unknown-linux-gnu-noopt"
-        DIST_FULL="unknown-linux-gnu-noopt-full"
+        DIST_FULL="unknown-linux-gnu-pgo+lto-full"
         ARCH_NAME="x86_64"
     fi
 fi
 
 echo "Preparing custom Python for go-embed-python..."
-mkdir -p "$TEMP_DIR/python-download"
+# Create a unique, writable working directory to avoid permission issues
+PREPARE_DIR=$(mktemp -d "${TEMP_BASE%/}/python-download")
 
 # Prepare the filenames - pattern must match actual filename in dist directory
 # The file pattern shown in your ls output is different from what you had in the script
@@ -63,7 +65,7 @@ if [ -z "$DIST_FILE" ]; then
     exit 1
 fi
 
-TARGET_FILE="$TEMP_DIR/python-download/cpython-${PYTHON_VERSION}+${CUSTOM_VERSION}-${ARCH_NAME}-${DIST_FULL}.tar.zst"
+TARGET_FILE="$PREPARE_DIR/cpython-${PYTHON_VERSION}+${CUSTOM_VERSION}-${ARCH_NAME}-${DIST_FULL}.tar.zst"
 EXTRACT_DIR="$TARGET_FILE.extracted"
 
 echo "Source file: $DIST_FILE"
@@ -98,7 +100,7 @@ go mod tidy && \
 go run ./python/generate \
     --python-standalone-version=${CUSTOM_VERSION} \
     --python-version=${PYTHON_VERSION} \
-    --prepare-path="$TEMP_DIR/python-download" \
+    --prepare-path="$PREPARE_DIR" \
     --prepare=false
 
 # Embed the Python interpreter into the go-embed-python package
