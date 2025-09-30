@@ -142,6 +142,16 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 				outAct := L.Mul(sp.Sub(spPrimeAct)).TruncateInt()
 				if outAct.LT(targetOutAmt) {
 					gross = gross.AddRaw(1)
+					effInActual = math.LegacyNewDecFromInt(gross).Mul(one.Sub(fee))
+					invSpPrime = math.LegacyOneDec().Quo(sp).Add(effInActual.Quo(L))
+					spPrimeAct, err = k.sqrtPrice(math.LegacyOneDec().Quo(invSpPrime))
+					if err != nil {
+						return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(err, "failed to compute next sqrt price (recheck)")
+					}
+					outAct = L.Mul(sp.Sub(spPrimeAct)).TruncateInt()
+					if outAct.LT(targetOutAmt) {
+						return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "insufficient liquidity for exact-out: outAct=%s targetOutAmt=%s", outAct.String(), targetOutAmt.String())
+					}
 				}
 				feeInt := gross.Sub(effInActual.TruncateInt())
 				if feeInt.IsPositive() {
@@ -174,6 +184,12 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 				outAct := L.Mul(math.LegacyOneDec().Quo(sp).Sub(math.LegacyOneDec().Quo(spPrimeAct))).TruncateInt()
 				if outAct.LT(targetOutAmt) {
 					gross = gross.AddRaw(1)
+					effInActual = math.LegacyNewDecFromInt(gross).Mul(one.Sub(fee))
+					spPrimeAct = sp.Add(effInActual.Quo(L))
+					outAct = L.Mul(math.LegacyOneDec().Quo(sp).Sub(math.LegacyOneDec().Quo(spPrimeAct))).TruncateInt()
+					if outAct.LT(targetOutAmt) {
+						return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "insufficient liquidity for exact-out")
+					}
 				}
 				feeInt := gross.Sub(effInActual.TruncateInt())
 				if feeInt.IsPositive() {
@@ -268,6 +284,13 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 			outAct := outDec.TruncateInt()
 			if outAct.LT(targetOutAmt) {
 				gross = gross.AddRaw(1)
+				effInActual = math.LegacyNewDecFromInt(gross).Mul(one.Sub(fee))
+				q = kDec.Quo(rIn.Add(effInActual)).Ceil()
+				outDec = rOut.Sub(q)
+				outAct = outDec.TruncateInt()
+				if outAct.LT(targetOutAmt) {
+					return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "insufficient liquidity for exact-out")
+				}
 			}
 			feeInt := gross.Sub(effInActual.TruncateInt())
 			if feeInt.IsPositive() {

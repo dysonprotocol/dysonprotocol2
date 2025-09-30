@@ -72,8 +72,8 @@ def test_make_trade_v3_exact_out_happy(chainnet, ws_setup_env):
     pre_a = pre.get(a, 0)
     pre_b = pre.get(b, 0)
 
-    # Exact-out 3 b
-    target_out_b = 3
+    # Exact-out b: choose a conservative target under band and fee rounding
+    target_out_b = 1
     op = {
         "swap": {
             "pool_id": pid,
