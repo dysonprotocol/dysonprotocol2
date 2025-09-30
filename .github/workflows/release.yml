@@ -25,10 +25,16 @@ jobs:
       - name: Install dev deps and run tests
         run: |
           make dev-install
-          make test
+          make test PYTEST_ARGS="--html=reports/pytest.html --self-contained-html  -n 4"
 
       - name: Set release name env
         run: echo "RELEASE_NAME=dysond-$(uname -m)-${GITHUB_REF_NAME}" >> $GITHUB_ENV
+
+      - name: Upload pytest report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: reports/pytest.html
 
       - name: Compress dysond binary
         run: |
@@ -46,3 +52,4 @@ jobs:
         with:
           name: ${{ env.RELEASE_NAME }}
           path: ./${{ env.RELEASE_NAME }}.zip
+      
