@@ -31,13 +31,14 @@ jobs:
         run: echo "ARCH=$(uname -m)" >> $GITHUB_ENV
 
       - name: Compress dysond binary
-        uses: somaz94/compress-decompress@v1
-        with:
-          command: compress
-          source: build/dysond
-          format: zip
-          dest: '.'
-          destfilename: 'dysond-${{ env.ARCH }}'
+        run: |
+          set -euo pipefail
+          : "${ARCH:?ARCH not set}"
+          if ! command -v zip > /dev/null 2>&1; then
+            echo "zip command not found on runner" >&2
+            exit 1
+          fi
+          zip -j "dysond-${ARCH}.zip" "build/dysond"
 
       - name: Upload release asset
         if: startsWith(github.ref, 'refs/tags/')
