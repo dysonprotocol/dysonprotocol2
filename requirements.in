@@ -2,3 +2,6 @@ tomlkit
 requests
 click
 pip-tools
+pytest-playwright
+black
+pytest-xdist[psutil]
