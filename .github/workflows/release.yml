@@ -38,11 +38,11 @@ jobs:
             echo "zip command not found on runner" >&2
             exit 1
           fi
-          zip -j "dysond-${ARCH}.zip" "build/dysond"
+          zip -j "dysond-${ARCH}-${{ github.ref_name }}.zip" "build/dysond"
 
       - name: Upload release asset
         if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4
         with:
-          name: dysond-${{ env.ARCH }}
-          path: ./dysond-${{ env.ARCH }}.zip
+          name: dysond-${{ env.ARCH }}-${{ github.ref_name }}
+          path: ./dysond-${{ env.ARCH }}-${{ github.ref_name }}.zip
