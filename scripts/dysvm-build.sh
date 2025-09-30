@@ -50,13 +50,54 @@ if [ "$(uname -s)" = "Darwin" ]; then
     --target-triple $([ "$(uname -m)" = "arm64" ] && echo "aarch64-apple-darwin" || echo "x86_64-apple-darwin") \
     --options noopt  # Use 'noopt' for FP consistency (avoids PGO/LTO variability)
 else
-    cd "$PYTHON_BUILD_STANDALONE_DIR" && \
-    PYBUILD_PYTHON_VERSION="$PYTHON_VERSION" \
+    cd "$PYTHON_BUILD_STANDALONE_DIR"
+    PYBUILD_PYTHON_VERSION="$PYTHON_VERSION"
+
+    TARGET_TRIPLE=$([ "$(uname -m)" = "aarch64" ] && echo "aarch64-unknown-linux-gnu" || echo "x86_64-unknown-linux-gnu")
+
+    # Run the linux build; if it fails in the final compress/rename step, fall back to manual compression.
+    set +e
     python3 build-linux.py \
-    --python "cpython-${PYTHON_VERSION_SHORT}" \
-    --python-source "$CPYTHON_DIR" \
-    --target-triple $([ "$(uname -m)" = "aarch64" ] && echo "aarch64-unknown-linux-gnu" || echo "x86_64-unknown-linux-gnu") \
-    --options noopt  # Use 'noopt' for FP consistency
+        --python "cpython-${PYTHON_VERSION_SHORT}" \
+        --python-source "$CPYTHON_DIR" \
+        --target-triple "$TARGET_TRIPLE" \
+        --options noopt
+    BUILD_STATUS=$?
+    set -e
+
+    # If build failed, try to manually create the expected .tar.zst from the built .tar
+    if [ $BUILD_STATUS -ne 0 ]; then
+        echo "python-build-standalone build failed; attempting manual compression fallback..."
+
+        BUILD_TAR="$PYTHON_BUILD_STANDALONE_DIR/build/cpython-${PYTHON_VERSION}-${TARGET_TRIPLE}-noopt.tar"
+        DIST_DIR="$PYTHON_BUILD_STANDALONE_DIR/dist"
+        mkdir -p "$DIST_DIR"
+
+        if [ ! -f "$BUILD_TAR" ]; then
+            echo "Error: Expected build archive not found: $BUILD_TAR"
+            exit $BUILD_STATUS
+        fi
+
+        RELEASE_TAG=$(git log -n 1 --date=format:%Y%m%dT%H%M --pretty=format:%ad)
+        DEST_FILE="$DIST_DIR/cpython-${PYTHON_VERSION}-${TARGET_TRIPLE}-noopt-${RELEASE_TAG}.tar.zst"
+        TMP_FILE="$DEST_FILE.tmp.$$"
+
+        if ! command -v zstd >/dev/null 2>&1; then
+            echo "Error: zstd not found; cannot perform fallback compression"
+            exit $BUILD_STATUS
+        fi
+
+        echo "Compressing $BUILD_TAR -> $DEST_FILE (fallback)"
+        # Use strong compression and all cores; write to temp then atomically move
+        zstd -T0 -22 -q -c "$BUILD_TAR" > "$TMP_FILE" && mv "$TMP_FILE" "$DEST_FILE"
+
+        if [ ! -f "$DEST_FILE" ]; then
+            echo "Fallback compression failed to produce $DEST_FILE"
+            exit $BUILD_STATUS
+        fi
+
+        echo "Fallback compression succeeded: $DEST_FILE"
+    fi
 fi
 
 echo "Python distributions built successfully"
