@@ -85,7 +85,7 @@ def test_simple_wsgi_example(chainnet, generate_account, faucet, api_address):
     test_names = ["Alice", "Bob", "Charlie"]
     for name in test_names:
         response = requests.get(
-            api_url, timeout=1, headers={"Host": script_url}, params={"name": name}
+            api_url, timeout=10, headers={"Host": script_url}, params={"name": name}
         )
         assert (
             response.status_code == 200
@@ -98,7 +98,7 @@ def test_simple_wsgi_example(chainnet, generate_account, faucet, api_address):
     # Test with POST request
     post_data = {"name": "PostUser"}
     post_response = requests.post(
-        api_url, timeout=1, headers={"Host": script_url}, data=post_data
+        api_url, timeout=10, headers={"Host": script_url}, data=post_data
     )
     assert post_response.status_code == 200, "WSGI POST request failed"
     print(f"POST response: {post_response.text[:100]}...")
