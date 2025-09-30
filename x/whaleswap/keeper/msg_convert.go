@@ -23,6 +23,10 @@ func (k Keeper) ConvertToLiquid(ctx context.Context, msg *whaleswapv1.MsgConvert
 	if strings.TrimSpace(msg.Denom) == "" {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "denom required")
 	}
+	// Prevent double-wrapping: solid only
+	if k.isLiquidDenom(msg.Denom) {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "denom is already liquid")
+	}
 	amt, ok := math.NewIntFromString(msg.Amount)
 	if !ok || !amt.IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid amount")
@@ -76,9 +80,29 @@ func (k Keeper) ConvertToSolid(ctx context.Context, msg *whaleswapv1.MsgConvertT
 	}); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to burn liquid %s", sdk.NewCoin(msg.LiquidDenom, amt).String())
 	}
-	backing := k.bank.GetBalance(ctx, k.accKeeper.GetModuleAddress(whaleswap.ModuleName), solid).Amount
-	if backing.LT(amt) {
-		return nil, fmt.Errorf("insufficient escrow backing")
+	// Ensure available solid backing is sufficient: subtract AMM reserves, offer escrow, auctions and pfand
+	ammRequired, err := k.tallyAMMReserves(ctx)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "tally AMM reserves")
+	}
+	escrowRequired, err := k.tallyEscrowRequired(ctx)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "tally escrow required")
+	}
+	pfandRequired, err := k.tallyPfandRequired(ctx)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "tally pfand required")
+	}
+	auctionRequired, err := k.tallyAuctionRequired(ctx)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "tally auctions required")
+	}
+	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
+	bal := k.bank.GetBalance(ctx, moduleAddr, solid).Amount
+	need := ammRequired.AmountOf(solid).Add(escrowRequired.AmountOf(solid)).Add(auctionRequired.AmountOf(solid)).Add(pfandRequired.AmountOf(solid))
+	available := bal.Sub(need)
+	if available.LT(amt) {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "insufficient backing for %s: available=%s need=%s", solid, available.String(), amt.String())
 	}
 	if err := k.bank.SendCoinsFromModuleToAccount(ctx, whaleswap.ModuleName, caller, sdk.NewCoins(sdk.NewCoin(solid, amt))); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to send solid %s to %s", sdk.NewCoin(solid, amt).String(), msg.Caller)

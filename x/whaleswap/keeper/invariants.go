@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"strings"
 
 	cosmossdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -45,6 +46,25 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 
 	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
 	actual := k.bank.SpendableCoins(ctx, moduleAddr)
+
+	// Hard constraints: module must not hold liquid wrappers or pool share denoms
+	for _, c := range actual {
+		d := c.Denom
+		if k.isLiquidDenom(d) {
+			return cosmossdkerrors.Wrapf(
+				sdkerrors.ErrLogic,
+				"module holds liquid wrapper balance: %s=%s",
+				d, c.Amount.String(),
+			)
+		}
+		if strings.HasPrefix(d, whaleswapv1.PoolsDenomPrefix) && c.Amount.IsPositive() {
+			return cosmossdkerrors.Wrapf(
+				sdkerrors.ErrLogic,
+				"module holds pool shares unexpectedly: %s=%s",
+				d, c.Amount.String(),
+			)
+		}
+	}
 	// Compute liquid-backing as the remainder of module solid balances after
 	// accounting for AMM reserves, offer escrow, auctions and pfand. This
 	// partitions module solids disjointly across components.
@@ -52,7 +72,11 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 	parts := sdk.NewCoins().Add(ammRequired...).Add(escrowRequired...).Add(auctionRequired...).Add(pfandRequired...)
 	actualSolids := sdk.NewCoins()
 	for _, c := range actual {
-		if !k.isLiquidDenom(c.Denom) && c.Amount.IsPositive() {
+		// Include only true solid denoms that are not pfand and not shares
+		if c.Amount.IsPositive() &&
+			!k.isLiquidDenom(c.Denom) &&
+			c.Denom != whaleswapv1.PfandDenom &&
+			!strings.HasPrefix(c.Denom, whaleswapv1.PoolsDenomPrefix) {
 			actualSolids = actualSolids.Add(c)
 		}
 	}
@@ -67,6 +91,17 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 
 	// Build expected totals per denom
 	expected := sdk.NewCoins().Add(ammRequired...).Add(escrowRequired...).Add(auctionRequired...).Add(pfandRequired...).Add(liquidBacking...)
+
+	// Pfand must match exactly (not be absorbed into liquidBacking)
+	havePfand := actual.AmountOf(whaleswapv1.PfandDenom)
+	needPfand := pfandRequired.AmountOf(whaleswapv1.PfandDenom)
+	if !havePfand.Equal(needPfand) {
+		return cosmossdkerrors.Wrapf(
+			sdkerrors.ErrLogic,
+			"pfand mismatch: have=%s expected=%s",
+			havePfand.String(), needPfand.String(),
+		)
+	}
 
 	// Actual module balances (spendable equals total for module accounts)
 	// reuse moduleAddr and actual from above

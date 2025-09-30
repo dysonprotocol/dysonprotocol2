@@ -18,6 +18,8 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 	}
 
 	// Pools
+	// Tally AMM reserve requirements and sanity-check shares supply
+	ammRequired := map[string]cosmossdk_math.Int{}
 	var maxPoolID uint64
 	for _, p := range gs.Pools {
 		if p.PoolId > maxPoolID {
@@ -25,6 +27,19 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 		}
 		if err := k.PoolsMap.Set(ctx, p.PoolId, *p); err != nil {
 			panic(err)
+		}
+		// accumulate AMM reserves per denom
+		for _, c := range p.Coins {
+			if cur, ok := ammRequired[c.Denom]; ok {
+				ammRequired[c.Denom] = cur.Add(c.Amount)
+			} else {
+				ammRequired[c.Denom] = c.Amount
+			}
+		}
+		// shares supply must be positive for any existing pool
+		supply := k.bank.GetSupply(ctx, p.SharesDenom).Amount
+		if !supply.IsPositive() {
+			panic(fmt.Sprintf("genesis: shares supply must be > 0 for pool %d denom %s", p.PoolId, p.SharesDenom))
 		}
 	}
 	if maxPoolID > 0 {
@@ -38,6 +53,8 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 	}
 
 	// Offers
+	escrowRequired := map[string]cosmossdk_math.Int{}
+	pfandRequired := map[string]cosmossdk_math.Int{}
 	var maxOfferID uint64
 	for _, o := range gs.Offers {
 		if o.OfferId > maxOfferID {
@@ -59,8 +76,11 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 		if err := k.OffersByOwnerStatus.Set(ctx, collections.Join3(o.Maker, o.Status, o.OfferId), o.OfferId); err != nil {
 			panic(err)
 		}
-		// price index only for open offers
+		// price index only for open offers (require positive amounts)
 		if o.Status == types.OfferStatusOpen {
+			if !o.RemainingHave.Amount.IsPositive() || !o.RemainingWant.Amount.IsPositive() {
+				panic(fmt.Sprintf("genesis: open offer %d must have positive have and want amounts", o.OfferId))
+			}
 			haveDenom := o.RemainingHave.Denom
 			wantDenom := o.RemainingWant.Denom
 			low, high := haveDenom, wantDenom
@@ -76,6 +96,26 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 			}
 			if err := k.OffersByPairPrice.Set(ctx, collections.Join3(pairKey, priceDec.String(), o.OfferId), o.OfferId); err != nil {
 				panic(err)
+			}
+			// Tally escrow/pfand requirements for open offers
+			if k.isLiquidDenom(o.RemainingHave.Denom) {
+				if o.PfandLocked.Amount.IsPositive() {
+					den := o.PfandLocked.Denom
+					if cur, ok := pfandRequired[den]; ok {
+						pfandRequired[den] = cur.Add(o.PfandLocked.Amount)
+					} else {
+						pfandRequired[den] = o.PfandLocked.Amount
+					}
+				}
+			} else {
+				if o.RemainingHave.Amount.IsPositive() {
+					den := o.RemainingHave.Denom
+					if cur, ok := escrowRequired[den]; ok {
+						escrowRequired[den] = cur.Add(o.RemainingHave.Amount)
+					} else {
+						escrowRequired[den] = o.RemainingHave.Amount
+					}
+				}
 			}
 		}
 	}
@@ -120,10 +160,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 		}
 	}
 
-	// Auctions
+	// Auctions (tally required sell escrow)
 	var maxAuctionID uint64
-	// Optional sanity: aggregate required escrow per denom
-	requiredEscrow := map[string]sdk.Coin{}
+	auctionRequired := map[string]cosmossdk_math.Int{}
 	for _, a := range gs.Auctions {
 		if a.AuctionId > maxAuctionID {
 			maxAuctionID = a.AuctionId
@@ -138,13 +177,12 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 		if err := k.AuctionsByBidSell.Set(ctx, collections.Join3(a.BidDenom, a.Sell.Denom, a.AuctionId), a.AuctionId); err != nil {
 			panic(err)
 		}
-		// Tally escrow requirement
-		if ex, ok := requiredEscrow[a.Sell.Denom]; ok {
-			sum := ex
-			sum.Amount = sum.Amount.Add(a.Sell.Amount)
-			requiredEscrow[a.Sell.Denom] = sum
+		// Tally auction escrow requirement
+		den := a.Sell.Denom
+		if cur, ok := auctionRequired[den]; ok {
+			auctionRequired[den] = cur.Add(a.Sell.Amount)
 		} else {
-			requiredEscrow[a.Sell.Denom] = a.Sell
+			auctionRequired[den] = a.Sell.Amount
 		}
 	}
 	if maxAuctionID > 0 {
@@ -156,12 +194,47 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 			panic(err)
 		}
 	}
-	// Validate module escrow balances cover required sums (best-effort; panic on deficit)
+	// Validate module balances cover all required components per denom (AMM reserves + offer escrow + pfand + auctions)
 	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
-	for denom, need := range requiredEscrow {
-		bal := k.bank.GetBalance(ctx, moduleAddr, denom)
-		if !bal.IsGTE(need) {
-			panic(fmt.Sprintf("genesis escrow deficit for denom %s: have=%s need=%s", denom, bal.String(), need.String()))
+	denomSet := map[string]struct{}{}
+	for d := range ammRequired {
+		denomSet[d] = struct{}{}
+	}
+	for d := range escrowRequired {
+		denomSet[d] = struct{}{}
+	}
+	for d := range pfandRequired {
+		denomSet[d] = struct{}{}
+	}
+	for d := range auctionRequired {
+		denomSet[d] = struct{}{}
+	}
+	for denom := range denomSet {
+		need := cosmossdk_math.NewInt(0)
+		if v, ok := ammRequired[denom]; ok {
+			need = need.Add(v)
+		}
+		if v, ok := escrowRequired[denom]; ok {
+			need = need.Add(v)
+		}
+		if v, ok := pfandRequired[denom]; ok {
+			need = need.Add(v)
+		}
+		if v, ok := auctionRequired[denom]; ok {
+			need = need.Add(v)
+		}
+		balAmt := k.bank.GetBalance(ctx, moduleAddr, denom).Amount
+		if balAmt.LT(need) {
+			panic(fmt.Sprintf(
+				"genesis module balance deficit for %s: have=%s need=%s (amm=%s escrow=%s pfand=%s auction=%s)",
+				denom,
+				balAmt.String(),
+				need.String(),
+				ammRequired[denom].String(),
+				escrowRequired[denom].String(),
+				pfandRequired[denom].String(),
+				auctionRequired[denom].String(),
+			))
 		}
 	}
 }
