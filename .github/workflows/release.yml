@@ -2,6 +2,8 @@ name: Build and Release dysond
 
 on:
   push:
+    branches:
+      - develop
     tags:
       - '*'
 
@@ -19,6 +21,11 @@ jobs:
 
       - name: Build dysond
         run: make dysvm build
+
+      - name: Install dev deps and run tests
+        run: |
+          make dev-install
+          make test
 
       - name: Upload release asset
         if: startsWith(github.ref, 'refs/tags/')

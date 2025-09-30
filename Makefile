@@ -83,6 +83,21 @@ ifeq (debug,$(findstring debug,$(COSMOS_BUILD_OPTIONS)))
 endif
 
 ###############################################################################
+###                          Development (Python)                           ###
+###############################################################################
+
+# Virtual environment for Python dev/test dependencies
+VENV := $(CURDIR)/.venv
+PY := $(VENV)/bin/python
+
+dev-venv:
+	@test -d $(VENV) || python3 -m venv $(VENV)
+	@$(PY) -m pip install -U pip
+
+dev-install: dev-venv
+	@$(PY) -m pip install -r dev-requirements.txt
+
+###############################################################################
 ###                                Building                                 ###
 ###############################################################################
 
@@ -91,6 +106,7 @@ build:
 	@echo "Building dysond binary..."
 	@mkdir -p $(BUILDDIR)
 	@go build -mod=readonly $(BUILD_FLAGS) -o $(BUILDDIR)/dysond ./dysond
+	@chmod +x $(BUILDDIR)/dysond || true
 
 install:
 	@echo "Installing dysond binary..."
@@ -112,7 +128,8 @@ test: install
 		RAMDISK_MOUNT=$$(mktemp -d); \
 		mount -t hfs $$RAMDISK_DEVICE $$RAMDISK_MOUNT; \
 		echo "Created RAM disk at $$RAMDISK_MOUNT"; \
-		DEFAULT_BASE_DIR=$$RAMDISK_MOUNT/test-dysonchains python -u -m pytest  --capture=fd -x --showlocals --durations=0 --ff --nf  $(PYTEST_ARGS); \
+		PYTHON_RUNNER=$$( [ -x "$(PY)" ] && echo "$(PY)" || echo "python" ); \
+		DEFAULT_BASE_DIR=$$RAMDISK_MOUNT/test-dysonchains $$PYTHON_RUNNER -u -m pytest  --capture=fd -x --showlocals --durations=0 --ff --nf  $(PYTEST_ARGS); \
 		TEST_EXIT_CODE=$$?; \
 		echo "Cleaning up RAM disk"; \
 		umount $$RAMDISK_MOUNT; \
@@ -127,7 +144,8 @@ test: install
 		fi; \
 		TEST_TMPDIR=$$(mktemp -d $$TMPDIR_BASE/dyson-test.XXXXXX); \
 		echo "Using temporary directory: $$TEST_TMPDIR"; \
-		DEFAULT_BASE_DIR=$$TEST_TMPDIR/test-dysonchains python -u -m pytest  --capture=fd -x --showlocals --durations=0 --ff --nf $(PYTEST_ARGS); \
+		PYTHON_RUNNER=$$( [ -x "$(PY)" ] && echo "$(PY)" || echo "python" ); \
+		DEFAULT_BASE_DIR=$$TEST_TMPDIR/test-dysonchains $$PYTHON_RUNNER -u -m pytest  --capture=fd -x --showlocals --durations=0 --ff --nf $(PYTEST_ARGS); \
 		TEST_EXIT_CODE=$$?; \
 		echo "Cleaning up temporary directory"; \
 		rm -rf $$TEST_TMPDIR; \
