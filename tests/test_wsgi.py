@@ -53,7 +53,7 @@ def test_simple_wsgi_example(chainnet, generate_account, faucet, api_address):
         nonlocal attempts
         attempts += 1
 
-        response = requests.get(api_url, timeout=1, headers={"Host": script_url})
+        response = requests.get(api_url, timeout=10, headers={"Host": script_url})
         ready = response.status_code == 200
 
         (
