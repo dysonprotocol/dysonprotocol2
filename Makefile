@@ -95,7 +95,7 @@ dev-venv:
 	@$(PY) -m pip install -U pip
 
 dev-install: dev-venv
-	@$(PY) -m pip install -r dev-requirements.txt
+	@$(PY) -m pip install -r requirements.txt
 
 ###############################################################################
 ###                                Building                                 ###
