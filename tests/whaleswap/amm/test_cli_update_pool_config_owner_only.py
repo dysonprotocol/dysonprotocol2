@@ -80,7 +80,7 @@ def test_update_pool_config_owner_only(
         "--max-price",
         "3udys",
         "--max-price",
-        f"3{name}",
+        f"1{name}",
         "--from",
         creator_name,
     )

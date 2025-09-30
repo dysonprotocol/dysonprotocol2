@@ -130,7 +130,7 @@ test: install
 		RAMDISK_MOUNT=$$(mktemp -d); \
 		mount -t hfs $$RAMDISK_DEVICE $$RAMDISK_MOUNT; \
 		echo "Created RAM disk at $$RAMDISK_MOUNT"; \
-		DEFAULT_BASE_DIR=$$RAMDISK_MOUNT/test-dysonchains python -u -m pytest  --capture=fd -x --showlocals --durations=0 --ff --nf  $(PYTEST_ARGS); \
+		DEFAULT_BASE_DIR=$$RAMDISK_MOUNT/test-dysonchains python -u -m pytest  --capture=fd -x --showlocals --durations=0 $(PYTEST_ARGS); \
 		TEST_EXIT_CODE=$$?; \
 		echo "Cleaning up RAM disk"; \
 		umount $$RAMDISK_MOUNT; \
@@ -145,7 +145,7 @@ test: install
 		fi; \
 		TEST_TMPDIR=$$(mktemp -d $$TMPDIR_BASE/dyson-test.XXXXXX); \
 		echo "Using temporary directory: $$TEST_TMPDIR"; \
-		DEFAULT_BASE_DIR=$$TEST_TMPDIR/test-dysonchains python -u -m pytest  --capture=fd -x --showlocals --durations=0 --ff --nf $(PYTEST_ARGS); \
+		DEFAULT_BASE_DIR=$$TEST_TMPDIR/test-dysonchains python -u -m pytest  --capture=fd -x --showlocals --durations=0 $(PYTEST_ARGS); \
 		TEST_EXIT_CODE=$$?; \
 		echo "Cleaning up temporary directory"; \
 		rm -rf $$TEST_TMPDIR; \

@@ -57,7 +57,38 @@ def test_add_liquidity_v2(chainnet, generate_account, faucet, register_name):
     denom1 = coins[1]["denom"]
     a1 = "300udys" if denom0 == "udys" else f"50{name}"
     a2 = "300udys" if denom1 == "udys" else f"50{name}"
-    # First, intentionally misproportional amounts – expect failure (serves as guard)
+
+    # First, intentionally misproportional amounts – in v2 this SHOULD succeed with refunds
+    # Compute expected refunds deterministically (no branching in test)
+    def _amt(coin_str, denom):
+        assert coin_str.endswith(
+            denom
+        ), f"coin '{coin_str}' must end with denom '{denom}'"
+        return int(coin_str[: -len(denom)])
+
+    exR1 = int(p_pre["coins"][0]["amount"])  # denom0 reserve
+    exR2 = int(p_pre["coins"][1]["amount"])  # denom1 reserve
+    add1_i = _amt(a1, denom0)
+    add2_i = _amt(a2, denom1)
+    # Ceil divisions to match keeper math; compute both sides and then take mins/max without branching
+    targetA2 = (add1_i * exR2 + (exR1 - 1)) // exR1
+    targetA1 = (add2_i * exR1 + (exR2 - 1)) // exR2
+    eff1 = min(add1_i, targetA1)
+    eff2 = min(add2_i, targetA2)
+    refund1 = add1_i - eff1
+    refund2 = add2_i - eff2
+
+    # Capture owner balances before tx for denom0/denom1
+    def _bal(addr, denom):
+        b = dysond("query", "bank", "balances", addr)
+        blist = b.get("balances", [])
+        return sum(
+            [int(c.get("amount", "0")) * int(c.get("denom") == denom) for c in blist]
+        )
+
+    pre_b0 = _bal(owner_addr, denom0)
+    pre_b1 = _bal(owner_addr, denom1)
+
     bad = dysond(
         "tx",
         "whaleswap",
@@ -72,8 +103,32 @@ def test_add_liquidity_v2(chainnet, generate_account, faucet, register_name):
         owner_name,
     )
     assert (
-        bad.get("code", 0) != 0
-    ), f"expected misproportional add-liquidity failure: {json.dumps(bad, indent=2)}"
+        bad.get("code", 1) == 0
+    ), f"misproportional add-liquidity should succeed with refunds: {json.dumps(bad, indent=2)}"
+    # Verify minted shares > 0 using event_dict built from events
+    event_dict = {
+        e.get("type"): {a.get("key"): a.get("value") for a in e.get("attributes", [])}
+        for e in bad.get("events", [])
+    }
+    minted_shares = int(
+        str(
+            event_dict.get(
+                "dysonprotocol.whaleswap.v1.EventPoolLiquidityAdded", {}
+            ).get("shares", "0")
+        ).strip('"')
+    )
+    assert (
+        minted_shares > 0
+    ), f"no shares minted on misproportional add: {json.dumps(bad, indent=2)}"
+
+    # Verify owner balance deltas equal effective adds (refunds implied)
+    post_b0 = _bal(owner_addr, denom0)
+    post_b1 = _bal(owner_addr, denom1)
+    delta0 = pre_b0 - post_b0
+    delta1 = pre_b1 - post_b1
+    assert (
+        delta0 == eff1 and delta1 == eff2
+    ), f"unexpected balance deltas: expected ({eff1},{eff2}) got ({delta0},{delta1}); tx: {json.dumps(bad, indent=2)}"
 
     # Now add proportionally to current reserves (coins[0]:coins[1] = 1:2)
     prop_a = f"50{name}" if denom0 == name else "100udys"
@@ -94,13 +149,16 @@ def test_add_liquidity_v2(chainnet, generate_account, faucet, register_name):
     assert (
         add_ok.get("code", 1) == 0
     ), f"add-liquidity proportional failed: {json.dumps(add_ok, indent=2)}"
-    evs = [
-        e
+    # Verify shares > 0 via the same event_dict approach
+    event_dict2 = {
+        e.get("type"): {a.get("key"): a.get("value") for a in e.get("attributes", [])}
         for e in add_ok.get("events", [])
-        if e.get("type") == "dysonprotocol.whaleswap.v1.EventPoolLiquidityAdded"
-    ]
-    assert evs, f"liquidity-added event missing: {json.dumps(add_ok, indent=2)}"
-    shares_attr = [a for a in evs[0].get("attributes", []) if a.get("key") == "shares"]
-    assert (
-        shares_attr and int(str(shares_attr[0]["value"]).strip('"')) > 0
-    ), f"no shares minted: {json.dumps(add_ok, indent=2)}"
+    }
+    minted_shares2 = int(
+        str(
+            event_dict2.get(
+                "dysonprotocol.whaleswap.v1.EventPoolLiquidityAdded", {}
+            ).get("shares", "0")
+        ).strip('"')
+    )
+    assert minted_shares2 > 0, f"no shares minted: {json.dumps(add_ok, indent=2)}"

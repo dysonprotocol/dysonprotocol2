@@ -42,6 +42,8 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 
 	add1 := msg.Amount1.Amount
 	add2 := msg.Amount2.Amount
+	orig1 := add1
+	orig2 := add2
 	refund1 := math.NewInt(0)
 	refund2 := math.NewInt(0)
 	var dL math.LegacyDec
@@ -110,8 +112,9 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		}
 	}
 
-	if err := k.sendToModule(ctx, signer, sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, add1), sdk.NewCoin(pool.Coins[1].Denom, add2))); err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "failed to escrow adds %s,%s", sdk.NewCoin(pool.Coins[0].Denom, add1).String(), sdk.NewCoin(pool.Coins[1].Denom, add2).String())
+	// Escrow the full user-provided amounts, then refund the unused difference.
+	if err := k.sendToModule(ctx, signer, sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, orig1), sdk.NewCoin(pool.Coins[1].Denom, orig2))); err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "failed to escrow adds %s,%s", sdk.NewCoin(pool.Coins[0].Denom, orig1).String(), sdk.NewCoin(pool.Coins[1].Denom, orig2).String())
 	}
 	refunds := sdk.NewCoins()
 	if refund1.IsPositive() {

@@ -5,8 +5,10 @@ pytest-xdist[psutil]
 pytest-html
 tomlkit==0.12.3
 pytest==7.4.3
+pytest-random-order
 pytest-timeout==2.2.0
 requests==2.31.0
 python-dotenv==1.0.0
 click==8.1.7
 pyyaml==6.0.1 
+ruff
