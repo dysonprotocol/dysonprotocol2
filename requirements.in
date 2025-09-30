@@ -2,6 +2,7 @@ pip-tools
 pytest-playwright
 black
 pytest-xdist[psutil]
+pytest-html
 tomlkit==0.12.3
 pytest==7.4.3
 pytest-timeout==2.2.0

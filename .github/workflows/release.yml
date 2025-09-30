@@ -25,6 +25,8 @@ jobs:
       - name: Install dev deps and run tests
         run: |
           make dev-install
+          ./.venv/bin/pip install pytest-html
+          mkdir -p reports
           make test PYTEST_ARGS="--html=reports/pytest.html --self-contained-html  -n 4"
 
       - name: Set release name env

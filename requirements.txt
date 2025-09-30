@@ -25,6 +25,10 @@ idna==3.10
     # via requests
 iniconfig==2.1.0
     # via pytest
+jinja2==3.1.6
+    # via pytest-html
+markupsafe==3.0.3
+    # via jinja2
 mypy-extensions==1.1.0
     # via black
 packaging==25.0
@@ -54,11 +58,17 @@ pytest==7.4.3
     # via
     #   -r requirements.in
     #   pytest-base-url
+    #   pytest-html
+    #   pytest-metadata
     #   pytest-playwright
     #   pytest-timeout
     #   pytest-xdist
 pytest-base-url==2.1.0
     # via pytest-playwright
+pytest-html==4.1.1
+    # via -r requirements.in
+pytest-metadata==3.1.1
+    # via pytest-html
 pytest-playwright==0.7.1
     # via -r requirements.in
 pytest-timeout==2.2.0
