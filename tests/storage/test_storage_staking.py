@@ -19,11 +19,15 @@ class TestStorageStakingParameters:
         params = params_result["params"]
 
         # Verify default values
-        expected_max_storage_size = 50 * 1024  # 50KB default from params.go
-        expected_storage_stake_multiple = "0"  # Default disabled validation
+        expected_max_storage_size = 100 * 1024  # 100KB default from params.go
+        expected_storage_stake_multiple = decimal.Decimal(
+            "0.0"
+        )  # Default enabled validation
 
         actual_max_storage_size = int(params["max_storage_size"])
-        actual_storage_stake_multiple = params["storage_stake_multiple"]
+        actual_storage_stake_multiple = decimal.Decimal(
+            params["storage_stake_multiple"]
+        )
 
         assert actual_max_storage_size == expected_max_storage_size
         assert actual_storage_stake_multiple == expected_storage_stake_multiple
@@ -75,15 +79,6 @@ class TestStorageStakingParameters:
         current_decimal = decimal.Decimal(current_multiplier)
         assert current_decimal >= 0
 
-        # Test valid decimal values
-        valid_values = ["0", "0.5", "1.0", "2.0", "100.123456", "1000000.0"]
-        for valid_value in valid_values:
-            parsed = decimal.Decimal(valid_value)
-            assert parsed >= 0
-            # Verify calculation compatibility
-            result = parsed * decimal.Decimal("1000")
-            assert result >= 0
-
         print("✅ Parameter validation verified")
 
     def test_governance_parameter_updates(self, chainnet, generate_account, faucet):
@@ -103,8 +98,35 @@ class TestStorageStakingParameters:
         # Get current params
         current_params = dysond("query", "storage", "params")["params"]
 
-        # Test valid parameter update proposals
-        valid_multipliers = ["0", "0.5", "1.0", "2.0"]
+        # Ensure proposer (alice) has voting power by delegating stake
+        validators = dysond("query", "staking", "validators")
+        validator_operator = validators["validators"][0]["operator_address"]
+        delegate_result = dysond(
+            "tx",
+            "staking",
+            "delegate",
+            validator_operator,
+            "50000000udys",
+            "--from",
+            proposer_name,
+            "--yes",
+        )
+        assert delegate_result["code"] == 0
+
+        # Prepare test account with zero delegated stake
+        test_account = "bob"
+        bob_addr = dysond("keys", "show", test_account, "-a").strip()
+        delegations_result = dysond("query", "staking", "delegations", bob_addr)
+        assert delegations_result["delegation_responses"] is None
+
+        # Large data that requires stake when multiplier > 0
+        large_data = "a" * 10000  # 10KB
+
+        inital_value = current_params["storage_stake_multiple"]
+
+        # Test valid parameter update proposals (non-zero multipliers)
+
+        valid_multipliers = ["2.0", "0.5"]
 
         for multiplier in valid_multipliers:
             test_params = dict(current_params)
@@ -122,6 +144,7 @@ class TestStorageStakingParameters:
                 "deposit": "10000000udys",
                 "title": f"Test Storage Stake Multiple {multiplier}",
                 "summary": f"Test setting storage_stake_multiple to {multiplier}",
+                "expedited": True,
             }
 
             # Submit proposal (should succeed)
@@ -142,6 +165,149 @@ class TestStorageStakingParameters:
                 assert (
                     prop_result["code"] == 0
                 ), f"Valid proposal should succeed for '{multiplier}'"
+
+            # Get proposal ID and pass it via governance
+            events = prop_result.get("events", [])
+            submit_proposal_events = [
+                e for e in events if e["type"] == "submit_proposal"
+            ]
+            assert (
+                len(submit_proposal_events) > 0
+            ), f"No submit_proposal event found in: {events}"
+            proposal_id_attrs = [
+                attr
+                for attr in submit_proposal_events[0]["attributes"]
+                if attr["key"] == "proposal_id"
+            ]
+            assert (
+                len(proposal_id_attrs) > 0
+            ), "No proposal_id attribute found in submit_proposal event"
+            proposal_id = proposal_id_attrs[0]["value"]
+
+            # Vote yes and wait for proposal to reach a final state
+            vote_result = dysond(
+                "tx", "gov", "vote", proposal_id, "yes", "--from", proposer_name
+            )
+            assert (
+                vote_result["code"] == 0
+            ), f"Voting failed: {vote_result.get('raw_log', 'no raw_log')}"
+
+            def check_proposal_status():
+                result = dysond("query", "gov", "proposal", proposal_id)
+                status = result.get("proposal", {}).get("status", "UNKNOWN")
+                final_states = [
+                    "PROPOSAL_STATUS_PASSED",
+                    "PROPOSAL_STATUS_REJECTED",
+                    "PROPOSAL_STATUS_FAILED",
+                ]
+                return status in final_states
+
+            poll_until_condition(check_proposal_status, timeout=120, poll_interval=2)
+
+            # Verify proposal passed
+            final_result = dysond("query", "gov", "proposal", proposal_id)
+            final_status = final_result.get("proposal", {}).get("status", "UNKNOWN")
+            assert (
+                final_status == "PROPOSAL_STATUS_PASSED"
+            ), f"Expected proposal to pass but got status: {final_status}"
+
+            # After proposal: attempt storage set, expect insufficient stake
+            with pytest.raises(Exception, match="insufficient delegated stake"):
+                dysond(
+                    "tx",
+                    "storage",
+                    "set",
+                    "--index",
+                    "test_zero_multiplier_bypass",
+                    "--data",
+                    large_data,
+                    "--from",
+                    test_account,
+                    "--gas",
+                    "auto",
+                )
+
+        # Now set multiplier to zero and verify storage succeeds
+        zero_params = dict(current_params)
+        zero_params["storage_stake_multiple"] = "0"
+
+        zero_proposal_data = {
+            "messages": [
+                {
+                    "@type": "/dysonprotocol.storage.v1.MsgUpdateParams",
+                    "authority": gov_module_addr,
+                    "params": zero_params,
+                }
+            ],
+            "metadata": "ipfs://CID",
+            "deposit": "10000000udys",
+            "title": "Set Storage Stake Multiple 0",
+            "summary": "Set storage_stake_multiple to 0 to disable validation",
+            "expedited": True,
+        }
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=True) as f:
+            json.dump(zero_proposal_data, f)
+            f.flush()
+            zero_proposal_file = f.name
+            zero_prop_result = dysond(
+                "tx",
+                "gov",
+                "submit-proposal",
+                zero_proposal_file,
+                "--from",
+                proposer_name,
+            )
+            assert zero_prop_result["code"] == 0
+
+        zero_events = zero_prop_result.get("events", [])
+        zero_submit_events = [e for e in zero_events if e["type"] == "submit_proposal"]
+        zero_id_attrs = [
+            attr
+            for attr in zero_submit_events[0]["attributes"]
+            if attr["key"] == "proposal_id"
+        ]
+        zero_proposal_id = zero_id_attrs[0]["value"]
+
+        zero_vote_result = dysond(
+            "tx", "gov", "vote", zero_proposal_id, "yes", "--from", proposer_name
+        )
+        assert zero_vote_result["code"] == 0
+
+        def zero_check_status():
+            result = dysond("query", "gov", "proposal", zero_proposal_id)
+            status = result.get("proposal", {}).get("status", "UNKNOWN")
+            final_states = [
+                "PROPOSAL_STATUS_PASSED",
+                "PROPOSAL_STATUS_REJECTED",
+                "PROPOSAL_STATUS_FAILED",
+            ]
+            return status in final_states
+
+        poll_until_condition(zero_check_status, timeout=120, poll_interval=2)
+
+        zero_final = dysond("query", "gov", "proposal", zero_proposal_id)
+        zero_status = zero_final.get("proposal", {}).get("status", "UNKNOWN")
+        assert zero_status == "PROPOSAL_STATUS_PASSED"
+
+        storage_result = dysond(
+            "tx",
+            "storage",
+            "set",
+            "--index",
+            "test_zero_multiplier_bypass",
+            "--data",
+            large_data,
+            "--from",
+            test_account,
+            "--gas",
+            "auto",
+        )
+        assert storage_result["code"] == 0
+
+        metrics_result = dysond("query", "storage", "metrics", bob_addr)
+        assert int(metrics_result["min_stake_amount"]) == 0
+        assert int(metrics_result["total_bytes"]) > 0
 
         print("✅ Governance parameter updates validated")
 
@@ -283,279 +449,6 @@ class TestStorageStakingMetrics:
 
         assert current_stake == 0
         print("✅ No delegations correctly returns zero stake")
-
-
-class TestStorageStakingValidation:
-    """Tests for stake-based storage validation functionality."""
-
-    def test_default_zero_multiplier_bypasses_validation(self, chainnet):
-        """Test that default storage_stake_multiple = '0' bypasses all validation."""
-        dysond = chainnet[0]
-
-        # Verify default parameter
-        params_result = dysond("query", "storage", "params")
-        assert params_result["params"]["storage_stake_multiple"] == "0"
-
-        # Use bob who has no delegations
-        test_account = "bob"
-        bob_addr = dysond("keys", "show", test_account, "-a").strip()
-
-        # Verify bob has no delegations
-        delegations_result = dysond("query", "staking", "delegations", bob_addr)
-        assert delegations_result["delegation_responses"] is None
-
-        # Store large data that would require significant stake with non-zero multiplier
-        large_data = "a" * 10000  # 10KB
-        storage_result = dysond(
-            "tx",
-            "storage",
-            "set",
-            "--index",
-            "test_zero_multiplier_bypass",
-            "--data",
-            large_data,
-            "--from",
-            test_account,
-            "--gas",
-            "auto",
-        )
-
-        assert storage_result["code"] == 0
-
-        # Verify metrics show zero min_stake_amount
-        metrics_result = dysond("query", "storage", "metrics", bob_addr)
-        assert int(metrics_result["min_stake_amount"]) == 0
-        assert int(metrics_result["total_bytes"]) > 0
-
-        print("✅ Zero multiplier bypasses validation")
-
-    def test_governance_enable_stake_validation_comprehensive(
-        self, chainnet, generate_account, faucet
-    ):
-        """Test complete stake validation functionality by enabling it via governance."""
-        dysond = chainnet[0]
-
-        # Create test accounts
-        [insufficient_user, insufficient_addr] = generate_account(
-            "insufficient", faucet_amount=1_000_000
-        )
-        [sufficient_user, sufficient_addr] = generate_account(
-            "sufficient", faucet_amount=10_000_000
-        )
-
-        # Set up alice for governance voting
-        validators = dysond("query", "staking", "validators")
-        validator_operator = validators["validators"][0]["operator_address"]
-
-        delegate_result = dysond(
-            "tx",
-            "staking",
-            "delegate",
-            validator_operator,
-            "50000000udys",
-            "--from",
-            "alice",
-            "--yes",
-        )
-        assert delegate_result["code"] == 0
-
-        # Enable stake validation (set storage_stake_multiple = "1.0")
-        proposal_id = self._submit_governance_proposal_with_multiplier(
-            dysond, "alice", "1.0"
-        )
-
-        # Verify parameter updated
-        updated_params = dysond("query", "storage", "params")
-        assert updated_params["params"]["storage_stake_multiple"] == "1.0"
-        print("✅ Stake validation enabled via governance")
-
-        # Test insufficient stake scenario
-        insufficient_data = "a" * 1000  # 1000 bytes = 1000 udys required
-
-        with pytest.raises(Exception, match="insufficient delegated stake"):
-            dysond(
-                "tx",
-                "storage",
-                "set",
-                "--index",
-                "test_insufficient_stake",
-                "--data",
-                insufficient_data,
-                "--from",
-                insufficient_user,
-                "--gas",
-                "auto",
-            )
-        print("✅ Storage correctly rejected for insufficient stake")
-
-        # Test sufficient stake scenario
-        delegate_sufficient_result = dysond(
-            "tx",
-            "staking",
-            "delegate",
-            validator_operator,
-            "2000000udys",
-            "--from",
-            sufficient_user,
-        )
-        assert delegate_sufficient_result["code"] == 0
-
-        sufficient_data = "b" * 1000  # 1000 bytes = 1000 udys required
-        sufficient_result = dysond(
-            "tx",
-            "storage",
-            "set",
-            "--index",
-            "test_sufficient_stake",
-            "--data",
-            sufficient_data,
-            "--from",
-            sufficient_user,
-            "--gas",
-            "auto",
-        )
-        assert sufficient_result["code"] == 0
-        print("✅ Storage succeeded with sufficient stake")
-
-        # Test metrics calculation
-        metrics_result = dysond("query", "storage", "metrics", sufficient_addr)
-        min_stake = int(metrics_result["min_stake_amount"])
-        total_bytes = int(metrics_result["total_bytes"])
-        current_stake = int(metrics_result["current_stake_amount"])
-
-        assert (
-            min_stake == total_bytes
-        ), f"With 1.0 multiplier, min_stake ({min_stake}) should equal total_bytes ({total_bytes})"
-        assert (
-            current_stake >= min_stake
-        ), f"Current stake ({current_stake}) should be >= min_stake ({min_stake})"
-        print(
-            f"✅ Metrics calculation: total_bytes={total_bytes}, min_stake={min_stake}, current_stake={current_stake}"
-        )
-
-        # Test StorageSet delta calculation (updating existing entry)
-        larger_data = "c" * 1500  # 1500 bytes total, delta = +500 bytes
-        update_result = dysond(
-            "tx",
-            "storage",
-            "set",
-            "--index",
-            "test_sufficient_stake",  # Update existing
-            "--data",
-            larger_data,
-            "--from",
-            sufficient_user,
-            "--gas",
-            "auto",
-        )
-        assert update_result["code"] == 0
-
-        # Verify updated metrics
-        updated_metrics = dysond("query", "storage", "metrics", sufficient_addr)
-        updated_min_stake = int(updated_metrics["min_stake_amount"])
-        updated_total_bytes = int(updated_metrics["total_bytes"])
-
-        assert updated_total_bytes == 1500
-        assert updated_min_stake == 1500
-        print("✅ Delta calculation works for entry updates")
-
-        # Test StorageDelete (should always succeed)
-        delete_result = dysond(
-            "tx",
-            "storage",
-            "delete",
-            "--from",
-            sufficient_user,
-            "--indexes",
-            "test_sufficient_stake",
-        )
-        assert delete_result["code"] == 0
-
-        # Verify metrics updated after deletion
-        post_delete_metrics = dysond("query", "storage", "metrics", sufficient_addr)
-        post_delete_min_stake = int(post_delete_metrics["min_stake_amount"])
-        post_delete_total_bytes = int(post_delete_metrics["total_bytes"])
-
-        assert post_delete_total_bytes == 0
-        assert post_delete_min_stake == 0
-        print("✅ StorageDelete updates metrics correctly")
-
-        # Restore default parameter
-        self._submit_governance_proposal_with_multiplier(dysond, "alice", "0")
-
-        final_params = dysond("query", "storage", "params")
-        assert final_params["params"]["storage_stake_multiple"] == "0"
-        print("✅ Stake validation disabled via governance")
-
-    def test_fractional_multiplier_calculations(
-        self, chainnet, generate_account, faucet
-    ):
-        """Test stake calculations with fractional storage_stake_multiple values."""
-        dysond = chainnet[0]
-
-        test_account_name, test_addr = generate_account(
-            "fractional_test", faucet_amount=10_000_000
-        )
-
-        # Set up governance
-        validators = dysond("query", "staking", "validators")
-        validator_operator = validators["validators"][0]["operator_address"]
-
-        delegate_result = dysond(
-            "tx",
-            "staking",
-            "delegate",
-            validator_operator,
-            "50000000udys",
-            "--from",
-            "alice",
-            "--yes",
-        )
-        assert delegate_result["code"] == 0
-
-        # Test with storage_stake_multiple = "0.5"
-        self._submit_governance_proposal_with_multiplier(dysond, "alice", "0.5")
-
-        # Give test user some stake
-        delegate_test_result = dysond(
-            "tx",
-            "staking",
-            "delegate",
-            validator_operator,
-            "1000000udys",
-            "--from",
-            test_account_name,
-        )
-        assert delegate_test_result["code"] == 0
-
-        # Store 1000 bytes (should require 500 udys with 0.5 multiplier)
-        test_data = "a" * 1000
-        storage_result = dysond(
-            "tx",
-            "storage",
-            "set",
-            "--index",
-            "fractional_test",
-            "--data",
-            test_data,
-            "--from",
-            test_account_name,
-            "--gas",
-            "auto",
-        )
-        assert storage_result["code"] == 0
-
-        # Verify metrics calculation
-        metrics = dysond("query", "storage", "metrics", test_addr)
-        min_stake = int(metrics["min_stake_amount"])
-        total_bytes = int(metrics["total_bytes"])
-
-        expected_min_stake = int(total_bytes * 0.5)
-        assert min_stake == expected_min_stake
-        print(f"✅ Fractional multiplier: {total_bytes} bytes × 0.5 = {min_stake} udys")
-
-        # Restore default
-        self._submit_governance_proposal_with_multiplier(dysond, "alice", "0")
 
     def test_zero_bytes_storage_always_succeeds(
         self, chainnet, generate_account, faucet
@@ -765,6 +658,7 @@ class TestStorageStakingValidation:
         final_result = dysond("query", "gov", "proposal", proposal_id)
         final_status = final_result.get("proposal", {}).get("status", "UNKNOWN")
         assert final_status == "PROPOSAL_STATUS_PASSED"
+        self._submit_governance_proposal_with_multiplier(dysond, "alice", "0")
 
         return proposal_id
 

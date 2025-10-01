@@ -122,35 +122,14 @@ install:
 test: install
 	@echo "--> running pytest"
 	@echo "--> Setting up in-memory filesystem for tests"
-	@if [ "$$(uname)" = "Darwin" ]; then \
-		RAMDISK_SIZE=512; \
-		RAMDISK_SECTORS=$$((RAMDISK_SIZE * 2048)); \
-		RAMDISK_DEVICE=$$(hdiutil attach -nomount ram://$$RAMDISK_SECTORS); \
-		newfs_hfs -v DysonTestRAM $$RAMDISK_DEVICE > /dev/null 2>&1; \
-		RAMDISK_MOUNT=$$(mktemp -d); \
-		mount -t hfs $$RAMDISK_DEVICE $$RAMDISK_MOUNT; \
-		echo "Created RAM disk at $$RAMDISK_MOUNT"; \
-		DEFAULT_BASE_DIR=$$RAMDISK_MOUNT/test-dysonchains python -u -m pytest  --capture=fd -x --showlocals --durations=0 $(PYTEST_ARGS); \
-		TEST_EXIT_CODE=$$?; \
-		echo "Cleaning up RAM disk"; \
-		umount $$RAMDISK_MOUNT; \
-		rmdir $$RAMDISK_MOUNT; \
-		hdiutil detach $$RAMDISK_DEVICE > /dev/null 2>&1; \
-		exit $$TEST_EXIT_CODE; \
-	else \
-		if [ -d "/dev/shm" ]; then \
-			TMPDIR_BASE=/dev/shm; \
-		else \
-			TMPDIR_BASE=/tmp; \
-		fi; \
-		TEST_TMPDIR=$$(mktemp -d $$TMPDIR_BASE/dyson-test.XXXXXX); \
-		echo "Using temporary directory: $$TEST_TMPDIR"; \
-		DEFAULT_BASE_DIR=$$TEST_TMPDIR/test-dysonchains python -u -m pytest  --capture=fd -x --showlocals --durations=0 $(PYTEST_ARGS); \
-		TEST_EXIT_CODE=$$?; \
-		echo "Cleaning up temporary directory"; \
-		rm -rf $$TEST_TMPDIR; \
-		exit $$TEST_EXIT_CODE; \
-	fi
+	@DEFAULT_BASE_DIR=$$(mktemp -d /tmp/dyson-test.XXXXXX); \
+	echo "Using temporary directory: $$DEFAULT_BASE_DIR"; \
+	DEFAULT_BASE_DIR=$$DEFAULT_BASE_DIR/test-dysonchains python -u -m pytest  --capture=fd -x --showlocals --durations=0 $(PYTEST_ARGS); \
+	TEST_EXIT_CODE=$$?; \
+	echo "Cleaning up temporary directory"; \
+	rm -rf $$DEFAULT_BASE_DIR; \
+	exit $$TEST_EXIT_CODE; \
+
 
 ###############################################################################
 ###                                Scripts                                  ###

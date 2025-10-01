@@ -22,7 +22,7 @@ func (k Keeper) UpdatePoolConfig(ctx context.Context, msg *whaleswapv1.MsgUpdate
 		return nil, cosmossdkerrors.Wrapf(err, "failed to get signer address: %s", msg.Signer)
 	}
 	if err := k.ensureMajorityOwner(ctx, pool, signer); err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "signer is not majority owner of shares:%s", signer.String())
+		return nil, cosmossdkerrors.Wrapf(err, "signer is not majority owner of shares: %s", signer.String())
 	}
 
 	// Apply optional updates
@@ -55,7 +55,7 @@ func (k Keeper) UpdatePoolConfig(ctx context.Context, msg *whaleswapv1.MsgUpdate
 		}
 		// Enforce max > min strictly: maxQuote/maxBase > minQuote/minBase => maxQuote*minBase > minQuote*maxBase
 		if !maxQuote.Mul(minBase).GT(minQuote.Mul(maxBase)) {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_price must be > min_price")
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_price [%s] must be > min_price [%s]", msg.MaxPrice.String(), msg.MinPrice.String())
 		}
 		// Current price within [min, max]
 		rBase := pool.Coins[0].Amount
@@ -63,11 +63,11 @@ func (k Keeper) UpdatePoolConfig(ctx context.Context, msg *whaleswapv1.MsgUpdate
 		// Enforce strictly within (min, max):
 		// P > min => rQuote*minBase > rBase*minQuote
 		if !rQuote.Mul(minBase).GT(rBase.Mul(minQuote)) {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "current price must be greater than min_price")
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "current price [%s] must be greater than min_price [%s]", rQuote.Mul(minBase).String(), rBase.Mul(minQuote).String())
 		}
 		// P < max => rQuote*maxBase < rBase*maxQuote
 		if !rQuote.Mul(maxBase).LT(rBase.Mul(maxQuote)) {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "current price must be less than max_price")
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "current price [%s] must be less than max_price [%s]", rQuote.Mul(maxBase).String(), rBase.Mul(maxQuote).String())
 		}
 		// Store only the two relevant coins in canonical pool order
 		pool.MinPrice = sdk.NewCoins(sdk.NewCoin(baseDenom, minBase), sdk.NewCoin(quoteDenom, minQuote))

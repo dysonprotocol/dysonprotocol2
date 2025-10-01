@@ -40,6 +40,8 @@ var (
 	serverInst *PythonServer
 )
 
+const defaultDeadline = 15 * time.Second
+
 func getServer(ctx context.Context) *PythonServer {
 	serverOnce.Do(func() {
 		serverInst = &PythonServer{
@@ -118,7 +120,7 @@ func (s *PythonServer) ensureStarted(ctx context.Context) error {
 
 	// Wait for uvicorn to report the listening port
 	var discoveredPort string
-	deadline := time.Now().Add(5 * time.Second)
+	deadline := time.Now().Add(defaultDeadline)
 	for time.Now().Before(deadline) {
 		select {
 		case p := <-portCh:
@@ -135,7 +137,7 @@ GOT_PORT:
 	s.baseURL = fmt.Sprintf("http://%s:%s", host, discoveredPort)
 	fmt.Printf("dyslang server started on %s\n", s.baseURL)
 	// Wait for health
-	deadline = time.Now().Add(5 * time.Second)
+	deadline = time.Now().Add(defaultDeadline)
 	for time.Now().Before(deadline) {
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.baseURL+"/health", nil)
 		if err != nil {
@@ -171,7 +173,8 @@ func (s *PythonServer) request(ctx context.Context, path string, payload any) (j
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := s.client.Do(req)
 	if err != nil {
-		return nil, errorsmod.Wrapf(err, "failed to do request")
+		fmt.Printf("failed to do request: %s\n", err)
+		return nil, fmt.Errorf("failed to do request")
 	}
 	defer resp.Body.Close()
 	var pr pyResponse
@@ -199,7 +202,7 @@ func (s *PythonServer) request(ctx context.Context, path string, payload any) (j
 
 // Exec via server
 func (s *PythonServer) Exec(ctx context.Context, msgJSON, scriptJSON, attachedMsgResultsJSON, headerInfoJSON, port string) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, defaultDeadline)
 	defer cancel()
 	res, err := s.request(ctx, "/exec_script", map[string]any{
 		"msg_json":                  msgJSON,
@@ -220,7 +223,7 @@ func (s *PythonServer) Exec(ctx context.Context, msgJSON, scriptJSON, attachedMs
 }
 
 func (s *PythonServer) Wsgi(ctx context.Context, port, scriptName, scriptJSON, blockInfoJSON, httpreq string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, defaultDeadline)
 	defer cancel()
 	res, err := s.request(ctx, "/run_wsgi", map[string]any{
 		"rpc_port":        mustAtoi(port),
@@ -240,7 +243,7 @@ func (s *PythonServer) Wsgi(ctx context.Context, port, scriptName, scriptJSON, b
 }
 
 func (s *PythonServer) Benchmark(ctx context.Context, iterations int, details bool) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, defaultDeadline)
 	defer cancel()
 	res, err := s.request(ctx, "/run_benchmark", map[string]any{
 		"iterations": iterations,
@@ -257,7 +260,7 @@ func (s *PythonServer) Benchmark(ctx context.Context, iterations int, details bo
 }
 
 func (s *PythonServer) DysFormat(ctx context.Context, code string) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, defaultDeadline)
 	defer cancel()
 	res, err := s.request(ctx, "/dys_format", map[string]any{
 		"code": code,
@@ -277,7 +280,7 @@ func (s *PythonServer) DysFormat(ctx context.Context, code string) (string, erro
 }
 
 func (s *PythonServer) ExtractFunctionSchema(ctx context.Context, scriptJSON, blockInfoJSON, port, executorAddress, scriptName string) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, defaultDeadline)
 	defer cancel()
 	res, err := s.request(ctx, "/extract_function_schema", map[string]any{
 		"script_json":      scriptJSON,

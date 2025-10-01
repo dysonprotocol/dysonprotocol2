@@ -336,7 +336,7 @@ func (k Keeper) ensureMajorityOwner(ctx context.Context, pool whaleswapv1.Pool, 
 	}
 	bal := k.bank.GetBalance(ctx, signer, pool.SharesDenom).Amount
 	if bal.MulRaw(2).LTE(total) {
-		return fmt.Errorf("signer is not majority owner of shares")
+		return fmt.Errorf("signer is not majority owner of shares total=%s bal=%s", total.String(), bal.String())
 	}
 	return nil
 }

@@ -610,6 +610,7 @@ Check if voting period was too short or quorum not met.
     print("Creating script to store block height data...")
 
     storage_script_code = '''
+
 def store_block_height():
     """Store current block height in storage at index 'test_history'"""
     import json
@@ -646,6 +647,7 @@ def query_heights(heights):
         results.append(result)
     
     return results
+
 '''
 
     # Create the storage script

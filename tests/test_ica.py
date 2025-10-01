@@ -89,8 +89,8 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         print(f"🔗 connection-0 on Chain A: {json.dumps(conn_a, indent=2)}")
 
         # Transfer channel state (created during IBC setup) on both chains
-        chan_a = chain_a("query", "ibc", "channel", "channel", "transfer", "channel-0")
-        chan_b = chain_b("query", "ibc", "channel", "channel", "transfer", "channel-0")
+        chan_a = chain_a("query", "ibc", "channel", "end", "transfer", "channel-0")
+        chan_b = chain_b("query", "ibc", "channel", "end", "transfer", "channel-0")
         print(f"🚚 transfer/channel-0 on Chain A: {json.dumps(chan_a, indent=2)}")
         print(f"🚚 transfer/channel-0 on Chain B: {json.dumps(chan_b, indent=2)}")
 
@@ -121,6 +121,73 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         )
 
     _log_ibc_preconditions()
+
+    # Early asserts to surface missing IBC primitives before polling
+    chain_a = ibc_setup[0]
+    chain_b = ibc_setup[1] if len(ibc_setup) > 1 else ibc_setup[0]
+    conn_a = chain_a("query", "ibc", "connection", "end", "connection-0")
+    assert isinstance(conn_a, dict) and conn_a.get(
+        "connection"
+    ), f"connection-0 missing on Chain A. Full: {json.dumps(conn_a, indent=2)}"
+
+    chan_a = chain_a("query", "ibc", "channel", "end", "transfer", "channel-0")
+    chan_b = chain_b("query", "ibc", "channel", "end", "transfer", "channel-0")
+    assert (
+        isinstance(chan_a, dict) and chan_a.get("channel") is not None
+    ), f"transfer/channel-0 missing on Chain A. Full: {json.dumps(chan_a, indent=2)}"
+    assert (
+        isinstance(chan_b, dict) and chan_b.get("channel") is not None
+    ), f"transfer/channel-0 missing on Chain B. Full: {json.dumps(chan_b, indent=2)}"
+
+    # Poll: ICS-27 controller and host channels are OPEN on both chains
+    def _ics27_channels_open():
+        ctrl_port = f"icacontroller-{alice_address}"
+        chain_a = ibc_setup[0]
+        chain_b = ibc_setup[1] if len(ibc_setup) > 1 else ibc_setup[0]
+
+        chs_a = chain_a("query", "ibc", "channel", "channels")
+        chs_b = chain_b("query", "ibc", "channel", "channels")
+
+        ica_ctrl = [
+            c for c in chs_a.get("channels", []) if c.get("port_id") == ctrl_port
+        ]
+        ica_host = [
+            c for c in chs_b.get("channels", []) if c.get("port_id") == "icahost"
+        ]
+
+        a_open = any([c.get("state") == "STATE_OPEN" for c in ica_ctrl])
+        b_open = any([c.get("state") == "STATE_OPEN" for c in ica_host])
+
+        print(f"🛰️  ICS-27 controller open on A: {a_open}; host open on B: {b_open}")
+        return a_open and b_open
+
+    poll_until_condition(
+        _ics27_channels_open,
+        timeout=120,
+        poll_interval=1,
+        error_message="ICS-27 channels not open on both chains",
+    )
+
+    # Poll: transfer channel-0 is OPEN on both chains
+    def _transfer_channel_open():
+        chain_a = ibc_setup[0]
+        chain_b = ibc_setup[1] if len(ibc_setup) > 1 else ibc_setup[0]
+
+        end_a = chain_a("query", "ibc", "channel", "end", "transfer", "channel-0")
+        end_b = chain_b("query", "ibc", "channel", "end", "transfer", "channel-0")
+
+        a_open = end_a.get("channel", {}).get("state") == "STATE_OPEN"
+        b_open = end_b.get("channel", {}).get("state") == "STATE_OPEN"
+
+        print(f"🚚 transfer/channel-0 open on A: {a_open}; on B: {b_open}")
+        return a_open and b_open
+
+    poll_until_condition(
+        _transfer_channel_open,
+        timeout=60,
+        poll_interval=1,
+        error_message="transfer/channel-0 not open on both chains",
+    )
 
     # 3. Wait for ICA address to be established via get_ica_address
     print(f"⏳ Waiting for ICA address establishment...")

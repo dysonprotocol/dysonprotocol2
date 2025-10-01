@@ -26,6 +26,24 @@ def test_l1_l2_greeting_echo_flow(chainnet, generate_account, faucet):
     user_name, user_addr = generate_account("alice", faucet_amount=1000000)
     print(f"Created user account: {user_name} -> {user_addr}")
 
+    # Delegate some stake for the script owner (required for storage writes)
+    validators = dysond_bin("query", "staking", "validators")
+    validator_operator = validators["validators"][0]["operator_address"]
+    delegate_result = dysond_bin(
+        "tx",
+        "staking",
+        "delegate",
+        validator_operator,
+        "100000udys",  # 100k udys >> 135 bytes requirement
+        "--from",
+        tew_name,
+        "--yes",
+        "--gas",
+        "auto",
+    )
+    assert delegate_result["code"] == 0, f"Delegation failed: {delegate_result}"
+    print("✓ Delegated stake for TEW operator to satisfy storage stake validation")
+
     # Upload queue_chain.py script
     project_root = Path(__file__).parent.parent.parent
     queue_chain_path = project_root / "demo-tew" / "queue_chain.py"

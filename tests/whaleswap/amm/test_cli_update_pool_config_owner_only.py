@@ -48,6 +48,9 @@ def test_update_pool_config_owner_only(
         str([a for a in pool_attrs if a.get("key") == "pool_id"][0]["value"]).strip('"')
     )
 
+    # Canonicalize denoms to match keeper's Sort() behavior
+    base, quote = sorted(["udys", name])
+
     [stranger_name, stranger_addr] = generate_account("amm_stranger")
     faucet(stranger_addr, amount=500_000)
     bad = dysond(
@@ -74,13 +77,13 @@ def test_update_pool_config_owner_only(
         "--fee-pct",
         "0.002",
         "--min-price",
-        "1udys",
+        f"3{base}",
         "--min-price",
-        f"1{name}",
+        f"1{quote}",
         "--max-price",
-        "3udys",
+        f"1{base}",
         "--max-price",
-        f"1{name}",
+        f"3{quote}",
         "--from",
         creator_name,
     )

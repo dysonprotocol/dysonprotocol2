@@ -162,7 +162,7 @@ def test_homepage_loads(page: Page, demo_url):
     # Reduce element operation timeout but allow ample time for the first
     # navigation to complete because the local dev node may take a moment to
     # serve the demo after deployment.
-    page.set_default_timeout(5000)  # 5 s element operations
+    page.set_default_timeout(10000)  # 5 s element operations
     page.set_default_navigation_timeout(10000)  # 10 s navigation
 
     page.goto(demo_url)

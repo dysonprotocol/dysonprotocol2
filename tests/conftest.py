@@ -344,7 +344,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
             "500ms",
             "--no-blocks-timeout",
             "5",
-            # "--logs",
+            "--logs",
         ],
         preexec_fn=os.setsid,
     )
@@ -579,6 +579,36 @@ def ibc_setup(
         # Fund the account on the second chain
         faucet(ibc_address, dysond_bin=dysond_bin2, amount=100_000_000)
 
+    # Pre-flight diagnostics to surface common causes early
+    import shutil as _shutil
+
+    hermes_path = _shutil.which("hermes")
+    print(f"Hermes binary: {hermes_path}")
+    assert hermes_path, "Hermes binary not found in PATH; required for IBC tests"
+    try:
+        hermes_ver = subprocess.run(
+            [hermes_path, "version"], capture_output=True, text=True
+        )
+        print(
+            f"Hermes version: {hermes_ver.stdout.strip() or hermes_ver.stderr.strip()}"
+        )
+    except Exception as _exc:
+        print(f"Warning: failed to get hermes version: {_exc}")
+
+    # Basic node readiness snapshot (heights) before starting IBC setup
+    try:
+        status_a = chainnet[0]("status")
+        print(
+            f"Pre-IBC Chain A height: {status_a.get('sync_info', {}).get('latest_block_height')}"
+        )
+        if len(chainnet) > 1:
+            status_b = chainnet[1]("status")
+            print(
+                f"Pre-IBC Chain B height: {status_b.get('sync_info', {}).get('latest_block_height')}"
+            )
+    except Exception as _exc:
+        print(f"Warning: failed pre-IBC status snapshot: {_exc}")
+
     print(f"Starting IBC setup in background with account {ibc_name}")
     ibc_proc = subprocess.Popen(
         [
@@ -607,12 +637,55 @@ def ibc_setup(
         print(f"Checking if IBC setup is complete: {ibc_proc.poll()}")
         return ibc_proc.poll() is not None
 
-    poll_until_condition(
-        _ibc_setup_ready,
-        timeout=25,
-        poll_interval=1,
-        error_message="IBC setup did not complete",
-    )
+    try:
+        poll_until_condition(
+            _ibc_setup_ready,
+            timeout=25,
+            poll_interval=1,
+            error_message="IBC setup did not complete",
+        )
+    except Exception as _timeout_exc:
+        # On timeout, dump rich diagnostics to narrow failure point
+        print("\n===== IBC setup timeout diagnostics =====")
+        try:
+            cfg = json.load(open(test_config_path))
+            print(f"chains.json path: {test_config_path}")
+            print(
+                f"Chains present: {[c.get('chain_id') for c in cfg.get('chains', [])]}"
+            )
+        except Exception as _exc:
+            print(f"Failed reading chains.json: {_exc}")
+
+        try:
+            # Query basic per-chain health
+            for i, rc in enumerate(chainnet):
+                st = rc("status")
+                print(
+                    f"Chain[{i}] height={st.get('sync_info', {}).get('latest_block_height')} catching_up={st.get('sync_info', {}).get('catching_up')}"
+                )
+        except Exception as _exc:
+            print(f"Failed querying node status: {_exc}")
+
+        try:
+            # Force-stop the IBC process to capture its stdout/stderr
+            if ibc_proc.poll() is None:
+                try:
+                    os.killpg(os.getpgid(ibc_proc.pid), signal.SIGTERM)
+                except Exception:
+                    pass
+            out, err = ibc_proc.communicate(timeout=3)
+            print(
+                f"IBC STDOUT:\n{out.decode('utf-8', errors='ignore') if isinstance(out, bytes) else out}"
+            )
+            print(
+                f"IBC STDERR:\n{err.decode('utf-8', errors='ignore') if isinstance(err, bytes) else err}"
+            )
+        except subprocess.TimeoutExpired:
+            print("Failed to capture IBC process output: communicate timeout")
+        except Exception as _exc:
+            print(f"Failed to capture IBC process output: {_exc}")
+        print("===== End IBC diagnostics =====\n")
+        raise
 
     # Check if IBC setup was successful
     if ibc_proc.returncode != 0:

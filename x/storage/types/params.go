@@ -13,10 +13,10 @@ const DefaultMaxStorageSize = uint64(100 * 1024) // 10en0KB
 const MinMaxStorageSize = uint64(1) // 1KB
 
 // MaxMaxStorageSize is the maximum allowed value for max storage size
-const MaxMaxStorageSize = uint64(100 * 1024 * 1024) // 100MB
+const MaxMaxStorageSize = uint64(1000 * 1024) // 1000KB
 
 // DefaultStorageStakeMultiple is the default stake requirement multiplier (0 udys per byte)
-const DefaultStorageStakeMultiple = "0"
+const DefaultStorageStakeMultiple = "0.0"
 
 // NewParams creates a new Params instance with given values
 func NewParams(maxStorageSize uint64, storageStakeMultiple string) Params {

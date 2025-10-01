@@ -5,6 +5,25 @@ import random
 import string
 
 
+def _stake(dysond, faucet_fn, name, addr, stake_amount="100000udys", topup=200000):
+    validators = dysond("query", "staking", "validators")
+    operator = validators["validators"][0]["operator_address"]
+    faucet_fn(addr, amount=topup)
+    res = dysond(
+        "tx",
+        "staking",
+        "delegate",
+        operator,
+        stake_amount,
+        "--from",
+        name,
+        "--yes",
+        "--gas",
+        "auto",
+    )
+    assert res["code"] == 0, f"Delegation failed: {res}"
+
+
 def test_storage_set_get(chainnet, generate_account, faucet):
     """Test setting and retrieving a storage value."""
     dysond = chainnet[0]
@@ -12,6 +31,8 @@ def test_storage_set_get(chainnet, generate_account, faucet):
     # Create Alice account and fund it
     [alice_name, alice_addr] = generate_account("alice")
     faucet(alice_addr)
+
+    _stake(dysond, faucet, alice_name, alice_addr)
 
     # Set a storage value for testing with unique suffix
     suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
@@ -55,6 +76,8 @@ def test_storage_list(chainnet, generate_account, faucet):
     # Create Alice account and fund it
     [alice_name, alice_addr] = generate_account("alice")
     faucet(alice_addr)
+
+    _stake(dysond, faucet, alice_name, alice_addr)
 
     # Set multiple storage values with a common prefix
     suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
@@ -116,6 +139,8 @@ def test_storage_delete(chainnet, generate_account, faucet):
     [alice_name, alice_addr] = generate_account("alice")
     faucet(alice_addr)
 
+    _stake(dysond, faucet, alice_name, alice_addr)
+
     # First set a storage value
     suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
     test_key = f"delete_test_key_{suffix}"
@@ -174,6 +199,9 @@ def test_storage_multi_user(chainnet, generate_account, faucet):
     # Fund both accounts for transactions
     faucet(alice_addr)
     faucet(bob_addr)
+
+    _stake(dysond, faucet, alice_name, alice_addr)
+    _stake(dysond, faucet, bob_name, bob_addr)
 
     # Create unique test keys for each user
     suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
@@ -261,6 +289,8 @@ def test_storage_binary_data(chainnet, generate_account, faucet):
     [alice_name, alice_addr] = generate_account("alice")
     faucet(alice_addr)
 
+    _stake(dysond, faucet, alice_name, alice_addr)
+
     # Create binary data (base64 encoded)
     binary_data = base64.b64encode(b"Binary test data").decode("utf-8")
     suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
@@ -304,6 +334,8 @@ def test_storage_extract_and_filter(chainnet, generate_account, faucet):
     # Create user and fund
     [user_name, user_addr] = generate_account("extractor")
     faucet(user_addr)
+
+    _stake(dysond, faucet, user_name, user_addr)
 
     # Prepare JSON payloads
     json_entry_1 = {"title": "First Post", "category": "blog", "meta": {"views": 10}}
@@ -391,6 +423,8 @@ def test_storage_pagination_offset_bug(chainnet, generate_account, faucet):
         "pagination_test", faucet_amount=1_000_000
     )
     faucet(user_addr)
+
+    _stake(dysond, faucet, user_name, user_addr)
 
     # Create test data with entries that will be sorted in a predictable order
     # Using reverse alphabetical order so we can test offset behavior
@@ -765,6 +799,8 @@ def test_storage_invalid_extract_and_filter(chainnet, generate_account, faucet):
     [u_name, u_addr] = generate_account("neg")
     faucet(u_addr)
 
+    _stake(dysond, faucet, u_name, u_addr)
+
     entry = {"foo": {"bar": 1}}
     dysond(
         "tx",
@@ -807,6 +843,8 @@ def test_storage_extract_filter_too_long(chainnet, generate_account, faucet):
     [name, addr] = generate_account("toolong")
     faucet(addr)
 
+    _stake(dysond, faucet, name, addr)
+
     long_path = "a" * 101
     dysond(
         "tx", "storage", "set", "--from", name, "--index", "toolong/1", "--data", "{}"
@@ -843,6 +881,8 @@ def test_storage_delete_by_prefix_and_filter(chainnet, generate_account, faucet)
     # Create account and fund it
     [user_name, user_addr] = generate_account("deleter")
     faucet(user_addr)
+
+    _stake(dysond, faucet, user_name, user_addr)
 
     # Create test data with a common prefix
     suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
@@ -1443,12 +1483,6 @@ def run_full_test():
         f"✅ Test completed - found {mismatch_count} mismatches (expected if bug is in script execution layer)"
     )
 
-    return {
-        "mismatches": mismatches,
-        "total_tests": len(pagination_results),
-        "expected_order": test_data["expected_order"],
-    }
-
 
 def test_storage_pagination_exact_nuance_replication(
     chainnet, generate_account, faucet
@@ -1649,14 +1683,6 @@ def run_exact_nuance_test():
     print(
         f"Bug reproduction status: {'SUCCESS - exact nuance bug reproduced!' if mismatch_count > 0 else 'FAILED - no bug found in exact replica'}"
     )
-
-    # Return the test results for further analysis
-    return {
-        "mismatches": mismatches,
-        "total_tests": len(pagination_results),
-        "expected_order": test_data["expected_order"],
-        "script_execution_successful": True,
-    }
 
 
 def test_storage_pagination_nuance_key_format(chainnet, generate_account, faucet):
@@ -1994,6 +2020,7 @@ def test_storage_pagination_next_key(chainnet, generate_account, faucet):
 
     # Create account and fund it
     [user_name, user_addr] = generate_account("nextkey_pagination", faucet_amount=100)
+    _stake(dysond, faucet, user_name, user_addr)
 
     # Create test data with predictable sort order
     suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
