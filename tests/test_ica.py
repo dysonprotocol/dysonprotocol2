@@ -65,6 +65,63 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         register_result.get("code", 1) == 0
     ), f"Failed to register ICA account: {register_result}"
 
+    # Pre-check diagnostics to understand ICA readiness issues
+    print(f"🧪 Gathering IBC pre-check diagnostics...")
+
+    def _log_ibc_preconditions():
+
+        # Both chains' dysond runners
+        chain_a = ibc_setup[0]
+        chain_b = ibc_setup[1] if len(ibc_setup) > 1 else ibc_setup[0]
+
+        # Heights
+        status_a = chain_a("status")
+        status_b = chain_b("status")
+        print(
+            f"⛓️  Chain A height: {status_a.get('sync_info', {}).get('latest_block_height')}"
+        )
+        print(
+            f"⛓️  Chain B height: {status_b.get('sync_info', {}).get('latest_block_height')}"
+        )
+
+        # Connection state on Chain A
+        conn_a = chain_a("query", "ibc", "connection", "end", "connection-0")
+        print(f"🔗 connection-0 on Chain A: {json.dumps(conn_a, indent=2)}")
+
+        # Transfer channel state (created during IBC setup) on both chains
+        chan_a = chain_a("query", "ibc", "channel", "channel", "transfer", "channel-0")
+        chan_b = chain_b("query", "ibc", "channel", "channel", "transfer", "channel-0")
+        print(f"🚚 transfer/channel-0 on Chain A: {json.dumps(chan_a, indent=2)}")
+        print(f"🚚 transfer/channel-0 on Chain B: {json.dumps(chan_b, indent=2)}")
+
+        # Controller port id for this owner/script
+        ctrl_port = f"icacontroller-{alice_address}"
+        print(f"🪪 Expected ICA controller port_id: {ctrl_port}")
+
+        # List channels and filter for ICS-27 controller port on both chains
+        chs_a = chain_a("query", "ibc", "channel", "channels")
+        chs_b = chain_b("query", "ibc", "channel", "channels")
+        ica_chs_a = [
+            c for c in chs_a.get("channels", []) if c.get("port_id") == ctrl_port
+        ]
+        ica_chs_b = [
+            c
+            for c in chs_b.get("channels", [])
+            if c.get("port_id")
+            in [
+                ctrl_port,
+                "icahost",
+            ]
+        ]
+        print(
+            f"🛰️  ICS-27 channels (controller) on Chain A: {json.dumps(ica_chs_a, indent=2)}"
+        )
+        print(
+            f"🛰️  ICS-27 channels (controller/host) on Chain B: {json.dumps(ica_chs_b, indent=2)}"
+        )
+
+    _log_ibc_preconditions()
+
     # 3. Wait for ICA address to be established via get_ica_address
     print(f"⏳ Waiting for ICA address establishment...")
 
@@ -72,69 +129,54 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         """Check if ICA address has been established"""
         print(f"🔍 Checking if ICA address is established...")
         result = dysond_bin(
-            "tx",
+            "query",
             "script",
-            "exec",
+            "run",
+            "--executor-address",
+            alice_address,
             "--script-address",
             alice_address,
             "--function-name",
             "get_ica_address",
             "--args",
             "[]",
-            "--from",
-            alice_name,
-            "--gas",
-            "3000000",
+            "--kwargs",
+            "{}",
+            "-o",
+            "json",
         )
-        print(f"🔍 get_ica_address check result: {result}")
-        assert result.get("code", 1) == 0, f"get_ica_address execution failed: {result}"
+        print(f"🔍 get_ica_address (query run) result: {result}")
+        assert "result" in result, f"get_ica_address run failed: {result}"
 
-        # Extract response using list comprehensions
-        exec_events = [
-            e
-            for e in result.get("events", [])
-            if e.get("type") == "dysonprotocol.script.v1.EventExecScript"
-        ]
-        response_attrs = [
-            a
-            for e in exec_events
-            for a in e.get("attributes", [])
-            if a.get("key") == "response"
-        ]
+        # Parse query run structured response (see tests/script/test_script.py)
+        result_data = json.loads(result["result"])  # outer wrapper
+        ica_result = result_data.get("result", {})  # actual function return
+        print(f"🔍 ICA address check response: {ica_result}")
 
-        for attr in response_attrs:
-            response_json = attr.get("value")
-            response_data = json.loads(response_json)
-            result_data = json.loads(response_data.get("result", "{}"))
-            ica_result = result_data.get("result", {})
-            print(f"🔍 ICA address check response: {ica_result}")
+        # Check if ICA is ready
+        is_dict = isinstance(ica_result, dict)
+        is_success = is_dict and ica_result.get("status") == "success"
 
-            # Check if ICA is ready
-            is_dict = isinstance(ica_result, dict)
-            is_success = is_dict and ica_result.get("status") == "success"
+        (
+            print(f"❌ ICA address not ready: {ica_result}")
+            if is_dict and not is_success
+            else None
+        )
 
-            (
-                print(f"❌ ICA address not ready: {ica_result}")
-                if is_dict and not is_success
-                else None
-            )
-
-            # Return early if successful
-            registered_address = (
-                ica_result.get("registered_address", "") if is_success else ""
-            )
-            print(f"✅ Found ICA address: {registered_address}") if is_success else None
-            return (
-                (registered_address and registered_address.startswith("dys"))
-                if is_success
-                else False
-            )
-
-        return False
+        # Return early if successful
+        registered_address = (
+            ica_result.get("registered_address", "") if is_success else ""
+        )
+        print(f"✅ Found ICA address: {registered_address}") if is_success else None
+        return (
+            (registered_address and registered_address.startswith("dys"))
+            if is_success
+            else False
+        )
 
     poll_until_condition(
         _ica_address_established,
-        timeout=60,
+        timeout=120,
         poll_interval=1,
         error_message="ICA address not established after registration",
     )

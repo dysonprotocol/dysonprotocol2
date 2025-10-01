@@ -7,10 +7,10 @@ import (
 )
 
 // DefaultMaxStorageSize is the default maximum storage size in bytes (1KB)
-const DefaultMaxStorageSize = uint64(50 * 1024) // 50KB
+const DefaultMaxStorageSize = uint64(100 * 1024) // 10en0KB
 
 // MinMaxStorageSize is the minimum allowed value for max storage size
-const MinMaxStorageSize = uint64(1024) // 1KB
+const MinMaxStorageSize = uint64(1) // 1KB
 
 // MaxMaxStorageSize is the maximum allowed value for max storage size
 const MaxMaxStorageSize = uint64(100 * 1024 * 1024) // 100MB
