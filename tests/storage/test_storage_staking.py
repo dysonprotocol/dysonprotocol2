@@ -657,8 +657,9 @@ class TestStorageStakingMetrics:
         # Verify proposal passed
         final_result = dysond("query", "gov", "proposal", proposal_id)
         final_status = final_result.get("proposal", {}).get("status", "UNKNOWN")
-        assert final_status == "PROPOSAL_STATUS_PASSED"
-        self._submit_governance_proposal_with_multiplier(dysond, "alice", "0")
+        assert (
+            final_status == "PROPOSAL_STATUS_PASSED"
+        ), f"Expected proposal to pass but got status: {final_status}"
 
         return proposal_id
 

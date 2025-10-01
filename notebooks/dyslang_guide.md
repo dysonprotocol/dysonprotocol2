@@ -83,9 +83,9 @@ assert 'balance' in json_result, "Balance not found in the result"
 print(json.dumps(json_result['balance'], indent=2))
 ```
 
-    {"result":"{\"cumsize\":8654,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":31,\"result\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"9945388846\",\"denom\":\"udys\"}},\"script_gas_consumed\":1013122,\"stdout\":\"\"}","attached_message_results":[]}
+    {"result":"{\"cumsize\":6570,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":23,\"result\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"10000000000\",\"denom\":\"udys\"}},\"script_gas_consumed\":1013352,\"stdout\":\"\"}","attached_message_results":[]}
     {
-      "amount": "9945388846",
+      "amount": "10000000000",
       "denom": "udys"
     }
 
@@ -147,12 +147,12 @@ assert 'bob_balance' in json_result, "Bob's balance not found in the result"
 print(json.dumps(json_result, indent=2))
 ```
 
-    {"result":"{\"cumsize\":18524,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":47,\"result\":{\"alice_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"9945388846\",\"denom\":\"udys\"}},\"bob_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"10000000000\",\"denom\":\"udys\"}}},\"script_gas_consumed\":1024103,\"stdout\":\"\"}","attached_message_results":[]}
+    {"result":"{\"cumsize\":15368,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":39,\"result\":{\"alice_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"10000000000\",\"denom\":\"udys\"}},\"bob_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"10000000000\",\"denom\":\"udys\"}}},\"script_gas_consumed\":1023261,\"stdout\":\"\"}","attached_message_results":[]}
     {
       "alice_balance": {
         "@type": "/cosmos.bank.v1beta1.QueryBalanceResponse",
         "balance": {
-          "amount": "9945388846",
+          "amount": "10000000000",
           "denom": "udys"
         }
       },
@@ -238,14 +238,14 @@ print(f"- Total gas for iterations: {gas_metrics['iterations_gas']}")
 print(f"- Average gas per iteration: {gas_metrics['per_iteration']}")
 ```
 
-    {"result":"{\"cumsize\":84935,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":141,\"result\":{\"after_query_gas\":1017505,\"final_gas\":1066889,\"initial_gas\":1007409,\"iterations_gas\":49384,\"per_iteration\":9876.8,\"query_gas\":10096},\"script_gas_consumed\":1089403,\"stdout\":\"Iteration 1 of 5\\nIteration 2 of 5\\nIteration 3 of 5\\nIteration 4 of 5\\nIteration 5 of 5\\n\"}","attached_message_results":[]}
+    {"result":"{\"cumsize\":75443,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":133,\"result\":{\"after_query_gas\":1017185,\"final_gas\":1061678,\"initial_gas\":1008377,\"iterations_gas\":44493,\"per_iteration\":8898.6,\"query_gas\":8808},\"script_gas_consumed\":1082225,\"stdout\":\"Iteration 1 of 5\\nIteration 2 of 5\\nIteration 3 of 5\\nIteration 4 of 5\\nIteration 5 of 5\\n\"}","attached_message_results":[]}
     Gas report for benchmark operations:
-    - Initial gas consumed: 1007409
-    - Gas after query: 1017505
-    - Gas after iterations: 1066889
-    - Total gas for query: 10096
-    - Total gas for iterations: 49384
-    - Average gas per iteration: 9876.8
+    - Initial gas consumed: 1008377
+    - Gas after query: 1017185
+    - Gas after iterations: 1061678
+    - Total gas for query: 8808
+    - Total gas for iterations: 44493
+    - Average gas per iteration: 8898.6
 
 
 ### Gas Limits
@@ -339,7 +339,7 @@ print(f"- Calculation result: {node_metrics['calculation_result']}")
 ```
 
     Node execution metrics:
-    - Nodes called: 114
+    - Nodes called: 106
     - Calculation result: 90
 
 
@@ -373,7 +373,7 @@ assert 'memory_used' in memory_used, "Memory used not found in the result: " + s
 print(f"Memory usage: {memory_used['memory_used']} bytes")
 ```
 
-    Memory usage: 1262 bytes
+    Memory usage: 463 bytes
 
 
 ## Context Information
@@ -429,7 +429,7 @@ print(f"Executor Address: {address_info['caller_address']}")
 print(f"Self-execution: {address_info['is_self_call']}")
 ```
 
-    {"result":"{\"cumsize\":11161,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":35,\"result\":{\"caller_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"is_self_call\":true,\"script_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\"},\"script_gas_consumed\":1014521,\"stdout\":\"\"}","attached_message_results":[]}
+    {"result":"{\"cumsize\":8798,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":27,\"result\":{\"caller_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"is_self_call\":true,\"script_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\"},\"script_gas_consumed\":1014469,\"stdout\":\"\"}","attached_message_results":[]}
     Script Address: dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej
     Executor Address: dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej
     Self-execution: True
@@ -475,9 +475,9 @@ print(f"- Time: {block_info['time']}")
 ```
 
     Block Information:
-    - Height: 376
+    - Height: 12
     - Chain ID: chain-a
-    - Time: 2025-10-01T22:07:57.813309Z
+    - Time: 2025-10-01T22:17:10.62794Z
 
 
 ## Transaction Data
@@ -541,7 +541,7 @@ for m, r in zip(results['attached_messages'], results['attached_msg_results']):
     print(f"Result: {r}")
 ```
 
-    {"result":"{\"cumsize\":14352,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":26,\"result\":{\"attached_messages\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"amount\":[{\"amount\":\"12\",\"denom\":\"udys\"}],\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"},{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"amount\":[{\"amount\":\"34\",\"denom\":\"udys\"}],\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"}],\"attached_msg_results\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"},{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"}]},\"script_gas_consumed\":1056844,\"stdout\":\"\"}","attached_message_results":[{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"},{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"}]}
+    {"result":"{\"cumsize\":12601,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":18,\"result\":{\"attached_messages\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"amount\":[{\"amount\":\"12\",\"denom\":\"udys\"}],\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"},{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"amount\":[{\"amount\":\"34\",\"denom\":\"udys\"}],\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"}],\"attached_msg_results\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"},{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"}]},\"script_gas_consumed\":1056963,\"stdout\":\"\"}","attached_message_results":[{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"},{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"}]}
     {'attached_messages': [{'@type': '/cosmos.bank.v1beta1.MsgSend', 'amount': [{'amount': '12', 'denom': 'udys'}], 'from_address': 'dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej', 'to_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el'}, {'@type': '/cosmos.bank.v1beta1.MsgSend', 'amount': [{'amount': '34', 'denom': 'udys'}], 'from_address': 'dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej', 'to_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el'}], 'attached_msg_results': [{'@type': '/cosmos.bank.v1beta1.MsgSendResponse'}, {'@type': '/cosmos.bank.v1beta1.MsgSendResponse'}]}
     Message: {'@type': '/cosmos.bank.v1beta1.MsgSend', 'amount': [{'amount': '12', 'denom': 'udys'}], 'from_address': 'dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej', 'to_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el'}
     Result: {'@type': '/cosmos.bank.v1beta1.MsgSendResponse'}
@@ -598,16 +598,16 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
 ```
 
     {
-      "height": "378",
-      "txhash": "5F5EB337D3F05A72FE457997E9B24AA21141771B37DE69DFD898F91598CC7861",
+      "height": "15",
+      "txhash": "07CA48632DAFD22BD80387C8E3236CF6ECFBD02CBC76D254FC95988B4D1FEDFB",
       "codespace": "",
       "code": 0,
-      "data": "12C2010A282F6479736F6E70726F746F636F6C2E7363726970742E76312E4D736745786563526573706F6E73651295010A92017B2263756D73697A65223A343039392C22657863657074696F6E223A6E756C6C2C226761735F6C696D6974223A31303030303030302C226E6F6465735F63616C6C6564223A32352C22726573756C74223A7B226576656E745F656D6974746564223A747275657D2C227363726970745F6761735F636F6E73756D6564223A313033393230352C227374646F7574223A22227D",
+      "data": "12C2010A282F6479736F6E70726F746F636F6C2E7363726970742E76312E4D736745786563526573706F6E73651295010A92017B2263756D73697A65223A323431362C22657863657074696F6E223A6E756C6C2C226761735F6C696D6974223A31303030303030302C226E6F6465735F63616C6C6564223A31372C22726573756C74223A7B226576656E745F656D6974746564223A747275657D2C227363726970745F6761735F636F6E73756D6564223A313035343332332C227374646F7574223A22227D",
       "raw_log": "",
       "logs": [],
       "info": "",
       "gas_wanted": "10000000",
-      "gas_used": "1039205",
+      "gas_used": "1054323",
       "tx": null,
       "timestamp": "",
       "events": [
@@ -616,7 +616,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
           "attributes": [
             {
               "key": "acc_seq",
-              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/85",
+              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/0",
               "index": true
             }
           ]
@@ -626,7 +626,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
           "attributes": [
             {
               "key": "signature",
-              "value": "c3hH5rgFocxcENqSi/qskUOzLOJ0zIRSnjhL3qSS08xHwlDc6g5beU4u29RspRp76zwElWxyvI9mV5MuCTEoGg==",
+              "value": "yxrrjbGGLzn09Jqc6e9SLE+Jy1g6wVhIezi8RjWOp2ESxV+75TvJFP/FuqK5L5RO56wvTn6y7bM5dGapJA/ocg==",
               "index": true
             }
           ]
@@ -726,7 +726,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
             },
             {
               "key": "response",
-              "value": "{\"result\":\"{\\\"cumsize\\\":4099,\\\"exception\\\":null,\\\"gas_limit\\\":10000000,\\\"nodes_called\\\":25,\\\"result\\\":{\\\"event_emitted\\\":true},\\\"script_gas_consumed\\\":1039205,\\\"stdout\\\":\\\"\\\"}\",\"attached_message_results\":[]}",
+              "value": "{\"result\":\"{\\\"cumsize\\\":2416,\\\"exception\\\":null,\\\"gas_limit\\\":10000000,\\\"nodes_called\\\":17,\\\"result\\\":{\\\"event_emitted\\\":true},\\\"script_gas_consumed\\\":1054323,\\\"stdout\\\":\\\"\\\"}\",\"attached_message_results\":[]}",
               "index": true
             },
             {
@@ -750,8 +750,8 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
     }
     {
       "tx": {
-        "acc_seq": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/85",
-        "signature": "c3hH5rgFocxcENqSi/qskUOzLOJ0zIRSnjhL3qSS08xHwlDc6g5beU4u29RspRp76zwElWxyvI9mV5MuCTEoGg=="
+        "acc_seq": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/0",
+        "signature": "yxrrjbGGLzn09Jqc6e9SLE+Jy1g6wVhIezi8RjWOp2ESxV+75TvJFP/FuqK5L5RO56wvTn6y7bM5dGapJA/ocg=="
       },
       "message": {
         "action": "/dysonprotocol.script.v1.MsgExec",
@@ -769,7 +769,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
         "executor_address": "\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\"",
         "function_name": "\"emit_test_event\"",
         "request": "{\"executor_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"script_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"script_name\":\"\",\"extra_code\":\"\\nfrom dys import emit_event\\n\\ndef emit_test_event():\\n    # Emit a custom event, none is a success or an exception is raised\\n    emit_event(\\\"payment_processed\\\", \\\"success\\\")\\n    emit_event(\\\"foo\\\", '123123')\\n    return {\\\"event_emitted\\\": True}\\n\",\"function_name\":\"emit_test_event\",\"args\":\"\",\"kwargs\":\"\",\"attached_messages\":[]}",
-        "response": "{\"result\":\"{\\\"cumsize\\\":4099,\\\"exception\\\":null,\\\"gas_limit\\\":10000000,\\\"nodes_called\\\":25,\\\"result\\\":{\\\"event_emitted\\\":true},\\\"script_gas_consumed\\\":1039205,\\\"stdout\\\":\\\"\\\"}\",\"attached_message_results\":[]}",
+        "response": "{\"result\":\"{\\\"cumsize\\\":2416,\\\"exception\\\":null,\\\"gas_limit\\\":10000000,\\\"nodes_called\\\":17,\\\"result\\\":{\\\"event_emitted\\\":true},\\\"script_gas_consumed\\\":1054323,\\\"stdout\\\":\\\"\\\"}\",\"attached_message_results\":[]}",
         "script_address": "\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\"",
         "script_name": "\"\"",
         "msg_index": "0"
@@ -832,7 +832,7 @@ print(f"- Multi-statement: {eval_results['multi_statement']}")
 ```
 
     {
-      "result": "{\"cumsize\":16860,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":92,\"result\":{\"arithmetic\":14,\"multi_statement\":38,\"string_ops\":\"hello WORLD\",\"with_variables\":50},\"script_gas_consumed\":1020220,\"stdout\":\"\"}",
+      "result": "{\"cumsize\":12729,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":84,\"result\":{\"arithmetic\":14,\"multi_statement\":38,\"string_ops\":\"hello WORLD\",\"with_variables\":50},\"script_gas_consumed\":1014997,\"stdout\":\"\"}",
       "attached_message_results": []
     }
     Dynamic evaluation results:
