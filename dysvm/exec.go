@@ -10,6 +10,8 @@ import (
 
 	"github.com/kluctl/go-embed-python/embed_util"
 	"github.com/kluctl/go-embed-python/python"
+
+	cosmossdkerrors "cosmossdk.io/errors"
 )
 
 func Exec(ctx context.Context, msgJSON, scriptJSON, attachedMsgResultsJSON, headerInfoJSON, port string) (string, error) {
@@ -20,13 +22,13 @@ func Exec(ctx context.Context, msgJSON, scriptJSON, attachedMsgResultsJSON, head
 	var lib *embed_util.EmbeddedFiles
 	ep, err := python.NewEmbeddedPython("dyslang")
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to create embedded python")
 	}
 
 	lib, err = embed_util.NewEmbeddedFiles(data.Data, "dyslang-libs")
 
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to create embedded files")
 	}
 	// TODO Make this an environment variable or config
 	ep.AddPythonPath("./dysvm/internal/py-dyslang")
@@ -35,7 +37,7 @@ func Exec(ctx context.Context, msgJSON, scriptJSON, attachedMsgResultsJSON, head
 	cmd, err := ep.PythonCmd("-m", "dyslang", "exec_script", msgJSON, scriptJSON, attachedMsgResultsJSON, headerInfoJSON, port)
 
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to run exec")
 	}
 
 	out, runErr := cmd.CombinedOutput()
@@ -51,12 +53,12 @@ func Benchmark(ctx context.Context, iterations int, details bool) (string, error
 	var lib *embed_util.EmbeddedFiles
 	ep, err := python.NewEmbeddedPython("dyslang")
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to create embedded python")
 	}
 
 	lib, err = embed_util.NewEmbeddedFiles(data.Data, "dyslang-libs")
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to create embedded files")
 	}
 
 	// TODO Make this an environment variable or config
@@ -72,7 +74,7 @@ func Benchmark(ctx context.Context, iterations int, details bool) (string, error
 
 	cmd, err := ep.PythonCmd("-m", "dyslang", "run_benchmark", fmt.Sprintf("%d", iterations), detailsFlag)
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to run benchmark")
 	}
 
 	out, runErr := cmd.CombinedOutput()
@@ -87,13 +89,13 @@ func Wsgi(ctx context.Context, port, scriptName, scriptJSON, blockInfoJSON, http
 	var lib *embed_util.EmbeddedFiles
 	ep, err := python.NewEmbeddedPython("dyslang")
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to create embedded python")
 	}
 
 	lib, err = embed_util.NewEmbeddedFiles(data.Data, "dyslang-libs")
 
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to create embedded files")
 	}
 	// TODO Make this an environment variable or config
 	ep.AddPythonPath("./dysvm/internal/py-dyslang")
@@ -102,7 +104,7 @@ func Wsgi(ctx context.Context, port, scriptName, scriptJSON, blockInfoJSON, http
 	cmd, err := ep.PythonCmd("-m", "dyslang", "run_wsgi", port, scriptName, scriptJSON, blockInfoJSON, httpreq)
 
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to run wsgi")
 	}
 
 	out, runErr := cmd.CombinedOutput()
@@ -121,12 +123,12 @@ func DysFormat(ctx context.Context, code string) (string, error) {
 	var lib *embed_util.EmbeddedFiles
 	ep, err := python.NewEmbeddedPython("dyslang")
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to dys format")
 	}
 
 	lib, err = embed_util.NewEmbeddedFiles(data.Data, "dyslang-libs")
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to create embedded files")
 	}
 
 	// TODO Make this an environment variable or config
@@ -135,7 +137,7 @@ func DysFormat(ctx context.Context, code string) (string, error) {
 
 	cmd, err := ep.PythonCmd("-m", "dyslang", "dys_format")
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to dys format")
 	}
 
 	// Set stdin to the code
@@ -156,12 +158,12 @@ func ExtractFunctionSchema(ctx context.Context, scriptJSON, blockInfoJSON, port,
 	var lib *embed_util.EmbeddedFiles
 	ep, err := python.NewEmbeddedPython("dyslang")
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to create embedded python")
 	}
 
 	lib, err = embed_util.NewEmbeddedFiles(data.Data, "dyslang-libs")
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to create embedded files")
 	}
 
 	// TODO Make this an environment variable or config
@@ -170,7 +172,7 @@ func ExtractFunctionSchema(ctx context.Context, scriptJSON, blockInfoJSON, port,
 
 	cmd, err := ep.PythonCmd("-m", "dyslang", "extract_function_schema", scriptJSON, blockInfoJSON, port, executorAddress, scriptName)
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrapf(err, "failed to dys format")
 	}
 
 	out, runErr := cmd.CombinedOutput()
