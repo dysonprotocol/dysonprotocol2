@@ -412,7 +412,7 @@ log_level = 'info'
 [mode.clients]
 enabled = true
 refresh = true
-misbehaviour = true
+misbehaviour = false
 
 [mode.connections]
 enabled = true
@@ -427,7 +427,7 @@ clear_on_start = true
 tx_confirmation = true
 
 [telemetry]
-enabled = true
+enabled = false
 host = '127.0.0.1'
 port = 3001
 
@@ -444,13 +444,13 @@ account_prefix = "dys2"
 key_name = "{key_name}"
 store_prefix = "ibc"
 gas_price = {{ price = 0.000, denom = "{denom}" }}
-gas_multiplier = 1.2
+gas_multiplier = 2
 default_gas = 1000000
 max_gas = 10000000
 max_msg_num = 30
 max_tx_size = 2097152
-clock_drift = "5s"
-max_block_time = "500ms"
+clock_drift = "10s"
+max_block_time = "1000ms"
 trusting_period = "14days"
 trust_threshold = {{ numerator = "2", denominator = "3" }}
 

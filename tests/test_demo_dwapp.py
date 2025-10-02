@@ -155,7 +155,8 @@ def demo_url(deployed_demo_script):
     return deployed_demo_script["script_url"]
 
 
-# @pytest.mark.skip(reason="Sometimes the js is not loaded fast enough")
+# TODO use local node_modules for this, don't make a request to cdns
+@pytest.mark.skip(reason="Sometimes the js is not loaded fast enough")
 @pytest.mark.frontend
 def test_homepage_loads(page: Page, demo_url):
     """Test that the homepage loads successfully."""

@@ -43,8 +43,56 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         update_result.get("code", 1) == 0
     ), f"Failed to deploy ICA e2e script: {update_result}"
 
-    # 2. Register ICA account
-    print(f"🔗 Registering ICA account...")
+    # Discover transfer channel pair and derive controller/host connection IDs
+    chain_a = ibc_setup[0]
+    chain_b = ibc_setup[1] if len(ibc_setup) > 1 else ibc_setup[0]
+    chs_a = chain_a("query", "ibc", "channel", "channels")
+    chs_b = chain_b("query", "ibc", "channel", "channels")
+    a_open = [
+        c
+        for c in chs_a.get("channels", [])
+        if c.get("port_id") == "transfer" and c.get("state") == "STATE_OPEN"
+    ]
+    assert (
+        len(a_open) > 0
+    ), f"No OPEN transfer channel on Chain A. Full: {json.dumps(chs_a, indent=2)}"
+    transfer_chan_id_a = a_open[0].get("channel_id")
+    b_matches = [
+        c
+        for c in chs_b.get("channels", [])
+        if c.get("port_id") == "transfer"
+        and c.get("state") == "STATE_OPEN"
+        and c.get("counterparty", {}).get("channel_id") == transfer_chan_id_a
+    ]
+    assert (
+        len(b_matches) > 0
+    ), f"No OPEN transfer counterparty for {transfer_chan_id_a} on Chain B. Full: {json.dumps(chs_b, indent=2)}"
+    transfer_chan_id_b = b_matches[0].get("channel_id")
+    end_a = chain_a("query", "ibc", "channel", "end", "transfer", transfer_chan_id_a)
+    end_b = chain_b("query", "ibc", "channel", "end", "transfer", transfer_chan_id_b)
+    assert end_a.get(
+        "channel"
+    ), f"Missing channel end for A transfer/{transfer_chan_id_a}: {json.dumps(end_a, indent=2)}"
+    assert end_b.get(
+        "channel"
+    ), f"Missing channel end for B transfer/{transfer_chan_id_b}: {json.dumps(end_b, indent=2)}"
+    controller_connection_id = end_a["channel"].get("connection_hops", [None])[0]
+    host_connection_id = end_b["channel"].get("connection_hops", [None])[0]
+    assert (
+        controller_connection_id
+    ), f"No connection hop on A channel {transfer_chan_id_a}: {json.dumps(end_a, indent=2)}"
+    assert (
+        host_connection_id
+    ), f"No connection hop on B channel {transfer_chan_id_b}: {json.dumps(end_b, indent=2)}"
+    print(
+        f"🔗 Derived: transfer A={transfer_chan_id_a} B={transfer_chan_id_b}; connections controller={controller_connection_id} host={host_connection_id}"
+    )
+
+    # 2. Register ICA account using derived connection IDs
+    print(
+        f"🔗 Registering ICA account (controller={controller_connection_id}, host={host_connection_id})..."
+    )
+    register_args = [controller_connection_id, host_connection_id, "proto3json"]
     register_result = dysond_bin(
         "tx",
         "script",
@@ -54,7 +102,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         "--function-name",
         "register",
         "--args",
-        "[]",
+        json.dumps(register_args),
         "--from",
         alice_name,
         "--gas",
@@ -122,22 +170,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     _log_ibc_preconditions()
 
-    # Early asserts to surface missing IBC primitives before polling
-    chain_a = ibc_setup[0]
-    chain_b = ibc_setup[1] if len(ibc_setup) > 1 else ibc_setup[0]
-    conn_a = chain_a("query", "ibc", "connection", "end", "connection-0")
-    assert isinstance(conn_a, dict) and conn_a.get(
-        "connection"
-    ), f"connection-0 missing on Chain A. Full: {json.dumps(conn_a, indent=2)}"
-
-    chan_a = chain_a("query", "ibc", "channel", "end", "transfer", "channel-0")
-    chan_b = chain_b("query", "ibc", "channel", "end", "transfer", "channel-0")
-    assert (
-        isinstance(chan_a, dict) and chan_a.get("channel") is not None
-    ), f"transfer/channel-0 missing on Chain A. Full: {json.dumps(chan_a, indent=2)}"
-    assert (
-        isinstance(chan_b, dict) and chan_b.get("channel") is not None
-    ), f"transfer/channel-0 missing on Chain B. Full: {json.dumps(chan_b, indent=2)}"
+    # Remove hardcoded pre-asserts; rely on dynamic discovery and polls below
 
     # Poll: ICS-27 controller and host channels are OPEN on both chains
     def _ics27_channels_open():
@@ -163,31 +196,144 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     poll_until_condition(
         _ics27_channels_open,
-        timeout=120,
+        timeout=30,
         poll_interval=1,
         error_message="ICS-27 channels not open on both chains",
     )
 
-    # Poll: transfer channel-0 is OPEN on both chains
+    # Resolve transfer channel IDs dynamically (do not assume channel-0)
+    def _resolve_transfer_channels():
+        chain_a = ibc_setup[0]
+        chain_b = ibc_setup[1] if len(ibc_setup) > 1 else ibc_setup[0]
+
+        chs_a = chain_a("query", "ibc", "channel", "channels")
+        chs_b = chain_b("query", "ibc", "channel", "channels")
+
+        a_open = [
+            c
+            for c in chs_a.get("channels", [])
+            if c.get("port_id") == "transfer" and c.get("state") == "STATE_OPEN"
+        ]
+        assert (
+            len(a_open) > 0
+        ), f"No OPEN transfer channel found on Chain A. Full: {json.dumps(chs_a, indent=2)}"
+
+        # Pick the first open channel on A, find its mapped partner on B via counterparty.channel_id
+        a_chan_id = a_open[0].get("channel_id")
+        b_matches = [
+            c
+            for c in chs_b.get("channels", [])
+            if c.get("port_id") == "transfer"
+            and c.get("state") == "STATE_OPEN"
+            and c.get("counterparty", {}).get("channel_id") == a_chan_id
+        ]
+        assert (
+            len(b_matches) > 0
+        ), f"No OPEN transfer counterparty for {a_chan_id} on Chain B. Full: {json.dumps(chs_b, indent=2)}"
+
+        b_chan_id = b_matches[0].get("channel_id")
+        print(
+            f"🚚 Resolved transfer channel pair: A transfer/{a_chan_id} <-> B transfer/{b_chan_id}"
+        )
+        return a_chan_id, b_chan_id
+
+    transfer_chan_id_a, transfer_chan_id_b = _resolve_transfer_channels()
+
+    # Poll: transfer channel is OPEN on both chains using resolved IDs
     def _transfer_channel_open():
         chain_a = ibc_setup[0]
         chain_b = ibc_setup[1] if len(ibc_setup) > 1 else ibc_setup[0]
 
-        end_a = chain_a("query", "ibc", "channel", "end", "transfer", "channel-0")
-        end_b = chain_b("query", "ibc", "channel", "end", "transfer", "channel-0")
+        end_a = chain_a(
+            "query", "ibc", "channel", "end", "transfer", transfer_chan_id_a
+        )
+        end_b = chain_b(
+            "query", "ibc", "channel", "end", "transfer", transfer_chan_id_b
+        )
 
         a_open = end_a.get("channel", {}).get("state") == "STATE_OPEN"
         b_open = end_b.get("channel", {}).get("state") == "STATE_OPEN"
 
-        print(f"🚚 transfer/channel-0 open on A: {a_open}; on B: {b_open}")
+        print(
+            f"🚚 transfer/{transfer_chan_id_a} open on A: {a_open}; transfer/{transfer_chan_id_b} on B: {b_open}"
+        )
         return a_open and b_open
 
     poll_until_condition(
         _transfer_channel_open,
-        timeout=60,
+        timeout=30,
         poll_interval=1,
-        error_message="transfer/channel-0 not open on both chains",
+        error_message="transfer channel not open on both chains",
     )
+
+    # Resolve ICS-27 controller/host channel IDs to use in later diagnostics
+    def _resolve_ics27_channels():
+        ctrl_port = f"icacontroller-{alice_address}"
+        chain_a = ibc_setup[0]
+        chain_b = ibc_setup[1] if len(ibc_setup) > 1 else ibc_setup[0]
+
+        chs_a = chain_a("query", "ibc", "channel", "channels")
+        chs_b = chain_b("query", "ibc", "channel", "channels")
+
+        ica_ctrl_list = [
+            c for c in chs_a.get("channels", []) if c.get("port_id") == ctrl_port
+        ]
+        assert (
+            len(ica_ctrl_list) > 0
+        ), f"No ICS-27 controller channel found on Chain A for port {ctrl_port}. Full A channels: {json.dumps(chs_a, indent=2)}"
+
+        ctrl_chan_id = ica_ctrl_list[0].get("channel_id")
+
+        ica_host_list = [
+            c
+            for c in chs_b.get("channels", [])
+            if c.get("port_id") == "icahost"
+            and c.get("counterparty", {}).get("port_id") == ctrl_port
+        ]
+        assert (
+            len(ica_host_list) > 0
+        ), f"No ICS-27 host channel found on Chain B for counterparty port {ctrl_port}. Full B channels: {json.dumps(chs_b, indent=2)}"
+
+        host_chan_id = ica_host_list[0].get("channel_id")
+
+        print(
+            f"🛰️  Resolved ICS-27 channels -> controller: {ctrl_port}/{ctrl_chan_id}, host: icahost/{host_chan_id}"
+        )
+        return ctrl_port, ctrl_chan_id, host_chan_id
+
+    ctrl_port, ctrl_chan_id, host_chan_id = _resolve_ics27_channels()
+
+    # Snapshot helper to print IBC progress for ICS-27 on both chains
+    def _ibc_progress_snapshot(label):
+        chain_a = ibc_setup[0]
+        chain_b = ibc_setup[1] if len(ibc_setup) > 1 else ibc_setup[0]
+
+        print(f"\n===== IBC Progress Snapshot: {label} =====")
+        end_a = chain_a("query", "ibc", "channel", "end", ctrl_port, ctrl_chan_id)
+        end_b = chain_b("query", "ibc", "channel", "end", "icahost", host_chan_id)
+        print(f"A end {ctrl_port}/{ctrl_chan_id}: {json.dumps(end_a, indent=2)}")
+        print(f"B end icahost/{host_chan_id}: {json.dumps(end_b, indent=2)}")
+
+        try_next = chain_a(
+            "query", "ibc", "channel", "next-sequence-send", ctrl_port, ctrl_chan_id
+        )
+        print(
+            f"A next-sequence-send {ctrl_port}/{ctrl_chan_id}: {json.dumps(try_next, indent=2)}"
+        )
+
+        try_commit = chain_a(
+            "query",
+            "ibc",
+            "channel",
+            "packet-commitments",
+            ctrl_port,
+            ctrl_chan_id,
+        )
+        seqs = [int(c.get("sequence", 0)) for c in try_commit.get("commitments", [])]
+        print(
+            f"A packet-commitments {ctrl_port}/{ctrl_chan_id}: sequences={seqs} full={json.dumps(try_commit, indent=2)}"
+        )
+        print("===== End Snapshot =====\n")
 
     # 3. Wait for ICA address to be established via get_ica_address
     print(f"⏳ Waiting for ICA address establishment...")
@@ -206,7 +352,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
             "--function-name",
             "get_ica_address",
             "--args",
-            "[]",
+            json.dumps([controller_connection_id]),
             "--kwargs",
             "{}",
             "-o",
@@ -243,7 +389,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     poll_until_condition(
         _ica_address_established,
-        timeout=120,
+        timeout=30,
         poll_interval=1,
         error_message="ICA address not established after registration",
     )
@@ -259,7 +405,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         "--function-name",
         "get_ica_address",
         "--args",
-        "[]",
+        json.dumps([controller_connection_id]),
         "--from",
         alice_name,
         "--gas",
@@ -305,7 +451,13 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
     print(f"✅ ICA Address established: {ica_address}")
 
     # 5. Fund the ICA account via IBC transfer
-    fund_args = ["udys", "5000"]
+    fund_args = [
+        "udys",
+        "5000",
+        "transfer",
+        transfer_chan_id_a,
+        controller_connection_id,
+    ]
     print(f"💰 Funding ICA account with {fund_args}...")
     fund_result = dysond_bin(
         "tx",
@@ -336,7 +488,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         "--function-name",
         "request_query_balance",
         "--args",
-        "[]",
+        json.dumps([controller_connection_id]),
         "--from",
         alice_name,
         "--gas",
@@ -390,61 +542,45 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         callback_args = ["balance_query", query_ref_id]
         print(f"🔍 Checking for callback with args: {callback_args}")
         result = dysond_bin(
-            "tx",
+            "query",
             "script",
-            "exec",
+            "run",
+            "--executor-address",
+            alice_address,
             "--script-address",
             alice_address,
             "--function-name",
             "get_callback",
             "--args",
             json.dumps(callback_args),
-            "--from",
-            alice_name,
-            "--gas",
-            "2000000",
+            "--kwargs",
+            "{}",
+            "-o",
+            "json",
         )
-        print(f"🔍 Callback check result: {result}")
-        assert result.get("code", 1) == 0, f"get_callback execution failed: {result}"
+        print(f"🔍 Callback (query run) result: {result}")
+        assert "result" in result, f"get_callback run failed: {result}"
 
-        # Extract callback response using list comprehensions
-        exec_events = [
-            e
-            for e in result.get("events", [])
-            if e.get("type") == "dysonprotocol.script.v1.EventExecScript"
-        ]
-        response_attrs = [
-            a
-            for e in exec_events
-            for a in e.get("attributes", [])
-            if a.get("key") == "response"
-        ]
+        # Parse query run structured response
+        result_data = json.loads(result["result"])  # outer wrapper
+        callback_result = result_data.get("result", {})  # actual function return
+        print(f"🔍 Callback check response: {callback_result}")
 
-        for attr in response_attrs:
-            response_json = attr.get("value")
-            response_data = json.loads(response_json)
-            result_data = json.loads(response_data.get("result", "{}"))
-            callback_result = result_data.get("result", {})
-            print(f"🔍 Callback check response: {callback_result}")
+        # Check callback status
+        is_dict = isinstance(callback_result, dict)
+        status = callback_result.get("status") if is_dict else None
+        print(f"🔍 Callback status: {status}")
 
-            # Check callback status
-            is_dict = isinstance(callback_result, dict)
-            status = callback_result.get("status") if is_dict else None
-            print(f"🔍 Callback status: {status}")
+        # Return based on status
+        print(f"✅ Callback found!") if status == "success" else None
+        print(f"❌ Callback not found yet") if status == "not_found" else None
+        (
+            print(f"❓ Unexpected callback status: {status}")
+            if status not in ["success", "not_found"] and status is not None
+            else None
+        )
 
-            # Return based on status
-            print(f"✅ Callback found!") if status == "success" else None
-            print(f"❌ Callback not found yet") if status == "not_found" else None
-            (
-                print(f"❓ Unexpected callback status: {status}")
-                if status not in ["success", "not_found"] and status is not None
-                else None
-            )
-
-            return status == "success"
-
-        print(f"❌ No callback response found in events")
-        return False
+        return status == "success"
 
     # Let's also check what callbacks exist at all
     print(f"🔍 Checking what callbacks exist...")
@@ -467,7 +603,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     poll_until_condition(
         _balance_callback_received,
-        timeout=20,
+        timeout=30,
         poll_interval=1,
         error_message="Balance query callback not received",
     )
@@ -476,29 +612,39 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
     callback_args = ["balance_query", query_ref_id]
     print(f"✅ Getting callback data for verification...")
     callback_result = dysond_bin(
-        "tx",
+        "query",
         "script",
-        "exec",
+        "run",
+        "--executor-address",
+        alice_address,
         "--script-address",
         alice_address,
         "--function-name",
         "get_callback",
         "--args",
         json.dumps(callback_args),
-        "--from",
-        alice_name,
-        "--gas",
-        "2000000",
+        "--kwargs",
+        "{}",
+        "-o",
+        "json",
     )
-    print(f"✅ Callback verification result: {callback_result}")
+    print(f"✅ Callback verification (query run) result: {callback_result}")
+    assert "result" in callback_result, f"get_callback run failed: {callback_result}"
+
+    # Parse and verify
+    result_data = json.loads(callback_result["result"])  # outer wrapper
+    verify_callback = result_data.get("result", {})  # actual function return
     assert (
-        callback_result.get("code", 1) == 0
-    ), f"Failed to get balance callback: {callback_result}"
+        isinstance(verify_callback, dict) and verify_callback.get("status") == "success"
+    ), f"Expected success status. Full context: {json.dumps(verify_callback, indent=2)}"
 
     # 9. Withdraw funds back to controller
     withdraw_args = [
         "ibc/3B2294AF63D402DF9B10DA43CEC03677D9041297A1031AB1AFC789C492280D79",
         "1000",
+        "transfer",
+        transfer_chan_id_b,
+        controller_connection_id,
     ]
     print(f"💸 Withdrawing funds with args: {withdraw_args}")
     withdraw_result = dysond_bin(
@@ -520,6 +666,9 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
     assert (
         withdraw_result.get("code", 1) == 0
     ), f"Failed to withdraw from ICA account: {withdraw_result}"
+
+    # Immediate post-withdraw diagnostic snapshot to capture sequences/commitments
+    _ibc_progress_snapshot("post-withdraw-tx")
 
     # Extract withdrawal ref_id using list comprehensions
     exec_events = [
@@ -555,58 +704,45 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     def _withdrawal_callback_received():
         """Check if withdrawal callback has been received"""
-        # Get latest callback for withdrawal topic
+        # Get latest callback for withdrawal topic via query run (read-only)
         callback_args = ["withdrawal"]
-        print(f"🔍 Checking for withdrawal callback...")
+        print(f"🔍 Checking for withdrawal callback via query run...")
         result = dysond_bin(
-            "tx",
+            "query",
             "script",
-            "exec",
+            "run",
+            "--executor-address",
+            alice_address,
             "--script-address",
             alice_address,
             "--function-name",
             "get_callback",
             "--args",
             json.dumps(callback_args),
-            "--from",
-            alice_name,
-            "--gas",
-            "2000000",
+            "--kwargs",
+            "{}",
+            "-o",
+            "json",
         )
-        print(f"🔍 Withdrawal callback check result: {result}")
-        assert result.get("code", 1) == 0, f"get_callback execution failed: {result}"
+        print(f"🔍 Withdrawal callback (query run) result: {result}")
+        assert "result" in result, f"get_callback run failed: {result}"
 
-        # Extract callback response using list comprehensions
-        exec_events = [
-            e
-            for e in result.get("events", [])
-            if e.get("type") == "dysonprotocol.script.v1.EventExecScript"
-        ]
-        response_attrs = [
-            a
-            for e in exec_events
-            for a in e.get("attributes", [])
-            if a.get("key") == "response"
-        ]
+        # Parse query run structured response
+        result_data = json.loads(result["result"])  # outer wrapper
+        callback_result = result_data.get("result", {})  # actual function return
+        print(f"🔍 Withdrawal callback response: {callback_result}")
 
-        for attr in response_attrs:
-            response_json = attr.get("value")
-            response_data = json.loads(response_json)
-            result_data = json.loads(response_data.get("result", "{}"))
-            callback_result = result_data.get("result", {})
-            print(f"🔍 Withdrawal callback response: {callback_result}")
-
-            # Check status and return
-            is_dict = isinstance(callback_result, dict)
-            status = callback_result.get("status") if is_dict else None
-            print(f"🔍 Withdrawal callback status: {status}")
-            return status == "success"
-
-        return False
+        # Check status and return
+        is_dict = isinstance(callback_result, dict)
+        status = callback_result.get("status") if is_dict else None
+        print(f"🔍 Withdrawal callback status: {status}")
+        # Ongoing snapshot to observe IBC progress while polling
+        _ibc_progress_snapshot("poll-withdraw-callback")
+        return status == "success"
 
     poll_until_condition(
         _withdrawal_callback_received,
-        timeout=20,
+        timeout=30,
         poll_interval=1,
         error_message="Withdrawal callback not received",
     )

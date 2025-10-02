@@ -341,7 +341,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
             "--config-file",
             str(config_path),
             "--block-speed",
-            "500ms",
+            "1000ms",
             "--no-blocks-timeout",
             "5",
             "--logs",
@@ -694,6 +694,54 @@ def ibc_setup(
         print(f"IBC setup failed with exit code {ibc_proc.returncode}")
         print(f"STDOUT: {stdout.decode('utf-8')}\nSTDERR: {stderr.decode('utf-8')}")
         raise Exception(f"IBC setup failed with exit code {ibc_proc.returncode}")
+
+    # Post-IBC setup: poll for transfer channel OPEN on both chains
+    dysond_a = chainnet[0]
+    dysond_b = chainnet[1] if len(chainnet) > 1 else chainnet[0]
+
+    def _resolve_transfer_channel_pair():
+        chs_a = dysond_a("query", "ibc", "channel", "channels")
+        chs_b = dysond_b("query", "ibc", "channel", "channels")
+
+        a_open = [
+            c
+            for c in chs_a.get("channels", [])
+            if c.get("port_id") == "transfer" and c.get("state") == "STATE_OPEN"
+        ]
+        if not a_open:
+            return None
+        a_chan_id = a_open[0].get("channel_id")
+        b_matches = [
+            c
+            for c in chs_b.get("channels", [])
+            if c.get("port_id") == "transfer"
+            and c.get("state") == "STATE_OPEN"
+            and c.get("counterparty", {}).get("channel_id") == a_chan_id
+        ]
+        if not b_matches:
+            return None
+        return a_chan_id, b_matches[0].get("channel_id")
+
+    def _transfer_open_on_both():
+        pair = _resolve_transfer_channel_pair()
+        if pair is None:
+            return False
+        a_id, b_id = pair
+        end_a = dysond_a("query", "ibc", "channel", "end", "transfer", a_id)
+        end_b = dysond_b("query", "ibc", "channel", "end", "transfer", b_id)
+        a_open = end_a.get("channel", {}).get("state") == "STATE_OPEN"
+        b_open = end_b.get("channel", {}).get("state") == "STATE_OPEN"
+        print(
+            f"[ibc_setup] transfer/{a_id} open on A: {a_open}; transfer/{b_id} open on B: {b_open}"
+        )
+        return a_open and b_open
+
+    poll_until_condition(
+        _transfer_open_on_both,
+        timeout=30,
+        poll_interval=1,
+        error_message="transfer channel not open on both chains after IBC setup",
+    )
 
     yield chainnet
 

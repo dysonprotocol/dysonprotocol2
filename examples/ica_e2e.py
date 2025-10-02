@@ -49,7 +49,24 @@ def register(
         Dictionary with registration result (address will be available after IBC handshake)
     """
     if host_connection_id is None:
-        host_connection_id = connection_id
+        # Try to derive host_connection_id from counterparty of the controller connection.
+        # If the query type is unavailable in this runtime, default to controller's connection_id.
+        derived_host_cid = None
+        try:
+            conn = _query(
+                {
+                    "@type": "/ibc.core.connection.v1.QueryConnectionRequest",
+                    "connection_id": connection_id,
+                }
+            )
+            derived_host_cid = (
+                conn.get("connection", {}).get("counterparty", {}).get("connection_id")
+            )
+        except Exception as e:
+            print(
+                f"Connection query unsupported or failed, defaulting host_connection_id={connection_id}: {str(e)}"
+            )
+        host_connection_id = derived_host_cid or connection_id
 
     # Construct the version JSON as required by ICA specification
     # ICA channels must be ORDERED
