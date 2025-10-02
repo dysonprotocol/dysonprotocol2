@@ -83,10 +83,10 @@ assert 'balance' in json_result, "Balance not found in the result"
 print(json.dumps(json_result['balance'], indent=2))
 ```
 
-    {"result":"{\"result\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"denom\":\"udys\",\"amount\":\"10000000000\"}},\"stdout\":\"\",\"exception\":null,\"nodes_called\":23,\"gas_limit\":18446744073709551615,\"script_gas_consumed\":1013352,\"cumsize\":6570}","attached_message_results":[]}
+    {"result":"{\"result\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"denom\":\"udys\",\"amount\":\"9985999961\"}},\"stdout\":\"\",\"exception\":null,\"nodes_called\":23,\"gas_limit\":18446744073709551615,\"script_gas_consumed\":1013342,\"cumsize\":6563}","attached_message_results":[]}
     {
       "denom": "udys",
-      "amount": "10000000000"
+      "amount": "9985999961"
     }
 
 
@@ -147,13 +147,13 @@ assert 'bob_balance' in json_result, "Bob's balance not found in the result"
 print(json.dumps(json_result, indent=2))
 ```
 
-    {"result":"{\"result\":{\"alice_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"denom\":\"udys\",\"amount\":\"10000000000\"}},\"bob_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"denom\":\"udys\",\"amount\":\"10000000000\"}}},\"stdout\":\"\",\"exception\":null,\"nodes_called\":39,\"gas_limit\":18446744073709551615,\"script_gas_consumed\":1023261,\"cumsize\":15368}","attached_message_results":[]}
+    {"result":"{\"result\":{\"alice_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"denom\":\"udys\",\"amount\":\"9985999961\"}},\"bob_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"denom\":\"udys\",\"amount\":\"10000000000\"}}},\"stdout\":\"\",\"exception\":null,\"nodes_called\":39,\"gas_limit\":18446744073709551615,\"script_gas_consumed\":1023235,\"cumsize\":15345}","attached_message_results":[]}
     {
       "alice_balance": {
         "@type": "/cosmos.bank.v1beta1.QueryBalanceResponse",
         "balance": {
           "denom": "udys",
-          "amount": "10000000000"
+          "amount": "9985999961"
         }
       },
       "bob_balance": {
@@ -238,14 +238,14 @@ print(f"- Total gas for iterations: {gas_metrics['iterations_gas']}")
 print(f"- Average gas per iteration: {gas_metrics['per_iteration']}")
 ```
 
-    {"result":"{\"result\":{\"initial_gas\":1008377,\"after_query_gas\":1017185,\"final_gas\":1061678,\"query_gas\":8808,\"iterations_gas\":44493,\"per_iteration\":8898.6},\"stdout\":\"Iteration 1 of 5\\nIteration 2 of 5\\nIteration 3 of 5\\nIteration 4 of 5\\nIteration 5 of 5\\n\",\"exception\":null,\"nodes_called\":133,\"gas_limit\":18446744073709551615,\"script_gas_consumed\":1082225,\"cumsize\":75443}","attached_message_results":[]}
+    {"result":"{\"result\":{\"initial_gas\":1008377,\"after_query_gas\":1017181,\"final_gas\":1061601,\"query_gas\":8804,\"iterations_gas\":44420,\"per_iteration\":8884.0},\"stdout\":\"Iteration 1 of 5\\nIteration 2 of 5\\nIteration 3 of 5\\nIteration 4 of 5\\nIteration 5 of 5\\n\",\"exception\":null,\"nodes_called\":133,\"gas_limit\":18446744073709551615,\"script_gas_consumed\":1082116,\"cumsize\":75337}","attached_message_results":[]}
     Gas report for benchmark operations:
     - Initial gas consumed: 1008377
-    - Gas after query: 1017185
-    - Gas after iterations: 1061678
-    - Total gas for query: 8808
-    - Total gas for iterations: 44493
-    - Average gas per iteration: 8898.6
+    - Gas after query: 1017181
+    - Gas after iterations: 1061601
+    - Total gas for query: 8804
+    - Total gas for iterations: 44420
+    - Average gas per iteration: 8884.0
 
 
 ### Gas Limits
@@ -475,9 +475,9 @@ print(f"- Time: {block_info['time']}")
 ```
 
     Block Information:
-    - Height: 7
+    - Height: 35
     - Chain ID: chain-a
-    - Time: 2025-10-02T10:48:38.432233Z
+    - Time: 2025-10-02T11:23:21.704235Z
 
 
 ## Transaction Data
@@ -541,7 +541,7 @@ for m, r in zip(results['attached_messages'], results['attached_msg_results']):
     print(f"Result: {r}")
 ```
 
-    {"result":"{\"result\":{\"attached_messages\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\",\"amount\":[{\"denom\":\"udys\",\"amount\":\"12\"}]},{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\",\"amount\":[{\"denom\":\"udys\",\"amount\":\"34\"}]}],\"attached_msg_results\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"},{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"}]},\"stdout\":\"\",\"exception\":null,\"nodes_called\":18,\"gas_limit\":18446744073709551615,\"script_gas_consumed\":1056963,\"cumsize\":12601}","attached_message_results":[{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"},{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"}]}
+    {"result":"{\"result\":{\"attached_messages\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\",\"amount\":[{\"denom\":\"udys\",\"amount\":\"12\"}]},{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\",\"amount\":[{\"denom\":\"udys\",\"amount\":\"34\"}]}],\"attached_msg_results\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"},{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"}]},\"stdout\":\"\",\"exception\":null,\"nodes_called\":18,\"gas_limit\":18446744073709551615,\"script_gas_consumed\":1057404,\"cumsize\":12601}","attached_message_results":[{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"},{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"}]}
     {'attached_messages': [{'@type': '/cosmos.bank.v1beta1.MsgSend', 'from_address': 'dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej', 'to_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'amount': [{'denom': 'udys', 'amount': '12'}]}, {'@type': '/cosmos.bank.v1beta1.MsgSend', 'from_address': 'dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej', 'to_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'amount': [{'denom': 'udys', 'amount': '34'}]}], 'attached_msg_results': [{'@type': '/cosmos.bank.v1beta1.MsgSendResponse'}, {'@type': '/cosmos.bank.v1beta1.MsgSendResponse'}]}
     Message: {'@type': '/cosmos.bank.v1beta1.MsgSend', 'from_address': 'dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej', 'to_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'amount': [{'denom': 'udys', 'amount': '12'}]}
     Result: {'@type': '/cosmos.bank.v1beta1.MsgSendResponse'}
@@ -598,16 +598,16 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
 ```
 
     {
-      "height": "9",
-      "txhash": "07CA48632DAFD22BD80387C8E3236CF6ECFBD02CBC76D254FC95988B4D1FEDFB",
+      "height": "36",
+      "txhash": "EFCD69B63B2A7CC650F06FD76A89ECEA5DC38BF0602C6B31A3252E74109228C8",
       "codespace": "",
       "code": 0,
-      "data": "12C2010A282F6479736F6E70726F746F636F6C2E7363726970742E76312E4D736745786563526573706F6E73651295010A92017B22726573756C74223A7B226576656E745F656D6974746564223A747275657D2C227374646F7574223A22222C22657863657074696F6E223A6E756C6C2C226E6F6465735F63616C6C6564223A31372C226761735F6C696D6974223A31303030303030302C227363726970745F6761735F636F6E73756D6564223A313035343332332C2263756D73697A65223A323431367D",
+      "data": "12C2010A282F6479736F6E70726F746F636F6C2E7363726970742E76312E4D736745786563526573706F6E73651295010A92017B22726573756C74223A7B226576656E745F656D6974746564223A747275657D2C227374646F7574223A22222C22657863657074696F6E223A6E756C6C2C226E6F6465735F63616C6C6564223A31372C226761735F6C696D6974223A31303030303030302C227363726970745F6761735F636F6E73756D6564223A313033393833332C2263756D73697A65223A323431367D",
       "raw_log": "",
       "logs": [],
       "info": "",
       "gas_wanted": "10000000",
-      "gas_used": "1054323",
+      "gas_used": "1039833",
       "tx": null,
       "timestamp": "",
       "events": [
@@ -616,7 +616,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
           "attributes": [
             {
               "key": "acc_seq",
-              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/0",
+              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/16",
               "index": true
             }
           ]
@@ -626,7 +626,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
           "attributes": [
             {
               "key": "signature",
-              "value": "yxrrjbGGLzn09Jqc6e9SLE+Jy1g6wVhIezi8RjWOp2ESxV+75TvJFP/FuqK5L5RO56wvTn6y7bM5dGapJA/ocg==",
+              "value": "Zn4YDE+TJqaiQG485DYfgYqlildzbNz041RHyvnfrBF74CwFbgXvT7UCcK6O/SlIBIdh/6jQSFAIwYGPqR6/zA==",
               "index": true
             }
           ]
@@ -726,7 +726,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
             },
             {
               "key": "response",
-              "value": "{\"result\":\"{\\\"result\\\":{\\\"event_emitted\\\":true},\\\"stdout\\\":\\\"\\\",\\\"exception\\\":null,\\\"nodes_called\\\":17,\\\"gas_limit\\\":10000000,\\\"script_gas_consumed\\\":1054323,\\\"cumsize\\\":2416}\",\"attached_message_results\":[]}",
+              "value": "{\"result\":\"{\\\"result\\\":{\\\"event_emitted\\\":true},\\\"stdout\\\":\\\"\\\",\\\"exception\\\":null,\\\"nodes_called\\\":17,\\\"gas_limit\\\":10000000,\\\"script_gas_consumed\\\":1039833,\\\"cumsize\\\":2416}\",\"attached_message_results\":[]}",
               "index": true
             },
             {
@@ -750,8 +750,8 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
     }
     {
       "tx": {
-        "acc_seq": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/0",
-        "signature": "yxrrjbGGLzn09Jqc6e9SLE+Jy1g6wVhIezi8RjWOp2ESxV+75TvJFP/FuqK5L5RO56wvTn6y7bM5dGapJA/ocg=="
+        "acc_seq": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/16",
+        "signature": "Zn4YDE+TJqaiQG485DYfgYqlildzbNz041RHyvnfrBF74CwFbgXvT7UCcK6O/SlIBIdh/6jQSFAIwYGPqR6/zA=="
       },
       "message": {
         "action": "/dysonprotocol.script.v1.MsgExec",
@@ -769,7 +769,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
         "executor_address": "\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\"",
         "function_name": "\"emit_test_event\"",
         "request": "{\"executor_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"script_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"script_name\":\"\",\"extra_code\":\"\\nfrom dys import emit_event\\n\\ndef emit_test_event():\\n    # Emit a custom event, none is a success or an exception is raised\\n    emit_event(\\\"payment_processed\\\", \\\"success\\\")\\n    emit_event(\\\"foo\\\", '123123')\\n    return {\\\"event_emitted\\\": True}\\n\",\"function_name\":\"emit_test_event\",\"args\":\"\",\"kwargs\":\"\",\"attached_messages\":[]}",
-        "response": "{\"result\":\"{\\\"result\\\":{\\\"event_emitted\\\":true},\\\"stdout\\\":\\\"\\\",\\\"exception\\\":null,\\\"nodes_called\\\":17,\\\"gas_limit\\\":10000000,\\\"script_gas_consumed\\\":1054323,\\\"cumsize\\\":2416}\",\"attached_message_results\":[]}",
+        "response": "{\"result\":\"{\\\"result\\\":{\\\"event_emitted\\\":true},\\\"stdout\\\":\\\"\\\",\\\"exception\\\":null,\\\"nodes_called\\\":17,\\\"gas_limit\\\":10000000,\\\"script_gas_consumed\\\":1039833,\\\"cumsize\\\":2416}\",\"attached_message_results\":[]}",
         "script_address": "\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\"",
         "script_name": "\"\"",
         "msg_index": "0"

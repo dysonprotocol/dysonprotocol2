@@ -84,18 +84,18 @@ print(output)
 assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Protocol!' in output, got: " + output
 ```
 
-    Accessing your DWapp at 'http://dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost:7317'
+    Accessing your DWapp at 'http://dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost:8317'
 
 
-    * Host dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost:7317 was resolved.
+    * Host dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost:8317 was resolved.
     * IPv6: ::1
     * IPv4: 127.0.0.1
-    *   Trying [::1]:7317...
-    * connect to ::1 port 7317 from ::1 port 64784 failed: Connection refused
-    *   Trying 127.0.0.1:7317...
-    * Connected to dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost (127.0.0.1) port 7317
+    *   Trying [::1]:8317...
+    * connect to ::1 port 8317 from ::1 port 58856 failed: Connection refused
+    *   Trying 127.0.0.1:8317...
+    * Connected to dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost (127.0.0.1) port 8317
     > GET /hi HTTP/1.1
-    > Host: dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost:7317
+    > Host: dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost:8317
     > User-Agent: curl/8.7.1
     > Accept: */*
     > 
@@ -103,9 +103,9 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     < HTTP/1.1 200 OK
     < Content-Length: 82
     < Content-Type: text/html
-    < Date: Thu, 02 Oct 2025 10:48:55 GMT
+    < Date: Thu, 02 Oct 2025 11:23:22 GMT
     < Server: WSGIServer/0.2 CPython/3.12.11
-    < X-Server-Time: 1759402136
+    < X-Server-Time: 1759404203
     < 
     { [82 bytes data]
     * Connection #0 to host dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost left intact
@@ -133,7 +133,7 @@ print(f"✓ Script query successful for address: {address}")
 
 ```
 
-    {"script":{"address":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej","version":"2","code":"def add(a, b):\n    print(f\"Adding {a} and {b}\")\n    return {\"a\": a, \"b\": b, \"add_result\": a + b}\n\n\ndef wsgi(environ, start_response):\n    status = \"200 OK\"\n    headers = [(\"Content-type\", \"text/html\")]\n    start_response(status, headers)\n    return [\n        b\"\"\"\n\u003chtml\u003e\n    \u003cbody\u003e\n        \u003ch1\u003eHello from Dyson Protocol!\u003c/h1\u003e\n    \u003c/body\u003e\n\u003c/html\u003e\"\"\"\n    ]\n","update_height":"22"}}
+    {"script":{"address":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej","version":"2","code":"def add(a, b):\n    print(f\"Adding {a} and {b}\")\n    return {\"a\": a, \"b\": b, \"add_result\": a + b}\n\n\ndef wsgi(environ, start_response):\n    status = \"200 OK\"\n    headers = [(\"Content-type\", \"text/html\")]\n    start_response(status, headers)\n    return [\n        b\"\"\"\n\u003chtml\u003e\n    \u003cbody\u003e\n        \u003ch1\u003eHello from Dyson Protocol!\u003c/h1\u003e\n    \u003c/body\u003e\n\u003c/html\u003e\"\"\"\n    ]\n","update_height":"36"}}
     ✓ Script query successful for address: dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej
 
 
@@ -164,7 +164,7 @@ and observe how the function processes these values and returns the calculated s
           "attributes": [
             {
               "key": "acc_seq",
-              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/7",
+              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/16",
               "index": true
             }
           ]
@@ -174,7 +174,7 @@ and observe how the function processes these values and returns the calculated s
           "attributes": [
             {
               "key": "signature",
-              "value": "ucebIcpG0tRGe5IvLMQgzqR/37oa+0/wMg0sxG9ttUROpYb0Gwjm/JvI0AfrFBOOKUSqXKqpBeg9kWmkt96v0Q==",
+              "value": "JUfEtTJPUYtDN8a+Coy4h7cb46+yYJvL46ytk4QscB0KpGBdjFz9IP333rpmKW+Ei2+IDmeIsxJcni4iqK2MWg==",
               "index": true
             }
           ]
@@ -244,9 +244,9 @@ print(f"Salt: {salt}")
 print(f"Hex Hash: {hex_hash}")
 ```
 
-    Name: alice-itjsa.dys
-    Salt: 801il6stwe
-    Hex Hash: 2836fe388685cf2ca523d016cc91e3aca38bae9476d9ec58622eeb3cf41b9bb9
+    Name: alice-21ggm.dys
+    Salt: m52rhanjar
+    Hex Hash: 62a781e10c14cd374a23f1429c4ca2c2051f55ff3fa88edce01f547a1ee325cb
 
 
 
@@ -305,18 +305,18 @@ print(output)
 assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Protocol!' in output, got: " + output
 ```
 
-    Accessing your DWapp at 'http://alice-itjsa.localhost:7317'
+    Accessing your DWapp at 'http://alice-21ggm.localhost:8317'
 
 
-    * Host alice-itjsa.localhost:7317 was resolved.
+    * Host alice-21ggm.localhost:8317 was resolved.
     * IPv6: ::1
     * IPv4: 127.0.0.1
-    *   Trying [::1]:7317...
-    * connect to ::1 port 7317 from ::1 port 58654 failed: Connection refused
-    *   Trying 127.0.0.1:7317...
-    * Connected to alice-itjsa.localhost (127.0.0.1) port 7317
+    *   Trying [::1]:8317...
+    * connect to ::1 port 8317 from ::1 port 52089 failed: Connection refused
+    *   Trying 127.0.0.1:8317...
+    * Connected to alice-21ggm.localhost (127.0.0.1) port 8317
     > GET /hi HTTP/1.1
-    > Host: alice-itjsa.localhost:7317
+    > Host: alice-21ggm.localhost:8317
     > User-Agent: curl/8.7.1
     > Accept: */*
     > 
@@ -324,12 +324,12 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     < HTTP/1.1 200 OK
     < Content-Length: 82
     < Content-Type: text/html
-    < Date: Thu, 02 Oct 2025 10:49:00 GMT
+    < Date: Thu, 02 Oct 2025 11:23:26 GMT
     < Server: WSGIServer/0.2 CPython/3.12.11
-    < X-Server-Time: 1759402142
+    < X-Server-Time: 1759404207
     < 
     { [82 bytes data]
-    * Connection #0 to host alice-itjsa.localhost left intact
+    * Connection #0 to host alice-21ggm.localhost left intact
     
     <html>
         <body>

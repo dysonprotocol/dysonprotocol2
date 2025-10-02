@@ -341,7 +341,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
             "--config-file",
             str(config_path),
             "--block-speed",
-            "1000ms",
+            "500ms",
             "--no-blocks-timeout",
             "5",
             "--logs",
