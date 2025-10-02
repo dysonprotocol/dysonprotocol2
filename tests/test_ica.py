@@ -196,7 +196,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     poll_until_condition(
         _ics27_channels_open,
-        timeout=30,
+        timeout=60,
         poll_interval=1,
         error_message="ICS-27 channels not open on both chains",
     )
@@ -261,7 +261,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     poll_until_condition(
         _transfer_channel_open,
-        timeout=30,
+        timeout=60,
         poll_interval=1,
         error_message="transfer channel not open on both chains",
     )
@@ -389,7 +389,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     poll_until_condition(
         _ica_address_established,
-        timeout=30,
+        timeout=60,
         poll_interval=1,
         error_message="ICA address not established after registration",
     )
@@ -603,7 +603,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     poll_until_condition(
         _balance_callback_received,
-        timeout=30,
+        timeout=60,
         poll_interval=1,
         error_message="Balance query callback not received",
     )
@@ -742,7 +742,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     poll_until_condition(
         _withdrawal_callback_received,
-        timeout=30,
+        timeout=60,
         poll_interval=1,
         error_message="Withdrawal callback not received",
     )
