@@ -191,6 +191,7 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// Create a response object
 	resp := &scriptv1.WebResponse{}
 
+	fmt.Printf("Querying script: %+v\n", queryReq)
 	// Use clientCtx.Invoke instead of direct app.Query
 	err = h.clientCtx.Invoke(req.Context(), "/dysonprotocol.script.v1.Query/Web", queryReq, resp)
 	if err != nil {
@@ -317,6 +318,11 @@ func getRawRequest(r *http.Request) (string, error) {
 
 	// Write the request method, URL, and protocol
 	if _, err := fmt.Fprintf(&buf, "%s %s %s\r\n", r.Method, r.URL.RequestURI(), r.Proto); err != nil {
+		return "", err
+	}
+
+	// Explicitly write Host header (not included in r.Header by default)
+	if _, err := fmt.Fprintf(&buf, "Host: %s\r\n", r.Host); err != nil {
 		return "", err
 	}
 
