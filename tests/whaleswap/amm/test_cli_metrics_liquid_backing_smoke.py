@@ -2,7 +2,7 @@ import json
 
 
 def _bal_map(dysond, addr):
-    res = dysond("query", "bank", "balances", addr)
+    res = dysond("query", "bank", "balances", addr, "--page-limit", "1000")
     return {b.get("denom"): int(b.get("amount")) for b in res.get("balances", [])}
 
 
