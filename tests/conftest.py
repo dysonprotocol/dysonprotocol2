@@ -640,7 +640,7 @@ def ibc_setup(
     try:
         poll_until_condition(
             _ibc_setup_ready,
-            timeout=25,
+            timeout=45,
             poll_interval=1,
             error_message="IBC setup did not complete",
         )

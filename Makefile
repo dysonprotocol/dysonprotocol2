@@ -121,7 +121,6 @@ install:
 
 test: install
 	@echo "--> running pytest"
-	@echo "--> Setting up in-memory filesystem for tests"
 	@DEFAULT_BASE_DIR=$$(mktemp -d /tmp/dyson-test.XXXXXX); \
 	echo "Using temporary directory: $$DEFAULT_BASE_DIR"; \
 	DEFAULT_BASE_DIR=$$DEFAULT_BASE_DIR/test-dysonchains python -u -m pytest  --capture=fd -x --showlocals --durations=0 $(PYTEST_ARGS); \

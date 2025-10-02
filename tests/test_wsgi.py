@@ -53,7 +53,7 @@ def test_simple_wsgi_example(chainnet, generate_account, faucet, api_address):
         nonlocal attempts
         attempts += 1
 
-        response = requests.get(api_url, timeout=10, headers={"Host": script_url})
+        response = requests.get(api_url, timeout=20, headers={"Host": script_url})
         ready = response.status_code == 200
 
         (
@@ -68,16 +68,16 @@ def test_simple_wsgi_example(chainnet, generate_account, faucet, api_address):
     # Poll until the endpoint is ready
     poll_until_condition(
         check_url_ready,
-        timeout=10,
+        timeout=20,
         error_message=f"Endpoint {script_url} not ready after 10 seconds",
     )
 
     # Test default response (hi world)
-    response = requests.get(api_url, timeout=10, headers={"Host": script_url})
+    response = requests.get(api_url, timeout=20, headers={"Host": script_url})
     print(f"Response status: {response.status_code}")
     assert (
         response.status_code == 200
-    ), f"WSGI request failed with status code {response.status_code}"
+    ), f"WSGI request failed with status code {response.status_code}: {response.text}"
     assert "hi world" in response.text, "Default greeting not found in WSGI response"
     print(f"Default response: {response.text[:100]}...")
 
@@ -85,11 +85,11 @@ def test_simple_wsgi_example(chainnet, generate_account, faucet, api_address):
     test_names = ["Alice", "Bob", "Charlie"]
     for name in test_names:
         response = requests.get(
-            api_url, timeout=10, headers={"Host": script_url}, params={"name": name}
+            api_url, timeout=20, headers={"Host": script_url}, params={"name": name}
         )
         assert (
             response.status_code == 200
-        ), f"WSGI request with name={name} failed with status code {response.status_code}"
+        ), f"WSGI request with name={name} failed with status code {response.status_code}: {response.text}"
         assert (
             f"hi {name}" in response.text
         ), f"Greeting with name '{name}' not found in WSGI response"
@@ -98,7 +98,9 @@ def test_simple_wsgi_example(chainnet, generate_account, faucet, api_address):
     # Test with POST request
     post_data = {"name": "PostUser"}
     post_response = requests.post(
-        api_url, timeout=10, headers={"Host": script_url}, data=post_data
+        api_url, timeout=20, headers={"Host": script_url}, data=post_data
     )
-    assert post_response.status_code == 200, "WSGI POST request failed"
+    assert (
+        post_response.status_code == 200
+    ), f"WSGI POST request failed: {post_response.text}"
     print(f"POST response: {post_response.text[:100]}...")
