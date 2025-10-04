@@ -530,7 +530,9 @@ type TradeMetrics struct {
 	EscrowedPfand github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,4,rep,name=escrowed_pfand,json=escrowedPfand,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"escrowed_pfand"`
 	// Sum of auction sell escrows over all open auctions
 	EscrowedAuctionCoins github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,5,rep,name=escrowed_auction_coins,json=escrowedAuctionCoins,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"escrowed_auction_coins"`
-	// Any liquid coins currently held by the module (should generally be zero)
+	// Solid backing for liquid supply: for each liquid denom
+	// whaleswap.dys/coins/X, this reports the required backing amount on solid
+	// denom X.
 	EscrowedLiquidCoins github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,6,rep,name=escrowed_liquid_coins,json=escrowedLiquidCoins,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"escrowed_liquid_coins"`
 	// Sum of fees_earned across all pools (accounted inside pool reserves)
 	FeesEarned github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,7,rep,name=fees_earned,json=feesEarned,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"fees_earned"`

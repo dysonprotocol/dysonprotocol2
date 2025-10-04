@@ -1782,7 +1782,7 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "title": "Any liquid coins currently held by the module (should generally be zero)"
+          "description": "Solid backing for liquid supply: for each liquid denom\nwhaleswap.dys/coins/X, this reports the required backing amount on solid\ndenom X."
         },
         "fees_earned": {
           "type": "array",

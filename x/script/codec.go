@@ -17,7 +17,6 @@ import (
 	govv1beta "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
 	// all the types from the other modules
-	circuittypes "cosmossdk.io/x/circuit/types"
 	evidencetypes "cosmossdk.io/x/evidence/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -145,9 +144,6 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		&bank.MsgSendResponse{},
 
 		// circuit
-		&circuittypes.QueryAccountRequest{}, &circuittypes.AccountResponse{},
-		&circuittypes.QueryAccountsRequest{}, &circuittypes.AccountsResponse{},
-		&circuittypes.QueryDisabledListRequest{}, &circuittypes.DisabledListResponse{},
 
 		// consensus
 		&consensustypes.QueryParamsRequest{}, &consensustypes.QueryParamsResponse{},

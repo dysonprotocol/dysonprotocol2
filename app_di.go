@@ -15,7 +15,6 @@ import (
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
-	circuitkeeper "cosmossdk.io/x/circuit/keeper"
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
 	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
@@ -84,7 +83,6 @@ type DysApp struct {
 	UpgradeKeeper         *upgradekeeper.Keeper
 	EvidenceKeeper        evidencekeeper.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
-	CircuitKeeper         circuitkeeper.Keeper
 
 	// supplementary keepers
 	FeeGrantKeeper feegrantkeeper.Keeper
@@ -195,7 +193,7 @@ func NewDysApp(
 		&app.UpgradeKeeper,
 		&app.EvidenceKeeper,
 		&app.ConsensusParamsKeeper,
-		&app.CircuitKeeper,
+
 		&app.FeeGrantKeeper,
 		&app.AuthzKeeper,
 		&app.NFTKeeper,
@@ -293,7 +291,6 @@ func (app *DysApp) setAnteHandler(txConfig client.TxConfig) {
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			handlerOpts,
-			&app.CircuitKeeper,
 		},
 	)
 	if err != nil {

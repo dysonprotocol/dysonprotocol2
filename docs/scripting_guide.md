@@ -84,18 +84,18 @@ print(output)
 assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Protocol!' in output, got: " + output
 ```
 
-    Accessing your DWapp at 'http://dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost:8317'
+    Accessing your DWapp at 'http://dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost:2317'
 
 
-    * Host dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost:8317 was resolved.
+    * Host dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost:2317 was resolved.
     * IPv6: ::1
     * IPv4: 127.0.0.1
-    *   Trying [::1]:8317...
-    * connect to ::1 port 8317 from ::1 port 58856 failed: Connection refused
-    *   Trying 127.0.0.1:8317...
-    * Connected to dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost (127.0.0.1) port 8317
+    *   Trying [::1]:2317...
+    * connect to ::1 port 2317 from ::1 port 55492 failed: Connection refused
+    *   Trying 127.0.0.1:2317...
+    * Connected to dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost (127.0.0.1) port 2317
     > GET /hi HTTP/1.1
-    > Host: dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost:8317
+    > Host: dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost:2317
     > User-Agent: curl/8.7.1
     > Accept: */*
     > 
@@ -103,9 +103,9 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     < HTTP/1.1 200 OK
     < Content-Length: 82
     < Content-Type: text/html
-    < Date: Thu, 02 Oct 2025 11:23:22 GMT
+    < Date: Sat, 04 Oct 2025 16:06:59 GMT
     < Server: WSGIServer/0.2 CPython/3.12.11
-    < X-Server-Time: 1759404203
+    < X-Server-Time: 1759594020
     < 
     { [82 bytes data]
     * Connection #0 to host dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost left intact
@@ -133,7 +133,7 @@ print(f"✓ Script query successful for address: {address}")
 
 ```
 
-    {"script":{"address":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej","version":"2","code":"def add(a, b):\n    print(f\"Adding {a} and {b}\")\n    return {\"a\": a, \"b\": b, \"add_result\": a + b}\n\n\ndef wsgi(environ, start_response):\n    status = \"200 OK\"\n    headers = [(\"Content-type\", \"text/html\")]\n    start_response(status, headers)\n    return [\n        b\"\"\"\n\u003chtml\u003e\n    \u003cbody\u003e\n        \u003ch1\u003eHello from Dyson Protocol!\u003c/h1\u003e\n    \u003c/body\u003e\n\u003c/html\u003e\"\"\"\n    ]\n","update_height":"36"}}
+    {"script":{"address":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej","version":"2","code":"def add(a, b):\n    print(f\"Adding {a} and {b}\")\n    return {\"a\": a, \"b\": b, \"add_result\": a + b}\n\n\ndef wsgi(environ, start_response):\n    status = \"200 OK\"\n    headers = [(\"Content-type\", \"text/html\")]\n    start_response(status, headers)\n    return [\n        b\"\"\"\n\u003chtml\u003e\n    \u003cbody\u003e\n        \u003ch1\u003eHello from Dyson Protocol!\u003c/h1\u003e\n    \u003c/body\u003e\n\u003c/html\u003e\"\"\"\n    ]\n\n","update_height":"24"}}
     ✓ Script query successful for address: dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej
 
 
@@ -157,14 +157,14 @@ and observe how the function processes these values and returns the calculated s
     {
       "code": 11,
       "script_result": null,
-      "raw_log": "out of gas in location: script exec base cost; gasWanted: 200000, gasUsed: 1032639: out of gas",
+      "raw_log": "out of gas in location: script exec base cost; gasWanted: 200000, gasUsed: 1030642: out of gas",
       "events": [
         {
           "type": "tx",
           "attributes": [
             {
               "key": "acc_seq",
-              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/16",
+              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/7",
               "index": true
             }
           ]
@@ -174,7 +174,7 @@ and observe how the function processes these values and returns the calculated s
           "attributes": [
             {
               "key": "signature",
-              "value": "JUfEtTJPUYtDN8a+Coy4h7cb46+yYJvL46ytk4QscB0KpGBdjFz9IP333rpmKW+Ei2+IDmeIsxJcni4iqK2MWg==",
+              "value": "ucebIcpG0tRGe5IvLMQgzqR/37oa+0/wMg0sxG9ttUROpYb0Gwjm/JvI0AfrFBOOKUSqXKqpBeg9kWmkt96v0Q==",
               "index": true
             }
           ]
@@ -244,9 +244,9 @@ print(f"Salt: {salt}")
 print(f"Hex Hash: {hex_hash}")
 ```
 
-    Name: alice-21ggm.dys
-    Salt: m52rhanjar
-    Hex Hash: 62a781e10c14cd374a23f1429c4ca2c2051f55ff3fa88edce01f547a1ee325cb
+    Name: alice-ybpwj.dys
+    Salt: nzp36vs9m9
+    Hex Hash: 2bad0987188b9e6b191a85ce55aece8948fecdc65fb42e6bc211c91bb10d8be2
 
 
 
@@ -305,18 +305,18 @@ print(output)
 assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Protocol!' in output, got: " + output
 ```
 
-    Accessing your DWapp at 'http://alice-21ggm.localhost:8317'
+    Accessing your DWapp at 'http://alice-ybpwj.localhost:2317'
 
 
-    * Host alice-21ggm.localhost:8317 was resolved.
+    * Host alice-ybpwj.localhost:2317 was resolved.
     * IPv6: ::1
     * IPv4: 127.0.0.1
-    *   Trying [::1]:8317...
-    * connect to ::1 port 8317 from ::1 port 52089 failed: Connection refused
-    *   Trying 127.0.0.1:8317...
-    * Connected to alice-21ggm.localhost (127.0.0.1) port 8317
+    *   Trying [::1]:2317...
+    * connect to ::1 port 2317 from ::1 port 58136 failed: Connection refused
+    *   Trying 127.0.0.1:2317...
+    * Connected to alice-ybpwj.localhost (127.0.0.1) port 2317
     > GET /hi HTTP/1.1
-    > Host: alice-21ggm.localhost:8317
+    > Host: alice-ybpwj.localhost:2317
     > User-Agent: curl/8.7.1
     > Accept: */*
     > 
@@ -324,12 +324,12 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     < HTTP/1.1 200 OK
     < Content-Length: 82
     < Content-Type: text/html
-    < Date: Thu, 02 Oct 2025 11:23:26 GMT
+    < Date: Sat, 04 Oct 2025 16:07:02 GMT
     < Server: WSGIServer/0.2 CPython/3.12.11
-    < X-Server-Time: 1759404207
+    < X-Server-Time: 1759594023
     < 
     { [82 bytes data]
-    * Connection #0 to host alice-21ggm.localhost left intact
+    * Connection #0 to host alice-ybpwj.localhost left intact
     
     <html>
         <body>

@@ -1,278 +1,292 @@
 {
-    "swagger": "2.0",
-    "info": {
-      "title": "Dyson Protocol - gRPC Gateway docs",
-      "description": "A REST interface for state queries.",
-      "version": "1.0.0"
-    },
-    "apis": [
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/script/v1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_ScriptParams"
-          }
+  "swagger": "2.0",
+  "info": {
+    "title": "Dyson Protocol - gRPC Gateway docs",
+    "description": "A REST interface for state queries.",
+    "version": "1.0.0"
+  },
+  "apis": [
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/script/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_ScriptParams"
         }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/storage/v1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_StorageParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/crontask/v1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_CrontaskParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/nameservice/v1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_NameserviceParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/nft/v1beta1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_NftParams",
-            "Query_Balance": "Query_NftBalance"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/auth/v1beta1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_AuthParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/bank/v1beta1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_BankParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/base/tendermint/v1beta1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_BaseParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/base/node/v1beta1/query.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/base/reflection/v1beta1/reflection.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/base/reflection/v2alpha1/reflection.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/distribution/v1beta1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_DistributionParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/gov/v1beta1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_GovParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/gov/v1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_GovV1Params",
-            "Query_Proposal": "Query_GovV1Proposal",
-            "Query_Proposals": "Query_GovV1Proposal",
-            "Query_Vote": "Query_GovV1Vote",
-            "Query_Votes": "Query_GovV1Votes",
-            "Query_Deposit": "Query_GovV1Deposit",
-            "Query_Deposits": "Query_GovV1Deposit",
-            "Query_TallyResult": "Query_GovV1TallyResult"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/mint/v1beta1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_MintParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/params/v1beta1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_Params"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/slashing/v1beta1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_SlashingParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/staking/v1beta1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_StakingParams",
-            "Query_DelegatorValidators": "Query_StakingDelegatorValidators"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/authz/v1beta1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_AuthzParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/feegrant/v1beta1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_FeegrantParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/consensus/v1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_ConsensusParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/ibc/applications/interchain_accounts/controller/v1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_IBCInterchainAccountsControllerParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/ibc/applications/interchain_accounts/host/v1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_IBCInterchainAccountsHostParams"
-          }
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/ibc/applications/transfer/v1/query.swagger.json",
-        "operationIds": {
-          "rename": {
-            "Query_Params": "Query_IBCTransferParams"
-          }
-        }
-      },
-      
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/tx/v1beta1/service.swagger.json",
-        "dereference": {
-          "circular": "ignore"
-        }
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/crontask/v1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/nameservice/v1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/nft/v1beta1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/script/v1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/storage/v1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/authz/v1beta1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/bank/v1beta1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/consensus/v1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/distribution/v1beta1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/feegrant/v1beta1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/gov/v1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/gov/v1beta1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/mint/v1beta1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/protocolpool/v1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/slashing/v1beta1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/staking/v1beta1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/cosmos/vesting/v1beta1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/ibc/applications/interchain_accounts/controller/v1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/ibc/applications/interchain_accounts/host/v1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/ibc/applications/transfer/v1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/channel/v1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/channel/v2/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/client/v1/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/client/v2/tx.swagger.json"
-      },
-      {
-        "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/connection/v1/tx.swagger.json"
       }
-    ]
-  }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/storage/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_StorageParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/crontask/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_CrontaskParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/nameservice/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_NameserviceParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/nft/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_NftParams",
+          "Query_Balance": "Query_NftBalance"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/auth/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_AuthParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/bank/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_BankParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/base/tendermint/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_BaseParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/base/node/v1beta1/query.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/base/reflection/v1beta1/reflection.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/base/reflection/v2alpha1/reflection.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/distribution/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_DistributionParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/gov/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_GovParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/gov/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_GovV1Params",
+          "Query_Proposal": "Query_GovV1Proposal",
+          "Query_Proposals": "Query_GovV1Proposal",
+          "Query_Vote": "Query_GovV1Vote",
+          "Query_Votes": "Query_GovV1Votes",
+          "Query_Deposit": "Query_GovV1Deposit",
+          "Query_Deposits": "Query_GovV1Deposit",
+          "Query_TallyResult": "Query_GovV1TallyResult"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/mint/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_MintParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/params/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_Params"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/slashing/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_SlashingParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/staking/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_StakingParams",
+          "Query_DelegatorValidators": "Query_StakingDelegatorValidators"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/authz/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_AuthzParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/feegrant/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_FeegrantParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/consensus/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_ConsensusParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/applications/interchain_accounts/controller/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_IBCInterchainAccountsControllerParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/applications/interchain_accounts/host/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_IBCInterchainAccountsHostParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/applications/transfer/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_IBCTransferParams"
+        }
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/channel/v1/query.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/channel/v2/query.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/client/v1/query.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/client/v2/query.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/connection/v1/query.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/tx/v1beta1/service.swagger.json",
+      "dereference": {
+        "circular": "ignore"
+      }
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/crontask/v1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/nameservice/v1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/nft/v1beta1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/script/v1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/storage/v1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/authz/v1beta1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/bank/v1beta1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/consensus/v1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/distribution/v1beta1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/feegrant/v1beta1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/gov/v1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/gov/v1beta1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/mint/v1beta1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/protocolpool/v1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/slashing/v1beta1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/staking/v1beta1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/cosmos/vesting/v1beta1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/applications/interchain_accounts/controller/v1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/applications/interchain_accounts/host/v1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/applications/transfer/v1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/channel/v1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/channel/v2/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/client/v1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/client/v2/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/ibc/core/connection/v1/tx.swagger.json"
+    }
+  ]
+}

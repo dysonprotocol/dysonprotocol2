@@ -85,7 +85,7 @@ Initialize your node and join the Dyson Protocol testnet:
 
 ```bash
 dysond init your_node_name                                                                            
-dysond join https://dys2-testnet-rpc.dysonprotocol.com
+dysond join https://dys-testnet2.dysonprotocol.com/rpc
 ```
 
 ### 3. Create new accounts

@@ -21,9 +21,7 @@ import (
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
-	"cosmossdk.io/x/circuit"
-	circuitkeeper "cosmossdk.io/x/circuit/keeper"
-	circuittypes "cosmossdk.io/x/circuit/types"
+
 	"cosmossdk.io/x/evidence"
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
 	evidencetypes "cosmossdk.io/x/evidence/types"
@@ -213,7 +211,6 @@ type DysApp struct {
 	UpgradeKeeper         *upgradekeeper.Keeper
 	EvidenceKeeper        evidencekeeper.Keeper
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
-	CircuitKeeper         circuitkeeper.Keeper
 
 	// supplementary keepers
 	FeeGrantKeeper feegrantkeeper.Keeper
@@ -341,7 +338,7 @@ func NewDysApp(
 		upgradetypes.StoreKey,
 		feegrant.StoreKey,
 		evidencetypes.StoreKey,
-		circuittypes.StoreKey,
+
 		authzkeeper.StoreKey,
 		nftkeeper.StoreKey,
 		//epochstypes.StoreKey,
@@ -481,14 +478,6 @@ func NewDysApp(
 			app.SlashingKeeper.Hooks(),
 		),
 	)
-
-	app.CircuitKeeper = circuitkeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[circuittypes.StoreKey]),
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		app.AccountKeeper.AddressCodec(),
-	)
-	app.BaseApp.SetCircuitBreaker(&app.CircuitKeeper)
 
 	app.AuthzKeeper = authzkeeper.NewKeeper(
 		runtime.NewKVStoreService(keys[authzkeeper.StoreKey]),
@@ -756,7 +745,6 @@ func NewDysApp(
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		nftmodule.NewAppModule(appCodec, app.NFTKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
-		circuit.NewAppModule(appCodec, app.CircuitKeeper),
 		//epochs.NewAppModule(app.EpochsKeeper),
 		protocolpool.NewAppModule(app.ProtocolPoolKeeper, app.AccountKeeper, app.BankKeeper),
 		nameservicemodule.NewAppModule(appCodec, app.NameserviceKeeper, app.interfaceRegistry),
@@ -859,7 +847,7 @@ func NewDysApp(
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
-		circuittypes.ModuleName,
+
 		//epochstypes.ModuleName,
 		protocolpooltypes.ModuleName,
 		nameservicev1.ModuleName,
@@ -890,7 +878,7 @@ func NewDysApp(
 		nft.ModuleName,
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
-		circuittypes.ModuleName,
+
 		//epochstypes.ModuleName,
 		nameservicev1.ModuleName,
 		scriptv1.ModuleName,
@@ -989,7 +977,6 @@ func (app *DysApp) setAnteHandler(txConfig client.TxConfig) {
 					ante.WithMaxUnorderedTxTimeoutDuration(ante.DefaultMaxTimeoutDuration),
 				},
 			},
-			&app.CircuitKeeper,
 		},
 	)
 	if err != nil {

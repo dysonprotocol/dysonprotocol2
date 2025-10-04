@@ -81,8 +81,10 @@ def execute_notebook(notebook_path, dyson_home, env=None):
     Returns:
         tuple: (success: bool, markdown_path: str, error: str)
     """
-    # Create markdown output path with same name as notebook
-    markdown_path = notebook_path.with_suffix(".md")
+    # Ensure docs output directory exists and build output path ./docs/{name}.md
+    docs_dir = Path(__file__).parent.parent / "docs"
+    docs_dir.mkdir(parents=True, exist_ok=True)
+    markdown_path = docs_dir / f"{notebook_path.stem}.md"
 
     # Execute the notebook and convert to markdown
     cmd = [
@@ -92,7 +94,9 @@ def execute_notebook(notebook_path, dyson_home, env=None):
         "markdown",
         "--execute",
         "--output",
-        str(markdown_path),
+        notebook_path.stem,
+        "--output-dir",
+        str(docs_dir),
         "--ExecutePreprocessor.timeout=30",  # Increased timeout for blockchain operations
         "--ExecutePreprocessor.kernel_name=python3",
         str(notebook_path),

@@ -5949,7 +5949,9 @@ type TradeMetrics struct {
 	EscrowedPfand []*v1beta1.Coin `protobuf:"bytes,4,rep,name=escrowed_pfand,json=escrowedPfand,proto3" json:"escrowed_pfand,omitempty"`
 	// Sum of auction sell escrows over all open auctions
 	EscrowedAuctionCoins []*v1beta1.Coin `protobuf:"bytes,5,rep,name=escrowed_auction_coins,json=escrowedAuctionCoins,proto3" json:"escrowed_auction_coins,omitempty"`
-	// Any liquid coins currently held by the module (should generally be zero)
+	// Solid backing for liquid supply: for each liquid denom
+	// whaleswap.dys/coins/X, this reports the required backing amount on solid
+	// denom X.
 	EscrowedLiquidCoins []*v1beta1.Coin `protobuf:"bytes,6,rep,name=escrowed_liquid_coins,json=escrowedLiquidCoins,proto3" json:"escrowed_liquid_coins,omitempty"`
 	// Sum of fees_earned across all pools (accounted inside pool reserves)
 	FeesEarned []*v1beta1.Coin `protobuf:"bytes,7,rep,name=fees_earned,json=feesEarned,proto3" json:"fees_earned,omitempty"`
