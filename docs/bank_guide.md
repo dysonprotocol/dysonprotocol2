@@ -27,7 +27,7 @@ Use the standard bank balance query. Replace `alice` with your key name if diffe
 import json
 
 # Get alice address
-[ALICE] = get_ipython().getoutput("dysond keys show -a alice")
+[ALICE] = !dysond keys show -a alice
 # Query balance
 ! dysond query bank balance {ALICE} udys -o json | jq -M
 
@@ -51,7 +51,7 @@ Runs a minimal script inline using `--extra-code` to query the balance from with
 import tempfile, shlex
 
 # Get alice address
-[ALICE] = get_ipython().getoutput("dysond keys show -a alice")
+[ALICE] = !dysond keys show -a alice
 
 extra_code = """
 from dys import _query
@@ -89,8 +89,8 @@ Send 123 udys from `alice` to `bob`.
 ```python
 import json
 
-[ALICE] = get_ipython().getoutput("dysond keys show -a alice")
-[BOB] = get_ipython().getoutput("dysond keys show -a bob")
+[ALICE] = !dysond keys show -a alice
+[BOB] = !dysond keys show -a bob
 
 ! dysond tx bank send alice {BOB} 123udys -y -o json | dysond query wait-tx -o json | jq -M
 
@@ -248,8 +248,8 @@ Use an inline script executed via `dysond tx script exec` to send funds.
 ```python
 import tempfile, shlex
 
-[ALICE] = get_ipython().getoutput("dysond keys show -a alice")
-[BOB] = get_ipython().getoutput("dysond keys show -a bob")
+[ALICE] = !dysond keys show -a alice
+[BOB] = !dysond keys show -a bob
 
 extra_code = """
 from dys import _msg, get_executor_address

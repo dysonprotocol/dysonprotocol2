@@ -91,7 +91,7 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     * IPv6: ::1
     * IPv4: 127.0.0.1
     *   Trying [::1]:2317...
-    * connect to ::1 port 2317 from ::1 port 55492 failed: Connection refused
+    * connect to ::1 port 2317 from ::1 port 56254 failed: Connection refused
     *   Trying 127.0.0.1:2317...
     * Connected to dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost (127.0.0.1) port 2317
     > GET /hi HTTP/1.1
@@ -103,9 +103,9 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     < HTTP/1.1 200 OK
     < Content-Length: 82
     < Content-Type: text/html
-    < Date: Sat, 04 Oct 2025 16:06:59 GMT
+    < Date: Sun, 05 Oct 2025 08:56:06 GMT
     < Server: WSGIServer/0.2 CPython/3.12.11
-    < X-Server-Time: 1759594020
+    < X-Server-Time: 1759654567
     < 
     { [82 bytes data]
     * Connection #0 to host dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost left intact
@@ -244,9 +244,9 @@ print(f"Salt: {salt}")
 print(f"Hex Hash: {hex_hash}")
 ```
 
-    Name: alice-ybpwj.dys
-    Salt: nzp36vs9m9
-    Hex Hash: 2bad0987188b9e6b191a85ce55aece8948fecdc65fb42e6bc211c91bb10d8be2
+    Name: alice-0rqg1.dys
+    Salt: rm07zfv6dq
+    Hex Hash: 4cea66f99c9178a75f368d75a979b91a3280db6ce925e43ef38337801ed015a9
 
 
 
@@ -305,18 +305,18 @@ print(output)
 assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Protocol!' in output, got: " + output
 ```
 
-    Accessing your DWapp at 'http://alice-ybpwj.localhost:2317'
+    Accessing your DWapp at 'http://alice-0rqg1.localhost:2317'
 
 
-    * Host alice-ybpwj.localhost:2317 was resolved.
+    * Host alice-0rqg1.localhost:2317 was resolved.
     * IPv6: ::1
     * IPv4: 127.0.0.1
     *   Trying [::1]:2317...
-    * connect to ::1 port 2317 from ::1 port 58136 failed: Connection refused
+    * connect to ::1 port 2317 from ::1 port 58896 failed: Connection refused
     *   Trying 127.0.0.1:2317...
-    * Connected to alice-ybpwj.localhost (127.0.0.1) port 2317
+    * Connected to alice-0rqg1.localhost (127.0.0.1) port 2317
     > GET /hi HTTP/1.1
-    > Host: alice-ybpwj.localhost:2317
+    > Host: alice-0rqg1.localhost:2317
     > User-Agent: curl/8.7.1
     > Accept: */*
     > 
@@ -324,12 +324,12 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     < HTTP/1.1 200 OK
     < Content-Length: 82
     < Content-Type: text/html
-    < Date: Sat, 04 Oct 2025 16:07:02 GMT
+    < Date: Sun, 05 Oct 2025 08:56:09 GMT
     < Server: WSGIServer/0.2 CPython/3.12.11
-    < X-Server-Time: 1759594023
+    < X-Server-Time: 1759654570
     < 
     { [82 bytes data]
-    * Connection #0 to host alice-ybpwj.localhost left intact
+    * Connection #0 to host alice-0rqg1.localhost left intact
     
     <html>
         <body>

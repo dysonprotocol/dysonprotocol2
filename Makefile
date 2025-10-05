@@ -206,7 +206,7 @@ proto-clean-image:
 DYSVM_SCRIPTS_DIR := $(CURRENT_DIR)/scripts
 
 # Main DYSVM target - runs patch, build, and embed in sequence
-dysvm:
+dysvm: dev-install
 	@echo "Running complete DYSVM process..."
 	@$(DYSVM_SCRIPTS_DIR)/dysvm.sh
 

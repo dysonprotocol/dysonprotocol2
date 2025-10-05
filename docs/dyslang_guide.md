@@ -134,10 +134,9 @@ def query_multiple_balances():
 with tempfile.NamedTemporaryFile("w+", suffix=".py", delete=True) as f:
     f.write(query_multi_script)
     f.flush()
+    path = f.name
     # Execute the script using dysond query script exec
-    out = get_ipython().getoutput(
-        f"dysond query script run --script-address {ALICE_ADDRESS} --executor-address {ALICE_ADDRESS} --function-name query_multiple_balances --extra-code-path {f.name} -o json" 
-    )
+    out = ! dysond query script run --script-address {ALICE_ADDRESS} --executor-address {ALICE_ADDRESS} --function-name query_multiple_balances --extra-code-path {path} -o json
 out = '\n'.join(out)
 print(out)
 result = json.loads(out)
@@ -477,7 +476,7 @@ print(f"- Time: {block_info['time']}")
     Block Information:
     - Height: 10
     - Chain ID: chain-a
-    - Time: 2025-10-04T16:06:52.307293Z
+    - Time: 2025-10-05T08:55:58.814585Z
 
 
 ## Transaction Data

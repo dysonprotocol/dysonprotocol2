@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Enable verbose mode and exit on error
-set -ex
+set -e
 
 # Script for cleaning DYSVM build artifacts
 

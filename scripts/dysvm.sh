@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Enable verbose mode and exit on error
-set -ex
+set -e
 
 # Function to check if a command exists
 command_exists() {
@@ -67,47 +67,119 @@ check_python() {
     return 0
 }
 
+# Function to verify git submodules (auto-init if missing)
+check_git_submodules() {
+    local script_dir
+    local repo_root
+    script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    repo_root="$(cd "$script_dir/.." && pwd)"
+
+    # If not a git checkout, skip (e.g., archive download)
+    if ! git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        echo "⚠️  Not a git checkout; skipping submodule verification"
+        return 0
+    fi
+
+    # No submodules defined
+    if [ ! -f "$repo_root/.gitmodules" ]; then
+        echo "✓ No git submodules defined"
+        return 0
+    fi
+
+    echo "Verifying git submodules..."
+
+    local need_init=0
+    local has_conflict=0
+    local status
+    status=$(git -C "$repo_root" submodule status --recursive 2>/dev/null || true)
+    if echo "$status" | grep -q '^-'; then
+        need_init=1
+    fi
+
+    # Detect conflicts: directory exists, non-empty, but not a git checkout
+    for d in "$repo_root/dysvm/cpython" "$repo_root/dysvm/go-embed-python" "$repo_root/dysvm/python-build-standalone"; do
+        if [ -d "$d" ] && [ -n "$(ls -A "$d" 2>/dev/null)" ]; then
+            if ! git -C "$d" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+                echo "⚠️  Submodule directory exists but is not a git checkout: $d"
+                has_conflict=1
+            fi
+        fi
+    done
+
+    if [ "$has_conflict" -eq 1 ]; then
+        echo "Refusing to modify conflicting directories automatically."
+        echo "Please remove or move the conflicting directories above, then run:"
+        echo "  git submodule update --init --recursive"
+        return 1
+    fi
+
+    # Ensure required DYSVM submodules exist
+    for d in "$repo_root/dysvm/cpython" "$repo_root/dysvm/go-embed-python" "$repo_root/dysvm/python-build-standalone"; do
+        if [ ! -d "$d" ] || [ -z "$(ls -A "$d" 2>/dev/null)" ]; then
+            echo "• Missing or empty submodule directory: $d"
+            need_init=1
+        fi
+    done
+
+    if [ "$need_init" -eq 1 ]; then
+        echo "Submodules are not initialized. This requires network access to clone/fetch."
+        # Consent gates
+        if [ "${DYSVM_YES:-}" = "1" ]; then
+            echo "Consent provided via environment. Initializing submodules..."
+        elif [ -t 0 ]; then
+            read -r -p "Allow running 'git submodule update --init --recursive'? [y/N]: " _ans
+            case "$_ans" in
+                y|Y|yes|YES)
+                    echo "Initializing submodules..." ;;
+                *)
+                    echo "Declined. No network requests were made."
+                    echo "Run 'git submodule update --init --recursive' manually, or set DYSVM_YES=1 to auto-run."
+                    return 1 ;;
+            esac
+        else
+            echo "Non-interactive shell detected. Refusing to make network requests."
+            echo "Run 'git submodule update --init --recursive' manually, or set DYSVM_YES=1 to auto-run."
+            return 1
+        fi
+
+        if ! git -C "$repo_root" submodule update --init --recursive; then
+            echo "Error: Failed to initialize git submodules."
+            echo "Hint: Run 'git submodule update --init --recursive' in $repo_root"
+            return 1
+        fi
+    fi
+
+    echo "✓ Git submodules verified"
+    return 0
+}
+
 # Function to verify all requirements
 verify_requirements() {
     echo "Verifying system requirements..."
     
-    local errors=0
-    
     # Check Go
-    if ! check_go_version; then
-        errors=$((errors + 1))
-    fi
+    check_go_version || return 1
     
     # Check Git
     if ! command_exists git; then
         echo "Error: Git is not installed"
-        errors=$((errors + 1))
+        return 1
     else
         echo "✓ Git found"
+        # Verify and initialize submodules if needed (fail fast on error)
+        check_git_submodules || return 1
     fi
     
     # Check Make
     if ! command_exists make; then
         echo "Error: Make is not installed"
-        errors=$((errors + 1))
+        return 1
     else
         echo "✓ Make found"
     fi
     
     # Check Python
-    if ! check_python; then
-        errors=$((errors + 1))
-    fi
-    
-    if [ $errors -gt 0 ]; then
-        echo ""
-        echo "❌ $errors requirement(s) not met. Please install the missing dependencies:"
-        echo "   - Go (>= 1.24): https://golang.org/doc/install"
-        echo "   - Git: Package manager or https://git-scm.com/downloads"
-        echo "   - Make: Package manager (build-essential on Ubuntu/Debian)"
-        echo "   - Python 3.12+ with venv: python3.12-venv package or equivalent"
-        exit 1
-    fi
+    check_python || return 1
     
     echo "✅ All requirements verified successfully"
     echo ""
