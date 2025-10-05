@@ -105,7 +105,7 @@ dev-install: dev-venv
 
 
 verify-requirements:
- 	@echo "Verifying build/install requirements..."
+	@echo "Verifying build/install requirements..."
 	@bash ./scripts/verify_requirements.sh
 
 build: verify-requirements
