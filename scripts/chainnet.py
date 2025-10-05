@@ -1018,7 +1018,7 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs):
     cfg = json.loads(Path(config_file).read_text())
     bin_path = cfg["dysond_bin"]
     procs = []
-    node_procs = []  # track per-node proc/cmd/home
+    node_procs = []  # track per-node proc/cmd/home 
     log_files = []  # Track log files for cleanup
     hermes_started = False
     stop_event = threading.Event()
@@ -1089,7 +1089,7 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs):
                     "home": node["home"],
                     "moniker": node["moniker"],
                     "chain_id": chain["chain_id"],
-                    "restart_count": 0,
+                    "restart_count": 0
                 }
             )
 
