@@ -104,13 +104,17 @@ dev-install: dev-venv
 ###############################################################################
 
 
-build:
+verify-requirements:
+ 	@echo "Verifying build/install requirements..."
+	@bash ./scripts/verify_requirements.sh
+
+build: verify-requirements
 	@echo "Building dysond binary..."
 	@mkdir -p $(BUILDDIR)
 	@go build -mod=readonly $(BUILD_FLAGS) -o $(BUILDDIR)/dysond ./dysond
 	@chmod +x $(BUILDDIR)/dysond || true
 
-install:
+install: verify-requirements
 	@echo "Installing dysond binary..."
 	@go install -mod=readonly $(BUILD_FLAGS) ./dysond
 	@dysond version --long | tail -n 8
@@ -231,4 +235,4 @@ dysvm-clean:
 	@$(DYSVM_SCRIPTS_DIR)/dysvm-clean.sh
 
 
-.PHONY:  build install test init localnet start watch dashboard proto-all proto-gen proto-format proto-lint proto-update proto-build-image proto-clean-image dysvm dysvm-patch dysvm-build dysvm-embed dysvm-clean
+.PHONY:  build install test init localnet start watch dashboard proto-all proto-gen proto-format proto-lint proto-update proto-build-image proto-clean-image dysvm dysvm-patch dysvm-build dysvm-embed dysvm-clean verify-requirements
