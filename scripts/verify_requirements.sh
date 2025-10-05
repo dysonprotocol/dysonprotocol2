@@ -78,6 +78,20 @@ ensure_git_and_submodules() {
     script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     repo_root="$(cd "$script_dir/.." && pwd)"
 
+    init_submodules_shallow() {
+        # Try shallow first; if unsupported or fails, fall back to full history
+        if git -C "$repo_root" submodule update --init --recursive --depth 1; then
+            echo "✓ Git submodules initialized (shallow)"
+            return 0
+        fi
+        echo "⚠️  Shallow submodule init not supported or failed; falling back to full history..."
+        if ! git -C "$repo_root" submodule update --init --recursive; then
+            return 1
+        fi
+        echo "✓ Git submodules initialized"
+        return 0
+    }
+
     if ! command_exists git; then
         echo "Error: Git is not installed"
         return 1
@@ -92,33 +106,91 @@ ensure_git_and_submodules() {
             if [ ! -f "$repo_root/cosmos-sdk/collections/go.mod" ]; then
                 echo "Error: Local Cosmos SDK replacement detected but submodule directory is missing."
                 echo "Please clone the repository with git and initialize submodules:"
-                echo "  git clone --recursive <repo>"
+                echo "  git clone --recursive --depth 1 <repo>"
                 echo "or inside the repo:"
-                echo "  git submodule update --init --recursive"
+                echo "  git submodule update --init --recursive --depth 1"
                 return 1
             fi
         fi
         return 0
     fi
 
-    # Initialize/update all submodules recursively (non-interactive, safe to re-run)
     echo "Ensuring git submodules are initialized..."
-    if ! git -C "$repo_root" submodule update --init --recursive; then
-        echo "Error: Failed to initialize git submodules."
-        echo "Hint: Run 'git submodule update --init --recursive' in $repo_root"
-        return 1
+
+    local need_init=0
+    local status
+    status=$(git -C "$repo_root" submodule status --recursive 2>/dev/null || true)
+    if echo "$status" | grep -q '^-'; then
+        need_init=1
     fi
 
-    # Sanity check for common fresh-clone failure: local Cosmos SDK replacement
+    # Fresh-clone sanity for local Cosmos SDK replacement
     if grep -q "replace\\s\+cosmossdk.io/collections" "$repo_root/go.mod" 2>/dev/null; then
         if [ ! -f "$repo_root/cosmos-sdk/collections/go.mod" ]; then
-            echo "Error: cosmos-sdk submodule appears uninitialized or incomplete (missing collections/go.mod)."
-            echo "Run: git submodule update --init --recursive"
-            return 1
+            need_init=1
         fi
     fi
 
-    echo "✓ Git submodules verified"
+    if [ "$MODE" = "dysvm" ]; then
+        # DYSVM-related submodules exist check
+        for d in "$repo_root/dysvm/cpython" "$repo_root/dysvm/go-embed-python" "$repo_root/dysvm/python-build-standalone"; do
+            if [ ! -d "$d" ] || [ -z "$(ls -A "$d" 2>/dev/null)" ]; then
+                need_init=1
+            fi
+        done
+    fi
+
+    if [ "$need_init" -eq 0 ]; then
+        echo "✓ Git submodules already initialized"
+        echo "✓ Git submodules verified"
+        return 0
+    fi
+
+    echo "One or more required submodules are missing or uninitialized."
+    echo "This repository uses git submodules for vendored dependencies (e.g., cosmos-sdk)."
+    echo "To fix automatically, the following command must be run in $repo_root:"
+    echo "  git submodule update --init --recursive --depth 1"
+
+    # Consent gates: allow non-interactive auto-yes via env var
+    if [ "${VERIFY_REQS_YES:-}" = "1" ] || [ "${DYSVM_YES:-}" = "1" ] || [ "${YES:-}" = "1" ]; then
+        echo "Consent provided via environment. Initializing submodules (shallow)..."
+        if ! init_submodules_shallow; then
+            echo "Error: Failed to initialize git submodules."
+            echo "Hint: Run 'git submodule update --init --recursive --depth 1' in $repo_root"
+            return 1
+        fi
+        echo "✓ Git submodules verified"
+        return 0
+    fi
+
+    # Interactive prompt only if stdin is a TTY
+    if [ -t 0 ]; then
+        echo -n "Proceed to initialize submodules now? [y/N]: "
+        read -r _ans
+        case "$_ans" in
+            y|Y|yes|YES)
+                echo "Initializing submodules (shallow)..."
+                if ! init_submodules_shallow; then
+                    echo "Error: Failed to initialize git submodules."
+                    echo "Hint: Run 'git submodule update --init --recursive --depth 1' in $repo_root"
+                    return 1
+                fi
+                echo "✓ Git submodules verified"
+                return 0
+                ;;
+            *)
+                echo "Declined. No changes were made."
+                echo "You can initialize later with:"
+                echo "  git submodule update --init --recursive --depth 1"
+                echo "Or rerun with VERIFY_REQS_YES=1 to auto-approve."
+                return 1
+                ;;
+        esac
+    else
+        echo "Non-interactive shell detected. Refusing to make changes automatically."
+        echo "Run 'git submodule update --init --recursive --depth 1' manually, or set VERIFY_REQS_YES=1 to auto-approve."
+        return 1
+    fi
 }
 
 verify_common() {

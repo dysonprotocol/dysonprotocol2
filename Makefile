@@ -108,13 +108,13 @@ verify-requirements:
 	@echo "Verifying build/install requirements..."
 	@bash ./scripts/verify_requirements.sh
 
-build: verify-requirements
+build: verify-requirements dysvm-assets
 	@echo "Building dysond binary..."
 	@mkdir -p $(BUILDDIR)
 	@go build -mod=readonly $(BUILD_FLAGS) -o $(BUILDDIR)/dysond ./dysond
 	@chmod +x $(BUILDDIR)/dysond || true
 
-install: verify-requirements
+install: verify-requirements dysvm-assets
 	@echo "Installing dysond binary..."
 	@go install -mod=readonly $(BUILD_FLAGS) ./dysond
 	@dysond version --long | tail -n 8
@@ -214,6 +214,30 @@ dysvm: dev-install
 	@echo "Running complete DYSVM process..."
 	@$(DYSVM_SCRIPTS_DIR)/dysvm.sh
 
+# Ensure DYSVM embedded assets exist; prompt or auto-run dysvm if missing
+dysvm-assets:
+	@echo "Checking for DYSVM embedded assets..."
+	@if [ ! -d ./dysvm/internal/data ] || ! ls -A ./dysvm/internal/data >/dev/null 2>&1; then \
+	  echo "⚠️  DYSVM assets missing (./dysvm/internal/data)."; \
+	  if [ "$$VERIFY_REQS_YES" = "1" ] || [ "$$DYSVM_YES" = "1" ] || [ "$$YES" = "1" ]; then \
+	    echo "Consent provided via environment. Running 'make dysvm'..."; \
+	    $(MAKE) dysvm; \
+	  else \
+	    if [ -t 0 ]; then \
+	      printf "Run 'make dysvm' now? [y/N]: "; \
+	      read ans; \
+	      case "$$ans" in \
+	        y|Y|yes|YES) $(MAKE) dysvm ;; \
+	        *) echo "Declined. Please run 'make dysvm' first."; exit 1 ;; \
+	      esac; \
+	    else \
+	      echo "Non-interactive shell. Run 'make dysvm' manually or set VERIFY_REQS_YES=1."; exit 1; \
+	    fi; \
+	  fi; \
+	else \
+	  echo "✓ DYSVM assets present"; \
+	fi
+
 # Apply patch to CPython submodule
 dysvm-patch:
 	@echo "Running DYSVM patch operation..."
@@ -235,4 +259,4 @@ dysvm-clean:
 	@$(DYSVM_SCRIPTS_DIR)/dysvm-clean.sh
 
 
-.PHONY:  build install test init localnet start watch dashboard proto-all proto-gen proto-format proto-lint proto-update proto-build-image proto-clean-image dysvm dysvm-patch dysvm-build dysvm-embed dysvm-clean verify-requirements
+.PHONY:  build install test init localnet start watch dashboard proto-all proto-gen proto-format proto-lint proto-update proto-build-image proto-clean-image dysvm dysvm-patch dysvm-build dysvm-embed dysvm-clean verify-requirements dysvm-assets
