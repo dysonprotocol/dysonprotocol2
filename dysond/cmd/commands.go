@@ -442,6 +442,20 @@ type StatusInfo struct {
 	LatestBlockHeight string
 }
 
+// sanitizePeerAddress normalizes a CometBFT listen address into host:port for p2p.seeds.
+// - Strips schemes like tcp://, http://, https://
+// - Replaces wildcard/loopback hosts (0.0.0.0, 127.0.0.1, ::, localhost) with the host from rpcEndpoint
+// - Preserves the port from the listen address when available
+func sanitizePeerAddress(rpcEndpoint, listenAddr string) string {
+	addr := strings.TrimSpace(listenAddr)
+	for _, prefix := range []string{"tcp://", "http://", "https://"} {
+		addr = strings.TrimPrefix(addr, prefix)
+	}
+	addr = strings.TrimSuffix(addr, "/")
+
+	return addr
+}
+
 // fetchGenesis fetches the genesis file from RPC endpoint and saves it
 func fetchGenesis(rpcEndpoint, homeDir string) error {
 	genesisURL := strings.TrimSuffix(rpcEndpoint, "/") + "/genesis"
@@ -533,8 +547,9 @@ func configureStateSync(homeDir, rpcEndpoint string, statusInfo *StatusInfo) err
 
 	configStr := string(configData)
 
-	// Configure p2p seeds
-	seeds := fmt.Sprintf("%s@%s", statusInfo.NodeID, statusInfo.ListenAddr)
+	// Configure p2p seeds (ensure listen address is host:port without scheme and not wildcard/loopback)
+	peerAddr := sanitizePeerAddress(rpcEndpoint, statusInfo.ListenAddr)
+	seeds := fmt.Sprintf("%s@%s", statusInfo.NodeID, peerAddr)
 	configStr = updateConfigValue(configStr, "seeds", seeds)
 	fmt.Printf("Set p2p.seeds = %s\n", seeds)
 
