@@ -142,53 +142,78 @@ ensure_git_and_submodules() {
 
     if [ "$need_init" -eq 0 ]; then
         echo "✓ Git submodules already initialized"
-        echo "✓ Git submodules verified"
-        return 0
-    fi
+    else
+        echo "One or more required submodules are missing or uninitialized."
+        echo "This repository uses git submodules for vendored dependencies (e.g., cosmos-sdk)."
+        echo "Initialize them with:"
+        echo "  git submodule update --init --recursive --depth 1"
 
-    echo "One or more required submodules are missing or uninitialized."
-    echo "This repository uses git submodules for vendored dependencies (e.g., cosmos-sdk)."
-    echo "To fix automatically, the following command must be run in $repo_root:"
-    echo "  git submodule update --init --recursive --depth 1"
-
-    # Consent gates: allow non-interactive auto-yes via env var
-    if [ "${VERIFY_REQS_YES:-}" = "1" ] || [ "${DYSVM_YES:-}" = "1" ] || [ "${YES:-}" = "1" ]; then
-        echo "Consent provided via environment. Initializing submodules (shallow)..."
-        if ! init_submodules_shallow; then
-            echo "Error: Failed to initialize git submodules."
-            echo "Hint: Run 'git submodule update --init --recursive --depth 1' in $repo_root"
+        # Interactive prompt only if stdin is a TTY
+        if [ -t 0 ]; then
+            echo -n "Proceed to initialize submodules now? [y/N]: "
+            read -r _ans
+            case "$_ans" in
+                y|Y|yes|YES)
+                    echo "Initializing submodules (shallow)..."
+                    if ! init_submodules_shallow; then
+                        echo "Error: Failed to initialize git submodules."
+                        echo "Hint: Run 'git submodule update --init --recursive --depth 1' in $repo_root"
+                        return 1
+                    fi
+                    echo "✓ Git submodules initialized"
+                    ;;
+                *)
+                    echo "Declined. No changes were made."
+                    echo "Initialize later with:"
+                    echo "  git submodule update --init --recursive --depth 1"
+                    return 1
+                    ;;
+            esac
+        else
+            echo "Non-interactive shell detected."
+            echo "Run 'git submodule update --init --recursive --depth 1' manually and retry."
             return 1
         fi
+    fi
+
+    # After ensuring initialization, check whether submodules are at recorded commits and clean
+    status=$(git -C "$repo_root" submodule status --recursive 2>/dev/null || true)
+    out_of_sync=$(echo "$status" | grep -E '^[+U]|dirty' || true)
+    if [ -z "$out_of_sync" ]; then
         echo "✓ Git submodules verified"
         return 0
     fi
 
-    # Interactive prompt only if stdin is a TTY
+    echo "⚠️  One or more submodules are not at the recorded commit or have local changes:"
+    echo "$out_of_sync"
+    echo "To sync to the recorded commits, run in $repo_root:"
+    echo "  git submodule sync --recursive && git submodule update --init --recursive --depth 1"
+
+    sync_submodules() {
+        if git -C "$repo_root" submodule sync --recursive && \
+           git -C "$repo_root" submodule update --init --recursive --depth 1; then
+            echo "✓ Submodules synced to recorded commits"
+            return 0
+        fi
+        echo "Error: Failed to sync submodules. If there are local changes, commit or stash them and retry."
+        return 1
+    }
+
     if [ -t 0 ]; then
-        echo -n "Proceed to initialize submodules now? [y/N]: "
-        read -r _ans
-        case "$_ans" in
+        echo -n "Sync submodules now? [y/N]: "
+        read -r _ans2
+        case "$_ans2" in
             y|Y|yes|YES)
-                echo "Initializing submodules (shallow)..."
-                if ! init_submodules_shallow; then
-                    echo "Error: Failed to initialize git submodules."
-                    echo "Hint: Run 'git submodule update --init --recursive --depth 1' in $repo_root"
-                    return 1
-                fi
+                sync_submodules || return 1
                 echo "✓ Git submodules verified"
-                return 0
-                ;;
+                return 0 ;;
             *)
-                echo "Declined. No changes were made."
-                echo "You can initialize later with:"
-                echo "  git submodule update --init --recursive --depth 1"
-                echo "Or rerun with VERIFY_REQS_YES=1 to auto-approve."
-                return 1
-                ;;
+                echo "Declined. Please run the sync command above and retry."
+                return 1 ;;
         esac
     else
-        echo "Non-interactive shell detected. Refusing to make changes automatically."
-        echo "Run 'git submodule update --init --recursive --depth 1' manually, or set VERIFY_REQS_YES=1 to auto-approve."
+        echo "Non-interactive shell detected."
+        echo "Run the sync command above and retry."
         return 1
     fi
 }
