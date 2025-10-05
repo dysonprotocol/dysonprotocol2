@@ -476,7 +476,7 @@ print(f"- Time: {block_info['time']}")
     Block Information:
     - Height: 10
     - Chain ID: chain-a
-    - Time: 2025-10-05T08:55:58.814585Z
+    - Time: 2025-10-05T13:27:04.305293Z
 
 
 ## Transaction Data
@@ -877,9 +877,17 @@ with open('/tmp/coverage_test.py', 'w') as f:
 out = ! dysond q script run --script-address {CHARLIE_ADDRESS} --executor-address {CHARLIE_ADDRESS} --function-name test_a_or_b --extra-code-path /tmp/coverage_test.py -o json
 out = '\n'.join(out)
 json_out = json.loads(out)
-print(json.dumps(json_out, indent=2))
+print(json.loads(json_out['result']))
 # Extract and interpret the coverage data
 coverage_data = json.loads(json_out['result'])['result']
+
+```
+
+    {'cumsize': 2794, 'exception': None, 'gas_limit': 18446744073709551615, 'nodes_called': 23, 'result': [[[3, 0, 8, 15, 'FunctionDef', ''], [1, 68]], [[3, 11, 3, 12, 'arg', ''], [2, 96]], [[3, 14, 3, 15, 'arg', ''], [2, 96]], [[4, 4, 5, 16, 'If', ''], [2, 288]], [[4, 7, 4, 8, 'Name', ''], [2, 288]], [[5, 8, 5, 16, 'Return', ''], [2, 288]], [[5, 15, 5, 16, 'Name', ''], [2, 288]], [[6, 4, 7, 16, 'If', ''], [0, 0]], [[6, 7, 6, 8, 'Name', ''], [0, 0]], [[7, 8, 7, 16, 'Return', ''], [0, 0]], [[7, 15, 7, 16, 'Name', ''], [0, 0]], [[8, 4, 8, 15, 'Return', ''], [0, 0]], [[8, 11, 8, 15, 'Constant', ''], [0, 0]], [[10, 0, 13, 16, 'FunctionDef', ''], [1, 117]], [[12, 4, 12, 16, 'Expr', ''], [1, 128]], [[12, 4, 12, 16, 'Call', ''], [1, 128]], [[12, 4, 12, 10, 'Name', ''], [1, 154]], [[12, 11, 12, 12, 'Constant', ''], [1, 128]], [[12, 14, 12, 15, 'Constant', ''], [1, 128]], [[13, 4, 13, 16, 'Expr', ''], [1, 128]], [[13, 4, 13, 16, 'Call', ''], [1, 128]], [[13, 4, 13, 10, 'Name', ''], [1, 154]], [[13, 11, 13, 12, 'Constant', ''], [1, 128]], [[13, 14, 13, 15, 'Constant', ''], [1, 128]]], 'script_gas_consumed': 1008465, 'stdout': ''}
+
+
+
+```python
 # Display a simplified analysis of the coverage data
 print("Coverage Analysis Results:")
 for item in coverage_data:
@@ -904,10 +912,6 @@ for item in coverage_data:
 assert len(coverage_data) > 0, "Coverage data should be greater than 0"
 ```
 
-    {
-      "result": "{\"cumsize\":2794,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":23,\"result\":[[[3,0,8,15,\"FunctionDef\",\"\"],[1,68]],[[3,11,3,12,\"arg\",\"\"],[2,96]],[[3,14,3,15,\"arg\",\"\"],[2,96]],[[4,4,5,16,\"If\",\"\"],[2,288]],[[4,7,4,8,\"Name\",\"\"],[2,288]],[[5,8,5,16,\"Return\",\"\"],[2,288]],[[5,15,5,16,\"Name\",\"\"],[2,288]],[[6,4,7,16,\"If\",\"\"],[0,0]],[[6,7,6,8,\"Name\",\"\"],[0,0]],[[7,8,7,16,\"Return\",\"\"],[0,0]],[[7,15,7,16,\"Name\",\"\"],[0,0]],[[8,4,8,15,\"Return\",\"\"],[0,0]],[[8,11,8,15,\"Constant\",\"\"],[0,0]],[[10,0,13,16,\"FunctionDef\",\"\"],[1,117]],[[12,4,12,16,\"Expr\",\"\"],[1,128]],[[12,4,12,16,\"Call\",\"\"],[1,128]],[[12,4,12,10,\"Name\",\"\"],[1,154]],[[12,11,12,12,\"Constant\",\"\"],[1,128]],[[12,14,12,15,\"Constant\",\"\"],[1,128]],[[13,4,13,16,\"Expr\",\"\"],[1,128]],[[13,4,13,16,\"Call\",\"\"],[1,128]],[[13,4,13,10,\"Name\",\"\"],[1,154]],[[13,11,13,12,\"Constant\",\"\"],[1,128]],[[13,14,13,15,\"Constant\",\"\"],[1,128]]],\"script_gas_consumed\":1008465,\"stdout\":\"\"}",
-      "attached_message_results": []
-    }
     Coverage Analysis Results:
     - FunctionDef (a_or_b): executed 1 time and used 68 bytes of memory
     - If (line 4): executed 2 times and used 288 bytes of memory
@@ -948,168 +952,111 @@ Scripts run in a carefully controlled environment where only whitelisted functio
 
 As we've seen, the execution environment tracks AST node evaluations and terminates if limits are exceeded, preventing resource-exhaustion attacks.
 
-## Building a Simple dApp
 
-Let's bring everything together by building a simple counter dApp that demonstrates the integration of dyslang with the Storage module:
+<table>
+<thead><tr><th>AST Node</th><th>Demo</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td colspan="3"><h3>Literals and Constants</h3></td></tr>
+<tr><td>Constant</td><td><code>42</code></td><td>SUCCESS: 42</td></tr>
+<tr><td>FormattedValue</td><td><code>f'The answer is {40 + 2}'</code></td><td>SUCCESS: The answer is 42</td></tr>
+<tr><td>JoinedStr</td><td><code>f'Hello {"world"}'</code></td><td>SUCCESS: Hello world</td></tr>
+<tr><td colspan="3"><h3>Collections</h3></td></tr>
+<tr><td>List</td><td><code>[1, 2, 3]</code></td><td>SUCCESS: [1, 2, 3]</td></tr>
+<tr><td>Tuple</td><td><code>(1, 2, 3)</code></td><td>SUCCESS: (1, 2, 3)</td></tr>
+<tr><td>Set</td><td><code>{1, 2, 3}</code></td><td>SUCCESS: {1, 2, 3}</td></tr>
+<tr><td>Dict</td><td><code>{'a': 1, 'b': 2}</code></td><td>SUCCESS: {'a': 1, 'b': 2}</td></tr>
+<tr><td colspan="3"><h3>Variables</h3></td></tr>
+<tr><td>Name_Load</td><td><code>x = 1; x</code></td><td>SUCCESS: 1</td></tr>
+<tr><td>Name_Store</td><td><code>x = 42</code></td><td>SUCCESS: None</td></tr>
+<tr><td>Name_Del</td><td><code>y = 10; del y</code></td><td>SUCCESS: None</td></tr>
+<tr><td>Starred</td><td><code>a, *b = [1, 2, 3, 4]; b</code></td><td>SUCCESS: [2, 3, 4]</td></tr>
+<tr><td colspan="3"><h3>Expressions</h3></td></tr>
+<tr><td>UnaryOp_Not</td><td><code>not True</code></td><td>SUCCESS: False</td></tr>
+<tr><td>UnaryOp_Invert</td><td><code>~42</code></td><td>SUCCESS: -43</td></tr>
+<tr><td>UnaryOp_UAdd</td><td><code>+42</code></td><td>SUCCESS: 42</td></tr>
+<tr><td>UnaryOp_USub</td><td><code>-42</code></td><td>SUCCESS: -42</td></tr>
+<tr><td colspan="3"><h3>Binary Operations</h3></td></tr>
+<tr><td>BinOp_Add</td><td><code>1 + 2</code></td><td>SUCCESS: 3</td></tr>
+<tr><td>BinOp_Sub</td><td><code>1 - 2</code></td><td>SUCCESS: -1</td></tr>
+<tr><td>BinOp_Mult</td><td><code>2 * 3</code></td><td>SUCCESS: 6</td></tr>
+<tr><td>BinOp_Div</td><td><code>6 / 3</code></td><td>SUCCESS: 2.0</td></tr>
+<tr><td>BinOp_FloorDiv</td><td><code>7 // 3</code></td><td>SUCCESS: 2</td></tr>
+<tr><td>BinOp_Mod</td><td><code>7 % 3</code></td><td>SUCCESS: 1</td></tr>
+<tr><td>BinOp_Pow</td><td><code>2 ** 3</code></td><td>SUCCESS: 8</td></tr>
+<tr><td>BinOp_LShift</td><td><code>1 &lt;&lt; 2</code></td><td>SUCCESS: 4</td></tr>
+<tr><td>BinOp_RShift</td><td><code>8 &gt;&gt; 2</code></td><td>SUCCESS: 2</td></tr>
+<tr><td>BinOp_BitOr</td><td><code>1 | 2</code></td><td>SUCCESS: 3</td></tr>
+<tr><td>BinOp_BitXor</td><td><code>5 ^ 3</code></td><td>SUCCESS: 6</td></tr>
+<tr><td>BinOp_BitAnd</td><td><code>5 &amp; 3</code></td><td>SUCCESS: 1</td></tr>
+<tr><td>BinOp_MatMult</td><td><code># Not in basic Python: a @ b</code></td><td>SKIPPED</td></tr>
+<tr><td colspan="3"><h3>Boolean Operations</h3></td></tr>
+<tr><td>BoolOp_And</td><td><code>True and False</code></td><td>SUCCESS: False</td></tr>
+<tr><td>BoolOp_Or</td><td><code>True or False</code></td><td>SUCCESS: True</td></tr>
+<tr><td colspan="3"><h3>Comparisons</h3></td></tr>
+<tr><td>Compare_Eq</td><td><code>1 == 1</code></td><td>SUCCESS: True</td></tr>
+<tr><td>Compare_NotEq</td><td><code>1 != 2</code></td><td>SUCCESS: True</td></tr>
+<tr><td>Compare_Lt</td><td><code>1 &lt; 2</code></td><td>SUCCESS: True</td></tr>
+<tr><td>Compare_LtE</td><td><code>1 &lt;= 2</code></td><td>SUCCESS: True</td></tr>
+<tr><td>Compare_Gt</td><td><code>2 &gt; 1</code></td><td>SUCCESS: True</td></tr>
+<tr><td>Compare_GtE</td><td><code>2 &gt;= 1</code></td><td>SUCCESS: True</td></tr>
+<tr><td>Compare_Is</td><td><code>1 is 1</code></td><td>SUCCESS: True</td></tr>
+<tr><td>Compare_IsNot</td><td><code>1 is not 2</code></td><td>SUCCESS: True</td></tr>
+<tr><td>Compare_In</td><td><code>1 in [1, 2, 3]</code></td><td>SUCCESS: True</td></tr>
+<tr><td>Compare_NotIn</td><td><code>0 not in [1, 2, 3]</code></td><td>SUCCESS: True</td></tr>
+<tr><td colspan="3"><h3>Function and Method Calls</h3></td></tr>
+<tr><td>Call</td><td><code>len([1, 2, 3])</code></td><td>SUCCESS: 3</td></tr>
+<tr><td>Call_Kwargs</td><td><code>dict(a=1, b=2)</code></td><td>SUCCESS: {'a': 1, 'b': 2}</td></tr>
+<tr><td>Call_Starred</td><td><code>sum([1, 2, 3])</code></td><td>SUCCESS: 6</td></tr>
+<tr><td>Call_KwStarred</td><td><code>dict(**{'a': 1, 'b': 2})</code></td><td>SUCCESS: {'a': 1, 'b': 2}</td></tr>
+<tr><td colspan="3"><h3>Conditional Expressions</h3></td></tr>
+<tr><td>IfExp</td><td><code>1 if True else 2</code></td><td>SUCCESS: 1</td></tr>
+<tr><td colspan="3"><h3>Attribute Access</h3></td></tr>
+<tr><td>Attribute</td><td><code>'hello'.upper()</code></td><td>SUCCESS: HELLO</td></tr>
+<tr><td colspan="3"><h3>Subscripting</h3></td></tr>
+<tr><td>Subscript</td><td><code>[1, 2, 3][0]</code></td><td>SUCCESS: 1</td></tr>
+<tr><td>Slice</td><td><code>[1, 2, 3, 4][1:3]</code></td><td>SUCCESS: [2, 3]</td></tr>
+<tr><td colspan="3"><h3>Comprehensions</h3></td></tr>
+<tr><td>ListComp</td><td><code>[x for x in range(5)]</code></td><td>SUCCESS: [0, 1, 2, 3, 4]</td></tr>
+<tr><td>SetComp</td><td><code>{x for x in range(5)}</code></td><td>SUCCESS: {0, 1, 2, 3, 4}</td></tr>
+<tr><td>DictComp</td><td><code>{x: x*x for x in range(5)}</code></td><td>SUCCESS: {0: 0, 1: 1, 2: 4, 3: 9, 4: 16}</td></tr>
+<tr><td>GeneratorExp</td><td><code>(x for x in range(5))</code></td><td>SUCCESS: [0, 1, 2, 3, 4]</td></tr>
+<tr><td colspan="3"><h3>Assignments</h3></td></tr>
+<tr><td>Assign</td><td><code>x = 42</code></td><td>SUCCESS: None</td></tr>
+<tr><td>AnnAssign</td><td><code>x: int = 42</code></td><td>SUCCESS: None</td></tr>
+<tr><td>AugAssign</td><td><code>x = 1; x += 1</code></td><td>SUCCESS: None</td></tr>
+<tr><td>NamedExpr</td><td><code>(x := 42)</code></td><td>SUCCESS: 42</td></tr>
+<tr><td colspan="3"><h3>Control Flow</h3></td></tr>
+<tr><td>If</td><td><code>if True: pass</code></td><td>SUCCESS: None</td></tr>
+<tr><td>For</td><td><code>for i in range(5): pass</code></td><td>SUCCESS: None</td></tr>
+<tr><td>While</td><td><code>while False: pass</code></td><td>SUCCESS: None</td></tr>
+<tr><td>Break</td><td><code>for i in range(5):<br>    if i &gt; 2: break</code></td><td>SUCCESS: None</td></tr>
+<tr><td>Continue</td><td><code>for i in range(5):<br>    if i &lt; 2: continue</code></td><td>SUCCESS: None</td></tr>
+<tr><td colspan="3"><h3>Exception Handling</h3></td></tr>
+<tr><td>Try</td><td><code>try:<br>    1/0<br>except ZeroDivisionError:<br>    pass</code></td><td>SUCCESS: None</td></tr>
+<tr><td>Raise</td><td><code>try:<br>    raise ValueError('example error')<br>except ValueError:<br>    pass</code></td><td>SUCCESS: None</td></tr>
+<tr><td>Assert</td><td><code>assert True, 'message'</code></td><td>SUCCESS: None</td></tr>
+<tr><td colspan="3"><h3>Function and Class Definitions</h3></td></tr>
+<tr><td>FunctionDef</td><td><code>def func(x): return x*2</code></td><td>SUCCESS: None</td></tr>
+<tr><td>Lambda</td><td><code>lambda x: x*2</code></td><td>SUCCESS: &lt;function &lt;lambda&gt; at 0x1234&gt;</td></tr>
+<tr><td>Return</td><td><code>def func(): return 42</code></td><td>SUCCESS: None</td></tr>
+<tr><td>ClassDef</td><td><code>class MyClass:<br>    pass</code></td><td>SUCCESS: None</td></tr>
+<tr><td colspan="3"><h3>Import Statements</h3></td></tr>
+<tr><td>Import</td><td><code>try: import json<br>except ImportError: pass</code></td><td>SUCCESS: None</td></tr>
+<tr><td>ImportFrom</td><td><code>try: from json import loads<br>except ImportError: pass</code></td><td>SUCCESS: None</td></tr>
+<tr><td colspan="3"><h3>With Statements</h3></td></tr>
+<tr><td>With</td><td><code>with open('file.txt', 'w') as f: pass</code></td><td>ERROR: Not Implemented</td></tr>
+<tr><td colspan="3"><h3>Async/Await</h3></td></tr>
+<tr><td>AsyncFunctionDef</td><td><code>async def func(): pass</code></td><td>ERROR: Not Implemented</td></tr>
+<tr><td>Await</td><td><code>async def func():<br>    await other_func()</code></td><td>ERROR: Not Implemented</td></tr>
+<tr><td>AsyncFor</td><td><code>async def func():<br>    async for i in aiter(): pass</code></td><td>ERROR: Not Implemented</td></tr>
+<tr><td>AsyncWith</td><td><code>async def func():<br>    async with acontext() as a: pass</code></td><td>ERROR: Not Implemented</td></tr>
+<tr><td colspan="3"><h3>Yield Expressions</h3></td></tr>
+<tr><td>Yield</td><td><code>def gen(): yield 42</code></td><td>ERROR: Not Implemented</td></tr>
+<tr><td>YieldFrom</td><td><code>def gen(): yield from [1, 2, 3]</code></td><td>ERROR: Not Implemented</td></tr>
+<tr><td colspan="3"><h3>Others</h3></td></tr>
+<tr><td>Delete</td><td><code>x = 1; del x</code></td><td>SUCCESS: None</td></tr>
+<tr><td>Pass</td><td><code>pass</code></td><td>SUCCESS: None</td></tr>
+<tr><td>Global</td><td><code>global x</code></td><td>ERROR: Not Implemented</td></tr>
+<tr><td>Nonlocal</td><td><code>nonlocal x</code></td><td>ERROR: Not Implemented</td></tr>
+</tbody></table>
 
-
-```python
-import json
-import shlex
-
-# Create the counter dApp script
-counter_app_script = '''
-from dys import _query, _msg, get_script_address
-import json
-from datetime import datetime
-
-def get_counter():
-    """Get the current counter value or initialize it"""
-    script_address = get_script_address()
-    # Try to query the existing counter
-    try:
-        response = _query({
-            "@type": "/dysonprotocol.storage.v1.QueryStorageGetRequest",
-            "owner": script_address,
-            "index": "counter"
-        })
-        counter_data = json.loads(response["entry"]["data"])
-        return counter_data["value"]
-    except Exception as e:
-        if "NotFound" in str(e):
-            _msg({
-                "@type": "/dysonprotocol.storage.v1.MsgStorageSet",
-                "owner": script_address,
-                "index": "counter",
-                "data": json.dumps({
-                    "value": 0, 
-                    "updated_at": datetime.now().isoformat()
-                })
-            })
-            return 0
-        else:
-            raise e
-
-
-
-def increment_counter():
-    """Increment the counter and store the new value"""
-    # Get the current counter value
-    current_value = get_counter()
-    
-    # Increment it
-    new_value = current_value + 1
-    
-    # Store the new value
-    script_address = get_script_address()
-
-    _msg({
-        "@type": "/dysonprotocol.storage.v1.MsgStorageSet",
-        "owner": script_address,
-         "index": "counter",
-         "data": json.dumps({
-            "value": new_value,
-            "updated_at": datetime.now().isoformat()
-        })
-    })
-
-    
-    return {
-        "previous_value": current_value,
-        "new_value": new_value
-    }
-
-def reset_counter():
-    """Reset the counter to zero"""
-    script_address = get_script_address()
-    _msg({
-        "@type": "/dysonprotocol.storage.v1.MsgStorageDelete",
-        "owner": script_address,
-        "indexes": ["counter"]
-    })
-    return {
-        "result": "Counter reset to 0"
-    }
-'''
-
-# Save the counter app script
-with open('/tmp/counter_app.py', 'w') as f:
-    f.write(counter_app_script)
-    f.close()
-
-print(f"Setting up counter dApp for alice...")
-
-# First, upload the script to Alice's account
-out = ! dysond tx script update \
-    --code-path /tmp/counter_app.py \
-    --from alice \
-    --gas "20000000" \
-    --output json -y | dysond query wait-tx --output json
-out = '\n'.join(out)
-result = json.loads(out)
-assert result['code'] == 0, f"Error: {result['raw_log']}"
-
-for i in range(3):
-    # Now let's test the counter app
-    # 1. Get initial counter (should be 0, then set to 1)
-    out = ! dysond tx script exec \
-        --script-address $ALICE_ADDRESS \
-        --function-name increment_counter \
-        --from alice \
-        --gas "10000000" \
-        --output json -y | dysond query wait-tx --output json | python ../scripts/parse_exec_script_tx.py
-    out = '\n'.join(out)
-    result = json.loads(out)
-    assert result['code'] == 0, f"Error: {result['raw_log']}"
-    counter_result = result['script_result']['result']['result']
-    print(f"Counter state: {counter_result['previous_value']} -> {counter_result['new_value']}")
-
-# 4. Reset the counter for cleanup
-print(f"Cleaning up...")
-out = ! dysond tx script exec \
-    --script-address $ALICE_ADDRESS \
-    --function-name reset_counter \
-    --from alice \
-    --extra-code-path /tmp/counter_app.py \
-    --output json -y  \
-    --gas 10000000 | dysond query wait-tx --output json | python ../scripts/parse_exec_script_tx.py
-out = '\n'.join(out)
-result = json.loads(out)
-assert result['code'] == 0, f"Error: {result['raw_log']}"
-
-print(f"Counter dApp demo completed successfully!")
-```
-
-    Setting up counter dApp for alice...
-
-
-    Counter state: 0 -> 1
-
-
-    Counter state: 1 -> 2
-
-
-    Counter state: 2 -> 3
-    Cleaning up...
-
-
-    Counter dApp demo completed successfully!
-
-
-## Summary
-
-In this guide, we've explored the powerful features of the Dyson Protocol Language Module (dyslang). We've seen how to:
-
-1. **Query the Blockchain**: Use `_query` to retrieve blockchain state
-2. **Submit Transactions**: Use `_msg` to modify blockchain state
-3. **Monitor Gas**: Track and manage computational resources
-4. **Access Context**: Retrieve script and block information
-5. **Handle Messages**: Work with transaction messages
-6. **Emit Events**: Produce blockchain events
-7. **Evaluate Code**: Execute dynamic Python code
-8. **Test Coverage**: Analyze script execution paths
-9. **Build dApps**: Combine these features to create decentralized applications
-
-The dyslang module provides a secure, sandboxed environment for executing Python code on the blockchain, making it possible to build sophisticated decentralized applications with familiar Python syntax and powerful blockchain capabilities.
-
-For more information on building scripts with these functions and integrating with other modules like Storage, check out the [Script Module Documentation](SCRIPT.md) and the other guides in the Dyson Protocol documentation.

@@ -276,17 +276,10 @@ def wsgi(environ, start_response):
 
                 for node in nodes:
                     if node in ast_examples:
-                        evaluation = evaluate_ast_example(node)
-
                         html += f"""<tr>
 <td><a href="/?node={node}">{node}</a></td>
 <td><pre>{ast_examples[node]}</pre></td>
-<td>{
-'<span style="color: green">✓</span> ' + escape(evaluation["result"]) if evaluation['status'] == 'success' else
-'<span style="color: red">✗</span> ' + escape(evaluation["message"]) if evaluation['status'] == 'error' else
-'<span style="color: gray">-</span> Skipped' if evaluation['status'] == 'skipped' else
-'<span style="color: orange">?</span> Unknown'
-}</td>
+<td><iframe src="/?node={node}" width="100%" height="120" style="border:none;"></iframe></td>
 </tr>
 """
 
