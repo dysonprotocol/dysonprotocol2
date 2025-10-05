@@ -1018,7 +1018,7 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs):
     cfg = json.loads(Path(config_file).read_text())
     bin_path = cfg["dysond_bin"]
     procs = []
-    node_procs = []  # track per-node proc/cmd/home for auto-restart on upgrade
+    node_procs = []  # track per-node proc/cmd/home
     log_files = []  # Track log files for cleanup
     hermes_started = False
     stop_event = threading.Event()
@@ -1090,7 +1090,6 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs):
                     "moniker": node["moniker"],
                     "chain_id": chain["chain_id"],
                     "restart_count": 0,
-                    "seen_upgrade_markers": [],
                 }
             )
 
@@ -1214,80 +1213,6 @@ Stopping all nodes!
             click.echo(f"Exception in block monitor: {e}")
             stop_event.set()
             return
-
-    # Enforce a minimum stale timeout to avoid false positives during upgrades
-    if no_blocks_timeout and no_blocks_timeout < 60:
-        no_blocks_timeout = 60
-
-    # Supervise node processes and auto-restart on upgrade-needed halts
-    def supervise_nodes():
-        import time
-
-        click.echo(f"[chainnet] supervisor started for {len(node_procs)} node(s)")
-        while not stop_event.is_set():
-            for entry in list(node_procs):
-                ret = entry["proc"].poll()
-                # Proactively restart when upgrade marker appears even if process hasn't exited yet
-                if ret is None:
-                    upgrade_info = os.path.join(
-                        entry["home"], "data", "upgrade-info.json"
-                    )
-                    if os.path.exists(upgrade_info):
-                        marker_key = None
-                        try:
-                            with open(upgrade_info, "r") as f:
-                                info = json.load(f)
-                            name = str(info.get("name", "")).strip()
-                            height = str(info.get("height", "")).strip()
-                            marker_key = f"{name}:{height}"
-                        except Exception:
-                            try:
-                                marker_key = f"mtime:{os.path.getmtime(upgrade_info)}"
-                            except Exception:
-                                marker_key = "unknown"
-
-                        if marker_key not in entry.get("seen_upgrade_markers", []):
-                            click.echo(
-                                f"[chainnet] detected upgrade marker while running: {upgrade_info}; forcing restart to apply upgrade"
-                            )
-                            try:
-                                os.killpg(os.getpgid(entry["proc"].pid), signal.SIGTERM)
-                            except Exception:
-                                pass
-                            entry.setdefault("seen_upgrade_markers", []).append(
-                                marker_key
-                            )
-                            # Process will exit shortly; normal restart path will handle it
-                            continue
-                if ret is not None:
-                    click.echo(
-                        f"[chainnet] node exited pid={entry['proc'].pid} rc={ret} chain={entry['chain_id']} moniker={entry['moniker']} home={entry['home']}"
-                    )
-                    upgrade_info = os.path.join(
-                        entry["home"], "data", "upgrade-info.json"
-                    )
-                    if os.path.exists(upgrade_info):
-                        click.echo(
-                            f"[chainnet] detected upgrade marker: {upgrade_info}"
-                        )
-                        new_proc = subprocess.Popen(entry["cmd"], preexec_fn=os.setsid)
-                        procs.append(new_proc)
-                        entry["proc"] = new_proc
-                        entry["restart_count"] += 1
-                        click.echo(
-                            f"[chainnet] restarted node chain={entry['chain_id']} moniker={entry['moniker']} new_pid={new_proc.pid} restarts={entry['restart_count']}"
-                        )
-                        continue
-                    # Not an upgrade-triggered exit; stop all
-                    click.echo(
-                        f"[chainnet] node exit without upgrade-info; stopping all"
-                    )
-                    stop_event.set()
-                    return
-            time.sleep(0.5)
-
-    t_super = threading.Thread(target=supervise_nodes, daemon=True)
-    t_super.start()
 
     if no_blocks_timeout:
         t = threading.Thread(
