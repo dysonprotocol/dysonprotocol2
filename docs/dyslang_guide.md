@@ -476,7 +476,7 @@ print(f"- Time: {block_info['time']}")
     Block Information:
     - Height: 9
     - Chain ID: chain-a
-    - Time: 2025-10-06T09:20:49.87992Z
+    - Time: 2025-10-06T15:02:50.062658Z
 
 
 ## Transaction Data
@@ -597,7 +597,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
 ```
 
     {
-      "height": "11",
+      "height": "12",
       "txhash": "07CA48632DAFD22BD80387C8E3236CF6ECFBD02CBC76D254FC95988B4D1FEDFB",
       "codespace": "",
       "code": 0,
@@ -1637,27 +1637,41 @@ Here is a table of all the python syntax that is supported by Dyslang.
 <tr><td>If</td><td><pre><code>if True: pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
 <tr><td>For</td><td><pre><code>for i in range(5): pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
 <tr><td>While</td><td><pre><code>while False: pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
-<tr><td>Break</td><td><pre><code>for i in range(5):<br>    if i &gt; 2: break</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
-<tr><td>Continue</td><td><pre><code>for i in range(5):<br>    if i &lt; 2: continue</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>Break</td><td><pre><code>for i in range(5):
+    if i &gt; 2: break</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>Continue</td><td><pre><code>for i in range(5):
+    if i &lt; 2: continue</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
 <tr><td colspan="3"><h3>Exception Handling</h3></td></tr>
-<tr><td>Try</td><td><pre><code>try:<br>    1/0<br>except ZeroDivisionError:<br>    pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
-<tr><td>Raise</td><td><pre><code>try:<br>    raise ValueError('example error')<br>except ValueError:<br>    pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>Try</td><td><pre><code>try:
+    1/0
+except ZeroDivisionError:
+    pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>Raise</td><td><pre><code>try:
+    raise ValueError('example error')
+except ValueError:
+    pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
 <tr><td>Assert</td><td><pre><code>assert True, 'message'</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
 <tr><td colspan="3"><h3>Function and Class Definitions</h3></td></tr>
 <tr><td>FunctionDef</td><td><pre><code>def func(x): return x*2</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
 <tr><td>Lambda</td><td><pre><code>lambda x: x*2</code></pre></td><td><pre><code>SUCCESS: &lt;function &lt;lambda&gt; at 0x1234&gt;</code></pre></td></tr>
 <tr><td>Return</td><td><pre><code>def func(): return 42</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
-<tr><td>ClassDef</td><td><pre><code>class MyClass:<br>    pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>ClassDef</td><td><pre><code>class MyClass:
+    pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
 <tr><td colspan="3"><h3>Import Statements</h3></td></tr>
-<tr><td>Import</td><td><pre><code>try: import json<br>except ImportError: pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
-<tr><td>ImportFrom</td><td><pre><code>try: from json import loads<br>except ImportError: pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>Import</td><td><pre><code>try: import json
+except ImportError: pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>ImportFrom</td><td><pre><code>try: from json import loads
+except ImportError: pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
 <tr><td colspan="3"><h3>With Statements</h3></td></tr>
 <tr><td>With</td><td><pre><code>with open('file.txt', 'w') as f: pass</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
 <tr><td colspan="3"><h3>Async/Await</h3></td></tr>
 <tr><td>AsyncFunctionDef</td><td><pre><code>async def func(): pass</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
-<tr><td>Await</td><td><pre><code>async def func():<br>    await other_func()</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
-<tr><td>AsyncFor</td><td><pre><code>async def func():<br>    async for i in aiter(): pass</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
-<tr><td>AsyncWith</td><td><pre><code>async def func():<br>    async with acontext() as a: pass</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
+<tr><td>Await</td><td><pre><code>async def func():
+    await other_func()</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
+<tr><td>AsyncFor</td><td><pre><code>async def func():
+    async for i in aiter(): pass</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
+<tr><td>AsyncWith</td><td><pre><code>async def func():
+    async with acontext() as a: pass</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
 <tr><td colspan="3"><h3>Yield Expressions</h3></td></tr>
 <tr><td>Yield</td><td><pre><code>def gen(): yield 42</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
 <tr><td>YieldFrom</td><td><pre><code>def gen(): yield from [1, 2, 3]</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
