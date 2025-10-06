@@ -30,12 +30,12 @@ GENESIS_AUTH = get_script_address()
 
 
 class Message(TypedDict):
-    msg_id: int
+    msg_id: str
     message_data: Any
 
 
 class Response(TypedDict):
-    msg_id: int
+    msg_id: str
     response_data: Any
 
 
@@ -50,13 +50,13 @@ class Queueable:
     def get_next_message_id(self):
         next_id = self.queue_metadata.get("next_message_id", 0)
         self.queue_metadata["next_message_id"] = next_id + 1
-        return next_id
+        return str(next_id)
 
     def send_message(self, msg: str):
         """sends a message to the other side"""
         # message can be any basic data type
         message_id = self.get_next_message_id()
-        self.outgoing_queue[str(message_id)] = {
+        self.outgoing_queue[message_id] = {
             "msg_id": message_id,
             "message_data": msg,
         }
@@ -152,7 +152,7 @@ class L1(Queueable):
     """
 
     # Store responses from L2 for verification
-    stored_responses: Dict[int, str] = field(default_factory=dict)
+    stored_responses: Dict[str, str] = field(default_factory=dict)
 
     def say_hi(self, sender: str, greeting: str):
         """Example L1-initiated message to L2"""
@@ -261,7 +261,7 @@ class L2(Queueable):
 
     # L2-specific state
     current_height: int = 0
-    processed_messages: Dict[int, str] = field(default_factory=dict)
+    processed_messages: Dict[str, str] = field(default_factory=dict)
 
     def say_hola(self, sender: str, greeting: str):
         """Example L2-initiated message to L1"""
@@ -515,15 +515,13 @@ def create_l2_from_snapshot(snapshot: Optional[Dict] = None):
     if snapshot:
         queue_metadata = snapshot.get("queue_metadata", {})
 
-        # Reconstruct message objects from snapshot
+        # Reconstruct message objects from snapshot (preserve original string keys)
         outgoing_queue = {}
         outgoing_data = snapshot.get("outgoing_queue", {})
         for k, v in outgoing_data.items():
-            # Convert string keys back to int if needed
-            key = int(k) if isinstance(k, str) else k
             # Handle both old and new field names for compatibility
             message_content = v.get("message_data", v.get("msg"))
-            outgoing_queue[key] = {
+            outgoing_queue[k] = {
                 "msg_id": v["msg_id"],
                 "message_data": message_content,
             }
@@ -531,11 +529,9 @@ def create_l2_from_snapshot(snapshot: Optional[Dict] = None):
         response_queue = {}
         response_data = snapshot.get("response_queue", {})
         for k, v in response_data.items():
-            # Convert string keys back to int if needed
-            key = int(k) if isinstance(k, str) else k
             # Handle both old and new field names for compatibility
             response_content = v.get("response_data", v.get("response"))
-            response_queue[key] = {
+            response_queue[k] = {
                 "msg_id": v["msg_id"],
                 "response_data": response_content,
             }
@@ -550,11 +546,6 @@ def create_l2_from_snapshot(snapshot: Optional[Dict] = None):
     processed_messages = {}
     if snapshot:
         current_height = snapshot.get("current_height", 0)
-        if "processed_messages" in snapshot:
-            # Convert string keys back to ints using dict comprehension (available in dyslang)
-            processed_messages = {
-                int(k): v for k, v in snapshot["processed_messages"].items()
-            }
 
     # Create instance with reconstructed data
     l2 = L2(
@@ -1370,15 +1361,6 @@ def build_next_block(
         for msg_id in l1_messages_to_remove:
             del l1.outgoing_queue[msg_id]
             chain_scope["print"](f"L1 removed acknowledged message {msg_id}")
-
-        # L2: Remove messages that have responses in L1's response queue
-        l2_messages_to_remove = []
-        for msg_id in l2.outgoing_queue:
-            if msg_id in l1.response_queue:
-                l2_messages_to_remove.append(msg_id)
-        for msg_id in l2_messages_to_remove:
-            del l2.outgoing_queue[msg_id]
-            chain_scope["print"](f"L2 removed acknowledged message {msg_id}")
 
     def _send_l1_message(message_data):
         """Core L1 message sending with validation"""
