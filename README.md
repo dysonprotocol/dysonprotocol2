@@ -6,9 +6,9 @@ Download the latest release from:
 https://github.com/dysonprotocol/dysonprotocol2/releases
 
 ```bash
-wget https://github.com/dysonprotocol/dysonprotocol2/releases/download/v2.0.0-rc6/dysond-x86_64-v2.0.0-rc6.zip
+wget https://github.com/dysonprotocol/dysonprotocol2/releases/download/v2.0.0/dysond-x86_64-v2.0.0.zip
 
-unzip dysond-x86_64-v2.0.0-rc6.zip
+unzip dysond-x86_64-v2.0.0.zip
 
 chmod +x dysond
 
