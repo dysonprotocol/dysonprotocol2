@@ -65,7 +65,15 @@ async def _handle_exec_script(payload: Dict[str, Any]) -> Dict[str, Any]:
         if response.get("exception") is not None:
             print(f"##### _handle_exec_script <exception>{response}</exception>")
             return {"ok": False, "error": response}
-        return _ok(json.dumps(response, separators=(",", ":"), cls=DecimalEncoder))
+        return _ok(
+            json.dumps(
+                response,
+                separators=(",", ":"),
+                sort_keys=True,
+                ensure_ascii=True,
+                cls=DecimalEncoder,
+            )
+        )
     except Exception as e:
         print(f"##### _handle_exec_script <error>{e}</error>")
         return _err_from_exc(e)

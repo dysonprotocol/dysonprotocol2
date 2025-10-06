@@ -481,6 +481,8 @@ def build_sandbox(
                 return
 
             if hasattr(node, "lineno"):
+                print("scope", self.scope)
+                print("last_eval_result", self._last_eval_result)
                 self.size = len(repr(self.scope)) + len(repr(self._last_eval_result))
 
                 node_info = self._seen_nodes[
@@ -841,10 +843,17 @@ def eval_script(
                 sandbox.consume_gas()
 
                 random.seed(
-                    (str(block_info) or "")
-                    + (str(msg) or "")
-                    + (str(script) or "")
-                    + (str(attached_msg_results) or "")
+                    json.dumps(
+                        {
+                            "block_info": block_info,
+                            "msg": msg,
+                            "script": script,
+                            "attached_msg_results": attached_msg_results,
+                        },
+                        separators=(",", ":"),
+                        sort_keys=True,
+                        cls=DecimalEncoder,
+                    )
                 )
                 result = (
                     sandbox.eval(
