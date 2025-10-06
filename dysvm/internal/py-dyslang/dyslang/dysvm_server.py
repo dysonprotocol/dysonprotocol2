@@ -481,8 +481,6 @@ def build_sandbox(
                 return
 
             if hasattr(node, "lineno"):
-                print("scope", self.scope)
-                print("last_eval_result", self._last_eval_result)
                 self.size = len(repr(self.scope)) + len(repr(self._last_eval_result))
 
                 node_info = self._seen_nodes[
