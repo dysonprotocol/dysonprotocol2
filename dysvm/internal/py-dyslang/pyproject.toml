@@ -6,5 +6,5 @@ version = "1.0.2"
 generate_hashes = true
 
 [tool.setuptools]
-packages = ["dyslang", "bencoder"]
+packages = ["dyslang", "bencoder", "function_schema"]
 

@@ -48,6 +48,8 @@ MANIFEST
 # private files
 private[.-]*
 private
+validator-pubkey.json
+validator.json
 
 # Build
 vendor

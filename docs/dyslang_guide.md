@@ -474,9 +474,9 @@ print(f"- Time: {block_info['time']}")
 ```
 
     Block Information:
-    - Height: 10
+    - Height: 9
     - Chain ID: chain-a
-    - Time: 2025-10-05T14:18:07.66923Z
+    - Time: 2025-10-06T09:20:49.87992Z
 
 
 ## Transaction Data
@@ -597,7 +597,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
 ```
 
     {
-      "height": "12",
+      "height": "11",
       "txhash": "07CA48632DAFD22BD80387C8E3236CF6ECFBD02CBC76D254FC95988B4D1FEDFB",
       "codespace": "",
       "code": 0,
@@ -932,7 +932,7 @@ From the coverage analysis, we can see that:
 
 This coverage analysis helps us identify test gaps in our code. In this case, we need to add tests for when the first condition fails to ensure we're testing all code paths.
 
-# Available Modules and Functions
+## Available Modules and Functions
 
 These are the available modules and functions that can be used in dyslang scripts.
 
@@ -1565,107 +1565,107 @@ Here is a table of all the python syntax that is supported by Dyslang.
 <thead><tr><th>AST Node</th><th>Demo</th><th>Result</th></tr></thead>
 <tbody>
 <tr><td colspan="3"><h3>Literals and Constants</h3></td></tr>
-<tr><td>Constant</td><td><code>42</code></td><td>SUCCESS: 42</td></tr>
-<tr><td>FormattedValue</td><td><code>f'The answer is {40 + 2}'</code></td><td>SUCCESS: The answer is 42</td></tr>
-<tr><td>JoinedStr</td><td><code>f'Hello {"world"}'</code></td><td>SUCCESS: Hello world</td></tr>
+<tr><td>Constant</td><td><pre><code>42</code></pre></td><td><pre><code>SUCCESS: 42</code></pre></td></tr>
+<tr><td>FormattedValue</td><td><pre><code>f'The answer is {40 + 2}'</code></pre></td><td><pre><code>SUCCESS: The answer is 42</code></pre></td></tr>
+<tr><td>JoinedStr</td><td><pre><code>f'Hello {"world"}'</code></pre></td><td><pre><code>SUCCESS: Hello world</code></pre></td></tr>
 <tr><td colspan="3"><h3>Collections</h3></td></tr>
-<tr><td>List</td><td><code>[1, 2, 3]</code></td><td>SUCCESS: [1, 2, 3]</td></tr>
-<tr><td>Tuple</td><td><code>(1, 2, 3)</code></td><td>SUCCESS: (1, 2, 3)</td></tr>
-<tr><td>Set</td><td><code>{1, 2, 3}</code></td><td>SUCCESS: {1, 2, 3}</td></tr>
-<tr><td>Dict</td><td><code>{'a': 1, 'b': 2}</code></td><td>SUCCESS: {'a': 1, 'b': 2}</td></tr>
+<tr><td>List</td><td><pre><code>[1, 2, 3]</code></pre></td><td><pre><code>SUCCESS: [1, 2, 3]</code></pre></td></tr>
+<tr><td>Tuple</td><td><pre><code>(1, 2, 3)</code></pre></td><td><pre><code>SUCCESS: (1, 2, 3)</code></pre></td></tr>
+<tr><td>Set</td><td><pre><code>{1, 2, 3}</code></pre></td><td><pre><code>SUCCESS: {1, 2, 3}</code></pre></td></tr>
+<tr><td>Dict</td><td><pre><code>{'a': 1, 'b': 2}</code></pre></td><td><pre><code>SUCCESS: {'a': 1, 'b': 2}</code></pre></td></tr>
 <tr><td colspan="3"><h3>Variables</h3></td></tr>
-<tr><td>Name_Load</td><td><code>x = 1; x</code></td><td>SUCCESS: 1</td></tr>
-<tr><td>Name_Store</td><td><code>x = 42</code></td><td>SUCCESS: None</td></tr>
-<tr><td>Name_Del</td><td><code>y = 10; del y</code></td><td>SUCCESS: None</td></tr>
-<tr><td>Starred</td><td><code>a, *b = [1, 2, 3, 4]; b</code></td><td>SUCCESS: [2, 3, 4]</td></tr>
+<tr><td>Name_Load</td><td><pre><code>x = 1; x</code></pre></td><td><pre><code>SUCCESS: 1</code></pre></td></tr>
+<tr><td>Name_Store</td><td><pre><code>x = 42</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>Name_Del</td><td><pre><code>y = 10; del y</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>Starred</td><td><pre><code>a, *b = [1, 2, 3, 4]; b</code></pre></td><td><pre><code>SUCCESS: [2, 3, 4]</code></pre></td></tr>
 <tr><td colspan="3"><h3>Expressions</h3></td></tr>
-<tr><td>UnaryOp_Not</td><td><code>not True</code></td><td>SUCCESS: False</td></tr>
-<tr><td>UnaryOp_Invert</td><td><code>~42</code></td><td>SUCCESS: -43</td></tr>
-<tr><td>UnaryOp_UAdd</td><td><code>+42</code></td><td>SUCCESS: 42</td></tr>
-<tr><td>UnaryOp_USub</td><td><code>-42</code></td><td>SUCCESS: -42</td></tr>
+<tr><td>UnaryOp_Not</td><td><pre><code>not True</code></pre></td><td><pre><code>SUCCESS: False</code></pre></td></tr>
+<tr><td>UnaryOp_Invert</td><td><pre><code>~42</code></pre></td><td><pre><code>SUCCESS: -43</code></pre></td></tr>
+<tr><td>UnaryOp_UAdd</td><td><pre><code>+42</code></pre></td><td><pre><code>SUCCESS: 42</code></pre></td></tr>
+<tr><td>UnaryOp_USub</td><td><pre><code>-42</code></pre></td><td><pre><code>SUCCESS: -42</code></pre></td></tr>
 <tr><td colspan="3"><h3>Binary Operations</h3></td></tr>
-<tr><td>BinOp_Add</td><td><code>1 + 2</code></td><td>SUCCESS: 3</td></tr>
-<tr><td>BinOp_Sub</td><td><code>1 - 2</code></td><td>SUCCESS: -1</td></tr>
-<tr><td>BinOp_Mult</td><td><code>2 * 3</code></td><td>SUCCESS: 6</td></tr>
-<tr><td>BinOp_Div</td><td><code>6 / 3</code></td><td>SUCCESS: 2.0</td></tr>
-<tr><td>BinOp_FloorDiv</td><td><code>7 // 3</code></td><td>SUCCESS: 2</td></tr>
-<tr><td>BinOp_Mod</td><td><code>7 % 3</code></td><td>SUCCESS: 1</td></tr>
-<tr><td>BinOp_Pow</td><td><code>2 ** 3</code></td><td>SUCCESS: 8</td></tr>
-<tr><td>BinOp_LShift</td><td><code>1 &lt;&lt; 2</code></td><td>SUCCESS: 4</td></tr>
-<tr><td>BinOp_RShift</td><td><code>8 &gt;&gt; 2</code></td><td>SUCCESS: 2</td></tr>
-<tr><td>BinOp_BitOr</td><td><code>1 | 2</code></td><td>SUCCESS: 3</td></tr>
-<tr><td>BinOp_BitXor</td><td><code>5 ^ 3</code></td><td>SUCCESS: 6</td></tr>
-<tr><td>BinOp_BitAnd</td><td><code>5 &amp; 3</code></td><td>SUCCESS: 1</td></tr>
-<tr><td>BinOp_MatMult</td><td><code># Not in basic Python: a @ b</code></td><td>SKIPPED</td></tr>
+<tr><td>BinOp_Add</td><td><pre><code>1 + 2</code></pre></td><td><pre><code>SUCCESS: 3</code></pre></td></tr>
+<tr><td>BinOp_Sub</td><td><pre><code>1 - 2</code></pre></td><td><pre><code>SUCCESS: -1</code></pre></td></tr>
+<tr><td>BinOp_Mult</td><td><pre><code>2 * 3</code></pre></td><td><pre><code>SUCCESS: 6</code></pre></td></tr>
+<tr><td>BinOp_Div</td><td><pre><code>6 / 3</code></pre></td><td><pre><code>SUCCESS: 2.0</code></pre></td></tr>
+<tr><td>BinOp_FloorDiv</td><td><pre><code>7 // 3</code></pre></td><td><pre><code>SUCCESS: 2</code></pre></td></tr>
+<tr><td>BinOp_Mod</td><td><pre><code>7 % 3</code></pre></td><td><pre><code>SUCCESS: 1</code></pre></td></tr>
+<tr><td>BinOp_Pow</td><td><pre><code>2 ** 3</code></pre></td><td><pre><code>SUCCESS: 8</code></pre></td></tr>
+<tr><td>BinOp_LShift</td><td><pre><code>1 &lt;&lt; 2</code></pre></td><td><pre><code>SUCCESS: 4</code></pre></td></tr>
+<tr><td>BinOp_RShift</td><td><pre><code>8 &gt;&gt; 2</code></pre></td><td><pre><code>SUCCESS: 2</code></pre></td></tr>
+<tr><td>BinOp_BitOr</td><td><pre><code>1 | 2</code></pre></td><td><pre><code>SUCCESS: 3</code></pre></td></tr>
+<tr><td>BinOp_BitXor</td><td><pre><code>5 ^ 3</code></pre></td><td><pre><code>SUCCESS: 6</code></pre></td></tr>
+<tr><td>BinOp_BitAnd</td><td><pre><code>5 &amp; 3</code></pre></td><td><pre><code>SUCCESS: 1</code></pre></td></tr>
+<tr><td>BinOp_MatMult</td><td><pre><code># Not in basic Python: a @ b</code></pre></td><td><pre><code>SKIPPED</code></pre></td></tr>
 <tr><td colspan="3"><h3>Boolean Operations</h3></td></tr>
-<tr><td>BoolOp_And</td><td><code>True and False</code></td><td>SUCCESS: False</td></tr>
-<tr><td>BoolOp_Or</td><td><code>True or False</code></td><td>SUCCESS: True</td></tr>
+<tr><td>BoolOp_And</td><td><pre><code>True and False</code></pre></td><td><pre><code>SUCCESS: False</code></pre></td></tr>
+<tr><td>BoolOp_Or</td><td><pre><code>True or False</code></pre></td><td><pre><code>SUCCESS: True</code></pre></td></tr>
 <tr><td colspan="3"><h3>Comparisons</h3></td></tr>
-<tr><td>Compare_Eq</td><td><code>1 == 1</code></td><td>SUCCESS: True</td></tr>
-<tr><td>Compare_NotEq</td><td><code>1 != 2</code></td><td>SUCCESS: True</td></tr>
-<tr><td>Compare_Lt</td><td><code>1 &lt; 2</code></td><td>SUCCESS: True</td></tr>
-<tr><td>Compare_LtE</td><td><code>1 &lt;= 2</code></td><td>SUCCESS: True</td></tr>
-<tr><td>Compare_Gt</td><td><code>2 &gt; 1</code></td><td>SUCCESS: True</td></tr>
-<tr><td>Compare_GtE</td><td><code>2 &gt;= 1</code></td><td>SUCCESS: True</td></tr>
-<tr><td>Compare_Is</td><td><code>1 is 1</code></td><td>SUCCESS: True</td></tr>
-<tr><td>Compare_IsNot</td><td><code>1 is not 2</code></td><td>SUCCESS: True</td></tr>
-<tr><td>Compare_In</td><td><code>1 in [1, 2, 3]</code></td><td>SUCCESS: True</td></tr>
-<tr><td>Compare_NotIn</td><td><code>0 not in [1, 2, 3]</code></td><td>SUCCESS: True</td></tr>
+<tr><td>Compare_Eq</td><td><pre><code>1 == 1</code></pre></td><td><pre><code>SUCCESS: True</code></pre></td></tr>
+<tr><td>Compare_NotEq</td><td><pre><code>1 != 2</code></pre></td><td><pre><code>SUCCESS: True</code></pre></td></tr>
+<tr><td>Compare_Lt</td><td><pre><code>1 &lt; 2</code></pre></td><td><pre><code>SUCCESS: True</code></pre></td></tr>
+<tr><td>Compare_LtE</td><td><pre><code>1 &lt;= 2</code></pre></td><td><pre><code>SUCCESS: True</code></pre></td></tr>
+<tr><td>Compare_Gt</td><td><pre><code>2 &gt; 1</code></pre></td><td><pre><code>SUCCESS: True</code></pre></td></tr>
+<tr><td>Compare_GtE</td><td><pre><code>2 &gt;= 1</code></pre></td><td><pre><code>SUCCESS: True</code></pre></td></tr>
+<tr><td>Compare_Is</td><td><pre><code>1 is 1</code></pre></td><td><pre><code>SUCCESS: True</code></pre></td></tr>
+<tr><td>Compare_IsNot</td><td><pre><code>1 is not 2</code></pre></td><td><pre><code>SUCCESS: True</code></pre></td></tr>
+<tr><td>Compare_In</td><td><pre><code>1 in [1, 2, 3]</code></pre></td><td><pre><code>SUCCESS: True</code></pre></td></tr>
+<tr><td>Compare_NotIn</td><td><pre><code>0 not in [1, 2, 3]</code></pre></td><td><pre><code>SUCCESS: True</code></pre></td></tr>
 <tr><td colspan="3"><h3>Function and Method Calls</h3></td></tr>
-<tr><td>Call</td><td><code>len([1, 2, 3])</code></td><td>SUCCESS: 3</td></tr>
-<tr><td>Call_Kwargs</td><td><code>dict(a=1, b=2)</code></td><td>SUCCESS: {'a': 1, 'b': 2}</td></tr>
-<tr><td>Call_Starred</td><td><code>sum([1, 2, 3])</code></td><td>SUCCESS: 6</td></tr>
-<tr><td>Call_KwStarred</td><td><code>dict(**{'a': 1, 'b': 2})</code></td><td>SUCCESS: {'a': 1, 'b': 2}</td></tr>
+<tr><td>Call</td><td><pre><code>len([1, 2, 3])</code></pre></td><td><pre><code>SUCCESS: 3</code></pre></td></tr>
+<tr><td>Call_Kwargs</td><td><pre><code>dict(a=1, b=2)</code></pre></td><td><pre><code>SUCCESS: {'a': 1, 'b': 2}</code></pre></td></tr>
+<tr><td>Call_Starred</td><td><pre><code>sum([1, 2, 3])</code></pre></td><td><pre><code>SUCCESS: 6</code></pre></td></tr>
+<tr><td>Call_KwStarred</td><td><pre><code>dict(**{'a': 1, 'b': 2})</code></pre></td><td><pre><code>SUCCESS: {'a': 1, 'b': 2}</code></pre></td></tr>
 <tr><td colspan="3"><h3>Conditional Expressions</h3></td></tr>
-<tr><td>IfExp</td><td><code>1 if True else 2</code></td><td>SUCCESS: 1</td></tr>
+<tr><td>IfExp</td><td><pre><code>1 if True else 2</code></pre></td><td><pre><code>SUCCESS: 1</code></pre></td></tr>
 <tr><td colspan="3"><h3>Attribute Access</h3></td></tr>
-<tr><td>Attribute</td><td><code>'hello'.upper()</code></td><td>SUCCESS: HELLO</td></tr>
+<tr><td>Attribute</td><td><pre><code>'hello'.upper()</code></pre></td><td><pre><code>SUCCESS: HELLO</code></pre></td></tr>
 <tr><td colspan="3"><h3>Subscripting</h3></td></tr>
-<tr><td>Subscript</td><td><code>[1, 2, 3][0]</code></td><td>SUCCESS: 1</td></tr>
-<tr><td>Slice</td><td><code>[1, 2, 3, 4][1:3]</code></td><td>SUCCESS: [2, 3]</td></tr>
+<tr><td>Subscript</td><td><pre><code>[1, 2, 3][0]</code></pre></td><td><pre><code>SUCCESS: 1</code></pre></td></tr>
+<tr><td>Slice</td><td><pre><code>[1, 2, 3, 4][1:3]</code></pre></td><td><pre><code>SUCCESS: [2, 3]</code></pre></td></tr>
 <tr><td colspan="3"><h3>Comprehensions</h3></td></tr>
-<tr><td>ListComp</td><td><code>[x for x in range(5)]</code></td><td>SUCCESS: [0, 1, 2, 3, 4]</td></tr>
-<tr><td>SetComp</td><td><code>{x for x in range(5)}</code></td><td>SUCCESS: {0, 1, 2, 3, 4}</td></tr>
-<tr><td>DictComp</td><td><code>{x: x*x for x in range(5)}</code></td><td>SUCCESS: {0: 0, 1: 1, 2: 4, 3: 9, 4: 16}</td></tr>
-<tr><td>GeneratorExp</td><td><code>(x for x in range(5))</code></td><td>SUCCESS: [0, 1, 2, 3, 4]</td></tr>
+<tr><td>ListComp</td><td><pre><code>[x for x in range(5)]</code></pre></td><td><pre><code>SUCCESS: [0, 1, 2, 3, 4]</code></pre></td></tr>
+<tr><td>SetComp</td><td><pre><code>{x for x in range(5)}</code></pre></td><td><pre><code>SUCCESS: {0, 1, 2, 3, 4}</code></pre></td></tr>
+<tr><td>DictComp</td><td><pre><code>{x: x*x for x in range(5)}</code></pre></td><td><pre><code>SUCCESS: {0: 0, 1: 1, 2: 4, 3: 9, 4: 16}</code></pre></td></tr>
+<tr><td>GeneratorExp</td><td><pre><code>(x for x in range(5))</code></pre></td><td><pre><code>SUCCESS: [0, 1, 2, 3, 4]</code></pre></td></tr>
 <tr><td colspan="3"><h3>Assignments</h3></td></tr>
-<tr><td>Assign</td><td><code>x = 42</code></td><td>SUCCESS: None</td></tr>
-<tr><td>AnnAssign</td><td><code>x: int = 42</code></td><td>SUCCESS: None</td></tr>
-<tr><td>AugAssign</td><td><code>x = 1; x += 1</code></td><td>SUCCESS: None</td></tr>
-<tr><td>NamedExpr</td><td><code>(x := 42)</code></td><td>SUCCESS: 42</td></tr>
+<tr><td>Assign</td><td><pre><code>x = 42</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>AnnAssign</td><td><pre><code>x: int = 42</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>AugAssign</td><td><pre><code>x = 1; x += 1</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>NamedExpr</td><td><pre><code>(x := 42)</code></pre></td><td><pre><code>SUCCESS: 42</code></pre></td></tr>
 <tr><td colspan="3"><h3>Control Flow</h3></td></tr>
-<tr><td>If</td><td><code>if True: pass</code></td><td>SUCCESS: None</td></tr>
-<tr><td>For</td><td><code>for i in range(5): pass</code></td><td>SUCCESS: None</td></tr>
-<tr><td>While</td><td><code>while False: pass</code></td><td>SUCCESS: None</td></tr>
-<tr><td>Break</td><td><code>for i in range(5):<br>    if i &gt; 2: break</code></td><td>SUCCESS: None</td></tr>
-<tr><td>Continue</td><td><code>for i in range(5):<br>    if i &lt; 2: continue</code></td><td>SUCCESS: None</td></tr>
+<tr><td>If</td><td><pre><code>if True: pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>For</td><td><pre><code>for i in range(5): pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>While</td><td><pre><code>while False: pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>Break</td><td><pre><code>for i in range(5):<br>    if i &gt; 2: break</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>Continue</td><td><pre><code>for i in range(5):<br>    if i &lt; 2: continue</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
 <tr><td colspan="3"><h3>Exception Handling</h3></td></tr>
-<tr><td>Try</td><td><code>try:<br>    1/0<br>except ZeroDivisionError:<br>    pass</code></td><td>SUCCESS: None</td></tr>
-<tr><td>Raise</td><td><code>try:<br>    raise ValueError('example error')<br>except ValueError:<br>    pass</code></td><td>SUCCESS: None</td></tr>
-<tr><td>Assert</td><td><code>assert True, 'message'</code></td><td>SUCCESS: None</td></tr>
+<tr><td>Try</td><td><pre><code>try:<br>    1/0<br>except ZeroDivisionError:<br>    pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>Raise</td><td><pre><code>try:<br>    raise ValueError('example error')<br>except ValueError:<br>    pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>Assert</td><td><pre><code>assert True, 'message'</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
 <tr><td colspan="3"><h3>Function and Class Definitions</h3></td></tr>
-<tr><td>FunctionDef</td><td><code>def func(x): return x*2</code></td><td>SUCCESS: None</td></tr>
-<tr><td>Lambda</td><td><code>lambda x: x*2</code></td><td>SUCCESS: &lt;function &lt;lambda&gt; at 0x1234&gt;</td></tr>
-<tr><td>Return</td><td><code>def func(): return 42</code></td><td>SUCCESS: None</td></tr>
-<tr><td>ClassDef</td><td><code>class MyClass:<br>    pass</code></td><td>SUCCESS: None</td></tr>
+<tr><td>FunctionDef</td><td><pre><code>def func(x): return x*2</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>Lambda</td><td><pre><code>lambda x: x*2</code></pre></td><td><pre><code>SUCCESS: &lt;function &lt;lambda&gt; at 0x1234&gt;</code></pre></td></tr>
+<tr><td>Return</td><td><pre><code>def func(): return 42</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>ClassDef</td><td><pre><code>class MyClass:<br>    pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
 <tr><td colspan="3"><h3>Import Statements</h3></td></tr>
-<tr><td>Import</td><td><code>try: import json<br>except ImportError: pass</code></td><td>SUCCESS: None</td></tr>
-<tr><td>ImportFrom</td><td><code>try: from json import loads<br>except ImportError: pass</code></td><td>SUCCESS: None</td></tr>
+<tr><td>Import</td><td><pre><code>try: import json<br>except ImportError: pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>ImportFrom</td><td><pre><code>try: from json import loads<br>except ImportError: pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
 <tr><td colspan="3"><h3>With Statements</h3></td></tr>
-<tr><td>With</td><td><code>with open('file.txt', 'w') as f: pass</code></td><td>ERROR: Not Implemented</td></tr>
+<tr><td>With</td><td><pre><code>with open('file.txt', 'w') as f: pass</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
 <tr><td colspan="3"><h3>Async/Await</h3></td></tr>
-<tr><td>AsyncFunctionDef</td><td><code>async def func(): pass</code></td><td>ERROR: Not Implemented</td></tr>
-<tr><td>Await</td><td><code>async def func():<br>    await other_func()</code></td><td>ERROR: Not Implemented</td></tr>
-<tr><td>AsyncFor</td><td><code>async def func():<br>    async for i in aiter(): pass</code></td><td>ERROR: Not Implemented</td></tr>
-<tr><td>AsyncWith</td><td><code>async def func():<br>    async with acontext() as a: pass</code></td><td>ERROR: Not Implemented</td></tr>
+<tr><td>AsyncFunctionDef</td><td><pre><code>async def func(): pass</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
+<tr><td>Await</td><td><pre><code>async def func():<br>    await other_func()</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
+<tr><td>AsyncFor</td><td><pre><code>async def func():<br>    async for i in aiter(): pass</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
+<tr><td>AsyncWith</td><td><pre><code>async def func():<br>    async with acontext() as a: pass</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
 <tr><td colspan="3"><h3>Yield Expressions</h3></td></tr>
-<tr><td>Yield</td><td><code>def gen(): yield 42</code></td><td>ERROR: Not Implemented</td></tr>
-<tr><td>YieldFrom</td><td><code>def gen(): yield from [1, 2, 3]</code></td><td>ERROR: Not Implemented</td></tr>
+<tr><td>Yield</td><td><pre><code>def gen(): yield 42</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
+<tr><td>YieldFrom</td><td><pre><code>def gen(): yield from [1, 2, 3]</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
 <tr><td colspan="3"><h3>Others</h3></td></tr>
-<tr><td>Delete</td><td><code>x = 1; del x</code></td><td>SUCCESS: None</td></tr>
-<tr><td>Pass</td><td><code>pass</code></td><td>SUCCESS: None</td></tr>
-<tr><td>Global</td><td><code>global x</code></td><td>ERROR: Not Implemented</td></tr>
-<tr><td>Nonlocal</td><td><code>nonlocal x</code></td><td>ERROR: Not Implemented</td></tr>
+<tr><td>Delete</td><td><pre><code>x = 1; del x</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>Pass</td><td><pre><code>pass</code></pre></td><td><pre><code>SUCCESS: None</code></pre></td></tr>
+<tr><td>Global</td><td><pre><code>global x</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
+<tr><td>Nonlocal</td><td><pre><code>nonlocal x</code></pre></td><td><pre><code>ERROR: Not Implemented</code></pre></td></tr>
 </tbody></table>
 
 
