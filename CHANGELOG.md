@@ -47,3 +47,4 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 * (x/crontask) #6-4 Query responses now encode empty task lists as [] instead of null, fixing CLI pagination and API consistency. Removed deprecated proto messages and endpoints for scheduled/pending/done tasks.
 * (dysvm) #6-6 Align DYSLANG_SERVER=1 script error JSON with baseline (DYSLANG_SERVER=0) to prevent consensus mismatch. Python FastAPI now returns the full eval response on error, and the Go server client surfaces the full error JSON string, matching baseline logs.
+* (dysvm) #6-7 Add missing `random.sample` to sandbox module mapping in `dysvm_server.py`.
