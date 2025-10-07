@@ -246,6 +246,7 @@ def get_module_dict():
             "gauss": random.gauss,
             "paretovariate": random.paretovariate,
             "random": random.random,
+            "sample": random.sample,
             "shuffle": random.shuffle,
             "triangular": random.triangular,
             "seed": safe_random_seed,
