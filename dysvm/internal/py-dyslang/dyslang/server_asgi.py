@@ -63,6 +63,7 @@ async def _handle_exec_script(payload: Dict[str, Any]) -> Dict[str, Any]:
         )
         # If the script raised an exception, return ok=false to preserve legacy semantics
         if response.get("exception") is not None:
+            # Preserve full response on error to match baseline shape
             print(f"##### _handle_exec_script <exception>{response}</exception>")
             return {"ok": False, "error": response}
         return _ok(
