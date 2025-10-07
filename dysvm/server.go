@@ -183,18 +183,12 @@ func (s *PythonServer) request(ctx context.Context, path string, payload any) (j
 		return nil, errorsmod.Wrapf(err, "failed to decode response")
 	}
 	if !pr.Ok {
-		// If error is the wrapped eval response, normalize to {"exception": {...}} string
+		// Return the full error object as the error string to match baseline behavior
 		if m, ok := pr.Error.(map[string]any); ok {
-			var exc any
-			if resp, ok2 := m["exception"]; ok2 {
-				exc = resp
-			} else {
-				exc = m
-			}
-			wrapper, _ := json.Marshal(map[string]any{"exception": exc})
-			return nil, fmt.Errorf("%s", string(wrapper))
+			b, _ := json.Marshal(m)
+			return nil, fmt.Errorf("%s", string(b))
 		}
-		b, _ := json.Marshal(map[string]any{"exception": pr.Error})
+		b, _ := json.Marshal(pr.Error)
 		return nil, fmt.Errorf("%s", string(b))
 	}
 	return pr.Result, nil
@@ -212,6 +206,10 @@ func (s *PythonServer) Exec(ctx context.Context, msgJSON, scriptJSON, attachedMs
 		"rpc_port":                  mustAtoi(port),
 	})
 	if err != nil {
+		// If the error string is a JSON object, surface it as output as well
+		if len(err.Error()) > 0 && err.Error()[0] == '{' {
+			return err.Error(), errorsmod.Wrapf(err, "failed to exec script")
+		}
 		return "", errorsmod.Wrapf(err, "failed to exec script")
 	}
 	var out string
