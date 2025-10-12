@@ -28,6 +28,11 @@ const RemoveCircuitUpgradeName = "remove-circuit"
 // V2RC9UpgradeName defines the on-chain upgrade name for v2.0.0-rc9.
 const V2RC9UpgradeName = "v2.0.0-rc9"
 
+// RmHistoricalQueriesUpgradeName defines the on-chain upgrade name for
+// removing historical query support in the script module. This is an
+// export/import style upgrade with no store upgrades.
+const RmHistoricalQueriesUpgradeName = "rm-historical-queries"
+
 func (app *DysApp) RegisterUpgradeHandlers() {
 	app.Logger().Info("RegisterUpgradeHandlers: installing upgrade handlers")
 	app.UpgradeKeeper.SetUpgradeHandler(
@@ -62,6 +67,21 @@ func (app *DysApp) RegisterUpgradeHandlers() {
 	// Register handler for v2.0.0-rc9
 	app.UpgradeKeeper.SetUpgradeHandler(
 		V2RC9UpgradeName,
+		func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+			app.Logger().Info("Executing upgrade handler", "name", plan.Name, "height", plan.Height)
+			newVM, err := app.ModuleManager.RunMigrations(ctx, app.Configurator(), fromVM)
+			if err != nil {
+				app.Logger().Error("Upgrade handler failed", "name", plan.Name, "height", plan.Height, "err", err)
+				return newVM, err
+			}
+			app.Logger().Info("Upgrade handler completed", "name", plan.Name, "height", plan.Height)
+			return newVM, nil
+		},
+	)
+
+	// Register handler for rm-historical-queries (export/import upgrade)
+	app.UpgradeKeeper.SetUpgradeHandler(
+		RmHistoricalQueriesUpgradeName,
 		func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 			app.Logger().Info("Executing upgrade handler", "name", plan.Name, "height", plan.Height)
 			newVM, err := app.ModuleManager.RunMigrations(ctx, app.Configurator(), fromVM)
@@ -126,10 +146,13 @@ func (app *DysApp) RegisterUpgradeHandlers() {
 		case V2RC9UpgradeName:
 			// No store upgrades required for v2.0.0-rc9
 			app.Logger().Info("No store upgrades for this upgrade; not configuring store loader", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
+		case RmHistoricalQueriesUpgradeName:
+			// Export/Import style upgrade; no store upgrades
+			app.Logger().Info("Export/Import upgrade; no store upgrades configured", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
 		default:
 			app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{UpgradeName, RemoveCircuitUpgradeName, V2RC9UpgradeName}, "height", upgradeInfo.Height)
 		}
-	} else if upgradeInfo.Name == UpgradeName || upgradeInfo.Name == RemoveCircuitUpgradeName || upgradeInfo.Name == V2RC9UpgradeName {
+	} else if upgradeInfo.Name == UpgradeName || upgradeInfo.Name == RemoveCircuitUpgradeName || upgradeInfo.Name == V2RC9UpgradeName || upgradeInfo.Name == RmHistoricalQueriesUpgradeName {
 		app.Logger().Info("Skip height is set; not configuring store loader", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
 	} else {
 		app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{UpgradeName, RemoveCircuitUpgradeName, V2RC9UpgradeName}, "height", upgradeInfo.Height)
