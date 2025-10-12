@@ -552,7 +552,7 @@ def query_block(height=None):
     """
     result = _query({
         "@type": "/dysonprotocol.script.v1.QueryGetBlockRequest"
-    }, query_height=height)
+    })
     # The result from _query is a dict, but we return a JSON string
     # for consistent parsing by consumers.
     return json.dumps(result)

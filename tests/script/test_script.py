@@ -496,16 +496,13 @@ def test_script_governance_param_update_and_storage_history(chainnet):
             {
                 "@type": "/dysonprotocol.script.v1.MsgUpdateParams",
                 "authority": gov_address,
-                "params": {
-                    "maxRelativeHistoricalBlocks": "1000",  # Update from default to 1000
-                    "absoluteHistoricalBlockCutoff": "1",  # Keep default cutoff
-                },
+                "params": {},
             }
         ],
         "metadata": "ipfs://CID",
         "deposit": "100000udys",
         "title": "Update Script Module Parameters",
-        "summary": "Update maxRelativeHistoricalBlocks parameter to 1000",
+        "summary": "Update script module params (empty)",
     }
 
     # Submit the proposal using temporary file
@@ -612,40 +609,39 @@ Check if voting period was too short or quorum not met.
     storage_script_code = '''
 
 def store_block_height():
-    """Store current block height in storage at index 'test_history'"""
+    """Store current block height in storage at a unique index per height"""
     import json
     from dys import get_block_info, get_script_address, _msg
-    
+
     block_info = get_block_info()
     current_height = block_info["height"]
     data = {"block_height": current_height}
-    
-    # Store data using storage module
-    result = _msg({
+
+    # Store data using a height-specific index to avoid historical queries
+    idx = f"test_history/{current_height}"
+    _msg({
         "@type": "/dysonprotocol.storage.v1.MsgStorageSet",
         "owner": get_script_address(),
-        "index": "test_history",
+        "index": idx,
         "data": json.dumps(data)
     })
-    
-    return f"Stored block height {current_height}"
 
-def query_heights(heights):
-    """Query storage data for given heights"""
+    return idx
+
+def query_indices(indices):
+    """Query storage data for the given indices (current state only)"""
     import json
     from dys import get_script_address, _query
-    
+
     results = []
-    for height in heights:
-        # Query storage at specific height
+    for idx in indices:
         result = _query({
             "@type": "/dysonprotocol.storage.v1.QueryStorageGetRequest",
             "owner": get_script_address(),
-            "index": "test_history"
-        }, query_height=height)
-        
+            "index": idx
+        })
         results.append(result)
-    
+
     return results
 
 '''
@@ -671,7 +667,7 @@ def query_heights(heights):
     # Step 3: Call the storage function 3 separate times to store data at different heights
     print("Storing block height data 3 times...")
 
-    stored_heights = []
+    stored_indices = []
     for i in range(3):
         print(f"Storing data iteration {i+1}...")
 
@@ -695,6 +691,27 @@ def query_heights(heights):
         assert (
             result["code"] == 0
         ), f"Failed to execute store_block_height iteration {i+1}: {result}"
+
+        # Extract returned index from EventExecScript
+        events_by_type = {
+            event.get("type"): event for event in result.get("events", [])
+        }
+        assert (
+            "dysonprotocol.script.v1.EventExecScript" in events_by_type
+        ), f"No EventExecScript in: {result}"
+        attrs_by_key = {
+            a.get("key"): a.get("value")
+            for a in events_by_type["dysonprotocol.script.v1.EventExecScript"].get(
+                "attributes", []
+            )
+        }
+        response_json = attrs_by_key.get("response", "{}")
+        response_data = json.loads(response_json)
+        result_data = json.loads(response_data.get("result", "{}"))
+        returned_index = result_data.get("result")
+        assert returned_index and returned_index.startswith(
+            "test_history/"
+        ), f"Unexpected returned index: {returned_index}"
 
         # Get current block height to track what was stored
         block_result = dysond_bin("query", "block")
@@ -720,7 +737,7 @@ def query_heights(heights):
             )
         )
         assert current_height > 0, f"Unexpected block result structure: {json_data}"
-        stored_heights.append(current_height)
+        stored_indices.append(returned_index)
 
         # Use poll_until_condition to wait for block height to increase
         prev_height = current_height
@@ -743,7 +760,7 @@ def query_heights(heights):
 
         poll_until_condition(block_height_increased, timeout=10, poll_interval=0.5)
 
-        print(f"Stored data at heights: {stored_heights}")
+        print(f"Stored indices: {stored_indices}")
 
         # Step 4: First check if data was stored by querying current state
         print("Checking if data was stored in current state...")
@@ -760,7 +777,7 @@ def query_heights(heights):
         print("Querying stored data...")
 
         # Execute the query_heights function with the stored heights
-        heights_json = json.dumps(stored_heights)
+        heights_json = json.dumps(stored_indices)
         result = dysond_bin(
             "tx",
             "script",
@@ -768,7 +785,7 @@ def query_heights(heights):
             "--script-address",
             script_address,
             "--function-name",
-            "query_heights",
+            "query_indices",
             "--args",
             f"[{heights_json}]",
             "--from",
@@ -808,9 +825,7 @@ def query_heights(heights):
     # Verify each result
     assert len(query_results) == 3, f"Expected 3 results, got {len(query_results)}"
 
-    for i, (stored_height, result_data) in enumerate(
-        zip(stored_heights, query_results)
-    ):
+    for i, (stored_index, result_data) in enumerate(zip(stored_indices, query_results)):
         assert result_data is not None, f"Result {i+1} should not be None"
         assert "@type" in result_data, f"Result {i+1} should contain '@type'"
         assert (
@@ -828,11 +843,12 @@ def query_heights(heights):
             "block_height" in data
         ), f"Result {i+1} data should contain 'block_height'"
 
-        # The stored height should match what we expect (within a reasonable range due to timing)
+        # The stored height encoded in key should match the data
         result_height = data["block_height"]
+        expected_height = int(stored_index.split("/")[-1])
         assert (
-            abs(result_height - stored_height) <= 2
-        ), f"Result {i+1}: expected height ~{stored_height}, got {result_height}"
+            result_height == expected_height
+        ), f"Result {i+1}: expected height {expected_height}, got {result_height}"
 
         print(f"✓ Verified result {i+1}: stored at height {result_height}")
 

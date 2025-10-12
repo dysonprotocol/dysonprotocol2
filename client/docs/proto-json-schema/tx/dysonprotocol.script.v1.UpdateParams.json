@@ -21,20 +21,10 @@
                 "description": "MsgUpdateParams is the Msg/UpdateParams request type."
             },
             "dysonprotocol.script.v1.Params": {
-                "properties": {
-                    "max_relative_historical_blocks": {
-                        "type": "string",
-                        "description": "max_relative_historical_blocks defines the maximum number of historical blocks relative to the current block height that must be kept by nodes for script queries. For example, if this value is 1000 and the current height is 5000, nodes must be able to query blocks back to height 4000."
-                    },
-                    "absolute_historical_block_cutoff": {
-                        "type": "string",
-                        "description": "absolute_historical_block_cutoff defines the lowest absolute block height that nodes are required to have when max_relative_historical_blocks is enforced. This parameter is used when params are updated so that if MaxRelativeHistoricalBlocks is increased, nodes are not suddenly required to retroactively have historical blocks that predate this cutoff. When MaxRelativeHistoricalBlocks validation occurs, the oldest required block height will be max(current_height - max_relative_historical_blocks, absolute_historical_block_cutoff)."
-                    }
-                },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Params",
-                "description": "Params defines the parameters for the script module."
+                "description": "Params defines the parameters for the script module. Historical query-related fields have been removed; this message is currently empty."
             }
         }
     },

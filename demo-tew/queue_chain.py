@@ -107,9 +107,7 @@ class Queueable:
         """Generate storage key - to be overridden by subclasses"""
         raise NotImplementedError("Subclasses must implement _get_storage_key")
 
-    def _load_data(
-        self, query_height: Optional[int] = None, instance_id: str = "default"
-    ) -> Optional[Dict]:
+    def _load_data(self, instance_id: str = "default") -> Optional[Dict]:
         """Load JSON data from storage"""
         storage_key = self._get_storage_key(instance_id)
         response = _query(
@@ -118,7 +116,6 @@ class Queueable:
                 "owner": get_script_address(),
                 "index": storage_key,
             },
-            query_height=query_height,
         )
 
         # Handle both success and error response structures

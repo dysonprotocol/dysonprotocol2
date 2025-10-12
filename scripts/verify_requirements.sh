@@ -84,7 +84,7 @@ ensure_git_and_submodules() {
             echo "✓ Git submodules initialized (shallow)"
             return 0
         fi
-        echo "⚠️  Shallow submodule init not supported or failed; falling back to full history..."
+        echo "!  Shallow submodule init not supported or failed; falling back to full history..."
         if ! git -C "$repo_root" submodule update --init --recursive; then
             return 1
         fi
@@ -184,7 +184,7 @@ ensure_git_and_submodules() {
         return 0
     fi
 
-    echo "⚠️  One or more submodules are not at the recorded commit or have local changes:"
+    echo "!  One or more submodules are not at the recorded commit or have local changes:"
     echo "$out_of_sync"
     echo "To sync to the recorded commits, run in $repo_root:"
     echo "  git submodule sync --recursive && git submodule update --init --recursive --depth 1"
@@ -222,12 +222,7 @@ verify_common() {
     echo "Verifying system requirements (build/install)..."
     check_go_version
     ensure_git_and_submodules
-    if ! command_exists make; then
-        echo "Error: Make is not installed"
-        return 1
-    fi
-    echo "✓ Make found"
-    echo "✅ Common requirements verified successfully"
+    echo "✓ Common requirements verified successfully"
     echo ""
 }
 
@@ -235,7 +230,7 @@ verify_dysvm() {
     verify_common
     echo "Verifying additional DYSVM requirements..."
     check_python_min_for_dysvm
-    echo "✅ DYSVM requirements verified successfully"
+    echo "✓ DYSVM requirements verified successfully"
     echo ""
 }
 

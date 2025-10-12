@@ -113,9 +113,8 @@ type MsgRequest struct {
 
 // QueryRequest defines a request to execute a query
 type QueryRequest struct {
-	JsonQuery   string `protobuf:"bytes,2,opt,name=Jsonquery,proto3" json:"json_query,omitempty"`
-	QueryHeight int64  `protobuf:"bytes,3,opt,name=QueryHeight,proto3" json:"query_height,omitempty"`
-	GasLimit    uint64 `json:"gas_limit"`
+	JsonQuery string `protobuf:"bytes,2,opt,name=Jsonquery,proto3" json:"json_query,omitempty"`
+	GasLimit  uint64 `json:"gas_limit"`
 }
 
 // NewKeeper creates a new script keeper.
@@ -370,28 +369,7 @@ func (k Keeper) HandleJSONAnyQuery(ctx context.Context, req *QueryRequest) (stri
 	parentCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx := parentCtx
 
-	// Handle historical queries if QueryHeight is specified
-	if req.QueryHeight != 0 {
-
-		if req.QueryHeight < 0 {
-			return "", cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "query height must be greater than 0")
-		}
-
-		// Get module parameters to determine the maximum allowed historical query height
-		params := k.GetParams(ctx)
-		maxRelativeHistoricalBlocks := params.MaxRelativeHistoricalBlocks
-
-		relativeHeight := sdkCtx.BlockHeight() - req.QueryHeight
-		if relativeHeight > maxRelativeHistoricalBlocks {
-			return "", cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "Max relative historical query height is %d blocks in the past", maxRelativeHistoricalBlocks)
-		}
-
-		var err2 error
-		sdkCtx, err2 = k.App.CreateQueryContextWithCheckHeader(req.QueryHeight, false, false)
-		if err2 != nil {
-			return "", err2
-		}
-	}
+	// Historical queries are not supported; always use current block context
 
 	path := ConvertRPCPath(typeURL)
 
