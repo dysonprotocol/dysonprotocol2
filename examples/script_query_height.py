@@ -20,22 +20,21 @@ def store_block_height():
     return f"Stored block height {current_height}"
 
 
-def query_heights(heights):
-    """Query storage data for given heights"""
+def query_heights(indices):
+    """Query storage data for given indices (current state only)"""
     import json
     from dys import get_script_address, _query
 
     results = []
-    for height in heights:
+    for idx in indices:
         try:
             # Query storage at specific height
             result = _query(
                 {
                     "@type": "/dysonprotocol.storage.v1.QueryStorageGetRequest",
                     "owner": get_script_address(),
-                    "index": "test_history",
+                    "index": idx,
                 },
-                query_height=height,
             )
 
             results.append(result)

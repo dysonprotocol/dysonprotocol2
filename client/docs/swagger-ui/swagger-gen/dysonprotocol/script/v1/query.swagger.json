@@ -295,19 +295,7 @@
   "definitions": {
     "dysonprotocol.script.v1.Params": {
       "type": "object",
-      "properties": {
-        "max_relative_historical_blocks": {
-          "type": "string",
-          "format": "int64",
-          "description": "max_relative_historical_blocks defines the maximum number of historical\nblocks relative to the current block height that must be kept by nodes for\nscript queries. For example, if this value is 1000 and the current height\nis 5000, nodes must be able to query blocks back to height 4000."
-        },
-        "absolute_historical_block_cutoff": {
-          "type": "string",
-          "format": "int64",
-          "description": "absolute_historical_block_cutoff defines the lowest absolute block height\nthat nodes are required to have when max_relative_historical_blocks is\nenforced. This parameter is used when params are updated so that if\nMaxRelativeHistoricalBlocks is increased, nodes are not suddenly required\nto retroactively have historical blocks that predate this cutoff. When\nMaxRelativeHistoricalBlocks validation occurs, the oldest required block\nheight will be max(current_height - max_relative_historical_blocks,\nabsolute_historical_block_cutoff)."
-        }
-      },
-      "description": "Params defines the parameters for the script module."
+      "description": "Params defines the parameters for the script module.\nHistorical query-related fields have been removed; this message is currently\nempty."
     },
     "dysonprotocol.script.v1.QueryDecodeBytesResponse": {
       "type": "object",

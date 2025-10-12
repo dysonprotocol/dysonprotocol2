@@ -14,16 +14,12 @@ import (
 )
 
 var (
-	md_Params                                  protoreflect.MessageDescriptor
-	fd_Params_max_relative_historical_blocks   protoreflect.FieldDescriptor
-	fd_Params_absolute_historical_block_cutoff protoreflect.FieldDescriptor
+	md_Params protoreflect.MessageDescriptor
 )
 
 func init() {
 	file_dysonprotocol_script_v1_params_proto_init()
 	md_Params = File_dysonprotocol_script_v1_params_proto.Messages().ByName("Params")
-	fd_Params_max_relative_historical_blocks = md_Params.Fields().ByName("max_relative_historical_blocks")
-	fd_Params_absolute_historical_block_cutoff = md_Params.Fields().ByName("absolute_historical_block_cutoff")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -91,18 +87,6 @@ func (x *fastReflection_Params) Interface() protoreflect.ProtoMessage {
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.MaxRelativeHistoricalBlocks != int64(0) {
-		value := protoreflect.ValueOfInt64(x.MaxRelativeHistoricalBlocks)
-		if !f(fd_Params_max_relative_historical_blocks, value) {
-			return
-		}
-	}
-	if x.AbsoluteHistoricalBlockCutoff != int64(0) {
-		value := protoreflect.ValueOfInt64(x.AbsoluteHistoricalBlockCutoff)
-		if !f(fd_Params_absolute_historical_block_cutoff, value) {
-			return
-		}
-	}
 }
 
 // Has reports whether a field is populated.
@@ -118,10 +102,6 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "dysonprotocol.script.v1.Params.max_relative_historical_blocks":
-		return x.MaxRelativeHistoricalBlocks != int64(0)
-	case "dysonprotocol.script.v1.Params.absolute_historical_block_cutoff":
-		return x.AbsoluteHistoricalBlockCutoff != int64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.script.v1.Params"))
@@ -138,10 +118,6 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "dysonprotocol.script.v1.Params.max_relative_historical_blocks":
-		x.MaxRelativeHistoricalBlocks = int64(0)
-	case "dysonprotocol.script.v1.Params.absolute_historical_block_cutoff":
-		x.AbsoluteHistoricalBlockCutoff = int64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.script.v1.Params"))
@@ -158,12 +134,6 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "dysonprotocol.script.v1.Params.max_relative_historical_blocks":
-		value := x.MaxRelativeHistoricalBlocks
-		return protoreflect.ValueOfInt64(value)
-	case "dysonprotocol.script.v1.Params.absolute_historical_block_cutoff":
-		value := x.AbsoluteHistoricalBlockCutoff
-		return protoreflect.ValueOfInt64(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.script.v1.Params"))
@@ -184,10 +154,6 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "dysonprotocol.script.v1.Params.max_relative_historical_blocks":
-		x.MaxRelativeHistoricalBlocks = value.Int()
-	case "dysonprotocol.script.v1.Params.absolute_historical_block_cutoff":
-		x.AbsoluteHistoricalBlockCutoff = value.Int()
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.script.v1.Params"))
@@ -208,10 +174,6 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "dysonprotocol.script.v1.Params.max_relative_historical_blocks":
-		panic(fmt.Errorf("field max_relative_historical_blocks of message dysonprotocol.script.v1.Params is not mutable"))
-	case "dysonprotocol.script.v1.Params.absolute_historical_block_cutoff":
-		panic(fmt.Errorf("field absolute_historical_block_cutoff of message dysonprotocol.script.v1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.script.v1.Params"))
@@ -225,10 +187,6 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "dysonprotocol.script.v1.Params.max_relative_historical_blocks":
-		return protoreflect.ValueOfInt64(int64(0))
-	case "dysonprotocol.script.v1.Params.absolute_historical_block_cutoff":
-		return protoreflect.ValueOfInt64(int64(0))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.script.v1.Params"))
@@ -298,12 +256,6 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		var n int
 		var l int
 		_ = l
-		if x.MaxRelativeHistoricalBlocks != 0 {
-			n += 1 + runtime.Sov(uint64(x.MaxRelativeHistoricalBlocks))
-		}
-		if x.AbsoluteHistoricalBlockCutoff != 0 {
-			n += 1 + runtime.Sov(uint64(x.AbsoluteHistoricalBlockCutoff))
-		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -332,16 +284,6 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
-		}
-		if x.AbsoluteHistoricalBlockCutoff != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.AbsoluteHistoricalBlockCutoff))
-			i--
-			dAtA[i] = 0x10
-		}
-		if x.MaxRelativeHistoricalBlocks != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxRelativeHistoricalBlocks))
-			i--
-			dAtA[i] = 0x8
 		}
 		if input.Buf != nil {
 			input.Buf = append(input.Buf, dAtA...)
@@ -392,44 +334,6 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: Params: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
-			case 1:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxRelativeHistoricalBlocks", wireType)
-				}
-				x.MaxRelativeHistoricalBlocks = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.MaxRelativeHistoricalBlocks |= int64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-			case 2:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AbsoluteHistoricalBlockCutoff", wireType)
-				}
-				x.AbsoluteHistoricalBlockCutoff = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.AbsoluteHistoricalBlockCutoff |= int64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -479,25 +383,12 @@ const (
 )
 
 // Params defines the parameters for the script module.
+// Historical query-related fields have been removed; this message is currently
+// empty.
 type Params struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	// max_relative_historical_blocks defines the maximum number of historical
-	// blocks relative to the current block height that must be kept by nodes for
-	// script queries. For example, if this value is 1000 and the current height
-	// is 5000, nodes must be able to query blocks back to height 4000.
-	MaxRelativeHistoricalBlocks int64 `protobuf:"varint,1,opt,name=max_relative_historical_blocks,json=maxRelativeHistoricalBlocks,proto3" json:"max_relative_historical_blocks,omitempty"`
-	// absolute_historical_block_cutoff defines the lowest absolute block height
-	// that nodes are required to have when max_relative_historical_blocks is
-	// enforced. This parameter is used when params are updated so that if
-	// MaxRelativeHistoricalBlocks is increased, nodes are not suddenly required
-	// to retroactively have historical blocks that predate this cutoff. When
-	// MaxRelativeHistoricalBlocks validation occurs, the oldest required block
-	// height will be max(current_height - max_relative_historical_blocks,
-	// absolute_historical_block_cutoff).
-	AbsoluteHistoricalBlockCutoff int64 `protobuf:"varint,2,opt,name=absolute_historical_block_cutoff,json=absoluteHistoricalBlockCutoff,proto3" json:"absolute_historical_block_cutoff,omitempty"`
 }
 
 func (x *Params) Reset() {
@@ -520,20 +411,6 @@ func (*Params) Descriptor() ([]byte, []int) {
 	return file_dysonprotocol_script_v1_params_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Params) GetMaxRelativeHistoricalBlocks() int64 {
-	if x != nil {
-		return x.MaxRelativeHistoricalBlocks
-	}
-	return 0
-}
-
-func (x *Params) GetAbsoluteHistoricalBlockCutoff() int64 {
-	if x != nil {
-		return x.AbsoluteHistoricalBlockCutoff
-	}
-	return 0
-}
-
 var File_dysonprotocol_script_v1_params_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_script_v1_params_proto_rawDesc = []byte{
@@ -542,25 +419,10 @@ var file_dysonprotocol_script_v1_params_proto_rawDesc = []byte{
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x17, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x2e, 0x76, 0x31, 0x1a,
 	0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xee, 0x01, 0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73,
-	0x12, 0x6e, 0x0a, 0x1e, 0x6d, 0x61, 0x78, 0x5f, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x76, 0x65,
-	0x5f, 0x68, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x69, 0x63, 0x61, 0x6c, 0x5f, 0x62, 0x6c, 0x6f, 0x63,
-	0x6b, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x42, 0x29, 0xf2, 0xde, 0x1f, 0x25, 0x79, 0x61,
-	0x6d, 0x6c, 0x3a, 0x22, 0x6d, 0x61, 0x78, 0x5f, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x76, 0x65,
-	0x5f, 0x68, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x69, 0x63, 0x61, 0x6c, 0x5f, 0x62, 0x6c, 0x6f, 0x63,
-	0x6b, 0x73, 0x22, 0x52, 0x1b, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x76, 0x65,
-	0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x69, 0x63, 0x61, 0x6c, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x73,
-	0x12, 0x74, 0x0a, 0x20, 0x61, 0x62, 0x73, 0x6f, 0x6c, 0x75, 0x74, 0x65, 0x5f, 0x68, 0x69, 0x73,
-	0x74, 0x6f, 0x72, 0x69, 0x63, 0x61, 0x6c, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x63, 0x75,
-	0x74, 0x6f, 0x66, 0x66, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x42, 0x2b, 0xf2, 0xde, 0x1f, 0x27,
-	0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x61, 0x62, 0x73, 0x6f, 0x6c, 0x75, 0x74, 0x65, 0x5f, 0x68,
-	0x69, 0x73, 0x74, 0x6f, 0x72, 0x69, 0x63, 0x61, 0x6c, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f,
-	0x63, 0x75, 0x74, 0x6f, 0x66, 0x66, 0x22, 0x52, 0x1d, 0x61, 0x62, 0x73, 0x6f, 0x6c, 0x75, 0x74,
-	0x65, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x69, 0x63, 0x61, 0x6c, 0x42, 0x6c, 0x6f, 0x63, 0x6b,
-	0x43, 0x75, 0x74, 0x6f, 0x66, 0x66, 0x42, 0x22, 0x5a, 0x20, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x73, 0x63,
-	0x72, 0x69, 0x70, 0x74, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x08, 0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42,
+	0x22, 0x5a, 0x20, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x2f, 0x74, 0x79,
+	0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (

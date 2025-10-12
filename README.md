@@ -79,7 +79,7 @@ For more detailed information about specific modules, please refer to the follow
  - [Exec Other Script](examples/exec_other_script.py)
  - [Ica](examples/ica.py)
  - [Ica E2e](examples/ica_e2e.py)
- - [Script Query Height](examples/script_query_height.py)
+ - [Script Query Indices](examples/script_query_height.py)
  - [Simple Wsgi Example](examples/simple_wsgi_example.py)
  - [Storage Example](examples/storage_example.py)
 
