@@ -22,14 +22,221 @@ import re
 import hashlib
 from typing import Callable, Iterable, List, Tuple
 
+
+############################
+# Permissions (principal-scoped: name_or_address)
+############################
+
+# Permission vocabulary (granular)
+_DEFAULT_ROLE_PERMS = {
+    "admin": {
+        "roles.manage",
+        "roles.assign",
+        "roles.revoke",
+        "invites.issue",
+        "invites.revoke",
+    },
+    "unary electron": {
+        "rate.any",
+    },
+    "super space pollen": {
+        "post.create",
+        "post.reference",
+    },
+    "hyper larva of knowlage": {
+        "tag.add.own.existing",
+    },
+    "cosmic neuron of understnding": {
+        "invites.issue",
+    },
+    "holographic hive mind": {
+        "tag.add.any.existing",
+        "tag.add.any.new",
+    },
+}
+
+
+def resolve_address(name_or_address: str) -> str:
+    """Resolve a name or address to a canonical address."""
+    resp = _query(
+        {
+            "@type": "/dysonprotocol.nameservice.v1.QueryResolveNameRequest",
+            "name_or_address": name_or_address,
+        }
+    )
+    address = resp.get("address")
+    assert address, f"Unable to resolve principal: {name_or_address}"
+    return address
+
+
+def _role_key(role: str) -> str:
+    return f"perm/role/{role}"
+
+
+def _principal_roles_key(principal: str) -> str:
+    return f"perm/principal_roles/{principal}"
+
+
+def _invite_ssp_key(principal: str) -> str:
+    return f"perm/invite/super_space_pollen/{principal}"
+
+
+def _granted_at_key(role: str, principal: str) -> str:
+    return f"perm/granted_at/{role}/{principal}"
+
+
+def _load_role_perms(role: str) -> set:
+    try:
+        stored = _get_data(_role_key(role))
+    except Exception as _e:
+        print(f"load_role_perms missing for {role}: {_e}")
+        stored = {}
+    perms = set(stored.get("perms", []))
+    perms |= _DEFAULT_ROLE_PERMS.get(role, set())
+    return perms
+
+
+def get_roles(principal: str) -> List[str]:
+    try:
+        data = _get_data(_principal_roles_key(principal))
+    except Exception as _e:
+        print(f"roles not found for {principal}: {_e}")
+        data = {}
+    roles = data.get("roles", [])
+    # normalize order for determinism
+    return sorted(list(set(roles)))
+
+
+def _has_role(role: str, principal: str) -> bool:
+    return role in set(get_roles(principal))
+
+
+def _has_perm(perm: str, principal: str) -> bool:
+    perms: set = set()
+    for role in get_roles(principal):
+        perms |= _load_role_perms(role)
+    return perm in perms
+
+
+def _add_role(role: str, principal: str) -> None:
+    caller = get_executor_address()
+    assert _has_perm("roles.assign", caller) or _has_role(
+        "admin", caller
+    ), "roles.addr.assign required"
+    roles = set(get_roles(principal))
+    if role in roles:
+        return
+    roles.add(role)
+    _store_data(_principal_roles_key(principal), {"roles": sorted(roles)})
+
+
+def _remove_role(role: str, principal: str) -> None:
+    caller = get_executor_address()
+    assert _has_perm("roles.revoke", caller) or _has_role(
+        "admin", caller
+    ), "roles.addr.revoke required"
+    roles = set(get_roles(principal))
+    if role not in roles:
+        return
+    roles.remove(role)
+    _store_data(_principal_roles_key(principal), {"roles": sorted(roles)})
+
+
+def invite(principal: str) -> None:
+    caller = get_executor_address()
+    assert _has_perm("invites.issue", caller) or _has_role(
+        "admin", caller
+    ), "invites.issue required"
+    ts = int(datetime.now().timestamp())
+    _store_data(_invite_ssp_key(principal), {"inviter": caller, "timestamp": ts})
+
+
+def uninvite(principal: str) -> None:
+    caller = get_executor_address()
+    assert _has_perm("invites.revoke", caller) or _has_role(
+        "admin", caller
+    ), "invites.revoke required"
+    # reuse existing delete helper
+    _delete_data(_invite_ssp_key(principal))
+
+
+def granted_at(role: str, principal: str):
+    try:
+        data = _get_data(_granted_at_key(role, principal))
+    except Exception as _e:
+        print(f"granted_at missing for {role}:{principal}: {_e}")
+        data = {}
+    return data.get("timestamp")
+
+
+def bootstrap_permissions() -> None:
+    """Persist default role→permission schema; assign admin to script address if desired."""
+    # Persist role schemas
+    for role, perms in _DEFAULT_ROLE_PERMS.items():
+        _store_data(_role_key(role), {"perms": sorted(list(perms))})
+
+
+def claim(role: str, principal: str) -> None:
+    role = str(role).strip()
+    address = resolve_address(principal)
+    # Claims are self‑service only
+    assert (
+        address == get_executor_address()
+    ), "claim must be executed by the claimed principal"
+
+    now = int(datetime.now().timestamp())
+
+    if role == "super space pollen":
+        try:
+            invite_rec = _get_data(_invite_ssp_key(principal))
+        except Exception as _e:
+            print(f"invite not found: {_e}")
+            invite_rec = None
+        assert invite_rec is not None, "invite not found"
+        _add_role("super space pollen", principal)
+        _store_data(
+            _granted_at_key("super space pollen", principal), {"timestamp": now}
+        )
+        return
+
+    if role == "hyper larva of knowlage":
+        super_ts = granted_at("super space pollen", principal)
+        assert super_ts is not None, "super space pollen not yet claimed"
+        assert (
+            now - int(super_ts) >= 30 * 24 * 60 * 60
+        ), "30 days required after super space pollen"
+        _add_role("hyper larva of knowlage", principal)
+        _store_data(
+            _granted_at_key("hyper larva of knowlage", principal), {"timestamp": now}
+        )
+        return
+
+    if role == "cosmic neuron of understnding":
+        super_ts = granted_at("super space pollen", principal)
+        assert super_ts is not None, "super space pollen not yet claimed"
+        assert (
+            now - int(super_ts) >= 60 * 24 * 60 * 60
+        ), "60 days required after super space pollen"
+        _add_role("cosmic neuron of understnding", principal)
+        _store_data(
+            _granted_at_key("cosmic neuron of understnding", principal),
+            {"timestamp": now},
+        )
+        return
+
+    raise ValueError(f"unsupported role claim: {role}")
+
+
 def get_base_domain():
     """Get BASE_DOMAIN from storage settings, with fallback for development."""
     try:
-        settings_response = _query({
-            "@type": "/dysonprotocol.storage.v1.QueryStorageGetRequest",
-            "owner": get_script_address(),
-            "index": "settings",
-        })
+        settings_response = _query(
+            {
+                "@type": "/dysonprotocol.storage.v1.QueryStorageGetRequest",
+                "owner": get_script_address(),
+                "index": "settings",
+            }
+        )
         if "entry" in settings_response and "data" in settings_response["entry"]:
             settings = json.loads(settings_response["entry"]["data"])
             return settings.get("BASE_DOMAIN", "http://localhost:1317")
@@ -66,129 +273,6 @@ class SafeString(str):
     pass
 
 
-class SafeTemplate(Template):
-    delimiter = "{{"
-    pattern = r"\{\{\s*(?P<named>[a-zA-Z_][a-zA-Z_0-9]*)\s*\}\}"  # type: ignore
-
-    def substitute(self, mapping):
-        safe_map = {}
-        for k, v in mapping.items():
-            safe_map[k] = v if isinstance(v, SafeString) else html.escape(str(v))
-        return Template.substitute(self, safe_map)
-
-    def safe_substitute(self, mapping):
-        safe_map = {}
-        for k, v in mapping.items():
-            safe_map[k] = v if isinstance(v, SafeString) else html.escape(str(v))
-        return Template.safe_substitute(self, safe_map)
-
-
-def fetch_template(name):
-    q = {
-        "@type": "/dysonprotocol.storage.v1.QueryStorageGetRequest",
-        "owner": get_script_address(),
-        "index": f"templates/{name}",
-    }
-    r = _query(q)
-    entry = r.get("entry")
-    if not entry:
-        return f"<p>Template not found: {name}</p>"
-    return entry.get("data", "")
-
-
-def render_posts(
-    posts,
-    pagination,
-    header="",
-    load_more_url_base="",
-    req_pagination=None,
-    container_class="",
-    hx_select="main",
-    hx_target="this",
-    hx_swap="innerHTML",
-    use_template=True,
-):
-    """
-    Render a list of posts with pagination and htmx lazy loading.
-
-    Args:
-        posts: List of post data
-        pagination: Pagination info with potential 'next_key'
-        header: Optional header content
-        load_more_url_base: Base URL for load more button (e.g. "/recent/")
-        req_pagination: Request pagination data for URL construction
-        container_class: CSS class for post containers
-        hx_select: htmx hx-select attribute
-        hx_target: htmx hx-target attribute
-        hx_swap: htmx hx-swap attribute
-        use_template: Whether to use post_list.html template or return raw HTML
-    """
-    if pagination.get("next_key") and load_more_url_base and req_pagination:
-        # Create the 'load more' placeholder using f-string
-        limit = req_pagination["limit"]
-        key = pagination["next_key"]
-        load_more_url = f"{load_more_url_base}?limit={limit}&key={key}"
-        load_more_html = f"""
-<div
-  hx-get="{load_more_url}"
-  hx-trigger="revealed once"
-  hx-select="{hx_select}"
-  hx-target="{hx_target}"
-  hx-swap="{hx_swap}"
->Load more posts... </div>"""
-    else:
-        load_more_html = "<div>Fin.</div>"
-
-    # Generate HTML for the list of posts
-    container_attrs = f'class="{container_class}"' if container_class else ""
-    posts_html = "\n".join(
-        [
-            f"""
-<div
-  {container_attrs}
-  hx-trigger="revealed once"
-  hx-get="/{post['post_id']}?depth=0"
-  hx-select="article"
-  hx-target="this"
-  hx-swap="innerHTML ignoreTitle:true"
->
-  <article>Loading {post['post_id']}...</article>
-</div>
-            """
-            for post in posts
-        ]
-    )
-
-    if use_template:
-        post_list_template = SafeTemplate(fetch_template("post_list.html"))
-        content = post_list_template.substitute(
-            {"header": header, "posts": SafeString(posts_html + load_more_html)}
-        )
-        return content
-    else:
-        return SafeString(posts_html + load_more_html)
-
-
-routes = []
-
-
-def route(pattern):
-    def decorator(f):
-        routes.append((pattern, f))
-        return f
-
-    return decorator
-
-whitelabel_routes = []
-
-
-def whitelabel_route(pattern, **kwargs):
-    def decorator(f):
-        whitelabel_routes.append((pattern, f, kwargs))
-        return f
-
-    return decorator
-
 def get_coins_sent():
     """Parse coins from attached messages (v2 API replacement for old get_coins_sent)."""
     attached_messages = get_attached_messages()
@@ -222,6 +306,11 @@ def publish_post(content: TEXTAREA, author: str = ""):
     Returns:
         int: The ID of the published post.
     """
+
+    # Permissions: require the caller to have post.create
+    assert _has_perm(
+        "post.create", get_executor_address()
+    ), "post.create permission required"
 
     author = author.strip()
     if get_caller() and author:
@@ -344,10 +433,10 @@ def edit_author_profile(content: TEXTAREA, author: str = ""):
 
 def link_page(path: str, post_id: int, author: str, title: str = ""):
     """Link a custom page to a post for an author.
-    
+
     Creates a custom author page that displays the specified post at the given path.
     Only the author or authorized name owner can create links.
-    
+
     Args:
         path (str): The custom path for the page (e.g., "about", "contact")
         post_id (int): The ID of the post to display at this path
@@ -359,17 +448,19 @@ def link_page(path: str, post_id: int, author: str, title: str = ""):
     """
     path = path.strip().strip("/")
     author = author.strip()
-    
+
     # Validate path
     assert path and len(path) <= 50, "Path must be 1-50 characters"
     # Check if path contains only allowed characters (letters, numbers, hyphens, underscores)
     allowed_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
     for c in path:
-        assert c in allowed_chars, "Path must contain only letters, numbers, hyphens, and underscores"
-    
+        assert (
+            c in allowed_chars
+        ), "Path must contain only letters, numbers, hyphens, and underscores"
+
     # Validate author is non-falsey and resolves to caller
     assert author, "Author must be provided and non-empty"
-    
+
     try:
         name_resp = _query(
             {
@@ -378,45 +469,47 @@ def link_page(path: str, post_id: int, author: str, title: str = ""):
             }
         )
         destination_address = name_resp["address"]
-        assert get_caller() == destination_address, f'Author "{author}" does not resolve to caller address'
+        assert (
+            get_caller() == destination_address
+        ), f'Author "{author}" does not resolve to caller address'
     except Exception as e:
         raise Exception(f'[{get_caller()}] is not authorized for "{author}": {e}')
-    
+
     # Validate post exists
     try:
         _get_data(_get_post_index(post_id))
     except Exception as e:
         raise AssertionError(f"Post {post_id} not found: {e}")
-    
+
     # Store the page link
     page_data = {
         "post_id": post_id,
         "author": author,
         "title": title,
         "path": path,
-        "created_time": get_block_info()["time"]
+        "created_time": get_block_info()["time"],
     }
-    
+
     _store_data(_get_author_page_index(author, path), page_data)
 
 
 def unlink_page(path: str, author: str = ""):
     """Remove a custom page link for an author.
-    
+
     Removes the custom author page at the specified path.
     Only the author or authorized name owner can remove links.
-    
+
     Args:
         path (str): The custom path to remove
         author (str): The author name or address (defaults to caller)
-        
+
     Raises:
         Exception: If caller is not authorized for the author
         AssertionError: If page doesn't exist
     """
     path = path.strip()
     author = author.strip()
-    
+
     # Validate author authorization
     if get_caller() and author:
         try:
@@ -430,19 +523,19 @@ def unlink_page(path: str, author: str = ""):
             assert get_caller() == destination_address
         except Exception as e:
             raise Exception(f'[{get_caller()}] is not authorized for "{author}": {e}')
-    
+
     # Set author to caller if not specified
     author = author or get_caller()
-    
+
     # Delete the page link
     page_index = _get_author_page_index(author, path)
-    
+
     # Verify page exists before deletion
     try:
         _get_data(page_index)
     except Exception as e:
         raise AssertionError(f"Page '{path}' not found for author '{author}': {e}")
-    
+
     _delete_data(page_index)
 
 
@@ -500,13 +593,14 @@ def _list_data(prefix: str, **kwargs):
     }
 
     # DEBUG: Print the exact query being constructed
-    print(f"DEBUG _list_data: Constructing query with params: {json.dumps(query_params, indent=2)}")
+    print(
+        f"DEBUG _list_data: Constructing query with params: {json.dumps(query_params, indent=2)}"
+    )
 
     result = _query(query_params)
 
     # DEBUG: Print the raw result
     print(f"DEBUG _list_data: Raw query result: {json.dumps(result, indent=2)}")
-
 
     processed_entries = [
         {"_index": item["index"], **json.loads(item["data"])}
@@ -617,7 +711,7 @@ def rate_tag(
     contributor: str = "",
 ):
 
-    assert len(tag_name) <= 15, f"Tag is too long (max 15): {len(tag_name)}"
+    assert len(tag_name) <= 64, f"Tag is too long (max 64): {len(tag_name)}"
     coins = get_coins_sent()
     assert (
         len(coins) == 1 and coins[0]["denom"] == "udys"
@@ -625,11 +719,49 @@ def rate_tag(
     coins[0]["amount"] = int(coins[0]["amount"])
     amount = coins[0]["amount"]
     rate_amount = amount / 1000000
+    # Permissions gating for tag creation vs adding existing tags
+    caller_addr = get_executor_address()
+
+    def _tag_exists_globally(tag: str) -> bool:
+        try:
+            prefix = _get_rating_rate_prefix("tags", tag, "best")
+            entries, _ = _list_data(prefix, pagination={"limit": 1})
+            return len(entries) > 0
+        except Exception as _e:
+            print(f"tag_exists check failed: {_e}")
+            return False
+
+    exists_globally = _tag_exists_globally(tag_name)
+    if not exists_globally:
+        # creating a new tag anywhere requires tag.add.any.new
+        assert _has_perm(
+            "tag.add.any.new", caller_addr
+        ), "tag.add.any.new permission required to create new tags"
+    else:
+        if not _has_perm("tag.add.any.existing", caller_addr):
+            # if not global-any, allow only own existing tag add with tag.add.own.existing
+            post = _get_data(_get_post_index(post_id))
+            author = post["author"]
+            if author != get_caller():
+                name_resp = _query(
+                    {
+                        "@type": "/dysonprotocol.nameservice.v1.QueryResolveNameRequest",
+                        "name_or_address": author,
+                    }
+                )
+                destination_address = name_resp["address"]
+                assert (
+                    get_caller() == destination_address
+                ), f"Only the author may add existing tags to own post"
+            assert _has_perm(
+                "tag.add.own.existing", caller_addr
+            ), "tag.add.own.existing permission required"
+
     try:
         rate_index = _get_rate_index("tags", tag_name, post_id)
         _get_data(rate_index)
     except Exception as e:
-        # Post Tag doesn't exist, maybe the author is adding it.
+        # Post Tag doesn't exist on this post; existing author checks retained
         print(f"Rate index not found: {e}")
         post = _get_data(_get_post_index(post_id))
 
@@ -643,7 +775,9 @@ def rate_tag(
                 }
             )
             destination_address = name_resp["address"]
-            assert get_caller() == destination_address, f"Nonexistant tag[{tag_name}] for post_id[{post_id}] and only the author[{post['author']}] can add new tags not you[{get_caller()}]"
+            assert (
+                get_caller() == destination_address
+            ), f"Nonexistant tag[{tag_name}] for post_id[{post_id}] and only the author[{post['author']}] can add new tags not you[{get_caller()}]"
     _rate("tags", tag_name, post_id, rate, rate_amount, contributor=contributor)
 
 
@@ -1171,7 +1305,9 @@ def _add_rewards(tag_name, coins, namespace, contributor):
             }
         )
         destination_address = name_resp["address"]
-        assert get_caller() == destination_address, f"[{get_caller()}] is not authorized for contributor name: {contributor}"
+        assert (
+            get_caller() == destination_address
+        ), f"[{get_caller()}] is not authorized for contributor name: {contributor}"
     index = _get_tag_index(namespace, tag_name)
 
     try:
@@ -1221,48 +1357,6 @@ def _set_rewards_indexes(namespace, rewards):
         )
 
 
-#############
-## Web App ##
-#############
-
-# Constants for content type
-CONTENT_TYPE_HTML = ("Content-Type", "text/html; charset=UTF-8")
-CONTENT_TYPE_JS = ("Content-Type", "application/javascript; charset=utf-8")
-HEADERS = [
-    ("Access-Control-Allow-Methods", "HEAD, GET, POST, OPTIONS"),
-    ("Access-Control-Allow-Headers", "*"),
-    #("Cache-Control", "max-age=60, public"),
-    ("Service-Worker-Allowed", "/"),
-    # /("Content-Security-Policy-Report-Only", "default-src 'none'"),
-    (
-        "Content-Security-Policy",
-        "script-src * 'unsafe-eval' 'unsafe-inline'; worker-src *; img-src 'self' data:",
-    ),
-    ("X-DysonProtocol-Block-Height", json.dumps(get_block_info()["height"])),
-]
-
-
-def _parse_pagination(environ, reverse=False, default_limit=None):
-
-    pagination = {
-        k: v
-        for k, v in parse_qsl(environ.get("QUERY_STRING", ""))
-        if k in ["reverse", "offset", "limit", "key"]
-    }
-
-    if reverse:
-        pagination["reverse"] = str(pagination.get("reverse", False)).lower() not in [
-            "1",
-            "t",
-            "true",
-        ]
-
-    if "limit" not in pagination and default_limit is not None:
-        pagination["limit"] = default_limit
-
-    return pagination
-
-
 def _get_profile(author_name):
     try:
         profile_index = _get_author_profile_index(author_name)
@@ -1301,993 +1395,3 @@ def _get_post_reply(post_id: int, reply_post_id: int):
     tag_index = _get_rate_index("replies", _format_id(post_id), reply_post_id)
     return _get_data(tag_index)
 
-
-StartResponse = Callable[[str, List[Tuple[str, str]], tuple | None], Callable]
-WSGIApp = Callable[[dict, StartResponse], Iterable[bytes]]
-
-
-def with_etag(app: WSGIApp) -> WSGIApp:
-    """Wrap an existing WSGI app and add automatic ETag + 304 support."""
-
-    def _wrapped(environ: dict, start_response: StartResponse) -> Iterable[bytes]:
-        captured: list[bytes] = []
-
-        # 1. Call the wrapped app, intercepting its *write* callable so we can
-        #    keep a copy of everything sent.
-        status_headers: dict[str, object] = {}
-
-        def _capture_start(
-            status: str, headers: List[Tuple[str, str]], exc_info=None
-        ) -> Callable[[bytes], None]:
-            status_headers["status"] = status
-            status_headers["headers"] = headers
-            status_headers["exc_info"] = exc_info
-            return captured.append
-
-        body_iter = app(environ, _capture_start)
-
-        # 2. Accumulate the body (works for short responses; see notes below).
-        for chunk in body_iter:
-            captured.append(chunk)
-        body = b"".join(captured)
-
-        status: str = status_headers["status"]  # type: ignore
-        headers = status_headers["headers"].copy()  # type: ignore
-
-        # 3. Compute & attach ETag only for successful responses that have a body.
-        if status.startswith("200") and body:
-            etag = '"' + hashlib.sha256(body).hexdigest() + '"'
-            headers.append(("ETag", etag))
-
-            if environ.get("HTTP_IF_NONE_MATCH") == etag:
-                # 4. Client already has the same version → reply 304.
-                #    Remove/overwrite entity headers that no longer apply.
-                headers = [
-                    (k, v)
-                    for k, v in headers
-                    if k.lower() not in {"content-length", "content-type"}
-                ]
-                start_response("304 Not Modified", headers, status_headers["exc_info"])  # type: ignore
-                return []
-
-        # 5. Normal 200/other response path.
-        headers.append(("Content-Length", str(len(body))))
-        start_response(status, headers, status_headers["exc_info"])  # type: ignore
-        return [body]
-
-    return _wrapped
-
-
-# @with_etag
-def wsgi(environ, start_response):
-    """WSGI Application using declarative routing.
-
-    This is the entry point for serving the website.
-    It handles routing and serves data based on the request path.
-    """
-    if environ['REQUEST_METHOD'] == 'OPTIONS':
-        start_response('200 OK', [
-            ('Access-Control-Allow-Origin', '*'),
-            ('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'),
-            ('Access-Control-Allow-Headers', '*'),
-        ])
-        return [b'']
-
-    path_info = environ["PATH_INFO"]
-    if WHITELABEL:
-        for pattern, func, kwargs in whitelabel_routes:
-            m = re.match(pattern, path_info)
-            if m:
-                return func(environ, start_response, **m.groupdict(), **kwargs)
-
-    for pattern, func in routes:
-        m = re.match(pattern, path_info)
-        if m:
-            return func(environ, start_response, **m.groupdict())
-    start_response("404 Not Found", [("Content-Type", "text/plain; charset=utf-8")])
-    return [b"404 Not Found"]
-
-
-@route(r"^/$")
-def handle_root(environ, start_response):
-    """Handle root redirect to /recent"""
-
-    start_response("302 Moved", [
-        ("Location", "/recent"),
-            ('Access-Control-Allow-Origin', '*'),
-            ('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'),
-            ('Access-Control-Allow-Headers', '*'),
-    ])
-    return []
-
-@whitelabel_route(r"^/$", name=name)
-def handle_whitelabel_root(environ, start_response, name):
-    return handle_author_posts(environ, start_response, name, whitelabel=True)
-
-@route(r"^/blog/?$")
-def handle_blog(environ, start_response):
-    """Handle blog redirect to nuance.dys author page"""
-    return handle_author_posts(environ, start_response, "nuance.dys")
-
-
-@route(r"^/active/?$")
-def handle_active(environ, start_response):
-    """Handle active posts page"""
-    req_pagination = _parse_pagination(environ, default_limit=2, reverse=True)
-    posts, pagination = _list_data(
-        "available_rewards/replies/udys/", pagination=req_pagination
-    )
-
-    # Generate placeholders for each replying post with HTMX fetching the full content
-    items_html = "\n".join(
-        [
-            f"""
-<div>
-  <div class="active-info">
-    <a href="/{int(post['tag_name'])}">Post #{int(post['tag_name'])}</a> has
-    <strong>{post['amount'] // 1000000} DYS</strong> available to be
-    claimed by top replies.
-  </div>
-  <article
-    hx-trigger="load"
-    hx-get="/{int(post['tag_name'])}?depth=0"
-    hx-select="article"
-    hx-target="closest article"
-    hx-swap="outerHTML ignoreTitle:true"
-  >
-    <div class="">Loading post: #{int(post['tag_name'])}...</div>
-  </article>
-</div>
-            """
-            for post in posts
-        ]
-    )
-
-    # Check if there are more replies to load
-    if pagination.get("next_key"):
-        next_key = pagination["next_key"]
-        # Create the 'load more' placeholder
-        load_more_html = f"""
-            <div
-              hx-get="/active/?limit={pagination.get('limit', 2)}&key={next_key}"
-              hx-trigger="revealed"
-              hx-swap="outerHTML ignoreTitle:true"
-              hx-target="closest div"
-              hx-select="main >  div"
-            >
-              Loading more posts...
-            </div>
-
-        """
-
-    else:
-        load_more_html = "<div>Fin.</div>"
-
-    # Return only the replies items and load more element
-    start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-
-    content = items_html + load_more_html
-
-    html_content = _render_base(content, title="Active Posts")
-
-    return [html_content]
-
-
-@route(r"^/recent/?$")
-def handle_recent(environ, start_response):
-    """Handle recent posts page"""
-    req_pagination = _parse_pagination(environ, reverse=True, default_limit=2)
-    posts, pagination = _list_data("posts/", pagination=req_pagination)
-
-    content = render_posts(
-        posts=posts,
-        pagination=pagination,
-        header="",
-        load_more_url_base="/recent/",
-        req_pagination=req_pagination,
-    )
-
-    start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-
-    html_content = _render_base(content, title="Post List")
-
-    return [html_content]
-
-
-@route(r"^/(?P<post_id>\d+)$")
-def handle_post_detail(environ, start_response, post_id):
-    """Handle individual post detail page"""
-    post_id = int(post_id)
-
-    """Serve a specific post by post_id.
-
-    Renders the detail view for a specific post.
-
-    Args:
-        environ (dict): The WSGI environment dictionary.
-        start_response (callable): The WSGI start_response callable.
-        post_id (int): The ID of the post to display.
-
-    Returns:
-        iterable: An iterable yielding the response body.
-    """
-    try:
-        post = _get_data(_get_post_index(post_id))
-    except Exception as e:
-        # If the post is not found, return a 404 error
-        start_response("404 Not Found", [CONTENT_TYPE_HTML])
-        error_template = SafeTemplate(fetch_template("error.html"))
-        content = error_template.substitute(
-            {"message": f"Post {post_id} not found: {e}"}
-        )
-        html_content = _render_base(content, title="404 Not Found")
-
-        return [html_content]
-
-    # Escape HTML to prevent injection attacks
-    depth = max(
-        0,
-        min(3, int(dict(parse_qsl(environ.get("QUERY_STRING", ""))).get("depth", 1))),
-    )
-
-    post_id = post["post_id"]
-
-    author = html.escape(post["author"])
-    content_text = html.escape(post["content"])
-    if depth > 0:
-        content_text = re.sub(
-            POST_RE,
-            rf"""
-
-            <div
-                    hx-trigger="intersect once"
-                    hx-get="/\1?depth={depth - 1}"
-                    hx-select="article"
-                    hx-swap="innerHTML ignoreTitle:true"
-                    hx-target="closest div"
-                    data-fragment="\2"
-                    >
-                        Loading: \1  ...
-            </div>
-
-""",
-            content_text,
-        )
-    else:
-        content_text = re.sub(
-            POST_RE,
-            rf"""
-
-            <div class="post" data-fragment="\2">
-              <div style="border: 1px solid; margin: 1em 0;
-    overflow: auto;
-    word-wrap: break-word;
-    padding: 1em 1.5em;">
-                <header>
-                    <button
-                        class="btn text-center"
-                        hx-trigger="click once"
-                        hx-get="/\1?depth={depth}"
-                        hx-select="article"
-                        hx-swap="innerHTML ignoreTitle:true"
-                        hx-target="closest div.post"
-                    >
-                    Load Post #\1
-                    </button>
-                    <mark data-render-fragment="\2"></mark>
-                </header>
-                </div>
-            </div>
-
-""",
-            content_text,
-        )
-
-    post_detail_template = SafeTemplate(fetch_template("post_detail.html"))
-    content = post_detail_template.substitute(
-        {
-            "post_id": post_id,
-            "author": SafeString(author),  # Already HTML-escaped
-            "content": SafeString(content_text),  # Already HTML-escaped with HTML added
-            "created_time": post["created_time"],
-            "claimed": post.get("claimed", {}).get("udys", 0) // 1000000,
-        }
-    )
-
-    html_content = _render_base(content, title=f"Post {post_id}")
-
-    start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-
-    html_content = _render_base(content, title=f"Post {post_id}")
-    return [html_content]
-
-
-@route(r"^/topics$")
-def handle_topics(environ, start_response):
-    """Handle topics list page"""
-    # Alpine.js will handle data fetching and rendering client-side
-    content = fetch_template("topics.html")
-
-    start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-
-    html_content = _render_base(content, title="Topics")
-    return [html_content]
-
-
-@route(r"^/publish$")
-def handle_publish(environ, start_response):
-    """Handle new post publishing page"""
-    new_post_template = SafeTemplate(fetch_template("new_post.html"))
-    content = new_post_template.substitute({})
-
-    start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-
-    html_content = _render_base(content, title="New Post")
-    return [html_content]
-
-
-@route(r"^/wallet$")
-def handle_wallet(environ, start_response):
-    """Handle wallet management page"""
-    # This function generates the HTML body for the wallet management page.
-    wallet_body_template = SafeTemplate(fetch_template("wallet.html"))
-    wallet_body_html = wallet_body_template.substitute({})
-
-    start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-    html_content = _render_base(wallet_body_html, title="Wallet Management")
-    return [html_content]
-
-
-@route(r"^/authors/(?P<author>[^/]+)/?$")
-def handle_author_posts(environ, start_response, author, whitelabel=False):
-    """Handle author posts list page"""
-    profile_data = _get_profile(author)
-
-    req_pagination = _parse_pagination(environ, reverse=True, default_limit=2)
-    posts, pagination = _list_data(
-        _get_author_post_prefix(author), pagination=req_pagination
-    )
-
-    posts_html = render_posts(
-        posts=posts,
-        pagination=pagination,
-        header="",
-        load_more_url_base=f"/authors/{author}",
-        req_pagination=req_pagination,
-        container_class="articleLoader",
-        hx_select=".articleLoader",
-        hx_swap="outerHTML",
-        use_template=False,
-    )
-
-  
-    
-    profile_content = html.escape(profile_data.get("content", ""))
-    
-    profile_content = re.sub(
-            POST_RE,
-            r"""
-
-            <div
-                    hx-trigger="intersect once"
-                    hx-get="/\1"
-                    hx-select="article"
-                    hx-swap="innerHTML ignoreTitle:true"
-                    hx-target="closest div"
-                    data-fragment="\2"
-                    >
-                        Loading: \1  ...
-            </div>
-
-""",
-            profile_content,
-        )
-    head_extra = ""
-    if whitelabel:
-        head_extra=SafeString('''
-<style>
-    body > header {
-        display: none;
-    }
-    .powered-by {
-        display: block;
-    }
-</style>
-''')
-
-    # Use the new author_posts.html template
-    author_posts_template = SafeTemplate(fetch_template("author_posts.html"))
-    content = author_posts_template.substitute({
-        "author": author,
-        "claimed_dys": profile_data.get("claimed", {}).get("udys", 0) // 1000000,
-        "profile_content": SafeString(profile_content),
-        "posts_html": SafeString(posts_html),
-    })
-
-    start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-    html_content = _render_base(content, title=f"{author}", head_extra=head_extra)
-    return [html_content]
-
-
-@route(r"^/edit-author/(?P<author>[^/]+)/?$")
-def handle_edit_author(environ, start_response, author):
-    """Handle author profile editing page"""
-    profile_data = _get_profile(author)
-    
-    # Load custom pages for this author
-    try:
-        custom_pages, _ = _list_data(_get_author_page_prefix(author))
-        custom_pages_data = [
-            {
-                "path": page.get("path", page["_index"].split("/")[-1]),
-                "post_id": page["post_id"],
-                "title": page.get("title", "")
-            }
-            for page in custom_pages
-        ]
-    except Exception as e:
-        print(f"No custom pages found for author {author}: {e}")
-        custom_pages_data = []
-    
-    edit_template = SafeTemplate(fetch_template("edit_author_profile.html"))
-    content = edit_template.substitute({
-        "author_name": author, 
-        "custom_pages": SafeString(json.dumps(custom_pages_data)),
-        **profile_data
-    })
-
-    start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-
-    html_content = _render_base(content, title=f"Edit profile: {author}")
-    return [html_content]
-
-@whitelabel_route(r"^/(?P<path>.*[^/])/?$", author=name)
-@route(r"^/authors/(?P<author>[^/]+)/(?P<path>.*[^/])/?$")
-def handle_author_page(environ, start_response, author, path):
-    """Handle custom author page display"""
-    try:
-        # Load the custom page data
-        page_data = _get_data(_get_author_page_index(author, path))
-        
-        # Load the referenced post
-        post = _get_data(_get_post_index(page_data["post_id"]))
-        
-        # Escape HTML to prevent injection attacks
-        depth = max(
-            0,
-            min(3, int(dict(parse_qsl(environ.get("QUERY_STRING", ""))).get("depth", 1))),
-        )
-
-        post_id = post["post_id"]
-        content_text = html.escape(post["content"])
-        custom_title = html.escape(page_data.get("title", ""))
-        
-        # Handle post references in content (same as post detail)
-        if depth > 0:
-            content_text = re.sub(
-                POST_RE,
-                rf"""
-                <div
-                        hx-trigger="intersect once"
-                        hx-get="/\1?depth={depth - 1}"
-                        hx-select="article"
-                        hx-swap="innerHTML ignoreTitle:true"
-                        hx-target="closest div"
-                        data-fragment="\2"
-                        >
-                            Loading: \1  ...
-                </div>
-    """,
-                content_text,
-            )
-        else:
-            content_text = re.sub(
-                POST_RE,
-                rf"""
-                <div data-fragment="\2">
-                        <a
-                            hx-trigger="click once"
-                            hx-get="/\1?depth={depth}"
-                            hx-select="article"
-                            hx-swap="innerHTML ignoreTitle:true"
-                            hx-target="closest div"
-                        >
-                        /\1
-                        </a>
-                </div>
-    """,
-                content_text,
-            )
-
-        # Use the new author_custom_page.html template
-        author_custom_page_template = SafeTemplate(fetch_template("author_custom_page.html"))
-        content = author_custom_page_template.substitute({
-            "custom_title": custom_title,
-            "author": author,
-            "post_id": post_id,
-            "content_text": SafeString(content_text),
-            "path": path
-        })
-
-        start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-        if WHITELABEL:
-            head_extra=SafeString('''
-<style>
-    body > header {
-        display: none;
-    }
-    .powered-by {
-        display: block;
-    }
-</style>
-''')       
-        html_content = _render_base(content, title=custom_title, head_extra=head_extra)
-        return [html_content]
-        
-    except Exception as e:
-        # If the page is not found, return a 404 error
-        start_response("404 Not Found", [CONTENT_TYPE_HTML])
-        error_template = SafeTemplate(fetch_template("error.html"))
-        content = error_template.substitute(
-            {"message": f"Custom page '{path}' not found for author '{author}': {e}"}
-        )
-        html_content = _render_base(content, title="404 Not Found")
-        return [html_content]
-
-
-@route(r"^/(?P<post_id>\d+)/replies/?$")
-def handle_post_replies(environ, start_response, post_id):
-    """Handle post replies list page"""
-    post_id = int(post_id)
-
-    req_pagination = _parse_pagination(environ, default_limit=2, reverse=True)
-    replies, replies_pagination = _get_best_replies_by_post_id(
-        post_id, pagination=req_pagination
-    )
-
-    # Generate placeholders for each replying post with HTMX fetching the full content
-    replies_items_html = "\n".join(
-        [
-            f"""
-<div id="reply-{reply['id']}">
-  <div
-    href="/{post_id}/replies/{reply['id']}"
-    hx-get="/{post_id}/replies/{reply['id']}"
-    hx-select=".reply-detail-container"
-    hx-trigger="revealed once"
-    hx-swap="innerHTML"
-    hx-target="this"
-  >
-    Loading reply: {reply['id']}
-  </div>
-  <div
-    hx-trigger="load"
-    hx-get="/{reply['id']}?depth=0"
-    hx-select="article"
-    hx-swap="innerHTML ignoreTitle:true"
-    hx-target="this"
-  >
-    <div class="">Loading: {reply['id']} ...</div>
-  </div>
-</div>
-            """
-            for reply in replies
-        ]
-    )
-
-    # Check if there are more replies to load
-    if replies_pagination.get("next_key"):
-        next_key = replies_pagination["next_key"]
-        # Create the 'load more' placeholder
-        load_more_html = f"""
-            <div
-              hx-get="/{post_id}/replies/?limit={req_pagination.get('limit', 2)}&key={next_key}"
-              hx-trigger="revealed"
-              hx-swap="outerHTML ignoreTitle:true"
-              hx-select="#reply-content"
-              hx-target="this"
-            >
-              Loading more replies...
-            </div>
-
-        """
-
-    else:
-        load_more_html = "<div>Fin.</div>"
-
-    # Return only the replies items and load more element
-
-    content = (
-        f'<h2 class="text-2xl font-bold text-gray-900 py-4">Replies to <a href="/{post_id}"> Post #{post_id}</a></h2><div id="reply-content">'
-        + replies_items_html
-        + load_more_html
-        + "</div>"
-    )
-    html_content = _render_base(content, title=f"Post {post_id} replies")
-    start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-    return [html_content]
-
-
-@route(r"^/(?P<post_id>\d+)/topics/(?P<tag_name>[a-zA-Z0-9-]+)/?$")
-def handle_post_tag_detail(environ, start_response, post_id, tag_name):
-    """Handle post tag detail page"""
-    post_id = int(post_id)
-
-    tag = _get_post_tag(post_id, tag_name)
-    if tag is None:
-        start_response("404 Not Found", [CONTENT_TYPE_HTML])
-        error_template = SafeTemplate(fetch_template("error.html"))
-        content = error_template.substitute(
-            {"message": f"Tag '{tag_name}' on post {post_id} not found."}
-        )
-        html_content = _render_base(content, title="404 Not Found")
-        return [html_content]
-
-    # Get the post data to access the author information
-    try:
-        post_data = _get_data(_get_post_index(post_id))
-        post_author = post_data.get("author", "")
-    except Exception as e:
-        print(f"Could not find post {post_id}: {e}")
-        start_response("404 Not Found", [CONTENT_TYPE_HTML])
-        error_template = SafeTemplate(fetch_template("error.html"))
-        content = error_template.substitute(
-            {"message": f"Post {post_id} not found."}
-        )
-        html_content = _render_base(content, title="404 Not Found")
-        return [html_content]
-
-    claimed = tag["metadata"].get("claimed", {})
-    earliest_claim_time = tag["metadata"].get("earliest_claim_time", 0)
-    earned = claimed.get("udys", 0)
-
-    post_tag_detail_template = SafeTemplate(fetch_template("post_tag_detail.html"))
-    content = post_tag_detail_template.substitute(
-        {
-            "tag_json": json.dumps(tag, indent=2),
-            "meter_max": tag["up"] + tag["down"],
-            "percent": int(tag["best_rating"] * 100),
-            "earned": earned,
-            "earliest_claim_time": earliest_claim_time,
-            "post_author": SafeString(post_author),
-            **tag,
-        }
-    )
-
-    # history, pagination = _list_data(
-    #    _get_post_tag_historical_rewards_prefix(tag_name, post_id)
-    # )
-    html_content = _render_base(content, title=f"Post {post_id} tag: {tag_name}")
-    start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-
-    return [html_content]
-
-
-@route(r"^/(?P<post_id>\d+)/replies/(?P<reply_post_id>\d+)/?$")
-def handle_post_reply_detail(environ, start_response, post_id, reply_post_id):
-    """Handle post reply detail page"""
-    post_id = int(post_id)
-    reply_post_id = int(reply_post_id)
-
-    reply = _get_post_reply(post_id, reply_post_id)
-
-    # Get the reply post data to access the author information
-    try:
-        reply_post_data = _get_data(_get_post_index(reply_post_id))
-        reply_author = reply_post_data.get("author", "")
-    except Exception as e:
-        print(f"Could not find reply post {reply_post_id}: {e}")
-        reply_author = ""
-
-    claimed = reply["metadata"].get("claimed", {})
-    earliest_claim_time = reply["metadata"].get("earliest_claim_time", 0)
-    earned = claimed.get("udys", 0)
-
-    post_id = int(reply["tag_name"])
-    reply_post_id = reply["id"]
-    post_reply_detail_template = SafeTemplate(fetch_template("post_reply_detail.html"))
-    content = post_reply_detail_template.substitute(
-        {
-            "reply_json": json.dumps(reply, indent=2),
-            "meter_max": reply["up"] + reply["down"],
-            "percent": int(reply["best_rating"] * 100),
-            "post_id": post_id,
-            "reply_post_id": reply_post_id,
-            "reply_author": reply_author,
-            "earned": earned,
-            "earliest_claim_time": earliest_claim_time,
-            **reply,
-        }
-    )
-
-    # history, pagination = _list_data(
-    #    _get_post_tag_historical_rewards_prefix(tag_name, post_id)
-    # )
-    html_content = _render_base(content, title=f"Post {post_id} reply: {reply_post_id}")
-    start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-    return [html_content]
-
-
-@route(r"^/(?P<post_id>\d+)/topics/?$")
-def handle_post_topics(environ, start_response, post_id):
-    """Handle post topics list page"""
-    post_id = int(post_id)
-
-    req_pagination = _parse_pagination(environ, reverse=True, default_limit=2)
-    tags, pagination = _get_best_tags_by_post_id(post_id, pagination=req_pagination)
-
-    items_html = "".join(
-        [
-            f"""
-<li><a
-    title="{tag['tag_name']}"
-    href="/{post_id}/topics/{tag['tag_name']}"
-    class="text-blue-600 hover:text-blue-800 transition-colors"
-    >{tag['tag_name']}</a></li>
-"""
-            for tag in tags
-        ]
-    )
-
-    # There is a bug where if the pagination limit is equal to the number of returned items Storage assumes there
-    # are more items and returns a key to paginate but the next page is empty. So in this case we only show
-    # "No tags found" if there are no tags and no pagination key (which means we're on the first page)
-    if not tags and not req_pagination.get("key"):
-        items_html = "<li>No tags found</li>"
-
-    if pagination.get("next_key"):
-        # create the 'load more' link
-        load_more_html = f"""
-<li
-  hx-get="/{post_id}/topics?limit={req_pagination['limit']}&key={pagination['next_key']}"
-  hx-trigger="revealed once"
-  hx-swap="outerHTML"
-  hx-select="li"
-  hx-target="this"
->load more tags... </li>"""
-    else:
-        load_more_html = ""
-
-    post_topics_template = SafeTemplate(fetch_template("post_topics.html"))
-    content = post_topics_template.substitute(
-        {
-            "post_id": post_id,
-            "items_html": SafeString(items_html),
-            "load_more_html": SafeString(load_more_html),
-        }
-    )
-
-    start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-
-    html_content = _render_base(content, title=f"Post {post_id} tags")
-    return [html_content]
-
-
-@route(r"^/topics/(?P<tag_name>\w+)/?$")
-def handle_topic_redirect(environ, start_response, tag_name):
-    """Handle topic redirect to hot posts"""
-    start_response("302 Moved", [("Location", f"/topics/{tag_name}/hot")])
-    return []
-
-
-@route(r"^/topics/(?P<tag_name>\w+)/(?P<sortby>hot|best)/?$")
-def handle_topic_posts(environ, start_response, tag_name, sortby):
-    """Handle topic posts list page"""
-    req_pagination = _parse_pagination(environ, reverse=True, default_limit=2)
-    if sortby == "hot":
-        prefix = _get_rating_rate_prefix("tags", tag_name, "hot")
-        links = f'<span>Hot</span> | <a href="/topics/{tag_name}/best">Best</a>'
-    elif sortby == "best":
-        prefix = _get_rating_rate_prefix("tags", tag_name, "best")
-        links = f'<a href="/topics/{tag_name}/hot">Hot</a> | <span>Best</span>'
-    else:
-        raise Exception("not found")
-
-    links += f'| <a href="/topics/{tag_name}/stats">Statistics</a>'
-
-    posts, pagination = _list_data(prefix, pagination=req_pagination)
-
-    # Generate HTML for the list of posts
-    posts_html = "\n".join(
-        [
-            f"""
-<div>
-  <article
-      hx-trigger="revealed once"
-      hx-get="/{post['id']}?depth=0"
-      hx-select="article"
-      hx-swap="outerHTML ignoreTitle:true"
-      hx-target="this"
-      >Loading {post['id']}...</article>
-</div>
-            """
-            for post in posts
-        ]
-    )
-
-    if pagination.get("next_key"):
-        # Create the 'load more' placeholder
-        load_more_html = f"""
-<div
-  hx-get="?limit={req_pagination['limit']}&key={pagination['next_key']}"
-  hx-trigger="revealed once"
-  hx-swap="outerHTML"
-  hx-select="main > div"
-  hx-target="this"
->Load more posts... </div>"""
-    else:
-        load_more_html = "<div>Fin.</div>"
-
-    reward_index = _get_tag_index(TAGS, tag_name)
-
-    try:
-        rewards = _get_data(reward_index)
-    except Exception as e:
-        # dict of {denom: amount}
-        print(f"Tag rewards not found: {e}")
-        rewards = {}
-    reward_html = f"""
-    | Rewards available: <strong>{rewards.get("available", {}).get("udys", 0) // 1000000} DYS</strong>
-    | Rewards claimed: <strong>{rewards.get("claimed", {}).get("udys", 0) // 1000000} DYS</strong>
-     """
-
-    post_list_template = SafeTemplate(fetch_template("post_list.html"))
-    content = post_list_template.substitute(
-        {
-            "header": SafeString(
-                f'<h1 style="text-transform: capitalize;">{tag_name}</h1>'
-                + links
-                + reward_html
-            ),
-            "posts": SafeString(
-                f"""
-    <style>
-        a[title="{tag_name}"] {{
-            font-weight: bold
-        }}
-    </style>
-    """
-                + posts_html
-                + load_more_html
-            ),
-        }
-    )
-    start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-
-    html_content = _render_base(content, title=f"Posts tagged: {tag_name}")
-
-    return [html_content]
-
-
-@route(r"^/topics/(?P<tag_name>\w+)/stats/?$")
-def handle_topic_stats(environ, start_response, tag_name):
-    """Handle topic statistics page"""
-    topic_stats_template = SafeTemplate(fetch_template("topic_stats.html"))
-    content = topic_stats_template.substitute({"tag_name": tag_name})
-    html_content = _render_base(content, title="Topic Stats")
-    start_response("200 OK", [CONTENT_TYPE_HTML] + HEADERS)
-    return [html_content]
-
-@whitelabel_route(r"^/static/(?P<file_path>.+)$")
-@route(r"^/static/(?P<file_path>.+)$")
-def handle_static(environ, start_response, file_path):
-    """Handle static file serving"""
-    try:
-        q = {
-            "@type": "/dysonprotocol.storage.v1.QueryStorageGetRequest",
-            "owner": get_script_address(),
-            "index": f"static/{file_path}",
-        }
-        r = _query(q)
-
-        if not r.get("entry") or not r["entry"].get("data"):
-            raise FileNotFoundError(
-                f"Static file not found in storage: static/{file_path}"
-            )
-
-        data = r["entry"]["data"]
-
-        # Determine content type
-        ctype, encoding = mimetypes.guess_type(file_path or "")
-        if not ctype:
-            ctype = "application/octet-stream"
-
-        # The data from storage is a string, so we encode it to bytes
-        response_body = data.encode("utf-8")
-
-        start_response(
-            "200 OK",
-            [("Content-Type", ctype), ("Cache-Control", "max-age=3600, public")],
-        )
-        return [response_body]
-
-    except Exception as e:
-        print(f"Error serving static file {file_path}: {e}")
-        start_response("404 Not Found", [("Content-Type", "text/plain")])
-        return [b"File Not Found"]
-
-# Must be regitsted after statick because is a wildcard route
-whitelabel_route(r"^/(?P<path>.*[^/])/?$", author=name)(handle_author_page)
-
-
-@route(r"^/sw\.min\.js$")
-def handle_service_worker(environ, start_response):
-    """Handle service worker file"""
-    start_response("200 OK", [CONTENT_TYPE_JS, ("Cache-Control", "max-age=0, public")])
-    return [
-        """
-(()=>{"use strict";let e=!1;self.addEventListener("install",(()=>{self.skipWaiting()})),self.addEventListener("fetch",(s=>{const t=(s=>{const{url:t}=s.request;return t.includes(self.registration.scope+"webtorrent/")?t.includes(self.registration.scope+"webtorrent/keepalive/")?new Response:t.includes(self.registration.scope+"webtorrent/cancel/")?new Response(new ReadableStream({cancel(){e=!0}})):async function({request:s}){const{url:t,method:n,headers:o,destination:a}=s,l=await clients.matchAll({type:"window",includeUncontrolled:!0}),[r,i]=await new Promise((e=>{for(const s of l){const l=new MessageChannel,{port1:r,port2:i}=l;r.onmessage=({data:s})=>{e([s,r])},s.postMessage({url:t,method:n,headers:Object.fromEntries(o.entries()),scope:self.registration.scope,destination:a,type:"webtorrent"},[i])}}));let c=null;const d=()=>{i.postMessage(!1),clearTimeout(c),i.onmessage=null};return"STREAM"!==r.body?(d(),new Response(r.body,r)):new Response(new ReadableStream({pull:s=>new Promise((t=>{i.onmessage=({data:e})=>{e?s.enqueue(e):(d(),s.close()),t()},e||(clearTimeout(c),"document"!==a&&(c=setTimeout((()=>{d(),t()}),5e3))),i.postMessage(!0)})),cancel(){d()}}),r)}(s):null})(s);t&&s.respondWith(t)})),self.addEventListener("activate",(()=>{self.clients.claim()}))})();
-
-            """.encode()
-    ]
-
-
-def _render_base(body: str, title: str, head_extra: str = "", **kwargs) -> bytes:
-    """Render base.html with integrity context and supplied main HTML."""
-
-    return (
-        SafeTemplate(fetch_template("base.html"))
-        .substitute(
-            {
-                "body": SafeString(body),
-                "BASE_DOMAIN": get_base_domain(),
-                "static_scripts": render_script_tags(),
-                "importmap_json": SafeString(
-                    _query(
-                        {
-                            "@type": "/dysonprotocol.storage.v1.QueryStorageGetRequest",
-                            "owner": get_script_address(),
-                            "index": "static/importmap.json",
-                        }
-                    )["entry"]["data"]
-                ),
-                "css_integrity": get_css_integrity(),
-                "title": title,
-                "head_extra": head_extra,
-                "script_address": get_script_address(),
-                "script_version": get_script_version(),
-                **kwargs,
-            }
-        )
-        .encode()
-    )
-
-
-def render_script_tags() -> SafeString:
-    """List all scripts in static/js directory and output script tags with proper integrity hash."""
-    # Query all storage entries with prefix "static/js/"
-    script_address = get_script_address()
-    storage_list = _query(
-        {
-            "@type": "/dysonprotocol.storage.v1.QueryStorageListRequest",
-            "owner": script_address,
-            "index_prefix": "static/js/",
-            "extract": "false",  # don't extract the data, just list the entries
-        }
-    )
-
-    # tags = []
-    # for entry in storage_list["entries"]:
-    #    index = entry["index"]
-    #    hash_value = entry["hash"]
-    #    tags.append()
-
-    tags = [
-        f'<script defer type="module" src="/{entry["index"]}" integrity="{entry["hash"]}"></script>'
-        for entry in storage_list["entries"]
-    ]
-    # Join with newline and indentation for readability
-    return SafeString("\n    ".join(tags))
-
-
-def get_css_integrity() -> SafeString:
-    """Get integrity attribute for style.css file."""
-    css_res = _query(
-        {
-            "@type": "/dysonprotocol.storage.v1.QueryStorageGetRequest",
-            "owner": get_script_address(),
-            "index": "static/css/style.css",
-        }
-    )
-    hash_value = css_res["entry"]["hash"]
-    return SafeString(f' integrity="{hash_value}"')

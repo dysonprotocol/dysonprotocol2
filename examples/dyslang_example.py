@@ -25,8 +25,8 @@ def show_block_info():
     }
 
 
-def query_balance(query_height=0):
-    """Query the script's own balance"""
+def query_balance():
+    """Query the script's own balance at current height"""
     script_address = get_script_address()
     current_balance = _query(
         {
@@ -34,33 +34,9 @@ def query_balance(query_height=0):
             "address": script_address,
             "denom": "udys",
         },
-        query_height=0,
     )
     current_height = get_block_info().get("Height")
-
-    if query_height < 0:
-        query_height = current_height + query_height
-
-    if query_height > current_height:
-        return {"error": "query_height is in the future"}
-
-    query_balance = None
-    if query_height > 0:
-        query_balance = _query(
-            {
-                "@type": "/cosmos.bank.v1beta1.QueryBalanceRequest",
-                "address": script_address,
-                "denom": "udys",
-            },
-            query_height=query_height,
-        )
-
-    return {
-        "current_balance": current_balance,
-        "current_height": current_height,
-        "query_balance": query_balance,
-        "query_height": query_height,
-    }
+    return {"current_balance": current_balance, "current_height": current_height}
 
 
 def check_gas():

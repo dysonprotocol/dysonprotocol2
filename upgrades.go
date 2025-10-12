@@ -25,6 +25,9 @@ const UpgradeName = "v050-to-v053"
 // deprecated "circuit" module store from state.
 const RemoveCircuitUpgradeName = "remove-circuit"
 
+// V2RC9UpgradeName defines the on-chain upgrade name for v2.0.0-rc9.
+const V2RC9UpgradeName = "v2.0.0-rc9"
+
 func (app *DysApp) RegisterUpgradeHandlers() {
 	app.Logger().Info("RegisterUpgradeHandlers: installing upgrade handlers")
 	app.UpgradeKeeper.SetUpgradeHandler(
@@ -44,6 +47,21 @@ func (app *DysApp) RegisterUpgradeHandlers() {
 	// Register handler for removing the deprecated circuit module store
 	app.UpgradeKeeper.SetUpgradeHandler(
 		RemoveCircuitUpgradeName,
+		func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+			app.Logger().Info("Executing upgrade handler", "name", plan.Name, "height", plan.Height)
+			newVM, err := app.ModuleManager.RunMigrations(ctx, app.Configurator(), fromVM)
+			if err != nil {
+				app.Logger().Error("Upgrade handler failed", "name", plan.Name, "height", plan.Height, "err", err)
+				return newVM, err
+			}
+			app.Logger().Info("Upgrade handler completed", "name", plan.Name, "height", plan.Height)
+			return newVM, nil
+		},
+	)
+
+	// Register handler for v2.0.0-rc9
+	app.UpgradeKeeper.SetUpgradeHandler(
+		V2RC9UpgradeName,
 		func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 			app.Logger().Info("Executing upgrade handler", "name", plan.Name, "height", plan.Height)
 			newVM, err := app.ModuleManager.RunMigrations(ctx, app.Configurator(), fromVM)
@@ -105,12 +123,15 @@ func (app *DysApp) RegisterUpgradeHandlers() {
 			}
 			// configure store loader that checks if version == upgradeHeight and applies store deletions
 			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+		case V2RC9UpgradeName:
+			// No store upgrades required for v2.0.0-rc9
+			app.Logger().Info("No store upgrades for this upgrade; not configuring store loader", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
 		default:
-			app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{UpgradeName, RemoveCircuitUpgradeName}, "height", upgradeInfo.Height)
+			app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{UpgradeName, RemoveCircuitUpgradeName, V2RC9UpgradeName}, "height", upgradeInfo.Height)
 		}
-	} else if upgradeInfo.Name == UpgradeName || upgradeInfo.Name == RemoveCircuitUpgradeName {
+	} else if upgradeInfo.Name == UpgradeName || upgradeInfo.Name == RemoveCircuitUpgradeName || upgradeInfo.Name == V2RC9UpgradeName {
 		app.Logger().Info("Skip height is set; not configuring store loader", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
 	} else {
-		app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{UpgradeName, RemoveCircuitUpgradeName}, "height", upgradeInfo.Height)
+		app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{UpgradeName, RemoveCircuitUpgradeName, V2RC9UpgradeName}, "height", upgradeInfo.Height)
 	}
 }

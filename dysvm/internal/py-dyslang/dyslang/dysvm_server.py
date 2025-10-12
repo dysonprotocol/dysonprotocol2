@@ -761,7 +761,6 @@ def build_sandbox(
                 sort_keys=True,
                 cls=DecimalEncoder,
             ),
-            query_height=query_height,
         )
         if resp.get("exception", None):
             raise DysQueryException(resp["exception"])
