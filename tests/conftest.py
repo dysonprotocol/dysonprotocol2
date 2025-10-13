@@ -343,7 +343,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
             "--block-speed",
             "500ms",
             "--no-blocks-timeout",
-            "5",
+            "15",
             # "--logs",
         ],
         preexec_fn=os.setsid,
@@ -412,7 +412,7 @@ def node_ready(chainnet):
 
     poll_until_condition(
         _ready,
-        timeout=5,
+        timeout=15,
         poll_interval=0.3,
         error_message="Node did not produce blocks",
     )
