@@ -9,6 +9,8 @@ func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		Params:      DefaultParams(),
 		Commitments: []Commitment{},
+		BidSeq:      0,
+		Bids:        []BidRecord{},
 	}
 }
 
@@ -30,6 +32,24 @@ func ValidateGenesis(data *GenesisState) error {
 			return fmt.Errorf("duplicate commitment found: %s", commitment.Hexhash)
 		}
 		commitmentMap[commitment.Hexhash] = true
+	}
+
+	// Validate bids: unique IDs, non-empty class and nft ids
+	seen := make(map[uint64]bool)
+	for _, b := range data.Bids {
+		if b.BidId == 0 {
+			return fmt.Errorf("bid_id cannot be zero")
+		}
+		if seen[b.BidId] {
+			return fmt.Errorf("duplicate bid_id in genesis: %d", b.BidId)
+		}
+		seen[b.BidId] = true
+		if b.ClassId == "" || b.NftId == "" || b.Bidder == "" {
+			return fmt.Errorf("invalid bid record %d: empty class_id/nft_id/bidder", b.BidId)
+		}
+		if b.Amount.Denom == "" || !b.Amount.Amount.IsPositive() {
+			return fmt.Errorf("invalid bid amount for bid %d", b.BidId)
+		}
 	}
 
 	return nil

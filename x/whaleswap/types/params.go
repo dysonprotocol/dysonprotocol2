@@ -30,6 +30,12 @@ func (p Params) Validate() error {
 	if !p.PfandPerOffer.Amount.IsZero() && p.PfandPerOffer.Denom == "" {
 		return fmt.Errorf("pfand_per_offer denom must be set when amount > 0")
 	}
+	if p.ValuationPeriod <= 0 {
+		return fmt.Errorf("valuation_period must be > 0")
+	}
+	if p.BidTimeout <= 0 {
+		return fmt.Errorf("bid_timeout must be > 0")
+	}
 	if p.ValuationFeePct != "" {
 		dec, err := math.LegacyNewDecFromStr(p.ValuationFeePct)
 		if err != nil {

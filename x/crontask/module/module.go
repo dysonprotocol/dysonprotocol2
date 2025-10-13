@@ -73,9 +73,6 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config sdkclient.TxEn
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the crontask module.
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx sdkclient.Context, mux *gwruntime.ServeMux) {
-	if err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)); err != nil {
-		panic(err)
-	}
 }
 
 type AppModule struct {
@@ -129,6 +126,12 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 // ConsensusVersion implements HasConsensusVersion
 func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
+
+// RegisterMigrations registers module migrations
+func (am AppModule) RegisterMigrations() error {
+	// No migrations yet
+	return nil
+}
 
 // RegisterStoreDecoder registers a decoder for crontask module's types
 func (am AppModule) RegisterStoreDecoder(sdr simtypes.StoreDecoderRegistry) {

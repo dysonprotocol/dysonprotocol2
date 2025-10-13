@@ -1,13 +1,13 @@
 package dysonprotocol
 
 import (
-    "context"
+	"context"
 
-    "strings"
+	"strings"
 
-    upgradetypes "cosmossdk.io/x/upgrade/types"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 
-    "github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
 // (removed legacy upgrade names)
@@ -19,7 +19,7 @@ const RmHistoricalQueriesUpgradeName = "rm-historical-queries"
 
 func (app *DysApp) RegisterUpgradeHandlers() {
 	app.Logger().Info("RegisterUpgradeHandlers: installing upgrade handlers")
-    // (removed legacy handlers)
+	// (removed legacy handlers)
 
 	// Register handler for rm-historical-queries (export/import upgrade)
 	app.UpgradeKeeper.SetUpgradeHandler(
@@ -64,17 +64,17 @@ func (app *DysApp) RegisterUpgradeHandlers() {
 		)
 	}
 
-    if !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-        switch upgradeInfo.Name {
-        case RmHistoricalQueriesUpgradeName:
+	if !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		switch upgradeInfo.Name {
+		case RmHistoricalQueriesUpgradeName:
 			// Export/Import style upgrade; no store upgrades
 			app.Logger().Info("Export/Import upgrade; no store upgrades configured", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
 		default:
-            app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{RmHistoricalQueriesUpgradeName}, "height", upgradeInfo.Height)
+			app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{RmHistoricalQueriesUpgradeName}, "height", upgradeInfo.Height)
 		}
-    } else if upgradeInfo.Name == RmHistoricalQueriesUpgradeName {
+	} else if upgradeInfo.Name == RmHistoricalQueriesUpgradeName {
 		app.Logger().Info("Skip height is set; not configuring store loader", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
 	} else {
-        app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{RmHistoricalQueriesUpgradeName}, "height", upgradeInfo.Height)
+		app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{RmHistoricalQueriesUpgradeName}, "height", upgradeInfo.Height)
 	}
 }

@@ -65,10 +65,63 @@ func (x *_GenesisState_3_list) IsValid() bool {
 	return x.list != nil
 }
 
+var _ protoreflect.List = (*_GenesisState_5_list)(nil)
+
+type _GenesisState_5_list struct {
+	list *[]*BidRecord
+}
+
+func (x *_GenesisState_5_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_GenesisState_5_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_GenesisState_5_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*BidRecord)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_GenesisState_5_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*BidRecord)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_GenesisState_5_list) AppendMutable() protoreflect.Value {
+	v := new(BidRecord)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_GenesisState_5_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_GenesisState_5_list) NewElement() protoreflect.Value {
+	v := new(BidRecord)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_GenesisState_5_list) IsValid() bool {
+	return x.list != nil
+}
+
 var (
 	md_GenesisState             protoreflect.MessageDescriptor
 	fd_GenesisState_params      protoreflect.FieldDescriptor
 	fd_GenesisState_commitments protoreflect.FieldDescriptor
+	fd_GenesisState_bid_seq     protoreflect.FieldDescriptor
+	fd_GenesisState_bids        protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -76,6 +129,8 @@ func init() {
 	md_GenesisState = File_dysonprotocol_nameservice_v1_genesis_proto.Messages().ByName("GenesisState")
 	fd_GenesisState_params = md_GenesisState.Fields().ByName("params")
 	fd_GenesisState_commitments = md_GenesisState.Fields().ByName("commitments")
+	fd_GenesisState_bid_seq = md_GenesisState.Fields().ByName("bid_seq")
+	fd_GenesisState_bids = md_GenesisState.Fields().ByName("bids")
 }
 
 var _ protoreflect.Message = (*fastReflection_GenesisState)(nil)
@@ -155,6 +210,18 @@ func (x *fastReflection_GenesisState) Range(f func(protoreflect.FieldDescriptor,
 			return
 		}
 	}
+	if x.BidSeq != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.BidSeq)
+		if !f(fd_GenesisState_bid_seq, value) {
+			return
+		}
+	}
+	if len(x.Bids) != 0 {
+		value := protoreflect.ValueOfList(&_GenesisState_5_list{list: &x.Bids})
+		if !f(fd_GenesisState_bids, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -174,6 +241,10 @@ func (x *fastReflection_GenesisState) Has(fd protoreflect.FieldDescriptor) bool 
 		return x.Params != nil
 	case "dysonprotocol.nameservice.v1.GenesisState.commitments":
 		return len(x.Commitments) != 0
+	case "dysonprotocol.nameservice.v1.GenesisState.bid_seq":
+		return x.BidSeq != uint64(0)
+	case "dysonprotocol.nameservice.v1.GenesisState.bids":
+		return len(x.Bids) != 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.nameservice.v1.GenesisState"))
@@ -194,6 +265,10 @@ func (x *fastReflection_GenesisState) Clear(fd protoreflect.FieldDescriptor) {
 		x.Params = nil
 	case "dysonprotocol.nameservice.v1.GenesisState.commitments":
 		x.Commitments = nil
+	case "dysonprotocol.nameservice.v1.GenesisState.bid_seq":
+		x.BidSeq = uint64(0)
+	case "dysonprotocol.nameservice.v1.GenesisState.bids":
+		x.Bids = nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.nameservice.v1.GenesisState"))
@@ -218,6 +293,15 @@ func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescripto
 			return protoreflect.ValueOfList(&_GenesisState_3_list{})
 		}
 		listValue := &_GenesisState_3_list{list: &x.Commitments}
+		return protoreflect.ValueOfList(listValue)
+	case "dysonprotocol.nameservice.v1.GenesisState.bid_seq":
+		value := x.BidSeq
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.nameservice.v1.GenesisState.bids":
+		if len(x.Bids) == 0 {
+			return protoreflect.ValueOfList(&_GenesisState_5_list{})
+		}
+		listValue := &_GenesisState_5_list{list: &x.Bids}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
@@ -245,6 +329,12 @@ func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value
 		lv := value.List()
 		clv := lv.(*_GenesisState_3_list)
 		x.Commitments = *clv.list
+	case "dysonprotocol.nameservice.v1.GenesisState.bid_seq":
+		x.BidSeq = value.Uint()
+	case "dysonprotocol.nameservice.v1.GenesisState.bids":
+		lv := value.List()
+		clv := lv.(*_GenesisState_5_list)
+		x.Bids = *clv.list
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.nameservice.v1.GenesisState"))
@@ -276,6 +366,14 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 		}
 		value := &_GenesisState_3_list{list: &x.Commitments}
 		return protoreflect.ValueOfList(value)
+	case "dysonprotocol.nameservice.v1.GenesisState.bids":
+		if x.Bids == nil {
+			x.Bids = []*BidRecord{}
+		}
+		value := &_GenesisState_5_list{list: &x.Bids}
+		return protoreflect.ValueOfList(value)
+	case "dysonprotocol.nameservice.v1.GenesisState.bid_seq":
+		panic(fmt.Errorf("field bid_seq of message dysonprotocol.nameservice.v1.GenesisState is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.nameservice.v1.GenesisState"))
@@ -295,6 +393,11 @@ func (x *fastReflection_GenesisState) NewField(fd protoreflect.FieldDescriptor) 
 	case "dysonprotocol.nameservice.v1.GenesisState.commitments":
 		list := []*Commitment{}
 		return protoreflect.ValueOfList(&_GenesisState_3_list{list: &list})
+	case "dysonprotocol.nameservice.v1.GenesisState.bid_seq":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.nameservice.v1.GenesisState.bids":
+		list := []*BidRecord{}
+		return protoreflect.ValueOfList(&_GenesisState_5_list{list: &list})
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.nameservice.v1.GenesisState"))
@@ -374,6 +477,15 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				n += 1 + l + runtime.Sov(uint64(l))
 			}
 		}
+		if x.BidSeq != 0 {
+			n += 1 + runtime.Sov(uint64(x.BidSeq))
+		}
+		if len(x.Bids) > 0 {
+			for _, e := range x.Bids {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -402,6 +514,27 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Bids) > 0 {
+			for iNdEx := len(x.Bids) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.Bids[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x2a
+			}
+		}
+		if x.BidSeq != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BidSeq))
+			i--
+			dAtA[i] = 0x20
 		}
 		if len(x.Commitments) > 0 {
 			for iNdEx := len(x.Commitments) - 1; iNdEx >= 0; iNdEx-- {
@@ -552,6 +685,59 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
 				iNdEx = postIndex
+			case 4:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BidSeq", wireType)
+				}
+				x.BidSeq = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.BidSeq |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Bids", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Bids = append(x.Bids, &BidRecord{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Bids[len(x.Bids)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -609,6 +795,9 @@ type GenesisState struct {
 	// params defines all the parameters of the module.
 	Params      *Params       `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
 	Commitments []*Commitment `protobuf:"bytes,3,rep,name=commitments,proto3" json:"commitments,omitempty"`
+	// Bid ledger authoritative state; secondary indexes are rebuilt at import
+	BidSeq uint64       `protobuf:"varint,4,opt,name=bid_seq,json=bidSeq,proto3" json:"bid_seq,omitempty"`
+	Bids   []*BidRecord `protobuf:"bytes,5,rep,name=bids,proto3" json:"bids,omitempty"`
 }
 
 func (x *GenesisState) Reset() {
@@ -645,6 +834,20 @@ func (x *GenesisState) GetCommitments() []*Commitment {
 	return nil
 }
 
+func (x *GenesisState) GetBidSeq() uint64 {
+	if x != nil {
+		return x.BidSeq
+	}
+	return 0
+}
+
+func (x *GenesisState) GetBids() []*BidRecord {
+	if x != nil {
+		return x.Bids
+	}
+	return nil
+}
+
 var File_dysonprotocol_nameservice_v1_genesis_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_nameservice_v1_genesis_proto_rawDesc = []byte{
@@ -661,7 +864,7 @@ var file_dysonprotocol_nameservice_v1_genesis_proto_rawDesc = []byte{
 	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x70,
 	0x61, 0x72, 0x61, 0x6d, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1e, 0x63, 0x6f, 0x73,
 	0x6d, 0x6f, 0x73, 0x2f, 0x62, 0x61, 0x73, 0x65, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31,
-	0x2f, 0x63, 0x6f, 0x69, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xb8, 0x01, 0x0a, 0x0c,
+	0x2f, 0x63, 0x6f, 0x69, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x94, 0x02, 0x0a, 0x0c,
 	0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x42, 0x0a, 0x06,
 	0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x64,
 	0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x6e, 0x61, 0x6d,
@@ -672,11 +875,17 @@ var file_dysonprotocol_nameservice_v1_genesis_proto_rawDesc = []byte{
 	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63,
 	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x6d, 0x65, 0x6e, 0x74, 0x42,
 	0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0b, 0x63, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x6d, 0x65, 0x6e,
-	0x74, 0x73, 0x4a, 0x04, 0x08, 0x02, 0x10, 0x03, 0x52, 0x0c, 0x6e, 0x61, 0x6d, 0x65, 0x5f, 0x72,
-	0x65, 0x63, 0x6f, 0x72, 0x64, 0x73, 0x42, 0x27, 0x5a, 0x25, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x6e, 0x61,
-	0x6d, 0x65, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x74, 0x73, 0x12, 0x17, 0x0a, 0x07, 0x62, 0x69, 0x64, 0x5f, 0x73, 0x65, 0x71, 0x18, 0x04, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x06, 0x62, 0x69, 0x64, 0x53, 0x65, 0x71, 0x12, 0x41, 0x0a, 0x04, 0x62,
+	0x69, 0x64, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x64, 0x79, 0x73, 0x6f,
+	0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x65,
+	0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x69, 0x64, 0x52, 0x65, 0x63, 0x6f,
+	0x72, 0x64, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x04, 0x62, 0x69, 0x64, 0x73, 0x4a, 0x04,
+	0x08, 0x02, 0x10, 0x03, 0x52, 0x0c, 0x6e, 0x61, 0x6d, 0x65, 0x5f, 0x72, 0x65, 0x63, 0x6f, 0x72,
+	0x64, 0x73, 0x42, 0x27, 0x5a, 0x25, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x65,
+	0x72, 0x76, 0x69, 0x63, 0x65, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -696,15 +905,17 @@ var file_dysonprotocol_nameservice_v1_genesis_proto_goTypes = []interface{}{
 	(*GenesisState)(nil), // 0: dysonprotocol.nameservice.v1.GenesisState
 	(*Params)(nil),       // 1: dysonprotocol.nameservice.v1.Params
 	(*Commitment)(nil),   // 2: dysonprotocol.nameservice.v1.Commitment
+	(*BidRecord)(nil),    // 3: dysonprotocol.nameservice.v1.BidRecord
 }
 var file_dysonprotocol_nameservice_v1_genesis_proto_depIdxs = []int32{
 	1, // 0: dysonprotocol.nameservice.v1.GenesisState.params:type_name -> dysonprotocol.nameservice.v1.Params
 	2, // 1: dysonprotocol.nameservice.v1.GenesisState.commitments:type_name -> dysonprotocol.nameservice.v1.Commitment
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	3, // 2: dysonprotocol.nameservice.v1.GenesisState.bids:type_name -> dysonprotocol.nameservice.v1.BidRecord
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_dysonprotocol_nameservice_v1_genesis_proto_init() }

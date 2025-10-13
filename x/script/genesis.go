@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"dysonprotocol.com/x/script/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	gogoprotoany "github.com/cosmos/gogoproto/types/any"
 )
 
@@ -26,6 +27,9 @@ func ValidateGenesis(s *types.GenesisState) error {
 		}
 		if sc.Address == "" {
 			return fmt.Errorf("script address cannot be empty")
+		}
+		if _, err := sdk.AccAddressFromBech32(sc.Address); err != nil {
+			return fmt.Errorf("invalid script address %s: %v", sc.Address, err)
 		}
 		if _, dup := seen[sc.Address]; dup {
 			return fmt.Errorf("duplicate script address %s", sc.Address)

@@ -4,7 +4,9 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"strings"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/store"
@@ -212,9 +214,13 @@ func (k Keeper) GetNamesByDestination(ctx context.Context, destination string) (
 func (k Keeper) GetParams(ctx context.Context) (params nameservicev1.Params) {
 	params, err := k.params.Get(ctx)
 	if err != nil {
-		// If params don't exist, return defaults
-		k.Logger.Info("GetParams: failed to load params; returning defaults", "err", err)
-		return nameservicev1.DefaultParams()
+		// Return defaults only if params are not found (expected on fresh chain)
+		if errors.Is(err, collections.ErrNotFound) {
+			k.Logger.Info("GetParams: params not found; returning defaults")
+			return nameservicev1.DefaultParams()
+		}
+		// Any other error indicates store/coding corruption: fail fast
+		panic(fmt.Errorf("GetParams: failed to load params: %w", err))
 	}
 	return params
 }
@@ -490,9 +496,23 @@ func (k Keeper) ResolveNameOrAddress(ctx context.Context, nameOrAddress string) 
 		fmt.Sprintf("name resolution exceeded maximum depth of %d for: %s", maxDepth, nameOrAddress))
 }
 
-// ExportGenesis returns the exported genesis state as raw bytes for the gov
+// ExportGenesis returns the exported genesis state for nameservice
 func (k Keeper) ExportGenesis(ctx context.Context) (*nameservicev1.GenesisState, error) {
 	commitments, err := k.GetAllCommitments(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Export authoritative bid ledger
+	var bids []nameservicev1.BidRecord
+	if walkErr := k.bids.Walk(ctx, nil, func(_ uint64, v nameservicev1.BidRecord) (bool, error) {
+		bids = append(bids, v)
+		return false, nil
+	}); walkErr != nil {
+		return nil, walkErr
+	}
+
+	seq, err := k.bidSeq.Peek(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -500,10 +520,108 @@ func (k Keeper) ExportGenesis(ctx context.Context) (*nameservicev1.GenesisState,
 	gs := &nameservicev1.GenesisState{
 		Params:      k.GetParams(ctx),
 		Commitments: commitments,
+		BidSeq:      seq,
+		Bids:        bids,
 	}
-	// NOTE: Additional reverse-index or bid-ledger state is derived from other
-	// modules and internal activity. We intentionally do not persist these in
-	// genesis and instead rebuild them during InitGenesis to keep genesis minimal
-	// and deterministic.
 	return gs, nil
+}
+
+// RebuildDerivedIndexes reconstructs reverse indexes that are not persisted in genesis.
+// It rebuilds:
+// - classesByRootName: (root_name, class_id) -> class_id for every existing class
+// - nameDestinations: (destination, name) -> name for every Name NFT with a non-empty URI
+// Denom reverse indexes are intentionally skipped here as they require full bank iteration.
+func (k Keeper) RebuildDerivedIndexes(ctx context.Context) error {
+	// Clear existing derived indexes
+	if err := k.classesByRootName.Clear(ctx, nil); err != nil {
+		return fmt.Errorf("failed to clear classesByRootName: %w", err)
+	}
+	if err := k.nameDestinations.Clear(ctx, nil); err != nil {
+		return fmt.Errorf("failed to clear nameDestinations: %w", err)
+	}
+	if err := k.denomsByRootName.Clear(ctx, nil); err != nil {
+		return fmt.Errorf("failed to clear denomsByRootName: %w", err)
+	}
+
+	// Rebuild class reverse index for all classes
+	classes := k.nftKeeper.GetClasses(ctx)
+	for _, class := range classes {
+		root := extractRootName(class.Id)
+		if err := k.SetClassByRootName(ctx, root, class.Id); err != nil {
+			return fmt.Errorf("rebuild class index failed for %s: %w", class.Id, err)
+		}
+
+		// If this is the names class, also rebuild name->destination reverse mappings
+		if class.Id == NamesClassID {
+			nfts := k.nftKeeper.GetNFTsOfClass(ctx, NamesClassID)
+			for _, n := range nfts {
+				if n.Uri == "" {
+					continue
+				}
+				if err := k.SetNameDestinationMapping(ctx, n.Uri, n.Id); err != nil {
+					return fmt.Errorf("rebuild name destination for %s failed: %w", n.Id, err)
+				}
+			}
+		}
+	}
+
+	// Rebuild denoms reverse index from bank metadata (authoritative list)
+	metas := k.bankKeeper.GetAllDenomMetaData(ctx)
+	for _, meta := range metas {
+		if meta.Base == "" {
+			continue
+		}
+		// Only track nameservice denoms (root must be a name ending in .dys)
+		root := extractRootName(meta.Base)
+		if !strings.HasSuffix(root, ".dys") {
+			continue
+		}
+		if err := k.setDenomTracked(ctx, meta.Base); err != nil {
+			return fmt.Errorf("failed to index denom %s: %w", meta.Base, err)
+		}
+	}
+
+	// Rebuild bid secondary indexes from authoritative bids
+	if err := k.bidsByBidder.Clear(ctx, nil); err != nil {
+		return fmt.Errorf("failed to clear bidsByBidder: %w", err)
+	}
+	if err := k.bidsByNFT.Clear(ctx, nil); err != nil {
+		return fmt.Errorf("failed to clear bidsByNFT: %w", err)
+	}
+	if err := k.activeBidForNFT.Clear(ctx, nil); err != nil {
+		return fmt.Errorf("failed to clear activeBidForNFT: %w", err)
+	}
+
+	if err := k.bids.Walk(ctx, nil, func(_ uint64, br nameservicev1.BidRecord) (bool, error) {
+		if err := k.bidsByBidder.Set(ctx, collections.Join(br.Bidder, br.BidId), br.BidId); err != nil {
+			return true, err
+		}
+		if err := k.bidsByNFT.Set(ctx, collections.Join3(br.ClassId, br.NftId, br.BidId), br.BidId); err != nil {
+			return true, err
+		}
+		if br.Status == nameservicev1.BidStatus_BID_ACTIVE {
+			// last write wins; store current active bid per NFT
+			if err := k.activeBidForNFT.Set(ctx, collections.Join(br.ClassId, br.NftId), br.BidId); err != nil {
+				return true, err
+			}
+		}
+		return false, nil
+	}); err != nil {
+		return fmt.Errorf("failed to rebuild bid indexes: %w", err)
+	}
+
+	return nil
+}
+
+func (k Keeper) SetBidSeq(ctx context.Context, seq uint64) error {
+	return k.bidSeq.Set(ctx, seq)
+}
+
+func (k Keeper) ImportBids(ctx context.Context, records []nameservicev1.BidRecord) error {
+	for _, br := range records {
+		if err := k.bids.Set(ctx, br.BidId, br); err != nil {
+			return err
+		}
+	}
+	return nil
 }

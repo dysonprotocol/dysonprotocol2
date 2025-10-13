@@ -476,7 +476,7 @@ print(f"- Time: {block_info['time']}")
     Block Information:
     - Height: 9
     - Chain ID: chain-a
-    - Time: 2025-10-06T15:08:57.005785Z
+    - Time: 2025-10-13T13:00:12.293672Z
 
 
 ## Transaction Data
@@ -1234,7 +1234,20 @@ These are the available modules and functions that can be used in dyslang script
         "re2._Match.groups",
         "re2._Regexp.match",
         "scanner",
+        "script.a_or_b",
+        "script.benchmark_gas",
+        "script.check_limit",
+        "script.check_memory",
+        "script.check_messages",
+        "script.count_nodes",
+        "script.demonstrate_dys_eval",
+        "script.emit_test_event",
         "script.list_api",
+        "script.query_balance",
+        "script.query_multiple_balances",
+        "script.show_block_info",
+        "script.test_a_or_b",
+        "script.who_called_me",
         "search",
         "set.add",
         "set.clear",
@@ -1477,6 +1490,7 @@ These are the available modules and functions that can be used in dyslang script
           "paretovariate": "Pareto distribution.  alpha is the shape parameter.",
           "randint": "Return random integer in range [a, b], including both end points.",
           "random": "random() -> x in the interval [0, 1).",
+          "sample": "Chooses k unique random elements from a population sequence.\n\n        Returns a new list containing elements from the population while\n        leaving the original population unchanged.  The resulting list is\n        in selection order so that all sub-slices will also be valid random\n        samples.  This allows raffle winners (the sample) to be partitioned\n        into grand prize and second place winners (the subslices).\n\n        Members of the population need not be hashable or unique.  If the\n        population contains repeats, then each occurrence is a possible\n        selection in the sample.\n\n        Repeated elements can be specified one at a time or with the optional\n        counts parameter.  For example:\n\n            sample(['red', 'blue'], counts=[4, 2], k=5)\n\n        is equivalent to:\n\n            sample(['red', 'red', 'red', 'red', 'blue', 'blue'], k=5)\n\n        To choose a sample from a range of integers, use range() for the\n        population argument.  This is especially fast and space efficient\n        for sampling from a large population:\n\n            sample(range(10000000), 60)",
           "seed": "Initialize internal state from a seed.\n\n        The only supported seed types are None, int, float,\n        str, bytes, and bytearray.\n\n        None or no argument seeds from current time or from an operating\n        system specific randomness source if available.\n\n        If *a* is an int, all bits are used.\n\n        For version 2 (the default), all of the bits are used if *a* is a str,\n        bytes, or bytearray.  For version 1 (provided for reproducing random\n        sequences from older versions of Python), the algorithm for str and\n        bytes generates a narrower range of seeds.",
           "shuffle": "Shuffle list x in place, and return None.",
           "triangular": "Triangular distribution.\n\n        Continuous distribution bounded by given lower and upper limits,\n        and having a given mode value in-between.\n\n        http://en.wikipedia.org/wiki/Triangular_distribution\n\n        The mean (expected value) and variance of the random variable are:\n\n            E[X] = (low + high + mode) / 3\n            Var[X] = (low**2 + high**2 + mode**2 - low*high - low*mode - high*mode) / 18",

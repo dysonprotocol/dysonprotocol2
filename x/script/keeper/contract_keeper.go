@@ -1,12 +1,10 @@
 package keeper
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"sort"
 
 	cosmossdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -21,52 +19,6 @@ import (
 	"dysonprotocol.com/x/script/types"
 	scripttypes "dysonprotocol.com/x/script/types"
 )
-
-// marshalDeterministic encodes JSON with lexicographically-sorted object keys for deterministic bytes.
-func marshalDeterministic(v any) ([]byte, error) {
-	switch vv := v.(type) {
-	case map[string]any:
-		keys := make([]string, 0, len(vv))
-		for k := range vv {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-		buf := bytes.NewBuffer(make([]byte, 0, 256))
-		buf.WriteByte('{')
-		for i, k := range keys {
-			kb, _ := json.Marshal(k)
-			buf.Write(kb)
-			buf.WriteByte(':')
-			vb, err := marshalDeterministic(vv[k])
-			if err != nil {
-				return nil, err
-			}
-			buf.Write(vb)
-			if i < len(keys)-1 {
-				buf.WriteByte(',')
-			}
-		}
-		buf.WriteByte('}')
-		return buf.Bytes(), nil
-	case []any:
-		buf := bytes.NewBuffer(make([]byte, 0, 256))
-		buf.WriteByte('[')
-		for i, el := range vv {
-			eb, err := marshalDeterministic(el)
-			if err != nil {
-				return nil, err
-			}
-			buf.Write(eb)
-			if i < len(vv)-1 {
-				buf.WriteByte(',')
-			}
-		}
-		buf.WriteByte(']')
-		return buf.Bytes(), nil
-	default:
-		return json.Marshal(v)
-	}
-}
 
 // Verify Keeper implements ContractKeeper at compile time
 var _ callbacktypes.ContractKeeper = (*Keeper)(nil)
@@ -280,7 +232,7 @@ func (k *Keeper) IBCOnAcknowledgementPacketCallback(
 		finalKwargsMap["beta_ibc_callback_data_v1"] = callbackData
 
 		// Marshal the combined kwargs
-		finalKwargsJson, err := marshalDeterministic(finalKwargsMap)
+		finalKwargsJson, err := json.Marshal(finalKwargsMap)
 		if err != nil {
 			logger.Error("Failed to MarshalJSON final callback kwargs", "error", err)
 			return cosmossdkerrors.Wrap(err, "failed to marshal combined callback kwargs")
@@ -449,7 +401,7 @@ func (k *Keeper) IBCOnAcknowledgementPacketCallback(
 		}
 
 		// Marshal callback args
-		if srcCallbackArgsJson, err := marshalDeterministic(any(srcCallback.Args)); err != nil {
+		if srcCallbackArgsJson, err := json.Marshal(any(srcCallback.Args)); err != nil {
 			logger.Error("Failed to MarshalJSON srcCallback.Args", "error", err)
 			if callbackError == "" {
 				callbackError = fmt.Sprintf("failed to marshal callback args: %v", err)

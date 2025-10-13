@@ -14,6 +14,10 @@ message GenesisState {
   Params params = 1 [ (gogoproto.nullable) = false ];
   repeated Commitment commitments = 3 [ (gogoproto.nullable) = false ];
 
+  // Bid ledger authoritative state; secondary indexes are rebuilt at import
+  uint64 bid_seq = 4;
+  repeated BidRecord bids = 5 [ (gogoproto.nullable) = false ];
+
   // For backward compatibility during migration, but will be ignored
   // in future versions
   reserved 2;
