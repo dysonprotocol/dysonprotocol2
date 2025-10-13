@@ -1,6 +1,7 @@
 package module
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -47,6 +48,11 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	return cdc.MustMarshalJSON(whaleswap.DefaultGenesis())
 }
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ sdkclient.TxEncodingConfig, bz json.RawMessage) error {
+	// Treat empty or "{}" or "null" as default genesis
+	trimmed := bytes.TrimSpace(bz)
+	if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("{}")) || bytes.Equal(trimmed, []byte("null")) {
+		return whaleswap.ValidateGenesisState(*whaleswap.DefaultGenesis())
+	}
 	var data whaleswaptypes.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", whaleswap.ModuleName, err)
@@ -92,11 +98,17 @@ func (am AppModule) ValidateGenesis(source appmodule.GenesisSource) error {
 		return whaleswap.ValidateGenesisState(*whaleswap.DefaultGenesis())
 	}
 	defer func(rc io.ReadCloser) { _ = rc.Close() }(reader)
+	// Read full JSON to detect empty object or null
+	raw, err := io.ReadAll(reader)
+	if err != nil {
+		return fmt.Errorf("failed to read %s genesis: %w", whaleswap.ModuleName, err)
+	}
+	trimmed := bytes.TrimSpace(raw)
+	if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("{}")) || bytes.Equal(trimmed, []byte("null")) {
+		return whaleswap.ValidateGenesisState(*whaleswap.DefaultGenesis())
+	}
 	var tmp whaleswaptypes.GenesisState
-	if err := json.NewDecoder(reader).Decode(&tmp); err != nil {
-		if err == io.EOF {
-			return whaleswap.ValidateGenesisState(*whaleswap.DefaultGenesis())
-		}
+	if err := json.Unmarshal(trimmed, &tmp); err != nil {
 		return fmt.Errorf("failed to decode %s genesis: %w", whaleswap.ModuleName, err)
 	}
 	return whaleswap.ValidateGenesisState(tmp)
@@ -111,14 +123,18 @@ func (am AppModule) InitGenesis(ctx context.Context, source appmodule.GenesisSou
 		gs = whaleswap.DefaultGenesis()
 	} else {
 		defer func(rc io.ReadCloser) { _ = rc.Close() }(reader)
-		var tmp whaleswaptypes.GenesisState
-		if err := json.NewDecoder(reader).Decode(&tmp); err != nil {
-			if err == io.EOF {
-				gs = whaleswap.DefaultGenesis()
-			} else {
+		raw, err := io.ReadAll(reader)
+		if err != nil {
+			return fmt.Errorf("failed to read %s genesis: %w", whaleswap.ModuleName, err)
+		}
+		trimmed := bytes.TrimSpace(raw)
+		if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("{}")) || bytes.Equal(trimmed, []byte("null")) {
+			gs = whaleswap.DefaultGenesis()
+		} else {
+			var tmp whaleswaptypes.GenesisState
+			if err := json.Unmarshal(trimmed, &tmp); err != nil {
 				return fmt.Errorf("failed to decode %s genesis: %w", whaleswap.ModuleName, err)
 			}
-		} else {
 			gs = &tmp
 		}
 	}

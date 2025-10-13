@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/store"
@@ -94,9 +95,13 @@ func (k Keeper) GetAuthority() string {
 func (k Keeper) GetParams(ctx context.Context) (params storagev1.Params) {
 	params, err := k.params.Get(ctx)
 	if err != nil {
-		// If params don't exist, return defaults
-		k.Logger(sdk.UnwrapSDKContext(ctx)).Error("GetParams: failed to load params; returning defaults", "err", err)
-		return storagev1.DefaultParams()
+		// Return defaults only if params are not found (fresh chain)
+		if errors.IsOf(err, collections.ErrNotFound) {
+			k.Logger(sdk.UnwrapSDKContext(ctx)).Info("GetParams: params not found; returning defaults")
+			return storagev1.DefaultParams()
+		}
+		// Any other error indicates corruption; fail fast
+		panic(fmt.Errorf("GetParams: failed to load params: %w", err))
 	}
 	return params
 }
@@ -183,6 +188,63 @@ func (k Keeper) CalculateMinStakeAmount(ctx context.Context, totalBytes uint64) 
 	// Truncate to integer (removing fractional part) and return as string
 	minStakeInt := minStakeDecimal.TruncateInt()
 	return minStakeInt.String(), nil
+}
+
+// RebuildDerivedState recomputes per-owner storage metrics from StorageMap.
+// It clears stale metrics and recalculates totals and min stake amounts.
+func (k Keeper) RebuildDerivedState(ctx context.Context) error {
+	// Clear all existing metrics
+	iter, err := k.StorageMetricsMap.Iterate(ctx, nil)
+	if err != nil {
+		return err
+	}
+	// Collect owners to avoid mutating while iterating
+	var owners []string
+	for ; iter.Valid(); iter.Next() {
+		key, e := iter.Key()
+		if e != nil {
+			_ = iter.Close()
+			return e
+		}
+		owners = append(owners, key)
+	}
+	_ = iter.Close()
+	for _, o := range owners {
+		if remErr := k.StorageMetricsMap.Remove(ctx, o); remErr != nil {
+			return remErr
+		}
+	}
+
+	// Aggregate bytes per owner by scanning all storage entries
+	bytesByOwner := map[string]uint64{}
+	entriesIter, err := k.StorageMap.Iterate(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer entriesIter.Close()
+	for ; entriesIter.Valid(); entriesIter.Next() {
+		st, vErr := entriesIter.Value()
+		if vErr != nil {
+			return vErr
+		}
+		bytesByOwner[st.Owner] += uint64(len(st.Data))
+	}
+
+	// Write fresh metrics
+	for owner, total := range bytesByOwner {
+		minStake, mErr := k.CalculateMinStakeAmount(ctx, total)
+		if mErr != nil {
+			return mErr
+		}
+		if setErr := k.StorageMetricsMap.Set(ctx, owner, storagev1.StorageMetrics{
+			Owner:          owner,
+			TotalBytes:     total,
+			MinStakeAmount: minStake,
+		}); setErr != nil {
+			return setErr
+		}
+	}
+	return nil
 }
 
 // GetTotalDelegatedStake returns the total amount a delegator has bonded across all validators

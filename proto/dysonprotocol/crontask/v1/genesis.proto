@@ -2,6 +2,7 @@ syntax = "proto3";
 package dysonprotocol.crontask.v1;
 
 import "dysonprotocol/crontask/v1/crontask.proto";
+import "dysonprotocol/crontask/v1/subscription.proto";
 
 option go_package = "dysonprotocol.com/x/crontask/types";
 
@@ -18,4 +19,7 @@ message GenesisState {
 
   // The sequence for the next subscription ID
   uint64 next_subscription_id = 4;
+
+  // List of subscriptions to initialize with
+  repeated Subscription subscriptions = 5;
 }

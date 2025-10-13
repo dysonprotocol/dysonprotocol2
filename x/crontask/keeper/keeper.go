@@ -95,6 +95,23 @@ type Keeper struct {
 	NextSubscriptionID collections.Sequence
 }
 
+// RebuildIndexes iterates primary data to rebuild raw KV secondary indexes for tasks.
+// Subscriptions use collections.IndexedMap and do not need manual rebuild.
+func (k Keeper) RebuildIndexes(ctx context.Context) error {
+	// Clear and rebuild per-task raw KV indexes by walking all tasks
+	// Note: deletion of all possible old index keys is expensive; instead we remove per-task entries using current values
+	// This is sufficient on a fresh import as the KV store is empty before writes.
+	// If running in-place, callers should clear old prefixes beforehand if needed.
+	if err := k.Tasks.Walk(ctx, nil, func(_ uint64, task crontasktypes.Task) (bool, error) {
+		// Ensure indexes exist for current task state
+		k.addIndexes(ctx, task)
+		return false, nil
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
 // SubscriptionIndexes defines secondary indexes for subscriptions.
 // - ByStatus: maps status string -> subscription_id (multi)
 // - ByCreator: maps creator address string -> subscription_id (multi)
@@ -399,15 +416,15 @@ func (k Keeper) SetParams(ctx context.Context, params crontasktypes.Params) erro
 // GetParams gets the crontask module parameters
 func (k Keeper) GetParams(ctx context.Context) crontasktypes.Params {
 	params, err := k.Params.Get(ctx)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			k.Logger.Error("GetParams: params not found; returning defaults")
-			return crontasktypes.DefaultParams()
-		}
-		k.Logger.Error("GetParams: failed to load params; returning defaults", "err", err)
+	if err == nil {
+		return params
+	}
+	if errors.Is(err, collections.ErrNotFound) {
+		k.Logger.Error("GetParams: params not found; returning defaults")
 		return crontasktypes.DefaultParams()
 	}
-	return params
+	// Surface unexpected errors loudly; do not mask corruption
+	panic(err)
 }
 
 // GetModuleParams returns the current module parameters

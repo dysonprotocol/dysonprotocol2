@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -708,11 +709,13 @@ func (k Keeper) dispatchJSONMsg(ctx sdk.Context, scriptAddress sdk.AccAddress, j
 // GetParams returns the current module parameters
 func (k Keeper) GetParams(ctx context.Context) (params scripttypes.Params) {
 	params, err := k.params.Get(ctx)
-	if err != nil {
-		// If params don't exist, return defaults
+	if err == nil {
+		return params
+	}
+	if errors.Is(err, collections.ErrNotFound) {
 		return scripttypes.DefaultParams()
 	}
-	return params
+	panic(err)
 }
 
 // SetParams sets the module parameters

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	script "dysonprotocol.com/x/script"
 	"dysonprotocol.com/x/script/types"
@@ -56,8 +57,12 @@ func (k Keeper) ExportGenesis(ctx context.Context, _ codec.JSONCodec) (*types.Ge
 		if err != nil {
 			return nil, fmt.Errorf("failed to read script during export: %w", err)
 		}
-		scripts = append(scripts, &value)
+		v := value
+		scripts = append(scripts, &v)
 	}
+
+	// Ensure deterministic export order
+	sort.Slice(scripts, func(i, j int) bool { return scripts[i].Address < scripts[j].Address })
 
 	// Create and return a new genesis state with the params and scripts
 	return &types.GenesisState{

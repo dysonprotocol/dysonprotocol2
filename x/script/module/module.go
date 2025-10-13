@@ -90,10 +90,6 @@ type AppModule struct {
 
 // NewAppModule creates a new AppModule object
 func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, ak scripttypes.AccountKeeper, bk scripttypes.BankKeeper, registry cdctypes.InterfaceRegistry) AppModule {
-
-	// Ensure registry has the right types registered
-	script.RegisterInterfaces(registry)
-
 	return AppModule{
 		cdc:        cdc,
 		keeper:     keeper,
@@ -146,12 +142,12 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	return am.keeper.EndBlocker(ctx)
 }
 
-// DefaultGenesis returns default genesis state as raw bytes for the group module.
+// DefaultGenesis returns default genesis state as raw bytes for the script module.
 func (am AppModule) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	return cdc.MustMarshalJSON(script.NewGenesisState())
 }
 
-// ValidateGenesis performs genesis state validation for the group module.
+// ValidateGenesis performs genesis state validation for the script module.
 func (am AppModule) ValidateGenesis(cdc codec.JSONCodec, config sdkclient.TxEncodingConfig, bz json.RawMessage) error {
 	var data scripttypes.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
@@ -167,7 +163,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.
 	}
 }
 
-// ExportGenesis returns the exported genesis state as raw bytes for the group module.
+// ExportGenesis returns the exported genesis state as raw bytes for the script module.
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
 	gs, err := am.keeper.ExportGenesis(ctx, cdc)
 	if err != nil {

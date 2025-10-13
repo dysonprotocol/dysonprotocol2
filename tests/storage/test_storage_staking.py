@@ -679,8 +679,18 @@ class TestStorageStakingErrorHandling:
         lower = result.lower()
         print(f"Invalid address error: {lower}")
         tail = lower.strip().splitlines()[-1]
-        expected = "rpc error: code = invalidargument desc = rpc error: code = invalidargument desc = failed to resolve owner: name not found: invalid_address_format: not found [dysonprotocol.com/x/nameservice/keeper/keeper.go:480]: invalid request"
-        assert tail == expected, f"Expected '{expected}', got: {tail}\nFull: {lower}"
+        prefix = (
+            "rpc error: code = invalidargument desc = rpc error: code = invalidargument desc = "
+            "failed to resolve owner: name not found: invalid_address_format: not found "
+            "[dysonprotocol.com/x/nameservice/keeper/keeper.go:"
+        )
+        suffix = "]: invalid request"
+        assert tail.startswith(
+            prefix
+        ), f"Expected error to start with '{prefix}', got: {tail}\nFull: {lower}"
+        assert tail.endswith(
+            suffix
+        ), f"Expected error to end with '{suffix}', got: {tail}\nFull: {lower}"
 
         print("✅ Invalid address handling works correctly")
 
