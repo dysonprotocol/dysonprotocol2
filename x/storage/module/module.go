@@ -68,9 +68,6 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config sdkclient.TxEn
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the storage module.
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx sdkclient.Context, mux *gwruntime.ServeMux) {
-	if err := storagetypes.RegisterQueryHandlerClient(context.Background(), mux, storagetypes.NewQueryClient(clientCtx)); err != nil {
-		panic(err)
-	}
 }
 
 // GetTxCmd returns the root tx command for the storage module.

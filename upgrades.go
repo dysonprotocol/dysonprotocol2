@@ -5,28 +5,12 @@ import (
 
 	"strings"
 
-	storetypes "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
 	"github.com/cosmos/cosmos-sdk/types/module"
-	epochstypes "github.com/cosmos/cosmos-sdk/x/epochs/types"
-	protocolpooltypes "github.com/cosmos/cosmos-sdk/x/protocolpool/types"
 )
 
-// UpgradeName defines the on-chain upgrade name for the sample DysApp upgrade
-// from v050 to v053.
-//
-// NOTE: This upgrade defines a reference implementation of what an upgrade
-// could look like when an application is migrating from Cosmos SDK version
-// v0.50.x to v0.53.x.
-const UpgradeName = "v050-to-v053"
-
-// RemoveCircuitUpgradeName defines the on-chain upgrade name that removes the
-// deprecated "circuit" module store from state.
-const RemoveCircuitUpgradeName = "remove-circuit"
-
-// V2RC9UpgradeName defines the on-chain upgrade name for v2.0.0-rc9.
-const V2RC9UpgradeName = "v2.0.0-rc9"
+// (removed legacy upgrade names)
 
 // RmHistoricalQueriesUpgradeName defines the on-chain upgrade name for
 // removing historical query support in the script module. This is an
@@ -35,49 +19,7 @@ const RmHistoricalQueriesUpgradeName = "rm-historical-queries"
 
 func (app *DysApp) RegisterUpgradeHandlers() {
 	app.Logger().Info("RegisterUpgradeHandlers: installing upgrade handlers")
-	app.UpgradeKeeper.SetUpgradeHandler(
-		UpgradeName,
-		func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-			app.Logger().Info("Executing upgrade handler", "name", plan.Name, "height", plan.Height)
-			newVM, err := app.ModuleManager.RunMigrations(ctx, app.Configurator(), fromVM)
-			if err != nil {
-				app.Logger().Error("Upgrade handler failed", "name", plan.Name, "height", plan.Height, "err", err)
-				return newVM, err
-			}
-			app.Logger().Info("Upgrade handler completed", "name", plan.Name, "height", plan.Height)
-			return newVM, nil
-		},
-	)
-
-	// Register handler for removing the deprecated circuit module store
-	app.UpgradeKeeper.SetUpgradeHandler(
-		RemoveCircuitUpgradeName,
-		func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-			app.Logger().Info("Executing upgrade handler", "name", plan.Name, "height", plan.Height)
-			newVM, err := app.ModuleManager.RunMigrations(ctx, app.Configurator(), fromVM)
-			if err != nil {
-				app.Logger().Error("Upgrade handler failed", "name", plan.Name, "height", plan.Height, "err", err)
-				return newVM, err
-			}
-			app.Logger().Info("Upgrade handler completed", "name", plan.Name, "height", plan.Height)
-			return newVM, nil
-		},
-	)
-
-	// Register handler for v2.0.0-rc9
-	app.UpgradeKeeper.SetUpgradeHandler(
-		V2RC9UpgradeName,
-		func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-			app.Logger().Info("Executing upgrade handler", "name", plan.Name, "height", plan.Height)
-			newVM, err := app.ModuleManager.RunMigrations(ctx, app.Configurator(), fromVM)
-			if err != nil {
-				app.Logger().Error("Upgrade handler failed", "name", plan.Name, "height", plan.Height, "err", err)
-				return newVM, err
-			}
-			app.Logger().Info("Upgrade handler completed", "name", plan.Name, "height", plan.Height)
-			return newVM, nil
-		},
-	)
+	// (removed legacy handlers)
 
 	// Register handler for rm-historical-queries (export/import upgrade)
 	app.UpgradeKeeper.SetUpgradeHandler(
@@ -124,37 +66,15 @@ func (app *DysApp) RegisterUpgradeHandlers() {
 
 	if !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		switch upgradeInfo.Name {
-		case UpgradeName:
-			app.Logger().Info("Configuring store loader for upgrade", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
-			storeUpgrades := storetypes.StoreUpgrades{
-				Added: []string{
-					epochstypes.ModuleName,
-					protocolpooltypes.ModuleName,
-				},
-			}
-			// configure store loader that checks if version == upgradeHeight and applies store upgrades
-			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
-		case RemoveCircuitUpgradeName:
-			app.Logger().Info("Configuring store loader to delete deprecated module store", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
-			storeUpgrades := storetypes.StoreUpgrades{
-				Deleted: []string{
-					"circuit", // store key matches x/circuit types.ModuleName
-				},
-			}
-			// configure store loader that checks if version == upgradeHeight and applies store deletions
-			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
-		case V2RC9UpgradeName:
-			// No store upgrades required for v2.0.0-rc9
-			app.Logger().Info("No store upgrades for this upgrade; not configuring store loader", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
 		case RmHistoricalQueriesUpgradeName:
 			// Export/Import style upgrade; no store upgrades
 			app.Logger().Info("Export/Import upgrade; no store upgrades configured", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
 		default:
-			app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{UpgradeName, RemoveCircuitUpgradeName, V2RC9UpgradeName}, "height", upgradeInfo.Height)
+			app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{RmHistoricalQueriesUpgradeName}, "height", upgradeInfo.Height)
 		}
-	} else if upgradeInfo.Name == UpgradeName || upgradeInfo.Name == RemoveCircuitUpgradeName || upgradeInfo.Name == V2RC9UpgradeName || upgradeInfo.Name == RmHistoricalQueriesUpgradeName {
+	} else if upgradeInfo.Name == RmHistoricalQueriesUpgradeName {
 		app.Logger().Info("Skip height is set; not configuring store loader", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
 	} else {
-		app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{UpgradeName, RemoveCircuitUpgradeName, V2RC9UpgradeName}, "height", upgradeInfo.Height)
+		app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{RmHistoricalQueriesUpgradeName}, "height", upgradeInfo.Height)
 	}
 }

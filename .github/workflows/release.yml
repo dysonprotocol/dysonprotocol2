@@ -13,6 +13,16 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Clean workspace before checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$GITHUB_WORKSPACE"
+          echo "Cleaning $dir"
+          cd ..
+          if [ -d "$dir" ]; then
+            find "$dir" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+          fi
       - name: Checkout
         uses: actions/checkout@v4
         with:

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	crontasktypes "dysonprotocol.com/x/crontask/types"
 )
@@ -49,19 +50,51 @@ func (k Keeper) InitGenesis(ctx context.Context, genState *crontasktypes.Genesis
 		return err
 	}
 
-	// Import all tasks
+	// Import all tasks with basic message unpack validation
 	for _, task := range genState.Tasks {
-		if err := k.Tasks.Set(ctx, task.TaskId, *task); err != nil {
+		for i, anyMsg := range task.Msgs {
+			var sdkMsg interface{}
+			if err := k.cdc.UnpackAny(anyMsg, &sdkMsg); err != nil {
+				return fmt.Errorf("invalid task message at index %d: %w", i, err)
+			}
+		}
+		// Use SetTask to ensure secondary indexes are created consistently
+		if err := k.SetTask(ctx, *task); err != nil {
 			return err
 		}
 	}
 
-	// Initialize subscription ID sequence. If not provided (0), default to 1.
+	// Import subscriptions if provided
+	for _, sub := range genState.Subscriptions {
+		// Write primary record
+		if err := k.Subscriptions.Set(ctx, sub.SubscriptionId, *sub); err != nil {
+			return err
+		}
+	}
+
+	// Initialize subscription ID sequence. If not provided (0) or stale (<= max), set to max+1 (or 1 if none)
+	var maxSubID uint64
+	for _, sub := range genState.Subscriptions {
+		if sub.SubscriptionId > maxSubID {
+			maxSubID = sub.SubscriptionId
+		}
+	}
 	nextSubID := genState.NextSubscriptionId
 	if nextSubID == 0 {
-		nextSubID = 1
+		if maxSubID == 0 {
+			nextSubID = 1
+		} else {
+			nextSubID = maxSubID + 1
+		}
+	} else if nextSubID <= maxSubID {
+		nextSubID = maxSubID + 1
 	}
 	if err := k.NextSubscriptionID.Set(ctx, nextSubID); err != nil {
+		return err
+	}
+
+	// Rebuild any raw secondary indexes derived from primary data (idempotent)
+	if err := k.RebuildIndexes(ctx); err != nil {
 		return err
 	}
 
@@ -98,10 +131,21 @@ func (k Keeper) ExportGenesis(ctx context.Context) (*crontasktypes.GenesisState,
 		return nil, err // Direct error propagation
 	}
 
+	// Get all subscriptions
+	var subs []*crontasktypes.Subscription
+	if err := k.Subscriptions.Walk(ctx, nil, func(id uint64, sub crontasktypes.Subscription) (bool, error) {
+		s := sub
+		subs = append(subs, &s)
+		return false, nil
+	}); err != nil {
+		return nil, err
+	}
+
 	return &crontasktypes.GenesisState{
 		Tasks:              tasks,
 		NextTaskId:         nextTaskID,
 		Params:             &params,
 		NextSubscriptionId: nextSubscriptionID,
+		Subscriptions:      subs,
 	}, nil
 }

@@ -63,12 +63,64 @@ func (x *_GenesisState_1_list) IsValid() bool {
 	return x.list != nil
 }
 
+var _ protoreflect.List = (*_GenesisState_5_list)(nil)
+
+type _GenesisState_5_list struct {
+	list *[]*Subscription
+}
+
+func (x *_GenesisState_5_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_GenesisState_5_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_GenesisState_5_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*Subscription)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_GenesisState_5_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*Subscription)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_GenesisState_5_list) AppendMutable() protoreflect.Value {
+	v := new(Subscription)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_GenesisState_5_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_GenesisState_5_list) NewElement() protoreflect.Value {
+	v := new(Subscription)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_GenesisState_5_list) IsValid() bool {
+	return x.list != nil
+}
+
 var (
 	md_GenesisState                      protoreflect.MessageDescriptor
 	fd_GenesisState_tasks                protoreflect.FieldDescriptor
 	fd_GenesisState_next_task_id         protoreflect.FieldDescriptor
 	fd_GenesisState_params               protoreflect.FieldDescriptor
 	fd_GenesisState_next_subscription_id protoreflect.FieldDescriptor
+	fd_GenesisState_subscriptions        protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -78,6 +130,7 @@ func init() {
 	fd_GenesisState_next_task_id = md_GenesisState.Fields().ByName("next_task_id")
 	fd_GenesisState_params = md_GenesisState.Fields().ByName("params")
 	fd_GenesisState_next_subscription_id = md_GenesisState.Fields().ByName("next_subscription_id")
+	fd_GenesisState_subscriptions = md_GenesisState.Fields().ByName("subscriptions")
 }
 
 var _ protoreflect.Message = (*fastReflection_GenesisState)(nil)
@@ -169,6 +222,12 @@ func (x *fastReflection_GenesisState) Range(f func(protoreflect.FieldDescriptor,
 			return
 		}
 	}
+	if len(x.Subscriptions) != 0 {
+		value := protoreflect.ValueOfList(&_GenesisState_5_list{list: &x.Subscriptions})
+		if !f(fd_GenesisState_subscriptions, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -192,6 +251,8 @@ func (x *fastReflection_GenesisState) Has(fd protoreflect.FieldDescriptor) bool 
 		return x.Params != nil
 	case "dysonprotocol.crontask.v1.GenesisState.next_subscription_id":
 		return x.NextSubscriptionId != uint64(0)
+	case "dysonprotocol.crontask.v1.GenesisState.subscriptions":
+		return len(x.Subscriptions) != 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.crontask.v1.GenesisState"))
@@ -216,6 +277,8 @@ func (x *fastReflection_GenesisState) Clear(fd protoreflect.FieldDescriptor) {
 		x.Params = nil
 	case "dysonprotocol.crontask.v1.GenesisState.next_subscription_id":
 		x.NextSubscriptionId = uint64(0)
+	case "dysonprotocol.crontask.v1.GenesisState.subscriptions":
+		x.Subscriptions = nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.crontask.v1.GenesisState"))
@@ -247,6 +310,12 @@ func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescripto
 	case "dysonprotocol.crontask.v1.GenesisState.next_subscription_id":
 		value := x.NextSubscriptionId
 		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.crontask.v1.GenesisState.subscriptions":
+		if len(x.Subscriptions) == 0 {
+			return protoreflect.ValueOfList(&_GenesisState_5_list{})
+		}
+		listValue := &_GenesisState_5_list{list: &x.Subscriptions}
+		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.crontask.v1.GenesisState"))
@@ -277,6 +346,10 @@ func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value
 		x.Params = value.Message().Interface().(*Params)
 	case "dysonprotocol.crontask.v1.GenesisState.next_subscription_id":
 		x.NextSubscriptionId = value.Uint()
+	case "dysonprotocol.crontask.v1.GenesisState.subscriptions":
+		lv := value.List()
+		clv := lv.(*_GenesisState_5_list)
+		x.Subscriptions = *clv.list
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.crontask.v1.GenesisState"))
@@ -308,6 +381,12 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 			x.Params = new(Params)
 		}
 		return protoreflect.ValueOfMessage(x.Params.ProtoReflect())
+	case "dysonprotocol.crontask.v1.GenesisState.subscriptions":
+		if x.Subscriptions == nil {
+			x.Subscriptions = []*Subscription{}
+		}
+		value := &_GenesisState_5_list{list: &x.Subscriptions}
+		return protoreflect.ValueOfList(value)
 	case "dysonprotocol.crontask.v1.GenesisState.next_task_id":
 		panic(fmt.Errorf("field next_task_id of message dysonprotocol.crontask.v1.GenesisState is not mutable"))
 	case "dysonprotocol.crontask.v1.GenesisState.next_subscription_id":
@@ -335,6 +414,9 @@ func (x *fastReflection_GenesisState) NewField(fd protoreflect.FieldDescriptor) 
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	case "dysonprotocol.crontask.v1.GenesisState.next_subscription_id":
 		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.crontask.v1.GenesisState.subscriptions":
+		list := []*Subscription{}
+		return protoreflect.ValueOfList(&_GenesisState_5_list{list: &list})
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.crontask.v1.GenesisState"))
@@ -420,6 +502,12 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 		if x.NextSubscriptionId != 0 {
 			n += 1 + runtime.Sov(uint64(x.NextSubscriptionId))
 		}
+		if len(x.Subscriptions) > 0 {
+			for _, e := range x.Subscriptions {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -448,6 +536,22 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Subscriptions) > 0 {
+			for iNdEx := len(x.Subscriptions) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.Subscriptions[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x2a
+			}
 		}
 		if x.NextSubscriptionId != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.NextSubscriptionId))
@@ -646,6 +750,40 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 						break
 					}
 				}
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Subscriptions", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Subscriptions = append(x.Subscriptions, &Subscription{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Subscriptions[len(x.Subscriptions)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -708,6 +846,8 @@ type GenesisState struct {
 	Params *Params `protobuf:"bytes,3,opt,name=params,proto3" json:"params,omitempty"`
 	// The sequence for the next subscription ID
 	NextSubscriptionId uint64 `protobuf:"varint,4,opt,name=next_subscription_id,json=nextSubscriptionId,proto3" json:"next_subscription_id,omitempty"`
+	// List of subscriptions to initialize with
+	Subscriptions []*Subscription `protobuf:"bytes,5,rep,name=subscriptions,proto3" json:"subscriptions,omitempty"`
 }
 
 func (x *GenesisState) Reset() {
@@ -758,6 +898,13 @@ func (x *GenesisState) GetNextSubscriptionId() uint64 {
 	return 0
 }
 
+func (x *GenesisState) GetSubscriptions() []*Subscription {
+	if x != nil {
+		return x.Subscriptions
+	}
+	return nil
+}
+
 var File_dysonprotocol_crontask_v1_genesis_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_crontask_v1_genesis_proto_rawDesc = []byte{
@@ -767,24 +914,31 @@ var file_dysonprotocol_crontask_v1_genesis_proto_rawDesc = []byte{
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x72, 0x6f, 0x6e, 0x74, 0x61, 0x73,
 	0x6b, 0x2e, 0x76, 0x31, 0x1a, 0x28, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x63, 0x6f, 0x6c, 0x2f, 0x63, 0x72, 0x6f, 0x6e, 0x74, 0x61, 0x73, 0x6b, 0x2f, 0x76, 0x31, 0x2f,
-	0x63, 0x72, 0x6f, 0x6e, 0x74, 0x61, 0x73, 0x6b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xd4,
-	0x01, 0x0a, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12,
-	0x35, 0x0a, 0x05, 0x74, 0x61, 0x73, 0x6b, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1f,
-	0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63,
-	0x72, 0x6f, 0x6e, 0x74, 0x61, 0x73, 0x6b, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x61, 0x73, 0x6b, 0x52,
-	0x05, 0x74, 0x61, 0x73, 0x6b, 0x73, 0x12, 0x20, 0x0a, 0x0c, 0x6e, 0x65, 0x78, 0x74, 0x5f, 0x74,
-	0x61, 0x73, 0x6b, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x6e, 0x65,
-	0x78, 0x74, 0x54, 0x61, 0x73, 0x6b, 0x49, 0x64, 0x12, 0x39, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x61,
-	0x6d, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x72, 0x6f, 0x6e, 0x74, 0x61, 0x73,
-	0x6b, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x06, 0x70, 0x61, 0x72,
-	0x61, 0x6d, 0x73, 0x12, 0x30, 0x0a, 0x14, 0x6e, 0x65, 0x78, 0x74, 0x5f, 0x73, 0x75, 0x62, 0x73,
-	0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x12, 0x6e, 0x65, 0x78, 0x74, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74,
-	0x69, 0x6f, 0x6e, 0x49, 0x64, 0x42, 0x24, 0x5a, 0x22, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x63, 0x72, 0x6f,
-	0x6e, 0x74, 0x61, 0x73, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x63, 0x72, 0x6f, 0x6e, 0x74, 0x61, 0x73, 0x6b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x2c,
+	0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2f, 0x63, 0x72,
+	0x6f, 0x6e, 0x74, 0x61, 0x73, 0x6b, 0x2f, 0x76, 0x31, 0x2f, 0x73, 0x75, 0x62, 0x73, 0x63, 0x72,
+	0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xa3, 0x02, 0x0a,
+	0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x35, 0x0a,
+	0x05, 0x74, 0x61, 0x73, 0x6b, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x64,
+	0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x72, 0x6f,
+	0x6e, 0x74, 0x61, 0x73, 0x6b, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x61, 0x73, 0x6b, 0x52, 0x05, 0x74,
+	0x61, 0x73, 0x6b, 0x73, 0x12, 0x20, 0x0a, 0x0c, 0x6e, 0x65, 0x78, 0x74, 0x5f, 0x74, 0x61, 0x73,
+	0x6b, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x6e, 0x65, 0x78, 0x74,
+	0x54, 0x61, 0x73, 0x6b, 0x49, 0x64, 0x12, 0x39, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x72, 0x6f, 0x6e, 0x74, 0x61, 0x73, 0x6b, 0x2e,
+	0x76, 0x31, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d,
+	0x73, 0x12, 0x30, 0x0a, 0x14, 0x6e, 0x65, 0x78, 0x74, 0x5f, 0x73, 0x75, 0x62, 0x73, 0x63, 0x72,
+	0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x12, 0x6e, 0x65, 0x78, 0x74, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f,
+	0x6e, 0x49, 0x64, 0x12, 0x4d, 0x0a, 0x0d, 0x73, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74,
+	0x69, 0x6f, 0x6e, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x64, 0x79, 0x73,
+	0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x72, 0x6f, 0x6e, 0x74,
+	0x61, 0x73, 0x6b, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74,
+	0x69, 0x6f, 0x6e, 0x52, 0x0d, 0x73, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f,
+	0x6e, 0x73, 0x42, 0x24, 0x5a, 0x22, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x63, 0x72, 0x6f, 0x6e, 0x74, 0x61,
+	0x73, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -804,15 +958,17 @@ var file_dysonprotocol_crontask_v1_genesis_proto_goTypes = []interface{}{
 	(*GenesisState)(nil), // 0: dysonprotocol.crontask.v1.GenesisState
 	(*Task)(nil),         // 1: dysonprotocol.crontask.v1.Task
 	(*Params)(nil),       // 2: dysonprotocol.crontask.v1.Params
+	(*Subscription)(nil), // 3: dysonprotocol.crontask.v1.Subscription
 }
 var file_dysonprotocol_crontask_v1_genesis_proto_depIdxs = []int32{
 	1, // 0: dysonprotocol.crontask.v1.GenesisState.tasks:type_name -> dysonprotocol.crontask.v1.Task
 	2, // 1: dysonprotocol.crontask.v1.GenesisState.params:type_name -> dysonprotocol.crontask.v1.Params
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	3, // 2: dysonprotocol.crontask.v1.GenesisState.subscriptions:type_name -> dysonprotocol.crontask.v1.Subscription
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_dysonprotocol_crontask_v1_genesis_proto_init() }
@@ -821,6 +977,7 @@ func file_dysonprotocol_crontask_v1_genesis_proto_init() {
 		return
 	}
 	file_dysonprotocol_crontask_v1_crontask_proto_init()
+	file_dysonprotocol_crontask_v1_subscription_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_dysonprotocol_crontask_v1_genesis_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GenesisState); i {

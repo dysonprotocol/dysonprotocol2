@@ -29,6 +29,7 @@ type BankKeeper interface {
 	GetDenomMetaData(ctx context.Context, denom string) (banktypes.Metadata, bool)
 	HasDenomMetaData(ctx context.Context, denom string) bool
 	SetDenomMetaData(ctx context.Context, denomMetaData banktypes.Metadata)
+	GetAllDenomMetaData(ctx context.Context) []banktypes.Metadata
 }
 
 // CommunityPoolKeeper defines the expected community pool keeper
@@ -43,6 +44,8 @@ type NFTKeeper interface {
 	UpdateClass(ctx context.Context, class nft.Class) error
 	GetClass(ctx context.Context, classID string) (nft.Class, bool)
 	HasClass(ctx context.Context, classID string) bool
+	// List all classes
+	GetClasses(ctx context.Context) (classes []*nft.Class)
 	// GetTotalSupply returns the number of NFTs in the class
 	GetTotalSupply(ctx context.Context, classID string) uint64
 	// RemoveClass deletes an NFT class; must only be called when empty
@@ -55,6 +58,8 @@ type NFTKeeper interface {
 	GetNFT(ctx context.Context, classID string, nftID string) (nft.NFT, bool)
 	GetOwner(ctx context.Context, classID string, nftID string) sdk.AccAddress
 	HasNFT(ctx context.Context, classID string, nftID string) bool
+	// List all NFTs in a class
+	GetNFTsOfClass(ctx context.Context, classID string) (nfts []nft.NFT)
 	// Transfer transfers an NFT to a new owner
 	Transfer(ctx context.Context, classID string, nftID string, receiver sdk.AccAddress) error
 }

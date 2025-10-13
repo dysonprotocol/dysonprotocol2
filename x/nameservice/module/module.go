@@ -57,7 +57,7 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	return cdc.MustMarshalJSON(nameservicev1.DefaultGenesis())
 }
 
-// ValidateGenesis performs genesis state validation for the gov module.
+// ValidateGenesis performs genesis state validation for the nameservice module.
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
 	var data nameservicev1.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
@@ -68,11 +68,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncod
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the nameservice module.
-func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwruntime.ServeMux) {
-	if err := nameservicev1.RegisterQueryHandlerClient(context.Background(), mux, nameservicev1.NewQueryClient(clientCtx)); err != nil {
-		panic(err)
-	}
-}
+func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwruntime.ServeMux) {}
 
 type AppModule struct {
 	cdc      codec.Codec
@@ -163,8 +159,20 @@ func (am AppModule) InitGenesis(ctx context.Context, source appmodule.GenesisSou
 			return fmt.Errorf("failed to set nameservice commitment %s: %w", commitment.Hexhash, err)
 		}
 	}
+
+	// Restore bid ledger authoritative data
+	if err := am.keeper.SetBidSeq(sdkCtx, gs.BidSeq); err != nil {
+		return fmt.Errorf("failed to set bid sequence: %w", err)
+	}
+	if err := am.keeper.ImportBids(sdkCtx, gs.Bids); err != nil {
+		return fmt.Errorf("failed to import bids: %w", err)
+	}
 	if err := am.keeper.EnsureNamesClassExists(sdkCtx); err != nil {
 		return fmt.Errorf("failed to ensure names class: %w", err)
+	}
+	// Rebuild derived indexes that are not persisted in genesis
+	if err := am.keeper.RebuildDerivedIndexes(sdkCtx); err != nil {
+		return fmt.Errorf("failed to rebuild derived indexes: %w", err)
 	}
 	return nil
 }
@@ -182,9 +190,7 @@ func (am AppModule) DefaultGenesis(target appmodule.GenesisTarget) error {
 // ValidateGenesis performs genesis state validation for the nameservice module.
 // removed legacy ValidateGenesis
 
-// ExportGenesis returns the exported genesis state as raw bytes for the gov
-// ExportGenesis returns the exported genesis state as raw bytes for the gov
-// module.
+// ExportGenesis returns the exported genesis state for the nameservice module.
 func (am AppModule) ExportGenesis(ctx context.Context, target appmodule.GenesisTarget) error {
 	gs, err := am.keeper.ExportGenesis(ctx)
 	if err != nil {
@@ -218,7 +224,7 @@ func (AppModule) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwrunt
 	}
 }
 
-// RegisterLegacyAminoCodec registers the storage module's types for the given codec.
+// RegisterLegacyAminoCodec registers the nameservice module's types for the given codec.
 func (AppModule) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	nameservicev1.RegisterLegacyAminoCodec(cdc)
 }

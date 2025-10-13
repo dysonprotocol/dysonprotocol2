@@ -6,6 +6,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // DefaultGenesis returns the default genesis state for the module.
@@ -48,6 +49,9 @@ func ValidateGenesis(gs *GenesisState) error {
 		if task.Creator == "" {
 			return fmt.Errorf("task creator cannot be empty")
 		}
+		if _, err := sdk.AccAddressFromBech32(task.Creator); err != nil {
+			return fmt.Errorf("invalid task creator address %s: %v", task.Creator, err)
+		}
 		if task.ScheduledTimestamp <= 0 {
 			return fmt.Errorf("scheduled timestamp must be positive")
 		}
@@ -62,6 +66,40 @@ func ValidateGenesis(gs *GenesisState) error {
 		}
 		if len(task.Msgs) == 0 {
 			return fmt.Errorf("task must have at least one message")
+		}
+	}
+
+	// Validate subscriptions
+	subIDs := make(map[uint64]bool)
+	for _, sub := range gs.Subscriptions {
+		if sub.SubscriptionId == 0 {
+			return fmt.Errorf("subscription ID cannot be 0")
+		}
+		if _, exists := subIDs[sub.SubscriptionId]; exists {
+			return fmt.Errorf("duplicate subscription ID: %d", sub.SubscriptionId)
+		}
+		subIDs[sub.SubscriptionId] = true
+
+		if sub.Creator == "" {
+			return fmt.Errorf("subscription creator cannot be empty")
+		}
+		if _, err := sdk.AccAddressFromBech32(sub.Creator); err != nil {
+			return fmt.Errorf("invalid subscription creator address %s: %v", sub.Creator, err)
+		}
+		if sub.ScriptAddress == "" {
+			return fmt.Errorf("subscription script address cannot be empty")
+		}
+		if _, err := sdk.AccAddressFromBech32(sub.ScriptAddress); err != nil {
+			return fmt.Errorf("invalid subscription script address %s: %v", sub.ScriptAddress, err)
+		}
+		if sub.TaskGasLimit == 0 {
+			return fmt.Errorf("subscription task gas limit must be positive")
+		}
+		if !sub.TaskGasFee.IsValid() {
+			return fmt.Errorf("invalid subscription task gas fee")
+		}
+		if sub.ExpiryTimestamp <= 0 {
+			return fmt.Errorf("subscription expiry timestamp must be positive")
 		}
 	}
 

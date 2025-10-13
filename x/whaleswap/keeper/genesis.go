@@ -237,6 +237,11 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 			))
 		}
 	}
+
+	// Final AMM sanity (shares/liquidity/coverage) after import
+	if err := k.AssertAMMInvariants(ctx); err != nil {
+		panic(err)
+	}
 }
 
 // ExportGenesis exports current module state

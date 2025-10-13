@@ -42,6 +42,11 @@ func (k Keeper) InitGenesis(ctx context.Context, genState *storagev1.GenesisStat
 			panic(fmt.Errorf("failed to set storage entry %s: %w", combinedKey, err))
 		}
 	}
+
+	// Rebuild derived state (metrics) after entries are loaded
+	if err := k.RebuildDerivedState(ctx); err != nil {
+		panic(fmt.Errorf("failed to rebuild derived state: %w", err))
+	}
 }
 
 // ExportGenesis exports the storage module's state to a genesis state.
@@ -66,6 +71,8 @@ func (k Keeper) ExportGenesis(ctx context.Context) *storagev1.GenesisState {
 		}
 		entries = append(entries, value)
 	}
+
+	// Entries are already in a deterministic order; no additional sorting required
 
 	// Create and return a new genesis state with the params and entries
 	return &storagev1.GenesisState{
