@@ -233,7 +233,6 @@ func NewDysApp(
 	// }
 	// baseAppOptions = append(baseAppOptions, prepareOpt)
 
-	baseAppOptions = append(baseAppOptions, baseapp.SetOptimisticExecution())
 
 	app.App = appBuilder.Build(db, traceStore, baseAppOptions...)
 
