@@ -196,7 +196,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     poll_until_condition(
         _ics27_channels_open,
-        timeout=60,
+        timeout=10,
         poll_interval=1,
         error_message="ICS-27 channels not open on both chains",
     )
@@ -261,7 +261,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     poll_until_condition(
         _transfer_channel_open,
-        timeout=60,
+        timeout=10,
         poll_interval=1,
         error_message="transfer channel not open on both chains",
     )
@@ -389,7 +389,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     poll_until_condition(
         _ica_address_established,
-        timeout=60,
+        timeout=10,
         poll_interval=1,
         error_message="ICA address not established after registration",
     )
@@ -603,7 +603,7 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     poll_until_condition(
         _balance_callback_received,
-        timeout=60,
+        timeout=10,
         poll_interval=1,
         error_message="Balance query callback not received",
     )
@@ -638,9 +638,42 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         isinstance(verify_callback, dict) and verify_callback.get("status") == "success"
     ), f"Expected success status. Full context: {json.dumps(verify_callback, indent=2)}"
 
-    # 9. Withdraw funds back to controller
+    # 9. Wait for host (chain B) voucher to arrive and derive its denom dynamically
+    print(f"⏳ Waiting for host voucher on Chain B...")
+    host_voucher = {"denom": None}
+
+    def _host_voucher_funded():
+        balances = chain_b("query", "bank", "balances", ica_address)
+        bals = balances.get("balances", [])
+        ibc_bals = [
+            b
+            for b in bals
+            if isinstance(b, dict) and str(b.get("denom", "")).startswith("ibc/")
+        ]
+        eligible = [
+            b.get("denom") for b in ibc_bals if int(str(b.get("amount", "0"))) >= 5000
+        ]
+        host_voucher["denom"] = (
+            eligible[0] if len(eligible) > 0 else host_voucher["denom"]
+        )
+        print(
+            f"🔎 Host voucher candidates: {ibc_bals}; selected={host_voucher['denom']}"
+        )
+        return len(eligible) > 0
+
+    poll_until_condition(
+        _host_voucher_funded,
+        timeout=10,
+        poll_interval=1,
+        error_message="Host voucher not found on Chain B",
+    )
+
+    voucher_denom_b = host_voucher["denom"]
+    print(f"✅ Host voucher ready: {voucher_denom_b}")
+
+    # Withdraw funds back to controller using discovered voucher denom
     withdraw_args = [
-        "ibc/3B2294AF63D402DF9B10DA43CEC03677D9041297A1031AB1AFC789C492280D79",
+        voucher_denom_b,
         "1000",
         "transfer",
         transfer_chan_id_b,
@@ -691,21 +724,26 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         withdraw_response = result_data.get("result", {})
         print(f"💸 Withdraw response data: {withdraw_response}")
 
-        # Check if successful - for withdrawal, ref_id comes from tx_result or we can derive from block
+        # Extract ref_id when successful
         is_success = (
             isinstance(withdraw_response, dict)
             and withdraw_response.get("status") == "success"
         )
-        # Let's get latest callback for withdrawal topic - we don't need the ref_id for this test
-        pass
+        withdrawal_ref_id = (
+            withdraw_response.get("ref_id") if is_success else withdrawal_ref_id
+        )
+
+    assert (
+        withdrawal_ref_id is not None
+    ), f"Withdrawal ref_id should be returned. Full withdraw result: {json.dumps(withdraw_result, indent=2)}"
 
     # 10. Wait for withdrawal callback
     print(f"⏳ Waiting for withdrawal callback...")
 
     def _withdrawal_callback_received():
         """Check if withdrawal callback has been received"""
-        # Get latest callback for withdrawal topic via query run (read-only)
-        callback_args = ["withdrawal"]
+        # Get specific callback for withdrawal topic via query run (read-only)
+        callback_args = ["withdrawal", withdrawal_ref_id]
         print(f"🔍 Checking for withdrawal callback via query run...")
         result = dysond_bin(
             "query",
@@ -742,33 +780,45 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
 
     poll_until_condition(
         _withdrawal_callback_received,
-        timeout=60,
+        timeout=10,
         poll_interval=1,
         error_message="Withdrawal callback not received",
     )
 
     # 11. Verify withdrawal callback data
-    withdrawal_callback_args = ["withdrawal"]
+    withdrawal_callback_args = ["withdrawal", withdrawal_ref_id]
     print(f"✅ Getting withdrawal callback data for verification...")
     withdrawal_callback_result = dysond_bin(
-        "tx",
+        "query",
         "script",
-        "exec",
+        "run",
+        "--executor-address",
+        alice_address,
         "--script-address",
         alice_address,
         "--function-name",
         "get_callback",
         "--args",
         json.dumps(withdrawal_callback_args),
-        "--from",
-        alice_name,
-        "--gas",
-        "2000000",
+        "--kwargs",
+        "{}",
+        "-o",
+        "json",
     )
-    print(f"✅ Withdrawal callback verification result: {withdrawal_callback_result}")
+    print(
+        f"✅ Withdrawal callback verification (query run) result: {withdrawal_callback_result}"
+    )
     assert (
-        withdrawal_callback_result.get("code", 1) == 0
-    ), f"Failed to get withdrawal callback: {withdrawal_callback_result}"
+        "result" in withdrawal_callback_result
+    ), f"get_callback run failed: {withdrawal_callback_result}"
+
+    # Parse and verify
+    _w_result_data = json.loads(withdrawal_callback_result["result"])  # outer wrapper
+    _w_verify_callback = _w_result_data.get("result", {})  # actual function return
+    assert (
+        isinstance(_w_verify_callback, dict)
+        and _w_verify_callback.get("status") == "success"
+    ), f"Expected success status. Full context: {json.dumps(_w_verify_callback, indent=2)}"
 
     print(f"🎉 Complete ICA E2E workflow successful!")
     print(f"   - ICA Address: {ica_address}")
