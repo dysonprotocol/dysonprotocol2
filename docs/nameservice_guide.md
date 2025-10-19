@@ -671,7 +671,8 @@ Let's view all the NFT classes in the system to confirm our collections were cre
             "type": "/dysonprotocol.nameservice.v1.NFTClassData",
             "value": {
               "always_listed": true,
-              "valuation_fee_pct": "0.01",
+              "valuation_fee_pct": "0.01",
+
               "valuation_period": "8760h0m0s",
               "bid_timeout": "2s",
               "allowed_denoms": [

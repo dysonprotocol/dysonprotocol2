@@ -67,7 +67,7 @@ def test_pool_swap_v2_single_pool(chainnet, generate_account, faucet, register_n
     )
     assert swap.get("code", 1) == 0, f"swap failed: {json.dumps(swap, indent=2)}"
 
-    after = dysond("query", "whaleswap", "pool", str(pool_id))["pool"]
+    after = dysond("query", "whaleswap", "pool", "--pool-id", str(pool_id))["pool"]
     assert int(after["num_trades"]) >= 1, f"num_trades not incremented: {after}"
     # coins is an array in canonical order; find reserves by denom
     coins = after["coins"]

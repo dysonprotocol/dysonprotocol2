@@ -92,8 +92,8 @@ def test_take_mode_first_executes_only_first_feasible(
     assert (
         take_tx.get("code", 0) != 0
     ), f"batch should fail: {json.dumps(take_tx, indent=2)}"
-    qa = dysond("query", "whaleswap", "offer", str(offer_a))
-    qb = dysond("query", "whaleswap", "offer", str(offer_b))
+    qa = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_a))
+    qb = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_b))
     assert qa.get("offer", {}).get("status") == "open"
     assert qb.get("offer", {}).get("status") == "open"
 
@@ -109,8 +109,8 @@ def test_take_mode_first_executes_only_first_feasible(
     assert (
         take_a.get("code", 1) == 0
     ), f"take-offer(A) failed: {json.dumps(take_a, indent=2)}"
-    qa = dysond("query", "whaleswap", "offer", str(offer_a))
-    qb = dysond("query", "whaleswap", "offer", str(offer_b))
+    qa = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_a))
+    qb = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_b))
     assert qa.get("offer", {}).get("status") == "closed"
     assert qb.get("offer", {}).get("status") == "open"
 
@@ -201,8 +201,8 @@ def test_take_mode_any_executes_feasible_subset(
         taker_name,
     )
     assert take_tx.get("code", 0) != 0
-    qa = dysond("query", "whaleswap", "offer", str(offer_a))
-    qb = dysond("query", "whaleswap", "offer", str(offer_b))
+    qa = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_a))
+    qb = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_b))
     assert qa.get("offer", {}).get("status") == "open"
     assert qb.get("offer", {}).get("status") == "open"
 
@@ -216,8 +216,8 @@ def test_take_mode_any_executes_feasible_subset(
         taker_name,
     )
     assert take_a.get("code", 1) == 0
-    qa = dysond("query", "whaleswap", "offer", str(offer_a))
-    qb = dysond("query", "whaleswap", "offer", str(offer_b))
+    qa = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_a))
+    qb = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_b))
     assert qa.get("offer", {}).get("status") == "closed"
     assert qb.get("offer", {}).get("status") == "open"
 

@@ -79,7 +79,7 @@ def test_redeem_records_trade_only_for_last_bidder(
         "query",
         "whaleswap",
         "trades-by-taker",
-        seller_addr,
+        f"--taker={seller_addr}",
         "--page-limit",
         "1",
     )
@@ -159,7 +159,12 @@ def test_redeem_records_trade_only_for_last_bidder(
     ), f"redeem with valuation failed: {json.dumps(redeem2, indent=2)}"
 
     tqs = dysond(
-        "query", "whaleswap", "trades-by-taker", bidder_addr, "--page-limit", "10"
+        "query",
+        "whaleswap",
+        "trades-by-taker",
+        f"--taker={bidder_addr}",
+        "--page-limit",
+        "10",
     )
     trs = [
         t for t in tqs.get("trades", []) if int(t.get("auction_id", 0)) == auction_id2

@@ -21,13 +21,13 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "Pool",
-					Use:       "pool <pool-id>",
+					Use:       "pool --pool-id=<id>",
 					Short:     "Get a pool by ID",
 					Long:      "Fetch a single AMM pool by its numeric ID.",
-					Example:   "dysond query whaleswap pool 1",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{
-						ProtoField: "pool_id",
-					}},
+					Example:   "dysond query whaleswap pool --pool-id=1",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"pool_id": {Name: "pool-id", Usage: "Pool ID"},
+					},
 				},
 				{
 					RpcMethod: "Pools",
@@ -38,23 +38,23 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "Offer",
-					Use:       "offer <offer-id>",
+					Use:       "offer --offer-id=<id>",
 					Short:     "Get an offer by ID",
 					Long:      "Fetch a single orderbook offer by its numeric ID.",
-					Example:   "dysond query whaleswap offer 42",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{
-						ProtoField: "offer_id",
-					}},
+					Example:   "dysond query whaleswap offer --offer-id=42",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"offer_id": {Name: "offer-id", Usage: "Offer ID"},
+					},
 				},
 				{
 					RpcMethod: "OffersByOwner",
-					Use:       "offers-by-owner <owner>",
+					Use:       "offers-by-owner --owner=<addr>",
 					Short:     "List offers by owner with optional status",
 					Long:      "List all offers created by an owner address. Optionally filter by status (open/closed/cancelled).",
-					Example:   "dysond query whaleswap offers-by-owner $(dysond keys show alice -a) --status=open",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{
-						ProtoField: "owner",
-					}},
+					Example:   "dysond query whaleswap offers-by-owner --owner=$(dysond keys show alice -a) --status=open",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"owner": {Name: "owner", Usage: "Owner address"},
+					},
 				},
 				{
 					RpcMethod: "Offers",
@@ -65,53 +65,53 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "Trade",
-					Use:       "trade <trade-id>",
+					Use:       "trade --trade-id=<id>",
 					Short:     "Get a trade by ID",
 					Long:      "Fetch a single trade by its numeric ID.",
-					Example:   "dysond query whaleswap trade 1",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{
-						ProtoField: "trade_id",
-					}},
+					Example:   "dysond query whaleswap trade --trade-id=1",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"trade_id": {Name: "trade-id", Usage: "Trade ID"},
+					},
 				},
 				{
 					RpcMethod: "TradesByOffer",
-					Use:       "trades-by-offer <offer-id>",
+					Use:       "trades-by-offer --offer-id=<id>",
 					Short:     "List trades for an offer",
 					Long:      "List all trades executed against a specific offer.",
-					Example:   "dysond query whaleswap trades-by-offer 42",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{
-						ProtoField: "offer_id",
-					}},
+					Example:   "dysond query whaleswap trades-by-offer --offer-id=42",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"offer_id": {Name: "offer-id", Usage: "Offer ID"},
+					},
 				},
 				{
 					RpcMethod: "TradesByTaker",
-					Use:       "trades-by-taker <taker>",
+					Use:       "trades-by-taker --taker=<addr>",
 					Short:     "List trades by taker",
 					Long:      "List all trades executed by the given taker address.",
-					Example:   "dysond query whaleswap trades-by-taker $(dysond keys show bob -a)",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{
-						ProtoField: "taker",
-					}},
+					Example:   "dysond query whaleswap trades-by-taker --taker=$(dysond keys show bob -a)",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"taker": {Name: "taker", Usage: "Taker address"},
+					},
 				},
 				{
 					RpcMethod: "TradesByPool",
-					Use:       "trades-by-pool <pool-id>",
+					Use:       "trades-by-pool --pool-id=<id>",
 					Short:     "List trades by pool id",
 					Long:      "List all trades executed against the specified pool.",
-					Example:   "dysond query whaleswap trades-by-pool 1",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{
-						ProtoField: "pool_id",
-					}},
+					Example:   "dysond query whaleswap trades-by-pool --pool-id=1",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"pool_id": {Name: "pool-id", Usage: "Pool ID"},
+					},
 				},
 				{
 					RpcMethod: "Auction",
-					Use:       "auction <auction-id>",
+					Use:       "auction --auction-id=<id>",
 					Short:     "Get an auction by ID",
 					Long:      "Fetch a single auction by its numeric ID.",
-					Example:   "dysond query whaleswap auction 7",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{
-						ProtoField: "auction_id",
-					}},
+					Example:   "dysond query whaleswap auction --auction-id=7",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"auction_id": {Name: "auction-id", Usage: "Auction ID"},
+					},
 				},
 				{
 					RpcMethod: "Auctions",

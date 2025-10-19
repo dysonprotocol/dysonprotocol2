@@ -49,7 +49,7 @@ def test_create_pool_v2_success(chainnet, generate_account, faucet, register_nam
     pool_id_raw = pool_id_attr[0].get("value")
     pool_id = int(str(pool_id_raw).strip('"'))
 
-    q = dysond("query", "whaleswap", "pool", str(pool_id))
+    q = dysond("query", "whaleswap", "pool", "--pool-id", str(pool_id))
     pool = q.get("pool")
     assert pool, f"pool not found: {q}"
     coins = pool.get("coins", [])

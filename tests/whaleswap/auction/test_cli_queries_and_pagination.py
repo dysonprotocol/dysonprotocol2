@@ -73,7 +73,7 @@ def test_auctions_query_filters_and_index_cleanup(
     )
     assert redeem.get("code", 1) == 0
 
-    q = dysond("query", "whaleswap", "auction", str(auction_id))
+    q = dysond("query", "whaleswap", "auction", "--auction-id", str(auction_id))
     assert isinstance(q, str), f"expected error string, got {type(q)}: {q}"
     assert "auction not found" in q, f"unexpected error string: {q}"
 

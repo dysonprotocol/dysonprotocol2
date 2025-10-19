@@ -497,7 +497,8 @@ def faucet(chainnet):
                 "--yes",
                 **kwargs,
             )
-            if tx_out.get("code") == 0:
+            # Handle case where tx_out might be a string (command failed)
+            if isinstance(tx_out, dict) and tx_out.get("code") == 0:
                 break
             else:
                 print(f"===== Faucet tx failed: {tx_out}")

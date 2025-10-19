@@ -94,5 +94,5 @@ def test_nft_transfer_then_redeem_new_owner_old_owner_fails(
         ok.get("code", 1) == 0
     ), f"redeem by seller failed: {json.dumps(ok, indent=2)}"
 
-    gone = dysond("query", "whaleswap", "auction", str(auction_id))
+    gone = dysond("query", "whaleswap", "auction", "--auction-id", str(auction_id))
     assert isinstance(gone, str) and "auction not found" in gone

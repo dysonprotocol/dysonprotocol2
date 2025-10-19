@@ -78,7 +78,7 @@ def test_ring_trade_banded_auction(
     )
 
     # Assert initial v3 pool reserves and band setup
-    q_v3 = dysond("query", "whaleswap", "pool", str(pid_v3))
+    q_v3 = dysond("query", "whaleswap", "pool", "--pool-id", str(pid_v3))
     assert "pool" in q_v3, f"missing pool in query: {json.dumps(q_v3, indent=2)}"
     p3 = q_v3["pool"]
     # Coins are in canonical order; expect exactly 100 each
@@ -115,7 +115,7 @@ def test_ring_trade_banded_auction(
     )
 
     # Assert initial v2 pool reserves
-    q_v2 = dysond("query", "whaleswap", "pool", str(pid_v2))
+    q_v2 = dysond("query", "whaleswap", "pool", "--pool-id", str(pid_v2))
     assert "pool" in q_v2, f"missing pool in query: {json.dumps(q_v2, indent=2)}"
     p2 = q_v2["pool"]
     c2 = {c["denom"]: c["amount"] for c in p2.get("coins", [])}
@@ -207,7 +207,7 @@ def test_ring_trade_banded_auction(
     )
 
     # Assert solid offer state (B->C: 20 -> 10)
-    q_o1 = dysond("query", "whaleswap", "offer", str(offer_id1))
+    q_o1 = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id1))
     assert "offer" in q_o1, f"missing offer in query: {json.dumps(q_o1, indent=2)}"
     o1 = q_o1["offer"]
     assert (
@@ -251,7 +251,7 @@ def test_ring_trade_banded_auction(
     )
 
     # Assert liquid-have offer state (l/A -> B: 20 -> 20)
-    q_o2 = dysond("query", "whaleswap", "offer", str(offer_id2))
+    q_o2 = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id2))
     assert "offer" in q_o2, f"missing offer in query: {json.dumps(q_o2, indent=2)}"
     o2 = q_o2["offer"]
     assert (
@@ -296,7 +296,7 @@ def test_ring_trade_banded_auction(
         "--from",
         taker,
         "--gas",
-        "auto",
+        "2000000",
     )
     assert (
         tx_mt.get("code", 1) == 0
@@ -309,7 +309,7 @@ def test_ring_trade_banded_auction(
     assert ev_tr, f"no trade events: {json.dumps(tx_mt, indent=2)}"
 
     # Post-trade: assert offers updated
-    q_o1_after = dysond("query", "whaleswap", "offer", str(offer_id1))
+    q_o1_after = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id1))
     o1a = q_o1_after.get("offer", {})
     # Expect partial fill: remaining 10 B -> 5 C, status open
     assert (
@@ -328,7 +328,7 @@ def test_ring_trade_banded_auction(
         o1a.get("status") == "open"
     ), f"offer1 after status: {json.dumps(q_o1_after, indent=2)}"
 
-    q_o2_after = dysond("query", "whaleswap", "offer", str(offer_id2))
+    q_o2_after = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id2))
     o2a = q_o2_after.get("offer", {})
     # Expect full close: zero remain, status closed
     assert (
@@ -342,8 +342,8 @@ def test_ring_trade_banded_auction(
     ), f"offer2 after status: {json.dumps(q_o2_after, indent=2)}"
 
     # Post-trade: assert exact pool reserves after ops
-    q_v3_after = dysond("query", "whaleswap", "pool", str(pid_v3))
-    q_v2_after = dysond("query", "whaleswap", "pool", str(pid_v2))
+    q_v3_after = dysond("query", "whaleswap", "pool", "--pool-id", str(pid_v3))
+    q_v2_after = dysond("query", "whaleswap", "pool", "--pool-id", str(pid_v2))
     p3a = q_v3_after.get("pool", {})
     p2a = q_v2_after.get("pool", {})
     m3 = {c["denom"]: c["amount"] for c in p3a.get("coins", [])}
@@ -446,7 +446,12 @@ def test_ring_trade_banded_auction(
     )
     assert red.get("code", 1) == 0, f"redeem failed: {json.dumps(red, indent=2)}"
     q = dysond(
-        "query", "whaleswap", "trades-by-taker", bidder_addr, "--page-limit", "5"
+        "query",
+        "whaleswap",
+        "trades-by-taker",
+        f"--taker={bidder_addr}",
+        "--page-limit",
+        "5",
     )
     trs = [t for t in q.get("trades", []) if int(t.get("auction_id", 0)) == auction_id]
     assert (

@@ -64,6 +64,6 @@ def test_redeem_auction_no_bidder_owner_only(
         redeem.get("code", 1) == 0
     ), f"redeem-auction failed: {json.dumps(redeem, indent=2)}"
 
-    q = dysond("query", "whaleswap", "auction", str(auction_id))
+    q = dysond("query", "whaleswap", "auction", "--auction-id", str(auction_id))
     assert isinstance(q, str), f"expected error string, got {type(q)}: {q}"
     assert "auction not found" in q, f"unexpected error string: {q}"

@@ -150,8 +150,24 @@ def test_route_two_leg_across_two_pools(
     ), f"no {c} received: before={c_before} after={c_after} tx={json.dumps(tx, indent=2)}"
 
     # Each pool should record at least one trade
-    q1 = dysond("query", "whaleswap", "trades-by-pool", str(p1), "--page-limit", "1")
-    q2 = dysond("query", "whaleswap", "trades-by-pool", str(p2), "--page-limit", "1")
+    q1 = dysond(
+        "query",
+        "whaleswap",
+        "trades-by-pool",
+        "--pool-id",
+        str(p1),
+        "--page-limit",
+        "1",
+    )
+    q2 = dysond(
+        "query",
+        "whaleswap",
+        "trades-by-pool",
+        "--pool-id",
+        str(p2),
+        "--page-limit",
+        "1",
+    )
     assert q1.get(
         "trades", []
     ), f"no trades found for pool1: {json.dumps(q1, indent=2)}"

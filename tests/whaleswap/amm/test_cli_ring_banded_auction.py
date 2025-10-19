@@ -320,7 +320,12 @@ def test_ring_trade_banded_auction(
     )
     assert red.get("code", 1) == 0, f"redeem failed: {json.dumps(red, indent=2)}"
     q = dysond(
-        "query", "whaleswap", "trades-by-taker", bidder_addr, "--page-limit", "5"
+        "query",
+        "whaleswap",
+        "trades-by-taker",
+        f"--taker={bidder_addr}",
+        "--page-limit",
+        "5",
     )
     trs = [t for t in q.get("trades", []) if int(t.get("auction_id", 0)) == auction_id]
     assert (

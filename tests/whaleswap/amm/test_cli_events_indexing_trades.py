@@ -34,7 +34,7 @@ def test_cli_events_indexing_trades(chainnet, ws_setup_env, ws_create_offer):
     assert "code" in tx and tx["code"] == 0, f"tx failed: {json.dumps(tx, indent=2)}"
 
     # Query by taker
-    qt = dysond("query", "whaleswap", "trades-by-taker", taker_addr)
+    qt = dysond("query", "whaleswap", "trades-by-taker", f"--taker={taker_addr}")
     assert isinstance(qt, dict), f"bad taker query: {qt}"
     assert "trades" in qt, f"missing trades: {qt}"
     trades_taker = qt["trades"]
@@ -53,7 +53,7 @@ def test_cli_events_indexing_trades(chainnet, ws_setup_env, ws_create_offer):
     assert "denom" in t0["received"] and "amount" in t0["received"]
 
     # Query by offer
-    qo = dysond("query", "whaleswap", "trades-by-offer", str(oid))
+    qo = dysond("query", "whaleswap", "trades-by-offer", "--offer-id", str(oid))
     assert isinstance(qo, dict), f"bad offer query: {qo}"
     assert "trades" in qo
     trades_offer = qo["trades"]
@@ -69,7 +69,7 @@ def test_cli_events_indexing_trades(chainnet, ws_setup_env, ws_create_offer):
     assert o0["taker"] == taker_addr
 
     # Query single trade
-    q1 = dysond("query", "whaleswap", "trade", str(trade_id))
+    q1 = dysond("query", "whaleswap", "trade", "--trade-id", str(trade_id))
     assert isinstance(q1, dict)
     assert "trade" in q1
     tr = q1["trade"]

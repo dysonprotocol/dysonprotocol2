@@ -63,7 +63,7 @@ def test_partial_fill_exact_units(chainnet, generate_account, faucet, register_n
         take.get("code", 1) == 0
     ), f"partial take failed: {json.dumps(take, indent=2)}"
 
-    q = dysond("query", "whaleswap", "offer", str(offer_id))
+    q = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id))
     offer = q.get("offer", {})
     assert offer.get("status") == "open"
     assert offer.get("remaining_units") == "2"

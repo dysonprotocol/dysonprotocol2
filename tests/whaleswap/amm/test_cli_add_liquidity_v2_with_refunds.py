@@ -48,7 +48,7 @@ def test_add_liquidity_v2(chainnet, generate_account, faucet, register_name):
     )
 
     # Ensure amounts align with pool's canonical coin order using Pool.coins
-    p_pre = dysond("query", "whaleswap", "pool", str(pid))["pool"]
+    p_pre = dysond("query", "whaleswap", "pool", "--pool-id", str(pid))["pool"]
     coins = p_pre.get("coins", [])
     assert (
         isinstance(coins, list) and len(coins) == 2

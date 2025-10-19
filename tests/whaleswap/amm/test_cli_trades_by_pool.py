@@ -98,7 +98,13 @@ def test_trades_by_pool_lists_swaps_pagination(
 
     # Paginate trades-by-pool strictly
     page1 = dysond(
-        "query", "whaleswap", "trades-by-pool", str(pool_id), "--page-limit", "1"
+        "query",
+        "whaleswap",
+        "trades-by-pool",
+        "--pool-id",
+        str(pool_id),
+        "--page-limit",
+        "1",
     )
     t1 = page1.get("trades", [])
     assert len(t1) == 1, f"page1 expected 1 trade: {json.dumps(page1, indent=2)}"
@@ -109,6 +115,7 @@ def test_trades_by_pool_lists_swaps_pagination(
         "query",
         "whaleswap",
         "trades-by-pool",
+        "--pool-id",
         str(pool_id),
         "--page-limit",
         "1",

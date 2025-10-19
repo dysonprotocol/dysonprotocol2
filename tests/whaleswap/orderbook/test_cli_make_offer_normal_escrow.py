@@ -54,7 +54,7 @@ def test_make_offer_normal_escrow(chainnet, generate_account, faucet, register_n
     offer_id = int(oid_attr[0].get("value"))
 
     # Query offer and validate open status
-    q = dysond("query", "whaleswap", "offer", str(offer_id))
+    q = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id))
     offer = q.get("offer")
     assert offer, f"offer not found: {q}"
     assert offer["status"] == "open", f"unexpected status: {offer}"

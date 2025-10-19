@@ -60,7 +60,7 @@ def test_make_trade_take_units_partial_then_close(chainnet, faucet, ws_setup_env
         "auto",
     )
     assert tx1.get("code", 1) == 0, f"partial take failed: {json.dumps(tx1, indent=2)}"
-    q1 = dysond("query", "whaleswap", "offer", str(offer_id))
+    q1 = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id))
     offer1 = q1.get("offer", {})
     assert offer1.get("status") == "open"
     # GCD units: gcd(100,5)=5 => unit_have=20, unit_want=1, remaining_units=5-1=4
@@ -82,7 +82,7 @@ def test_make_trade_take_units_partial_then_close(chainnet, faucet, ws_setup_env
         "auto",
     )
     assert tx2.get("code", 1) == 0, f"close take failed: {json.dumps(tx2, indent=2)}"
-    q2 = dysond("query", "whaleswap", "offer", str(offer_id))
+    q2 = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id))
     offer2 = q2.get("offer", {})
     assert offer2.get("status") == "closed"
     assert offer2.get("remaining_units") == "0"

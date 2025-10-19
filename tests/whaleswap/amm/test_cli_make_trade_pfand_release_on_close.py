@@ -137,7 +137,7 @@ def test_make_trade_pfand_release_on_close(chainnet, ws_setup_env):
         "auto",
     )
     assert t1.get("code", 1) == 0, f"partial take failed: {json.dumps(t1, indent=2)}"
-    q1 = dysond("query", "whaleswap", "offer", str(offer_id))
+    q1 = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id))
     assert isinstance(q1, dict), f"bad offer query: {q1}"
     offer1 = q1.get("offer", {})
     assert offer1.get("status") == "open", f"expected open: {json.dumps(q1, indent=2)}"
@@ -172,7 +172,7 @@ def test_make_trade_pfand_release_on_close(chainnet, ws_setup_env):
     ), f"expected one pfand release: {json.dumps(t2, indent=2)}"
 
     # Offer closed
-    q2 = dysond("query", "whaleswap", "offer", str(offer_id))
+    q2 = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id))
     assert isinstance(q2, dict), f"bad offer query: {q2}"
     offer2 = q2.get("offer", {})
     assert (

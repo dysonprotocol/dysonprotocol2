@@ -50,7 +50,7 @@ def test_remove_liquidity_full_exit_deletes_pool(
     )
 
     # Respect canonical pool denom order using Pool.coins (sorted by denom)
-    p_pre = dysond("query", "whaleswap", "pool", str(pool_id))["pool"]
+    p_pre = dysond("query", "whaleswap", "pool", "--pool-id", str(pool_id))["pool"]
     coins = p_pre.get("coins", [])
     assert isinstance(coins, list) and len(coins) == 2, f"invalid pool coins: {p_pre}"
     denom0 = coins[0]["denom"]
@@ -74,7 +74,7 @@ def test_remove_liquidity_full_exit_deletes_pool(
     )
     assert add.get("code", 1) == 0, f"add-liquidity failed: {json.dumps(add, indent=2)}"
 
-    p = dysond("query", "whaleswap", "pool", str(pool_id))["pool"]
+    p = dysond("query", "whaleswap", "pool", "--pool-id", str(pool_id))["pool"]
     shares = p["shares_denom"]
     bals = dysond("query", "bank", "balances", owner_addr)
     share_bal = [b for b in bals.get("balances", []) if b.get("denom") == shares]
@@ -95,7 +95,7 @@ def test_remove_liquidity_full_exit_deletes_pool(
     assert (
         rem.get("code", 1) == 0
     ), f"remove-liquidity failed: {json.dumps(rem, indent=2)}"
-    q = dysond("query", "whaleswap", "pool", str(pool_id))
+    q = dysond("query", "whaleswap", "pool", "--pool-id", str(pool_id))
     # After full exit, querying the pool must return a deterministic not-found error string
     assert isinstance(
         q, str

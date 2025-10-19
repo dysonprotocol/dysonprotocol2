@@ -167,9 +167,9 @@ def ob_query_offer(offer_id):
     )
     assert take.get("code", 1) == 0, f"script take failed: {json.dumps(take, indent=2)}"
 
-    qa = dysond("query", "whaleswap", "offer", str(offer_a))
-    qb = dysond("query", "whaleswap", "offer", str(offer_b))
-    qc = dysond("query", "whaleswap", "offer", str(offer_c))
+    qa = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_a))
+    qb = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_b))
+    qc = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_c))
     assert qa.get("offer", {}).get("status") == "closed"
     assert qb.get("offer", {}).get("status") == "closed"
     assert qc.get("offer", {}).get("status") == "closed"

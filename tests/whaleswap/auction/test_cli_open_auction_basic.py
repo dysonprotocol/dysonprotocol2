@@ -52,7 +52,7 @@ def test_open_auction_basic(chainnet, generate_account, faucet, register_name):
     auction_id = int(str(aid_attr[0].get("value")).strip('"'))
 
     # Query auction
-    q = dysond("query", "whaleswap", "auction", str(auction_id))
+    q = dysond("query", "whaleswap", "auction", "--auction-id", str(auction_id))
     auction = q.get("auction")
     assert auction, f"auction not found: {q}"
     assert auction["sell"]["denom"] == name, f"unexpected sell denom: {auction}"

@@ -62,7 +62,7 @@ def test_take_offer_closes_offer(chainnet, generate_account, faucet, register_na
     )
     assert take.get("code", 1) == 0, f"take-offer failed: {json.dumps(take, indent=2)}"
 
-    q = dysond("query", "whaleswap", "offer", str(offer_id))
+    q = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id))
     offer = q.get("offer")
     assert (
         offer and offer["status"] == "closed"

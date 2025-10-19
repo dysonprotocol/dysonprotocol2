@@ -132,9 +132,9 @@ def test_ring_coincidence_of_wants(chainnet, generate_account, faucet, register_
         take_tx.get("code", 1) == 0
     ), f"ring take failed: {json.dumps(take_tx, indent=2)}"
 
-    qa = dysond("query", "whaleswap", "offer", str(offer_a))
-    qb = dysond("query", "whaleswap", "offer", str(offer_b))
-    qc = dysond("query", "whaleswap", "offer", str(offer_c))
+    qa = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_a))
+    qb = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_b))
+    qc = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_c))
     assert qa.get("offer", {}).get("status") == "closed"
     assert qb.get("offer", {}).get("status") == "closed"
     assert qc.get("offer", {}).get("status") == "closed"
@@ -294,9 +294,9 @@ def test_ring_with_liquid_and_pfand(chainnet, generate_account, faucet, register
         take_tx.get("code", 1) == 0
     ), f"ring liquid take failed: {json.dumps(take_tx, indent=2)}"
 
-    qa = dysond("query", "whaleswap", "offer", str(offer_a))
-    qb = dysond("query", "whaleswap", "offer", str(offer_b))
-    qc = dysond("query", "whaleswap", "offer", str(offer_c))
+    qa = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_a))
+    qb = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_b))
+    qc = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_c))
     assert qa.get("offer", {}).get("status") == "closed"
     assert qb.get("offer", {}).get("status") == "closed"
     assert qc.get("offer", {}).get("status") == "closed"
