@@ -6,17 +6,17 @@ def test_cli_invariant_bug_part1_metrics_count_closed_offer_escrow(
     chainnet, ws_setup_env, ws_create_offer
 ):
     """
-    BUG PART 1: Metrics incorrectly count closed offer's escrow.
+    Test that MakeTrade properly maintains invariants when closing offers.
 
     When MakeTrade closes an offer:
     - Offer status changes to "closed", remaining_have becomes 0
     - Coins are sent from module to taker (escrow released)
-    - BUT metrics.escrowed_offer_coins still counts the closed offer's coins
+    - Metrics correctly exclude closed offer from escrowed_offer_coins
 
-    This causes: module_balance < sum(metrics components)
+    This causes: module_balance == sum(metrics components)
 
-    Currently FAILS: module has LESS than metrics expect (metrics overcounting)
-    When fixed: Closed offers excluded from metrics, module == metrics
+    With fix (MakeTrade calls AssertInvariants): Test PASSES
+    Module balances match metrics, closed offers properly excluded.
     """
     dysond = chainnet[0]
     env = ws_setup_env
@@ -104,28 +104,28 @@ def test_cli_invariant_bug_part1_metrics_count_closed_offer_escrow(
             amount = int(coin["amount"])
             expected[denom] = expected.get(denom, 0) + amount
 
-    # BUG: Metrics overcount (include closed offer), module released the coins
+    # FIXED: Module balance should match expected (closed offers excluded from metrics)
     bar_actual = actual.get(bar_denom, 0)
     bar_expected = expected.get(bar_denom, 0)
 
     assert (
-        bar_actual < bar_expected
-    ), f"BUG PART 1 NOT REPRODUCED: Expected module < expected. module={bar_actual} expected={bar_expected}. Closed offer's 256 should be in metrics but not module. Metrics offers: {json.dumps(m.get('escrowed_offer_coins', []))}"
+        bar_actual == bar_expected
+    ), f"Module balance mismatch after closing offer. module={bar_actual} expected={bar_expected}. Metrics offers: {json.dumps(m.get('escrowed_offer_coins', []))}"
 
 
 def test_cli_invariant_bug_part2_make_offer_fails_after_closed_offer(
     chainnet, ws_setup_env, ws_create_offer
 ):
     """
-    BUG PART 2: MakeOffer fails with invariant error after MakeTrade closes an offer.
+    Test that MakeOffer succeeds after MakeTrade closes an offer.
 
-    After MakeTrade closes an offer, attempting to create a new offer fails because:
+    After MakeTrade closes an offer, creating a new offer should succeed:
     - MakeOffer calls AssertInvariants() after escrowing coins
-    - AssertInvariants detects mismatch: metrics still count closed offer escrow
-    - Fails with: "module balance mismatch... (escrow=256...)"
+    - Invariants pass because closed offers are excluded from metrics
+    - New offer is created successfully
 
-    Currently FAILS: ws_create_offer raises AssertionError from MakeOffer invariant failure
-    When fixed: Metrics properly exclude closed offers, MakeOffer succeeds
+    With fix (MakeTrade calls AssertInvariants): Test PASSES
+    MakeOffer succeeds after closed offers, no orphaned escrow.
     """
     dysond = chainnet[0]
     env = ws_setup_env

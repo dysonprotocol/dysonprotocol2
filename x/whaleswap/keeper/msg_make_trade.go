@@ -218,6 +218,10 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		if err := k.AssertAMMInvariants(ctx); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "AMM invariant after MakeTrade")
 		}
+		// Full module balance invariants (like MakeOffer and TakeOffer)
+		if err := k.AssertInvariants(ctx); err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "invariant after MakeTrade")
+		}
 		traderOutputs = outputsByAddr[traderBech]
 		return &whaleswapv1.MsgMakeTradeResponse{AmountOut: traderOutputs}, nil
 	}
@@ -231,6 +235,11 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 	// AMM invariants reuse
 	if err := k.AssertAMMInvariants(ctx); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "AMM invariant after MakeTrade")
+	}
+
+	// Full module balance invariants (like MakeOffer and TakeOffer)
+	if err := k.AssertInvariants(ctx); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "invariant after MakeTrade")
 	}
 
 	return &whaleswapv1.MsgMakeTradeResponse{AmountOut: traderOutputs}, nil
