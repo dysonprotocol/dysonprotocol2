@@ -16,7 +16,9 @@ RUN apk add --no-cache \
   py3-yaml
 
 
-RUN npm install -g swagger-combine
+RUN npm install -g swagger-combine \
+  @bufbuild/protoc-gen-es \
+  @connectrpc/protoc-gen-connect-es
 
 ARG UNAME=protobuild
 ARG UID=1000

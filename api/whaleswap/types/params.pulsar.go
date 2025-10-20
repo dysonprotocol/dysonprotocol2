@@ -23,6 +23,7 @@ var (
 	fd_Params_valuation_period             protoreflect.FieldDescriptor
 	fd_Params_bid_timeout                  protoreflect.FieldDescriptor
 	fd_Params_minimum_bid_percent_increase protoreflect.FieldDescriptor
+	fd_Params_max_note_length              protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -33,6 +34,7 @@ func init() {
 	fd_Params_valuation_period = md_Params.Fields().ByName("valuation_period")
 	fd_Params_bid_timeout = md_Params.Fields().ByName("bid_timeout")
 	fd_Params_minimum_bid_percent_increase = md_Params.Fields().ByName("minimum_bid_percent_increase")
+	fd_Params_max_note_length = md_Params.Fields().ByName("max_note_length")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -130,6 +132,12 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
+	if x.MaxNoteLength != uint32(0) {
+		value := protoreflect.ValueOfUint32(x.MaxNoteLength)
+		if !f(fd_Params_max_note_length, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -155,6 +163,8 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.BidTimeout != nil
 	case "dysonprotocol.whaleswap.v1.Params.minimum_bid_percent_increase":
 		return x.MinimumBidPercentIncrease != ""
+	case "dysonprotocol.whaleswap.v1.Params.max_note_length":
+		return x.MaxNoteLength != uint32(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -181,6 +191,8 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.BidTimeout = nil
 	case "dysonprotocol.whaleswap.v1.Params.minimum_bid_percent_increase":
 		x.MinimumBidPercentIncrease = ""
+	case "dysonprotocol.whaleswap.v1.Params.max_note_length":
+		x.MaxNoteLength = uint32(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -212,6 +224,9 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "dysonprotocol.whaleswap.v1.Params.minimum_bid_percent_increase":
 		value := x.MinimumBidPercentIncrease
 		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.Params.max_note_length":
+		value := x.MaxNoteLength
+		return protoreflect.ValueOfUint32(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -242,6 +257,8 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.BidTimeout = value.Message().Interface().(*durationpb.Duration)
 	case "dysonprotocol.whaleswap.v1.Params.minimum_bid_percent_increase":
 		x.MinimumBidPercentIncrease = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.Params.max_note_length":
+		x.MaxNoteLength = uint32(value.Uint())
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -281,6 +298,8 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field valuation_fee_pct of message dysonprotocol.whaleswap.v1.Params is not mutable"))
 	case "dysonprotocol.whaleswap.v1.Params.minimum_bid_percent_increase":
 		panic(fmt.Errorf("field minimum_bid_percent_increase of message dysonprotocol.whaleswap.v1.Params is not mutable"))
+	case "dysonprotocol.whaleswap.v1.Params.max_note_length":
+		panic(fmt.Errorf("field max_note_length of message dysonprotocol.whaleswap.v1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -307,6 +326,8 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	case "dysonprotocol.whaleswap.v1.Params.minimum_bid_percent_increase":
 		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.Params.max_note_length":
+		return protoreflect.ValueOfUint32(uint32(0))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -396,6 +417,9 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
+		if x.MaxNoteLength != 0 {
+			n += 1 + runtime.Sov(uint64(x.MaxNoteLength))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -424,6 +448,11 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.MaxNoteLength != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxNoteLength))
+			i--
+			dAtA[i] = 0x30
 		}
 		if len(x.MinimumBidPercentIncrease) > 0 {
 			i -= len(x.MinimumBidPercentIncrease)
@@ -702,6 +731,25 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 				x.MinimumBidPercentIncrease = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
+			case 6:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxNoteLength", wireType)
+				}
+				x.MaxNoteLength = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.MaxNoteLength |= uint32(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -768,6 +816,7 @@ type Params struct {
 	// minimum_bid_percent_increase specifies the minimum percent increase
 	// required over the current valuation for a new bid to be accepted.
 	MinimumBidPercentIncrease string `protobuf:"bytes,5,opt,name=minimum_bid_percent_increase,json=minimumBidPercentIncrease,proto3" json:"minimum_bid_percent_increase,omitempty"`
+	MaxNoteLength             uint32 `protobuf:"varint,6,opt,name=max_note_length,json=maxNoteLength,proto3" json:"max_note_length,omitempty"`
 }
 
 func (x *Params) Reset() {
@@ -825,6 +874,13 @@ func (x *Params) GetMinimumBidPercentIncrease() string {
 	return ""
 }
 
+func (x *Params) GetMaxNoteLength() uint32 {
+	if x != nil {
+		return x.MaxNoteLength
+	}
+	return 0
+}
+
 var File_dysonprotocol_whaleswap_v1_params_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_whaleswap_v1_params_proto_rawDesc = []byte{
@@ -839,7 +895,7 @@ var file_dysonprotocol_whaleswap_v1_params_proto_rawDesc = []byte{
 	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x62,
 	0x61, 0x73, 0x65, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2f, 0x63, 0x6f, 0x69, 0x6e,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x82, 0x04, 0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xc6, 0x04, 0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d,
 	0x73, 0x12, 0x61, 0x0a, 0x0f, 0x70, 0x66, 0x61, 0x6e, 0x64, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x6f,
 	0x66, 0x66, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73,
 	0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31,
@@ -871,10 +927,14 @@ var file_dysonprotocol_whaleswap_v1_params_proto_rawDesc = []byte{
 	0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x5f, 0x69, 0x6e, 0x63, 0x72, 0x65, 0x61, 0x73,
 	0x65, 0x22, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x44, 0x65, 0x63,
 	0x52, 0x19, 0x6d, 0x69, 0x6e, 0x69, 0x6d, 0x75, 0x6d, 0x42, 0x69, 0x64, 0x50, 0x65, 0x72, 0x63,
-	0x65, 0x6e, 0x74, 0x49, 0x6e, 0x63, 0x72, 0x65, 0x61, 0x73, 0x65, 0x42, 0x25, 0x5a, 0x23, 0x64,
-	0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79, 0x70,
-	0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x6e, 0x74, 0x49, 0x6e, 0x63, 0x72, 0x65, 0x61, 0x73, 0x65, 0x12, 0x42, 0x0a, 0x0f, 0x6d,
+	0x61, 0x78, 0x5f, 0x6e, 0x6f, 0x74, 0x65, 0x5f, 0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x18, 0x06,
+	0x20, 0x01, 0x28, 0x0d, 0x42, 0x1a, 0xf2, 0xde, 0x1f, 0x16, 0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22,
+	0x6d, 0x61, 0x78, 0x5f, 0x6e, 0x6f, 0x74, 0x65, 0x5f, 0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x22,
+	0x52, 0x0d, 0x6d, 0x61, 0x78, 0x4e, 0x6f, 0x74, 0x65, 0x4c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x42,
+	0x25, 0x5a, 0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70,
+	0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (

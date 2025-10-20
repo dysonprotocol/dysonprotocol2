@@ -16,6 +16,7 @@ find ./x -name "*.pb.gw.go" -delete
 # clean up old temp files
 rm -rf ./client/docs/swagger-ui/swagger-gen || true
 rm -rf ./client/docs/proto-json-schema || true
+rm -rf ./client/ts || true
 
 # Generate the swagger docs
 mkdir -p ./client/docs/swagger-ui/swagger-gen
@@ -197,6 +198,34 @@ cd ./client/docs/proto-json-schema
 tree . -J > index.json
 tree . --prune -H "./" > index.html
 cd -
+
+
+###
+# Generate TypeScript (protobuf-es + connect-es)
+###
+echo "Generating TypeScript client code (protobuf-es + connect-es)"
+
+cd ./proto
+
+# Ensure output dir exists
+mkdir -p ../client/ts
+
+for d in $(find . -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq); do
+  # skip if $dir is a subdirectory of ./cosmos/app/v1alpha1
+  if [[ "$d" =~ ^./cosmos/app/v1alpha1 ]]; then
+    echo "Skipping $d (subdirectory of ./cosmos/app/v1alpha1)"
+    continue
+  fi
+
+  # Only generate for tx.proto, query.proto, and service.proto
+  proto_files=$(find "${d}" -maxdepth 1 \( -name 'tx.proto' -o -name 'query.proto' -o -name 'service.proto' \))
+  for file in $proto_files; do
+    echo "Generating TS for $file"
+    buf generate --template ./buf.gen.es.yaml $file
+  done
+done
+
+cd ..
 
 
 ###

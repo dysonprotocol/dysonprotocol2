@@ -166,15 +166,17 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "MakeTrade",
-					Use:       "make-trade --max-input <coin> [--max-input <coin> ...] --op '<json>' [--op '<json>' ...] [--min-output <coin> ...]",
+					Use:       "make-trade --max-input <coin> [--max-input <coin> ...] --op '<json>' [--op '<json>' ...] [--min-output <coin> ...] [--trade-note=<str>]",
 					Short:     "Execute mixed operations (pool swaps + order takes) with single settlement",
 					Long: "Mix pool swap legs and orderbook takes in one transaction. Caps in --max-input are enforced only at the end; final trader minimums via --min-output.\n" +
-						"Each --op is JSON: either {\"swap\":{...SwapLeg...}} or {\"take\":{...TakeItem...}}. Swap leg supports swap_in (exact-in), swap_out (exact-out), or both.",
-					Example: "dysond tx whaleswap make-trade --max-input 200udys --op '{\"swap\":{\"pool_id\":1,\"swap_in\":{\"denom\":\"udys\",\"amount\":\"100\"}}}' --op '{\"take\":{\"offer_id\":42,\"take_units\":\"10\"}}' --min-output 1ufoo",
+						"Each --op is JSON: either {\"swap\":{...SwapLeg...}} or {\"take\":{...TakeItem...}}. Swap leg supports swap_in (exact-in), swap_out (exact-out), or both.\n" +
+						"Optional --trade-note adds a short note to the trade record (max 128 chars).",
+					Example: "dysond tx whaleswap make-trade --max-input 200udys --op '{\"swap\":{\"pool_id\":1,\"swap_in\":{\"denom\":\"udys\",\"amount\":\"100\"}}}' --op '{\"take\":{\"offer_id\":42,\"take_units\":\"10\"}}' --min-output 1ufoo --trade-note='Arbitrage trade'",
 					FlagOptions: map[string]*autocliv1.FlagOptions{
 						"max_input":  {Name: "max-input", Usage: "Per-denom debit cap (repeatable), e.g. 100udys"},
 						"operations": {Name: "op", Usage: "Repeated JSON operation: {\"swap\":{...}} or {\"take\":{...}}"},
 						"min_output": {Name: "min-output", Usage: "Final minimum credits (repeatable)"},
+						"note":       {Name: "trade-note", Usage: "Optional short note for the trade record (max 128 chars)"},
 					},
 				},
 				{

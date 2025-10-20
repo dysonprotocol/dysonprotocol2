@@ -1492,6 +1492,10 @@
         "minimum_bid_percent_increase": {
           "type": "string",
           "description": "minimum_bid_percent_increase specifies the minimum percent increase\nrequired over the current valuation for a new bid to be accepted."
+        },
+        "max_note_length": {
+          "type": "integer",
+          "format": "int64"
         }
       }
     },
@@ -1738,6 +1742,9 @@
           "type": "string",
           "format": "uint64",
           "title": "auction_id is non-zero for auction escrow release trades (redeem); zero\notherwise"
+        },
+        "note": {
+          "type": "string"
         }
       },
       "description": "Trade captures a single fill of an offer.\n\n- `sent` is the coin paid by the taker (want-denom), and `received` is the\n  coin delivered by the module (have-denom or base of liquid-have)."

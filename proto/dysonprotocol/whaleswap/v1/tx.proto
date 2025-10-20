@@ -216,6 +216,7 @@ message MsgMakeTrade {
     (amino.dont_omitempty) = true,
     (amino.encoding) = "legacy_coins"
   ];
+  string note = 5;
 }
 
 message MsgMakeTradeResponse {

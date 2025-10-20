@@ -24,6 +24,12 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid trader: %s", err.Error())
 	}
 
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	params := k.GetParams(sdkCtx)
+	if len(msg.Note) > int(params.MaxNoteLength) {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "note too long: %d > %d", len(msg.Note), params.MaxNoteLength)
+	}
+
 	// Caps per denom (vector). If unspecified, treat as zero (no debits allowed).
 	caps := sdk.NewCoins(msg.MaxInput...)
 
@@ -45,8 +51,6 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		outputsByAddr[addr] = outputsByAddr[addr].Add(c)
 	}
 
-	_ = sdk.UnwrapSDKContext(ctx)
-
 	// Execute operations in order, mutating pools/offers and accumulating
 	for _, op := range msg.Operations {
 		switch v := op.Op.(type) {
@@ -55,7 +59,7 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 			if leg == nil || leg.PoolId == 0 {
 				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap leg invalid")
 			}
-			inCoin, outCoin, derr := k.tradeApplySwapLeg(ctx, msg.Trader, leg)
+			inCoin, outCoin, derr := k.tradeApplySwapLeg(ctx, msg.Trader, leg, msg.Note)
 			if derr != nil {
 				return nil, derr
 			}
@@ -75,7 +79,7 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 			if item == nil {
 				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "take item missing")
 			}
-			maker, makerWant, takerRecv, makerLiqIn, pfand, terr := k.tradeApplyTakeItem(ctx, msg.Trader, item)
+			maker, makerWant, takerRecv, makerLiqIn, pfand, terr := k.tradeApplyTakeItem(ctx, msg.Trader, item, msg.Note)
 			if terr != nil {
 				return nil, terr
 			}

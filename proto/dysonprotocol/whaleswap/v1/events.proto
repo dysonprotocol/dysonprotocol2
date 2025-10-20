@@ -52,4 +52,5 @@ message EventTradeRecorded {
   uint64 offer_id = 2;
   uint64 pool_id = 3;
   uint64 auction_id = 4;
+  string note = 5;
 }

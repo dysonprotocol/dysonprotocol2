@@ -125,12 +125,12 @@ install: verify-requirements dysvm-assets
 
 test: install
 	@echo "--> running pytest"
-	@DEFAULT_BASE_DIR=$$(mktemp -d /tmp/dyson-test.XXXXXX); \
-	echo "Using temporary directory: $$DEFAULT_BASE_DIR"; \
-	DEFAULT_BASE_DIR=$$DEFAULT_BASE_DIR/test-dysonchains python -u -m pytest  --capture=fd -x --showlocals --durations=0 $(PYTEST_ARGS); \
+	@TMP_ROOT=$$(mktemp -d /tmp/dyson-test.XXXXXX); \
+	echo "Using temporary directory: $$TMP_ROOT"; \
+	DYSON_BASE_DIR=$$TMP_ROOT/test-dysonchains python -u -m pytest  --capture=fd -x --showlocals --durations=0 $(PYTEST_ARGS); \
 	TEST_EXIT_CODE=$$?; \
 	echo "Cleaning up temporary directory"; \
-	rm -rf $$DEFAULT_BASE_DIR; \
+	rm -rf $$TMP_ROOT; \
 	exit $$TEST_EXIT_CODE; \
 
 
@@ -153,13 +153,13 @@ watch:
 
 init-localnet: 
 	@echo "--> Initializing dyson local chain"
-	./scripts/chainnet.py generate --chains 1 --nodes 2 --hermes-config
-	./scripts/chainnet.py setup --force
+	./scripts/chainnet.py generate --chains 1 --nodes 2 --hermes-config --base-dir $${DYSON_BASE_DIR:-$$HOME/.dysonchains}
+	./scripts/chainnet.py setup --force --config-file $${DYSON_BASE_DIR:-$$HOME/.dysonchains}/chains.json
 
 
 start-localnet: 
 	@echo "--> Starting dyson local net"
-	./scripts/chainnet.py start --block-speed 500ms  --logs --no-blocks-timeout 10
+	./scripts/chainnet.py start --block-speed 500ms --logs --no-blocks-timeout 10 --config-file $${DYSON_BASE_DIR:-$$HOME/.dysonchains}/chains.json
 
 ###############################################################################
 ###                               Dashboard                                 ###

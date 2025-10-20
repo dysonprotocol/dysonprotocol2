@@ -11,18 +11,19 @@ import (
 // Defaults
 var DefaultPfandPerOffer = sdk.NewCoin(PfandDenom, math.NewInt(0))
 
-func NewParams(pfandPerOffer sdk.Coin, valuationFeePct, minBidPctIncrease string, valuationPeriod time.Duration, bidTimeout time.Duration) Params {
+func NewParams(pfandPerOffer sdk.Coin, valuationFeePct, minBidPctIncrease string, valuationPeriod time.Duration, bidTimeout time.Duration, maxNoteLength uint32) Params {
 	return Params{
 		PfandPerOffer:             pfandPerOffer,
 		ValuationFeePct:           valuationFeePct,
 		ValuationPeriod:           valuationPeriod,
 		BidTimeout:                bidTimeout,
 		MinimumBidPercentIncrease: minBidPctIncrease,
+		MaxNoteLength:             maxNoteLength,
 	}
 }
 
 func DefaultParams() Params {
-	p := NewParams(DefaultPfandPerOffer, "0", "0", time.Hour, time.Second*5)
+	p := NewParams(DefaultPfandPerOffer, "0", "0", time.Hour, time.Second*5, 128)
 	return p
 }
 
@@ -53,6 +54,9 @@ func (p Params) Validate() error {
 		if dec.IsNegative() || dec.GTE(math.LegacyNewDec(1)) {
 			return fmt.Errorf("minimum_bid_percent_increase must be in [0,1)")
 		}
+	}
+	if p.MaxNoteLength == 0 {
+		return fmt.Errorf("max_note_length must be > 0")
 	}
 	return nil
 }

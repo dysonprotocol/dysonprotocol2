@@ -92,6 +92,7 @@ message Trade {
   // auction_id is non-zero for auction escrow release trades (redeem); zero
   // otherwise
   uint64 auction_id = 9;
+  string note = 10;
 }
 
 // AuctionRecord stores metadata for a whaleswap-created auction escrow.

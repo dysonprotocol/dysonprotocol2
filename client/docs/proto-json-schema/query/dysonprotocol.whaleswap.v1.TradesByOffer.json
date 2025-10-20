@@ -136,6 +136,9 @@
                     "auction_id": {
                         "type": "string",
                         "description": "auction_id is non-zero for auction escrow release trades (redeem); zero otherwise"
+                    },
+                    "note": {
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,

@@ -263,6 +263,11 @@ def make_run_command(dysond_bin, node_home):
 @pytest.fixture(scope="session")
 def test_base_dir():
     """Fixture that returns the test base directory based on worker_id."""
+    env_base = os.getenv("DYSON_BASE_DIR")
+    if env_base:
+        p = Path(env_base)
+        p.mkdir(parents=True, exist_ok=True)
+        return p
     base_dir = Path(tempfile.mkdtemp())
     return base_dir
 

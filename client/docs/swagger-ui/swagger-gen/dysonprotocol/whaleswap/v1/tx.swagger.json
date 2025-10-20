@@ -663,6 +663,9 @@
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
           "title": "Final trader minimum outputs per denom after aggregation"
+        },
+        "note": {
+          "type": "string"
         }
       }
     },
@@ -889,6 +892,10 @@
         "minimum_bid_percent_increase": {
           "type": "string",
           "description": "minimum_bid_percent_increase specifies the minimum percent increase\nrequired over the current valuation for a new bid to be accepted."
+        },
+        "max_note_length": {
+          "type": "integer",
+          "format": "int64"
         }
       }
     },

@@ -59,6 +59,9 @@
                     "minimum_bid_percent_increase": {
                         "type": "string",
                         "description": "minimum_bid_percent_increase specifies the minimum percent increase required over the current valuation for a new bid to be accepted."
+                    },
+                    "max_note_length": {
+                        "type": "integer"
                     }
                 },
                 "additionalProperties": false,

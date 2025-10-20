@@ -35,6 +35,7 @@ def sh(line):
     try:
         return json.loads(joined)
     except json.JSONDecodeError:
+        print("Error parsing as json: ", joined)
         return joined
 ```
 
@@ -324,9 +325,9 @@ print("POOL_ID:", POOL_ID)
        {'denom': 'foo.dys', 'amount': '100000'}],
       'shares_denom': 'whaleswap.dys/pools/1',
       'fee_pct': '0.003',
-      'block_height': '14',
-      'created': '2025-10-19T18:53:45.572966Z',
-      'updated': '2025-10-19T18:53:45.572966Z'}}
+      'block_height': '13',
+      'created': '2025-10-20T10:29:08.517955Z',
+      'updated': '2025-10-20T10:29:08.517955Z'}}
 
 
 
@@ -602,6 +603,11 @@ print(json.dumps(events, indent=2))
             "index": true
           },
           {
+            "key": "note",
+            "value": "\"\"",
+            "index": true
+          },
+          {
             "key": "offer_id",
             "value": "\"0\"",
             "index": true
@@ -680,6 +686,11 @@ print(json.dumps(events, indent=2))
           {
             "key": "auction_id",
             "value": "\"0\"",
+            "index": true
+          },
+          {
+            "key": "note",
+            "value": "\"\"",
             "index": true
           },
           {
@@ -762,9 +773,9 @@ print(json.dumps(events, indent=2))
         ],
         "shares_denom": "whaleswap.dys/pools/1",
         "fee_pct": "0.0025",
-        "block_height": "22",
-        "created": "2025-10-19T18:53:45.572966Z",
-        "updated": "2025-10-19T18:53:50.329406Z",
+        "block_height": "21",
+        "created": "2025-10-20T10:29:08.517955Z",
+        "updated": "2025-10-20T10:29:13.995234Z",
         "num_trades": "2",
         "fees_earned": [
           {
@@ -833,8 +844,8 @@ print(json.dumps(events, indent=2))
           "offer_id": "1",
           "status": "open",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "24",
-          "updated_timestamp": "2025-10-19T18:53:50.857987Z",
+          "updated_height": "23",
+          "updated_timestamp": "2025-10-20T10:29:14.55588Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"
@@ -874,6 +885,11 @@ print(json.dumps(events, indent=2))
           {
             "key": "auction_id",
             "value": "\"0\"",
+            "index": true
+          },
+          {
+            "key": "note",
+            "value": "\"\"",
             "index": true
           },
           {
@@ -1294,6 +1310,148 @@ print(json.dumps(events, indent=2))
     ]
 
 
+## Mixed Trade (MakeTrade) with Note
+
+Demonstrate `MsgMakeTrade` which combines pool swaps and orderbook takes in one transaction, with an optional note recorded on each resulting Trade.
+
+We'll use a single swap leg for simplicity, including a note.
+
+
+
+
+```python
+# Mixed trade: single swap leg via MakeTrade, with a note
+# Note: MsgMakeTrade requires JSON for operations; here a swap leg
+
+import json, shlex
+
+# Define a swap operation: exact-in 300 foo.dys for bar.dys output
+# The autocli --op flag expects either {"swap": {...}} or {"take": {...}}
+op = {
+    "swap": {
+        "pool_id": int(POOL_ID),
+        "swap_in": {"denom": FOO_NAME, "amount": "300"}
+    }
+}
+op_json = json.dumps(op)
+op_q = shlex.quote(op_json)
+
+note = "Demo mixed trade with note"
+
+make_trade_tx = %sh dysond tx whaleswap make-trade --from bob --max-input "100000$FOO_NAME" --op {op_q} --min-output "1$BAR_NAME" --trade-note "{note}" -y -o json | dysond query wait-tx -o json
+assert isinstance(make_trade_tx, dict) and make_trade_tx['code'] == 0, make_trade_tx
+
+print("MakeTrade success with note")
+events = [e for e in make_trade_tx['events'] if e['type'].startswith('dysonprotocol')]
+print(json.dumps(events, indent=2))
+
+# Query recent trade to verify note (look for EventTradeRecorded and extract trade_id)
+trade_events = [e for e in events if 'EventTradeRecorded' in e['type']]
+if trade_events:
+    # Find trade_id attribute
+    for attr in trade_events[0]['attributes']:
+        if attr['key'] == 'trade_id':
+            recent_trade_id = int(attr['value'].strip('"'))
+            trade = %sh dysond query whaleswap trade --trade-id {recent_trade_id} -o json
+            print("Recent trade with note:")
+            print(json.dumps(trade, indent=2))
+            break
+else:
+    print("No EventTradeRecorded found")
+
+```
+
+    MakeTrade success with note
+    [
+      {
+        "type": "dysonprotocol.whaleswap.v1.EventPoolUpdate",
+        "attributes": [
+          {
+            "key": "pool_id",
+            "value": "\"1\"",
+            "index": true
+          },
+          {
+            "key": "msg_index",
+            "value": "0",
+            "index": true
+          }
+        ]
+      },
+      {
+        "type": "dysonprotocol.whaleswap.v1.EventPoolSwap",
+        "attributes": [
+          {
+            "key": "pool_id",
+            "value": "\"1\"",
+            "index": true
+          },
+          {
+            "key": "msg_index",
+            "value": "0",
+            "index": true
+          }
+        ]
+      },
+      {
+        "type": "dysonprotocol.whaleswap.v1.EventTradeRecorded",
+        "attributes": [
+          {
+            "key": "auction_id",
+            "value": "\"0\"",
+            "index": true
+          },
+          {
+            "key": "note",
+            "value": "\"Demo mixed trade with note\"",
+            "index": true
+          },
+          {
+            "key": "offer_id",
+            "value": "\"0\"",
+            "index": true
+          },
+          {
+            "key": "pool_id",
+            "value": "\"1\"",
+            "index": true
+          },
+          {
+            "key": "trade_id",
+            "value": "\"4\"",
+            "index": true
+          },
+          {
+            "key": "msg_index",
+            "value": "0",
+            "index": true
+          }
+        ]
+      }
+    ]
+
+
+    Recent trade with note:
+    {
+      "trade": {
+        "trade_id": "4",
+        "taker": "dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el",
+        "height": "29",
+        "timestamp": "2025-10-20T10:29:17.934736Z",
+        "sent": {
+          "denom": "foo.dys",
+          "amount": "300"
+        },
+        "received": {
+          "denom": "bar.dys",
+          "amount": "293"
+        },
+        "pool_id": "1",
+        "note": "Demo mixed trade with note"
+      }
+    }
+
+
 ## Discovery queries and metrics
 
 Explore indexes and health metrics.
@@ -1327,23 +1485,23 @@ print("Module metrics:")
           "coins": [
             {
               "denom": "bar.dys",
-              "amount": "98254"
+              "amount": "97961"
             },
             {
               "denom": "foo.dys",
-              "amount": "99754"
+              "amount": "100054"
             }
           ],
           "shares_denom": "whaleswap.dys/pools/1",
           "fee_pct": "0.0025",
-          "block_height": "22",
-          "created": "2025-10-19T18:53:45.572966Z",
-          "updated": "2025-10-19T18:53:50.329406Z",
-          "num_trades": "2",
+          "block_height": "29",
+          "created": "2025-10-20T10:29:08.517955Z",
+          "updated": "2025-10-20T10:29:17.934736Z",
+          "num_trades": "3",
           "fees_earned": [
             {
               "denom": "foo.dys",
-              "amount": "3"
+              "amount": "4"
             }
           ]
         }
@@ -1363,8 +1521,8 @@ print("Module metrics:")
           "offer_id": "1",
           "status": "closed",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "25",
-          "updated_timestamp": "2025-10-19T18:53:51.386298Z",
+          "updated_height": "24",
+          "updated_timestamp": "2025-10-20T10:29:15.118835Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"
@@ -1409,15 +1567,15 @@ print("Module metrics:")
 
     {
       "metrics": {
-        "num_trades": "3",
+        "num_trades": "4",
         "escrowed_pool_coins": [
           {
             "denom": "bar.dys",
-            "amount": "98254"
+            "amount": "97961"
           },
           {
             "denom": "foo.dys",
-            "amount": "99754"
+            "amount": "100054"
           }
         ],
         "escrowed_liquid_coins": [
@@ -1429,7 +1587,7 @@ print("Module metrics:")
         "fees_earned": [
           {
             "denom": "foo.dys",
-            "amount": "3"
+            "amount": "4"
           }
         ]
       }

@@ -14,7 +14,7 @@ import (
 
 // tradeApplySwapLeg executes a single SwapLeg against the pool, persists pool state, and records a Trade.
 // It returns the (in, out) coins used for aggregator accounting.
-func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whaleswapv1.SwapLeg) (sdk.Coin, sdk.Coin, error) {
+func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whaleswapv1.SwapLeg, note string) (sdk.Coin, sdk.Coin, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if leg == nil || leg.PoolId == 0 {
 		return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool_id required")
@@ -347,6 +347,7 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 		Received:  sdk.NewCoin(outDenom, outAmt),
 		PoolId:    pool.PoolId,
 		AuctionId: 0,
+		Note:      note,
 	}
 	if err := k.TradesMap.Set(ctx, tradeId, trade); err != nil {
 		return sdk.Coin{}, sdk.Coin{}, err
@@ -357,7 +358,7 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 	if err := k.TradesByTakerIndex.Set(ctx, collections.Join(trader, tradeId), tradeId); err != nil {
 		return sdk.Coin{}, sdk.Coin{}, err
 	}
-	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventTradeRecorded{TradeId: tradeId, OfferId: 0, PoolId: pool.PoolId, AuctionId: 0}); err != nil {
+	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventTradeRecorded{TradeId: tradeId, OfferId: 0, PoolId: pool.PoolId, AuctionId: 0, Note: note}); err != nil {
 		return sdk.Coin{}, sdk.Coin{}, err
 	}
 
@@ -367,7 +368,7 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 // tradeApplyTakeItem executes one TakeItem: updates the offer, records the trade,
 // and returns aggregator contributions: maker (for outputs), maker want coin, taker receive coin,
 // makerLiquidIn to inputs (for burn), and pfandReleased to add to taker outputs when closing.
-func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whaleswapv1.TakeItem) (string, sdk.Coin, sdk.Coin, sdk.Coin, sdk.Coin, error) {
+func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whaleswapv1.TakeItem, note string) (string, sdk.Coin, sdk.Coin, sdk.Coin, sdk.Coin, error) {
 	if item == nil || item.OfferId == 0 {
 		return "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "offer_id required")
 	}
@@ -437,6 +438,7 @@ func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whal
 		Received:  sdk.NewCoin(recDenom, deliverHave),
 		PoolId:    0,
 		AuctionId: 0,
+		Note:      note,
 	}
 	if err := k.TradesMap.Set(ctx, tradeId, trade); err != nil {
 		return "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, err
@@ -444,7 +446,7 @@ func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whal
 	if err := k.TradesByTakerIndex.Set(ctx, collections.Join(taker, tradeId), tradeId); err != nil {
 		return "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, err
 	}
-	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventTradeRecorded{TradeId: tradeId, OfferId: offer.OfferId, PoolId: 0, AuctionId: 0}); err != nil {
+	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventTradeRecorded{TradeId: tradeId, OfferId: offer.OfferId, PoolId: 0, AuctionId: 0, Note: note}); err != nil {
 		return "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, err
 	}
 	prev, _ := k.OffersMap.Get(ctx, offer.OfferId)

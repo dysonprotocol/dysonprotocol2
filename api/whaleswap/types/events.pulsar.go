@@ -5107,6 +5107,7 @@ var (
 	fd_EventTradeRecorded_offer_id   protoreflect.FieldDescriptor
 	fd_EventTradeRecorded_pool_id    protoreflect.FieldDescriptor
 	fd_EventTradeRecorded_auction_id protoreflect.FieldDescriptor
+	fd_EventTradeRecorded_note       protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -5116,6 +5117,7 @@ func init() {
 	fd_EventTradeRecorded_offer_id = md_EventTradeRecorded.Fields().ByName("offer_id")
 	fd_EventTradeRecorded_pool_id = md_EventTradeRecorded.Fields().ByName("pool_id")
 	fd_EventTradeRecorded_auction_id = md_EventTradeRecorded.Fields().ByName("auction_id")
+	fd_EventTradeRecorded_note = md_EventTradeRecorded.Fields().ByName("note")
 }
 
 var _ protoreflect.Message = (*fastReflection_EventTradeRecorded)(nil)
@@ -5207,6 +5209,12 @@ func (x *fastReflection_EventTradeRecorded) Range(f func(protoreflect.FieldDescr
 			return
 		}
 	}
+	if x.Note != "" {
+		value := protoreflect.ValueOfString(x.Note)
+		if !f(fd_EventTradeRecorded_note, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -5230,6 +5238,8 @@ func (x *fastReflection_EventTradeRecorded) Has(fd protoreflect.FieldDescriptor)
 		return x.PoolId != uint64(0)
 	case "dysonprotocol.whaleswap.v1.EventTradeRecorded.auction_id":
 		return x.AuctionId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventTradeRecorded.note":
+		return x.Note != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventTradeRecorded"))
@@ -5254,6 +5264,8 @@ func (x *fastReflection_EventTradeRecorded) Clear(fd protoreflect.FieldDescripto
 		x.PoolId = uint64(0)
 	case "dysonprotocol.whaleswap.v1.EventTradeRecorded.auction_id":
 		x.AuctionId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventTradeRecorded.note":
+		x.Note = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventTradeRecorded"))
@@ -5282,6 +5294,9 @@ func (x *fastReflection_EventTradeRecorded) Get(descriptor protoreflect.FieldDes
 	case "dysonprotocol.whaleswap.v1.EventTradeRecorded.auction_id":
 		value := x.AuctionId
 		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventTradeRecorded.note":
+		value := x.Note
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventTradeRecorded"))
@@ -5310,6 +5325,8 @@ func (x *fastReflection_EventTradeRecorded) Set(fd protoreflect.FieldDescriptor,
 		x.PoolId = value.Uint()
 	case "dysonprotocol.whaleswap.v1.EventTradeRecorded.auction_id":
 		x.AuctionId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventTradeRecorded.note":
+		x.Note = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventTradeRecorded"))
@@ -5338,6 +5355,8 @@ func (x *fastReflection_EventTradeRecorded) Mutable(fd protoreflect.FieldDescrip
 		panic(fmt.Errorf("field pool_id of message dysonprotocol.whaleswap.v1.EventTradeRecorded is not mutable"))
 	case "dysonprotocol.whaleswap.v1.EventTradeRecorded.auction_id":
 		panic(fmt.Errorf("field auction_id of message dysonprotocol.whaleswap.v1.EventTradeRecorded is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventTradeRecorded.note":
+		panic(fmt.Errorf("field note of message dysonprotocol.whaleswap.v1.EventTradeRecorded is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventTradeRecorded"))
@@ -5359,6 +5378,8 @@ func (x *fastReflection_EventTradeRecorded) NewField(fd protoreflect.FieldDescri
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "dysonprotocol.whaleswap.v1.EventTradeRecorded.auction_id":
 		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventTradeRecorded.note":
+		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventTradeRecorded"))
@@ -5440,6 +5461,10 @@ func (x *fastReflection_EventTradeRecorded) ProtoMethods() *protoiface.Methods {
 		if x.AuctionId != 0 {
 			n += 1 + runtime.Sov(uint64(x.AuctionId))
 		}
+		l = len(x.Note)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -5468,6 +5493,13 @@ func (x *fastReflection_EventTradeRecorded) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Note) > 0 {
+			i -= len(x.Note)
+			copy(dAtA[i:], x.Note)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Note)))
+			i--
+			dAtA[i] = 0x2a
 		}
 		if x.AuctionId != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.AuctionId))
@@ -5614,6 +5646,38 @@ func (x *fastReflection_EventTradeRecorded) ProtoMethods() *protoiface.Methods {
 						break
 					}
 				}
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Note", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Note = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -6116,6 +6180,7 @@ type EventTradeRecorded struct {
 	OfferId   uint64 `protobuf:"varint,2,opt,name=offer_id,json=offerId,proto3" json:"offer_id,omitempty"`
 	PoolId    uint64 `protobuf:"varint,3,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
 	AuctionId uint64 `protobuf:"varint,4,opt,name=auction_id,json=auctionId,proto3" json:"auction_id,omitempty"`
+	Note      string `protobuf:"bytes,5,opt,name=note,proto3" json:"note,omitempty"`
 }
 
 func (x *EventTradeRecorded) Reset() {
@@ -6164,6 +6229,13 @@ func (x *EventTradeRecorded) GetAuctionId() uint64 {
 		return x.AuctionId
 	}
 	return 0
+}
+
+func (x *EventTradeRecorded) GetNote() string {
+	if x != nil {
+		return x.Note
+	}
+	return ""
 }
 
 var File_dysonprotocol_whaleswap_v1_events_proto protoreflect.FileDescriptor
@@ -6223,7 +6295,7 @@ var file_dysonprotocol_whaleswap_v1_events_proto_rawDesc = []byte{
 	0x74, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x64, 0x65, 0x65, 0x6d, 0x65, 0x64,
 	0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x22,
-	0x82, 0x01, 0x0a, 0x12, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x72, 0x61, 0x64, 0x65, 0x52, 0x65,
+	0x96, 0x01, 0x0a, 0x12, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x72, 0x61, 0x64, 0x65, 0x52, 0x65,
 	0x63, 0x6f, 0x72, 0x64, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x72, 0x61, 0x64, 0x65, 0x5f,
 	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x72, 0x61, 0x64, 0x65, 0x49,
 	0x64, 0x12, 0x19, 0x0a, 0x08, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20,
@@ -6231,10 +6303,11 @@ var file_dysonprotocol_whaleswap_v1_events_proto_rawDesc = []byte{
 	0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70,
 	0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e,
 	0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x61, 0x75, 0x63, 0x74, 0x69,
-	0x6f, 0x6e, 0x49, 0x64, 0x42, 0x25, 0x5a, 0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c,
-	0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x6f, 0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x6f, 0x74, 0x65, 0x18, 0x05, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x04, 0x6e, 0x6f, 0x74, 0x65, 0x42, 0x25, 0x5a, 0x23, 0x64, 0x79, 0x73, 0x6f,
+	0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f,
+	0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (

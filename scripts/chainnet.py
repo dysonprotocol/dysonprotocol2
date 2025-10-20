@@ -90,12 +90,11 @@ import click
 import requests
 import tomlkit
 from datetime import datetime, timezone
+import tempfile
 
 
 # --- Defaults & Constants ---
 DEFAULT_DENOM = "udys"
-DEFAULT_BASE_DIR = Path(os.path.expanduser("~/.dysonchains"))
-DEFAULT_CONFIG_PATH = DEFAULT_BASE_DIR / "chains.json"
 DEFAULT_GENTX_AMOUNT = f"1000000{DEFAULT_DENOM}"
 DEFAULT_INITIAL_BALANCE = f"10000000000{DEFAULT_DENOM}"
 USER_KEYS = {
@@ -117,6 +116,37 @@ MAX_NODES_PER_CHAIN = 10
 
 
 # --- Helpers for generation ---
+def _resolve_base_dir(base_dir_option: Optional[str]) -> Path:
+    """Resolve the effective base directory.
+
+    Precedence:
+    1) Explicit --base-dir option
+    2) DYSON_BASE_DIR environment variable
+    3) A newly created random temporary directory
+    """
+    if base_dir_option:
+        return Path(base_dir_option)
+    env_base = os.getenv("DYSON_BASE_DIR")
+    if env_base:
+        return Path(env_base)
+    return Path(tempfile.mkdtemp(prefix="dyson-chainnet."))
+
+
+def _resolve_config_path(config_file_option: Optional[str]) -> Path:
+    """Resolve the config file path from option or DYSON_BASE_DIR.
+
+    Requires either --config-file or DYSON_BASE_DIR to be set.
+    """
+    if config_file_option:
+        return Path(config_file_option)
+    env_base = os.getenv("DYSON_BASE_DIR")
+    if env_base:
+        return Path(env_base) / "chains.json"
+    raise click.ClickException(
+        "Missing config file. Provide --config-file or set DYSON_BASE_DIR environment variable"
+    )
+
+
 def deep_merge_config(base: dict, override: dict) -> dict:
     """Deep merge override config into base config.
 
@@ -473,7 +503,7 @@ def chainnet():
 
 @chainnet.command()
 @click.option(
-    "--base-dir", default=DEFAULT_BASE_DIR, type=click.Path(), show_default=True
+    "--base-dir", default=None, type=click.Path(), help="Base directory for chain data"
 )
 @click.option("--chains", "num_chains", default=2, type=int, show_default=True)
 @click.option("--chainnet-offset", default=0, type=int, show_default=True)
@@ -499,7 +529,7 @@ def generate(
     output,
 ):
     """Generate and persist network config JSON (and optional Hermes TOML)."""
-    base = Path(base_dir)
+    base = _resolve_base_dir(base_dir)
     base.mkdir(parents=True, exist_ok=True)
 
     # Load base config if provided
@@ -530,7 +560,7 @@ def generate(
 
     # Merge base config with defaults (base config takes precedence)
     cfg = deep_merge_config(default_cfg, base_cfg)
-    path = Path(output) if output else DEFAULT_CONFIG_PATH
+    path = Path(output) if output else (base / "chains.json")
     path.write_text(json.dumps(cfg, indent=2))
     # print contents of path
     click.echo(f"Wrote config JSON to {path}")
@@ -697,12 +727,13 @@ def setup_hermes_keys(
 
 @chainnet.command()
 @click.option(
-    "--config-file", default=DEFAULT_CONFIG_PATH, type=click.Path(exists=True)
+    "--config-file", default=None, type=click.Path(), help="Path to chains.json"
 )
 @click.option("--force", is_flag=True)
 def setup(config_file, force):
     """Initialize nodes, keys, genesis, gentx, collect-gentxs, and distribute genesis.json"""
-    cfg = json.loads(Path(config_file).read_text())
+    cfg_path = _resolve_config_path(config_file)
+    cfg = json.loads(cfg_path.read_text())
     bin_path = cfg["dysond_bin"]
     denom = cfg.get("default_denom", DEFAULT_DENOM)
 
@@ -992,7 +1023,7 @@ def setup(config_file, force):
 
 @chainnet.command()
 @click.option(
-    "--config-file", default=DEFAULT_CONFIG_PATH, type=click.Path(exists=True)
+    "--config-file", default=None, type=click.Path(), help="Path to chains.json"
 )
 @click.option(
     "--block-speed",
@@ -1015,7 +1046,8 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs):
     """Start all dysond nodes and Hermes relayer."""
     import threading, time, requests
 
-    cfg = json.loads(Path(config_file).read_text())
+    cfg_path = _resolve_config_path(config_file)
+    cfg = json.loads(cfg_path.read_text())
     bin_path = cfg["dysond_bin"]
     procs = []
     node_procs = []  # track per-node proc/cmd/home
@@ -1248,7 +1280,7 @@ Stopping all nodes!
 
 @chainnet.command()
 @click.option(
-    "--config-file", default=DEFAULT_CONFIG_PATH, type=click.Path(exists=True)
+    "--config-file", default=None, type=click.Path(), help="Path to chains.json"
 )
 @click.option("--ibc-account-name", default=None, help="Name of the IBC account to use")
 @click.option(
@@ -1259,7 +1291,8 @@ Stopping all nodes!
 )
 def ibc(config_file, ibc_account_name, ibc_account_address, ibc_account_mnemonic):
     """Create IBC channels between consecutive chains."""
-    cfg = json.loads(Path(config_file).read_text())
+    cfg_path = _resolve_config_path(config_file)
+    cfg = json.loads(cfg_path.read_text())
     if not cfg["chains"] or len(cfg["chains"]) < 2:
         click.echo("IBC setup requires at least two chains. Skipping.")
         return
