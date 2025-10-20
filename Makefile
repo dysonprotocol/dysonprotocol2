@@ -127,7 +127,7 @@ test: install
 	@echo "--> running pytest"
 	@TMP_ROOT=$$(mktemp -d /tmp/dyson-test.XXXXXX); \
 	echo "Using temporary directory: $$TMP_ROOT"; \
-	DYSON_BASE_DIR=$$TMP_ROOT/test-dysonchains python -u -m pytest  --capture=fd -x --showlocals --durations=0 $(PYTEST_ARGS); \
+	DYSON_BASE_DIR=$$TMP_ROOT/test-dysonchains python -u -m pytest  --capture=fd --showlocals --durations=0 $(PYTEST_ARGS); \
 	TEST_EXIT_CODE=$$?; \
 	echo "Cleaning up temporary directory"; \
 	rm -rf $$TMP_ROOT; \
