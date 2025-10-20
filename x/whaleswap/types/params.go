@@ -55,8 +55,5 @@ func (p Params) Validate() error {
 			return fmt.Errorf("minimum_bid_percent_increase must be in [0,1)")
 		}
 	}
-	if p.MaxNoteLength == 0 {
-		return fmt.Errorf("max_note_length must be > 0")
-	}
 	return nil
 }
