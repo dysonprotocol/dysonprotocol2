@@ -210,14 +210,14 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 				new0 := pool.Coins[0].Amount.Add(actualInCoin.Amount)
 				new1 := pool.Coins[1].Amount.Sub(outAmt)
 				if !new1.IsPositive() {
-					return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap would deplete quote reserve to zero")
+					return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "swap would deplete quote reserve to zero in pool %d: quote_reserve=%s, swap_output=%s", leg.PoolId, pool.Coins[1].String(), outAmt.String())
 				}
 				pool.Coins = sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, new0), sdk.NewCoin(pool.Coins[1].Denom, new1))
 				outDenom = pool.Coins[1].Denom
 			} else {
 				new0 := pool.Coins[0].Amount.Sub(outAmt)
 				if !new0.IsPositive() {
-					return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap would deplete base reserve to zero")
+					return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "swap would deplete base reserve to zero in pool %d: base_reserve=%s, swap_output=%s", leg.PoolId, pool.Coins[0].String(), outAmt.String())
 				}
 				new1 := pool.Coins[1].Amount.Add(actualInCoin.Amount)
 				pool.Coins = sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, new0), sdk.NewCoin(pool.Coins[1].Denom, new1))
@@ -233,10 +233,10 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 		maxBase := pool.MaxPrice.AmountOf(denomA)
 		maxQuote := pool.MaxPrice.AmountOf(denomB)
 		if rQuote.Mul(minBase).LT(rBase.Mul(minQuote)) {
-			return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "resulting price below band after swap")
+			return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "resulting price below band after swap in pool %d: reserves=[%s%s,%s%s], min_price=%s%s/%s%s", leg.PoolId, rBase.String(), denomA, rQuote.String(), denomB, minBase.String(), denomA, minQuote.String(), denomB)
 		}
 		if rQuote.Mul(maxBase).GT(rBase.Mul(maxQuote)) {
-			return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "resulting price above band after swap")
+			return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "resulting price above band after swap in pool %d: reserves=[%s%s,%s%s], max_price=%s%s/%s%s", leg.PoolId, rBase.String(), denomA, rQuote.String(), denomB, maxBase.String(), denomA, maxQuote.String(), denomB)
 		}
 	} else {
 		// v2 constant product
@@ -253,12 +253,12 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 			outDec := rOut.Sub(q)
 			outAmt = outDec.TruncateInt()
 			if !outAmt.IsPositive() {
-				return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap output too small")
+				return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "swap output too small in pool %d: input=%s%s, computed_output=%s, reserves=[%s,%s], fee=%s", leg.PoolId, actualInCoin.Amount.String(), actualInCoin.Denom, outAmt.String(), pool.Coins[inputIdx].String(), pool.Coins[outputIdx].String(), fee.String())
 			}
 			newIn := pool.Coins[inputIdx].Amount.Add(actualInCoin.Amount)
 			newOut := pool.Coins[outputIdx].Amount.Sub(outAmt)
 			if !newOut.IsPositive() {
-				return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap would deplete output reserve to zero")
+				return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "swap would deplete output reserve to zero in pool %d: output_reserve=%s, swap_output=%s", leg.PoolId, pool.Coins[outputIdx].String(), outAmt.String())
 			}
 			if inputIdx == 0 {
 				pool.Coins = sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, newIn), sdk.NewCoin(pool.Coins[1].Denom, newOut))
@@ -270,12 +270,12 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 		} else {
 			out := math.LegacyNewDecFromInt(targetOutAmt)
 			if out.GTE(rOut) {
-				return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "exact-out equals/exceeds reserve")
+				return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "exact-out equals/exceeds reserve in pool %d: requested_output=%s, output_reserve=%s", leg.PoolId, targetOutAmt.String(), pool.Coins[outputIdx].String())
 			}
 			effInReq := rIn.Mul(rOut.Quo(rOut.Sub(out)).Sub(one))
 			gross := effInReq.Quo(one.Sub(fee)).Ceil().TruncateInt()
 			if !gross.IsPositive() {
-				return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "computed input not positive")
+				return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "computed input not positive in pool %d: requested_output=%s, reserves=[%s,%s], fee=%s", leg.PoolId, targetOutAmt.String(), pool.Coins[inputIdx].String(), pool.Coins[outputIdx].String(), fee.String())
 			}
 			effInActual := math.LegacyNewDecFromInt(gross).Mul(one.Sub(fee))
 			kDec := rIn.Mul(rOut)
@@ -289,7 +289,7 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 				outDec = rOut.Sub(q)
 				outAct = outDec.TruncateInt()
 				if outAct.LT(targetOutAmt) {
-					return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "insufficient liquidity for exact-out")
+					return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "insufficient liquidity for exact-out in pool %d: requested=%s, achievable=%s, reserves=[%s,%s]", leg.PoolId, targetOutAmt.String(), outAct.String(), pool.Coins[inputIdx].String(), pool.Coins[outputIdx].String())
 				}
 			}
 			feeInt := gross.Sub(effInActual.TruncateInt())
@@ -299,7 +299,7 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 			newIn := pool.Coins[inputIdx].Amount.Add(gross)
 			newOut := pool.Coins[outputIdx].Amount.Sub(targetOutAmt)
 			if !newOut.IsPositive() {
-				return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap would deplete output reserve to zero")
+				return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "swap would deplete output reserve to zero in pool %d: output_reserve=%s, requested_output=%s", leg.PoolId, pool.Coins[outputIdx].String(), targetOutAmt.String())
 			}
 			if inputIdx == 0 {
 				pool.Coins = sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, newIn), sdk.NewCoin(pool.Coins[1].Denom, newOut))

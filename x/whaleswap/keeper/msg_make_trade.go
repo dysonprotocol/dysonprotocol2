@@ -84,6 +84,7 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 				return nil, terr
 			}
 			addOut(maker, makerWant)
+			addIn(msg.Trader, makerWant) // Taker provides what maker wants
 			addOut(msg.Trader, takerRecv)
 			if makerLiqIn.IsValid() && makerLiqIn.Amount.IsPositive() {
 				addIn(maker, makerLiqIn)
