@@ -319,15 +319,21 @@ def test_ring_trade_banded_auction(
         bidder_name,
     )
     assert red.get("code", 1) == 0, f"redeem failed: {json.dumps(red, indent=2)}"
+    # Query trades by auction using new TradesByAuction endpoint (avoids if statements)
     q = dysond(
         "query",
         "whaleswap",
-        "trades-by-taker",
-        f"--taker={bidder_addr}",
+        "trades-by-auction",
+        f"--auction-id={auction_id}",
         "--page-limit",
         "5",
     )
-    trs = [t for t in q.get("trades", []) if int(t.get("auction_id", 0)) == auction_id]
+    trs = q.get("trades", [])
     assert (
         len(trs) == 1
     ), f"expected 1 auction trade, got {len(trs)}: {json.dumps(q, indent=2)}"
+
+    # Verify it's for the right bidder
+    assert (
+        trs[0].get("trader") == bidder_addr
+    ), f"trader mismatch: {json.dumps(trs[0], indent=2)}"

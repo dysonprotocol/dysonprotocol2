@@ -103,7 +103,10 @@ def test_cycle_profit_mixed_swaps_offers(chainnet, ws_setup_env, ws_create_offer
     et = "dysonprotocol.whaleswap.v1.EventPoolSwap"
     assert et in ev and len(ev[et]) == 2, json.dumps(ev, indent=2)
     et = "dysonprotocol.whaleswap.v1.EventTradeRecorded"
-    assert et in ev and len(ev[et]) == 3, json.dumps(ev, indent=2)
+    # Now 1 Trade with multiple operations, not multiple Trades
+    assert (
+        et in ev and len(ev[et]) == 1
+    ), f"expected 1 EventTradeRecorded: {json.dumps(ev, indent=2)}"
 
     debits, credits = sum_transfers_for_addr(tx, taddr)
     assert isinstance(debits, list) and isinstance(credits, list), json.dumps(

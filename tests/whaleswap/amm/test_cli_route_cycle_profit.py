@@ -108,7 +108,14 @@ def test_route_cycle_profit_no_inputs(
     et = "dysonprotocol.whaleswap.v1.EventPoolSwap"
     assert et in ev and len(ev[et]) == 3, json.dumps(ev, indent=2)
     et = "dysonprotocol.whaleswap.v1.EventTradeRecorded"
-    assert et in ev and len(ev[et]) == 3, json.dumps(ev, indent=2)
+    # Now 1 Trade with 3 operations, not 3 Trades
+    assert (
+        et in ev and len(ev[et]) == 1
+    ), f"expected 1 EventTradeRecorded: {json.dumps(ev, indent=2)}"
+    attrs = ev[et][0]
+    assert (
+        int(attrs.get("num_operations", 0)) == 3
+    ), f"expected 3 operations: {json.dumps(attrs, indent=2)}"
 
     # Exact net flows from transfer events
     debits, credits = sum_transfers_for_addr(tx, trader_addr)

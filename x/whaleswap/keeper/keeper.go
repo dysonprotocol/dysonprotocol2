@@ -40,8 +40,10 @@ var (
 	OffersByPairPricePrefix   = collections.NewPrefix(13)
 	OffersByOwnerStatusPrefix = collections.NewPrefix(14)
 	// Trades reverse indexes
-	TradesByPoolPrefix  = collections.NewPrefix(15)
-	TradesByTakerPrefix = collections.NewPrefix(16)
+	TradesByPoolPrefix    = collections.NewPrefix(15)
+	TradesByOfferPrefix   = collections.NewPrefix(16)
+	TradesByTraderPrefix  = collections.NewPrefix(17)
+	TradesByAuctionPrefix = collections.NewPrefix(18)
 )
 
 type Keeper struct {
@@ -64,9 +66,11 @@ type Keeper struct {
 	OffersMap collections.Map[uint64, whaleswapv1.OfferData]
 	tradeSeq  collections.Sequence
 	TradesMap collections.Map[uint64, whaleswapv1.Trade]
-	// Trades reverse indexes
-	TradesByPoolIndex  collections.Map[collections.Pair[uint64, uint64], uint64]
-	TradesByTakerIndex collections.Map[collections.Pair[string, uint64], uint64]
+	// Trades reverse indexes (many-to-many: one trade can reference multiple pools/offers)
+	TradesByPoolIndex    collections.Map[collections.Pair[uint64, uint64], uint64]
+	TradesByOfferIndex   collections.Map[collections.Pair[uint64, uint64], uint64]
+	TradesByTraderIndex  collections.Map[collections.Pair[string, uint64], uint64]
+	TradesByAuctionIndex collections.Map[collections.Pair[uint64, uint64], uint64]
 	// Offer reverse indexes
 	OffersByHave        collections.Map[collections.Pair[string, uint64], uint64]
 	OffersByWant        collections.Map[collections.Pair[string, uint64], uint64]
@@ -167,11 +171,25 @@ func NewKeeper(
 		collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key),
 		collections.Uint64Value,
 	)
-	k.TradesByTakerIndex = collections.NewMap(
+	k.TradesByOfferIndex = collections.NewMap(
 		sb,
-		TradesByTakerPrefix,
-		"trades_by_taker",
+		TradesByOfferPrefix,
+		"trades_by_offer",
+		collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key),
+		collections.Uint64Value,
+	)
+	k.TradesByTraderIndex = collections.NewMap(
+		sb,
+		TradesByTraderPrefix,
+		"trades_by_trader",
 		collections.PairKeyCodec(collections.StringKey, collections.Uint64Key),
+		collections.Uint64Value,
+	)
+	k.TradesByAuctionIndex = collections.NewMap(
+		sb,
+		TradesByAuctionPrefix,
+		"trades_by_auction",
+		collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key),
 		collections.Uint64Value,
 	)
 	// Auctions collections (sequence only for now)

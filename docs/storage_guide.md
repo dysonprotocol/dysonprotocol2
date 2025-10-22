@@ -37,7 +37,7 @@ Let's explore the available commands for the Storage module:
       -h, --help   help for storage
     
     Global Flags:
-          --home string         directory for config and data (default "/var/folders/th/nv7lq13d7gx0jfhfg68wdh040000gn/T/tmprp51ruon/chain-a-node-1")
+          --home string         directory for config and data (default "/tmp/dyson-test.f2nHWi/test-dysonchains/chain-a-node-1")
           --log_format string   The logging format (json|plain) (default "plain")
           --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
           --log_no_color        Disable colored logs
@@ -68,7 +68,7 @@ Let's explore the available commands for the Storage module:
       -h, --help   help for storage
     
     Global Flags:
-          --home string         directory for config and data (default "/var/folders/th/nv7lq13d7gx0jfhfg68wdh040000gn/T/tmprp51ruon/chain-a-node-1")
+          --home string         directory for config and data (default "/tmp/dyson-test.f2nHWi/test-dysonchains/chain-a-node-1")
           --log_format string   The logging format (json|plain) (default "plain")
           --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
           --log_no_color        Disable colored logs
@@ -126,7 +126,7 @@ for event in tx_result['events']:
 
 ```
 
-    {"height":"121","txhash":"2DECF8A5602AF1F4A87510563B61FC1E522124BC1D9B50CECF386A970FE3B2EE","codespace":"","code":0,"data":"12310A2F2F6479736F6E70726F746F636F6C2E73746F726167652E76312E4D736753746F72616765536574526573706F6E7365","raw_log":"","logs":[],"info":"","gas_wanted":"200000","gas_used":"52081","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/5","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"4A+jieI740XiLBPkzqW/t5TdsHAkm8Oh6dicOrdkTwJlvIlEHId/ihZVh8+xbaAnnZf8GYkt1NN3edggkEikOA==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.storage.v1.MsgStorageSet","index":true},{"key":"sender","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":true},{"key":"module","value":"storage","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.storage.v1.EventStorageUpdated","attributes":[{"key":"address","value":"\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"","index":true},{"key":"index","value":"\"profile/info\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}
+    {"height":"349","txhash":"5DFDB6D3EAA43CE41F31CC81531309C69F11C17CBEC707F0540195A7E28199A6","codespace":"","code":0,"data":"12310A2F2F6479736F6E70726F746F636F6C2E73746F726167652E76312E4D736753746F72616765536574526573706F6E7365","raw_log":"","logs":[],"info":"","gas_wanted":"200000","gas_used":"52111","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/9","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"uGbTow9IDmbrAn4FfElcIYwXvuqOFYySUPn52d7ZXlNwkliUVtIo0+fLp9XSaZ0j9nxxYhvNLj4ap15Y1p2doQ==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.storage.v1.MsgStorageSet","index":true},{"key":"sender","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":true},{"key":"module","value":"storage","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.storage.v1.EventStorageUpdated","attributes":[{"key":"address","value":"\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"","index":true},{"key":"index","value":"\"profile/info\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}
     {
       "type": "dysonprotocol.storage.v1.EventStorageUpdated",
       "attributes": [
@@ -171,7 +171,7 @@ for event in tx_result['events']:
         break
 ```
 
-    {"height":"122","txhash":"581EC8F7965C6E63C316B709D4F2ED9ACF1DC0DA0392FE6CF3DC1E4BB56DC585","codespace":"","code":0,"data":"12310A2F2F6479736F6E70726F746F636F6C2E73746F726167652E76312E4D736753746F72616765536574526573706F6E7365","raw_log":"","logs":[],"info":"","gas_wanted":"200000","gas_used":"48181","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/6","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"fjnbVnmNg72sKVwp9J5qcR2t7zK/UEe32+hzogwxOnoQfUCfy06CQMVRvi0Jskj/s4cz2MlDQQ23Ii7Zbtt+0Q==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.storage.v1.MsgStorageSet","index":true},{"key":"sender","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":true},{"key":"module","value":"storage","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.storage.v1.EventStorageUpdated","attributes":[{"key":"address","value":"\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"","index":true},{"key":"index","value":"\"settings/app\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}
+    {"height":"350","txhash":"94970DB97C8F3125AAF66D694D3ECBA49D0945FE32A4D1C5C3063B986487A3F8","codespace":"","code":0,"data":"12310A2F2F6479736F6E70726F746F636F6C2E73746F726167652E76312E4D736753746F72616765536574526573706F6E7365","raw_log":"","logs":[],"info":"","gas_wanted":"200000","gas_used":"48211","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/10","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"JKGyZ5kzrIVJJfLLHrLCvxWVDB/7aN72HNF6P51FdzJ5Y+5LpzK0O82QSTs8GC2DPRNJ+x4isVGcyU0Y0QNk+g==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.storage.v1.MsgStorageSet","index":true},{"key":"sender","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":true},{"key":"module","value":"storage","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.storage.v1.EventStorageUpdated","attributes":[{"key":"address","value":"\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"","index":true},{"key":"index","value":"\"settings/app\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}
     {
       "type": "dysonprotocol.storage.v1.EventStorageUpdated",
       "attributes": [
@@ -262,7 +262,7 @@ assert profile_data['bio'] == "Blockchain enthusiast", "Expected 'Blockchain ent
 assert profile_data['skills'] == ["Smart Contracts", "DeFi", "Web3"], "Expected ['Smart Contracts', 'DeFi', 'Web3'] in output, got: " + str(profile_data['skills'])
 ```
 
-    ['{"entry":{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\\"name\\": \\"Bob\\", \\"bio\\": \\"Blockchain enthusiast\\", \\"skills\\": [\\"Smart Contracts\\", \\"DeFi\\", \\"Web3\\"]}","updated_height":"121","updated_timestamp":"2025-10-13T13:01:27Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="}}']
+    ['{"entry":{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\\"name\\": \\"Bob\\", \\"bio\\": \\"Blockchain enthusiast\\", \\"skills\\": [\\"Smart Contracts\\", \\"DeFi\\", \\"Web3\\"]}","updated_height":"349","updated_timestamp":"2025-10-22T10:37:16Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="}}']
     {'name': 'Bob', 'bio': 'Blockchain enthusiast', 'skills': ['Smart Contracts', 'DeFi', 'Web3']}
 
 
@@ -276,7 +276,7 @@ The Storage module allows you to query entries with a common prefix, which is us
 ! dysond query storage list $ADDRESS --index-prefix "profile/" -o json 
 ```
 
-    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\"name\": \"Bob\", \"bio\": \"Blockchain enthusiast\", \"skills\": [\"Smart Contracts\", \"DeFi\", \"Web3\"]}","updated_height":"121","updated_timestamp":"2025-10-13T13:01:27Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="}],"pagination":{"next_key":null,"total":"0"}}
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\"name\": \"Bob\", \"bio\": \"Blockchain enthusiast\", \"skills\": [\"Smart Contracts\", \"DeFi\", \"Web3\"]}","updated_height":"349","updated_timestamp":"2025-10-22T10:37:16Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="}],"pagination":{"next_key":null,"total":"0"}}
 
 
 
@@ -285,7 +285,7 @@ The Storage module allows you to query entries with a common prefix, which is us
 ! dysond query storage list $ADDRESS --index-prefix "content/" -o json
 ```
 
-    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"content/posts/1","data":"{\"title\": \"Introduction to Blockchain\", \"content\": \"Blockchain is a distributed ledger technology...\", \"tags\": [\"blockchain\", \"crypto\", \"beginner\"], \"published_at\": \"2023-10-25T15:30:00Z\"}","updated_height":"123","updated_timestamp":"2025-10-13T13:01:28Z","hash":"sha256-ZHL5Y1S9UvkhTzc5u78zZ2K0Uvxp6LTpFD2T4OctMjk="}],"pagination":{"next_key":null,"total":"0"}}
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"content/posts/1","data":"{\"title\": \"Introduction to Blockchain\", \"content\": \"Blockchain is a distributed ledger technology...\", \"tags\": [\"blockchain\", \"crypto\", \"beginner\"], \"published_at\": \"2023-10-25T15:30:00Z\"}","updated_height":"351","updated_timestamp":"2025-10-22T10:37:17Z","hash":"sha256-ZHL5Y1S9UvkhTzc5u78zZ2K0Uvxp6LTpFD2T4OctMjk="}],"pagination":{"next_key":null,"total":"0"}}
 
 
 
@@ -294,7 +294,7 @@ The Storage module allows you to query entries with a common prefix, which is us
 ! dysond query storage list $ADDRESS --index-prefix "" -o json --limit 3 --count-total
 ```
 
-    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"content/posts/1","data":"{\"title\": \"Introduction to Blockchain\", \"content\": \"Blockchain is a distributed ledger technology...\", \"tags\": [\"blockchain\", \"crypto\", \"beginner\"], \"published_at\": \"2023-10-25T15:30:00Z\"}","updated_height":"123","updated_timestamp":"2025-10-13T13:01:28Z","hash":"sha256-ZHL5Y1S9UvkhTzc5u78zZ2K0Uvxp6LTpFD2T4OctMjk="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\"name\": \"Bob\", \"bio\": \"Blockchain enthusiast\", \"skills\": [\"Smart Contracts\", \"DeFi\", \"Web3\"]}","updated_height":"121","updated_timestamp":"2025-10-13T13:01:27Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"settings/app","data":"{\"theme\": \"dark\", \"notifications\": true}","updated_height":"122","updated_timestamp":"2025-10-13T13:01:27Z","hash":"sha256-W5j+Aa98S2rm66ch2QXtBLYx8yEOG08aRMp9tep/wBU="}],"pagination":{"next_key":null,"total":"3"}}
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"content/posts/1","data":"{\"title\": \"Introduction to Blockchain\", \"content\": \"Blockchain is a distributed ledger technology...\", \"tags\": [\"blockchain\", \"crypto\", \"beginner\"], \"published_at\": \"2023-10-25T15:30:00Z\"}","updated_height":"351","updated_timestamp":"2025-10-22T10:37:17Z","hash":"sha256-ZHL5Y1S9UvkhTzc5u78zZ2K0Uvxp6LTpFD2T4OctMjk="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\"name\": \"Bob\", \"bio\": \"Blockchain enthusiast\", \"skills\": [\"Smart Contracts\", \"DeFi\", \"Web3\"]}","updated_height":"349","updated_timestamp":"2025-10-22T10:37:16Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"settings/app","data":"{\"theme\": \"dark\", \"notifications\": true}","updated_height":"350","updated_timestamp":"2025-10-22T10:37:17Z","hash":"sha256-W5j+Aa98S2rm66ch2QXtBLYx8yEOG08aRMp9tep/wBU="}],"pagination":{"next_key":null,"total":"3"}}
 
 
 ### Deleting Storage Entries

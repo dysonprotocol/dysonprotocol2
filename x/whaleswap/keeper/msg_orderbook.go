@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"cosmossdk.io/collections"
 	cosmossdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	nameservicev1 "dysonprotocol.com/x/nameservice/types"
@@ -120,7 +119,10 @@ func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*
 		),
 	)
 	if pfandCoin.Amount.IsPositive() {
-		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPfandLocked{Amount: pfandCoin}); err != nil {
+		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPfandLocked{
+			Amount:  pfandCoin,
+			OfferId: id,
+		}); err != nil {
 			return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventPfandLocked")
 		}
 	}
@@ -146,8 +148,12 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 
 	outputsByAddr := map[string]sdk.Coins{}
 	inputsByAddr := map[string]sdk.Coins{}
-	totalSent := sdk.NewCoins()
-	totalRecv := sdk.NewCoins()
+	var operations []whaleswapv1.TradeOperation
+	type pfandRelease struct {
+		offerId uint64
+		amount  sdk.Coin
+	}
+	var pfandReleases []pfandRelease
 
 	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
 	moduleBech := moduleAddr.String()
@@ -206,10 +212,10 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 			offer.RemainingHave.Amount = math.NewInt(0)
 			offer.RemainingWant.Amount = math.NewInt(0)
 			if offer.PfandLocked.Amount.IsPositive() {
+				// Pfand flows: module → taker (was locked in module when offer created)
+				inputsByAddr[moduleBech] = inputsByAddr[moduleBech].Add(offer.PfandLocked)
 				outputsByAddr[msg.Taker] = outputsByAddr[msg.Taker].Add(offer.PfandLocked)
-				if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPfandReleased{Amount: offer.PfandLocked}); err != nil {
-					return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventPfandReleased")
-				}
+				pfandReleases = append(pfandReleases, pfandRelease{offerId: offer.OfferId, amount: offer.PfandLocked})
 			}
 		} else {
 			offer.RemainingUnits = newUnits.String()
@@ -217,37 +223,24 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 			offer.RemainingWant.Amount = newUnits.Mul(unitWant)
 		}
 
-		// Persist trade and offer; emit taken event (optimistic)
-		tradeId, terr := k.tradeSeq.Next(ctx)
-		if terr != nil {
-			return nil, cosmossdkerrors.Wrap(terr, "failed to allocate trade id")
-		}
+		// Determine received denom (unwrap liquid if needed)
 		recDenom := haveDenom
 		if k.isLiquidDenom(haveDenom) {
 			if baseHave, derr := k.decodeLiquidDenom(haveDenom); derr == nil {
 				recDenom = baseHave
 			}
 		}
-		trade := whaleswapv1.Trade{
-			TradeId:   tradeId,
-			OfferId:   offer.OfferId,
-			Taker:     msg.Taker,
-			Height:    uint64(sdkCtx.BlockHeight()),
-			Timestamp: &t,
-			Sent:      sdk.NewCoin(wantDenom, requiredWant),
-			Received:  sdk.NewCoin(recDenom, deliverHave),
-			PoolId:    0,
-			AuctionId: 0,
+
+		// Build operation record with execution results
+		takeItemCopy := it
+		op := whaleswapv1.TradeOperation{
+			Op:       &whaleswapv1.TradeOperation_Take{Take: &takeItemCopy},
+			Sent:     sdk.NewCoin(wantDenom, requiredWant),
+			Received: sdk.NewCoin(recDenom, deliverHave),
 		}
-		if err := k.TradesMap.Set(ctx, tradeId, trade); err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to save trade")
-		}
-		if err := k.TradesByTakerIndex.Set(ctx, collections.Join(msg.Taker, tradeId), tradeId); err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to index trade by taker")
-		}
-		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventTradeRecorded{TradeId: tradeId, OfferId: offer.OfferId, PoolId: 0, AuctionId: 0}); err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventTradeRecorded")
-		}
+		operations = append(operations, op)
+
+		// Persist offer (EventOfferTaken emitted by recordTradeWithOperations with proper trade_id)
 		prev, _ := k.OffersMap.Get(ctx, offer.OfferId)
 		if err := k.OffersMap.Set(ctx, offer.OfferId, offer); err != nil {
 			return nil, cosmossdkerrors.Wrapf(err, "failed to update offer %d", offer.OfferId)
@@ -255,12 +248,6 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 		if err := k.reindexOfferOnStatusChange(ctx, prev, offer); err != nil {
 			return nil, cosmossdkerrors.Wrapf(err, "failed to reindex offer after take")
 		}
-		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventOfferTaken{OfferId: offer.OfferId, TradeId: tradeId}); err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventOfferTaken")
-		}
-
-		totalSent = totalSent.Add(trade.Sent)
-		totalRecv = totalRecv.Add(trade.Received)
 	}
 
 	// Compute taker deficits per solid denom from outputs only (makers get wants; taker gets credits)
@@ -416,6 +403,32 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 	if err := k.AssertInvariants(ctx); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "invariant failed after TakeOffer")
 	}
+
+	// Record single trade with all operations
+	tradeId, err := k.recordTradeWithOperations(ctx, msg.Taker, operations, "")
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to record trade")
+	}
+
+	// Emit EventPfandReleased for any offers that were closed
+	for _, pr := range pfandReleases {
+		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPfandReleased{
+			Amount:  pr.amount,
+			OfferId: pr.offerId,
+			TradeId: tradeId,
+		}); err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "failed to emit EventPfandReleased")
+		}
+	}
+
+	// Compute totals from operations
+	totalSent := sdk.NewCoins()
+	totalRecv := sdk.NewCoins()
+	for _, op := range operations {
+		totalSent = totalSent.Add(op.Sent)
+		totalRecv = totalRecv.Add(op.Received)
+	}
+
 	return &whaleswapv1.MsgTakeOfferResponse{Sent: totalSent, Received: totalRecv}, nil
 }
 
@@ -483,7 +496,11 @@ func (k Keeper) CancelOffer(ctx context.Context, msg *whaleswapv1.MsgCancelOffer
 		return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventOfferCancelled")
 	}
 	if pfandLocked.Amount.IsPositive() {
-		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPfandReleased{Amount: pfandLocked}); err != nil {
+		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPfandReleased{
+			Amount:  pfandLocked,
+			OfferId: offer.OfferId,
+			TradeId: 0, // No trade for cancellation
+		}); err != nil {
 			return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventPfandReleased")
 		}
 	}

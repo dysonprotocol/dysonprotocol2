@@ -59,7 +59,10 @@ def test_cycle_profit_offers_only(chainnet, ws_setup_env, ws_create_offer, fauce
     # 3 trades recorded for takes
     ev = normalize_events(tx["events"])
     et = "dysonprotocol.whaleswap.v1.EventTradeRecorded"
-    assert et in ev and len(ev[et]) == 3, json.dumps(ev, indent=2)
+    # Now 1 Trade with multiple operations, not multiple Trades
+    assert (
+        et in ev and len(ev[et]) == 1
+    ), f"expected 1 EventTradeRecorded: {json.dumps(ev, indent=2)}"
 
     # Exact net flows
     debits, credits = sum_transfers_for_addr(tx, taddr)

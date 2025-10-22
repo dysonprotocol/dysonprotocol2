@@ -158,35 +158,44 @@ def test_redeem_records_trade_only_for_last_bidder(
         redeem2.get("code", 1) == 0
     ), f"redeem with valuation failed: {json.dumps(redeem2, indent=2)}"
 
+    # Query trades by auction using TradesByAuction endpoint
     tqs = dysond(
         "query",
         "whaleswap",
-        "trades-by-taker",
-        f"--taker={bidder_addr}",
+        "trades-by-auction",
+        f"--auction-id={auction_id2}",
         "--page-limit",
         "10",
     )
-    trs = [
-        t for t in tqs.get("trades", []) if int(t.get("auction_id", 0)) == auction_id2
-    ]
+    trs = tqs.get("trades", [])
     assert (
         len(trs) == 1
     ), f"expected exactly 1 auction trade: {json.dumps(tqs, indent=2)}"
     tr = trs[0]
-    # pool_id/offer_id may be omitted for zero; enforce zero-or-absent strictly
-    assert tr.get("pool_id") in (
-        None,
-        "0",
-        0,
-    ), f"pool_id must be zero or absent: {json.dumps(tr, indent=2)}"
-    assert tr.get("offer_id") in (
-        None,
-        "0",
-        0,
-    ), f"offer_id must be zero or absent: {json.dumps(tr, indent=2)}"
-    assert int(tr.get("auction_id")) == auction_id2
-    sent = tr.get("sent", {})
-    recv = tr.get("received", {})
+
+    # Validate new Trade structure
+    assert "trader" in tr, f"missing trader: {json.dumps(tr, indent=2)}"
+    assert "operations" in tr, f"missing operations: {json.dumps(tr, indent=2)}"
+    assert (
+        tr.get("trader") == bidder_addr
+    ), f"trader mismatch: {json.dumps(tr, indent=2)}"
+
+    # Validate auction operation (amino encoding)
+    ops = tr.get("operations", [])
+    assert len(ops) == 1, f"expected 1 operation: {json.dumps(tr, indent=2)}"
+    op_val = ops[0].get("Op", {}).get("value", {})
+    assert (
+        "auction" in op_val
+    ), f"operation missing auction: {json.dumps(ops[0], indent=2)}"
+    assert int(op_val["auction"]["auction_id"]) == auction_id2
+
+    # Validate totals (now arrays)
+    total_sent = tr.get("total_sent", [])
+    total_recv = tr.get("total_received", [])
+    assert len(total_sent) == 1 and len(total_recv) == 1
+
+    sent = total_sent[0]
+    recv = total_recv[0]
     assert (
         f"{sent.get('amount')}{sent.get('denom')}" == "1udys"
     ), f"sent must equal valuation: {json.dumps(tr, indent=2)}"

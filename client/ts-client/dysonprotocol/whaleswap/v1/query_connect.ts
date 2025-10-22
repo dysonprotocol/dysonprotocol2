@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { QueryAuctionByNFTRequest, QueryAuctionRequest, QueryAuctionResponse, QueryAuctionsByPairPriceRangeRequest, QueryAuctionsBySellerRequest, QueryAuctionsRequest, QueryAuctionsResponse, QueryMetricsRequest, QueryMetricsResponse, QueryOfferRequest, QueryOfferResponse, QueryOffersBestRequest, QueryOffersByDenomRequest, QueryOffersByOwnerRequest, QueryOffersByOwnerResponse, QueryOffersByPairPriceRangeRequest, QueryOffersRequest, QueryOffersResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolBySharesDenomRequest, QueryPoolRequest, QueryPoolResponse, QueryPoolsByDenomRequest, QueryPoolsByOwnerRequest, QueryPoolsByPairPriceRangeRequest, QueryPoolsByPairRequest, QueryPoolsRequest, QueryPoolsResponse, QueryTradeRequest, QueryTradeResponse, QueryTradesByOfferRequest, QueryTradesByOfferResponse, QueryTradesByPoolRequest, QueryTradesByPoolResponse, QueryTradesByTakerRequest, QueryTradesByTakerResponse } from "./query_pb.js";
+import { QueryAuctionByNFTRequest, QueryAuctionRequest, QueryAuctionResponse, QueryAuctionsByPairPriceRangeRequest, QueryAuctionsBySellerRequest, QueryAuctionsRequest, QueryAuctionsResponse, QueryMetricsRequest, QueryMetricsResponse, QueryOfferRequest, QueryOfferResponse, QueryOffersBestRequest, QueryOffersByDenomRequest, QueryOffersByOwnerRequest, QueryOffersByOwnerResponse, QueryOffersByPairPriceRangeRequest, QueryOffersRequest, QueryOffersResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolBySharesDenomRequest, QueryPoolRequest, QueryPoolResponse, QueryPoolsByDenomRequest, QueryPoolsByOwnerRequest, QueryPoolsByPairPriceRangeRequest, QueryPoolsByPairRequest, QueryPoolsRequest, QueryPoolsResponse, QueryTradeRequest, QueryTradeResponse, QueryTradesByAuctionRequest, QueryTradesByAuctionResponse, QueryTradesByOfferRequest, QueryTradesByOfferResponse, QueryTradesByPoolRequest, QueryTradesByPoolResponse, QueryTradesByTakerRequest, QueryTradesByTakerResponse, QueryTradesRequest, QueryTradesResponse } from "./query_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -192,6 +192,17 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
+     * List trades with optional filters and pagination
+     *
+     * @generated from rpc dysonprotocol.whaleswap.v1.Query.Trades
+     */
+    trades: {
+      name: "Trades",
+      I: QueryTradesRequest,
+      O: QueryTradesResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
      * @generated from rpc dysonprotocol.whaleswap.v1.Query.TradesByOffer
      */
     tradesByOffer: {
@@ -218,6 +229,17 @@ export const Query = {
       name: "TradesByPool",
       I: QueryTradesByPoolRequest,
       O: QueryTradesByPoolResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * TradesByAuction lists trades for auction redemptions
+     *
+     * @generated from rpc dysonprotocol.whaleswap.v1.Query.TradesByAuction
+     */
+    tradesByAuction: {
+      name: "TradesByAuction",
+      I: QueryTradesByAuctionRequest,
+      O: QueryTradesByAuctionResponse,
       kind: MethodKind.Unary,
     },
     /**

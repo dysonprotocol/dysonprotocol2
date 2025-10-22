@@ -325,9 +325,9 @@ print("POOL_ID:", POOL_ID)
        {'denom': 'foo.dys', 'amount': '100000'}],
       'shares_denom': 'whaleswap.dys/pools/1',
       'fee_pct': '0.003',
-      'block_height': '13',
-      'created': '2025-10-20T10:29:08.517955Z',
-      'updated': '2025-10-20T10:29:08.517955Z'}}
+      'block_height': '265',
+      'created': '2025-10-22T10:36:32.301186Z',
+      'updated': '2025-10-22T10:36:32.301186Z'}}
 
 
 
@@ -583,7 +583,17 @@ print(json.dumps(events, indent=2))
         "type": "dysonprotocol.whaleswap.v1.EventPoolSwap",
         "attributes": [
           {
+            "key": "operation_index",
+            "value": "0",
+            "index": true
+          },
+          {
             "key": "pool_id",
+            "value": "\"1\"",
+            "index": true
+          },
+          {
+            "key": "trade_id",
             "value": "\"1\"",
             "index": true
           },
@@ -598,28 +608,23 @@ print(json.dumps(events, indent=2))
         "type": "dysonprotocol.whaleswap.v1.EventTradeRecorded",
         "attributes": [
           {
-            "key": "auction_id",
-            "value": "\"0\"",
-            "index": true
-          },
-          {
             "key": "note",
             "value": "\"\"",
             "index": true
           },
           {
-            "key": "offer_id",
-            "value": "\"0\"",
-            "index": true
-          },
-          {
-            "key": "pool_id",
-            "value": "\"1\"",
+            "key": "num_operations",
+            "value": "1",
             "index": true
           },
           {
             "key": "trade_id",
             "value": "\"1\"",
+            "index": true
+          },
+          {
+            "key": "trader",
+            "value": "\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"",
             "index": true
           },
           {
@@ -669,8 +674,18 @@ print(json.dumps(events, indent=2))
         "type": "dysonprotocol.whaleswap.v1.EventPoolSwap",
         "attributes": [
           {
+            "key": "operation_index",
+            "value": "0",
+            "index": true
+          },
+          {
             "key": "pool_id",
             "value": "\"1\"",
+            "index": true
+          },
+          {
+            "key": "trade_id",
+            "value": "\"2\"",
             "index": true
           },
           {
@@ -684,28 +699,23 @@ print(json.dumps(events, indent=2))
         "type": "dysonprotocol.whaleswap.v1.EventTradeRecorded",
         "attributes": [
           {
-            "key": "auction_id",
-            "value": "\"0\"",
-            "index": true
-          },
-          {
             "key": "note",
             "value": "\"\"",
             "index": true
           },
           {
-            "key": "offer_id",
-            "value": "\"0\"",
-            "index": true
-          },
-          {
-            "key": "pool_id",
-            "value": "\"1\"",
+            "key": "num_operations",
+            "value": "1",
             "index": true
           },
           {
             "key": "trade_id",
             "value": "\"2\"",
+            "index": true
+          },
+          {
+            "key": "trader",
+            "value": "\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"",
             "index": true
           },
           {
@@ -773,9 +783,9 @@ print(json.dumps(events, indent=2))
         ],
         "shares_denom": "whaleswap.dys/pools/1",
         "fee_pct": "0.0025",
-        "block_height": "21",
-        "created": "2025-10-20T10:29:08.517955Z",
-        "updated": "2025-10-20T10:29:13.995234Z",
+        "block_height": "273",
+        "created": "2025-10-22T10:36:32.301186Z",
+        "updated": "2025-10-22T10:36:37.087995Z",
         "num_trades": "2",
         "fees_earned": [
           {
@@ -844,8 +854,8 @@ print(json.dumps(events, indent=2))
           "offer_id": "1",
           "status": "open",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "23",
-          "updated_timestamp": "2025-10-20T10:29:14.55588Z",
+          "updated_height": "275",
+          "updated_timestamp": "2025-10-22T10:36:37.619594Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"
@@ -880,41 +890,6 @@ print(json.dumps(events, indent=2))
     Offer taken by Bob
     [
       {
-        "type": "dysonprotocol.whaleswap.v1.EventTradeRecorded",
-        "attributes": [
-          {
-            "key": "auction_id",
-            "value": "\"0\"",
-            "index": true
-          },
-          {
-            "key": "note",
-            "value": "\"\"",
-            "index": true
-          },
-          {
-            "key": "offer_id",
-            "value": "\"1\"",
-            "index": true
-          },
-          {
-            "key": "pool_id",
-            "value": "\"0\"",
-            "index": true
-          },
-          {
-            "key": "trade_id",
-            "value": "\"3\"",
-            "index": true
-          },
-          {
-            "key": "msg_index",
-            "value": "0",
-            "index": true
-          }
-        ]
-      },
-      {
         "type": "dysonprotocol.whaleswap.v1.EventOfferTaken",
         "attributes": [
           {
@@ -925,6 +900,41 @@ print(json.dumps(events, indent=2))
           {
             "key": "trade_id",
             "value": "\"3\"",
+            "index": true
+          },
+          {
+            "key": "units_taken",
+            "value": "\"\"",
+            "index": true
+          },
+          {
+            "key": "msg_index",
+            "value": "0",
+            "index": true
+          }
+        ]
+      },
+      {
+        "type": "dysonprotocol.whaleswap.v1.EventTradeRecorded",
+        "attributes": [
+          {
+            "key": "note",
+            "value": "\"\"",
+            "index": true
+          },
+          {
+            "key": "num_operations",
+            "value": "1",
+            "index": true
+          },
+          {
+            "key": "trade_id",
+            "value": "\"3\"",
+            "index": true
+          },
+          {
+            "key": "trader",
+            "value": "\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"",
             "index": true
           },
           {
@@ -1301,6 +1311,11 @@ print(json.dumps(events, indent=2))
             "index": true
           },
           {
+            "key": "trade_id",
+            "value": "\"0\"",
+            "index": true
+          },
+          {
             "key": "msg_index",
             "value": "0",
             "index": true
@@ -1382,33 +1397,8 @@ else:
         "type": "dysonprotocol.whaleswap.v1.EventPoolSwap",
         "attributes": [
           {
-            "key": "pool_id",
-            "value": "\"1\"",
-            "index": true
-          },
-          {
-            "key": "msg_index",
+            "key": "operation_index",
             "value": "0",
-            "index": true
-          }
-        ]
-      },
-      {
-        "type": "dysonprotocol.whaleswap.v1.EventTradeRecorded",
-        "attributes": [
-          {
-            "key": "auction_id",
-            "value": "\"0\"",
-            "index": true
-          },
-          {
-            "key": "note",
-            "value": "\"Demo mixed trade with note\"",
-            "index": true
-          },
-          {
-            "key": "offer_id",
-            "value": "\"0\"",
             "index": true
           },
           {
@@ -1427,6 +1417,36 @@ else:
             "index": true
           }
         ]
+      },
+      {
+        "type": "dysonprotocol.whaleswap.v1.EventTradeRecorded",
+        "attributes": [
+          {
+            "key": "note",
+            "value": "\"Demo mixed trade with note\"",
+            "index": true
+          },
+          {
+            "key": "num_operations",
+            "value": "1",
+            "index": true
+          },
+          {
+            "key": "trade_id",
+            "value": "\"4\"",
+            "index": true
+          },
+          {
+            "key": "trader",
+            "value": "\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"",
+            "index": true
+          },
+          {
+            "key": "msg_index",
+            "value": "0",
+            "index": true
+          }
+        ]
       }
     ]
 
@@ -1435,18 +1455,48 @@ else:
     {
       "trade": {
         "trade_id": "4",
-        "taker": "dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el",
-        "height": "29",
-        "timestamp": "2025-10-20T10:29:17.934736Z",
-        "sent": {
-          "denom": "foo.dys",
-          "amount": "300"
-        },
-        "received": {
-          "denom": "bar.dys",
-          "amount": "293"
-        },
-        "pool_id": "1",
+        "trader": "dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el",
+        "height": "281",
+        "timestamp": "2025-10-22T10:36:40.79426Z",
+        "operations": [
+          {
+            "Op": {
+              "type": "swap",
+              "value": {
+                "swap": {
+                  "pool_id": "1",
+                  "swap_in": {
+                    "denom": "foo.dys",
+                    "amount": "300"
+                  },
+                  "swap_out": {
+                    "amount": "0"
+                  }
+                }
+              }
+            },
+            "sent": {
+              "denom": "foo.dys",
+              "amount": "300"
+            },
+            "received": {
+              "denom": "bar.dys",
+              "amount": "293"
+            }
+          }
+        ],
+        "total_sent": [
+          {
+            "denom": "foo.dys",
+            "amount": "300"
+          }
+        ],
+        "total_received": [
+          {
+            "denom": "bar.dys",
+            "amount": "293"
+          }
+        ],
         "note": "Demo mixed trade with note"
       }
     }
@@ -1494,9 +1544,9 @@ print("Module metrics:")
           ],
           "shares_denom": "whaleswap.dys/pools/1",
           "fee_pct": "0.0025",
-          "block_height": "29",
-          "created": "2025-10-20T10:29:08.517955Z",
-          "updated": "2025-10-20T10:29:17.934736Z",
+          "block_height": "281",
+          "created": "2025-10-22T10:36:32.301186Z",
+          "updated": "2025-10-22T10:36:40.79426Z",
           "num_trades": "3",
           "fees_earned": [
             {
@@ -1521,8 +1571,8 @@ print("Module metrics:")
           "offer_id": "1",
           "status": "closed",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "24",
-          "updated_timestamp": "2025-10-20T10:29:15.118835Z",
+          "updated_height": "276",
+          "updated_timestamp": "2025-10-22T10:36:38.148183Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"

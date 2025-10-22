@@ -140,20 +140,14 @@ func ValidateGenesisState(s types.GenesisState) error {
 			return fmt.Errorf("duplicate trade_id: %d", t.TradeId)
 		}
 		seenTrades[t.TradeId] = struct{}{}
-		if t.OfferId == 0 {
-			return fmt.Errorf("trade %d must reference a non-zero offer_id", t.TradeId)
+		if t.Trader == "" {
+			return fmt.Errorf("trade %d trader cannot be empty", t.TradeId)
 		}
-		if t.Taker == "" {
-			return fmt.Errorf("trade %d taker cannot be empty", t.TradeId)
+		if _, err := sdk.AccAddressFromBech32(t.Trader); err != nil {
+			return fmt.Errorf("trade %d trader address invalid: %v", t.TradeId, err)
 		}
-		if _, err := sdk.AccAddressFromBech32(t.Taker); err != nil {
-			return fmt.Errorf("trade %d taker address invalid: %v", t.TradeId, err)
-		}
-		if t.Sent.Denom == "" || t.Received.Denom == "" {
-			return fmt.Errorf("trade %d coins must have non-empty denoms", t.TradeId)
-		}
-		if !t.Sent.Amount.IsPositive() || !t.Received.Amount.IsPositive() {
-			return fmt.Errorf("trade %d coin amounts must be positive", t.TradeId)
+		if len(t.Operations) == 0 {
+			return fmt.Errorf("trade %d must have at least one operation", t.TradeId)
 		}
 	}
 

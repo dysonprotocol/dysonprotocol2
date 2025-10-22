@@ -52,6 +52,13 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 	}
 
 	// Execute operations in order, mutating pools/offers and accumulating
+	var operations []whaleswapv1.TradeOperation
+	type pfandRelease struct {
+		offerId uint64
+		amount  sdk.Coin
+	}
+	var pfandReleases []pfandRelease
+
 	for _, op := range msg.Operations {
 		switch v := op.Op.(type) {
 		case *whaleswapv1.TradeOperation_Swap:
@@ -59,10 +66,11 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 			if leg == nil || leg.PoolId == 0 {
 				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap leg invalid")
 			}
-			inCoin, outCoin, derr := k.tradeApplySwapLeg(ctx, msg.Trader, leg, msg.Note)
+			tradeOp, inCoin, outCoin, derr := k.tradeApplySwapLeg(ctx, msg.Trader, leg, msg.Note)
 			if derr != nil {
 				return nil, derr
 			}
+			operations = append(operations, tradeOp)
 			if v, ok := deltaByDenom[inCoin.Denom]; ok {
 				deltaByDenom[inCoin.Denom] = v.Add(inCoin.Amount)
 			} else {
@@ -79,18 +87,20 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 			if item == nil {
 				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "take item missing")
 			}
-			maker, makerWant, takerRecv, makerLiqIn, pfand, terr := k.tradeApplyTakeItem(ctx, msg.Trader, item, msg.Note)
+			tradeOp, maker, makerWant, takerRecv, makerLiqIn, pfand, terr := k.tradeApplyTakeItem(ctx, msg.Trader, item, msg.Note)
 			if terr != nil {
 				return nil, terr
 			}
+			operations = append(operations, tradeOp)
 			addOut(maker, makerWant)
-			addIn(msg.Trader, makerWant) // Taker provides what maker wants
+			// DON'T add taker input explicitly - let tradeNetAndCover determine it via coverage
 			addOut(msg.Trader, takerRecv)
 			if makerLiqIn.IsValid() && makerLiqIn.Amount.IsPositive() {
 				addIn(maker, makerLiqIn)
 			}
 			if pfand.IsValid() && pfand.Amount.IsPositive() {
 				addOut(msg.Trader, pfand)
+				pfandReleases = append(pfandReleases, pfandRelease{offerId: item.OfferId, amount: pfand})
 			}
 
 		default:
@@ -241,6 +251,23 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 	// Full module balance invariants (like MakeOffer and TakeOffer)
 	if err := k.AssertInvariants(ctx); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "invariant after MakeTrade")
+	}
+
+	// Record single trade with all operations
+	tradeId, err := k.recordTradeWithOperations(ctx, msg.Trader, operations, msg.Note)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to record trade")
+	}
+
+	// Emit EventPfandReleased for any offers that were closed
+	for _, pr := range pfandReleases {
+		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPfandReleased{
+			Amount:  pr.amount,
+			OfferId: pr.offerId,
+			TradeId: tradeId,
+		}); err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "failed to emit EventPfandReleased")
+		}
 	}
 
 	return &whaleswapv1.MsgMakeTradeResponse{AmountOut: traderOutputs}, nil

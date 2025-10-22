@@ -17,7 +17,7 @@ RUN apk add --no-cache \
 
 
 RUN npm install -g swagger-combine \
-  @bufbuild/protoc-gen-es \
+  @bufbuild/protoc-gen-es@1.10.1 \
   @connectrpc/protoc-gen-connect-es
 
 ARG UNAME=protobuild

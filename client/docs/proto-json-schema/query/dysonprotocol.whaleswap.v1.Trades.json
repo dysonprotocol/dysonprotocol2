@@ -1,11 +1,15 @@
 {
     "request": {
         "$schema": "http://json-schema.org/draft-04/schema#",
-        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryTradesByOfferRequest",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryTradesRequest",
         "definitions": {
-            "dysonprotocol.whaleswap.v1.QueryTradesByOfferRequest": {
+            "dysonprotocol.whaleswap.v1.QueryTradesRequest": {
                 "properties": {
-                    "offer_id": {
+                    "sent_denom": {
+                        "type": "string",
+                        "description": "optional filters; if unset, returns all"
+                    },
+                    "received_denom": {
                         "type": "string"
                     },
                     "pagination": {
@@ -15,7 +19,7 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Trades By Offer Request"
+                "title": "Query Trades Request"
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -51,9 +55,9 @@
     },
     "response": {
         "$schema": "http://json-schema.org/draft-04/schema#",
-        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryTradesByOfferResponse",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryTradesResponse",
         "definitions": {
-            "dysonprotocol.whaleswap.v1.QueryTradesByOfferResponse": {
+            "dysonprotocol.whaleswap.v1.QueryTradesResponse": {
                 "properties": {
                     "trades": {
                         "items": {
@@ -69,7 +73,7 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Trades By Offer Response"
+                "title": "Query Trades Response"
             },
             "cosmos.base.query.v1beta1.PageResponse": {
                 "properties": {

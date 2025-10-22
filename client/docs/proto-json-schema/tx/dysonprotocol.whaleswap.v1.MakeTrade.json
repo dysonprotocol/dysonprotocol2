@@ -54,6 +54,17 @@
                 "title": "Coin",
                 "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
             },
+            "dysonprotocol.whaleswap.v1.AuctionRedeem": {
+                "properties": {
+                    "auction_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Auction Redeem",
+                "description": "AuctionRedeem operation for recording auction redemption in Trade history"
+            },
             "dysonprotocol.whaleswap.v1.SwapLeg": {
                 "properties": {
                     "pool_id": {
@@ -96,12 +107,25 @@
                     "take": {
                         "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TakeItem",
                         "additionalProperties": false
+                    },
+                    "auction": {
+                        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRedeem",
+                        "additionalProperties": false
+                    },
+                    "sent": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Execution results (populated when recording Trade):"
+                    },
+                    "received": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Trade Operation",
-                "description": "TradeOperation allows mixing pool swap legs and orderbook takes."
+                "description": "TradeOperation allows mixing pool swap legs, orderbook takes, and auction redemptions. When stored in Trade.operations, sent/received fields are populated with execution results. When used in MsgMakeTrade.operations, sent/received are empty (populated during execution)."
             }
         }
     },

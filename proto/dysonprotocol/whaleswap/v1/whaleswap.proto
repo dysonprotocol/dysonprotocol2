@@ -5,6 +5,7 @@ import "gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos_proto/cosmos.proto";
+import "dysonprotocol/whaleswap/v1/tx.proto";
 
 option go_package = "dysonprotocol.com/x/whaleswap/types";
 
@@ -75,24 +76,35 @@ message OfferData {
   cosmos.base.v1beta1.Coin pfand_locked = 13 [ (gogoproto.nullable) = false ];
 }
 
-// Trade captures a single fill of an offer.
-//
-// - `sent` is the coin paid by the taker (want-denom), and `received` is the
-//   coin delivered by the module (have-denom or base of liquid-have).
+// Trade captures a batch of operations executed atomically in a single message.
+// Operations are stored in execution order, preserving the exact sequence from
+// the original message (MsgMakeTrade, MsgPoolSwap, MsgTakeOffer,
+// MsgRedeemAuction).
 message Trade {
   uint64 trade_id = 1;
-  uint64 offer_id = 2;
-  string taker = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  uint64 height = 4;
-  google.protobuf.Timestamp timestamp = 5 [ (gogoproto.stdtime) = true ];
-  cosmos.base.v1beta1.Coin sent = 6 [ (gogoproto.nullable) = false ];
-  cosmos.base.v1beta1.Coin received = 7 [ (gogoproto.nullable) = false ];
-  // pool_id is non-zero for AMM swaps; zero otherwise
-  uint64 pool_id = 8;
-  // auction_id is non-zero for auction escrow release trades (redeem); zero
-  // otherwise
-  uint64 auction_id = 9;
-  string note = 10;
+  string trader = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  uint64 height = 3;
+  google.protobuf.Timestamp timestamp = 4 [ (gogoproto.stdtime) = true ];
+
+  // Operations executed in this trade (from tx.proto TradeOperation).
+  // Each operation records what was sent/received for that specific step.
+  repeated TradeOperation operations = 5 [ (gogoproto.nullable) = false ];
+
+  // Aggregated totals across all operations
+  repeated cosmos.base.v1beta1.Coin total_sent = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  repeated cosmos.base.v1beta1.Coin total_received = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+
+  string note = 8;
+
+  // Reserved field numbers from old schema (removed: offer_id, pool_id,
+  // auction_id, sent, received)
+  reserved 9, 10, 11, 12, 13, 14, 15;
 }
 
 // AuctionRecord stores metadata for a whaleswap-created auction escrow.

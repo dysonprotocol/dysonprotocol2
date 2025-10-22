@@ -103,6 +103,10 @@ service Query {
     option (google.api.http).get =
         "/dysonprotocol/whaleswap/v1/trades/{trade_id}";
   }
+  // List trades with optional filters and pagination
+  rpc Trades(QueryTradesRequest) returns (QueryTradesResponse) {
+    option (google.api.http).get = "/dysonprotocol/whaleswap/v1/trades";
+  }
   rpc TradesByOffer(QueryTradesByOfferRequest)
       returns (QueryTradesByOfferResponse) {
     option (google.api.http).get =
@@ -118,6 +122,12 @@ service Query {
       returns (QueryTradesByPoolResponse) {
     option (google.api.http).get =
         "/dysonprotocol/whaleswap/v1/trades/pool/{pool_id}";
+  }
+  // TradesByAuction lists trades for auction redemptions
+  rpc TradesByAuction(QueryTradesByAuctionRequest)
+      returns (QueryTradesByAuctionResponse) {
+    option (google.api.http).get =
+        "/dysonprotocol/whaleswap/v1/trades/auction/{auction_id}";
   }
 
   // Auctions
@@ -268,6 +278,17 @@ message QueryOffersBestRequest {
   uint32 limit = 3; // number of top offers to return
 }
 
+message QueryTradesRequest {
+  // optional filters; if unset, returns all
+  string sent_denom = 1;
+  string received_denom = 2;
+  cosmos.base.query.v1beta1.PageRequest pagination = 3;
+}
+message QueryTradesResponse {
+  repeated Trade trades = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
 message QueryTradesByOfferRequest {
   uint64 offer_id = 1;
   cosmos.base.query.v1beta1.PageRequest pagination = 2;
@@ -293,6 +314,15 @@ message QueryTradesByPoolRequest {
 }
 
 message QueryTradesByPoolResponse {
+  repeated Trade trades = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryTradesByAuctionRequest {
+  uint64 auction_id = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+message QueryTradesByAuctionResponse {
   repeated Trade trades = 1;
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

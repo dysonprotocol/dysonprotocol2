@@ -479,6 +479,16 @@
       },
       "description": "Coin defines a token with a denomination and an amount.\n\nNOTE: The amount field is an Int which implements the custom method\nsignatures required by gogoproto."
     },
+    "dysonprotocol.whaleswap.v1.AuctionRedeem": {
+      "type": "object",
+      "properties": {
+        "auction_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "AuctionRedeem operation for recording auction redemption in Trade history"
+    },
     "dysonprotocol.whaleswap.v1.MsgAddLiquidity": {
       "type": "object",
       "properties": {
@@ -936,9 +946,19 @@
         },
         "take": {
           "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TakeItem"
+        },
+        "auction": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRedeem"
+        },
+        "sent": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "title": "Execution results (populated when recording Trade):"
+        },
+        "received": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
         }
       },
-      "description": "TradeOperation allows mixing pool swap legs and orderbook takes."
+      "description": "TradeOperation allows mixing pool swap legs, orderbook takes, and auction\nredemptions. When stored in Trade.operations, sent/received fields are\npopulated with execution results. When used in MsgMakeTrade.operations,\nsent/received are empty (populated during execution)."
     },
     "google.protobuf.Any": {
       "type": "object",

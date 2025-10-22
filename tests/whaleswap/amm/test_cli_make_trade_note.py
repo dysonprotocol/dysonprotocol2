@@ -72,7 +72,9 @@ def test_make_trade_note_recorded(chainnet, ws_setup_env):
 
     # Query trade and verify note persisted
     qtrade = dysond("query", "whaleswap", "trade", "--trade-id", str(trade_id))
+    assert isinstance(qtrade, dict), f"query returned non-dict: {type(qtrade)} {qtrade}"
     trade = qtrade.get("trade", {})
+    assert isinstance(trade, dict), f"trade is not dict: {type(trade)} {trade}"
     assert (
         trade.get("note") == note_text
     ), f"note not persisted: {json.dumps(trade, indent=2)}"

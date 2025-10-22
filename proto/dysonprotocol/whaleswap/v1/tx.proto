@@ -189,13 +189,23 @@ message SwapLeg {
   cosmos.base.v1beta1.Coin swap_out = 3 [ (gogoproto.nullable) = false ];
 }
 
-// TradeOperation allows mixing pool swap legs and orderbook takes.
+// TradeOperation allows mixing pool swap legs, orderbook takes, and auction
+// redemptions. When stored in Trade.operations, sent/received fields are
+// populated with execution results. When used in MsgMakeTrade.operations,
+// sent/received are empty (populated during execution).
 message TradeOperation {
   oneof op {
-    SwapLeg swap = 1;
-    TakeItem take = 2;
+    SwapLeg swap = 1 [ (amino.oneof_name) = "swap" ];
+    TakeItem take = 2 [ (amino.oneof_name) = "take" ];
+    AuctionRedeem auction = 3 [ (amino.oneof_name) = "auction" ];
   }
+  // Execution results (populated when recording Trade):
+  cosmos.base.v1beta1.Coin sent = 10 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin received = 11 [ (gogoproto.nullable) = false ];
 }
+
+// AuctionRedeem operation for recording auction redemption in Trade history
+message AuctionRedeem { uint64 auction_id = 1; }
 
 message MsgMakeTrade {
   option (cosmos.msg.v1.signer) = "trader";

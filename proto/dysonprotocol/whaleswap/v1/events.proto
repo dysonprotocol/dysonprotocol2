@@ -4,6 +4,7 @@ package dysonprotocol.whaleswap.v1;
 import "gogoproto/gogo.proto";
 import "amino/amino.proto";
 import "cosmos/base/v1beta1/coin.proto";
+import "dysonprotocol/whaleswap/v1/tx.proto";
 
 option go_package = "dysonprotocol.com/x/whaleswap/types";
 
@@ -13,7 +14,11 @@ message EventPoolCreated { uint64 pool_id = 1; }
 
 message EventPoolUpdate { uint64 pool_id = 1; }
 
-message EventPoolSwap { uint64 pool_id = 1; }
+message EventPoolSwap {
+  uint64 pool_id = 1;
+  uint64 trade_id = 2;
+  uint32 operation_index = 3;
+}
 
 message EventPoolLiquidityAdded {
   uint64 pool_id = 1;
@@ -30,27 +35,34 @@ message EventOfferCreated { uint64 offer_id = 1; }
 message EventOfferTaken {
   uint64 offer_id = 1;
   uint64 trade_id = 2;
+  string units_taken = 3;
 }
 
 message EventOfferCancelled { uint64 offer_id = 1; }
 
 message EventPfandLocked {
   cosmos.base.v1beta1.Coin amount = 1 [ (gogoproto.nullable) = false ];
+  uint64 offer_id = 2;
 }
 
 message EventPfandReleased {
   cosmos.base.v1beta1.Coin amount = 1 [ (gogoproto.nullable) = false ];
+  uint64 offer_id = 2;
+  uint64 trade_id = 3;
 }
 
 message EventAuctionCreated { uint64 auction_id = 1; }
 
-message EventAuctionRedeemed { uint64 auction_id = 1; }
+message EventAuctionRedeemed {
+  uint64 auction_id = 1;
+  uint64 trade_id = 2;
+}
 
-// Emitted whenever a Trade is recorded in state
+// Emitted once per Trade after all operations complete (summary event).
+// Operation details are in domain events (EventPoolSwap, EventOfferTaken, etc).
 message EventTradeRecorded {
   uint64 trade_id = 1;
-  uint64 offer_id = 2;
-  uint64 pool_id = 3;
-  uint64 auction_id = 4;
-  string note = 5;
+  string trader = 2;
+  uint32 num_operations = 3;
+  string note = 4;
 }

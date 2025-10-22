@@ -171,41 +171,35 @@ func (k Keeper) RedeemAuction(ctx context.Context, msg *whaleswapv1.MsgRedeemAuc
 		return nil, cosmossdkerrors.Wrapf(err, "failed to remove auction %d", msg.AuctionId)
 	}
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventAuctionRedeemed{AuctionId: msg.AuctionId}); err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventAuctionRedeemed")
-	}
-
 	// Record a trade ONLY if the redeemer is the last winning/claimed bidder:
 	// - ownership transferred away from original seller
 	// - valuation set in bid denom and > 0 (set by nameservice on accept/claim)
+	var tradeId uint64
 	if ownerStr != rec.Seller && nftData.Valuation.Denom == rec.BidDenom && nftData.Valuation.Amount.IsPositive() {
-		tradeId, terr := k.tradeSeq.Next(ctx)
-		if terr != nil {
-			return nil, cosmossdkerrors.Wrap(terr, "failed to allocate trade id")
+		// Build operation for auction redemption
+		op := whaleswapv1.TradeOperation{
+			Op: &whaleswapv1.TradeOperation_Auction{
+				Auction: &whaleswapv1.AuctionRedeem{AuctionId: rec.AuctionId},
+			},
+			Sent:     sdk.NewCoin(rec.BidDenom, nftData.Valuation.Amount),
+			Received: rec.Sell,
 		}
-		t := sdkCtx.BlockTime()
-		trade := whaleswapv1.Trade{
-			TradeId:   tradeId,
-			OfferId:   0,
-			Taker:     msg.Caller,
-			Height:    uint64(sdkCtx.BlockHeight()),
-			Timestamp: &t,
-			// Sent is the final accepted valuation (bid) in bid_denom
-			Sent: sdk.NewCoin(rec.BidDenom, nftData.Valuation.Amount),
-			// Received is the released sell coin
-			Received:  rec.Sell,
-			PoolId:    0,
-			AuctionId: rec.AuctionId,
+
+		// Record single-operation trade
+		tid, err := k.recordTradeWithOperations(ctx, msg.Caller, []whaleswapv1.TradeOperation{op}, "")
+		if err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "failed to record auction trade")
 		}
-		if err := k.TradesMap.Set(ctx, tradeId, trade); err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to save auction trade")
-		}
-		if err := k.TradesByTakerIndex.Set(ctx, collections.Join(msg.Caller, tradeId), tradeId); err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to index trade by taker")
-		}
-		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventTradeRecorded{TradeId: tradeId, OfferId: 0, PoolId: 0, AuctionId: rec.AuctionId}); err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventTradeRecorded")
-		}
+		tradeId = tid
 	}
+
+	// Emit EventAuctionRedeemed with trade_id (0 if seller redeemed without trade)
+	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventAuctionRedeemed{
+		AuctionId: msg.AuctionId,
+		TradeId:   tradeId,
+	}); err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventAuctionRedeemed")
+	}
+
 	return &whaleswapv1.MsgRedeemAuctionResponse{}, nil
 }

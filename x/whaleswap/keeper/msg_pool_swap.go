@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 
-	"cosmossdk.io/collections"
 	cosmossdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	whaleswap "dysonprotocol.com/x/whaleswap"
@@ -31,9 +30,8 @@ func (k Keeper) PoolSwap(ctx context.Context, msg *whaleswapv1.MsgPoolSwap) (*wh
 	// module delta per denom: amount>0 means module receives; amount<0 means module pays
 	deltaByDenom := map[string]math.Int{}
 
-	// Simulate each leg against pool snapshots, update pools and record trades
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	t := sdkCtx.BlockTime()
+	// Simulate each leg against pool snapshots, update pools and collect operations
+	var operations []whaleswapv1.TradeOperation
 	for _, leg := range msg.Legs {
 		if leg.PoolId == 0 {
 			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool_id required")
@@ -377,16 +375,13 @@ func (k Keeper) PoolSwap(ctx context.Context, msg *whaleswapv1.MsgPoolSwap) (*wh
 			}
 		}
 
-		// Persist pool changes and emit per-leg events
+		// Persist pool changes (EventPoolSwap emitted by recordTradeWithOperations with trade linkage)
 		pool.NumTrades += 1
 		if err := k.updatePool(ctx, &pool); err != nil {
 			return nil, cosmossdkerrors.Wrapf(err, "failed to update pool %d after swap", pool.PoolId)
 		}
-		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPoolSwap{PoolId: pool.PoolId}); err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventPoolSwap")
-		}
 
-		// Accumulate module delta and record trade (safe map accumulation)
+		// Accumulate module delta and collect operation (safe map accumulation)
 		if v, ok := deltaByDenom[actualInCoin.Denom]; ok {
 			deltaByDenom[actualInCoin.Denom] = v.Add(actualInCoin.Amount)
 		} else {
@@ -398,33 +393,13 @@ func (k Keeper) PoolSwap(ctx context.Context, msg *whaleswapv1.MsgPoolSwap) (*wh
 			deltaByDenom[outDenom] = outAmt.Neg()
 		}
 
-		tradeId, terr := k.tradeSeq.Next(ctx)
-		if terr != nil {
-			return nil, cosmossdkerrors.Wrap(terr, "failed to allocate trade id")
+		// Build operation record with execution results
+		op := whaleswapv1.TradeOperation{
+			Op:       &whaleswapv1.TradeOperation_Swap{Swap: &leg},
+			Sent:     actualInCoin,
+			Received: sdk.NewCoin(outDenom, outAmt),
 		}
-		trade := whaleswapv1.Trade{
-			TradeId:   tradeId,
-			OfferId:   0,
-			Taker:     msg.Trader,
-			Height:    uint64(sdkCtx.BlockHeight()),
-			Timestamp: &t,
-			Sent:      actualInCoin,
-			Received:  sdk.NewCoin(outDenom, outAmt),
-			PoolId:    pool.PoolId,
-			AuctionId: 0,
-		}
-		if err := k.TradesMap.Set(ctx, tradeId, trade); err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to save trade")
-		}
-		if err := k.TradesByPoolIndex.Set(ctx, collections.Join(pool.PoolId, tradeId), tradeId); err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to index trade by pool")
-		}
-		if err := k.TradesByTakerIndex.Set(ctx, collections.Join(msg.Trader, tradeId), tradeId); err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to index trade by taker")
-		}
-		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventTradeRecorded{TradeId: tradeId, OfferId: 0, PoolId: pool.PoolId, AuctionId: 0}); err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventTradeRecorded")
-		}
+		operations = append(operations, op)
 	}
 
 	// Derive debits (trader -> module) and credits (module -> trader) from module deltas
@@ -479,6 +454,11 @@ func (k Keeper) PoolSwap(ctx context.Context, msg *whaleswapv1.MsgPoolSwap) (*wh
 
 	if err := k.AssertAMMInvariants(ctx); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "AMM invariant after aggregated PoolSwap")
+	}
+
+	// Record single trade with all operations
+	if _, err := k.recordTradeWithOperations(ctx, msg.Trader, operations, ""); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to record trade")
 	}
 
 	return &whaleswapv1.MsgPoolSwapResponse{AmountOut: credits}, nil

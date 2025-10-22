@@ -150,7 +150,8 @@ def test_route_two_pools(chainnet, generate_account, faucet, register_name):
         for e in tx.get("events", [])
         if e.get("type") == "dysonprotocol.whaleswap.v1.EventTradeRecorded"
     ]
-    assert len(evs) >= 2, f"expected >=2 trades recorded: {json.dumps(tx, indent=2)}"
+    # Now expect 1 Trade with 2 operations (2 legs)
+    assert len(evs) == 1, f"expected 1 EventTradeRecorded: {json.dumps(tx, indent=2)}"
     bal_after = dysond("query", "bank", "balances", trader_addr)
     by_after = {
         b.get("denom"): int(b.get("amount")) for b in bal_after.get("balances", [])

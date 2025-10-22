@@ -1112,6 +1112,142 @@
         ]
       }
     },
+    "/dysonprotocol/whaleswap/v1/trades": {
+      "get": {
+        "summary": "List trades with optional filters and pagination",
+        "operationId": "dysonprotocol.whaleswap.v1.QueryTradesRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryTradesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "sent_denom",
+            "description": "optional filters; if unset, returns all.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "received_denom",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/dysonprotocol/whaleswap/v1/trades/auction/{auction_id}": {
+      "get": {
+        "summary": "TradesByAuction lists trades for auction redemptions",
+        "operationId": "dysonprotocol.whaleswap.v1.QueryTradesByAuctionRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryTradesByAuctionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.key",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
     "/dysonprotocol/whaleswap/v1/trades/offer/{offer_id}": {
       "get": {
         "operationId": "dysonprotocol.whaleswap.v1.QueryTradesByOfferRequest",
@@ -1421,6 +1557,16 @@
       },
       "description": "AuctionRecord stores metadata for a whaleswap-created auction escrow."
     },
+    "dysonprotocol.whaleswap.v1.AuctionRedeem": {
+      "type": "object",
+      "properties": {
+        "auction_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "AuctionRedeem operation for recording auction redemption in Trade history"
+    },
     "dysonprotocol.whaleswap.v1.OfferData": {
       "type": "object",
       "properties": {
@@ -1663,6 +1809,20 @@
         }
       }
     },
+    "dysonprotocol.whaleswap.v1.QueryTradesByAuctionResponse": {
+      "type": "object",
+      "properties": {
+        "trades": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Trade"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+        }
+      }
+    },
     "dysonprotocol.whaleswap.v1.QueryTradesByOfferResponse": {
       "type": "object",
       "properties": {
@@ -1705,6 +1865,49 @@
         }
       }
     },
+    "dysonprotocol.whaleswap.v1.QueryTradesResponse": {
+      "type": "object",
+      "properties": {
+        "trades": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Trade"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.SwapLeg": {
+      "type": "object",
+      "properties": {
+        "pool_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "swap_in": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "title": "One of swap_in or swap_out must be set; both allowed for rate constraint"
+        },
+        "swap_out": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.TakeItem": {
+      "type": "object",
+      "properties": {
+        "offer_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "take_units": {
+          "type": "string",
+          "description": "units to take (sdk.Int string). If empty, take full remaining."
+        }
+      }
+    },
     "dysonprotocol.whaleswap.v1.Trade": {
       "type": "object",
       "properties": {
@@ -1712,11 +1915,7 @@
           "type": "string",
           "format": "uint64"
         },
-        "offer_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "taker": {
+        "trader": {
           "type": "string"
         },
         "height": {
@@ -1727,27 +1926,31 @@
           "type": "string",
           "format": "date-time"
         },
-        "sent": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TradeOperation"
+          },
+          "description": "Operations executed in this trade (from tx.proto TradeOperation).\nEach operation records what was sent/received for that specific step."
         },
-        "received": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        "total_sent": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Aggregated totals across all operations"
         },
-        "pool_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "pool_id is non-zero for AMM swaps; zero otherwise"
-        },
-        "auction_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "auction_id is non-zero for auction escrow release trades (redeem); zero\notherwise"
+        "total_received": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
         },
         "note": {
           "type": "string"
         }
       },
-      "description": "Trade captures a single fill of an offer.\n\n- `sent` is the coin paid by the taker (want-denom), and `received` is the\n  coin delivered by the module (have-denom or base of liquid-have)."
+      "description": "Trade captures a batch of operations executed atomically in a single message.\nOperations are stored in execution order, preserving the exact sequence from\nthe original message (MsgMakeTrade, MsgPoolSwap, MsgTakeOffer,\nMsgRedeemAuction)."
     },
     "dysonprotocol.whaleswap.v1.TradeMetrics": {
       "type": "object",
@@ -1800,6 +2003,28 @@
         }
       },
       "description": "TradeMetrics reports the expected whaleswap module balances broken down by\nsubsystem, and summary counters useful for monitoring and invariants."
+    },
+    "dysonprotocol.whaleswap.v1.TradeOperation": {
+      "type": "object",
+      "properties": {
+        "swap": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.SwapLeg"
+        },
+        "take": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TakeItem"
+        },
+        "auction": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRedeem"
+        },
+        "sent": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "title": "Execution results (populated when recording Trade):"
+        },
+        "received": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        }
+      },
+      "description": "TradeOperation allows mixing pool swap legs, orderbook takes, and auction\nredemptions. When stored in Trade.operations, sent/received fields are\npopulated with execution results. When used in MsgMakeTrade.operations,\nsent/received are empty (populated during execution)."
     },
     "google.protobuf.Any": {
       "type": "object",

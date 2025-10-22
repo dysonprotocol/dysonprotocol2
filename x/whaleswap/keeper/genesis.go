@@ -7,6 +7,7 @@ import (
 	cosmossdk_math "cosmossdk.io/math"
 	whaleswap "dysonprotocol.com/x/whaleswap"
 	"dysonprotocol.com/x/whaleswap/types"
+	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -138,15 +139,35 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 		if err := k.TradesMap.Set(ctx, t.TradeId, *t); err != nil {
 			panic(err)
 		}
-		// rebuild reverse indexes
-		if t.PoolId > 0 {
-			if err := k.TradesByPoolIndex.Set(ctx, collections.Join(t.PoolId, t.TradeId), t.TradeId); err != nil {
+
+		// Index by trader
+		if t.Trader != "" {
+			if err := k.TradesByTraderIndex.Set(ctx, collections.Join(t.Trader, t.TradeId), t.TradeId); err != nil {
 				panic(err)
 			}
 		}
-		if t.Taker != "" {
-			if err := k.TradesByTakerIndex.Set(ctx, collections.Join(t.Taker, t.TradeId), t.TradeId); err != nil {
-				panic(err)
+
+		// Index by operations
+		for _, op := range t.Operations {
+			switch v := op.Op.(type) {
+			case *whaleswapv1.TradeOperation_Swap:
+				if v.Swap != nil && v.Swap.PoolId > 0 {
+					if err := k.TradesByPoolIndex.Set(ctx, collections.Join(v.Swap.PoolId, t.TradeId), t.TradeId); err != nil {
+						panic(err)
+					}
+				}
+			case *whaleswapv1.TradeOperation_Take:
+				if v.Take != nil && v.Take.OfferId > 0 {
+					if err := k.TradesByOfferIndex.Set(ctx, collections.Join(v.Take.OfferId, t.TradeId), t.TradeId); err != nil {
+						panic(err)
+					}
+				}
+			case *whaleswapv1.TradeOperation_Auction:
+				if v.Auction != nil && v.Auction.AuctionId > 0 {
+					if err := k.TradesByAuctionIndex.Set(ctx, collections.Join(v.Auction.AuctionId, t.TradeId), t.TradeId); err != nil {
+						panic(err)
+					}
+				}
 			}
 		}
 	}

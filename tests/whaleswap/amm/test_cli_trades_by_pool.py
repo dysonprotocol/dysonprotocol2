@@ -138,16 +138,38 @@ def test_trades_by_pool_lists_swaps_pagination(
         {"sent": in2, "out_denom": out2},
     ]
     for idx, tr in enumerate(trades_sorted):
-        # pool_id must match; offer_id/auction_id may be omitted for zero values
+        # Validate new Trade structure
+        assert "trader" in tr, f"missing trader: {json.dumps(tr, indent=2)}"
+        assert "operations" in tr, f"missing operations: {json.dumps(tr, indent=2)}"
         assert (
-            int(tr.get("pool_id")) == pool_id
-        ), f"pool_id mismatch: {json.dumps(tr, indent=2)}"
-        assert (
-            tr.get("taker") == taker_addr
-        ), f"taker mismatch: {json.dumps(tr, indent=2)}"
+            tr.get("trader") == taker_addr
+        ), f"trader mismatch: {json.dumps(tr, indent=2)}"
 
-        sent = tr.get("sent", {})
-        recv = tr.get("received", {})
+        # Extract pool_id from operations (amino encoding: Op.value.swap)
+        ops = tr.get("operations", [])
+        assert (
+            len(ops) == 1
+        ), f"expected 1 operation per PoolSwap trade: {json.dumps(tr, indent=2)}"
+        op_val = ops[0].get("Op", {}).get("value", {})
+        assert (
+            "swap" in op_val
+        ), f"operation missing swap: {json.dumps(ops[0], indent=2)}"
+        assert (
+            int(op_val["swap"]["pool_id"]) == pool_id
+        ), f"pool_id mismatch: {json.dumps(op_val, indent=2)}"
+
+        # Validate totals (now arrays)
+        total_sent = tr.get("total_sent", [])
+        total_recv = tr.get("total_received", [])
+        assert (
+            len(total_sent) == 1
+        ), f"expected 1 total_sent: {json.dumps(tr, indent=2)}"
+        assert (
+            len(total_recv) == 1
+        ), f"expected 1 total_received: {json.dumps(tr, indent=2)}"
+
+        sent = total_sent[0]
+        recv = total_recv[0]
         # Sent must match exactly the provided input
         exp_sent = expected[idx]["sent"]
         assert (
