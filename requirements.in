@@ -16,3 +16,4 @@ jupyter-core
 nbconvert
 ipython
 ipykernel
+hypothesis

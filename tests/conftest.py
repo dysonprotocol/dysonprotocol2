@@ -352,7 +352,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
             "--block-speed",
             "500ms",
             "--no-blocks-timeout",
-            "15",
+            "5",
             # "--logs",
         ],
         preexec_fn=os.setsid,

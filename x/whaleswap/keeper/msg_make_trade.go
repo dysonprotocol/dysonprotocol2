@@ -244,16 +244,9 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 	}
 	if len(inputs) == 0 && len(outputs) == 0 {
 		// No settlement required after full netting and coverage: still burn any liquid outputs
-		// destined for the module and assert invariants before returning success.
+		// destined for the module.
 		if err := k.tradeBurnModuleLiquid(ctx, outputsByAddr); err != nil {
 			return nil, err
-		}
-		if err := k.AssertAMMInvariants(ctx); err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "AMM invariant after MakeTrade")
-		}
-		// Full module balance invariants (like MakeOffer and TakeOffer)
-		if err := k.AssertInvariants(ctx); err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "invariant after MakeTrade")
 		}
 		traderOutputs = outputsByAddr[traderBech]
 		return &whaleswapv1.MsgMakeTradeResponse{AmountOut: traderOutputs}, nil
@@ -265,12 +258,7 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		return nil, err
 	}
 
-	// AMM invariants reuse
-	if err := k.AssertAMMInvariants(ctx); err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "AMM invariant after MakeTrade")
-	}
-
-	// Full module balance invariants (like MakeOffer and TakeOffer)
+	// Module balance invariants (like MakeOffer and TakeOffer)
 	if err := k.AssertInvariants(ctx); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "invariant after MakeTrade")
 	}

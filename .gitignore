@@ -4,6 +4,7 @@ delivery/
 snapshots/
 demo-tew/universal-connectivity/
 test-results
+.hypothesis
 */internal/data/*
 .ipynb_checkpoints
 .cursor/

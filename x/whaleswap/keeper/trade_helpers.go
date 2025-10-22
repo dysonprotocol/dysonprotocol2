@@ -435,7 +435,7 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 	// maker wants (solid)
 	makerWants := sdk.NewCoins()
 	for addr, coins := range outputsByAddr {
-		if addr == traderBech || addr == moduleBech {
+		if addr == moduleBech {
 			continue
 		}
 		for _, c := range coins {

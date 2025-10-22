@@ -47,6 +47,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	legacy.RegisterAminoMsg(cdc, &scripttypes.MsgUpdateScript{}, "dys/script/MsgUpdateScript")
 	legacy.RegisterAminoMsg(cdc, &scripttypes.MsgCreateNewScript{}, "dys/script/MsgCreateNewScript")
 	legacy.RegisterAminoMsg(cdc, &scripttypes.MsgUpdateParams{}, "dys/script/MsgUpdateParams")
+	legacy.RegisterAminoMsg(cdc, &scripttypes.MsgSudo{}, "dys/script/MsgSudo")
 
 	// Register ScriptExecAuthorization
 	cdc.RegisterConcrete(&scripttypes.ScriptExecAuthorization{}, "dys/script/ScriptExecAuthorization", nil)
@@ -66,6 +67,8 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 	registrar.RegisterImplementations((*gogoprotoany.UnpackInterfacesMessage)(nil),
 		&scripttypes.MsgExec{},
 		&scripttypes.MsgExecResponse{},
+		&scripttypes.MsgSudo{},
+		&scripttypes.MsgSudoResponse{},
 		&scripttypes.RunScript{},
 		&scripttypes.ResponseRunScript{},
 	)
@@ -76,6 +79,7 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		&scripttypes.MsgUpdateScript{}, &scripttypes.MsgUpdateScriptResponse{},
 		&scripttypes.MsgCreateNewScript{}, &scripttypes.MsgCreateNewScriptResponse{},
 		&scripttypes.MsgUpdateParams{}, &scripttypes.MsgUpdateParamsResponse{},
+		&scripttypes.MsgSudo{}, &scripttypes.MsgSudoResponse{},
 		&scripttypes.Script{},
 		&scripttypes.MsgArbitraryData{},
 

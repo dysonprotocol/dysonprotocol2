@@ -344,7 +344,7 @@ func (k Keeper) Sudo(ctx context.Context, msg *scripttypes.MsgSudo) (*scripttype
 	if err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to pack sudo results")
 	}
-	
+
 	// Convert to response format
 	anyResults, err := script.GetAnyMessages(results)
 	if err != nil {

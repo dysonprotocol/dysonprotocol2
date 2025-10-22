@@ -133,18 +133,20 @@ def test_sudo_update_script(chainnet, generate_account, faucet):
 
     assert submit_result["code"] == 0, f"Proposal submission failed: {submit_result}"
 
-    # Extract proposal ID
-    events_by_type = {
-        event.get("type"): event for event in submit_result.get("events", [])
-    }
-    submit_proposal_event = events_by_type.get("cosmos.gov.v1.EventSubmitProposal", {})
-    proposal_id_attrs = [
-        attr
-        for attr in submit_proposal_event.get("attributes", [])
-        if attr.get("key") == "proposal_id"
+    # Extract proposal ID - look for submit_proposal event
+    submit_events = [
+        e for e in submit_result.get("events", []) if e.get("type") == "submit_proposal"
     ]
-    assert proposal_id_attrs, "No proposal_id found in submit event"
-    proposal_id = json.loads(proposal_id_attrs[0]["value"])
+    proposal_id_attrs = [
+        a
+        for e in submit_events
+        for a in e.get("attributes", [])
+        if a.get("key") == "proposal_id"
+    ]
+    assert (
+        proposal_id_attrs
+    ), f"No proposal_id found in submit event. Events: {json.dumps(submit_result.get('events', []), indent=2)}"
+    proposal_id = proposal_id_attrs[0].get("value")
 
     print(f"Submitted proposal ID: {proposal_id}")
 
