@@ -313,6 +313,48 @@ func (k Keeper) UpdateParams(ctx context.Context, msg *scripttypes.MsgUpdatePara
 	return &scripttypes.MsgUpdateParamsResponse{}, nil
 }
 
+// Sudo executes arbitrary messages with authority override (no signer validation)
+func (k Keeper) Sudo(ctx context.Context, msg *scripttypes.MsgSudo) (*scripttypes.MsgSudoResponse, error) {
+	// Validate authority
+	if k.authority != msg.Authority {
+		return nil, cosmossdkerrors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, msg.Authority)
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	// Unpack messages
+	msgs, err := script.GetMsgExecMessages(&scripttypes.MsgExec{AttachedMessages: msg.Messages})
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to unpack sudo messages")
+	}
+
+	// Execute each message without signer validation
+	results := make([]sdk.Msg, len(msgs))
+	for i, execMsg := range msgs {
+		result, err := k.DispatchSudoMessage(sdkCtx, execMsg)
+		if err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to execute sudo message at index %d", i)
+		}
+		results[i] = result
+	}
+
+	// Pack results
+	resp := &scripttypes.MsgSudoResponse{}
+	err = script.SetMsgExecResult(&scripttypes.MsgExecResponse{}, results)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to pack sudo results")
+	}
+	
+	// Convert to response format
+	anyResults, err := script.GetAnyMessages(results)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to convert results to Any")
+	}
+	resp.Results = anyResults
+
+	return resp, nil
+}
+
 // HandleRunRecovery is an exported version of handleRunRecovery for testing
 func HandleRunRecovery(r interface{}) error {
 	return handleRunRecovery(r)

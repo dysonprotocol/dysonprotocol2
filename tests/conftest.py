@@ -261,11 +261,15 @@ def make_run_command(dysond_bin, node_home):
 
 
 @pytest.fixture(scope="session")
-def test_base_dir():
+def test_base_dir(worker_id):
     """Fixture that returns the test base directory based on worker_id."""
     env_base = os.getenv("DYSON_BASE_DIR")
     if env_base:
-        p = Path(env_base)
+        # Append worker_id to avoid conflicts when running with pytest-xdist
+        if worker_id == "master":
+            p = Path(env_base)
+        else:
+            p = Path(env_base) / worker_id
         p.mkdir(parents=True, exist_ok=True)
         return p
     base_dir = Path(tempfile.mkdtemp())
@@ -317,7 +321,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
             "--hermes-config",
             "--chainnet-offset",
             str(
-                worker_offset + 1
+                worker_offset + 2
             ),  # so that we don't interfere with the "make start" command
         ],
         check=True,

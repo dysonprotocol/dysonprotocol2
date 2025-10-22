@@ -40,7 +40,7 @@ from datetime import datetime
         "block_gas_limit": "3000000",
         "expiry_limit": "86400",
         "max_scheduled_time": "86400",
-        "clean_up_time": "2",
+        "clean_up_time": "86400",
         "max_subscription_duration": "24h0m0s",
         "min_stake_per_subscription": {
           "denom": "udys",
@@ -85,7 +85,7 @@ The Crontask module provides the following commands:
       -h, --help   help for crontask
     
     Global Flags:
-          --home string         directory for config and data (default "/tmp/dyson-test.f2nHWi/test-dysonchains/chain-a-node-1")
+          --home string         directory for config and data (default "/tmp/dyson-test.PP8oNq/test-dysonchains/gw2/chain-a-node-1")
           --log_format string   The logging format (json|plain) (default "plain")
           --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
           --log_no_color        Disable colored logs
@@ -123,7 +123,7 @@ The Crontask module provides the following commands:
       -h, --help   help for crontask
     
     Global Flags:
-          --home string         directory for config and data (default "/tmp/dyson-test.f2nHWi/test-dysonchains/chain-a-node-1")
+          --home string         directory for config and data (default "/tmp/dyson-test.PP8oNq/test-dysonchains/gw2/chain-a-node-1")
           --log_format string   The logging format (json|plain) (default "plain")
           --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
           --log_no_color        Disable colored logs
@@ -193,11 +193,11 @@ print(f"Transaction hash: {txhash}")
 
 ```
 
-    Scheduled time: 2025-10-22 12:36:51 (Unix: 1761129411)
-    Expiry time: 2025-10-23 12:36:50 (Unix: 1761215810)
+    Scheduled time: 2025-10-22 15:28:30 (Unix: 1761139710)
+    Expiry time: 2025-10-23 15:28:29 (Unix: 1761226109)
 
 
-    Transaction hash: D609258A4B2BA3B2EC8C901086DA7E14992F4EF337054899AEAF97AAD987162A
+    Transaction hash: 5E35AC750E610997F996DCA7C0F907C76287F2A4CA797F5A95E19D592A2283D3
 
 
 
@@ -212,7 +212,7 @@ assert tx_result['code'] == 0, f"Tx failed with code {tx_result['code']}, {tx_re
 
 ```
 
-    ['{"height":"298","txhash":"D609258A4B2BA3B2EC8C901086DA7E14992F4EF337054899AEAF97AAD987162A","codespace":"","code":0,"data":"12360A302F6479736F6E70726F746F636F6C2E63726F6E7461736B2E76312E4D73674372656174655461736B526573706F6E736512020827","raw_log":"","logs":[],"info":"","gas_wanted":"200000","gas_used":"53048","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/4","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"pUcEEWnzwPS7uPgL9k3Tt4yGiqvMSmSLsLFIOvoo0EZoGdk+4rdiHAO0rdW0I/J1SXddtRriST2OywEQiAVhMQ==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.crontask.v1.MsgCreateTask","index":true},{"key":"sender","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":true},{"key":"module","value":"crontask","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.crontask.v1.EventTaskCreated","attributes":[{"key":"creator","value":"\\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\\"","index":true},{"key":"task_id","value":"\\"39\\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}']
+    ['{"height":"264","txhash":"5E35AC750E610997F996DCA7C0F907C76287F2A4CA797F5A95E19D592A2283D3","codespace":"","code":0,"data":"12360A302F6479736F6E70726F746F636F6C2E63726F6E7461736B2E76312E4D73674372656174655461736B526573706F6E736512020802","raw_log":"","logs":[],"info":"","gas_wanted":"200000","gas_used":"53054","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/3","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"Rs2OtRAnkghm2u9hgD3fA+ZQ7nPyxcDc5vjNv7U40JYl7U7gRh2xD3P5pnRMStAXMmPjYkfbuljRkgSeUO2oTg==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.crontask.v1.MsgCreateTask","index":true},{"key":"sender","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":true},{"key":"module","value":"crontask","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.crontask.v1.EventTaskCreated","attributes":[{"key":"creator","value":"\\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\\"","index":true},{"key":"task_id","value":"\\"2\\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}']
     Tx error code: 0
 
 
@@ -247,7 +247,7 @@ print(f"Created task ID: {TASK_ID}")
         },
         {
           "key": "task_id",
-          "value": "\"39\"",
+          "value": "\"2\"",
           "index": true
         },
         {
@@ -257,7 +257,7 @@ print(f"Created task ID: {TASK_ID}")
         }
       ]
     }
-    Created task ID: 39
+    Created task ID: 2
 
 
 ## 5. Querying Task Information
@@ -274,10 +274,10 @@ print(json.dumps(json.loads(task_info_str), indent=2))
 
     {
       "task": {
-        "task_id": "39",
+        "task_id": "2",
         "creator": "dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el",
-        "scheduled_timestamp": "1761129411",
-        "expiry_timestamp": "1761215810",
+        "scheduled_timestamp": "1761139710",
+        "expiry_timestamp": "1761226109",
         "task_gas_limit": "200000",
         "task_gas_price": "0.000005000000000000udys",
         "task_gas_fee": {
@@ -300,8 +300,8 @@ print(json.dumps(json.loads(task_info_str), indent=2))
           }
         ],
         "status": "SCHEDULED",
-        "creation_time": "1761129409",
-        "creation_block_height": "298"
+        "creation_time": "1761139709",
+        "creation_block_height": "264"
       }
     }
 
@@ -319,10 +319,10 @@ tasks_by_addr_json
 
 
 
-    {'tasks': [{'task_id': '39',
+    {'tasks': [{'task_id': '2',
        'creator': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el',
-       'scheduled_timestamp': '1761129411',
-       'expiry_timestamp': '1761215810',
+       'scheduled_timestamp': '1761139710',
+       'expiry_timestamp': '1761226109',
        'task_gas_limit': '200000',
        'task_gas_price': '0.000005000000000000udys',
        'task_gas_fee': {'denom': 'udys', 'amount': '1'},
@@ -331,8 +331,8 @@ tasks_by_addr_json
           'to_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el',
           'amount': [{'denom': 'udys', 'amount': '1'}]}}],
        'status': 'SCHEDULED',
-       'creation_time': '1761129409',
-       'creation_block_height': '298'}],
+       'creation_time': '1761139709',
+       'creation_block_height': '264'}],
      'pagination': {'total': '1'}}
 
 
@@ -400,10 +400,10 @@ task_json
 
 
 
-    {'task': {'task_id': '39',
+    {'task': {'task_id': '2',
       'creator': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el',
-      'scheduled_timestamp': '1761129411',
-      'expiry_timestamp': '1761215810',
+      'scheduled_timestamp': '1761139710',
+      'expiry_timestamp': '1761226109',
       'task_gas_limit': '200000',
       'task_gas_price': '0.000005000000000000udys',
       'task_gas_fee': {'denom': 'udys', 'amount': '1'},
@@ -411,9 +411,14 @@ task_json
         'value': {'from_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el',
          'to_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el',
          'amount': [{'denom': 'udys', 'amount': '1'}]}}],
-      'status': 'SCHEDULED',
-      'creation_time': '1761129409',
-      'creation_block_height': '298'}}
+      'msg_results': [{'type': '/cosmos.bank.v1beta1.MsgSendResponse',
+        'value': {}}],
+      'status': 'DONE',
+      'creation_time': '1761139709',
+      'task_gas_consumed': '18605',
+      'execution_timestamp': '1761139710',
+      'creation_block_height': '264',
+      'execution_block_height': '265'}}
 
 
 
@@ -457,7 +462,7 @@ for event in tx_result['events']:
         },
         {
           "key": "task_id",
-          "value": "\"39\"",
+          "value": "\"2\"",
           "index": true
         },
         {
@@ -564,7 +569,7 @@ for event in tx_result['events']:
 
 ```
 
-    Script update transaction hash: 853979A553B04927B30B8ED1087AA83712EA1A04CCA4E864EDD3E70D607E2322
+    Script update transaction hash: 1ED0D9EFCB22BC9094B8ADF2C48DC0C052833D13A6479300786428298387BE5A
 
 
     Tx error code: 0
@@ -618,7 +623,7 @@ print("Script executed successfully.")
 tx_result
 ```
 
-    Script execution transaction hash: A5D930B250B9D427FCC50463126022FD080DFE8E8484E078FC546B829A35991E
+    Script execution transaction hash: 014CD979E98DEF4E7CC34671F7C7273EB58FBC421600138427E8795308C9936C
 
 
     Tx error code: 0
@@ -629,25 +634,25 @@ tx_result
 
 
     {'code': 0,
-     'script_result': {'result': {'cumsize': 66139,
+     'script_result': {'result': {'cumsize': 66125,
        'exception': None,
        'gas_limit': 10000000,
        'nodes_called': 123,
-       'result': {'next_execution': 1761129413,
+       'result': {'next_execution': 1761139713,
         'remaining': 1,
         'task_result': {'@type': '/dysonprotocol.crontask.v1.MsgCreateTaskResponse',
-         'task_id': '40'}},
-       'script_gas_consumed': 1125467,
+         'task_id': '3'}},
+       'script_gas_consumed': 1125459,
        'stdout': 'COUNTDOWN: 1\n'},
       'attached_message_results': []},
      'raw_log': '',
      'events': [{'type': 'tx',
        'attributes': [{'key': 'acc_seq',
-         'value': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/7',
+         'value': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/6',
          'index': True}]},
       {'type': 'tx',
        'attributes': [{'key': 'signature',
-         'value': 'x/F+M9JGmvyMlnBbckV8Ddw/ELI38mDtBRHfEo8N9DVQ2yxxxYSfOqsMWU5EOvWudsyypfN3eWUW7agfRhiB9g==',
+         'value': '5AvsRJKB6/N7LiiyUx3IRe00TLb04tHoFcNXgWeXvy4A1oOrk3myKnI7ebPFcHfNfU0yFinBCv8GqlemHJol3Q==',
          'index': True}]},
       {'type': 'message',
        'attributes': [{'key': 'action',
@@ -662,7 +667,7 @@ tx_result
        'attributes': [{'key': 'creator',
          'value': '"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el"',
          'index': True},
-        {'key': 'task_id', 'value': '"40"', 'index': True},
+        {'key': 'task_id', 'value': '"3"', 'index': True},
         {'key': 'msg_index', 'value': '0', 'index': True}]},
       {'type': 'dysonprotocol.script.v1.EventExecScript',
        'attributes': [{'key': 'executor_address',
@@ -673,7 +678,7 @@ tx_result
          'value': '{"executor_address":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","script_address":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","script_name":"","extra_code":"","function_name":"countdown","args":"[1]","kwargs":"","attached_messages":[]}',
          'index': True},
         {'key': 'response',
-         'value': '{"result":"{\\"cumsize\\":66139,\\"exception\\":null,\\"gas_limit\\":10000000,\\"nodes_called\\":123,\\"result\\":{\\"next_execution\\":1761129413,\\"remaining\\":1,\\"task_result\\":{\\"@type\\":\\"/dysonprotocol.crontask.v1.MsgCreateTaskResponse\\",\\"task_id\\":\\"40\\"}},\\"script_gas_consumed\\":1125467,\\"stdout\\":\\"COUNTDOWN: 1\\\\n\\"}","attached_message_results":[]}',
+         'value': '{"result":"{\\"cumsize\\":66125,\\"exception\\":null,\\"gas_limit\\":10000000,\\"nodes_called\\":123,\\"result\\":{\\"next_execution\\":1761139713,\\"remaining\\":1,\\"task_result\\":{\\"@type\\":\\"/dysonprotocol.crontask.v1.MsgCreateTaskResponse\\",\\"task_id\\":\\"3\\"}},\\"script_gas_consumed\\":1125459,\\"stdout\\":\\"COUNTDOWN: 1\\\\n\\"}","attached_message_results":[]}',
          'index': True},
         {'key': 'script_address',
          'value': '"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el"',
@@ -736,43 +741,28 @@ print(f"\nProcessed {task_count} tasks in the chain.")
 
 ```
 
-    Created task ID: 40
+    Created task ID: 3
     
-    --- Examining task #1 (ID: 40) ---
+    --- Examining task #1 (ID: 3) ---
     Waiting for it to be executed...
 
 
-    Task details: {'task': {'task_id': '40', 'creator': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'scheduled_timestamp': '1761129413', 'expiry_timestamp': '1761215812', 'task_gas_limit': '2000000', 'task_gas_price': '0.000000500000000000udys', 'task_gas_fee': {'denom': 'udys', 'amount': '1'}, 'msgs': [{'type': '/dysonprotocol.script.v1.MsgExec', 'value': {'executor_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'script_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'function_name': 'countdown', 'args': '[0]', 'kwargs': '{}'}}], 'status': 'SCHEDULED', 'creation_time': '1761129412', 'creation_block_height': '303'}}
+    Task details: {'task': {'task_id': '3', 'creator': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'scheduled_timestamp': '1761139713', 'expiry_timestamp': '1761226112', 'task_gas_limit': '2000000', 'task_gas_price': '0.000000500000000000udys', 'task_gas_fee': {'denom': 'udys', 'amount': '1'}, 'msgs': [{'type': '/dysonprotocol.script.v1.MsgExec', 'value': {'executor_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'script_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'function_name': 'countdown', 'args': '[0]', 'kwargs': '{}'}}], 'status': 'SCHEDULED', 'creation_time': '1761139712', 'creation_block_height': '269'}}
     Task status: SCHEDULED
     Waiting for it to be executed...
 
 
-    Task details: {'task': {'task_id': '40', 'creator': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'scheduled_timestamp': '1761129413', 'expiry_timestamp': '1761215812', 'task_gas_limit': '2000000', 'task_gas_price': '0.000000500000000000udys', 'task_gas_fee': {'denom': 'udys', 'amount': '1'}, 'msgs': [{'type': '/dysonprotocol.script.v1.MsgExec', 'value': {'executor_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'script_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'function_name': 'countdown', 'args': '[0]', 'kwargs': '{}'}}], 'status': 'SCHEDULED', 'creation_time': '1761129412', 'creation_block_height': '303'}}
+    Task details: {'task': {'task_id': '3', 'creator': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'scheduled_timestamp': '1761139713', 'expiry_timestamp': '1761226112', 'task_gas_limit': '2000000', 'task_gas_price': '0.000000500000000000udys', 'task_gas_fee': {'denom': 'udys', 'amount': '1'}, 'msgs': [{'type': '/dysonprotocol.script.v1.MsgExec', 'value': {'executor_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'script_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'function_name': 'countdown', 'args': '[0]', 'kwargs': '{}'}}], 'status': 'SCHEDULED', 'creation_time': '1761139712', 'creation_block_height': '269'}}
     Task status: SCHEDULED
     Waiting for it to be executed...
 
 
-    Task details: {'task': {'task_id': '40', 'creator': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'scheduled_timestamp': '1761129413', 'expiry_timestamp': '1761215812', 'task_gas_limit': '2000000', 'task_gas_price': '0.000000500000000000udys', 'task_gas_fee': {'denom': 'udys', 'amount': '1'}, 'msgs': [{'type': '/dysonprotocol.script.v1.MsgExec', 'value': {'executor_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'script_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'function_name': 'countdown', 'args': '[0]', 'kwargs': '{}'}}], 'status': 'SCHEDULED', 'creation_time': '1761129412', 'creation_block_height': '303'}}
+    Task details: {'task': {'task_id': '3', 'creator': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'scheduled_timestamp': '1761139713', 'expiry_timestamp': '1761226112', 'task_gas_limit': '2000000', 'task_gas_price': '0.000000500000000000udys', 'task_gas_fee': {'denom': 'udys', 'amount': '1'}, 'msgs': [{'type': '/dysonprotocol.script.v1.MsgExec', 'value': {'executor_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'script_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'function_name': 'countdown', 'args': '[0]', 'kwargs': '{}'}}], 'status': 'SCHEDULED', 'creation_time': '1761139712', 'creation_block_height': '269'}}
     Task status: SCHEDULED
     Waiting for it to be executed...
 
 
-    Task details: {'task': {'task_id': '40', 'creator': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'scheduled_timestamp': '1761129413', 'expiry_timestamp': '1761215812', 'task_gas_limit': '2000000', 'task_gas_price': '0.000000500000000000udys', 'task_gas_fee': {'denom': 'udys', 'amount': '1'}, 'msgs': [{'type': '/dysonprotocol.script.v1.MsgExec', 'value': {'executor_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'script_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'function_name': 'countdown', 'args': '[0]', 'kwargs': '{}'}}], 'status': 'SCHEDULED', 'creation_time': '1761129412', 'creation_block_height': '303'}}
-    Task status: SCHEDULED
-    Waiting for it to be executed...
-
-
-    Task details: {'task': {'task_id': '40', 'creator': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'scheduled_timestamp': '1761129413', 'expiry_timestamp': '1761215812', 'task_gas_limit': '2000000', 'task_gas_price': '0.000000500000000000udys', 'task_gas_fee': {'denom': 'udys', 'amount': '1'}, 'msgs': [{'type': '/dysonprotocol.script.v1.MsgExec', 'value': {'executor_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'script_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'function_name': 'countdown', 'args': '[0]', 'kwargs': '{}'}}], 'status': 'SCHEDULED', 'creation_time': '1761129412', 'creation_block_height': '303'}}
-    Task status: SCHEDULED
-    Waiting for it to be executed...
-
-
-    Task details: {'task': {'task_id': '40', 'creator': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'scheduled_timestamp': '1761129413', 'expiry_timestamp': '1761215812', 'task_gas_limit': '2000000', 'task_gas_price': '0.000000500000000000udys', 'task_gas_fee': {'denom': 'udys', 'amount': '1'}, 'msgs': [{'type': '/dysonprotocol.script.v1.MsgExec', 'value': {'executor_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'script_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'function_name': 'countdown', 'args': '[0]', 'kwargs': '{}'}}], 'status': 'SCHEDULED', 'creation_time': '1761129412', 'creation_block_height': '303'}}
-    Task status: SCHEDULED
-    Waiting for it to be executed...
-
-
-    Task details: {'task': {'task_id': '40', 'creator': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'scheduled_timestamp': '1761129413', 'expiry_timestamp': '1761215812', 'task_gas_limit': '2000000', 'task_gas_price': '0.000000500000000000udys', 'task_gas_fee': {'denom': 'udys', 'amount': '1'}, 'msgs': [{'type': '/dysonprotocol.script.v1.MsgExec', 'value': {'executor_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'script_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'function_name': 'countdown', 'args': '[0]', 'kwargs': '{}'}}], 'msg_results': [{'type': '/dysonprotocol.script.v1.MsgExecResponse', 'value': {'result': '{"cumsize":9997,"exception":null,"gas_limit":2000000,"nodes_called":33,"result":"Countdown complete!","script_gas_consumed":1017137,"stdout":"COUNTDOWN: 0\\n"}'}}], 'status': 'DONE', 'creation_time': '1761129412', 'task_gas_consumed': '1017137', 'execution_timestamp': '1761129413', 'creation_block_height': '303', 'execution_block_height': '305'}}
+    Task details: {'task': {'task_id': '3', 'creator': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'scheduled_timestamp': '1761139713', 'expiry_timestamp': '1761226112', 'task_gas_limit': '2000000', 'task_gas_price': '0.000000500000000000udys', 'task_gas_fee': {'denom': 'udys', 'amount': '1'}, 'msgs': [{'type': '/dysonprotocol.script.v1.MsgExec', 'value': {'executor_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'script_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el', 'function_name': 'countdown', 'args': '[0]', 'kwargs': '{}'}}], 'msg_results': [{'type': '/dysonprotocol.script.v1.MsgExecResponse', 'value': {'result': '{"cumsize":9997,"exception":null,"gas_limit":2000000,"nodes_called":33,"result":"Countdown complete!","script_gas_consumed":1017137,"stdout":"COUNTDOWN: 0\\n"}'}}], 'status': 'DONE', 'creation_time': '1761139712', 'task_gas_consumed': '1017137', 'execution_timestamp': '1761139713', 'creation_block_height': '269', 'execution_block_height': '270'}}
     Task status: DONE
     Task result: {'cumsize': 9997, 'exception': None, 'gas_limit': 2000000, 'nodes_called': 33, 'result': 'Countdown complete!', 'script_gas_consumed': 1017137, 'stdout': 'COUNTDOWN: 0\n'}
     No next task found. Chain complete.

@@ -5,7 +5,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { MsgCreateNewScript, MsgCreateNewScriptResponse, MsgExec, MsgExecResponse, MsgUpdateParams, MsgUpdateParamsResponse, MsgUpdateScript, MsgUpdateScriptResponse } from "./tx_pb.js";
+import { MsgCreateNewScript, MsgCreateNewScriptResponse, MsgExec, MsgExecResponse, MsgSudo, MsgSudoResponse, MsgUpdateParams, MsgUpdateParamsResponse, MsgUpdateScript, MsgUpdateScriptResponse } from "./tx_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -62,6 +62,19 @@ export const Msg = {
       name: "UpdateParams",
       I: MsgUpdateParams,
       O: MsgUpdateParamsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Sudo defines a governance operation for executing arbitrary messages
+     * with authority override. The authority defaults to the x/gov module
+     * account. Messages are executed without signer validation.
+     *
+     * @generated from rpc dysonprotocol.script.v1.Msg.Sudo
+     */
+    sudo: {
+      name: "Sudo",
+      I: MsgSudo,
+      O: MsgSudoResponse,
       kind: MethodKind.Unary,
     },
   }

@@ -25854,6 +25854,103 @@ paths:
             description: MsgExec executes a script by calling a function with arguments.
       tags:
         - Msg
+  dysonprotocol.script.v1.MsgSudo:
+    post:
+      summary: |-
+        Sudo defines a governance operation for executing arbitrary messages
+        with authority override. The authority defaults to the x/gov module
+        account. Messages are executed without signer validation.
+      operationId: dysonprotocol.script.v1.MsgSudo
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              results:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+                      description: >-
+                        Must be a valid serialized protocol buffer of the above
+                        specified type.
+                description: >-
+                  results contains the response messages from each executed
+                  message.
+            description: MsgSudoResponse is the Msg/Sudo response type.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+                      description: >-
+                        Must be a valid serialized protocol buffer of the above
+                        specified type.
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              authority:
+                type: string
+                description: >-
+                  authority is the address that controls the module (defaults to
+                  x/gov unless
+
+                  overwritten).
+              messages:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+                      description: >-
+                        Must be a valid serialized protocol buffer of the above
+                        specified type.
+                description: >-
+                  messages is the list of messages to execute without signer
+                  validation.
+
+                  All messages will be executed in order, and if any fails, the
+                  entire
+
+                  transaction is reverted.
+            description: >-
+              MsgSudo is the Msg/Sudo request type for governance-controlled
+              message
+
+              execution.
+      tags:
+        - Msg
   dysonprotocol.script.v1.MsgUpdateParams:
     post:
       summary: |-
@@ -57922,6 +58019,54 @@ definitions:
                 specified type.
         description: Results of the attached messages.
     description: MsgExecResponse is the Msg/Exec request type.
+  dysonprotocol.script.v1.MsgSudo:
+    type: object
+    properties:
+      authority:
+        type: string
+        description: >-
+          authority is the address that controls the module (defaults to x/gov
+          unless
+
+          overwritten).
+      messages:
+        type: array
+        items:
+          type: object
+          properties:
+            type_url:
+              type: string
+            value:
+              type: string
+              format: byte
+              description: >-
+                Must be a valid serialized protocol buffer of the above
+                specified type.
+        description: |-
+          messages is the list of messages to execute without signer validation.
+          All messages will be executed in order, and if any fails, the entire
+          transaction is reverted.
+    description: |-
+      MsgSudo is the Msg/Sudo request type for governance-controlled message
+      execution.
+  dysonprotocol.script.v1.MsgSudoResponse:
+    type: object
+    properties:
+      results:
+        type: array
+        items:
+          type: object
+          properties:
+            type_url:
+              type: string
+            value:
+              type: string
+              format: byte
+              description: >-
+                Must be a valid serialized protocol buffer of the above
+                specified type.
+        description: results contains the response messages from each executed message.
+    description: MsgSudoResponse is the Msg/Sudo response type.
   dysonprotocol.script.v1.MsgUpdateParams:
     type: object
     properties:

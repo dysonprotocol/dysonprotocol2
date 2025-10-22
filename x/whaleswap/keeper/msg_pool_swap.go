@@ -456,6 +456,10 @@ func (k Keeper) PoolSwap(ctx context.Context, msg *whaleswapv1.MsgPoolSwap) (*wh
 		return nil, cosmossdkerrors.Wrap(err, "AMM invariant after aggregated PoolSwap")
 	}
 
+	if err := k.AssertInvariants(ctx); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "invariant after PoolSwap")
+	}
+
 	// Record single trade with all operations
 	if _, err := k.recordTradeWithOperations(ctx, msg.Trader, operations, ""); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to record trade")

@@ -10,6 +10,7 @@ import (
 var (
 	_ sdk.Msg = &types.MsgUpdateScript{}
 	_ sdk.Msg = &types.MsgExec{}
+	_ sdk.Msg = &types.MsgSudo{}
 )
 
 // DEPRECATED: This function is no longer needed since MsgExec now implements UnpackInterfacesMessage

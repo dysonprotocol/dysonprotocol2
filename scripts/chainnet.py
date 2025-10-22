@@ -211,6 +211,21 @@ def merge_chains_array(base_chains: list, override_chains: list) -> list:
     return result
 
 
+def check_port_available(port: int, host: str = "127.0.0.1") -> bool:
+    """Check if a port is available for binding."""
+    import socket
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    try:
+        sock.bind((host, port))
+        return True
+    except OSError:
+        return False
+    finally:
+        sock.close()
+
+
 def get_genesis_defaults():
     """Get default genesis parameters."""
     return {
@@ -379,8 +394,6 @@ def generate_ports(port_offset: int, chainnet_offset: int) -> dict:
         "abci": 26658,
         "grpc": 9090,
         "api": 1317,
-        "telemetry": 8001,
-        "pprof": 6060,
     }
 
     return {
@@ -795,7 +808,7 @@ def setup(config_file, force):
             toml_conf_path = cfg_dir / "config.toml"
             toml_conf = tomlkit.parse(toml_conf_path.read_text())
             toml_conf["proxy_app"] = f"tcp://127.0.0.1:{node_ports['abci']}"
-            toml_conf["pprof_laddr"] = f"localhost:{node_ports['pprof']}"
+            toml_conf["pprof_laddr"] = ""
             cast(dict, toml_conf.setdefault("rpc", tomlkit.table()))[
                 "laddr"
             ] = f"tcp://127.0.0.1:{node_ports['rpc']}"
@@ -807,8 +820,7 @@ def setup(config_file, force):
             inst_table = cast(
                 dict, toml_conf.setdefault("instrumentation", tomlkit.table())
             )
-            inst_table["prometheus_listen_addr"] = f":{node_ports['telemetry']}"
-            inst_table["prometheus"] = True
+            inst_table["prometheus"] = False
             toml_conf_path.write_text(tomlkit.dumps(toml_conf))
 
             # Configure client.toml for this node
@@ -1054,6 +1066,42 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs):
     log_files = []  # Track log files for cleanup
     hermes_started = False
     stop_event = threading.Event()
+
+    # Check all ports are available before starting any nodes
+    # Services that bind to all interfaces (0.0.0.0) vs localhost (127.0.0.1)
+    all_interfaces_services = {"p2p"}
+
+    occupied_ports = []
+    for chain in cfg["chains"]:
+        for node in chain["nodes"]:
+            for service, port in node["ports"].items():
+                # Check on the same interface the service will actually bind to
+                host = "0.0.0.0" if service in all_interfaces_services else "127.0.0.1"
+                if not check_port_available(port, host):
+                    occupied_ports.append(
+                        {
+                            "chain": chain["chain_id"],
+                            "node": node["moniker"],
+                            "service": service,
+                            "port": port,
+                            "host": host,
+                        }
+                    )
+
+    if occupied_ports:
+        error_lines = [
+            "\nThe following ports are already in use and cannot be bound:\n"
+        ]
+        for info in occupied_ports:
+            error_lines.append(
+                f"  • {info['host']}:{info['port']} ({info['service']}) needed by {info['chain']}/{info['node']}"
+            )
+        error_lines.append(
+            f"\nTo fix this:\n"
+            f"  1. Stop processes using these ports (e.g., 'lsof -ti:{occupied_ports[0]['port']} | xargs kill')\n"
+            f"  2. Or regenerate network config with different --chainnet-offset to use different port ranges\n"
+        )
+        raise click.ClickException("".join(error_lines))
 
     def cleanup_processes():
         """Simple cleanup function."""

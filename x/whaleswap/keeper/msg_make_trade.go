@@ -58,6 +58,9 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		amount  sdk.Coin
 	}
 	var pfandReleases []pfandRelease
+	seenPools := make(map[uint64]bool)
+	seenOffers := make(map[uint64]bool)
+	seenAuctions := make(map[uint64]bool)
 
 	for _, op := range msg.Operations {
 		switch v := op.Op.(type) {
@@ -66,6 +69,10 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 			if leg == nil || leg.PoolId == 0 {
 				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap leg invalid")
 			}
+			if seenPools[leg.PoolId] {
+				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate pool_id %d in operations", leg.PoolId)
+			}
+			seenPools[leg.PoolId] = true
 			tradeOp, inCoin, outCoin, derr := k.tradeApplySwapLeg(ctx, msg.Trader, leg, msg.Note)
 			if derr != nil {
 				return nil, derr
@@ -87,6 +94,10 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 			if item == nil {
 				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "take item missing")
 			}
+			if item.OfferId > 0 && seenOffers[item.OfferId] {
+				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate offer_id %d in operations", item.OfferId)
+			}
+			seenOffers[item.OfferId] = true
 			tradeOp, maker, makerWant, takerRecv, makerLiqIn, pfand, terr := k.tradeApplyTakeItem(ctx, msg.Trader, item, msg.Note)
 			if terr != nil {
 				return nil, terr
@@ -103,8 +114,19 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 				pfandReleases = append(pfandReleases, pfandRelease{offerId: item.OfferId, amount: pfand})
 			}
 
+		case *whaleswapv1.TradeOperation_Auction:
+			auction := v.Auction
+			if auction == nil {
+				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "auction item missing")
+			}
+			if auction.AuctionId > 0 && seenAuctions[auction.AuctionId] {
+				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate auction_id %d in operations", auction.AuctionId)
+			}
+			seenAuctions[auction.AuctionId] = true
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "auction operations not yet implemented in MakeTrade")
+
 		default:
-			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "operation must be swap or take")
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "operation must be swap, take, or auction")
 		}
 	}
 

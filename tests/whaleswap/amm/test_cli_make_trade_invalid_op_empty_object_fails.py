@@ -17,5 +17,5 @@ def test_make_trade_invalid_op_empty_object_fails(chainnet, ws_setup_env):
     )
     err = (out or "").lower()
     assert (
-        "operation must be swap or take" in err
+        "operation must be swap, take, or auction" in err
     ), f"Expected keeper validation error for empty op. Full: {out}"

@@ -530,3 +530,97 @@ export class MsgArbitraryDataResponse extends Message<MsgArbitraryDataResponse> 
   }
 }
 
+/**
+ * MsgSudo is the Msg/Sudo request type for governance-controlled message
+ * execution.
+ *
+ * @generated from message dysonprotocol.script.v1.MsgSudo
+ */
+export class MsgSudo extends Message<MsgSudo> {
+  /**
+   * authority is the address that controls the module (defaults to x/gov unless
+   * overwritten).
+   *
+   * @generated from field: string authority = 1;
+   */
+  authority = "";
+
+  /**
+   * messages is the list of messages to execute without signer validation.
+   * All messages will be executed in order, and if any fails, the entire
+   * transaction is reverted.
+   *
+   * @generated from field: repeated google.protobuf.Any messages = 2;
+   */
+  messages: Any[] = [];
+
+  constructor(data?: PartialMessage<MsgSudo>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.script.v1.MsgSudo";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "authority", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "messages", kind: "message", T: Any, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgSudo {
+    return new MsgSudo().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgSudo {
+    return new MsgSudo().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgSudo {
+    return new MsgSudo().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgSudo | PlainMessage<MsgSudo> | undefined, b: MsgSudo | PlainMessage<MsgSudo> | undefined): boolean {
+    return proto3.util.equals(MsgSudo, a, b);
+  }
+}
+
+/**
+ * MsgSudoResponse is the Msg/Sudo response type.
+ *
+ * @generated from message dysonprotocol.script.v1.MsgSudoResponse
+ */
+export class MsgSudoResponse extends Message<MsgSudoResponse> {
+  /**
+   * results contains the response messages from each executed message.
+   *
+   * @generated from field: repeated google.protobuf.Any results = 1;
+   */
+  results: Any[] = [];
+
+  constructor(data?: PartialMessage<MsgSudoResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.script.v1.MsgSudoResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "results", kind: "message", T: Any, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgSudoResponse {
+    return new MsgSudoResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgSudoResponse {
+    return new MsgSudoResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgSudoResponse {
+    return new MsgSudoResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgSudoResponse | PlainMessage<MsgSudoResponse> | undefined, b: MsgSudoResponse | PlainMessage<MsgSudoResponse> | undefined): boolean {
+    return proto3.util.equals(MsgSudoResponse, a, b);
+  }
+}
+

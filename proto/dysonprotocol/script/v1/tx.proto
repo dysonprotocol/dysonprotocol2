@@ -31,6 +31,11 @@ service Msg {
   // UpdateParams defines a governance operation for updating the x/script
   // module parameters. The authority defaults to the x/gov module account.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
+  // Sudo defines a governance operation for executing arbitrary messages
+  // with authority override. The authority defaults to the x/gov module
+  // account. Messages are executed without signer validation.
+  rpc Sudo(MsgSudo) returns (MsgSudoResponse);
 }
 
 // MsgUpdateScript is the Msg/UpdateScript request type.
@@ -159,3 +164,25 @@ message MsgArbitraryData {
 
 // MsgArbitraryDataResponse is the response for MsgArbitraryData
 message MsgArbitraryDataResponse {}
+
+// MsgSudo is the Msg/Sudo request type for governance-controlled message
+// execution.
+message MsgSudo {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "dys/script/MsgSudo";
+
+  // authority is the address that controls the module (defaults to x/gov unless
+  // overwritten).
+  string authority = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+  // messages is the list of messages to execute without signer validation.
+  // All messages will be executed in order, and if any fails, the entire
+  // transaction is reverted.
+  repeated google.protobuf.Any messages = 2;
+}
+
+// MsgSudoResponse is the Msg/Sudo response type.
+message MsgSudoResponse {
+  // results contains the response messages from each executed message.
+  repeated google.protobuf.Any results = 1;
+}

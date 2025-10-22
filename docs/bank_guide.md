@@ -36,7 +36,7 @@ import json
     {
       "balance": {
         "denom": "udys",
-        "amount": "8999944565"
+        "amount": "9958979973"
       }
     }
 
@@ -73,7 +73,7 @@ args = shlex.quote(json.dumps([ALICE, "udys"]))
 ```
 
     {
-      "result": "{\"cumsize\":4777,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":25,\"result\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"8999944565\",\"denom\":\"udys\"}},\"script_gas_consumed\":1009242,\"stdout\":\"\"}",
+      "result": "{\"cumsize\":4777,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":25,\"result\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"9958979973\",\"denom\":\"udys\"}},\"script_gas_consumed\":1009242,\"stdout\":\"\"}",
       "attached_message_results": []
     }
 
@@ -97,8 +97,8 @@ import json
 ```
 
     {
-      "height": "290",
-      "txhash": "6E15208FF29DDCEBB9F790B839F31B713CA42E35C29285466D869F455322C4BF",
+      "height": "254",
+      "txhash": "5C797694985EF945ECC9E590724F4096177F8865A768761A70844117FA9A1440",
       "codespace": "",
       "code": 0,
       "data": "12260A242F636F736D6F732E62616E6B2E763162657461312E4D736753656E64526573706F6E7365",
@@ -115,7 +115,7 @@ import json
           "attributes": [
             {
               "key": "acc_seq",
-              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/72",
+              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/67",
               "index": true
             }
           ]
@@ -125,7 +125,7 @@ import json
           "attributes": [
             {
               "key": "signature",
-              "value": "KUuu+UNYRriBxrBKfWxmcmIP5Yku+JGtSmj87Ni6L0s6UKyEwhFyKeXIvfQU7jvKbowKjmwJrauBJjVlqYMcAA==",
+              "value": "GHXvRxIZyG3j5JUugRk4ztk6a4TIUv4th4olmJgTmwszktUmNH1g1Di6fjY6b/gp5VdfZ83UHPuLOOe6en0jcw==",
               "index": true
             }
           ]
@@ -272,8 +272,8 @@ args = shlex.quote(json.dumps([BOB, 123, "udys"]))
 ```
 
     {
-      "height": "291",
-      "txhash": "F2D95550423B45CAAEAC7A15304586637D76EEF0860AE9E47EA98CF0E73F1435",
+      "height": "256",
+      "txhash": "2F8D7DC0C5DFF47A7FCA23D32B75EDB897D7FF7F8A6D411CA18B2A7418064ACA",
       "codespace": "sdk",
       "code": 11,
       "data": "",
@@ -290,7 +290,7 @@ args = shlex.quote(json.dumps([BOB, 123, "udys"]))
           "attributes": [
             {
               "key": "acc_seq",
-              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/73",
+              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/68",
               "index": true
             }
           ]
@@ -300,7 +300,7 @@ args = shlex.quote(json.dumps([BOB, 123, "udys"]))
           "attributes": [
             {
               "key": "signature",
-              "value": "m4WIFstf1z47IM7qb0Fc5OQ5CGuSlDMsfgNkHsLw3mdB4ZFTF5AYc2o3D2h5y68haD/hJe/hiPi8P4TqsAdQkg==",
+              "value": "gaoiHnrq35L0IUGovFIWWoKicUBLf0JBvrxbrN7Unx5BnphqolkhXwEq6Zox5AJNbZEbZ2ciL5Up2gjIQrXgiQ==",
               "index": true
             }
           ]

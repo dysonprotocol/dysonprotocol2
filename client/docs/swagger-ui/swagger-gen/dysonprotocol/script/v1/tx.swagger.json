@@ -77,6 +77,39 @@
         ]
       }
     },
+    "dysonprotocol.script.v1.MsgSudo": {
+      "post": {
+        "summary": "Sudo defines a governance operation for executing arbitrary messages\nwith authority override. The authority defaults to the x/gov module\naccount. Messages are executed without signer validation.",
+        "operationId": "dysonprotocol.script.v1.MsgSudo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.script.v1.MsgSudoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.script.v1.MsgSudo"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
     "dysonprotocol.script.v1.MsgUpdateParams": {
       "post": {
         "summary": "UpdateParams defines a governance operation for updating the x/script\nmodule parameters. The authority defaults to the x/gov module account.",
@@ -231,6 +264,36 @@
         }
       },
       "description": "MsgExecResponse is the Msg/Exec request type."
+    },
+    "dysonprotocol.script.v1.MsgSudo": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string",
+          "description": "authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          },
+          "description": "messages is the list of messages to execute without signer validation.\nAll messages will be executed in order, and if any fails, the entire\ntransaction is reverted."
+        }
+      },
+      "description": "MsgSudo is the Msg/Sudo request type for governance-controlled message\nexecution."
+    },
+    "dysonprotocol.script.v1.MsgSudoResponse": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          },
+          "description": "results contains the response messages from each executed message."
+        }
+      },
+      "description": "MsgSudoResponse is the Msg/Sudo response type."
     },
     "dysonprotocol.script.v1.MsgUpdateParams": {
       "type": "object",

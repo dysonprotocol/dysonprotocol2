@@ -517,6 +517,48 @@ func (k Keeper) DispatchMessage(sdkCtx sdk.Context, executor sdk.AccAddress, msg
 	return respMsg, nil
 }
 
+// DispatchSudoMessage dispatches a message without signer validation (for governance use)
+func (k Keeper) DispatchSudoMessage(sdkCtx sdk.Context, msg sdk.Msg) (sdk.Msg, error) {
+	err := validateMsg(msg)
+	if err != nil {
+		return nil, err
+	}
+
+	// Use the MsgServiceRouter to route and handle the message
+	handler := k.MsgRouterService.Handler(msg)
+	if handler == nil {
+		return nil, fmt.Errorf("no message handler found for %s", sdk.MsgTypeURL(msg))
+	}
+
+	// Get the response and convert back to sdk.Msg
+	resp, err := handler(sdkCtx, msg)
+	fmt.Println("DispatchSudoMessage handler", msg, resp)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "failed to dispatch sudo message")
+	}
+
+	// Extract message from response
+	var respMsg sdk.Msg
+	if resp != nil && len(resp.MsgResponses) > 0 {
+		err = k.cdc.UnpackAny(resp.MsgResponses[0], &respMsg)
+		if err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to unpack response message")
+		}
+	}
+
+	// Forward events produced by the message execution into the current context
+	if resp != nil && len(resp.Events) > 0 {
+		for _, event := range resp.Events {
+			sdkCtx.EventManager().EmitEvent(sdk.Event{
+				Type:       event.Type,
+				Attributes: event.Attributes,
+			})
+		}
+	}
+
+	return respMsg, nil
+}
+
 func validateMsg(msg sdk.Msg) error {
 	m, ok := msg.(sdk.HasValidateBasic)
 	if !ok {

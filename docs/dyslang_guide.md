@@ -83,9 +83,9 @@ assert 'balance' in json_result, "Balance not found in the result"
 print(json.dumps(json_result['balance'], indent=2))
 ```
 
-    {"result":"{\"cumsize\":6563,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":23,\"result\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"8999964568\",\"denom\":\"udys\"}},\"script_gas_consumed\":1013342,\"stdout\":\"\"}","attached_message_results":[]}
+    {"result":"{\"cumsize\":6563,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":23,\"result\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"9958999976\",\"denom\":\"udys\"}},\"script_gas_consumed\":1013342,\"stdout\":\"\"}","attached_message_results":[]}
     {
-      "amount": "8999964568",
+      "amount": "9958999976",
       "denom": "udys"
     }
 
@@ -146,12 +146,12 @@ assert 'bob_balance' in json_result, "Bob's balance not found in the result"
 print(json.dumps(json_result, indent=2))
 ```
 
-    {"result":"{\"cumsize\":15345,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":39,\"result\":{\"alice_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"8999964568\",\"denom\":\"udys\"}},\"bob_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"10000000000\",\"denom\":\"udys\"}}},\"script_gas_consumed\":1023235,\"stdout\":\"\"}","attached_message_results":[]}
+    {"result":"{\"cumsize\":15345,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":39,\"result\":{\"alice_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"9958999976\",\"denom\":\"udys\"}},\"bob_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"10000000000\",\"denom\":\"udys\"}}},\"script_gas_consumed\":1023235,\"stdout\":\"\"}","attached_message_results":[]}
     {
       "alice_balance": {
         "@type": "/cosmos.bank.v1beta1.QueryBalanceResponse",
         "balance": {
-          "amount": "8999964568",
+          "amount": "9958999976",
           "denom": "udys"
         }
       },
@@ -474,9 +474,9 @@ print(f"- Time: {block_info['time']}")
 ```
 
     Block Information:
-    - Height: 221
+    - Height: 182
     - Chain ID: chain-a
-    - Time: 2025-10-22T10:36:08.589533Z
+    - Time: 2025-10-22T13:27:38.168972Z
 
 
 ## Transaction Data
@@ -597,8 +597,8 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
 ```
 
     {
-      "height": "223",
-      "txhash": "DA1195D331916C492CFB3B57F791A86B527A55F8DE46F8750669F94261B51E27",
+      "height": "184",
+      "txhash": "B4B28EE8F9E5535271BC70CE4E1E4107A2326F01BFC04F719373B1B093F1ED5A",
       "codespace": "",
       "code": 0,
       "data": "12C2010A282F6479736F6E70726F746F636F6C2E7363726970742E76312E4D736745786563526573706F6E73651295010A92017B2263756D73697A65223A323431362C22657863657074696F6E223A6E756C6C2C226761735F6C696D6974223A31303030303030302C226E6F6465735F63616C6C6564223A31372C22726573756C74223A7B226576656E745F656D6974746564223A747275657D2C227363726970745F6761735F636F6E73756D6564223A313033373833332C227374646F7574223A22227D",
@@ -615,7 +615,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
           "attributes": [
             {
               "key": "acc_seq",
-              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/50",
+              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/46",
               "index": true
             }
           ]
@@ -625,7 +625,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
           "attributes": [
             {
               "key": "signature",
-              "value": "XOC2t3fMpLlqjO2L8vQ2Dl/651e5dRgwsMbbYC+FuQZ1BBxU3UbbjRBJtls3tKsSSTTlrOvEQE6Wzw6d8a4YiQ==",
+              "value": "QmuH01Kj2eIJYqCMHuhBYZ/eyOMp9k5NJSAotIuEcvUKA75GIAkzQJ8JqU11L/yRXXkmCqM0AaxDwe4HECs8PQ==",
               "index": true
             }
           ]
@@ -749,8 +749,8 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
     }
     {
       "tx": {
-        "acc_seq": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/50",
-        "signature": "XOC2t3fMpLlqjO2L8vQ2Dl/651e5dRgwsMbbYC+FuQZ1BBxU3UbbjRBJtls3tKsSSTTlrOvEQE6Wzw6d8a4YiQ=="
+        "acc_seq": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/46",
+        "signature": "QmuH01Kj2eIJYqCMHuhBYZ/eyOMp9k5NJSAotIuEcvUKA75GIAkzQJ8JqU11L/yRXXkmCqM0AaxDwe4HECs8PQ=="
       },
       "message": {
         "action": "/dysonprotocol.script.v1.MsgExec",
@@ -1236,22 +1236,18 @@ These are the available modules and functions that can be used in dyslang script
         "scanner",
         "script.a_or_b",
         "script.benchmark_gas",
-        "script.check_func",
         "script.check_limit",
         "script.check_memory",
         "script.check_messages",
         "script.count_nodes",
         "script.demonstrate_dys_eval",
         "script.emit_test_event",
-        "script.hello",
         "script.list_api",
-        "script.ping",
         "script.query_balance",
         "script.query_multiple_balances",
         "script.show_block_info",
         "script.test_a_or_b",
         "script.who_called_me",
-        "script.wsgi",
         "search",
         "set.add",
         "set.clear",

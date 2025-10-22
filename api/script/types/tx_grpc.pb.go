@@ -25,6 +25,7 @@ const (
 	Msg_ExecScript_FullMethodName      = "/dysonprotocol.script.v1.Msg/ExecScript"
 	Msg_CreateNewScript_FullMethodName = "/dysonprotocol.script.v1.Msg/CreateNewScript"
 	Msg_UpdateParams_FullMethodName    = "/dysonprotocol.script.v1.Msg/UpdateParams"
+	Msg_Sudo_FullMethodName            = "/dysonprotocol.script.v1.Msg/Sudo"
 )
 
 // MsgClient is the client API for Msg service.
@@ -45,6 +46,10 @@ type MsgClient interface {
 	// UpdateParams defines a governance operation for updating the x/script
 	// module parameters. The authority defaults to the x/gov module account.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
+	// Sudo defines a governance operation for executing arbitrary messages
+	// with authority override. The authority defaults to the x/gov module
+	// account. Messages are executed without signer validation.
+	Sudo(ctx context.Context, in *MsgSudo, opts ...grpc.CallOption) (*MsgSudoResponse, error)
 }
 
 type msgClient struct {
@@ -95,6 +100,16 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 	return out, nil
 }
 
+func (c *msgClient) Sudo(ctx context.Context, in *MsgSudo, opts ...grpc.CallOption) (*MsgSudoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgSudoResponse)
+	err := c.cc.Invoke(ctx, Msg_Sudo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility.
@@ -113,6 +128,10 @@ type MsgServer interface {
 	// UpdateParams defines a governance operation for updating the x/script
 	// module parameters. The authority defaults to the x/gov module account.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
+	// Sudo defines a governance operation for executing arbitrary messages
+	// with authority override. The authority defaults to the x/gov module
+	// account. Messages are executed without signer validation.
+	Sudo(context.Context, *MsgSudo) (*MsgSudoResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -134,6 +153,9 @@ func (UnimplementedMsgServer) CreateNewScript(context.Context, *MsgCreateNewScri
 }
 func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
+}
+func (UnimplementedMsgServer) Sudo(context.Context, *MsgSudo) (*MsgSudoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Sudo not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 func (UnimplementedMsgServer) testEmbeddedByValue()             {}
@@ -228,6 +250,24 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_Sudo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgSudo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).Sudo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_Sudo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).Sudo(ctx, req.(*MsgSudo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -250,6 +290,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateParams",
 			Handler:    _Msg_UpdateParams_Handler,
+		},
+		{
+			MethodName: "Sudo",
+			Handler:    _Msg_Sudo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -320,6 +320,7 @@
       {"type":"file","name":"dysonprotocol.nft.v1beta1.Send.json"},
       {"type":"file","name":"dysonprotocol.script.v1.CreateNewScript.json"},
       {"type":"file","name":"dysonprotocol.script.v1.ExecScript.json"},
+      {"type":"file","name":"dysonprotocol.script.v1.Sudo.json"},
       {"type":"file","name":"dysonprotocol.script.v1.UpdateParams.json"},
       {"type":"file","name":"dysonprotocol.script.v1.UpdateScript.json"},
       {"type":"file","name":"dysonprotocol.storage.v1.StorageDelete.json"},
@@ -378,5 +379,5 @@
     ]}
   ]}
 ,
-  {"type":"report","directories":3,"files":372}
+  {"type":"report","directories":3,"files":373}
 ]

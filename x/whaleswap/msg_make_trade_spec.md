@@ -67,6 +67,7 @@
 
 - Validation and semantics
   - Operations processed strictly in provided order; state (pools/offers) updates between ops
+  - Each pool_id, offer_id, and auction_id must be unique within a single MakeTrade message
 - SwapLeg supports exact-in or exact-out per leg (XOR). If both are provided, the leg is invalid. Use message-level max_input (caps) and min_output (guarantees) for symmetric, end-of-tx constraints across the entire trade.
   - TakeItem uses existing take semantics, including PFAND and liquid-have handling
   - max_input caps apply only to trader debits (no effect on maker/module)
@@ -123,9 +124,9 @@
 - Nonexistent pool/offer or closed/insufficient units
   - Solution: fail fast; include offer status/remaining units in error.
 
-- Duplicate take of same offer within a tx
-  - Problem: multiple TakeItems exceeding remaining units.
-  - Solution: track seen/taken units in-memory; reject overflow.
+- Duplicate IDs within a tx
+  - Problem: multiple operations referencing the same pool_id, offer_id, or auction_id.
+  - Solution: validate uniqueness during message validation; reject duplicates with clear error.
 
 - Mixed op ordering and state updates
   - Problem: correctness if a later op fails.
@@ -174,10 +175,6 @@
 - Rounding drift across many legs
   - Problem: integer truncation accumulates.
   - Solution: use Dec math internally; truncate only at coin boundaries; invariants at end.
-
-- Reused pools/cycles
-  - Problem: price drift across ops.
-  - Solution: update pool reserves per-op; band checks each time.
 
 - Conflicting min_output vs caps
   - Problem: both cannot be satisfied.
@@ -255,6 +252,9 @@ Here’s a precise, implementation-ready spec to (re)build MakeTrade cleanly, us
 - Common:
   - operations must be non-empty.
   - trader must decode as a valid bech32 address.
+  - each pool_id must be unique across all swap operations.
+  - each offer_id must be unique across all take operations.
+  - each auction_id must be unique across all auction operations.
 - SwapLeg:
   - pool_id > 0 and pool exists with exactly two reserves.
   - Must specify exactly one of swap_in or swap_out (XOR).
@@ -381,9 +381,12 @@ Here’s a precise, implementation-ready spec to (re)build MakeTrade cleanly, us
 These functions are shared across MakeTrade, and (in the second phase) will also be used by PoolSwap and TakeOffer by refactoring them to orchestrate the same helpers rather than re-implementing logic.
 
 ### Error Text Uniformity (do not change)
-- “operations must be non-empty”
-- “swap leg invalid”
-- “input denom %s not in pool %d”
+- "operations must be non-empty"
+- "duplicate pool_id %d in operations"
+- "duplicate offer_id %d in operations"
+- "duplicate auction_id %d in operations"
+- "swap leg invalid"
+- "input denom %s not in pool %d"
 - “output denom %s not in pool %d”
 - “swap_out must be > 0”
 - “exact-out equals/exceeds reserve”

@@ -173,5 +173,9 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		return nil, cosmossdkerrors.Wrapf(err, "AMM invariant failed after CreatePool: pool_id=%d coins=%s shares_denom=%s", id, msg.Coins.String(), sharesDenom)
 	}
 
+	if err := k.AssertInvariants(ctx); err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "invariant after CreatePool")
+	}
+
 	return &whaleswapv1.MsgCreatePoolResponse{PoolId: id}, nil
 }

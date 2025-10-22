@@ -325,9 +325,9 @@ print("POOL_ID:", POOL_ID)
        {'denom': 'foo.dys', 'amount': '100000'}],
       'shares_denom': 'whaleswap.dys/pools/1',
       'fee_pct': '0.003',
-      'block_height': '265',
-      'created': '2025-10-22T10:36:32.301186Z',
-      'updated': '2025-10-22T10:36:32.301186Z'}}
+      'block_height': '26',
+      'created': '2025-10-22T13:45:18.46848Z',
+      'updated': '2025-10-22T13:45:18.46848Z'}}
 
 
 
@@ -783,9 +783,9 @@ print(json.dumps(events, indent=2))
         ],
         "shares_denom": "whaleswap.dys/pools/1",
         "fee_pct": "0.0025",
-        "block_height": "273",
-        "created": "2025-10-22T10:36:32.301186Z",
-        "updated": "2025-10-22T10:36:37.087995Z",
+        "block_height": "34",
+        "created": "2025-10-22T13:45:18.46848Z",
+        "updated": "2025-10-22T13:45:23.271821Z",
         "num_trades": "2",
         "fees_earned": [
           {
@@ -854,8 +854,8 @@ print(json.dumps(events, indent=2))
           "offer_id": "1",
           "status": "open",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "275",
-          "updated_timestamp": "2025-10-22T10:36:37.619594Z",
+          "updated_height": "36",
+          "updated_timestamp": "2025-10-22T13:45:23.807248Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"
@@ -1456,8 +1456,8 @@ else:
       "trade": {
         "trade_id": "4",
         "trader": "dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el",
-        "height": "281",
-        "timestamp": "2025-10-22T10:36:40.79426Z",
+        "height": "42",
+        "timestamp": "2025-10-22T13:45:26.997762Z",
         "operations": [
           {
             "Op": {
@@ -1544,9 +1544,9 @@ print("Module metrics:")
           ],
           "shares_denom": "whaleswap.dys/pools/1",
           "fee_pct": "0.0025",
-          "block_height": "281",
-          "created": "2025-10-22T10:36:32.301186Z",
-          "updated": "2025-10-22T10:36:40.79426Z",
+          "block_height": "42",
+          "created": "2025-10-22T13:45:18.46848Z",
+          "updated": "2025-10-22T13:45:26.997762Z",
           "num_trades": "3",
           "fees_earned": [
             {
@@ -1571,8 +1571,8 @@ print("Module metrics:")
           "offer_id": "1",
           "status": "closed",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "276",
-          "updated_timestamp": "2025-10-22T10:36:38.148183Z",
+          "updated_height": "37",
+          "updated_timestamp": "2025-10-22T13:45:24.336479Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"

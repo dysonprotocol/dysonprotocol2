@@ -201,6 +201,9 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 			sdk.NewCoin(pool.Coins[1].Denom, pool.Coins[1].Amount).String(),
 		)
 	}
+	if err := k.AssertInvariants(ctx); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "invariant after AddLiquidity")
+	}
 	return &whaleswapv1.MsgAddLiquidityResponse{Shares: minted.String()}, nil
 }
 
@@ -377,6 +380,9 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 			sdk.NewCoin(pool.Coins[0].Denom, pool.Coins[0].Amount).String(),
 			sdk.NewCoin(pool.Coins[1].Denom, pool.Coins[1].Amount).String(),
 		)
+	}
+	if err := k.AssertInvariants(ctx); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "invariant after RemoveLiquidity")
 	}
 	return &whaleswapv1.MsgRemoveLiquidityResponse{Amount: outs}, nil
 }

@@ -93,5 +93,8 @@ func (k Keeper) UpdatePoolConfig(ctx context.Context, msg *whaleswapv1.MsgUpdate
 			pool.MaxPrice.String(),
 		)
 	}
+	if err := k.AssertInvariants(ctx); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "invariant after UpdatePoolConfig")
+	}
 	return &whaleswapv1.MsgUpdatePoolConfigResponse{}, nil
 }
