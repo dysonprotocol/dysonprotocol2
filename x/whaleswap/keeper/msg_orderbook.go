@@ -16,6 +16,11 @@ import (
 )
 
 func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*whaleswapv1.MsgMakeOfferResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(sdkCtx)
+
+	logger.Info("MakeOffer starting", "maker", msg.Maker, "have", msg.Have, "want", msg.Want)
+
 	// Parse maker
 	makerBz, err := k.accKeeper.AddressCodec().StringToBytes(msg.Maker)
 	if err != nil {
@@ -46,10 +51,12 @@ func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*
 	}
 	// Per-offer balance check: maker must currently hold at least `have` amount
 	balHaveCoin := k.bank.GetBalance(ctx, maker, have.Denom)
+	logger.Info("MakeOffer balance check", "maker_balance", balHaveCoin, "required_have", have)
 	if !balHaveCoin.IsGTE(have) {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "have exceeds maker balance: %s < %s", balHaveCoin.String(), have.String())
 	}
 
+	logger.Info("MakeOffer processing escrow/pfand", "have_denom_is_liquid", k.isLiquidDenom(have.Denom))
 	pfandCoin := sdk.NewCoin(k.GetParams(ctx).PfandPerOffer.Denom, math.NewInt(0))
 	if k.isLiquidDenom(have.Denom) {
 		req := k.GetParams(ctx).PfandPerOffer
@@ -63,13 +70,16 @@ func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*
 			}
 		}
 		pfandCoin = k.GetParams(ctx).PfandPerOffer
+		logger.Info("MakeOffer pfand locked", "pfand_amount", pfandCoin)
 	} else {
 		if err := k.bank.SendCoinsFromAccountToModule(ctx, maker, whaleswap.ModuleName, sdk.NewCoins(have)); err != nil {
 			return nil, cosmossdkerrors.Wrapf(err, "failed to escrow have %s from maker %s", have.String(), msg.Maker)
 		}
+		logger.Info("MakeOffer have escrowed", "escrowed_amount", have)
 	}
 
 	// GCD-first units: reduce ratio to simplest terms
+	logger.Info("MakeOffer calculating units", "have_amount", have.Amount, "want_amount", want.Amount)
 	g := k.gcdInt(have.Amount, want.Amount)
 	if !g.IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid gcd")
@@ -88,8 +98,8 @@ func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*
 	if err != nil {
 		return nil, err
 	}
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	t := sdkCtx.BlockTime()
+	logger.Info("MakeOffer creating offer", "offer_id", id, "unit_have", unitHave, "unit_want", unitWant, "remaining_units", remainingUnits, "pfand_locked", pfandCoin)
 	offer := whaleswapv1.OfferData{
 		OfferId:          id,
 		Status:           whaleswapv1.OfferStatusOpen,
@@ -108,9 +118,11 @@ func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*
 	if err := k.OffersMap.Set(ctx, id, offer); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to save offer %d", id)
 	}
+	logger.Info("MakeOffer offer saved", "offer_id", id)
 	if err := k.indexOfferOpen(ctx, offer); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to index offer %d", id)
 	}
+	logger.Info("MakeOffer offer indexed", "offer_id", id)
 	// Emit EventOfferCreated with plain numeric string (no extra quotes) for offer_id
 	sdkCtx.EventManager().EmitEvent(
 		sdk.NewEvent(
@@ -119,6 +131,7 @@ func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*
 		),
 	)
 	if pfandCoin.Amount.IsPositive() {
+		logger.Info("MakeOffer emitting pfand locked event", "offer_id", id, "pfand_amount", pfandCoin)
 		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPfandLocked{
 			Amount:  pfandCoin,
 			OfferId: id,
@@ -126,13 +139,21 @@ func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*
 			return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventPfandLocked")
 		}
 	}
+	logger.Info("MakeOffer checking invariants")
 	if err := k.AssertInvariants(ctx); err != nil {
+		logger.Error("MakeOffer invariant check failed", "error", err)
 		return nil, cosmossdkerrors.Wrap(err, "invariant failed after MakeOffer")
 	}
+	logger.Info("MakeOffer completed successfully", "offer_id", id)
 	return &whaleswapv1.MsgMakeOfferResponse{OfferId: id}, nil
 }
 
 func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*whaleswapv1.MsgTakeOfferResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(sdkCtx)
+
+	logger.Info("TakeOffer starting", "taker", msg.Taker, "trades_count", len(msg.Trades))
+
 	takerBz, err := k.accKeeper.AddressCodec().StringToBytes(msg.Taker)
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "invalid taker: %s", msg.Taker)
@@ -143,7 +164,6 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 	}
 
 	seen := map[uint64]struct{}{}
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	t := sdkCtx.BlockTime()
 
 	outputsByAddr := map[string]sdk.Coins{}
@@ -158,7 +178,9 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
 	moduleBech := moduleAddr.String()
 
+	logger.Info("TakeOffer processing trades")
 	for _, it := range msg.Trades {
+		logger.Info("TakeOffer processing trade", "offer_id", it.OfferId, "take_units", it.TakeUnits)
 		if _, dup := seen[it.OfferId]; dup {
 			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate offer_id %d", it.OfferId)
 		}
@@ -380,6 +402,15 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "no inputs or outputs for batch move")
 	}
 
+	// Debug: log the inputs and outputs before calling wsMoveCoins
+	logger.Info("TakeOffer wsMoveCoins debug", "inputs_count", len(inputs), "outputs_count", len(outputs))
+	for i, in := range inputs {
+		logger.Info("TakeOffer input", "idx", i, "addr", in.Address, "coins", in.Coins.String())
+	}
+	for i, out := range outputs {
+		logger.Info("TakeOffer output", "idx", i, "addr", out.Address, "coins", out.Coins.String())
+	}
+
 	if err := k.wsMoveCoins(ctx, inputs, outputs); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "move coins failed")
 	}
@@ -393,6 +424,7 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 		}
 	}
 	if !toBurn.IsZero() {
+		logger.Info("TakeOffer burning liquid coins", "amount", toBurn)
 		if _, err := k.nameSvc.BurnCoins(ctx, &nameservicev1.MsgBurnCoins{NameDestination: moduleBech, Amount: toBurn}); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "burn liquid failed")
 		}
@@ -400,24 +432,31 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 
 	// totalSent/Recv already accumulated
 
+	logger.Info("TakeOffer checking invariants")
 	if err := k.AssertInvariants(ctx); err != nil {
+		logger.Error("TakeOffer invariant check failed", "error", err)
 		return nil, cosmossdkerrors.Wrap(err, "invariant failed after TakeOffer")
 	}
 
 	// Record single trade with all operations
+	logger.Info("TakeOffer recording trade", "operations_count", len(operations))
 	tradeId, err := k.recordTradeWithOperations(ctx, msg.Taker, operations, "")
 	if err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to record trade")
 	}
+	logger.Info("TakeOffer trade recorded", "trade_id", tradeId)
 
 	// Emit EventPfandReleased for any offers that were closed
-	for _, pr := range pfandReleases {
-		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPfandReleased{
-			Amount:  pr.amount,
-			OfferId: pr.offerId,
-			TradeId: tradeId,
-		}); err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to emit EventPfandReleased")
+	if len(pfandReleases) > 0 {
+		logger.Info("TakeOffer emitting pfand release events", "pfand_releases_count", len(pfandReleases))
+		for _, pr := range pfandReleases {
+			if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPfandReleased{
+				Amount:  pr.amount,
+				OfferId: pr.offerId,
+				TradeId: tradeId,
+			}); err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "failed to emit EventPfandReleased")
+			}
 		}
 	}
 
@@ -428,6 +467,7 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 		totalSent = totalSent.Add(op.Sent)
 		totalRecv = totalRecv.Add(op.Received)
 	}
+	logger.Info("TakeOffer completed successfully", "trade_id", tradeId, "total_sent", totalSent, "total_received", totalRecv)
 
 	return &whaleswapv1.MsgTakeOfferResponse{Sent: totalSent, Received: totalRecv}, nil
 }

@@ -13,6 +13,11 @@ import (
 )
 
 func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) (*whaleswapv1.MsgCreatePoolResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(sdkCtx)
+
+	logger.Info("CreatePool starting", "creator", msg.Creator, "coins", msg.Coins, "fee_pct", msg.FeePct)
+
 	if len(msg.Coins) != 2 {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "coins must contain exactly 2 entries, got %d", len(msg.Coins))
 	}
@@ -99,17 +104,19 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		return nil, cosmossdkerrors.Wrapf(err, "failed to get creator address: %s", msg.Creator)
 	}
 
+	logger.Info("CreatePool sending funds to module", "creator_addr", from, "coins", msg.Coins)
 	if err := k.sendToModule(ctx, from, msg.Coins); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to send funds to module: %s: %+v", from.String(), msg)
 	}
 
+	logger.Info("CreatePool allocating pool ID")
 	id, err := k.poolSeq.Next(ctx)
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to allocate new pool id: %+v", msg)
 	}
+	logger.Info("CreatePool allocated pool ID", "pool_id", id)
 	sharesDenom := whaleswapv1.PoolSharesDenom(id)
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	t := sdkCtx.BlockTime()
 	pool := whaleswapv1.Pool{
 		PoolId:      id,
@@ -124,6 +131,7 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		NumTrades:   0,
 	}
 
+	logger.Info("CreatePool calculating initial shares", "has_bounds", hasBounds)
 	var initialShares math.Int
 	if hasBounds {
 		L, _, _, err := k.liquidityForReserves(pool)
@@ -131,6 +139,7 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 			return nil, cosmossdkerrors.Wrapf(err, "failed to compute initial liquidity: %+v", msg)
 		}
 		initialShares = L.TruncateInt()
+		logger.Info("CreatePool calculated bounded liquidity", "initial_shares", initialShares)
 	} else {
 		prod := math.LegacyNewDecFromInt(msg.Coins[0].Amount).Mul(math.LegacyNewDecFromInt(msg.Coins[1].Amount))
 		sqrt, err := prod.ApproxSqrt()
@@ -138,11 +147,14 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 			return nil, cosmossdkerrors.Wrapf(err, "failed to compute sqrt of initial product: %+v", msg)
 		}
 		initialShares = sqrt.TruncateInt()
+		logger.Info("CreatePool calculated unbounded liquidity", "initial_shares", initialShares, "product", prod, "sqrt", sqrt)
 	}
 	if !initialShares.IsPositive() {
 		initialShares = math.NewInt(1)
+		logger.Info("CreatePool adjusted initial shares to minimum", "initial_shares", initialShares)
 	}
 
+	logger.Info("CreatePool saving pool", "pool_id", id, "shares_denom", sharesDenom)
 	if err := k.PoolsMap.Set(ctx, id, pool); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to set pool: %+v", msg)
 	}
@@ -151,6 +163,7 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		return nil, cosmossdkerrors.Wrapf(err, "failed ensuring whaleswap.dys root before minting shares for pool %d: %+v", id, msg)
 	}
 
+	logger.Info("CreatePool minting shares", "shares_denom", sharesDenom, "initial_shares", initialShares)
 	mintMsg := &nameservicev1.MsgMintCoins{
 		NameDestination: k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String(),
 		Amount:          sdk.NewCoins(sdk.NewCoin(sharesDenom, initialShares)),
@@ -160,22 +173,29 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		return nil, cosmossdkerrors.Wrapf(err, "failed to mint shares: %+v", msg)
 	}
 
+	logger.Info("CreatePool sending shares to creator", "creator_addr", from, "shares_amount", initialShares)
 	if err := k.sendFromModule(ctx, from, sdk.NewCoins(sdk.NewCoin(sharesDenom, initialShares))); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to send minted shares: %+v", msg)
 	}
 
+	logger.Info("CreatePool emitting events", "pool_id", id)
 	sdkCtx.EventManager().EmitTypedEvents(
 		&whaleswapv1.EventPoolCreated{PoolId: id},
 		&whaleswapv1.EventPoolUpdate{PoolId: id},
 	)
 
+	logger.Info("CreatePool checking AMM invariants")
 	if err := k.AssertAMMInvariants(ctx); err != nil {
+		logger.Error("CreatePool AMM invariant check failed", "error", err)
 		return nil, cosmossdkerrors.Wrapf(err, "AMM invariant failed after CreatePool: pool_id=%d coins=%s shares_denom=%s", id, msg.Coins.String(), sharesDenom)
 	}
 
+	logger.Info("CreatePool checking invariants")
 	if err := k.AssertInvariants(ctx); err != nil {
+		logger.Error("CreatePool invariant check failed", "error", err)
 		return nil, cosmossdkerrors.Wrapf(err, "invariant after CreatePool")
 	}
 
+	logger.Info("CreatePool completed successfully", "pool_id", id)
 	return &whaleswapv1.MsgCreatePoolResponse{PoolId: id}, nil
 }

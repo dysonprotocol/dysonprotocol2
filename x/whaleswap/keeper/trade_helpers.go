@@ -14,6 +14,10 @@ import (
 // tradeApplySwapLeg executes a single SwapLeg against the pool, persists pool state, and returns a TradeOperation.
 // It returns (operation, in, out) for aggregator accounting. Trade recording happens in recordTradeWithOperations.
 func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whaleswapv1.SwapLeg, note string) (whaleswapv1.TradeOperation, sdk.Coin, sdk.Coin, error) {
+	logger := k.Logger(sdk.UnwrapSDKContext(ctx))
+
+	logger.Info("tradeApplySwapLeg starting", "trader", trader, "pool_id", leg.PoolId, "swap_in", leg.SwapIn, "swap_out", leg.SwapOut)
+
 	if leg == nil || leg.PoolId == 0 {
 		return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool_id required")
 	}
@@ -21,6 +25,7 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 	if gerr != nil {
 		return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, gerr
 	}
+	logger.Info("tradeApplySwapLeg got pool", "pool_coins", pool.Coins, "fee_pct", pool.FeePct)
 	if len(pool.Coins) != 2 {
 		return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves")
 	}
@@ -335,6 +340,7 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 		Received: sdk.NewCoin(outDenom, outAmt),
 	}
 
+	logger.Info("tradeApplySwapLeg completed", "sent", actualInCoin, "received", sdk.NewCoin(outDenom, outAmt))
 	return op, actualInCoin, sdk.NewCoin(outDenom, outAmt), nil
 }
 
@@ -342,6 +348,10 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 // Returns (operation, maker, makerWant, takerRecv, makerLiqIn, pfandReleased, error).
 // Trade recording happens in recordTradeWithOperations.
 func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whaleswapv1.TakeItem, note string) (whaleswapv1.TradeOperation, string, sdk.Coin, sdk.Coin, sdk.Coin, sdk.Coin, error) {
+	logger := k.Logger(sdk.UnwrapSDKContext(ctx))
+
+	logger.Info("tradeApplyTakeItem starting", "taker", taker, "offer_id", item.OfferId, "take_units", item.TakeUnits)
+
 	if item == nil || item.OfferId == 0 {
 		return whaleswapv1.TradeOperation{}, "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "offer_id required")
 	}
@@ -349,6 +359,7 @@ func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whal
 	if err != nil {
 		return whaleswapv1.TradeOperation{}, "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrNotFound, "offer not found: %d", item.OfferId)
 	}
+	logger.Info("tradeApplyTakeItem got offer", "maker", offer.Maker, "remaining_units", offer.RemainingUnits, "unit_have", offer.UnitHaveInt, "unit_want", offer.UnitWantInt)
 	if offer.Status != whaleswapv1.OfferStatusOpen {
 		return whaleswapv1.TradeOperation{}, "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "offer %d not open", item.OfferId)
 	}
@@ -423,19 +434,26 @@ func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whal
 		baseHave, _ := k.decodeLiquidDenom(haveDenom)
 		takerRecv = sdk.NewCoin(baseHave, deliverHave)
 		makerLiqIn = sdk.NewCoin(haveDenom, deliverHave)
+		logger.Info("tradeApplyTakeItem liquid denom", "base_have", baseHave, "taker_recv", takerRecv, "maker_liq_in", makerLiqIn)
 	} else {
 		takerRecv = sdk.NewCoin(haveDenom, deliverHave)
+		logger.Info("tradeApplyTakeItem solid denom", "taker_recv", takerRecv)
 	}
+	logger.Info("tradeApplyTakeItem completed", "maker", maker, "maker_want", makerWant, "taker_recv", takerRecv, "maker_liq_in", makerLiqIn, "pfand_released", pfandReleased)
 	return op, maker, makerWant, takerRecv, makerLiqIn, pfandReleased, nil
 }
 
 // tradeNetAndCover performs orderbook-style netting and coverage on the aggregator maps.
 func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsByAddr, outputsByAddr map[string]sdk.Coins) error {
+	logger := k.Logger(sdk.UnwrapSDKContext(ctx))
+
+	logger.Info("tradeNetAndCover starting", "trader_bech", traderBech, "inputs_by_addr_count", len(inputsByAddr), "outputs_by_addr_count", len(outputsByAddr))
+
 	moduleBech := k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String()
-	// maker wants (solid)
+	// maker wants (solid) - exclude trader
 	makerWants := sdk.NewCoins()
 	for addr, coins := range outputsByAddr {
-		if addr == moduleBech {
+		if addr == moduleBech || addr == traderBech {
 			continue
 		}
 		for _, c := range coins {
@@ -579,21 +597,29 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 	}
 	if !liquidToModule.IsZero() {
 		outputsByAddr[moduleBech] = outputsByAddr[moduleBech].Add(liquidToModule...)
+		logger.Info("tradeNetAndCover added liquid to burn", "liquid_to_module", liquidToModule)
 	}
+	logger.Info("tradeNetAndCover completed", "final_inputs_count", len(inputsByAddr), "final_outputs_count", len(outputsByAddr))
 	return nil
 }
 
 // tradeBurnModuleLiquid burns any liquid coins sent to the module during settlement.
 func (k Keeper) tradeBurnModuleLiquid(ctx context.Context, outputsByAddr map[string]sdk.Coins) error {
+	logger := k.Logger(sdk.UnwrapSDKContext(ctx))
+
+	logger.Info("tradeBurnModuleLiquid starting", "outputs_by_addr_count", len(outputsByAddr))
+
 	moduleBech := k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String()
 	if mcoins, ok := outputsByAddr[moduleBech]; ok {
 		for _, c := range mcoins {
 			if k.isLiquidDenom(c.Denom) && c.Amount.IsPositive() {
+				logger.Info("tradeBurnModuleLiquid burning liquid coin", "coin", c)
 				if err := k.burnLiquid(ctx, c); err != nil {
 					return cosmossdkerrors.Wrap(err, "burn liquid failed")
 				}
 			}
 		}
 	}
+	logger.Info("tradeBurnModuleLiquid completed")
 	return nil
 }

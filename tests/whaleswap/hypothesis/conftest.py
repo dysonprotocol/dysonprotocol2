@@ -48,3 +48,57 @@ def gov_addr(chainnet):
     result = dysond("query", "auth", "module-account", "gov", "-o", "json")
 
     return result["account"]["value"]["address"]
+
+
+@pytest.fixture(scope="session")
+def registered_names(chainnet, hypo_accounts, register_name):
+    """
+    Session-scoped fixture that registers names and mints coins once per session.
+
+    Returns dict with foo_name and bar_name that tests can reuse.
+    """
+    dysond = chainnet[0]
+    alice_addr = hypo_accounts["alice_addr"]
+    alice_name = hypo_accounts["alice_name"]
+
+    # Register foo.dys
+    foo_name = register_name(dysond, alice_name, alice_addr)
+
+    # Register bar.dys
+    bar_name = register_name(dysond, alice_name, alice_addr)
+
+    # Mint coins for both names (alice gets 1M of each)
+    params = dysond("query", "nameservice", "params")
+    fee_per = float(params["params"].get("mint_fee_per_coin", "0.01"))
+    mint_fee = int(1_000_000 * fee_per + 0.99999)  # ceiling
+
+    # Mint foo.dys coins
+    dysond(
+        "tx",
+        "nameservice",
+        "mint-coins",
+        "--amount",
+        f"1000000{foo_name}",
+        "--mint-fee",
+        f"{mint_fee}udys",
+        "--from",
+        alice_name,
+    )
+
+    # Mint bar.dys coins
+    dysond(
+        "tx",
+        "nameservice",
+        "mint-coins",
+        "--amount",
+        f"1000000{bar_name}",
+        "--mint-fee",
+        f"{mint_fee}udys",
+        "--from",
+        alice_name,
+    )
+
+    return {
+        "foo_name": foo_name,
+        "bar_name": bar_name,
+    }

@@ -22,7 +22,7 @@ import warnings
 from typing import List, Tuple, Iterable
 from textwrap import dedent
 
-NUM_CHAINS = 2
+NUM_CHAINS = 1
 NUM_NODES = 1
 
 # Global constants
@@ -353,7 +353,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
             "500ms",
             "--no-blocks-timeout",
             "5",
-            # "--logs",
+            "--logs",
         ],
         preexec_fn=os.setsid,
     )

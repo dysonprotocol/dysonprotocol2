@@ -32,6 +32,8 @@ click==8.1.7
     #   pip-tools
 comm==0.2.3
     # via ipykernel
+coverage[toml]==7.11.0
+    # via pytest-cov
 debugpy==1.8.17
     # via ipykernel
 decorator==5.2.1
@@ -130,7 +132,9 @@ platformdirs==4.4.0
 playwright==1.55.0
     # via pytest-playwright
 pluggy==1.6.0
-    # via pytest
+    # via
+    #   pytest
+    #   pytest-cov
 prompt-toolkit==3.0.52
     # via ipython
 psutil==7.1.0
@@ -156,6 +160,7 @@ pytest==7.4.3
     # via
     #   -r requirements.in
     #   pytest-base-url
+    #   pytest-cov
     #   pytest-html
     #   pytest-metadata
     #   pytest-playwright
@@ -164,6 +169,8 @@ pytest==7.4.3
     #   pytest-xdist
 pytest-base-url==2.1.0
     # via pytest-playwright
+pytest-cov==7.0.0
+    # via -r requirements.in
 pytest-html==4.1.1
     # via -r requirements.in
 pytest-metadata==3.1.1

@@ -6,11 +6,8 @@ All operations happen in a single dysond query script exec for speed and determi
 """
 
 import json
-import random
-import string
 import pytest
 from hypothesis import given, strategies as st, settings, HealthCheck, assume
-from pathlib import Path
 
 
 # ============================================================================
@@ -70,59 +67,17 @@ def execute_via_script(dysond, executor_script_path, gov_addr, function_name, ar
     return outer["result"]
 
 
-def generate_random_name():
-    """Generate random .dys name."""
-    return "test" + "".join(random.choices(string.ascii_lowercase, k=4)) + ".dys"
-
-
-def generate_random_salt():
-    """Generate random salt for commit-reveal."""
-    return "s" + "".join(random.choices(string.ascii_lowercase + string.digits, k=7))
-
-
 # ============================================================================
 # MESSAGE BUILDERS
 # ============================================================================
 
 
-def build_name_registration_messages(owner, name, salt):
-    """Build commit-reveal-mint sequence for a name."""
-    return [
-        {"_compute_hash": {"name": name, "salt": salt, "committer": owner}},
-        {
-            "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
-            "committer": owner,
-            "hexhash": "{COMPUTED_HASH}",
-            "valuation": {"denom": "udys", "amount": "10"},
-        },
-        {
-            "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
-            "committer": owner,
-            "name": name,
-            "salt": salt,
-        },
-        {
-            "@type": "/dysonprotocol.nameservice.v1.MsgMintCoins",
-            "name_destination": owner,
-            "amount": [{"denom": name, "amount": "1000000"}],
-            "mint_fee": {"denom": "udys", "amount": "10000"},
-        },
-    ]
-
-
 def build_setup_messages(alice_addr, foo_name, bar_name):
-    """Build all setup messages for whaleswap testing (alice does everything)."""
+    """Build setup messages for whaleswap testing (pool creation and offer making).
+
+    Names must already be registered and coins minted.
+    """
     messages = []
-
-    # Register and mint foo.dys (alice gets 1M coins)
-    messages.extend(
-        build_name_registration_messages(alice_addr, foo_name, generate_random_salt())
-    )
-
-    # Register and mint bar.dys (alice gets 1M coins)
-    messages.extend(
-        build_name_registration_messages(alice_addr, bar_name, generate_random_salt())
-    )
 
     # Create initial pool (alice provides liquidity)
     messages.append(
@@ -162,7 +117,12 @@ def build_setup_messages(alice_addr, foo_name, bar_name):
     suppress_health_check=[HealthCheck.function_scoped_fixture],
 )
 def test_make_trade_single_swap_random_amount(
-    chainnet, hypo_accounts, executor_script_path, gov_addr, swap_amount
+    chainnet,
+    hypo_accounts,
+    registered_names,
+    executor_script_path,
+    gov_addr,
+    swap_amount,
 ):
     """
     Test MsgMakeTrade with a single swap using random amounts.
@@ -172,8 +132,8 @@ def test_make_trade_single_swap_random_amount(
     dysond = chainnet[0]
     accounts = hypo_accounts
 
-    foo_name = generate_random_name()
-    bar_name = generate_random_name()
+    foo_name = registered_names["foo_name"]
+    bar_name = registered_names["bar_name"]
     denoms = [foo_name, bar_name, "udys"]
 
     messages = []
@@ -218,7 +178,12 @@ def test_make_trade_single_swap_random_amount(
     suppress_health_check=[HealthCheck.function_scoped_fixture],
 )
 def test_make_trade_take_offer_random_units(
-    chainnet, hypo_accounts, executor_script_path, gov_addr, take_units
+    chainnet,
+    hypo_accounts,
+    registered_names,
+    executor_script_path,
+    gov_addr,
+    take_units,
 ):
     """
     Test MsgMakeTrade taking an offer with random units.
@@ -229,8 +194,8 @@ def test_make_trade_take_offer_random_units(
     dysond = chainnet[0]
     accounts = hypo_accounts
 
-    foo_name = generate_random_name()
-    bar_name = generate_random_name()
+    foo_name = registered_names["foo_name"]
+    bar_name = registered_names["bar_name"]
     denoms = [foo_name, bar_name, "udys"]
 
     messages = []
@@ -259,8 +224,8 @@ def test_make_trade_take_offer_random_units(
 
     # The offer-taking accounting bug has been fixed
     assert result["success"], f"Take offer failed for {take_units} units."
-    # message_count excludes _compute_hash directives, so it's less than len(messages)
-    assert result["message_count"] == 9  # 11 messages - 2 _compute_hash directives
+    # message_count is now 3: pool creation, offer creation, trade (name registration moved to fixture)
+    assert result["message_count"] == 3
 
 
 def test_executor_script_basic(chainnet, hypo_accounts, executor_script_path, gov_addr):
@@ -297,62 +262,3 @@ def test_executor_script_basic(chainnet, hypo_accounts, executor_script_path, go
     assert (
         post_balance == pre_balance + 100
     ), f"Expected +100, got {post_balance - pre_balance}"
-
-
-def test_name_registration_in_script(
-    chainnet, hypo_accounts, executor_script_path, gov_addr
-):
-    """
-    Test that name registration via MsgSudo works in the executor script.
-    """
-    dysond = chainnet[0]
-    accounts = hypo_accounts
-
-    foo_name = generate_random_name()
-
-    # Build name registration messages
-    messages = []
-    foo_salt = generate_random_salt()
-    messages.extend(
-        [
-            {
-                "_compute_hash": {
-                    "name": foo_name,
-                    "salt": foo_salt,
-                    "committer": accounts["alice_addr"],
-                }
-            },
-            {
-                "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
-                "committer": accounts["alice_addr"],
-                "hexhash": "{COMPUTED_HASH}",
-                "valuation": {"denom": "udys", "amount": "10"},
-            },
-            {
-                "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
-                "committer": accounts["alice_addr"],
-                "name": foo_name,
-                "salt": foo_salt,
-            },
-            {
-                "@type": "/dysonprotocol.nameservice.v1.MsgMintCoins",
-                "name_destination": accounts["alice_addr"],
-                "amount": [{"denom": foo_name, "amount": "1000000"}],
-                "mint_fee": {"denom": "udys", "amount": "10000"},
-            },
-        ]
-    )
-
-    result = execute_via_script(
-        dysond,
-        executor_script_path,
-        gov_addr,
-        "execute_messages_with_sudo",
-        [messages, [foo_name, "udys"], [accounts["alice_addr"]], gov_addr],
-    )
-
-    assert result["success"], f"Name registration failed"
-
-    # Verify alice got the minted coins
-    post_balance = result["post_balances"][accounts["alice_addr"]][foo_name]
-    assert post_balance == 1000000, f"Expected 1000000 {foo_name}, got {post_balance}"

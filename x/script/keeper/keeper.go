@@ -332,25 +332,18 @@ func (k Keeper) HandleJSONAnyQuery(ctx context.Context, req *QueryRequest) (stri
 	var anyMsg map[string]interface{}
 	err := json.Unmarshal([]byte(req.JsonQuery), &anyMsg)
 	if err != nil {
-		return "", cosmossdkerrors.Wrapf(err, "failed to parse JSON")
+		return "", cosmossdkerrors.Wrapf(err, "failed to parse JSON: %s", req.JsonQuery)
 	}
 
 	typeURL, ok := anyMsg["@type"].(string)
 	if !ok {
-		return "", fmt.Errorf("JSON doesn't contain @type field")
+		return "", fmt.Errorf("JSON doesn't contain @type field: %s", req.JsonQuery)
 	}
-
-	reqMsg, err := k.cdc.InterfaceRegistry().Resolve(typeURL)
-	if err != nil {
-		return "", cosmossdkerrors.Wrapf(err, "failed to resolve request type")
-	}
-	fmt.Println("reqMsg", fmt.Sprintf("%T", reqMsg))
 
 	respMsg, err := k.cdc.InterfaceRegistry().Resolve(GetResponseTypeURL(typeURL))
 	if err != nil {
-		return "", cosmossdkerrors.Wrapf(err, "failed to resolve response type")
+		return "", cosmossdkerrors.Wrapf(err, "failed to resolve response type: %s", typeURL)
 	}
-	fmt.Println("respMsg", fmt.Sprintf("%T", respMsg))
 
 	// First try to unmarshal into a specific interface
 	var msg sdk.Msg
@@ -472,7 +465,7 @@ func (k Keeper) DispatchMessage(sdkCtx sdk.Context, executor sdk.AccAddress, msg
 
 	// Get the response and convert back to sdk.Msg
 	resp, err := handler(sdkCtx, msg)
-	fmt.Println("DispatchMessage handler", msg, resp)
+
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to dispatch message")
 	}
@@ -532,7 +525,6 @@ func (k Keeper) DispatchSudoMessage(sdkCtx sdk.Context, msg sdk.Msg) (sdk.Msg, e
 
 	// Get the response and convert back to sdk.Msg
 	resp, err := handler(sdkCtx, msg)
-	fmt.Println("DispatchSudoMessage handler", msg, resp)
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to dispatch sudo message")
 	}

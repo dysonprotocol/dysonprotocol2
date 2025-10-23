@@ -14,6 +14,11 @@ import (
 
 // MakeTrade mixes SwapLegs and TakeItems with single end-of-tx settlement.
 func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*whaleswapv1.MsgMakeTradeResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(sdkCtx)
+
+	logger.Info("MakeTrade starting", "trader", msg.Trader, "operations_count", len(msg.Operations), "max_input", msg.MaxInput, "min_output", msg.MinOutput)
+
 	if len(msg.Operations) == 0 {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "operations must be non-empty")
 	}
@@ -24,7 +29,6 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid trader: %s", err.Error())
 	}
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	params := k.GetParams(sdkCtx)
 	if len(msg.Note) > int(params.MaxNoteLength) {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "note too long: %d > %d", len(msg.Note), params.MaxNoteLength)
@@ -52,6 +56,7 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 	}
 
 	// Execute operations in order, mutating pools/offers and accumulating
+	logger.Info("MakeTrade processing operations", "operations_count", len(msg.Operations))
 	var operations []whaleswapv1.TradeOperation
 	type pfandRelease struct {
 		offerId uint64
@@ -62,10 +67,11 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 	seenOffers := make(map[uint64]bool)
 	seenAuctions := make(map[uint64]bool)
 
-	for _, op := range msg.Operations {
+	for i, op := range msg.Operations {
 		switch v := op.Op.(type) {
 		case *whaleswapv1.TradeOperation_Swap:
 			leg := v.Swap
+			logger.Info("MakeTrade processing swap operation", "operation_idx", i, "pool_id", leg.PoolId, "swap_in", leg.SwapIn, "swap_out", leg.SwapOut)
 			if leg == nil || leg.PoolId == 0 {
 				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap leg invalid")
 			}
@@ -91,6 +97,7 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 
 		case *whaleswapv1.TradeOperation_Take:
 			item := v.Take
+			logger.Info("MakeTrade processing take operation", "operation_idx", i, "offer_id", item.OfferId, "take_units", item.TakeUnits)
 			if item == nil {
 				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "take item missing")
 			}
@@ -102,8 +109,12 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 			if terr != nil {
 				return nil, terr
 			}
+			logger.Info("MakeTrade take operation applied", "operation_idx", i, "maker", maker, "maker_want", makerWant, "taker_recv", takerRecv, "maker_liq_in", makerLiqIn, "pfand", pfand)
 			operations = append(operations, tradeOp)
-			addOut(maker, makerWant)
+			// For self-takes (taker == maker), makerWant is a self-payment that nets to zero - don't add to outputs
+			if maker != msg.Trader {
+				addOut(maker, makerWant)
+			}
 			// DON'T add taker input explicitly - let tradeNetAndCover determine it via coverage
 			addOut(msg.Trader, takerRecv)
 			if makerLiqIn.IsValid() && makerLiqIn.Amount.IsPositive() {
@@ -130,9 +141,12 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		}
 	}
 
+	logger.Info("MakeTrade operations completed", "amm_deltas", deltaByDenom, "pfand_releases", len(pfandReleases))
+
 	moduleBech := k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String()
 	traderBech := msg.Trader
 
+	logger.Info("MakeTrade converting AMM deltas to inputs/outputs", "module_addr", moduleBech, "trader_addr", traderBech)
 	// Convert AMM module deltas to inputs/outputs entries (trader <-> module)
 	for denom, modAmt := range deltaByDenom {
 		if modAmt.IsZero() {
@@ -148,9 +162,11 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 	}
 
 	// Orderbook-style netting and coverage
+	logger.Info("MakeTrade before netting and coverage", "inputs_by_addr", inputsByAddr, "outputs_by_addr", outputsByAddr)
 	if err := k.tradeNetAndCover(ctx, traderBech, inputsByAddr, outputsByAddr); err != nil {
 		return nil, err
 	}
+	logger.Info("MakeTrade after netting and coverage", "inputs_by_addr", inputsByAddr, "outputs_by_addr", outputsByAddr)
 
 	// Self-net trader debits and credits by denom to allow circular profit without explicit debits.
 	// Keep totals balanced by subtracting the same amount from the module's symmetric entries.
@@ -230,6 +246,7 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 	}
 
 	// Build multisend IO and execute once
+	logger.Info("MakeTrade building multisend inputs/outputs", "inputs_by_addr", inputsByAddr, "outputs_by_addr", outputsByAddr)
 	var inputs []banktypes.Input
 	var outputs []banktypes.Output
 	for addr, coins := range inputsByAddr {
@@ -245,12 +262,28 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 	if len(inputs) == 0 && len(outputs) == 0 {
 		// No settlement required after full netting and coverage: still burn any liquid outputs
 		// destined for the module.
+		logger.Info("MakeTrade no settlement required, burning module liquid")
 		if err := k.tradeBurnModuleLiquid(ctx, outputsByAddr); err != nil {
 			return nil, err
 		}
 		traderOutputs = outputsByAddr[traderBech]
+		logger.Info("MakeTrade completed without settlement", "trader_outputs", traderOutputs)
 		return &whaleswapv1.MsgMakeTradeResponse{AmountOut: traderOutputs}, nil
 	}
+	// Validate that both inputs and outputs are non-empty before calling wsMoveCoins
+	if len(inputs) == 0 || len(outputs) == 0 {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid netting result: inputs=%d, outputs=%d", len(inputs), len(outputs))
+	}
+
+	// Debug: log the inputs and outputs before calling wsMoveCoins
+	logger.Info("MakeTrade wsMoveCoins debug", "inputs_count", len(inputs), "outputs_count", len(outputs))
+	for i, in := range inputs {
+		logger.Info("MakeTrade input", "idx", i, "addr", in.Address, "coins", in.Coins.String())
+	}
+	for i, out := range outputs {
+		logger.Info("MakeTrade output", "idx", i, "addr", out.Address, "coins", out.Coins.String())
+	}
+
 	if err := k.wsMoveCoins(ctx, inputs, outputs); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "move coins failed")
 	}
@@ -259,27 +292,36 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 	}
 
 	// Module balance invariants (like MakeOffer and TakeOffer)
+	logger.Info("MakeTrade checking invariants before assertion")
 	if err := k.AssertInvariants(ctx); err != nil {
+		logger.Error("MakeTrade invariant check failed", "error", err)
 		return nil, cosmossdkerrors.Wrap(err, "invariant after MakeTrade")
 	}
+	logger.Info("MakeTrade invariants passed")
 
 	// Record single trade with all operations
+	logger.Info("MakeTrade recording trade", "operations_count", len(operations))
 	tradeId, err := k.recordTradeWithOperations(ctx, msg.Trader, operations, msg.Note)
 	if err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to record trade")
 	}
+	logger.Info("MakeTrade trade recorded", "trade_id", tradeId)
 
 	// Emit EventPfandReleased for any offers that were closed
-	for _, pr := range pfandReleases {
-		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPfandReleased{
-			Amount:  pr.amount,
-			OfferId: pr.offerId,
-			TradeId: tradeId,
-		}); err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to emit EventPfandReleased")
+	if len(pfandReleases) > 0 {
+		logger.Info("MakeTrade emitting pfand release events", "pfand_releases_count", len(pfandReleases))
+		for _, pr := range pfandReleases {
+			if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPfandReleased{
+				Amount:  pr.amount,
+				OfferId: pr.offerId,
+				TradeId: tradeId,
+			}); err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "failed to emit EventPfandReleased")
+			}
 		}
 	}
 
+	logger.Info("MakeTrade completed successfully", "trade_id", tradeId, "trader_outputs", traderOutputs)
 	return &whaleswapv1.MsgMakeTradeResponse{AmountOut: traderOutputs}, nil
 }
 

@@ -11,6 +11,9 @@ CURRENT_DIR = $(shell pwd)
 
 # Build tags
 build_tags = netgo
+
+# Coverage support
+COVERAGE_ENABLED ?= false
 ifeq ($(LEDGER_ENABLED),true)
   ifeq ($(OS),Windows_NT)
     GCCEXE = $(shell where gcc.exe 2> NUL)
@@ -70,6 +73,9 @@ endif
 ldflags := $(strip $(ldflags))
 
 BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
+ifeq ($(COVERAGE_ENABLED),true)
+  BUILD_FLAGS += -cover
+endif
 # check for nostrip option
 ifeq (,$(findstring nostrip,$(COSMOS_BUILD_OPTIONS)))
   BUILD_FLAGS += -trimpath
@@ -127,8 +133,30 @@ test: install
 	@echo "--> running pytest"
 	@TMP_ROOT=$$(mktemp -d /tmp/dyson-test.XXXXXX); \
 	echo "Using temporary directory: $$TMP_ROOT"; \
+	if [ "$(COVERAGE_ENABLED)" = "true" ]; then \
+		echo "--> Coverage enabled, setting up coverage collection"; \
+		COV_DIR=$$TMP_ROOT/coverage; \
+		mkdir -p $$COV_DIR; \
+		export GOCOVERDIR=$$COV_DIR; \
+		echo "Coverage data will be written to: $$COV_DIR"; \
+	fi; \
 	DYSON_BASE_DIR=$$TMP_ROOT/test-dysonchains python -u -m pytest --ff --capture=fd --showlocals --durations=0 $(PYTEST_ARGS); \
 	TEST_EXIT_CODE=$$?; \
+	if [ "$(COVERAGE_ENABLED)" = "true" ] && [ -d "$$COV_DIR" ]; then \
+		echo "Generating coverage report from $$COV_DIR..."; \
+		go tool covdata percent -i=$$COV_DIR \
+		  -pkg="dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper" \
+		  | column -t; \
+		echo "Converting to text format..."; \
+		go tool covdata textfmt -i=$$COV_DIR \
+		  -pkg="dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper" \
+		  -o=coverage.out; \
+		echo "Coverage report saved to coverage.out"; \
+		echo "To view HTML report:"; \
+		echo "go tool cover -html=coverage.out -o=coverage.html"; \
+		echo "To view function-level coverage:"; \
+		echo "go tool cover -func=coverage.out -o=coverage.txt"; \
+	fi; \
 	echo "Cleaning up temporary directory"; \
 	rm -rf $$TMP_ROOT; \
 	exit $$TEST_EXIT_CODE; \
