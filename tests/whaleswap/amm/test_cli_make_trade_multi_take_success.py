@@ -5,11 +5,12 @@ def _take(offer_id, units):
     return {"take": {"offer_id": str(offer_id), "take_units": str(units)}}
 
 
-def test_make_trade_multi_take_invariant_mismatch(
-    chainnet, ws_setup_env, ws_create_offer, faucet
-):
+def test_make_trade_multi_take_success(chainnet, ws_setup_env, ws_create_offer, faucet):
     """
-    Reproduce invariant failure from manual run:
+    Test that multi-take MakeTrade operations work correctly.
+
+    Previously this reproduced a bug where multi-take accounting would forget
+    some taker inputs, causing module balance mismatch for udys.
 
     Error: invariant after MakeTrade: module balance mismatch for udys:
     have=3185276540 expected=3185276780
@@ -17,8 +18,7 @@ def test_make_trade_multi_take_invariant_mismatch(
 
     Module SHORT 240 udys after multi-take make-trade.
 
-    The manual state had pools and auctions consuming significant module balance,
-    making the accounting error detectable. Reproduce those conditions.
+    This test now verifies the bug has been fixed.
     """
     dysond = chainnet[0]
     env = ws_setup_env
@@ -28,8 +28,7 @@ def test_make_trade_multi_take_invariant_mismatch(
     taker_addr = env["acc1"]["addr"]
     maker = env["acc2"]["name"]
 
-    # Create three solid-have offers matching manual state
-    # Bug: Multi-take accounting forgets some taker inputs
+    # Create three solid-have offers
     # Offer 1: 100a for 104udys  -> unit 25a / 26udys (3 units taken = 78udys want)
     o1 = ws_create_offer(maker, have=f"100{a}", want="104udys")
     # Offer 2: 88a for 75udys   -> unit 88a / 75udys (1 unit taken = 75udys want)
@@ -53,8 +52,8 @@ def test_make_trade_multi_take_invariant_mismatch(
 
     # Single MakeTrade with three take operations
     # Expected want total: 78 + 75 + 87 = 240 udys
-    # Bug: accounting missing some taker inputs, module ends up SHORT
-    out = dysond(
+    # Should succeed now that the accounting bug is fixed
+    result = dysond(
         "tx",
         "whaleswap",
         "make-trade",
@@ -70,12 +69,10 @@ def test_make_trade_multi_take_invariant_mismatch(
         json.dumps(_take(o3, 1)),
         "--gas",
         "auto",
-        raw=True,
     )
 
-    assert isinstance(out, str), f"expected raw error string, got: {out}"
-    low = out.lower()
-    assert "invariant after maketrade" in low, f"missing invariant error: {out}"
-    assert (
-        "module balance mismatch for udys" in low
-    ), f"missing udys mismatch substring: {out}"
+    # Transaction should succeed (the bug that caused invariant failure has been fixed)
+    assert result["code"] == 0, f"MakeTrade failed: {json.dumps(result, indent=2)}"
+
+    # Transaction succeeded - the multi-take accounting bug has been fixed
+    # Invariants passed, confirming the module balance is correct

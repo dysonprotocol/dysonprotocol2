@@ -492,6 +492,21 @@ def faucet(chainnet):
             amount: The amount of coins to send.
         """
 
+        # Check alice's balance before attempting transfer
+        alice_balances = dysond_bin("query", "bank", "balances", "alice")
+        alice_balance = 0
+        for bal in alice_balances.get("balances", []):
+            if bal.get("denom") == denom:
+                alice_balance = int(bal.get("amount", 0))
+                break
+
+        if alice_balance < amount:
+            raise Exception(
+                f"Faucet insufficient funds: alice has {alice_balance} {denom} "
+                f"but test requested {amount} {denom}. "
+                f"Consider reducing faucet_amount or running tests in isolation."
+            )
+
         # Send tx from alice (run_command already waits for tx internally)
         for attempt in range(10):
             tx_out = dysond_bin(

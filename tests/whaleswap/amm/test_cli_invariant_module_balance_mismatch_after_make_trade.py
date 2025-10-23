@@ -98,6 +98,7 @@ def test_cli_invariant_bug_part1_metrics_count_closed_offer_escrow(
         m.get("escrowed_pool_coins", []),
         m.get("escrowed_offer_coins", []),
         m.get("escrowed_liquid_coins", []),
+        m.get("escrowed_auction_coins", []),
     ]:
         for coin in coin_list:
             denom = coin["denom"]
@@ -274,9 +275,10 @@ def test_cli_invariant_make_trade_should_call_assert_invariants(
     expected_pool = m.get("escrowed_pool_coins", [])
     expected_offer = m.get("escrowed_offer_coins", [])
     expected_liquid = m.get("escrowed_liquid_coins", [])
+    expected_auction = m.get("escrowed_auction_coins", [])
 
     expected = {}
-    for coin_list in [expected_pool, expected_offer, expected_liquid]:
+    for coin_list in [expected_pool, expected_offer, expected_liquid, expected_auction]:
         for coin in coin_list:
             denom = coin["denom"]
             amount = int(coin["amount"])

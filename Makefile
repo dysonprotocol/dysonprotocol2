@@ -133,29 +133,39 @@ test: install
 	@echo "--> running pytest"
 	@TMP_ROOT=$$(mktemp -d /tmp/dyson-test.XXXXXX); \
 	echo "Using temporary directory: $$TMP_ROOT"; \
-	if [ "$(COVERAGE_ENABLED)" = "true" ]; then \
+	if [ -n "$(COVERAGE_ENABLED)" ]; then \
 		echo "--> Coverage enabled, setting up coverage collection"; \
 		COV_DIR=$$TMP_ROOT/coverage; \
 		mkdir -p $$COV_DIR; \
 		export GOCOVERDIR=$$COV_DIR; \
 		echo "Coverage data will be written to: $$COV_DIR"; \
+		if [ "$(COVERAGE_ENABLED)" = "true" ]; then \
+			COVERAGE_PACKAGES="dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper"; \
+		else \
+			COVERAGE_PACKAGES="$(COVERAGE_ENABLED)"; \
+		fi; \
+		echo "Coverage packages: $$COVERAGE_PACKAGES"; \
 	fi; \
 	DYSON_BASE_DIR=$$TMP_ROOT/test-dysonchains python -u -m pytest --ff --capture=fd --showlocals --durations=0 $(PYTEST_ARGS); \
 	TEST_EXIT_CODE=$$?; \
-	if [ "$(COVERAGE_ENABLED)" = "true" ] && [ -d "$$COV_DIR" ]; then \
+	if [ -n "$(COVERAGE_ENABLED)" ] && [ -d "$$COV_DIR" ]; then \
 		echo "Generating coverage report from $$COV_DIR..."; \
 		go tool covdata percent -i=$$COV_DIR \
-		  -pkg="dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper" \
+		  -pkg="$$COVERAGE_PACKAGES" \
 		  | column -t; \
 		echo "Converting to text format..."; \
 		go tool covdata textfmt -i=$$COV_DIR \
-		  -pkg="dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper" \
+		  -pkg="$$COVERAGE_PACKAGES" \
 		  -o=coverage.out; \
 		echo "Coverage report saved to coverage.out"; \
+		go tool cover -html=coverage.out -o=coverage.html; \
+		echo "Coverage report saved to coverage.html"; \
+		go tool cover -func=coverage.out -o=coverage.txt; \
+		echo "Coverage report saved to coverage.txt"; \
 		echo "To view HTML report:"; \
-		echo "go tool cover -html=coverage.out -o=coverage.html"; \
+		echo "open coverage.html"; \
 		echo "To view function-level coverage:"; \
-		echo "go tool cover -func=coverage.out -o=coverage.txt"; \
+		echo "open coverage.txt"; \
 	fi; \
 	echo "Cleaning up temporary directory"; \
 	rm -rf $$TMP_ROOT; \

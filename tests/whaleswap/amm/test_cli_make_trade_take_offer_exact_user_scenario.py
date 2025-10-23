@@ -29,9 +29,11 @@ def test_make_trade_take_offer_exact_amounts_from_user_logs(
     """
     dysond = chainnet[0]
 
-    # Create alice with huge initial balance
+    # Create alice with sufficient balance for test operations
+    # Needs ~1.1B udys for pool creation + offers + auctions + buffer
+    # Plus additional for gas fees and escrow costs
     [alice_name, alice_addr] = generate_account(
-        "alice_trader", faucet_amount=10_000_000_000
+        "alice_trader", faucet_amount=2_000_000_000
     )
 
     # Register name and mint coins using script (same as ws_setup_env)
@@ -197,19 +199,21 @@ def register_and_mint(name, salt, amount):
         json.dumps({"take": {"offer_id": offer1_id, "take_units": "1"}}),
     )
 
-    # This should fail with invariant error
+    # The invariant bug has been fixed - MakeTrade should now succeed
     code = trade_tx.get("code", 0)
-    raw_log = trade_tx.get("raw_log", "")
+    assert (
+        code == 0
+    ), f"MakeTrade should succeed after invariant fix. Full tx: {json.dumps(trade_tx, indent=2)}"
 
-    assert (
-        code != 0
-    ), f"Expected invariant error but trade succeeded. Full tx: {json.dumps(trade_tx, indent=2)}"
-    assert (
-        "invariant after MakeTrade" in raw_log
-    ), f"Expected 'invariant after MakeTrade' in error, got: {raw_log}"
-    assert (
-        "module balance mismatch" in raw_log
-    ), f"Expected 'module balance mismatch' in error, got: {raw_log}"
-    assert (
-        "have=1199997733 expected=1199998680" in raw_log
-    ), f"Expected exact balance mismatch values in error, got: {raw_log}"
+    # Verify the trade completed successfully with expected events
+    events = normalize_events(trade_tx["events"])
+    assert "dysonprotocol.whaleswap.v1.EventOfferTaken" in events
+    assert "dysonprotocol.whaleswap.v1.EventTradeRecorded" in events
+
+    offer_taken = events["dysonprotocol.whaleswap.v1.EventOfferTaken"][0]
+    assert offer_taken["offer_id"] == offer1_id
+    assert offer_taken["units_taken"] == "1"
+
+    trade_recorded = events["dysonprotocol.whaleswap.v1.EventTradeRecorded"][0]
+    assert trade_recorded["trader"] == alice_addr
+    assert trade_recorded["num_operations"] == 1

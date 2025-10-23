@@ -136,10 +136,14 @@ def test_make_trade_single_swap_random_amount(
     bar_name = registered_names["bar_name"]
     denoms = [foo_name, bar_name, "udys"]
 
+    # Build messages with template variables for sequential execution
     messages = []
-    messages.extend(build_setup_messages(accounts["alice_addr"], foo_name, bar_name))
 
-    # Single swap
+    # Add setup messages (responses will be automatically extracted)
+    setup_messages = build_setup_messages(accounts["alice_addr"], foo_name, bar_name)
+    messages.extend(setup_messages)
+
+    # Add swap message with Jinja2-style template variable
     messages.append(
         {
             "@type": "/dysonprotocol.whaleswap.v1.MsgMakeTrade",
@@ -147,7 +151,7 @@ def test_make_trade_single_swap_random_amount(
             "operations": [
                 {
                     "swap": {
-                        "pool_id": "1",
+                        "pool_id": "{{ msg_0['pool_id'] }}",  # Uses pool_id from first message (CreatePool)
                         "swap_in": {"denom": foo_name, "amount": str(swap_amount)},
                     }
                 }
@@ -157,18 +161,27 @@ def test_make_trade_single_swap_random_amount(
         }
     )
 
+    # Execute messages sequentially with template substitution
     result = execute_via_script(
         dysond,
         executor_script_path,
         gov_addr,
-        "execute_messages_with_sudo",
+        "execute_messages_sequentially",
         [messages, denoms, [accounts["alice_addr"]], gov_addr],
     )
 
-    assert result["success"], f"Single swap failed for amount {swap_amount}"
-    # message_count excludes _compute_hash directives
-    actual_msg_count = sum(1 for m in messages if "@type" in m)
-    assert result["message_count"] == actual_msg_count
+    assert result["success"], f"Sequential execution failed for amount {swap_amount}"
+    assert result["message_count"] == len(messages)
+
+    # Verify we got the expected template variables
+    assert (
+        "msg_0" in result["template_vars"]
+    ), "msg_0 should contain CreatePool response"
+
+    # Verify pool_id is present and valid (sequence starts from 1, but may be >1 due to shared test state)
+    pool_id = result["template_vars"]["msg_0"]["pool_id"]
+    assert pool_id, "pool_id should not be empty"
+    assert int(pool_id) > 0, f"pool_id should be positive integer, got {pool_id}"
 
 
 @given(take_units=st.integers(min_value=1, max_value=100))
@@ -198,17 +211,28 @@ def test_make_trade_take_offer_random_units(
     bar_name = registered_names["bar_name"]
     denoms = [foo_name, bar_name, "udys"]
 
+    # Build messages with template variables for sequential execution
     messages = []
-    messages.extend(build_setup_messages(accounts["alice_addr"], foo_name, bar_name))
 
-    # Take the offer (offer 1 was created in setup)
+    # Add setup messages (responses will be automatically extracted)
+    setup_messages = build_setup_messages(accounts["alice_addr"], foo_name, bar_name)
+    messages.extend(setup_messages)
+
+    # Take the offer created in setup (msg_1 contains MakeOffer response with offer_id)
     # Offer: have 10000 foo.dys, want 5000 bar.dys (unit ratio 2:1)
     # Taking gives us foo.dys in exchange for bar.dys
     messages.append(
         {
             "@type": "/dysonprotocol.whaleswap.v1.MsgMakeTrade",
             "trader": accounts["alice_addr"],
-            "operations": [{"take": {"offer_id": "1", "take_units": str(take_units)}}],
+            "operations": [
+                {
+                    "take": {
+                        "offer_id": "{{ msg_1['offer_id'] }}",
+                        "take_units": str(take_units),
+                    }
+                }
+            ],
             "max_input": [{"denom": bar_name, "amount": "100000"}],
             "min_output": [],  # No minimum - we just want to test it executes
         }
@@ -218,7 +242,7 @@ def test_make_trade_take_offer_random_units(
         dysond,
         executor_script_path,
         gov_addr,
-        "execute_messages_with_sudo",
+        "execute_messages_sequentially",
         [messages, denoms, [accounts["alice_addr"]], gov_addr],
     )
 
@@ -226,6 +250,12 @@ def test_make_trade_take_offer_random_units(
     assert result["success"], f"Take offer failed for {take_units} units."
     # message_count is now 3: pool creation, offer creation, trade (name registration moved to fixture)
     assert result["message_count"] == 3
+
+    # Verify we got the expected template variables
+    assert "msg_1" in result["template_vars"], "msg_1 should contain MakeOffer response"
+    assert (
+        "offer_id" in result["template_vars"]["msg_1"]
+    ), "msg_1 should contain offer_id"
 
 
 def test_executor_script_basic(chainnet, hypo_accounts, executor_script_path, gov_addr):

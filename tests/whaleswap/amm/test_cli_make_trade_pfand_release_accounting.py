@@ -10,6 +10,8 @@ Without the module input, the invariant check fails with a balance mismatch.
 """
 
 import json
+from utils import poll_until_condition
+from tests.whaleswap.amm.normalize_events import normalize_events
 
 
 def test_make_trade_pfand_release_accounting(
@@ -37,6 +39,73 @@ def test_make_trade_pfand_release_accounting(
     [bob_name, bob_addr] = generate_account("pfand_bob")
     faucet(alice_addr, amount=1_000_000)
     faucet(bob_addr, amount=1_000_000)
+
+    # Set pfand_per_offer to 100 udys via governance proposal
+    gov_auth = (
+        dysond("query", "auth", "module-account", "gov")
+        .get("account", {})
+        .get("value", {})
+        .get("address", "")
+    )
+    assert gov_auth
+
+    # Give alice voting power by delegating
+    val = dysond("query", "staking", "validators")["validators"][0]["operator_address"]
+    deltx = dysond(
+        "tx", "staking", "delegate", val, "50000000udys", "--from", "alice", "--yes"
+    )
+    assert deltx.get("code", 1) == 0
+
+    # Get current params and create proposal to set pfand_per_offer
+    cur = dysond("query", "whaleswap", "params")["params"]
+    proposal = {
+        "messages": [
+            {
+                "@type": "/dysonprotocol.whaleswap.v1.MsgUpdateParams",
+                "authority": gov_auth,
+                "params": {
+                    "pfand_per_offer": {"denom": "udys", "amount": "100"},
+                    "valuation_fee_pct": cur.get("valuation_fee_pct", "0"),
+                    "valuation_period": cur.get("valuation_period", "1h0m0s"),
+                    "bid_timeout": cur.get("bid_timeout", "5s"),
+                    "minimum_bid_percent_increase": cur.get(
+                        "minimum_bid_percent_increase", "0"
+                    ),
+                },
+            }
+        ],
+        "metadata": "ipfs://CID",
+        "deposit": "1udys",
+        "title": "Set pfand to 100",
+        "summary": "Set pfand_per_offer to 100 udys",
+    }
+
+    import tempfile
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json") as f:
+        json.dump(proposal, f)
+        f.flush()
+        sp = dysond("tx", "gov", "submit-proposal", f.name, "--from", "alice", "--yes")
+
+    sp = dysond("query", "wait-tx", sp["txhash"])
+    evs = [e for e in sp.get("events", []) if e.get("type") == "submit_proposal"]
+    pid = [
+        a["value"]
+        for e in evs
+        for a in e.get("attributes", [])
+        if a.get("key") == "proposal_id"
+    ][0]
+
+    # Vote yes
+    vt = dysond("tx", "gov", "vote", str(pid), "yes", "--from", "alice", "--yes")
+    dysond("query", "wait-tx", vt["txhash"])
+
+    # Wait for proposal to pass
+    def _passed():
+        p = dysond("query", "gov", "proposal", str(pid))
+        return p.get("proposal", {}).get("status") == "PROPOSAL_STATUS_PASSED"
+
+    poll_until_condition(_passed, timeout=30, poll_interval=1)
 
     # Register alice.dys and mint solid coins
     name = register_name(dysond, alice_name, alice_addr, "100udys")
@@ -89,7 +158,7 @@ def test_make_trade_pfand_release_accounting(
     assert convert_tx.get("code", 1) == 0
 
     # Alice makes liquid offer: have 100 liquid alice.dys, want 100 udys
-    # This locks pfand (100 solid alice.dys in module)
+    # This locks pfand (100 udys as configured in pfand_per_offer parameter)
     have_amt = 100
     want_amt = 100
     tx = dysond(
@@ -122,14 +191,16 @@ def test_make_trade_pfand_release_accounting(
     # Query offer to verify pfand locked
     offer_query = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id))
     offer = offer_query["offer"]
-    # Pfand denom is always whaleswap.dys/pfand (synthetic denom)
-    assert offer["pfand_locked"]["denom"] == "whaleswap.dys/pfand"
+    # Pfand denom is configured via pfand_per_offer parameter (set to udys in this test)
+    assert offer["pfand_locked"]["denom"] == "udys"
     pfand_amount = int(offer["pfand_locked"]["amount"])
-    # For liquid offers, pfand should equal the have amount in solid denom
+    # Pfand amount equals the pfand_per_offer parameter amount (100 udys)
     assert pfand_amount == have_amt, f"Expected pfand {have_amt}, got {pfand_amount}"
 
     # Get module balance before take
-    module_addr = dysond("query", "whaleswap", "module-address")["address"]
+    module_addr = dysond("query", "auth", "module-account", "whaleswap")["account"][
+        "value"
+    ]["address"]
     mod_bal_before = dysond("query", "bank", "balance", module_addr, name)
     mod_alice_dys_before = int(mod_bal_before["balance"]["amount"])
 
@@ -156,15 +227,17 @@ def test_make_trade_pfand_release_accounting(
     ), f"Transaction failed: {take_tx.get('raw_log', take_tx)}"
 
     # Verify pfand was released in events
-    pfand_events = [
-        e
-        for e in take_tx["events"]
-        if e["type"] == "dysonprotocol.whaleswap.v1.EventPfandReleased"
-    ]
-    assert len(pfand_events) == 1
-    pfand_attr = [a for a in pfand_events[0]["attributes"] if a["key"] == "amount"][0]
-    pfand_coins = json.loads(pfand_attr["value"])
-    pfand_released_amt = int(pfand_coins[0]["amount"])
+    evdict = normalize_events(take_tx["events"])
+    etype = "dysonprotocol.whaleswap.v1.EventPfandReleased"
+    assert etype in evdict, f"missing {etype}: {json.dumps(evdict, indent=2)}"
+    pfand_rows = evdict[etype]
+    assert (
+        len(pfand_rows) == 1
+    ), f"expected one {etype}, got {len(pfand_rows)}: {pfand_rows}"
+    pfand_attrs = pfand_rows[0]
+    assert "amount" in pfand_attrs, f"missing amount in pfand event: {pfand_attrs}"
+    pfand_coin = pfand_attrs["amount"]
+    pfand_released_amt = int(pfand_coin["amount"])
     assert pfand_released_amt == pfand_amount
 
     # Verify module balance decreased by pfand amount
@@ -177,11 +250,11 @@ def test_make_trade_pfand_release_accounting(
         actual_decrease == expected_decrease
     ), f"Module balance change mismatch: expected decrease of {expected_decrease}, got {actual_decrease}"
 
-    # Verify Bob received pfand
+    # Verify Bob received pfand (but netting cancels udys flows)
     bob_bal = dysond("query", "bank", "balance", bob_addr, name)
     bob_alice_dys = int(bob_bal["balance"]["amount"])
-    # Bob started with 500, received 100 from offer + 100 pfand = 700
-    expected_bob = 500 + have_amt + pfand_amount
+    # Bob started with 500, received 100 from offer (udys flows cancel due to netting)
+    expected_bob = 500 + have_amt
     assert (
         bob_alice_dys == expected_bob
     ), f"Bob balance mismatch: expected {expected_bob}, got {bob_alice_dys}"
