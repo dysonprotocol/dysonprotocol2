@@ -25,8 +25,6 @@ const (
 	Msg_RemoveLiquidity_FullMethodName  = "/dysonprotocol.whaleswap.v1.Msg/RemoveLiquidity"
 	Msg_PoolSwap_FullMethodName         = "/dysonprotocol.whaleswap.v1.Msg/PoolSwap"
 	Msg_MakeTrade_FullMethodName        = "/dysonprotocol.whaleswap.v1.Msg/MakeTrade"
-	Msg_ConvertToLiquid_FullMethodName  = "/dysonprotocol.whaleswap.v1.Msg/ConvertToLiquid"
-	Msg_ConvertToSolid_FullMethodName   = "/dysonprotocol.whaleswap.v1.Msg/ConvertToSolid"
 	Msg_MakeOffer_FullMethodName        = "/dysonprotocol.whaleswap.v1.Msg/MakeOffer"
 	Msg_TakeOffer_FullMethodName        = "/dysonprotocol.whaleswap.v1.Msg/TakeOffer"
 	Msg_CancelOffer_FullMethodName      = "/dysonprotocol.whaleswap.v1.Msg/CancelOffer"
@@ -58,9 +56,9 @@ const (
 //     be either empty (unset) or contain exactly two coins whose denoms match the
 //     pool's reserve denoms, representing coin_b / coin_a.
 //
-//   - Liquid denoms: The module uses a liquid wrapper L(denom) to represent
-//     tokenized credit balances. Some operations disallow liquid denoms on
-//     certain sides (e.g., offers.want).
+//   - Settlement modes: Orderbook offers specify how the 'have' is funded:
+//     ESCROW (escrow base have at creation) or LIQUID (no escrow; lock PFAND and
+//     settle from maker balance at take).
 //
 // Msg defines the whaleswap Msg service.
 type MsgClient interface {
@@ -72,9 +70,6 @@ type MsgClient interface {
 	PoolSwap(ctx context.Context, in *MsgPoolSwap, opts ...grpc.CallOption) (*MsgPoolSwapResponse, error)
 	// Mixed operations: combine orderbook takes and pool swaps in one tx
 	MakeTrade(ctx context.Context, in *MsgMakeTrade, opts ...grpc.CallOption) (*MsgMakeTradeResponse, error)
-	// Wrapping (liquid conversions)
-	ConvertToLiquid(ctx context.Context, in *MsgConvertToLiquid, opts ...grpc.CallOption) (*MsgConvertToLiquidResponse, error)
-	ConvertToSolid(ctx context.Context, in *MsgConvertToSolid, opts ...grpc.CallOption) (*MsgConvertToSolidResponse, error)
 	// Orderbook
 	MakeOffer(ctx context.Context, in *MsgMakeOffer, opts ...grpc.CallOption) (*MsgMakeOfferResponse, error)
 	TakeOffer(ctx context.Context, in *MsgTakeOffer, opts ...grpc.CallOption) (*MsgTakeOfferResponse, error)
@@ -148,26 +143,6 @@ func (c *msgClient) MakeTrade(ctx context.Context, in *MsgMakeTrade, opts ...grp
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MsgMakeTradeResponse)
 	err := c.cc.Invoke(ctx, Msg_MakeTrade_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) ConvertToLiquid(ctx context.Context, in *MsgConvertToLiquid, opts ...grpc.CallOption) (*MsgConvertToLiquidResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(MsgConvertToLiquidResponse)
-	err := c.cc.Invoke(ctx, Msg_ConvertToLiquid_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) ConvertToSolid(ctx context.Context, in *MsgConvertToSolid, opts ...grpc.CallOption) (*MsgConvertToSolidResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(MsgConvertToSolidResponse)
-	err := c.cc.Invoke(ctx, Msg_ConvertToSolid_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -257,9 +232,9 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 //     be either empty (unset) or contain exactly two coins whose denoms match the
 //     pool's reserve denoms, representing coin_b / coin_a.
 //
-//   - Liquid denoms: The module uses a liquid wrapper L(denom) to represent
-//     tokenized credit balances. Some operations disallow liquid denoms on
-//     certain sides (e.g., offers.want).
+//   - Settlement modes: Orderbook offers specify how the 'have' is funded:
+//     ESCROW (escrow base have at creation) or LIQUID (no escrow; lock PFAND and
+//     settle from maker balance at take).
 //
 // Msg defines the whaleswap Msg service.
 type MsgServer interface {
@@ -271,9 +246,6 @@ type MsgServer interface {
 	PoolSwap(context.Context, *MsgPoolSwap) (*MsgPoolSwapResponse, error)
 	// Mixed operations: combine orderbook takes and pool swaps in one tx
 	MakeTrade(context.Context, *MsgMakeTrade) (*MsgMakeTradeResponse, error)
-	// Wrapping (liquid conversions)
-	ConvertToLiquid(context.Context, *MsgConvertToLiquid) (*MsgConvertToLiquidResponse, error)
-	ConvertToSolid(context.Context, *MsgConvertToSolid) (*MsgConvertToSolidResponse, error)
 	// Orderbook
 	MakeOffer(context.Context, *MsgMakeOffer) (*MsgMakeOfferResponse, error)
 	TakeOffer(context.Context, *MsgTakeOffer) (*MsgTakeOfferResponse, error)
@@ -310,12 +282,6 @@ func (UnimplementedMsgServer) PoolSwap(context.Context, *MsgPoolSwap) (*MsgPoolS
 }
 func (UnimplementedMsgServer) MakeTrade(context.Context, *MsgMakeTrade) (*MsgMakeTradeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MakeTrade not implemented")
-}
-func (UnimplementedMsgServer) ConvertToLiquid(context.Context, *MsgConvertToLiquid) (*MsgConvertToLiquidResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ConvertToLiquid not implemented")
-}
-func (UnimplementedMsgServer) ConvertToSolid(context.Context, *MsgConvertToSolid) (*MsgConvertToSolidResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ConvertToSolid not implemented")
 }
 func (UnimplementedMsgServer) MakeOffer(context.Context, *MsgMakeOffer) (*MsgMakeOfferResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MakeOffer not implemented")
@@ -464,42 +430,6 @@ func _Msg_MakeTrade_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_ConvertToLiquid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgConvertToLiquid)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).ConvertToLiquid(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_ConvertToLiquid_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).ConvertToLiquid(ctx, req.(*MsgConvertToLiquid))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_ConvertToSolid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgConvertToSolid)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).ConvertToSolid(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_ConvertToSolid_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).ConvertToSolid(ctx, req.(*MsgConvertToSolid))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Msg_MakeOffer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgMakeOffer)
 	if err := dec(in); err != nil {
@@ -638,14 +568,6 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "MakeTrade",
 			Handler:    _Msg_MakeTrade_Handler,
-		},
-		{
-			MethodName: "ConvertToLiquid",
-			Handler:    _Msg_ConvertToLiquid_Handler,
-		},
-		{
-			MethodName: "ConvertToSolid",
-			Handler:    _Msg_ConvertToSolid_Handler,
 		},
 		{
 			MethodName: "MakeOffer",

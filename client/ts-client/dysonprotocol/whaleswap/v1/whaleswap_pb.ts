@@ -6,7 +6,7 @@
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64, Timestamp } from "@bufbuild/protobuf";
 import { Coin } from "../../../cosmos/base/v1beta1/coin_pb.js";
-import { TradeOperation } from "./tx_pb.js";
+import { SettlementMode, TradeOperation } from "./tx_pb.js";
 
 /**
  * Pool describes AMM pool state.
@@ -213,6 +213,13 @@ export class OfferData extends Message<OfferData> {
    */
   pfandLocked?: Coin;
 
+  /**
+   * settlement_mode mirrors MsgMakeOffer.settlement_mode for this offer.
+   *
+   * @generated from field: dysonprotocol.whaleswap.v1.SettlementMode settlement_mode = 14;
+   */
+  settlementMode = SettlementMode.SETTLEMENT_ESCROW;
+
   constructor(data?: PartialMessage<OfferData>) {
     super();
     proto3.util.initPartial(data, this);
@@ -234,6 +241,7 @@ export class OfferData extends Message<OfferData> {
     { no: 11, name: "unit_want_int", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 12, name: "remaining_units", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 13, name: "pfand_locked", kind: "message", T: Coin },
+    { no: 14, name: "settlement_mode", kind: "enum", T: proto3.getEnumType(SettlementMode) },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): OfferData {
@@ -431,14 +439,14 @@ export class TradeMetrics extends Message<TradeMetrics> {
   escrowedPoolCoins: Coin[] = [];
 
   /**
-   * Sum of remaining_have over all open non-liquid offers
+   * Sum of remaining_have over all open escrow-mode offers
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin escrowed_offer_coins = 3;
    */
   escrowedOfferCoins: Coin[] = [];
 
   /**
-   * Sum of pfand_locked over all open liquid-have offers
+   * Sum of pfand_locked over all open liquid-mode offers
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin escrowed_pfand = 4;
    */
@@ -452,18 +460,9 @@ export class TradeMetrics extends Message<TradeMetrics> {
   escrowedAuctionCoins: Coin[] = [];
 
   /**
-   * Solid backing for liquid supply: for each liquid denom
-   * whaleswap.dys/coins/X, this reports the required backing amount on solid
-   * denom X.
-   *
-   * @generated from field: repeated cosmos.base.v1beta1.Coin escrowed_liquid_coins = 6;
-   */
-  escrowedLiquidCoins: Coin[] = [];
-
-  /**
    * Sum of fees_earned across all pools (accounted inside pool reserves)
    *
-   * @generated from field: repeated cosmos.base.v1beta1.Coin fees_earned = 7;
+   * @generated from field: repeated cosmos.base.v1beta1.Coin fees_earned = 6;
    */
   feesEarned: Coin[] = [];
 
@@ -480,8 +479,7 @@ export class TradeMetrics extends Message<TradeMetrics> {
     { no: 3, name: "escrowed_offer_coins", kind: "message", T: Coin, repeated: true },
     { no: 4, name: "escrowed_pfand", kind: "message", T: Coin, repeated: true },
     { no: 5, name: "escrowed_auction_coins", kind: "message", T: Coin, repeated: true },
-    { no: 6, name: "escrowed_liquid_coins", kind: "message", T: Coin, repeated: true },
-    { no: 7, name: "fees_earned", kind: "message", T: Coin, repeated: true },
+    { no: 6, name: "fees_earned", kind: "message", T: Coin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): TradeMetrics {

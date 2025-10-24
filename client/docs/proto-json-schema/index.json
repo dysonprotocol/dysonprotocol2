@@ -328,8 +328,6 @@
       {"type":"file","name":"dysonprotocol.storage.v1.UpdateParams.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.AddLiquidity.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.CancelOffer.json"},
-      {"type":"file","name":"dysonprotocol.whaleswap.v1.ConvertToLiquid.json"},
-      {"type":"file","name":"dysonprotocol.whaleswap.v1.ConvertToSolid.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.CreatePool.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.MakeOffer.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.MakeTrade.json"},
@@ -379,5 +377,5 @@
     ]}
   ]}
 ,
-  {"type":"report","directories":3,"files":373}
+  {"type":"report","directories":3,"files":371}
 ]

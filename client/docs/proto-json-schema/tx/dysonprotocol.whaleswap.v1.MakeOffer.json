@@ -15,12 +15,30 @@
                     "want": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false
+                    },
+                    "settlement_mode": {
+                        "enum": [
+                            "SETTLEMENT_ESCROW",
+                            0,
+                            "SETTLEMENT_LIQUID",
+                            1
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Settlement Mode",
+                        "description": "SettlementMode selects how offers fund the \"have\" side: - ESCROW: Escrow base have in the module at offer creation. - LIQUID: Do not escrow base; lock PFAND and settle from maker balance at take."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Make Offer",
-                "description": "Make an orderbook offer. Constraints and semantics: - have and want must be different denoms and strictly positive. - want denom must be a solid denom; liquid want is disallowed. - If have denom is liquid, the transaction locks PFAND per module params. - The keeper computes GCD(have.amount, want.amount) to establish integral   units for partial fills: unit_have = have/gcd, unit_want = want/gcd. - RemainingUnits starts at gcd and decreases as fills occur."
+                "description": "Make an orderbook offer. Constraints and semantics: - have and want must be different denoms and strictly positive. - Any denom allowed (including PFAND); settlement behavior controlled by settlement_mode. - If settlement_mode == LIQUID, the transaction locks PFAND per module params. - The keeper computes GCD(have.amount, want.amount) to establish integral   units for partial fills: unit_have = have/gcd, unit_want = want/gcd. - RemainingUnits starts at gcd and decreases as fills occur."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {

@@ -260,12 +260,8 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		}
 	}
 	if len(inputs) == 0 && len(outputs) == 0 {
-		// No settlement required after full netting and coverage: still burn any liquid outputs
-		// destined for the module.
-		logger.Info("MakeTrade no settlement required, burning module liquid")
-		if err := k.tradeBurnModuleLiquid(ctx, outputsByAddr); err != nil {
-			return nil, err
-		}
+		// No settlement required after full netting and coverage.
+		logger.Info("MakeTrade no settlement required")
 		traderOutputs = outputsByAddr[traderBech]
 		logger.Info("MakeTrade completed without settlement", "trader_outputs", traderOutputs)
 		return &whaleswapv1.MsgMakeTradeResponse{AmountOut: traderOutputs}, nil
@@ -286,9 +282,6 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 
 	if err := k.wsMoveCoins(ctx, inputs, outputs); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "move coins failed")
-	}
-	if err := k.tradeBurnModuleLiquid(ctx, outputsByAddr); err != nil {
-		return nil, err
 	}
 
 	// Module balance invariants (like MakeOffer and TakeOffer)

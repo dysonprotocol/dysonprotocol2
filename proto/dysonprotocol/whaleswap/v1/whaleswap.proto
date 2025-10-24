@@ -74,6 +74,8 @@ message OfferData {
   string remaining_units = 12; // sdk.Int string
   // pfand_locked is the PFAND coin locked for liquid-mode offers.
   cosmos.base.v1beta1.Coin pfand_locked = 13 [ (gogoproto.nullable) = false ];
+  // settlement_mode mirrors MsgMakeOffer.settlement_mode for this offer.
+  dysonprotocol.whaleswap.v1.SettlementMode settlement_mode = 14;
 }
 
 // Trade captures a batch of operations executed atomically in a single message.
@@ -126,12 +128,12 @@ message TradeMetrics {
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
-  // Sum of remaining_have over all open non-liquid offers
+  // Sum of remaining_have over all open escrow-mode offers
   repeated cosmos.base.v1beta1.Coin escrowed_offer_coins = 3 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
-  // Sum of pfand_locked over all open liquid-have offers
+  // Sum of pfand_locked over all open liquid-mode offers
   repeated cosmos.base.v1beta1.Coin escrowed_pfand = 4 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
@@ -141,15 +143,8 @@ message TradeMetrics {
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
-  // Solid backing for liquid supply: for each liquid denom
-  // whaleswap.dys/coins/X, this reports the required backing amount on solid
-  // denom X.
-  repeated cosmos.base.v1beta1.Coin escrowed_liquid_coins = 6 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
-  ];
   // Sum of fees_earned across all pools (accounted inside pool reserves)
-  repeated cosmos.base.v1beta1.Coin fees_earned = 7 [
+  repeated cosmos.base.v1beta1.Coin fees_earned = 6 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];

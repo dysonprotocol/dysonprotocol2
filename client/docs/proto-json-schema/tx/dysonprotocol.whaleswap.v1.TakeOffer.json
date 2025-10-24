@@ -56,7 +56,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Total coins the taker received across executed trades (usually have denom, base denom when offers use liquid have)."
+                        "description": "Total coins the taker received across executed trades (usually have denom)."
                     }
                 },
                 "additionalProperties": false,

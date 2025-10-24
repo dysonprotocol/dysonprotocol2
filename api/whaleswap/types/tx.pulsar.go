@@ -9083,2025 +9083,11 @@ func (x *fastReflection_MsgPoolSwapResponse) ProtoMethods() *protoiface.Methods 
 }
 
 var (
-	md_MsgConvertToLiquid        protoreflect.MessageDescriptor
-	fd_MsgConvertToLiquid_caller protoreflect.FieldDescriptor
-	fd_MsgConvertToLiquid_denom  protoreflect.FieldDescriptor
-	fd_MsgConvertToLiquid_amount protoreflect.FieldDescriptor
-)
-
-func init() {
-	file_dysonprotocol_whaleswap_v1_tx_proto_init()
-	md_MsgConvertToLiquid = File_dysonprotocol_whaleswap_v1_tx_proto.Messages().ByName("MsgConvertToLiquid")
-	fd_MsgConvertToLiquid_caller = md_MsgConvertToLiquid.Fields().ByName("caller")
-	fd_MsgConvertToLiquid_denom = md_MsgConvertToLiquid.Fields().ByName("denom")
-	fd_MsgConvertToLiquid_amount = md_MsgConvertToLiquid.Fields().ByName("amount")
-}
-
-var _ protoreflect.Message = (*fastReflection_MsgConvertToLiquid)(nil)
-
-type fastReflection_MsgConvertToLiquid MsgConvertToLiquid
-
-func (x *MsgConvertToLiquid) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgConvertToLiquid)(x)
-}
-
-func (x *MsgConvertToLiquid) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[15]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-var _fastReflection_MsgConvertToLiquid_messageType fastReflection_MsgConvertToLiquid_messageType
-var _ protoreflect.MessageType = fastReflection_MsgConvertToLiquid_messageType{}
-
-type fastReflection_MsgConvertToLiquid_messageType struct{}
-
-func (x fastReflection_MsgConvertToLiquid_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgConvertToLiquid)(nil)
-}
-func (x fastReflection_MsgConvertToLiquid_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgConvertToLiquid)
-}
-func (x fastReflection_MsgConvertToLiquid_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgConvertToLiquid
-}
-
-// Descriptor returns message descriptor, which contains only the protobuf
-// type information for the message.
-func (x *fastReflection_MsgConvertToLiquid) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgConvertToLiquid
-}
-
-// Type returns the message type, which encapsulates both Go and protobuf
-// type information. If the Go type information is not needed,
-// it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgConvertToLiquid) Type() protoreflect.MessageType {
-	return _fastReflection_MsgConvertToLiquid_messageType
-}
-
-// New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgConvertToLiquid) New() protoreflect.Message {
-	return new(fastReflection_MsgConvertToLiquid)
-}
-
-// Interface unwraps the message reflection interface and
-// returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgConvertToLiquid) Interface() protoreflect.ProtoMessage {
-	return (*MsgConvertToLiquid)(x)
-}
-
-// Range iterates over every populated field in an undefined order,
-// calling f for each field descriptor and value encountered.
-// Range returns immediately if f returns false.
-// While iterating, mutating operations may only be performed
-// on the current field descriptor.
-func (x *fastReflection_MsgConvertToLiquid) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.Caller != "" {
-		value := protoreflect.ValueOfString(x.Caller)
-		if !f(fd_MsgConvertToLiquid_caller, value) {
-			return
-		}
-	}
-	if x.Denom != "" {
-		value := protoreflect.ValueOfString(x.Denom)
-		if !f(fd_MsgConvertToLiquid_denom, value) {
-			return
-		}
-	}
-	if x.Amount != "" {
-		value := protoreflect.ValueOfString(x.Amount)
-		if !f(fd_MsgConvertToLiquid_amount, value) {
-			return
-		}
-	}
-}
-
-// Has reports whether a field is populated.
-//
-// Some fields have the property of nullability where it is possible to
-// distinguish between the default value of a field and whether the field
-// was explicitly populated with the default value. Singular message fields,
-// member fields of a oneof, and proto2 scalar fields are nullable. Such
-// fields are populated only if explicitly set.
-//
-// In other cases (aside from the nullable cases above),
-// a proto3 scalar field is populated if it contains a non-zero value, and
-// a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgConvertToLiquid) Has(fd protoreflect.FieldDescriptor) bool {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.caller":
-		return x.Caller != ""
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.denom":
-		return x.Denom != ""
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.amount":
-		return x.Amount != ""
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToLiquid"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToLiquid does not contain field %s", fd.FullName()))
-	}
-}
-
-// Clear clears the field such that a subsequent Has call reports false.
-//
-// Clearing an extension field clears both the extension type and value
-// associated with the given field number.
-//
-// Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToLiquid) Clear(fd protoreflect.FieldDescriptor) {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.caller":
-		x.Caller = ""
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.denom":
-		x.Denom = ""
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.amount":
-		x.Amount = ""
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToLiquid"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToLiquid does not contain field %s", fd.FullName()))
-	}
-}
-
-// Get retrieves the value for a field.
-//
-// For unpopulated scalars, it returns the default value, where
-// the default value of a bytes scalar is guaranteed to be a copy.
-// For unpopulated composite types, it returns an empty, read-only view
-// of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgConvertToLiquid) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
-	switch descriptor.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.caller":
-		value := x.Caller
-		return protoreflect.ValueOfString(value)
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.denom":
-		value := x.Denom
-		return protoreflect.ValueOfString(value)
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.amount":
-		value := x.Amount
-		return protoreflect.ValueOfString(value)
-	default:
-		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToLiquid"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToLiquid does not contain field %s", descriptor.FullName()))
-	}
-}
-
-// Set stores the value for a field.
-//
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType.
-// When setting a composite type, it is unspecified whether the stored value
-// aliases the source's memory in any way. If the composite value is an
-// empty, read-only value, then it panics.
-//
-// Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToLiquid) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.caller":
-		x.Caller = value.Interface().(string)
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.denom":
-		x.Denom = value.Interface().(string)
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.amount":
-		x.Amount = value.Interface().(string)
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToLiquid"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToLiquid does not contain field %s", fd.FullName()))
-	}
-}
-
-// Mutable returns a mutable reference to a composite type.
-//
-// If the field is unpopulated, it may allocate a composite value.
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType
-// if not already stored.
-// It panics if the field does not contain a composite type.
-//
-// Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToLiquid) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.caller":
-		panic(fmt.Errorf("field caller of message dysonprotocol.whaleswap.v1.MsgConvertToLiquid is not mutable"))
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.denom":
-		panic(fmt.Errorf("field denom of message dysonprotocol.whaleswap.v1.MsgConvertToLiquid is not mutable"))
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.amount":
-		panic(fmt.Errorf("field amount of message dysonprotocol.whaleswap.v1.MsgConvertToLiquid is not mutable"))
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToLiquid"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToLiquid does not contain field %s", fd.FullName()))
-	}
-}
-
-// NewField returns a new value that is assignable to the field
-// for the given descriptor. For scalars, this returns the default value.
-// For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgConvertToLiquid) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.caller":
-		return protoreflect.ValueOfString("")
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.denom":
-		return protoreflect.ValueOfString("")
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquid.amount":
-		return protoreflect.ValueOfString("")
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToLiquid"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToLiquid does not contain field %s", fd.FullName()))
-	}
-}
-
-// WhichOneof reports which field within the oneof is populated,
-// returning nil if none are populated.
-// It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgConvertToLiquid) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
-	switch d.FullName() {
-	default:
-		panic(fmt.Errorf("%s is not a oneof field in dysonprotocol.whaleswap.v1.MsgConvertToLiquid", d.FullName()))
-	}
-	panic("unreachable")
-}
-
-// GetUnknown retrieves the entire list of unknown fields.
-// The caller may only mutate the contents of the RawFields
-// if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgConvertToLiquid) GetUnknown() protoreflect.RawFields {
-	return x.unknownFields
-}
-
-// SetUnknown stores an entire list of unknown fields.
-// The raw fields must be syntactically valid according to the wire format.
-// An implementation may panic if this is not the case.
-// Once stored, the caller must not mutate the content of the RawFields.
-// An empty RawFields may be passed to clear the fields.
-//
-// SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToLiquid) SetUnknown(fields protoreflect.RawFields) {
-	x.unknownFields = fields
-}
-
-// IsValid reports whether the message is valid.
-//
-// An invalid message is an empty, read-only value.
-//
-// An invalid message often corresponds to a nil pointer of the concrete
-// message type, but the details are implementation dependent.
-// Validity is not part of the protobuf data model, and may not
-// be preserved in marshaling or other operations.
-func (x *fastReflection_MsgConvertToLiquid) IsValid() bool {
-	return x != nil
-}
-
-// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
-// This method may return nil.
-//
-// The returned methods type is identical to
-// "google.golang.org/protobuf/runtime/protoiface".Methods.
-// Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgConvertToLiquid) ProtoMethods() *protoiface.Methods {
-	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgConvertToLiquid)
-		if x == nil {
-			return protoiface.SizeOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Size:              0,
-			}
-		}
-		options := runtime.SizeInputToOptions(input)
-		_ = options
-		var n int
-		var l int
-		_ = l
-		l = len(x.Caller)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.Denom)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.Amount)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		if x.unknownFields != nil {
-			n += len(x.unknownFields)
-		}
-		return protoiface.SizeOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Size:              n,
-		}
-	}
-
-	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgConvertToLiquid)
-		if x == nil {
-			return protoiface.MarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Buf:               input.Buf,
-			}, nil
-		}
-		options := runtime.MarshalInputToOptions(input)
-		_ = options
-		size := options.Size(x)
-		dAtA := make([]byte, size)
-		i := len(dAtA)
-		_ = i
-		var l int
-		_ = l
-		if x.unknownFields != nil {
-			i -= len(x.unknownFields)
-			copy(dAtA[i:], x.unknownFields)
-		}
-		if len(x.Amount) > 0 {
-			i -= len(x.Amount)
-			copy(dAtA[i:], x.Amount)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Amount)))
-			i--
-			dAtA[i] = 0x1a
-		}
-		if len(x.Denom) > 0 {
-			i -= len(x.Denom)
-			copy(dAtA[i:], x.Denom)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Denom)))
-			i--
-			dAtA[i] = 0x12
-		}
-		if len(x.Caller) > 0 {
-			i -= len(x.Caller)
-			copy(dAtA[i:], x.Caller)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Caller)))
-			i--
-			dAtA[i] = 0xa
-		}
-		if input.Buf != nil {
-			input.Buf = append(input.Buf, dAtA...)
-		} else {
-			input.Buf = dAtA
-		}
-		return protoiface.MarshalOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Buf:               input.Buf,
-		}, nil
-	}
-	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgConvertToLiquid)
-		if x == nil {
-			return protoiface.UnmarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Flags:             input.Flags,
-			}, nil
-		}
-		options := runtime.UnmarshalInputToOptions(input)
-		_ = options
-		dAtA := input.Buf
-		l := len(dAtA)
-		iNdEx := 0
-		for iNdEx < l {
-			preIndex := iNdEx
-			var wire uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				wire |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			fieldNum := int32(wire >> 3)
-			wireType := int(wire & 0x7)
-			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgConvertToLiquid: wiretype end group for non-group")
-			}
-			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgConvertToLiquid: illegal tag %d (wire type %d)", fieldNum, wire)
-			}
-			switch fieldNum {
-			case 1:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Caller", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.Caller = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 2:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.Denom = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 3:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.Amount = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			default:
-				iNdEx = preIndex
-				skippy, err := runtime.Skip(dAtA[iNdEx:])
-				if err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				if (skippy < 0) || (iNdEx+skippy) < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if (iNdEx + skippy) > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if !options.DiscardUnknown {
-					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-				}
-				iNdEx += skippy
-			}
-		}
-
-		if iNdEx > l {
-			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-		}
-		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
-	}
-	return &protoiface.Methods{
-		NoUnkeyedLiterals: struct{}{},
-		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
-		Size:              size,
-		Marshal:           marshal,
-		Unmarshal:         unmarshal,
-		Merge:             nil,
-		CheckInitialized:  nil,
-	}
-}
-
-var (
-	md_MsgConvertToLiquidResponse              protoreflect.MessageDescriptor
-	fd_MsgConvertToLiquidResponse_liquid_denom protoreflect.FieldDescriptor
-	fd_MsgConvertToLiquidResponse_amount       protoreflect.FieldDescriptor
-)
-
-func init() {
-	file_dysonprotocol_whaleswap_v1_tx_proto_init()
-	md_MsgConvertToLiquidResponse = File_dysonprotocol_whaleswap_v1_tx_proto.Messages().ByName("MsgConvertToLiquidResponse")
-	fd_MsgConvertToLiquidResponse_liquid_denom = md_MsgConvertToLiquidResponse.Fields().ByName("liquid_denom")
-	fd_MsgConvertToLiquidResponse_amount = md_MsgConvertToLiquidResponse.Fields().ByName("amount")
-}
-
-var _ protoreflect.Message = (*fastReflection_MsgConvertToLiquidResponse)(nil)
-
-type fastReflection_MsgConvertToLiquidResponse MsgConvertToLiquidResponse
-
-func (x *MsgConvertToLiquidResponse) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgConvertToLiquidResponse)(x)
-}
-
-func (x *MsgConvertToLiquidResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[16]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-var _fastReflection_MsgConvertToLiquidResponse_messageType fastReflection_MsgConvertToLiquidResponse_messageType
-var _ protoreflect.MessageType = fastReflection_MsgConvertToLiquidResponse_messageType{}
-
-type fastReflection_MsgConvertToLiquidResponse_messageType struct{}
-
-func (x fastReflection_MsgConvertToLiquidResponse_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgConvertToLiquidResponse)(nil)
-}
-func (x fastReflection_MsgConvertToLiquidResponse_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgConvertToLiquidResponse)
-}
-func (x fastReflection_MsgConvertToLiquidResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgConvertToLiquidResponse
-}
-
-// Descriptor returns message descriptor, which contains only the protobuf
-// type information for the message.
-func (x *fastReflection_MsgConvertToLiquidResponse) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgConvertToLiquidResponse
-}
-
-// Type returns the message type, which encapsulates both Go and protobuf
-// type information. If the Go type information is not needed,
-// it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgConvertToLiquidResponse) Type() protoreflect.MessageType {
-	return _fastReflection_MsgConvertToLiquidResponse_messageType
-}
-
-// New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgConvertToLiquidResponse) New() protoreflect.Message {
-	return new(fastReflection_MsgConvertToLiquidResponse)
-}
-
-// Interface unwraps the message reflection interface and
-// returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgConvertToLiquidResponse) Interface() protoreflect.ProtoMessage {
-	return (*MsgConvertToLiquidResponse)(x)
-}
-
-// Range iterates over every populated field in an undefined order,
-// calling f for each field descriptor and value encountered.
-// Range returns immediately if f returns false.
-// While iterating, mutating operations may only be performed
-// on the current field descriptor.
-func (x *fastReflection_MsgConvertToLiquidResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.LiquidDenom != "" {
-		value := protoreflect.ValueOfString(x.LiquidDenom)
-		if !f(fd_MsgConvertToLiquidResponse_liquid_denom, value) {
-			return
-		}
-	}
-	if x.Amount != "" {
-		value := protoreflect.ValueOfString(x.Amount)
-		if !f(fd_MsgConvertToLiquidResponse_amount, value) {
-			return
-		}
-	}
-}
-
-// Has reports whether a field is populated.
-//
-// Some fields have the property of nullability where it is possible to
-// distinguish between the default value of a field and whether the field
-// was explicitly populated with the default value. Singular message fields,
-// member fields of a oneof, and proto2 scalar fields are nullable. Such
-// fields are populated only if explicitly set.
-//
-// In other cases (aside from the nullable cases above),
-// a proto3 scalar field is populated if it contains a non-zero value, and
-// a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgConvertToLiquidResponse) Has(fd protoreflect.FieldDescriptor) bool {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse.liquid_denom":
-		return x.LiquidDenom != ""
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse.amount":
-		return x.Amount != ""
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// Clear clears the field such that a subsequent Has call reports false.
-//
-// Clearing an extension field clears both the extension type and value
-// associated with the given field number.
-//
-// Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToLiquidResponse) Clear(fd protoreflect.FieldDescriptor) {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse.liquid_denom":
-		x.LiquidDenom = ""
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse.amount":
-		x.Amount = ""
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// Get retrieves the value for a field.
-//
-// For unpopulated scalars, it returns the default value, where
-// the default value of a bytes scalar is guaranteed to be a copy.
-// For unpopulated composite types, it returns an empty, read-only view
-// of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgConvertToLiquidResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
-	switch descriptor.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse.liquid_denom":
-		value := x.LiquidDenom
-		return protoreflect.ValueOfString(value)
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse.amount":
-		value := x.Amount
-		return protoreflect.ValueOfString(value)
-	default:
-		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse does not contain field %s", descriptor.FullName()))
-	}
-}
-
-// Set stores the value for a field.
-//
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType.
-// When setting a composite type, it is unspecified whether the stored value
-// aliases the source's memory in any way. If the composite value is an
-// empty, read-only value, then it panics.
-//
-// Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToLiquidResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse.liquid_denom":
-		x.LiquidDenom = value.Interface().(string)
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse.amount":
-		x.Amount = value.Interface().(string)
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// Mutable returns a mutable reference to a composite type.
-//
-// If the field is unpopulated, it may allocate a composite value.
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType
-// if not already stored.
-// It panics if the field does not contain a composite type.
-//
-// Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToLiquidResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse.liquid_denom":
-		panic(fmt.Errorf("field liquid_denom of message dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse is not mutable"))
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse.amount":
-		panic(fmt.Errorf("field amount of message dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse is not mutable"))
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// NewField returns a new value that is assignable to the field
-// for the given descriptor. For scalars, this returns the default value.
-// For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgConvertToLiquidResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse.liquid_denom":
-		return protoreflect.ValueOfString("")
-	case "dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse.amount":
-		return protoreflect.ValueOfString("")
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// WhichOneof reports which field within the oneof is populated,
-// returning nil if none are populated.
-// It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgConvertToLiquidResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
-	switch d.FullName() {
-	default:
-		panic(fmt.Errorf("%s is not a oneof field in dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse", d.FullName()))
-	}
-	panic("unreachable")
-}
-
-// GetUnknown retrieves the entire list of unknown fields.
-// The caller may only mutate the contents of the RawFields
-// if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgConvertToLiquidResponse) GetUnknown() protoreflect.RawFields {
-	return x.unknownFields
-}
-
-// SetUnknown stores an entire list of unknown fields.
-// The raw fields must be syntactically valid according to the wire format.
-// An implementation may panic if this is not the case.
-// Once stored, the caller must not mutate the content of the RawFields.
-// An empty RawFields may be passed to clear the fields.
-//
-// SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToLiquidResponse) SetUnknown(fields protoreflect.RawFields) {
-	x.unknownFields = fields
-}
-
-// IsValid reports whether the message is valid.
-//
-// An invalid message is an empty, read-only value.
-//
-// An invalid message often corresponds to a nil pointer of the concrete
-// message type, but the details are implementation dependent.
-// Validity is not part of the protobuf data model, and may not
-// be preserved in marshaling or other operations.
-func (x *fastReflection_MsgConvertToLiquidResponse) IsValid() bool {
-	return x != nil
-}
-
-// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
-// This method may return nil.
-//
-// The returned methods type is identical to
-// "google.golang.org/protobuf/runtime/protoiface".Methods.
-// Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgConvertToLiquidResponse) ProtoMethods() *protoiface.Methods {
-	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgConvertToLiquidResponse)
-		if x == nil {
-			return protoiface.SizeOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Size:              0,
-			}
-		}
-		options := runtime.SizeInputToOptions(input)
-		_ = options
-		var n int
-		var l int
-		_ = l
-		l = len(x.LiquidDenom)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.Amount)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		if x.unknownFields != nil {
-			n += len(x.unknownFields)
-		}
-		return protoiface.SizeOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Size:              n,
-		}
-	}
-
-	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgConvertToLiquidResponse)
-		if x == nil {
-			return protoiface.MarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Buf:               input.Buf,
-			}, nil
-		}
-		options := runtime.MarshalInputToOptions(input)
-		_ = options
-		size := options.Size(x)
-		dAtA := make([]byte, size)
-		i := len(dAtA)
-		_ = i
-		var l int
-		_ = l
-		if x.unknownFields != nil {
-			i -= len(x.unknownFields)
-			copy(dAtA[i:], x.unknownFields)
-		}
-		if len(x.Amount) > 0 {
-			i -= len(x.Amount)
-			copy(dAtA[i:], x.Amount)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Amount)))
-			i--
-			dAtA[i] = 0x12
-		}
-		if len(x.LiquidDenom) > 0 {
-			i -= len(x.LiquidDenom)
-			copy(dAtA[i:], x.LiquidDenom)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LiquidDenom)))
-			i--
-			dAtA[i] = 0xa
-		}
-		if input.Buf != nil {
-			input.Buf = append(input.Buf, dAtA...)
-		} else {
-			input.Buf = dAtA
-		}
-		return protoiface.MarshalOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Buf:               input.Buf,
-		}, nil
-	}
-	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgConvertToLiquidResponse)
-		if x == nil {
-			return protoiface.UnmarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Flags:             input.Flags,
-			}, nil
-		}
-		options := runtime.UnmarshalInputToOptions(input)
-		_ = options
-		dAtA := input.Buf
-		l := len(dAtA)
-		iNdEx := 0
-		for iNdEx < l {
-			preIndex := iNdEx
-			var wire uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				wire |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			fieldNum := int32(wire >> 3)
-			wireType := int(wire & 0x7)
-			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgConvertToLiquidResponse: wiretype end group for non-group")
-			}
-			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgConvertToLiquidResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-			}
-			switch fieldNum {
-			case 1:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LiquidDenom", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.LiquidDenom = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 2:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.Amount = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			default:
-				iNdEx = preIndex
-				skippy, err := runtime.Skip(dAtA[iNdEx:])
-				if err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				if (skippy < 0) || (iNdEx+skippy) < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if (iNdEx + skippy) > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if !options.DiscardUnknown {
-					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-				}
-				iNdEx += skippy
-			}
-		}
-
-		if iNdEx > l {
-			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-		}
-		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
-	}
-	return &protoiface.Methods{
-		NoUnkeyedLiterals: struct{}{},
-		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
-		Size:              size,
-		Marshal:           marshal,
-		Unmarshal:         unmarshal,
-		Merge:             nil,
-		CheckInitialized:  nil,
-	}
-}
-
-var (
-	md_MsgConvertToSolid              protoreflect.MessageDescriptor
-	fd_MsgConvertToSolid_caller       protoreflect.FieldDescriptor
-	fd_MsgConvertToSolid_liquid_denom protoreflect.FieldDescriptor
-	fd_MsgConvertToSolid_amount       protoreflect.FieldDescriptor
-)
-
-func init() {
-	file_dysonprotocol_whaleswap_v1_tx_proto_init()
-	md_MsgConvertToSolid = File_dysonprotocol_whaleswap_v1_tx_proto.Messages().ByName("MsgConvertToSolid")
-	fd_MsgConvertToSolid_caller = md_MsgConvertToSolid.Fields().ByName("caller")
-	fd_MsgConvertToSolid_liquid_denom = md_MsgConvertToSolid.Fields().ByName("liquid_denom")
-	fd_MsgConvertToSolid_amount = md_MsgConvertToSolid.Fields().ByName("amount")
-}
-
-var _ protoreflect.Message = (*fastReflection_MsgConvertToSolid)(nil)
-
-type fastReflection_MsgConvertToSolid MsgConvertToSolid
-
-func (x *MsgConvertToSolid) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgConvertToSolid)(x)
-}
-
-func (x *MsgConvertToSolid) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[17]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-var _fastReflection_MsgConvertToSolid_messageType fastReflection_MsgConvertToSolid_messageType
-var _ protoreflect.MessageType = fastReflection_MsgConvertToSolid_messageType{}
-
-type fastReflection_MsgConvertToSolid_messageType struct{}
-
-func (x fastReflection_MsgConvertToSolid_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgConvertToSolid)(nil)
-}
-func (x fastReflection_MsgConvertToSolid_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgConvertToSolid)
-}
-func (x fastReflection_MsgConvertToSolid_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgConvertToSolid
-}
-
-// Descriptor returns message descriptor, which contains only the protobuf
-// type information for the message.
-func (x *fastReflection_MsgConvertToSolid) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgConvertToSolid
-}
-
-// Type returns the message type, which encapsulates both Go and protobuf
-// type information. If the Go type information is not needed,
-// it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgConvertToSolid) Type() protoreflect.MessageType {
-	return _fastReflection_MsgConvertToSolid_messageType
-}
-
-// New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgConvertToSolid) New() protoreflect.Message {
-	return new(fastReflection_MsgConvertToSolid)
-}
-
-// Interface unwraps the message reflection interface and
-// returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgConvertToSolid) Interface() protoreflect.ProtoMessage {
-	return (*MsgConvertToSolid)(x)
-}
-
-// Range iterates over every populated field in an undefined order,
-// calling f for each field descriptor and value encountered.
-// Range returns immediately if f returns false.
-// While iterating, mutating operations may only be performed
-// on the current field descriptor.
-func (x *fastReflection_MsgConvertToSolid) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.Caller != "" {
-		value := protoreflect.ValueOfString(x.Caller)
-		if !f(fd_MsgConvertToSolid_caller, value) {
-			return
-		}
-	}
-	if x.LiquidDenom != "" {
-		value := protoreflect.ValueOfString(x.LiquidDenom)
-		if !f(fd_MsgConvertToSolid_liquid_denom, value) {
-			return
-		}
-	}
-	if x.Amount != "" {
-		value := protoreflect.ValueOfString(x.Amount)
-		if !f(fd_MsgConvertToSolid_amount, value) {
-			return
-		}
-	}
-}
-
-// Has reports whether a field is populated.
-//
-// Some fields have the property of nullability where it is possible to
-// distinguish between the default value of a field and whether the field
-// was explicitly populated with the default value. Singular message fields,
-// member fields of a oneof, and proto2 scalar fields are nullable. Such
-// fields are populated only if explicitly set.
-//
-// In other cases (aside from the nullable cases above),
-// a proto3 scalar field is populated if it contains a non-zero value, and
-// a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgConvertToSolid) Has(fd protoreflect.FieldDescriptor) bool {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.caller":
-		return x.Caller != ""
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.liquid_denom":
-		return x.LiquidDenom != ""
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.amount":
-		return x.Amount != ""
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToSolid"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToSolid does not contain field %s", fd.FullName()))
-	}
-}
-
-// Clear clears the field such that a subsequent Has call reports false.
-//
-// Clearing an extension field clears both the extension type and value
-// associated with the given field number.
-//
-// Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToSolid) Clear(fd protoreflect.FieldDescriptor) {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.caller":
-		x.Caller = ""
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.liquid_denom":
-		x.LiquidDenom = ""
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.amount":
-		x.Amount = ""
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToSolid"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToSolid does not contain field %s", fd.FullName()))
-	}
-}
-
-// Get retrieves the value for a field.
-//
-// For unpopulated scalars, it returns the default value, where
-// the default value of a bytes scalar is guaranteed to be a copy.
-// For unpopulated composite types, it returns an empty, read-only view
-// of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgConvertToSolid) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
-	switch descriptor.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.caller":
-		value := x.Caller
-		return protoreflect.ValueOfString(value)
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.liquid_denom":
-		value := x.LiquidDenom
-		return protoreflect.ValueOfString(value)
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.amount":
-		value := x.Amount
-		return protoreflect.ValueOfString(value)
-	default:
-		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToSolid"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToSolid does not contain field %s", descriptor.FullName()))
-	}
-}
-
-// Set stores the value for a field.
-//
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType.
-// When setting a composite type, it is unspecified whether the stored value
-// aliases the source's memory in any way. If the composite value is an
-// empty, read-only value, then it panics.
-//
-// Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToSolid) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.caller":
-		x.Caller = value.Interface().(string)
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.liquid_denom":
-		x.LiquidDenom = value.Interface().(string)
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.amount":
-		x.Amount = value.Interface().(string)
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToSolid"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToSolid does not contain field %s", fd.FullName()))
-	}
-}
-
-// Mutable returns a mutable reference to a composite type.
-//
-// If the field is unpopulated, it may allocate a composite value.
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType
-// if not already stored.
-// It panics if the field does not contain a composite type.
-//
-// Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToSolid) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.caller":
-		panic(fmt.Errorf("field caller of message dysonprotocol.whaleswap.v1.MsgConvertToSolid is not mutable"))
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.liquid_denom":
-		panic(fmt.Errorf("field liquid_denom of message dysonprotocol.whaleswap.v1.MsgConvertToSolid is not mutable"))
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.amount":
-		panic(fmt.Errorf("field amount of message dysonprotocol.whaleswap.v1.MsgConvertToSolid is not mutable"))
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToSolid"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToSolid does not contain field %s", fd.FullName()))
-	}
-}
-
-// NewField returns a new value that is assignable to the field
-// for the given descriptor. For scalars, this returns the default value.
-// For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgConvertToSolid) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.caller":
-		return protoreflect.ValueOfString("")
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.liquid_denom":
-		return protoreflect.ValueOfString("")
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolid.amount":
-		return protoreflect.ValueOfString("")
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToSolid"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToSolid does not contain field %s", fd.FullName()))
-	}
-}
-
-// WhichOneof reports which field within the oneof is populated,
-// returning nil if none are populated.
-// It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgConvertToSolid) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
-	switch d.FullName() {
-	default:
-		panic(fmt.Errorf("%s is not a oneof field in dysonprotocol.whaleswap.v1.MsgConvertToSolid", d.FullName()))
-	}
-	panic("unreachable")
-}
-
-// GetUnknown retrieves the entire list of unknown fields.
-// The caller may only mutate the contents of the RawFields
-// if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgConvertToSolid) GetUnknown() protoreflect.RawFields {
-	return x.unknownFields
-}
-
-// SetUnknown stores an entire list of unknown fields.
-// The raw fields must be syntactically valid according to the wire format.
-// An implementation may panic if this is not the case.
-// Once stored, the caller must not mutate the content of the RawFields.
-// An empty RawFields may be passed to clear the fields.
-//
-// SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToSolid) SetUnknown(fields protoreflect.RawFields) {
-	x.unknownFields = fields
-}
-
-// IsValid reports whether the message is valid.
-//
-// An invalid message is an empty, read-only value.
-//
-// An invalid message often corresponds to a nil pointer of the concrete
-// message type, but the details are implementation dependent.
-// Validity is not part of the protobuf data model, and may not
-// be preserved in marshaling or other operations.
-func (x *fastReflection_MsgConvertToSolid) IsValid() bool {
-	return x != nil
-}
-
-// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
-// This method may return nil.
-//
-// The returned methods type is identical to
-// "google.golang.org/protobuf/runtime/protoiface".Methods.
-// Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgConvertToSolid) ProtoMethods() *protoiface.Methods {
-	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgConvertToSolid)
-		if x == nil {
-			return protoiface.SizeOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Size:              0,
-			}
-		}
-		options := runtime.SizeInputToOptions(input)
-		_ = options
-		var n int
-		var l int
-		_ = l
-		l = len(x.Caller)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.LiquidDenom)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.Amount)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		if x.unknownFields != nil {
-			n += len(x.unknownFields)
-		}
-		return protoiface.SizeOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Size:              n,
-		}
-	}
-
-	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgConvertToSolid)
-		if x == nil {
-			return protoiface.MarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Buf:               input.Buf,
-			}, nil
-		}
-		options := runtime.MarshalInputToOptions(input)
-		_ = options
-		size := options.Size(x)
-		dAtA := make([]byte, size)
-		i := len(dAtA)
-		_ = i
-		var l int
-		_ = l
-		if x.unknownFields != nil {
-			i -= len(x.unknownFields)
-			copy(dAtA[i:], x.unknownFields)
-		}
-		if len(x.Amount) > 0 {
-			i -= len(x.Amount)
-			copy(dAtA[i:], x.Amount)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Amount)))
-			i--
-			dAtA[i] = 0x1a
-		}
-		if len(x.LiquidDenom) > 0 {
-			i -= len(x.LiquidDenom)
-			copy(dAtA[i:], x.LiquidDenom)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LiquidDenom)))
-			i--
-			dAtA[i] = 0x12
-		}
-		if len(x.Caller) > 0 {
-			i -= len(x.Caller)
-			copy(dAtA[i:], x.Caller)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Caller)))
-			i--
-			dAtA[i] = 0xa
-		}
-		if input.Buf != nil {
-			input.Buf = append(input.Buf, dAtA...)
-		} else {
-			input.Buf = dAtA
-		}
-		return protoiface.MarshalOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Buf:               input.Buf,
-		}, nil
-	}
-	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgConvertToSolid)
-		if x == nil {
-			return protoiface.UnmarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Flags:             input.Flags,
-			}, nil
-		}
-		options := runtime.UnmarshalInputToOptions(input)
-		_ = options
-		dAtA := input.Buf
-		l := len(dAtA)
-		iNdEx := 0
-		for iNdEx < l {
-			preIndex := iNdEx
-			var wire uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				wire |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			fieldNum := int32(wire >> 3)
-			wireType := int(wire & 0x7)
-			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgConvertToSolid: wiretype end group for non-group")
-			}
-			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgConvertToSolid: illegal tag %d (wire type %d)", fieldNum, wire)
-			}
-			switch fieldNum {
-			case 1:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Caller", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.Caller = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 2:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LiquidDenom", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.LiquidDenom = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 3:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.Amount = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			default:
-				iNdEx = preIndex
-				skippy, err := runtime.Skip(dAtA[iNdEx:])
-				if err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				if (skippy < 0) || (iNdEx+skippy) < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if (iNdEx + skippy) > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if !options.DiscardUnknown {
-					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-				}
-				iNdEx += skippy
-			}
-		}
-
-		if iNdEx > l {
-			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-		}
-		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
-	}
-	return &protoiface.Methods{
-		NoUnkeyedLiterals: struct{}{},
-		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
-		Size:              size,
-		Marshal:           marshal,
-		Unmarshal:         unmarshal,
-		Merge:             nil,
-		CheckInitialized:  nil,
-	}
-}
-
-var (
-	md_MsgConvertToSolidResponse            protoreflect.MessageDescriptor
-	fd_MsgConvertToSolidResponse_amount_out protoreflect.FieldDescriptor
-)
-
-func init() {
-	file_dysonprotocol_whaleswap_v1_tx_proto_init()
-	md_MsgConvertToSolidResponse = File_dysonprotocol_whaleswap_v1_tx_proto.Messages().ByName("MsgConvertToSolidResponse")
-	fd_MsgConvertToSolidResponse_amount_out = md_MsgConvertToSolidResponse.Fields().ByName("amount_out")
-}
-
-var _ protoreflect.Message = (*fastReflection_MsgConvertToSolidResponse)(nil)
-
-type fastReflection_MsgConvertToSolidResponse MsgConvertToSolidResponse
-
-func (x *MsgConvertToSolidResponse) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgConvertToSolidResponse)(x)
-}
-
-func (x *MsgConvertToSolidResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[18]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-var _fastReflection_MsgConvertToSolidResponse_messageType fastReflection_MsgConvertToSolidResponse_messageType
-var _ protoreflect.MessageType = fastReflection_MsgConvertToSolidResponse_messageType{}
-
-type fastReflection_MsgConvertToSolidResponse_messageType struct{}
-
-func (x fastReflection_MsgConvertToSolidResponse_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgConvertToSolidResponse)(nil)
-}
-func (x fastReflection_MsgConvertToSolidResponse_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgConvertToSolidResponse)
-}
-func (x fastReflection_MsgConvertToSolidResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgConvertToSolidResponse
-}
-
-// Descriptor returns message descriptor, which contains only the protobuf
-// type information for the message.
-func (x *fastReflection_MsgConvertToSolidResponse) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgConvertToSolidResponse
-}
-
-// Type returns the message type, which encapsulates both Go and protobuf
-// type information. If the Go type information is not needed,
-// it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgConvertToSolidResponse) Type() protoreflect.MessageType {
-	return _fastReflection_MsgConvertToSolidResponse_messageType
-}
-
-// New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgConvertToSolidResponse) New() protoreflect.Message {
-	return new(fastReflection_MsgConvertToSolidResponse)
-}
-
-// Interface unwraps the message reflection interface and
-// returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgConvertToSolidResponse) Interface() protoreflect.ProtoMessage {
-	return (*MsgConvertToSolidResponse)(x)
-}
-
-// Range iterates over every populated field in an undefined order,
-// calling f for each field descriptor and value encountered.
-// Range returns immediately if f returns false.
-// While iterating, mutating operations may only be performed
-// on the current field descriptor.
-func (x *fastReflection_MsgConvertToSolidResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.AmountOut != nil {
-		value := protoreflect.ValueOfMessage(x.AmountOut.ProtoReflect())
-		if !f(fd_MsgConvertToSolidResponse_amount_out, value) {
-			return
-		}
-	}
-}
-
-// Has reports whether a field is populated.
-//
-// Some fields have the property of nullability where it is possible to
-// distinguish between the default value of a field and whether the field
-// was explicitly populated with the default value. Singular message fields,
-// member fields of a oneof, and proto2 scalar fields are nullable. Such
-// fields are populated only if explicitly set.
-//
-// In other cases (aside from the nullable cases above),
-// a proto3 scalar field is populated if it contains a non-zero value, and
-// a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgConvertToSolidResponse) Has(fd protoreflect.FieldDescriptor) bool {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse.amount_out":
-		return x.AmountOut != nil
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// Clear clears the field such that a subsequent Has call reports false.
-//
-// Clearing an extension field clears both the extension type and value
-// associated with the given field number.
-//
-// Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToSolidResponse) Clear(fd protoreflect.FieldDescriptor) {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse.amount_out":
-		x.AmountOut = nil
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// Get retrieves the value for a field.
-//
-// For unpopulated scalars, it returns the default value, where
-// the default value of a bytes scalar is guaranteed to be a copy.
-// For unpopulated composite types, it returns an empty, read-only view
-// of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgConvertToSolidResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
-	switch descriptor.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse.amount_out":
-		value := x.AmountOut
-		return protoreflect.ValueOfMessage(value.ProtoReflect())
-	default:
-		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse does not contain field %s", descriptor.FullName()))
-	}
-}
-
-// Set stores the value for a field.
-//
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType.
-// When setting a composite type, it is unspecified whether the stored value
-// aliases the source's memory in any way. If the composite value is an
-// empty, read-only value, then it panics.
-//
-// Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToSolidResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse.amount_out":
-		x.AmountOut = value.Message().Interface().(*v1beta1.Coin)
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// Mutable returns a mutable reference to a composite type.
-//
-// If the field is unpopulated, it may allocate a composite value.
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType
-// if not already stored.
-// It panics if the field does not contain a composite type.
-//
-// Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToSolidResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse.amount_out":
-		if x.AmountOut == nil {
-			x.AmountOut = new(v1beta1.Coin)
-		}
-		return protoreflect.ValueOfMessage(x.AmountOut.ProtoReflect())
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// NewField returns a new value that is assignable to the field
-// for the given descriptor. For scalars, this returns the default value.
-// For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgConvertToSolidResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse.amount_out":
-		m := new(v1beta1.Coin)
-		return protoreflect.ValueOfMessage(m.ProtoReflect())
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// WhichOneof reports which field within the oneof is populated,
-// returning nil if none are populated.
-// It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgConvertToSolidResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
-	switch d.FullName() {
-	default:
-		panic(fmt.Errorf("%s is not a oneof field in dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse", d.FullName()))
-	}
-	panic("unreachable")
-}
-
-// GetUnknown retrieves the entire list of unknown fields.
-// The caller may only mutate the contents of the RawFields
-// if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgConvertToSolidResponse) GetUnknown() protoreflect.RawFields {
-	return x.unknownFields
-}
-
-// SetUnknown stores an entire list of unknown fields.
-// The raw fields must be syntactically valid according to the wire format.
-// An implementation may panic if this is not the case.
-// Once stored, the caller must not mutate the content of the RawFields.
-// An empty RawFields may be passed to clear the fields.
-//
-// SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgConvertToSolidResponse) SetUnknown(fields protoreflect.RawFields) {
-	x.unknownFields = fields
-}
-
-// IsValid reports whether the message is valid.
-//
-// An invalid message is an empty, read-only value.
-//
-// An invalid message often corresponds to a nil pointer of the concrete
-// message type, but the details are implementation dependent.
-// Validity is not part of the protobuf data model, and may not
-// be preserved in marshaling or other operations.
-func (x *fastReflection_MsgConvertToSolidResponse) IsValid() bool {
-	return x != nil
-}
-
-// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
-// This method may return nil.
-//
-// The returned methods type is identical to
-// "google.golang.org/protobuf/runtime/protoiface".Methods.
-// Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgConvertToSolidResponse) ProtoMethods() *protoiface.Methods {
-	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgConvertToSolidResponse)
-		if x == nil {
-			return protoiface.SizeOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Size:              0,
-			}
-		}
-		options := runtime.SizeInputToOptions(input)
-		_ = options
-		var n int
-		var l int
-		_ = l
-		if x.AmountOut != nil {
-			l = options.Size(x.AmountOut)
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		if x.unknownFields != nil {
-			n += len(x.unknownFields)
-		}
-		return protoiface.SizeOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Size:              n,
-		}
-	}
-
-	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgConvertToSolidResponse)
-		if x == nil {
-			return protoiface.MarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Buf:               input.Buf,
-			}, nil
-		}
-		options := runtime.MarshalInputToOptions(input)
-		_ = options
-		size := options.Size(x)
-		dAtA := make([]byte, size)
-		i := len(dAtA)
-		_ = i
-		var l int
-		_ = l
-		if x.unknownFields != nil {
-			i -= len(x.unknownFields)
-			copy(dAtA[i:], x.unknownFields)
-		}
-		if x.AmountOut != nil {
-			encoded, err := options.Marshal(x.AmountOut)
-			if err != nil {
-				return protoiface.MarshalOutput{
-					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-					Buf:               input.Buf,
-				}, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
-			i--
-			dAtA[i] = 0xa
-		}
-		if input.Buf != nil {
-			input.Buf = append(input.Buf, dAtA...)
-		} else {
-			input.Buf = dAtA
-		}
-		return protoiface.MarshalOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Buf:               input.Buf,
-		}, nil
-	}
-	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgConvertToSolidResponse)
-		if x == nil {
-			return protoiface.UnmarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Flags:             input.Flags,
-			}, nil
-		}
-		options := runtime.UnmarshalInputToOptions(input)
-		_ = options
-		dAtA := input.Buf
-		l := len(dAtA)
-		iNdEx := 0
-		for iNdEx < l {
-			preIndex := iNdEx
-			var wire uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				wire |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			fieldNum := int32(wire >> 3)
-			wireType := int(wire & 0x7)
-			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgConvertToSolidResponse: wiretype end group for non-group")
-			}
-			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgConvertToSolidResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-			}
-			switch fieldNum {
-			case 1:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AmountOut", wireType)
-				}
-				var msglen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					msglen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if msglen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + msglen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if x.AmountOut == nil {
-					x.AmountOut = &v1beta1.Coin{}
-				}
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.AmountOut); err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				iNdEx = postIndex
-			default:
-				iNdEx = preIndex
-				skippy, err := runtime.Skip(dAtA[iNdEx:])
-				if err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				if (skippy < 0) || (iNdEx+skippy) < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if (iNdEx + skippy) > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if !options.DiscardUnknown {
-					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-				}
-				iNdEx += skippy
-			}
-		}
-
-		if iNdEx > l {
-			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-		}
-		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
-	}
-	return &protoiface.Methods{
-		NoUnkeyedLiterals: struct{}{},
-		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
-		Size:              size,
-		Marshal:           marshal,
-		Unmarshal:         unmarshal,
-		Merge:             nil,
-		CheckInitialized:  nil,
-	}
-}
-
-var (
-	md_MsgMakeOffer       protoreflect.MessageDescriptor
-	fd_MsgMakeOffer_maker protoreflect.FieldDescriptor
-	fd_MsgMakeOffer_have  protoreflect.FieldDescriptor
-	fd_MsgMakeOffer_want  protoreflect.FieldDescriptor
+	md_MsgMakeOffer                 protoreflect.MessageDescriptor
+	fd_MsgMakeOffer_maker           protoreflect.FieldDescriptor
+	fd_MsgMakeOffer_have            protoreflect.FieldDescriptor
+	fd_MsgMakeOffer_want            protoreflect.FieldDescriptor
+	fd_MsgMakeOffer_settlement_mode protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -11110,6 +9096,7 @@ func init() {
 	fd_MsgMakeOffer_maker = md_MsgMakeOffer.Fields().ByName("maker")
 	fd_MsgMakeOffer_have = md_MsgMakeOffer.Fields().ByName("have")
 	fd_MsgMakeOffer_want = md_MsgMakeOffer.Fields().ByName("want")
+	fd_MsgMakeOffer_settlement_mode = md_MsgMakeOffer.Fields().ByName("settlement_mode")
 }
 
 var _ protoreflect.Message = (*fastReflection_MsgMakeOffer)(nil)
@@ -11121,7 +9108,7 @@ func (x *MsgMakeOffer) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgMakeOffer) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[19]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11195,6 +9182,12 @@ func (x *fastReflection_MsgMakeOffer) Range(f func(protoreflect.FieldDescriptor,
 			return
 		}
 	}
+	if x.SettlementMode != 0 {
+		value := protoreflect.ValueOfEnum((protoreflect.EnumNumber)(x.SettlementMode))
+		if !f(fd_MsgMakeOffer_settlement_mode, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -11216,6 +9209,8 @@ func (x *fastReflection_MsgMakeOffer) Has(fd protoreflect.FieldDescriptor) bool 
 		return x.Have != nil
 	case "dysonprotocol.whaleswap.v1.MsgMakeOffer.want":
 		return x.Want != nil
+	case "dysonprotocol.whaleswap.v1.MsgMakeOffer.settlement_mode":
+		return x.SettlementMode != 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgMakeOffer"))
@@ -11238,6 +9233,8 @@ func (x *fastReflection_MsgMakeOffer) Clear(fd protoreflect.FieldDescriptor) {
 		x.Have = nil
 	case "dysonprotocol.whaleswap.v1.MsgMakeOffer.want":
 		x.Want = nil
+	case "dysonprotocol.whaleswap.v1.MsgMakeOffer.settlement_mode":
+		x.SettlementMode = 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgMakeOffer"))
@@ -11263,6 +9260,9 @@ func (x *fastReflection_MsgMakeOffer) Get(descriptor protoreflect.FieldDescripto
 	case "dysonprotocol.whaleswap.v1.MsgMakeOffer.want":
 		value := x.Want
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.MsgMakeOffer.settlement_mode":
+		value := x.SettlementMode
+		return protoreflect.ValueOfEnum((protoreflect.EnumNumber)(value))
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgMakeOffer"))
@@ -11289,6 +9289,8 @@ func (x *fastReflection_MsgMakeOffer) Set(fd protoreflect.FieldDescriptor, value
 		x.Have = value.Message().Interface().(*v1beta1.Coin)
 	case "dysonprotocol.whaleswap.v1.MsgMakeOffer.want":
 		x.Want = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.MsgMakeOffer.settlement_mode":
+		x.SettlementMode = (SettlementMode)(value.Enum())
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgMakeOffer"))
@@ -11321,6 +9323,8 @@ func (x *fastReflection_MsgMakeOffer) Mutable(fd protoreflect.FieldDescriptor) p
 		return protoreflect.ValueOfMessage(x.Want.ProtoReflect())
 	case "dysonprotocol.whaleswap.v1.MsgMakeOffer.maker":
 		panic(fmt.Errorf("field maker of message dysonprotocol.whaleswap.v1.MsgMakeOffer is not mutable"))
+	case "dysonprotocol.whaleswap.v1.MsgMakeOffer.settlement_mode":
+		panic(fmt.Errorf("field settlement_mode of message dysonprotocol.whaleswap.v1.MsgMakeOffer is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgMakeOffer"))
@@ -11342,6 +9346,8 @@ func (x *fastReflection_MsgMakeOffer) NewField(fd protoreflect.FieldDescriptor) 
 	case "dysonprotocol.whaleswap.v1.MsgMakeOffer.want":
 		m := new(v1beta1.Coin)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.MsgMakeOffer.settlement_mode":
+		return protoreflect.ValueOfEnum(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgMakeOffer"))
@@ -11423,6 +9429,9 @@ func (x *fastReflection_MsgMakeOffer) ProtoMethods() *protoiface.Methods {
 			l = options.Size(x.Want)
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
+		if x.SettlementMode != 0 {
+			n += 1 + runtime.Sov(uint64(x.SettlementMode))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -11451,6 +9460,11 @@ func (x *fastReflection_MsgMakeOffer) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.SettlementMode != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.SettlementMode))
+			i--
+			dAtA[i] = 0x20
 		}
 		if x.Want != nil {
 			encoded, err := options.Marshal(x.Want)
@@ -11640,6 +9654,25 @@ func (x *fastReflection_MsgMakeOffer) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
 				iNdEx = postIndex
+			case 4:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SettlementMode", wireType)
+				}
+				x.SettlementMode = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.SettlementMode |= SettlementMode(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -11695,7 +9728,7 @@ func (x *MsgMakeOfferResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgMakeOfferResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[20]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12152,7 +10185,7 @@ func (x *MsgTakeOffer) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgTakeOffer) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[21]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12659,7 +10692,7 @@ func (x *TakeItem) ProtoReflect() protoreflect.Message {
 }
 
 func (x *TakeItem) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[22]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13229,7 +11262,7 @@ func (x *MsgTakeOfferResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgTakeOfferResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[23]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13759,7 +11792,7 @@ func (x *MsgCancelOffer) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgCancelOffer) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[24]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14223,7 +12256,7 @@ func (x *MsgCancelOfferResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgCancelOfferResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[25]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14585,7 +12618,7 @@ func (x *MsgOpenAuction) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgOpenAuction) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[26]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15144,7 +13177,7 @@ func (x *MsgOpenAuctionResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgOpenAuctionResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[27]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15550,7 +13583,7 @@ func (x *MsgRedeemAuction) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgRedeemAuction) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[28]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16014,7 +14047,7 @@ func (x *MsgRedeemAuctionResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgRedeemAuctionResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[29]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16374,7 +14407,7 @@ func (x *MsgUpdateParams) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgUpdateParams) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[30]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16869,7 +14902,7 @@ func (x *MsgUpdateParamsResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgUpdateParamsResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[31]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17219,6 +15252,56 @@ const (
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
+
+// SettlementMode selects how offers fund the "have" side:
+// - ESCROW: Escrow base have in the module at offer creation.
+// - LIQUID: Do not escrow base; lock PFAND and settle from maker balance at
+// take.
+type SettlementMode int32
+
+const (
+	SettlementMode_SETTLEMENT_ESCROW SettlementMode = 0
+	SettlementMode_SETTLEMENT_LIQUID SettlementMode = 1
+)
+
+// Enum value maps for SettlementMode.
+var (
+	SettlementMode_name = map[int32]string{
+		0: "SETTLEMENT_ESCROW",
+		1: "SETTLEMENT_LIQUID",
+	}
+	SettlementMode_value = map[string]int32{
+		"SETTLEMENT_ESCROW": 0,
+		"SETTLEMENT_LIQUID": 1,
+	}
+)
+
+func (x SettlementMode) Enum() *SettlementMode {
+	p := new(SettlementMode)
+	*p = x
+	return p
+}
+
+func (x SettlementMode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SettlementMode) Descriptor() protoreflect.EnumDescriptor {
+	return file_dysonprotocol_whaleswap_v1_tx_proto_enumTypes[0].Descriptor()
+}
+
+func (SettlementMode) Type() protoreflect.EnumType {
+	return &file_dysonprotocol_whaleswap_v1_tx_proto_enumTypes[0]
+}
+
+func (x SettlementMode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SettlementMode.Descriptor instead.
+func (SettlementMode) EnumDescriptor() ([]byte, []int) {
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{0}
+}
 
 // Create a pool.
 //
@@ -18013,194 +16096,14 @@ func (x *MsgPoolSwapResponse) GetAmountOut() []*v1beta1.Coin {
 	return nil
 }
 
-// Convert solid denom to liquid wrapper L(denom).
-type MsgConvertToLiquid struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Caller string `protobuf:"bytes,1,opt,name=caller,proto3" json:"caller,omitempty"`
-	Denom  string `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
-	Amount string `protobuf:"bytes,3,opt,name=amount,proto3" json:"amount,omitempty"` // sdk.Int string
-}
-
-func (x *MsgConvertToLiquid) Reset() {
-	*x = MsgConvertToLiquid{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[15]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MsgConvertToLiquid) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MsgConvertToLiquid) ProtoMessage() {}
-
-// Deprecated: Use MsgConvertToLiquid.ProtoReflect.Descriptor instead.
-func (*MsgConvertToLiquid) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *MsgConvertToLiquid) GetCaller() string {
-	if x != nil {
-		return x.Caller
-	}
-	return ""
-}
-
-func (x *MsgConvertToLiquid) GetDenom() string {
-	if x != nil {
-		return x.Denom
-	}
-	return ""
-}
-
-func (x *MsgConvertToLiquid) GetAmount() string {
-	if x != nil {
-		return x.Amount
-	}
-	return ""
-}
-
-type MsgConvertToLiquidResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	LiquidDenom string `protobuf:"bytes,1,opt,name=liquid_denom,json=liquidDenom,proto3" json:"liquid_denom,omitempty"`
-	Amount      string `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"` // sdk.Int string
-}
-
-func (x *MsgConvertToLiquidResponse) Reset() {
-	*x = MsgConvertToLiquidResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[16]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MsgConvertToLiquidResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MsgConvertToLiquidResponse) ProtoMessage() {}
-
-// Deprecated: Use MsgConvertToLiquidResponse.ProtoReflect.Descriptor instead.
-func (*MsgConvertToLiquidResponse) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *MsgConvertToLiquidResponse) GetLiquidDenom() string {
-	if x != nil {
-		return x.LiquidDenom
-	}
-	return ""
-}
-
-func (x *MsgConvertToLiquidResponse) GetAmount() string {
-	if x != nil {
-		return x.Amount
-	}
-	return ""
-}
-
-// Convert liquid denom L(denom) to solid denom.
-type MsgConvertToSolid struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Caller      string `protobuf:"bytes,1,opt,name=caller,proto3" json:"caller,omitempty"`
-	LiquidDenom string `protobuf:"bytes,2,opt,name=liquid_denom,json=liquidDenom,proto3" json:"liquid_denom,omitempty"`
-	Amount      string `protobuf:"bytes,3,opt,name=amount,proto3" json:"amount,omitempty"` // sdk.Int string
-}
-
-func (x *MsgConvertToSolid) Reset() {
-	*x = MsgConvertToSolid{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[17]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MsgConvertToSolid) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MsgConvertToSolid) ProtoMessage() {}
-
-// Deprecated: Use MsgConvertToSolid.ProtoReflect.Descriptor instead.
-func (*MsgConvertToSolid) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *MsgConvertToSolid) GetCaller() string {
-	if x != nil {
-		return x.Caller
-	}
-	return ""
-}
-
-func (x *MsgConvertToSolid) GetLiquidDenom() string {
-	if x != nil {
-		return x.LiquidDenom
-	}
-	return ""
-}
-
-func (x *MsgConvertToSolid) GetAmount() string {
-	if x != nil {
-		return x.Amount
-	}
-	return ""
-}
-
-type MsgConvertToSolidResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	AmountOut *v1beta1.Coin `protobuf:"bytes,1,opt,name=amount_out,json=amountOut,proto3" json:"amount_out,omitempty"`
-}
-
-func (x *MsgConvertToSolidResponse) Reset() {
-	*x = MsgConvertToSolidResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[18]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MsgConvertToSolidResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MsgConvertToSolidResponse) ProtoMessage() {}
-
-// Deprecated: Use MsgConvertToSolidResponse.ProtoReflect.Descriptor instead.
-func (*MsgConvertToSolidResponse) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *MsgConvertToSolidResponse) GetAmountOut() *v1beta1.Coin {
-	if x != nil {
-		return x.AmountOut
-	}
-	return nil
-}
-
 // Make an orderbook offer.
 //
 // Constraints and semantics:
-//   - have and want must be different denoms and strictly positive.
-//   - want denom must be a solid denom; liquid want is disallowed.
-//   - If have denom is liquid, the transaction locks PFAND per module params.
+// - have and want must be different denoms and strictly positive.
+// - Any denom allowed (including PFAND); settlement behavior controlled by
+// settlement_mode.
+// - If settlement_mode == LIQUID, the transaction locks PFAND per module
+// params.
 //   - The keeper computes GCD(have.amount, want.amount) to establish integral
 //     units for partial fills: unit_have = have/gcd, unit_want = want/gcd.
 //   - RemainingUnits starts at gcd and decreases as fills occur.
@@ -18212,12 +16115,15 @@ type MsgMakeOffer struct {
 	Maker string        `protobuf:"bytes,1,opt,name=maker,proto3" json:"maker,omitempty"`
 	Have  *v1beta1.Coin `protobuf:"bytes,2,opt,name=have,proto3" json:"have,omitempty"`
 	Want  *v1beta1.Coin `protobuf:"bytes,3,opt,name=want,proto3" json:"want,omitempty"`
+	// settlement_mode determines whether base have is escrowed (ESCROW) or
+	// PFAND is locked and settlement occurs from maker balance at take (LIQUID).
+	SettlementMode SettlementMode `protobuf:"varint,4,opt,name=settlement_mode,json=settlementMode,proto3,enum=dysonprotocol.whaleswap.v1.SettlementMode" json:"settlement_mode,omitempty"`
 }
 
 func (x *MsgMakeOffer) Reset() {
 	*x = MsgMakeOffer{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[19]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -18231,7 +16137,7 @@ func (*MsgMakeOffer) ProtoMessage() {}
 
 // Deprecated: Use MsgMakeOffer.ProtoReflect.Descriptor instead.
 func (*MsgMakeOffer) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{19}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *MsgMakeOffer) GetMaker() string {
@@ -18255,6 +16161,13 @@ func (x *MsgMakeOffer) GetWant() *v1beta1.Coin {
 	return nil
 }
 
+func (x *MsgMakeOffer) GetSettlementMode() SettlementMode {
+	if x != nil {
+		return x.SettlementMode
+	}
+	return SettlementMode_SETTLEMENT_ESCROW
+}
+
 type MsgMakeOfferResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -18266,7 +16179,7 @@ type MsgMakeOfferResponse struct {
 func (x *MsgMakeOfferResponse) Reset() {
 	*x = MsgMakeOfferResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[20]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -18280,7 +16193,7 @@ func (*MsgMakeOfferResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgMakeOfferResponse.ProtoReflect.Descriptor instead.
 func (*MsgMakeOfferResponse) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{20}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *MsgMakeOfferResponse) GetOfferId() uint64 {
@@ -18302,7 +16215,7 @@ type MsgTakeOffer struct {
 func (x *MsgTakeOffer) Reset() {
 	*x = MsgTakeOffer{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[21]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -18316,7 +16229,7 @@ func (*MsgTakeOffer) ProtoMessage() {}
 
 // Deprecated: Use MsgTakeOffer.ProtoReflect.Descriptor instead.
 func (*MsgTakeOffer) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{21}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *MsgTakeOffer) GetTaker() string {
@@ -18346,7 +16259,7 @@ type TakeItem struct {
 func (x *TakeItem) Reset() {
 	*x = TakeItem{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[22]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -18360,7 +16273,7 @@ func (*TakeItem) ProtoMessage() {}
 
 // Deprecated: Use TakeItem.ProtoReflect.Descriptor instead.
 func (*TakeItem) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{22}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *TakeItem) GetOfferId() uint64 {
@@ -18384,15 +16297,14 @@ type MsgTakeOfferResponse struct {
 
 	// Total coins the taker sent across executed trades (usually want denom).
 	Sent []*v1beta1.Coin `protobuf:"bytes,1,rep,name=sent,proto3" json:"sent,omitempty"`
-	// Total coins the taker received across executed trades (usually have denom,
-	// base denom when offers use liquid have).
+	// Total coins the taker received across executed trades (usually have denom).
 	Received []*v1beta1.Coin `protobuf:"bytes,2,rep,name=received,proto3" json:"received,omitempty"`
 }
 
 func (x *MsgTakeOfferResponse) Reset() {
 	*x = MsgTakeOfferResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[23]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -18406,7 +16318,7 @@ func (*MsgTakeOfferResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgTakeOfferResponse.ProtoReflect.Descriptor instead.
 func (*MsgTakeOfferResponse) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{23}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *MsgTakeOfferResponse) GetSent() []*v1beta1.Coin {
@@ -18423,12 +16335,11 @@ func (x *MsgTakeOfferResponse) GetReceived() []*v1beta1.Coin {
 	return nil
 }
 
-// Cancel an offer (maker or eligible third-party for liquid offers).
+// Cancel an offer (maker or eligible third-party for liquid-mode offers).
 //
 //   - Maker may always cancel open offers.
-//   - For liquid-have offers, a third party is eligible if the maker's balance of
-//     the liquid have denom drops below one unit_have, enabling recovery via
-//     PFAND.
+//   - For liquid-mode offers, a third party is eligible if the maker's balance of
+//     the have denom drops below one unit_have, enabling recovery via PFAND.
 type MsgCancelOffer struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -18441,7 +16352,7 @@ type MsgCancelOffer struct {
 func (x *MsgCancelOffer) Reset() {
 	*x = MsgCancelOffer{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[24]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -18455,7 +16366,7 @@ func (*MsgCancelOffer) ProtoMessage() {}
 
 // Deprecated: Use MsgCancelOffer.ProtoReflect.Descriptor instead.
 func (*MsgCancelOffer) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{24}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *MsgCancelOffer) GetCloser() string {
@@ -18481,7 +16392,7 @@ type MsgCancelOfferResponse struct {
 func (x *MsgCancelOfferResponse) Reset() {
 	*x = MsgCancelOfferResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[25]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -18495,10 +16406,10 @@ func (*MsgCancelOfferResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgCancelOfferResponse.ProtoReflect.Descriptor instead.
 func (*MsgCancelOfferResponse) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{25}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{21}
 }
 
-// Open an auction by escrowing exactly one solid denom amount.
+// Open an auction by escrowing exactly one coin amount.
 //
 //   - The escrowed `sell` coin is transferred from seller to module and marked by
 //     an NFT for redemption logic. `bid_denom` defines the quote asset.
@@ -18509,14 +16420,14 @@ type MsgOpenAuction struct {
 
 	Seller   string `protobuf:"bytes,1,opt,name=seller,proto3" json:"seller,omitempty"`
 	BidDenom string `protobuf:"bytes,2,opt,name=bid_denom,json=bidDenom,proto3" json:"bid_denom,omitempty"`
-	// Explicit solid sell coin to escrow from seller → module.
+	// Explicit sell coin to escrow from seller → module.
 	Sell *v1beta1.Coin `protobuf:"bytes,3,opt,name=sell,proto3" json:"sell,omitempty"`
 }
 
 func (x *MsgOpenAuction) Reset() {
 	*x = MsgOpenAuction{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[26]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -18530,7 +16441,7 @@ func (*MsgOpenAuction) ProtoMessage() {}
 
 // Deprecated: Use MsgOpenAuction.ProtoReflect.Descriptor instead.
 func (*MsgOpenAuction) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{26}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *MsgOpenAuction) GetSeller() string {
@@ -18565,7 +16476,7 @@ type MsgOpenAuctionResponse struct {
 func (x *MsgOpenAuctionResponse) Reset() {
 	*x = MsgOpenAuctionResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[27]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -18579,7 +16490,7 @@ func (*MsgOpenAuctionResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgOpenAuctionResponse.ProtoReflect.Descriptor instead.
 func (*MsgOpenAuctionResponse) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{27}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *MsgOpenAuctionResponse) GetAuctionId() uint64 {
@@ -18602,7 +16513,7 @@ type MsgRedeemAuction struct {
 func (x *MsgRedeemAuction) Reset() {
 	*x = MsgRedeemAuction{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[28]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -18616,7 +16527,7 @@ func (*MsgRedeemAuction) ProtoMessage() {}
 
 // Deprecated: Use MsgRedeemAuction.ProtoReflect.Descriptor instead.
 func (*MsgRedeemAuction) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{28}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *MsgRedeemAuction) GetCaller() string {
@@ -18642,7 +16553,7 @@ type MsgRedeemAuctionResponse struct {
 func (x *MsgRedeemAuctionResponse) Reset() {
 	*x = MsgRedeemAuctionResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[29]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -18656,7 +16567,7 @@ func (*MsgRedeemAuctionResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgRedeemAuctionResponse.ProtoReflect.Descriptor instead.
 func (*MsgRedeemAuctionResponse) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{29}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{25}
 }
 
 // UpdateParams is the Msg/UpdateParams request type.
@@ -18672,7 +16583,7 @@ type MsgUpdateParams struct {
 func (x *MsgUpdateParams) Reset() {
 	*x = MsgUpdateParams{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[30]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -18686,7 +16597,7 @@ func (*MsgUpdateParams) ProtoMessage() {}
 
 // Deprecated: Use MsgUpdateParams.ProtoReflect.Descriptor instead.
 func (*MsgUpdateParams) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{30}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *MsgUpdateParams) GetAuthority() string {
@@ -18712,7 +16623,7 @@ type MsgUpdateParamsResponse struct {
 func (x *MsgUpdateParamsResponse) Reset() {
 	*x = MsgUpdateParamsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[31]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -18726,7 +16637,7 @@ func (*MsgUpdateParamsResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgUpdateParamsResponse.ProtoReflect.Descriptor instead.
 func (*MsgUpdateParamsResponse) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{31}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{27}
 }
 
 var File_dysonprotocol_whaleswap_v1_tx_proto protoreflect.FileDescriptor
@@ -18952,226 +16863,191 @@ var file_dysonprotocol_whaleswap_v1_tx_proto_rawDesc = []byte{
 	0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x9a,
 	0xe7, 0xb0, 0x2a, 0x0c, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x5f, 0x63, 0x6f, 0x69, 0x6e, 0x73,
 	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x09, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x4f, 0x75, 0x74,
-	0x22, 0x81, 0x01, 0x0a, 0x12, 0x4d, 0x73, 0x67, 0x43, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x54,
-	0x6f, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x12, 0x30, 0x0a, 0x06, 0x63, 0x61, 0x6c, 0x6c, 0x65,
-	0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73,
-	0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e,
-	0x67, 0x52, 0x06, 0x63, 0x61, 0x6c, 0x6c, 0x65, 0x72, 0x12, 0x14, 0x0a, 0x05, 0x64, 0x65, 0x6e,
-	0x6f, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x12,
-	0x16, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x63, 0x61,
-	0x6c, 0x6c, 0x65, 0x72, 0x22, 0x57, 0x0a, 0x1a, 0x4d, 0x73, 0x67, 0x43, 0x6f, 0x6e, 0x76, 0x65,
-	0x72, 0x74, 0x54, 0x6f, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x5f, 0x64, 0x65, 0x6e,
-	0x6f, 0x6d, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64,
-	0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x8d, 0x01,
-	0x0a, 0x11, 0x4d, 0x73, 0x67, 0x43, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x54, 0x6f, 0x53, 0x6f,
-	0x6c, 0x69, 0x64, 0x12, 0x30, 0x0a, 0x06, 0x63, 0x61, 0x6c, 0x6c, 0x65, 0x72, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
-	0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x06, 0x63,
-	0x61, 0x6c, 0x6c, 0x65, 0x72, 0x12, 0x21, 0x0a, 0x0c, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x5f,
-	0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x6c, 0x69, 0x71,
-	0x75, 0x69, 0x64, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75,
-	0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74,
-	0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x63, 0x61, 0x6c, 0x6c, 0x65, 0x72, 0x22, 0x5b, 0x0a,
-	0x19, 0x4d, 0x73, 0x67, 0x43, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x54, 0x6f, 0x53, 0x6f, 0x6c,
-	0x69, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3e, 0x0a, 0x0a, 0x61, 0x6d,
-	0x6f, 0x75, 0x6e, 0x74, 0x5f, 0x6f, 0x75, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19,
-	0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62,
-	0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52,
-	0x09, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x4f, 0x75, 0x74, 0x22, 0xb4, 0x01, 0x0a, 0x0c, 0x4d,
-	0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x12, 0x2e, 0x0a, 0x05, 0x6d,
-	0x61, 0x6b, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14,
-	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74,
-	0x72, 0x69, 0x6e, 0x67, 0x52, 0x05, 0x6d, 0x61, 0x6b, 0x65, 0x72, 0x12, 0x33, 0x0a, 0x04, 0x68,
-	0x61, 0x76, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d,
-	0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e,
-	0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x04, 0x68, 0x61, 0x76, 0x65,
-	0x12, 0x33, 0x0a, 0x04, 0x77, 0x61, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19,
-	0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62,
-	0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52,
-	0x04, 0x77, 0x61, 0x6e, 0x74, 0x3a, 0x0a, 0x82, 0xe7, 0xb0, 0x2a, 0x05, 0x6d, 0x61, 0x6b, 0x65,
-	0x72, 0x22, 0x31, 0x0a, 0x14, 0x4d, 0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65, 0x4f, 0x66, 0x66, 0x65,
-	0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x6f, 0x66, 0x66,
-	0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x6f, 0x66, 0x66,
-	0x65, 0x72, 0x49, 0x64, 0x22, 0x8e, 0x01, 0x0a, 0x0c, 0x4d, 0x73, 0x67, 0x54, 0x61, 0x6b, 0x65,
-	0x4f, 0x66, 0x66, 0x65, 0x72, 0x12, 0x2e, 0x0a, 0x05, 0x74, 0x61, 0x6b, 0x65, 0x72, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
-	0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x05,
-	0x74, 0x61, 0x6b, 0x65, 0x72, 0x12, 0x42, 0x0a, 0x06, 0x74, 0x72, 0x61, 0x64, 0x65, 0x73, 0x18,
-	0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e,
-	0x76, 0x31, 0x2e, 0x54, 0x61, 0x6b, 0x65, 0x49, 0x74, 0x65, 0x6d, 0x42, 0x04, 0xc8, 0xde, 0x1f,
-	0x00, 0x52, 0x06, 0x74, 0x72, 0x61, 0x64, 0x65, 0x73, 0x3a, 0x0a, 0x82, 0xe7, 0xb0, 0x2a, 0x05,
-	0x74, 0x61, 0x6b, 0x65, 0x72, 0x22, 0x44, 0x0a, 0x08, 0x54, 0x61, 0x6b, 0x65, 0x49, 0x74, 0x65,
-	0x6d, 0x12, 0x19, 0x0a, 0x08, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x07, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x49, 0x64, 0x12, 0x1d, 0x0a, 0x0a,
-	0x74, 0x61, 0x6b, 0x65, 0x5f, 0x75, 0x6e, 0x69, 0x74, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x09, 0x74, 0x61, 0x6b, 0x65, 0x55, 0x6e, 0x69, 0x74, 0x73, 0x22, 0x8c, 0x02, 0x0a, 0x14,
-	0x4d, 0x73, 0x67, 0x54, 0x61, 0x6b, 0x65, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x75, 0x0a, 0x04, 0x73, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x03,
-	0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65,
-	0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x46, 0xc8,
-	0xde, 0x1f, 0x00, 0xaa, 0xdf, 0x1f, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d,
-	0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x9a,
-	0xe7, 0xb0, 0x2a, 0x0c, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x5f, 0x63, 0x6f, 0x69, 0x6e, 0x73,
-	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x04, 0x73, 0x65, 0x6e, 0x74, 0x12, 0x7d, 0x0a, 0x08, 0x72,
-	0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e,
+	0x22, 0x89, 0x02, 0x0a, 0x0c, 0x4d, 0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65, 0x4f, 0x66, 0x66, 0x65,
+	0x72, 0x12, 0x2e, 0x0a, 0x05, 0x6d, 0x61, 0x6b, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64,
+	0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x05, 0x6d, 0x61, 0x6b, 0x65,
+	0x72, 0x12, 0x33, 0x0a, 0x04, 0x68, 0x61, 0x76, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31,
+	0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00,
+	0x52, 0x04, 0x68, 0x61, 0x76, 0x65, 0x12, 0x33, 0x0a, 0x04, 0x77, 0x61, 0x6e, 0x74, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61,
+	0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42,
+	0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x04, 0x77, 0x61, 0x6e, 0x74, 0x12, 0x53, 0x0a, 0x0f, 0x73,
+	0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x0e, 0x32, 0x2a, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76,
+	0x31, 0x2e, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x4d, 0x6f, 0x64, 0x65,
+	0x52, 0x0e, 0x73, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x4d, 0x6f, 0x64, 0x65,
+	0x3a, 0x0a, 0x82, 0xe7, 0xb0, 0x2a, 0x05, 0x6d, 0x61, 0x6b, 0x65, 0x72, 0x22, 0x31, 0x0a, 0x14,
+	0x4d, 0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x5f, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x49, 0x64, 0x22,
+	0x8e, 0x01, 0x0a, 0x0c, 0x4d, 0x73, 0x67, 0x54, 0x61, 0x6b, 0x65, 0x4f, 0x66, 0x66, 0x65, 0x72,
+	0x12, 0x2e, 0x0a, 0x05, 0x74, 0x61, 0x6b, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42,
+	0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72,
+	0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x05, 0x74, 0x61, 0x6b, 0x65, 0x72,
+	0x12, 0x42, 0x0a, 0x06, 0x74, 0x72, 0x61, 0x64, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x24, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
+	0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x61,
+	0x6b, 0x65, 0x49, 0x74, 0x65, 0x6d, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06, 0x74, 0x72,
+	0x61, 0x64, 0x65, 0x73, 0x3a, 0x0a, 0x82, 0xe7, 0xb0, 0x2a, 0x05, 0x74, 0x61, 0x6b, 0x65, 0x72,
+	0x22, 0x44, 0x0a, 0x08, 0x54, 0x61, 0x6b, 0x65, 0x49, 0x74, 0x65, 0x6d, 0x12, 0x19, 0x0a, 0x08,
+	0x6f, 0x66, 0x66, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07,
+	0x6f, 0x66, 0x66, 0x65, 0x72, 0x49, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x74, 0x61, 0x6b, 0x65, 0x5f,
+	0x75, 0x6e, 0x69, 0x74, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x74, 0x61, 0x6b,
+	0x65, 0x55, 0x6e, 0x69, 0x74, 0x73, 0x22, 0x8c, 0x02, 0x0a, 0x14, 0x4d, 0x73, 0x67, 0x54, 0x61,
+	0x6b, 0x65, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x75, 0x0a, 0x04, 0x73, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e,
 	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65,
 	0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x46, 0xc8, 0xde, 0x1f, 0x00, 0xaa, 0xdf,
 	0x1f, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73,
 	0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74,
 	0x79, 0x70, 0x65, 0x73, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x9a, 0xe7, 0xb0, 0x2a, 0x0c, 0x6c,
 	0x65, 0x67, 0x61, 0x63, 0x79, 0x5f, 0x63, 0x6f, 0x69, 0x6e, 0x73, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
-	0x52, 0x08, 0x72, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x22, 0x6a, 0x0a, 0x0e, 0x4d, 0x73,
-	0x67, 0x43, 0x61, 0x6e, 0x63, 0x65, 0x6c, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x12, 0x30, 0x0a, 0x06,
-	0x63, 0x6c, 0x6f, 0x73, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4,
+	0x52, 0x04, 0x73, 0x65, 0x6e, 0x74, 0x12, 0x7d, 0x0a, 0x08, 0x72, 0x65, 0x63, 0x65, 0x69, 0x76,
+	0x65, 0x64, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43,
+	0x6f, 0x69, 0x6e, 0x42, 0x46, 0xc8, 0xde, 0x1f, 0x00, 0xaa, 0xdf, 0x1f, 0x28, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e,
+	0x43, 0x6f, 0x69, 0x6e, 0x73, 0x9a, 0xe7, 0xb0, 0x2a, 0x0c, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79,
+	0x5f, 0x63, 0x6f, 0x69, 0x6e, 0x73, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x08, 0x72, 0x65, 0x63,
+	0x65, 0x69, 0x76, 0x65, 0x64, 0x22, 0x6a, 0x0a, 0x0e, 0x4d, 0x73, 0x67, 0x43, 0x61, 0x6e, 0x63,
+	0x65, 0x6c, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x12, 0x30, 0x0a, 0x06, 0x63, 0x6c, 0x6f, 0x73, 0x65,
+	0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e,
+	0x67, 0x52, 0x06, 0x63, 0x6c, 0x6f, 0x73, 0x65, 0x72, 0x12, 0x19, 0x0a, 0x08, 0x6f, 0x66, 0x66,
+	0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x6f, 0x66, 0x66,
+	0x65, 0x72, 0x49, 0x64, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x63, 0x6c, 0x6f, 0x73, 0x65,
+	0x72, 0x22, 0x18, 0x0a, 0x16, 0x4d, 0x73, 0x67, 0x43, 0x61, 0x6e, 0x63, 0x65, 0x6c, 0x4f, 0x66,
+	0x66, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xa1, 0x01, 0x0a, 0x0e,
+	0x4d, 0x73, 0x67, 0x4f, 0x70, 0x65, 0x6e, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x30,
+	0x0a, 0x06, 0x73, 0x65, 0x6c, 0x6c, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18,
+	0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65,
+	0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x06, 0x73, 0x65, 0x6c, 0x6c, 0x65, 0x72,
+	0x12, 0x1b, 0x0a, 0x09, 0x62, 0x69, 0x64, 0x5f, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x08, 0x62, 0x69, 0x64, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12, 0x33, 0x0a,
+	0x04, 0x73, 0x65, 0x6c, 0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61,
+	0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x04, 0x73, 0x65,
+	0x6c, 0x6c, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6c, 0x6c, 0x65, 0x72, 0x22,
+	0x37, 0x0a, 0x16, 0x4d, 0x73, 0x67, 0x4f, 0x70, 0x65, 0x6e, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f,
+	0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x75, 0x63,
+	0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x61,
+	0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x22, 0x70, 0x0a, 0x10, 0x4d, 0x73, 0x67, 0x52,
+	0x65, 0x64, 0x65, 0x65, 0x6d, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x30, 0x0a, 0x06,
+	0x63, 0x61, 0x6c, 0x6c, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4,
 	0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
-	0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x06, 0x63, 0x6c, 0x6f, 0x73, 0x65, 0x72, 0x12, 0x19,
-	0x0a, 0x08, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x07, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x49, 0x64, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06,
-	0x63, 0x6c, 0x6f, 0x73, 0x65, 0x72, 0x22, 0x18, 0x0a, 0x16, 0x4d, 0x73, 0x67, 0x43, 0x61, 0x6e,
-	0x63, 0x65, 0x6c, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x22, 0xa1, 0x01, 0x0a, 0x0e, 0x4d, 0x73, 0x67, 0x4f, 0x70, 0x65, 0x6e, 0x41, 0x75, 0x63, 0x74,
-	0x69, 0x6f, 0x6e, 0x12, 0x30, 0x0a, 0x06, 0x73, 0x65, 0x6c, 0x6c, 0x65, 0x72, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
-	0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x06, 0x73,
-	0x65, 0x6c, 0x6c, 0x65, 0x72, 0x12, 0x1b, 0x0a, 0x09, 0x62, 0x69, 0x64, 0x5f, 0x64, 0x65, 0x6e,
-	0x6f, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x62, 0x69, 0x64, 0x44, 0x65, 0x6e,
-	0x6f, 0x6d, 0x12, 0x33, 0x0a, 0x04, 0x73, 0x65, 0x6c, 0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76,
-	0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f,
-	0x00, 0x52, 0x04, 0x73, 0x65, 0x6c, 0x6c, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65,
-	0x6c, 0x6c, 0x65, 0x72, 0x22, 0x37, 0x0a, 0x16, 0x4d, 0x73, 0x67, 0x4f, 0x70, 0x65, 0x6e, 0x41,
-	0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1d,
-	0x0a, 0x0a, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x04, 0x52, 0x09, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x22, 0x70, 0x0a,
-	0x10, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x64, 0x65, 0x65, 0x6d, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f,
-	0x6e, 0x12, 0x30, 0x0a, 0x06, 0x63, 0x61, 0x6c, 0x6c, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64,
-	0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x06, 0x63, 0x61, 0x6c,
-	0x6c, 0x65, 0x72, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69,
-	0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e,
-	0x49, 0x64, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x63, 0x61, 0x6c, 0x6c, 0x65, 0x72, 0x22,
-	0x1a, 0x0a, 0x18, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x64, 0x65, 0x65, 0x6d, 0x41, 0x75, 0x63, 0x74,
-	0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x9b, 0x01, 0x0a, 0x0f,
-	0x4d, 0x73, 0x67, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12,
-	0x36, 0x0a, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41,
-	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x09, 0x61, 0x75,
-	0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x12, 0x40, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d,
-	0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61,
-	0x70, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0x04, 0xc8, 0xde, 0x1f,
-	0x00, 0x52, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x3a, 0x0e, 0x82, 0xe7, 0xb0, 0x2a, 0x09,
-	0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x22, 0x19, 0x0a, 0x17, 0x4d, 0x73, 0x67,
-	0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x32, 0xbc, 0x0c, 0x0a, 0x03, 0x4d, 0x73, 0x67, 0x12, 0x6a, 0x0a, 0x0a,
-	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x50, 0x6f, 0x6f, 0x6c, 0x12, 0x29, 0x2e, 0x64, 0x79, 0x73,
-	0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65,
-	0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x72, 0x65, 0x61, 0x74,
-	0x65, 0x50, 0x6f, 0x6f, 0x6c, 0x1a, 0x31, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
+	0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x06, 0x63, 0x61, 0x6c, 0x6c, 0x65, 0x72, 0x12, 0x1d,
+	0x0a, 0x0a, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x09, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x3a, 0x0b, 0x82,
+	0xe7, 0xb0, 0x2a, 0x06, 0x63, 0x61, 0x6c, 0x6c, 0x65, 0x72, 0x22, 0x1a, 0x0a, 0x18, 0x4d, 0x73,
+	0x67, 0x52, 0x65, 0x64, 0x65, 0x65, 0x6d, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x9b, 0x01, 0x0a, 0x0f, 0x4d, 0x73, 0x67, 0x55, 0x70,
+	0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x36, 0x0a, 0x09, 0x61, 0x75,
+	0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2,
+	0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73,
+	0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69,
+	0x74, 0x79, 0x12, 0x40, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x22, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63,
+	0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e,
+	0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06, 0x70, 0x61,
+	0x72, 0x61, 0x6d, 0x73, 0x3a, 0x0e, 0x82, 0xe7, 0xb0, 0x2a, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f,
+	0x72, 0x69, 0x74, 0x79, 0x22, 0x19, 0x0a, 0x17, 0x4d, 0x73, 0x67, 0x55, 0x70, 0x64, 0x61, 0x74,
+	0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2a,
+	0x3e, 0x0a, 0x0e, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x4d, 0x6f, 0x64,
+	0x65, 0x12, 0x15, 0x0a, 0x11, 0x53, 0x45, 0x54, 0x54, 0x4c, 0x45, 0x4d, 0x45, 0x4e, 0x54, 0x5f,
+	0x45, 0x53, 0x43, 0x52, 0x4f, 0x57, 0x10, 0x00, 0x12, 0x15, 0x0a, 0x11, 0x53, 0x45, 0x54, 0x54,
+	0x4c, 0x45, 0x4d, 0x45, 0x4e, 0x54, 0x5f, 0x4c, 0x49, 0x51, 0x55, 0x49, 0x44, 0x10, 0x01, 0x32,
+	0xc9, 0x0a, 0x0a, 0x03, 0x4d, 0x73, 0x67, 0x12, 0x6a, 0x0a, 0x0a, 0x43, 0x72, 0x65, 0x61, 0x74,
+	0x65, 0x50, 0x6f, 0x6f, 0x6c, 0x12, 0x29, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e,
 	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x50, 0x6f, 0x6f, 0x6c,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x7c, 0x0a, 0x10, 0x55, 0x70, 0x64, 0x61,
-	0x74, 0x65, 0x50, 0x6f, 0x6f, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x2f, 0x2e, 0x64,
-	0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61,
-	0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x55, 0x70, 0x64,
-	0x61, 0x74, 0x65, 0x50, 0x6f, 0x6f, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x1a, 0x37, 0x2e,
-	0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68,
-	0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x55, 0x70,
-	0x64, 0x61, 0x74, 0x65, 0x50, 0x6f, 0x6f, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x70, 0x0a, 0x0c, 0x41, 0x64, 0x64, 0x4c, 0x69, 0x71,
-	0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x12, 0x2b, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70,
-	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64,
-	0x69, 0x74, 0x79, 0x1a, 0x33, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31,
-	0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x79, 0x0a, 0x0f, 0x52, 0x65, 0x6d, 0x6f,
-	0x76, 0x65, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x12, 0x2e, 0x2e, 0x64, 0x79,
-	0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c,
-	0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f,
-	0x76, 0x65, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x1a, 0x36, 0x2e, 0x64, 0x79,
-	0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c,
-	0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f,
-	0x76, 0x65, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x64, 0x0a, 0x08, 0x50, 0x6f, 0x6f, 0x6c, 0x53, 0x77, 0x61, 0x70, 0x12,
-	0x27, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e,
-	0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
-	0x50, 0x6f, 0x6f, 0x6c, 0x53, 0x77, 0x61, 0x70, 0x1a, 0x2f, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77,
-	0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x50, 0x6f, 0x6f, 0x6c, 0x53, 0x77, 0x61,
-	0x70, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x67, 0x0a, 0x09, 0x4d, 0x61, 0x6b,
-	0x65, 0x54, 0x72, 0x61, 0x64, 0x65, 0x12, 0x28, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70,
-	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65, 0x54, 0x72, 0x61, 0x64, 0x65,
-	0x1a, 0x30, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
+	0x1a, 0x31, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
 	0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73,
-	0x67, 0x4d, 0x61, 0x6b, 0x65, 0x54, 0x72, 0x61, 0x64, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x79, 0x0a, 0x0f, 0x43, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x54, 0x6f, 0x4c,
-	0x69, 0x71, 0x75, 0x69, 0x64, 0x12, 0x2e, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e,
-	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x54, 0x6f, 0x4c,
-	0x69, 0x71, 0x75, 0x69, 0x64, 0x1a, 0x36, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e,
-	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x54, 0x6f, 0x4c,
-	0x69, 0x71, 0x75, 0x69, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x76, 0x0a,
-	0x0e, 0x43, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x54, 0x6f, 0x53, 0x6f, 0x6c, 0x69, 0x64, 0x12,
-	0x2d, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e,
-	0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
-	0x43, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x54, 0x6f, 0x53, 0x6f, 0x6c, 0x69, 0x64, 0x1a, 0x35,
+	0x67, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x50, 0x6f, 0x6f, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x7c, 0x0a, 0x10, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x6f, 0x6f,
+	0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x2f, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61,
+	0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x6f,
+	0x6f, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x1a, 0x37, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77,
+	0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50,
+	0x6f, 0x6f, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x70, 0x0a, 0x0c, 0x41, 0x64, 0x64, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74,
+	0x79, 0x12, 0x2b, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f,
+	0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d,
+	0x73, 0x67, 0x41, 0x64, 0x64, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x1a, 0x33,
+	0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77,
+	0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41,
+	0x64, 0x64, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x79, 0x0a, 0x0f, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x4c, 0x69, 0x71,
+	0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x12, 0x2e, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70,
+	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x4c, 0x69, 0x71,
+	0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x1a, 0x36, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70,
+	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x4c, 0x69, 0x71,
+	0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x64,
+	0x0a, 0x08, 0x50, 0x6f, 0x6f, 0x6c, 0x53, 0x77, 0x61, 0x70, 0x12, 0x27, 0x2e, 0x64, 0x79, 0x73,
+	0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65,
+	0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x50, 0x6f, 0x6f, 0x6c, 0x53,
+	0x77, 0x61, 0x70, 0x1a, 0x2f, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31,
+	0x2e, 0x4d, 0x73, 0x67, 0x50, 0x6f, 0x6f, 0x6c, 0x53, 0x77, 0x61, 0x70, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x67, 0x0a, 0x09, 0x4d, 0x61, 0x6b, 0x65, 0x54, 0x72, 0x61, 0x64,
+	0x65, 0x12, 0x28, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f,
+	0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d,
+	0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65, 0x54, 0x72, 0x61, 0x64, 0x65, 0x1a, 0x30, 0x2e, 0x64, 0x79,
+	0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c,
+	0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65,
+	0x54, 0x72, 0x61, 0x64, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x67, 0x0a,
+	0x09, 0x4d, 0x61, 0x6b, 0x65, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x12, 0x28, 0x2e, 0x64, 0x79, 0x73,
+	0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65,
+	0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65, 0x4f,
+	0x66, 0x66, 0x65, 0x72, 0x1a, 0x30, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76,
+	0x31, 0x2e, 0x4d, 0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x67, 0x0a, 0x09, 0x54, 0x61, 0x6b, 0x65, 0x4f, 0x66,
+	0x66, 0x65, 0x72, 0x12, 0x28, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31,
+	0x2e, 0x4d, 0x73, 0x67, 0x54, 0x61, 0x6b, 0x65, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x1a, 0x30, 0x2e,
+	0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68,
+	0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x54, 0x61,
+	0x6b, 0x65, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x6d, 0x0a, 0x0b, 0x43, 0x61, 0x6e, 0x63, 0x65, 0x6c, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x12, 0x2a,
 	0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77,
 	0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43,
-	0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x54, 0x6f, 0x53, 0x6f, 0x6c, 0x69, 0x64, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x67, 0x0a, 0x09, 0x4d, 0x61, 0x6b, 0x65, 0x4f, 0x66, 0x66,
-	0x65, 0x72, 0x12, 0x28, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63,
-	0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e,
-	0x4d, 0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x1a, 0x30, 0x2e, 0x64,
-	0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61,
-	0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x4d, 0x61, 0x6b,
-	0x65, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x67,
-	0x0a, 0x09, 0x54, 0x61, 0x6b, 0x65, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x12, 0x28, 0x2e, 0x64, 0x79,
-	0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c,
-	0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x54, 0x61, 0x6b, 0x65,
-	0x4f, 0x66, 0x66, 0x65, 0x72, 0x1a, 0x30, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e,
-	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x54, 0x61, 0x6b, 0x65, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x6d, 0x0a, 0x0b, 0x43, 0x61, 0x6e, 0x63, 0x65,
-	0x6c, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x12, 0x2a, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70,
-	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x61, 0x6e, 0x63, 0x65, 0x6c, 0x4f, 0x66, 0x66,
-	0x65, 0x72, 0x1a, 0x32, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63,
-	0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e,
-	0x4d, 0x73, 0x67, 0x43, 0x61, 0x6e, 0x63, 0x65, 0x6c, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x6d, 0x0a, 0x0b, 0x4f, 0x70, 0x65, 0x6e, 0x41, 0x75,
-	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2a, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e,
-	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x4f, 0x70, 0x65, 0x6e, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f,
-	0x6e, 0x1a, 0x32, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f,
-	0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d,
-	0x73, 0x67, 0x4f, 0x70, 0x65, 0x6e, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x73, 0x0a, 0x0d, 0x52, 0x65, 0x64, 0x65, 0x65, 0x6d, 0x41,
-	0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2c, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70,
-	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x64, 0x65, 0x65, 0x6d, 0x41, 0x75, 0x63,
-	0x74, 0x69, 0x6f, 0x6e, 0x1a, 0x34, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76,
-	0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x64, 0x65, 0x65, 0x6d, 0x41, 0x75, 0x63, 0x74, 0x69,
-	0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x70, 0x0a, 0x0c, 0x55, 0x70,
-	0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x2b, 0x2e, 0x64, 0x79, 0x73,
+	0x61, 0x6e, 0x63, 0x65, 0x6c, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x1a, 0x32, 0x2e, 0x64, 0x79, 0x73,
 	0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65,
-	0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x55, 0x70, 0x64, 0x61, 0x74,
-	0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x1a, 0x33, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61,
-	0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61,
-	0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x1a, 0x05, 0x80, 0xe7,
-	0xb0, 0x2a, 0x01, 0x42, 0x25, 0x5a, 0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c, 0x65,
-	0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x61, 0x6e, 0x63, 0x65,
+	0x6c, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x6d,
+	0x0a, 0x0b, 0x4f, 0x70, 0x65, 0x6e, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2a, 0x2e,
+	0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68,
+	0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x4f, 0x70,
+	0x65, 0x6e, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x1a, 0x32, 0x2e, 0x64, 0x79, 0x73, 0x6f,
+	0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73,
+	0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x4f, 0x70, 0x65, 0x6e, 0x41, 0x75,
+	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x73, 0x0a,
+	0x0d, 0x52, 0x65, 0x64, 0x65, 0x65, 0x6d, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2c,
+	0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77,
+	0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52,
+	0x65, 0x64, 0x65, 0x65, 0x6d, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x1a, 0x34, 0x2e, 0x64,
+	0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61,
+	0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x64,
+	0x65, 0x65, 0x6d, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x12, 0x70, 0x0a, 0x0c, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61,
+	0x6d, 0x73, 0x12, 0x2b, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63,
+	0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e,
+	0x4d, 0x73, 0x67, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x1a,
+	0x33, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e,
+	0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
+	0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x1a, 0x05, 0x80, 0xe7, 0xb0, 0x2a, 0x01, 0x42, 0x25, 0x5a, 0x23, 0x64,
+	0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79, 0x70,
+	0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -19186,105 +17062,99 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP() []byte {
 	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescData
 }
 
-var file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
+var file_dysonprotocol_whaleswap_v1_tx_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
 var file_dysonprotocol_whaleswap_v1_tx_proto_goTypes = []interface{}{
-	(*MsgCreatePool)(nil),               // 0: dysonprotocol.whaleswap.v1.MsgCreatePool
-	(*MsgCreatePoolResponse)(nil),       // 1: dysonprotocol.whaleswap.v1.MsgCreatePoolResponse
-	(*MsgUpdatePoolConfig)(nil),         // 2: dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig
-	(*MsgUpdatePoolConfigResponse)(nil), // 3: dysonprotocol.whaleswap.v1.MsgUpdatePoolConfigResponse
-	(*MsgAddLiquidity)(nil),             // 4: dysonprotocol.whaleswap.v1.MsgAddLiquidity
-	(*MsgAddLiquidityResponse)(nil),     // 5: dysonprotocol.whaleswap.v1.MsgAddLiquidityResponse
-	(*MsgRemoveLiquidity)(nil),          // 6: dysonprotocol.whaleswap.v1.MsgRemoveLiquidity
-	(*MsgRemoveLiquidityResponse)(nil),  // 7: dysonprotocol.whaleswap.v1.MsgRemoveLiquidityResponse
-	(*MsgPoolSwap)(nil),                 // 8: dysonprotocol.whaleswap.v1.MsgPoolSwap
-	(*SwapLeg)(nil),                     // 9: dysonprotocol.whaleswap.v1.SwapLeg
-	(*TradeOperation)(nil),              // 10: dysonprotocol.whaleswap.v1.TradeOperation
-	(*AuctionRedeem)(nil),               // 11: dysonprotocol.whaleswap.v1.AuctionRedeem
-	(*MsgMakeTrade)(nil),                // 12: dysonprotocol.whaleswap.v1.MsgMakeTrade
-	(*MsgMakeTradeResponse)(nil),        // 13: dysonprotocol.whaleswap.v1.MsgMakeTradeResponse
-	(*MsgPoolSwapResponse)(nil),         // 14: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse
-	(*MsgConvertToLiquid)(nil),          // 15: dysonprotocol.whaleswap.v1.MsgConvertToLiquid
-	(*MsgConvertToLiquidResponse)(nil),  // 16: dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse
-	(*MsgConvertToSolid)(nil),           // 17: dysonprotocol.whaleswap.v1.MsgConvertToSolid
-	(*MsgConvertToSolidResponse)(nil),   // 18: dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse
-	(*MsgMakeOffer)(nil),                // 19: dysonprotocol.whaleswap.v1.MsgMakeOffer
-	(*MsgMakeOfferResponse)(nil),        // 20: dysonprotocol.whaleswap.v1.MsgMakeOfferResponse
-	(*MsgTakeOffer)(nil),                // 21: dysonprotocol.whaleswap.v1.MsgTakeOffer
-	(*TakeItem)(nil),                    // 22: dysonprotocol.whaleswap.v1.TakeItem
-	(*MsgTakeOfferResponse)(nil),        // 23: dysonprotocol.whaleswap.v1.MsgTakeOfferResponse
-	(*MsgCancelOffer)(nil),              // 24: dysonprotocol.whaleswap.v1.MsgCancelOffer
-	(*MsgCancelOfferResponse)(nil),      // 25: dysonprotocol.whaleswap.v1.MsgCancelOfferResponse
-	(*MsgOpenAuction)(nil),              // 26: dysonprotocol.whaleswap.v1.MsgOpenAuction
-	(*MsgOpenAuctionResponse)(nil),      // 27: dysonprotocol.whaleswap.v1.MsgOpenAuctionResponse
-	(*MsgRedeemAuction)(nil),            // 28: dysonprotocol.whaleswap.v1.MsgRedeemAuction
-	(*MsgRedeemAuctionResponse)(nil),    // 29: dysonprotocol.whaleswap.v1.MsgRedeemAuctionResponse
-	(*MsgUpdateParams)(nil),             // 30: dysonprotocol.whaleswap.v1.MsgUpdateParams
-	(*MsgUpdateParamsResponse)(nil),     // 31: dysonprotocol.whaleswap.v1.MsgUpdateParamsResponse
-	(*v1beta1.Coin)(nil),                // 32: cosmos.base.v1beta1.Coin
-	(*Params)(nil),                      // 33: dysonprotocol.whaleswap.v1.Params
+	(SettlementMode)(0),                 // 0: dysonprotocol.whaleswap.v1.SettlementMode
+	(*MsgCreatePool)(nil),               // 1: dysonprotocol.whaleswap.v1.MsgCreatePool
+	(*MsgCreatePoolResponse)(nil),       // 2: dysonprotocol.whaleswap.v1.MsgCreatePoolResponse
+	(*MsgUpdatePoolConfig)(nil),         // 3: dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig
+	(*MsgUpdatePoolConfigResponse)(nil), // 4: dysonprotocol.whaleswap.v1.MsgUpdatePoolConfigResponse
+	(*MsgAddLiquidity)(nil),             // 5: dysonprotocol.whaleswap.v1.MsgAddLiquidity
+	(*MsgAddLiquidityResponse)(nil),     // 6: dysonprotocol.whaleswap.v1.MsgAddLiquidityResponse
+	(*MsgRemoveLiquidity)(nil),          // 7: dysonprotocol.whaleswap.v1.MsgRemoveLiquidity
+	(*MsgRemoveLiquidityResponse)(nil),  // 8: dysonprotocol.whaleswap.v1.MsgRemoveLiquidityResponse
+	(*MsgPoolSwap)(nil),                 // 9: dysonprotocol.whaleswap.v1.MsgPoolSwap
+	(*SwapLeg)(nil),                     // 10: dysonprotocol.whaleswap.v1.SwapLeg
+	(*TradeOperation)(nil),              // 11: dysonprotocol.whaleswap.v1.TradeOperation
+	(*AuctionRedeem)(nil),               // 12: dysonprotocol.whaleswap.v1.AuctionRedeem
+	(*MsgMakeTrade)(nil),                // 13: dysonprotocol.whaleswap.v1.MsgMakeTrade
+	(*MsgMakeTradeResponse)(nil),        // 14: dysonprotocol.whaleswap.v1.MsgMakeTradeResponse
+	(*MsgPoolSwapResponse)(nil),         // 15: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse
+	(*MsgMakeOffer)(nil),                // 16: dysonprotocol.whaleswap.v1.MsgMakeOffer
+	(*MsgMakeOfferResponse)(nil),        // 17: dysonprotocol.whaleswap.v1.MsgMakeOfferResponse
+	(*MsgTakeOffer)(nil),                // 18: dysonprotocol.whaleswap.v1.MsgTakeOffer
+	(*TakeItem)(nil),                    // 19: dysonprotocol.whaleswap.v1.TakeItem
+	(*MsgTakeOfferResponse)(nil),        // 20: dysonprotocol.whaleswap.v1.MsgTakeOfferResponse
+	(*MsgCancelOffer)(nil),              // 21: dysonprotocol.whaleswap.v1.MsgCancelOffer
+	(*MsgCancelOfferResponse)(nil),      // 22: dysonprotocol.whaleswap.v1.MsgCancelOfferResponse
+	(*MsgOpenAuction)(nil),              // 23: dysonprotocol.whaleswap.v1.MsgOpenAuction
+	(*MsgOpenAuctionResponse)(nil),      // 24: dysonprotocol.whaleswap.v1.MsgOpenAuctionResponse
+	(*MsgRedeemAuction)(nil),            // 25: dysonprotocol.whaleswap.v1.MsgRedeemAuction
+	(*MsgRedeemAuctionResponse)(nil),    // 26: dysonprotocol.whaleswap.v1.MsgRedeemAuctionResponse
+	(*MsgUpdateParams)(nil),             // 27: dysonprotocol.whaleswap.v1.MsgUpdateParams
+	(*MsgUpdateParamsResponse)(nil),     // 28: dysonprotocol.whaleswap.v1.MsgUpdateParamsResponse
+	(*v1beta1.Coin)(nil),                // 29: cosmos.base.v1beta1.Coin
+	(*Params)(nil),                      // 30: dysonprotocol.whaleswap.v1.Params
 }
 var file_dysonprotocol_whaleswap_v1_tx_proto_depIdxs = []int32{
-	32, // 0: dysonprotocol.whaleswap.v1.MsgCreatePool.coins:type_name -> cosmos.base.v1beta1.Coin
-	32, // 1: dysonprotocol.whaleswap.v1.MsgCreatePool.min_price:type_name -> cosmos.base.v1beta1.Coin
-	32, // 2: dysonprotocol.whaleswap.v1.MsgCreatePool.max_price:type_name -> cosmos.base.v1beta1.Coin
-	32, // 3: dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig.min_price:type_name -> cosmos.base.v1beta1.Coin
-	32, // 4: dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig.max_price:type_name -> cosmos.base.v1beta1.Coin
-	32, // 5: dysonprotocol.whaleswap.v1.MsgAddLiquidity.amount1:type_name -> cosmos.base.v1beta1.Coin
-	32, // 6: dysonprotocol.whaleswap.v1.MsgAddLiquidity.amount2:type_name -> cosmos.base.v1beta1.Coin
-	32, // 7: dysonprotocol.whaleswap.v1.MsgRemoveLiquidityResponse.amount:type_name -> cosmos.base.v1beta1.Coin
-	32, // 8: dysonprotocol.whaleswap.v1.MsgPoolSwap.max_input:type_name -> cosmos.base.v1beta1.Coin
-	9,  // 9: dysonprotocol.whaleswap.v1.MsgPoolSwap.legs:type_name -> dysonprotocol.whaleswap.v1.SwapLeg
-	32, // 10: dysonprotocol.whaleswap.v1.MsgPoolSwap.min_output:type_name -> cosmos.base.v1beta1.Coin
-	32, // 11: dysonprotocol.whaleswap.v1.SwapLeg.swap_in:type_name -> cosmos.base.v1beta1.Coin
-	32, // 12: dysonprotocol.whaleswap.v1.SwapLeg.swap_out:type_name -> cosmos.base.v1beta1.Coin
-	9,  // 13: dysonprotocol.whaleswap.v1.TradeOperation.swap:type_name -> dysonprotocol.whaleswap.v1.SwapLeg
-	22, // 14: dysonprotocol.whaleswap.v1.TradeOperation.take:type_name -> dysonprotocol.whaleswap.v1.TakeItem
-	11, // 15: dysonprotocol.whaleswap.v1.TradeOperation.auction:type_name -> dysonprotocol.whaleswap.v1.AuctionRedeem
-	32, // 16: dysonprotocol.whaleswap.v1.TradeOperation.sent:type_name -> cosmos.base.v1beta1.Coin
-	32, // 17: dysonprotocol.whaleswap.v1.TradeOperation.received:type_name -> cosmos.base.v1beta1.Coin
-	32, // 18: dysonprotocol.whaleswap.v1.MsgMakeTrade.max_input:type_name -> cosmos.base.v1beta1.Coin
-	10, // 19: dysonprotocol.whaleswap.v1.MsgMakeTrade.operations:type_name -> dysonprotocol.whaleswap.v1.TradeOperation
-	32, // 20: dysonprotocol.whaleswap.v1.MsgMakeTrade.min_output:type_name -> cosmos.base.v1beta1.Coin
-	32, // 21: dysonprotocol.whaleswap.v1.MsgMakeTradeResponse.amount_out:type_name -> cosmos.base.v1beta1.Coin
-	32, // 22: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out:type_name -> cosmos.base.v1beta1.Coin
-	32, // 23: dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse.amount_out:type_name -> cosmos.base.v1beta1.Coin
-	32, // 24: dysonprotocol.whaleswap.v1.MsgMakeOffer.have:type_name -> cosmos.base.v1beta1.Coin
-	32, // 25: dysonprotocol.whaleswap.v1.MsgMakeOffer.want:type_name -> cosmos.base.v1beta1.Coin
-	22, // 26: dysonprotocol.whaleswap.v1.MsgTakeOffer.trades:type_name -> dysonprotocol.whaleswap.v1.TakeItem
-	32, // 27: dysonprotocol.whaleswap.v1.MsgTakeOfferResponse.sent:type_name -> cosmos.base.v1beta1.Coin
-	32, // 28: dysonprotocol.whaleswap.v1.MsgTakeOfferResponse.received:type_name -> cosmos.base.v1beta1.Coin
-	32, // 29: dysonprotocol.whaleswap.v1.MsgOpenAuction.sell:type_name -> cosmos.base.v1beta1.Coin
-	33, // 30: dysonprotocol.whaleswap.v1.MsgUpdateParams.params:type_name -> dysonprotocol.whaleswap.v1.Params
-	0,  // 31: dysonprotocol.whaleswap.v1.Msg.CreatePool:input_type -> dysonprotocol.whaleswap.v1.MsgCreatePool
-	2,  // 32: dysonprotocol.whaleswap.v1.Msg.UpdatePoolConfig:input_type -> dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig
-	4,  // 33: dysonprotocol.whaleswap.v1.Msg.AddLiquidity:input_type -> dysonprotocol.whaleswap.v1.MsgAddLiquidity
-	6,  // 34: dysonprotocol.whaleswap.v1.Msg.RemoveLiquidity:input_type -> dysonprotocol.whaleswap.v1.MsgRemoveLiquidity
-	8,  // 35: dysonprotocol.whaleswap.v1.Msg.PoolSwap:input_type -> dysonprotocol.whaleswap.v1.MsgPoolSwap
-	12, // 36: dysonprotocol.whaleswap.v1.Msg.MakeTrade:input_type -> dysonprotocol.whaleswap.v1.MsgMakeTrade
-	15, // 37: dysonprotocol.whaleswap.v1.Msg.ConvertToLiquid:input_type -> dysonprotocol.whaleswap.v1.MsgConvertToLiquid
-	17, // 38: dysonprotocol.whaleswap.v1.Msg.ConvertToSolid:input_type -> dysonprotocol.whaleswap.v1.MsgConvertToSolid
-	19, // 39: dysonprotocol.whaleswap.v1.Msg.MakeOffer:input_type -> dysonprotocol.whaleswap.v1.MsgMakeOffer
-	21, // 40: dysonprotocol.whaleswap.v1.Msg.TakeOffer:input_type -> dysonprotocol.whaleswap.v1.MsgTakeOffer
-	24, // 41: dysonprotocol.whaleswap.v1.Msg.CancelOffer:input_type -> dysonprotocol.whaleswap.v1.MsgCancelOffer
-	26, // 42: dysonprotocol.whaleswap.v1.Msg.OpenAuction:input_type -> dysonprotocol.whaleswap.v1.MsgOpenAuction
-	28, // 43: dysonprotocol.whaleswap.v1.Msg.RedeemAuction:input_type -> dysonprotocol.whaleswap.v1.MsgRedeemAuction
-	30, // 44: dysonprotocol.whaleswap.v1.Msg.UpdateParams:input_type -> dysonprotocol.whaleswap.v1.MsgUpdateParams
-	1,  // 45: dysonprotocol.whaleswap.v1.Msg.CreatePool:output_type -> dysonprotocol.whaleswap.v1.MsgCreatePoolResponse
-	3,  // 46: dysonprotocol.whaleswap.v1.Msg.UpdatePoolConfig:output_type -> dysonprotocol.whaleswap.v1.MsgUpdatePoolConfigResponse
-	5,  // 47: dysonprotocol.whaleswap.v1.Msg.AddLiquidity:output_type -> dysonprotocol.whaleswap.v1.MsgAddLiquidityResponse
-	7,  // 48: dysonprotocol.whaleswap.v1.Msg.RemoveLiquidity:output_type -> dysonprotocol.whaleswap.v1.MsgRemoveLiquidityResponse
-	14, // 49: dysonprotocol.whaleswap.v1.Msg.PoolSwap:output_type -> dysonprotocol.whaleswap.v1.MsgPoolSwapResponse
-	13, // 50: dysonprotocol.whaleswap.v1.Msg.MakeTrade:output_type -> dysonprotocol.whaleswap.v1.MsgMakeTradeResponse
-	16, // 51: dysonprotocol.whaleswap.v1.Msg.ConvertToLiquid:output_type -> dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse
-	18, // 52: dysonprotocol.whaleswap.v1.Msg.ConvertToSolid:output_type -> dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse
-	20, // 53: dysonprotocol.whaleswap.v1.Msg.MakeOffer:output_type -> dysonprotocol.whaleswap.v1.MsgMakeOfferResponse
-	23, // 54: dysonprotocol.whaleswap.v1.Msg.TakeOffer:output_type -> dysonprotocol.whaleswap.v1.MsgTakeOfferResponse
-	25, // 55: dysonprotocol.whaleswap.v1.Msg.CancelOffer:output_type -> dysonprotocol.whaleswap.v1.MsgCancelOfferResponse
-	27, // 56: dysonprotocol.whaleswap.v1.Msg.OpenAuction:output_type -> dysonprotocol.whaleswap.v1.MsgOpenAuctionResponse
-	29, // 57: dysonprotocol.whaleswap.v1.Msg.RedeemAuction:output_type -> dysonprotocol.whaleswap.v1.MsgRedeemAuctionResponse
-	31, // 58: dysonprotocol.whaleswap.v1.Msg.UpdateParams:output_type -> dysonprotocol.whaleswap.v1.MsgUpdateParamsResponse
-	45, // [45:59] is the sub-list for method output_type
-	31, // [31:45] is the sub-list for method input_type
+	29, // 0: dysonprotocol.whaleswap.v1.MsgCreatePool.coins:type_name -> cosmos.base.v1beta1.Coin
+	29, // 1: dysonprotocol.whaleswap.v1.MsgCreatePool.min_price:type_name -> cosmos.base.v1beta1.Coin
+	29, // 2: dysonprotocol.whaleswap.v1.MsgCreatePool.max_price:type_name -> cosmos.base.v1beta1.Coin
+	29, // 3: dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig.min_price:type_name -> cosmos.base.v1beta1.Coin
+	29, // 4: dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig.max_price:type_name -> cosmos.base.v1beta1.Coin
+	29, // 5: dysonprotocol.whaleswap.v1.MsgAddLiquidity.amount1:type_name -> cosmos.base.v1beta1.Coin
+	29, // 6: dysonprotocol.whaleswap.v1.MsgAddLiquidity.amount2:type_name -> cosmos.base.v1beta1.Coin
+	29, // 7: dysonprotocol.whaleswap.v1.MsgRemoveLiquidityResponse.amount:type_name -> cosmos.base.v1beta1.Coin
+	29, // 8: dysonprotocol.whaleswap.v1.MsgPoolSwap.max_input:type_name -> cosmos.base.v1beta1.Coin
+	10, // 9: dysonprotocol.whaleswap.v1.MsgPoolSwap.legs:type_name -> dysonprotocol.whaleswap.v1.SwapLeg
+	29, // 10: dysonprotocol.whaleswap.v1.MsgPoolSwap.min_output:type_name -> cosmos.base.v1beta1.Coin
+	29, // 11: dysonprotocol.whaleswap.v1.SwapLeg.swap_in:type_name -> cosmos.base.v1beta1.Coin
+	29, // 12: dysonprotocol.whaleswap.v1.SwapLeg.swap_out:type_name -> cosmos.base.v1beta1.Coin
+	10, // 13: dysonprotocol.whaleswap.v1.TradeOperation.swap:type_name -> dysonprotocol.whaleswap.v1.SwapLeg
+	19, // 14: dysonprotocol.whaleswap.v1.TradeOperation.take:type_name -> dysonprotocol.whaleswap.v1.TakeItem
+	12, // 15: dysonprotocol.whaleswap.v1.TradeOperation.auction:type_name -> dysonprotocol.whaleswap.v1.AuctionRedeem
+	29, // 16: dysonprotocol.whaleswap.v1.TradeOperation.sent:type_name -> cosmos.base.v1beta1.Coin
+	29, // 17: dysonprotocol.whaleswap.v1.TradeOperation.received:type_name -> cosmos.base.v1beta1.Coin
+	29, // 18: dysonprotocol.whaleswap.v1.MsgMakeTrade.max_input:type_name -> cosmos.base.v1beta1.Coin
+	11, // 19: dysonprotocol.whaleswap.v1.MsgMakeTrade.operations:type_name -> dysonprotocol.whaleswap.v1.TradeOperation
+	29, // 20: dysonprotocol.whaleswap.v1.MsgMakeTrade.min_output:type_name -> cosmos.base.v1beta1.Coin
+	29, // 21: dysonprotocol.whaleswap.v1.MsgMakeTradeResponse.amount_out:type_name -> cosmos.base.v1beta1.Coin
+	29, // 22: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out:type_name -> cosmos.base.v1beta1.Coin
+	29, // 23: dysonprotocol.whaleswap.v1.MsgMakeOffer.have:type_name -> cosmos.base.v1beta1.Coin
+	29, // 24: dysonprotocol.whaleswap.v1.MsgMakeOffer.want:type_name -> cosmos.base.v1beta1.Coin
+	0,  // 25: dysonprotocol.whaleswap.v1.MsgMakeOffer.settlement_mode:type_name -> dysonprotocol.whaleswap.v1.SettlementMode
+	19, // 26: dysonprotocol.whaleswap.v1.MsgTakeOffer.trades:type_name -> dysonprotocol.whaleswap.v1.TakeItem
+	29, // 27: dysonprotocol.whaleswap.v1.MsgTakeOfferResponse.sent:type_name -> cosmos.base.v1beta1.Coin
+	29, // 28: dysonprotocol.whaleswap.v1.MsgTakeOfferResponse.received:type_name -> cosmos.base.v1beta1.Coin
+	29, // 29: dysonprotocol.whaleswap.v1.MsgOpenAuction.sell:type_name -> cosmos.base.v1beta1.Coin
+	30, // 30: dysonprotocol.whaleswap.v1.MsgUpdateParams.params:type_name -> dysonprotocol.whaleswap.v1.Params
+	1,  // 31: dysonprotocol.whaleswap.v1.Msg.CreatePool:input_type -> dysonprotocol.whaleswap.v1.MsgCreatePool
+	3,  // 32: dysonprotocol.whaleswap.v1.Msg.UpdatePoolConfig:input_type -> dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig
+	5,  // 33: dysonprotocol.whaleswap.v1.Msg.AddLiquidity:input_type -> dysonprotocol.whaleswap.v1.MsgAddLiquidity
+	7,  // 34: dysonprotocol.whaleswap.v1.Msg.RemoveLiquidity:input_type -> dysonprotocol.whaleswap.v1.MsgRemoveLiquidity
+	9,  // 35: dysonprotocol.whaleswap.v1.Msg.PoolSwap:input_type -> dysonprotocol.whaleswap.v1.MsgPoolSwap
+	13, // 36: dysonprotocol.whaleswap.v1.Msg.MakeTrade:input_type -> dysonprotocol.whaleswap.v1.MsgMakeTrade
+	16, // 37: dysonprotocol.whaleswap.v1.Msg.MakeOffer:input_type -> dysonprotocol.whaleswap.v1.MsgMakeOffer
+	18, // 38: dysonprotocol.whaleswap.v1.Msg.TakeOffer:input_type -> dysonprotocol.whaleswap.v1.MsgTakeOffer
+	21, // 39: dysonprotocol.whaleswap.v1.Msg.CancelOffer:input_type -> dysonprotocol.whaleswap.v1.MsgCancelOffer
+	23, // 40: dysonprotocol.whaleswap.v1.Msg.OpenAuction:input_type -> dysonprotocol.whaleswap.v1.MsgOpenAuction
+	25, // 41: dysonprotocol.whaleswap.v1.Msg.RedeemAuction:input_type -> dysonprotocol.whaleswap.v1.MsgRedeemAuction
+	27, // 42: dysonprotocol.whaleswap.v1.Msg.UpdateParams:input_type -> dysonprotocol.whaleswap.v1.MsgUpdateParams
+	2,  // 43: dysonprotocol.whaleswap.v1.Msg.CreatePool:output_type -> dysonprotocol.whaleswap.v1.MsgCreatePoolResponse
+	4,  // 44: dysonprotocol.whaleswap.v1.Msg.UpdatePoolConfig:output_type -> dysonprotocol.whaleswap.v1.MsgUpdatePoolConfigResponse
+	6,  // 45: dysonprotocol.whaleswap.v1.Msg.AddLiquidity:output_type -> dysonprotocol.whaleswap.v1.MsgAddLiquidityResponse
+	8,  // 46: dysonprotocol.whaleswap.v1.Msg.RemoveLiquidity:output_type -> dysonprotocol.whaleswap.v1.MsgRemoveLiquidityResponse
+	15, // 47: dysonprotocol.whaleswap.v1.Msg.PoolSwap:output_type -> dysonprotocol.whaleswap.v1.MsgPoolSwapResponse
+	14, // 48: dysonprotocol.whaleswap.v1.Msg.MakeTrade:output_type -> dysonprotocol.whaleswap.v1.MsgMakeTradeResponse
+	17, // 49: dysonprotocol.whaleswap.v1.Msg.MakeOffer:output_type -> dysonprotocol.whaleswap.v1.MsgMakeOfferResponse
+	20, // 50: dysonprotocol.whaleswap.v1.Msg.TakeOffer:output_type -> dysonprotocol.whaleswap.v1.MsgTakeOfferResponse
+	22, // 51: dysonprotocol.whaleswap.v1.Msg.CancelOffer:output_type -> dysonprotocol.whaleswap.v1.MsgCancelOfferResponse
+	24, // 52: dysonprotocol.whaleswap.v1.Msg.OpenAuction:output_type -> dysonprotocol.whaleswap.v1.MsgOpenAuctionResponse
+	26, // 53: dysonprotocol.whaleswap.v1.Msg.RedeemAuction:output_type -> dysonprotocol.whaleswap.v1.MsgRedeemAuctionResponse
+	28, // 54: dysonprotocol.whaleswap.v1.Msg.UpdateParams:output_type -> dysonprotocol.whaleswap.v1.MsgUpdateParamsResponse
+	43, // [43:55] is the sub-list for method output_type
+	31, // [31:43] is the sub-list for method input_type
 	31, // [31:31] is the sub-list for extension type_name
 	31, // [31:31] is the sub-list for extension extendee
 	0,  // [0:31] is the sub-list for field type_name
@@ -19478,54 +17348,6 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 			}
 		}
 		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgConvertToLiquid); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgConvertToLiquidResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgConvertToSolid); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgConvertToSolidResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgMakeOffer); i {
 			case 0:
 				return &v.state
@@ -19537,7 +17359,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgMakeOfferResponse); i {
 			case 0:
 				return &v.state
@@ -19549,7 +17371,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgTakeOffer); i {
 			case 0:
 				return &v.state
@@ -19561,7 +17383,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*TakeItem); i {
 			case 0:
 				return &v.state
@@ -19573,7 +17395,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
+		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgTakeOfferResponse); i {
 			case 0:
 				return &v.state
@@ -19585,7 +17407,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgCancelOffer); i {
 			case 0:
 				return &v.state
@@ -19597,7 +17419,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
+		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgCancelOfferResponse); i {
 			case 0:
 				return &v.state
@@ -19609,7 +17431,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
+		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgOpenAuction); i {
 			case 0:
 				return &v.state
@@ -19621,7 +17443,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
+		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgOpenAuctionResponse); i {
 			case 0:
 				return &v.state
@@ -19633,7 +17455,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
+		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRedeemAuction); i {
 			case 0:
 				return &v.state
@@ -19645,7 +17467,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
+		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRedeemAuctionResponse); i {
 			case 0:
 				return &v.state
@@ -19657,7 +17479,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
+		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgUpdateParams); i {
 			case 0:
 				return &v.state
@@ -19669,7 +17491,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
+		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgUpdateParamsResponse); i {
 			case 0:
 				return &v.state
@@ -19692,13 +17514,14 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_dysonprotocol_whaleswap_v1_tx_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   32,
+			NumEnums:      1,
+			NumMessages:   28,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_dysonprotocol_whaleswap_v1_tx_proto_goTypes,
 		DependencyIndexes: file_dysonprotocol_whaleswap_v1_tx_proto_depIdxs,
+		EnumInfos:         file_dysonprotocol_whaleswap_v1_tx_proto_enumTypes,
 		MessageInfos:      file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes,
 	}.Build()
 	File_dysonprotocol_whaleswap_v1_tx_proto = out.File

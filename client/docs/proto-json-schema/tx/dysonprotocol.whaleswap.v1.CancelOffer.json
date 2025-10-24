@@ -15,7 +15,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Cancel Offer",
-                "description": "Cancel an offer (maker or eligible third-party for liquid offers). - Maker may always cancel open offers. - For liquid-have offers, a third party is eligible if the maker's balance of   the liquid have denom drops below one unit_have, enabling recovery via   PFAND."
+                "description": "Cancel an offer (maker or eligible third-party for liquid-mode offers). - Maker may always cancel open offers. - For liquid-mode offers, a third party is eligible if the maker's balance of   the have denom drops below one unit_have, enabling recovery via PFAND."
             }
         }
     },

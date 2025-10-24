@@ -8,8 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Defaults
-var DefaultPfandPerOffer = sdk.NewCoin(PfandDenom, math.NewInt(0))
+// Defaults: empty denom means PFAND disabled by default.
+var DefaultPfandPerOffer = sdk.Coin{Denom: "udys", Amount: math.NewInt(1)}
 
 func NewParams(pfandPerOffer sdk.Coin, valuationFeePct, minBidPctIncrease string, valuationPeriod time.Duration, bidTimeout time.Duration, maxNoteLength uint32) Params {
 	return Params{

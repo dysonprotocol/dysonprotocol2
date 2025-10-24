@@ -32,10 +32,7 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 	if len(pool.Coins) != 2 {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves")
 	}
-	// Reject liquid wrapper denoms for pool reserves
-	if k.isLiquidDenom(pool.Coins[0].Denom) || k.isLiquidDenom(pool.Coins[1].Denom) {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool reserves must be solid (no liquid denoms)")
-	}
+	// Pool reserves must be solid denoms (wrappers removed)
 	if msg.Amount1.Denom != pool.Coins[0].Denom || msg.Amount2.Denom != pool.Coins[1].Denom {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "amount denoms must match pool denoms")
 	}

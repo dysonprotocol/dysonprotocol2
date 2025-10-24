@@ -47,16 +47,9 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
 	actual := k.bank.SpendableCoins(ctx, moduleAddr)
 
-	// Hard constraints: module must not hold liquid wrappers or pool share denoms
+	// Hard constraints: module must not hold pool share denoms
 	for _, c := range actual {
 		d := c.Denom
-		if k.isLiquidDenom(d) {
-			return cosmossdkerrors.Wrapf(
-				sdkerrors.ErrLogic,
-				"module holds liquid wrapper balance: %s=%s",
-				d, c.Amount.String(),
-			)
-		}
 		if strings.HasPrefix(d, whaleswapv1.PoolsDenomPrefix) && c.Amount.IsPositive() {
 			return cosmossdkerrors.Wrapf(
 				sdkerrors.ErrLogic,
@@ -65,43 +58,12 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 			)
 		}
 	}
-	// Compute liquid-backing as the remainder of module solid balances after
-	// accounting for AMM reserves, offer escrow, auctions and pfand. This
-	// partitions module solids disjointly across components.
-	// First build a quick lookup for parts
-	parts := sdk.NewCoins().Add(ammRequired...).Add(escrowRequired...).Add(auctionRequired...).Add(pfandRequired...)
-	actualSolids := sdk.NewCoins()
-	for _, c := range actual {
-		// Include only true solid denoms that are not pfand and not shares
-		if c.Amount.IsPositive() &&
-			!k.isLiquidDenom(c.Denom) &&
-			c.Denom != whaleswapv1.PfandDenom &&
-			!strings.HasPrefix(c.Denom, whaleswapv1.PoolsDenomPrefix) {
-			actualSolids = actualSolids.Add(c)
-		}
-	}
-	liquidBacking := sdk.NewCoins()
-	// Iterate actual solid denoms and compute remainder per denom
-	for _, c := range actualSolids {
-		rem := c.Amount.Sub(parts.AmountOf(c.Denom))
-		if rem.IsPositive() {
-			liquidBacking = liquidBacking.Add(sdk.NewCoin(c.Denom, rem))
-		}
-	}
+	// Build expected totals per denom (no liquid-backing component now)
+	expected := sdk.NewCoins().Add(ammRequired...).Add(escrowRequired...).Add(auctionRequired...).Add(pfandRequired...)
 
-	// Build expected totals per denom
-	expected := sdk.NewCoins().Add(ammRequired...).Add(escrowRequired...).Add(auctionRequired...).Add(pfandRequired...).Add(liquidBacking...)
-
-	// Pfand must match exactly (not be absorbed into liquidBacking)
-	havePfand := actual.AmountOf(whaleswapv1.PfandDenom)
-	needPfand := pfandRequired.AmountOf(whaleswapv1.PfandDenom)
-	if !havePfand.Equal(needPfand) {
-		return cosmossdkerrors.Wrapf(
-			sdkerrors.ErrLogic,
-			"pfand mismatch: have=%s expected=%s",
-			havePfand.String(), needPfand.String(),
-		)
-	}
+	// No special-casing PFAND here: it's already included in pfandRequired and
+	// therefore in 'expected'. Per-denom equality below covers all pfand denoms
+	// that exist across open offers (supports historical changes to pfand params).
 
 	// Actual module balances (spendable equals total for module accounts)
 	// reuse moduleAddr and actual from above
@@ -134,11 +96,10 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 			esc := escMap[denom]
 			pfd := pfdMap[denom]
 			auc := auctionRequired.AmountOf(denom)
-			lb := liquidBacking.AmountOf(denom)
 			return cosmossdkerrors.Wrapf(
 				sdkerrors.ErrLogic,
-				"module balance mismatch for %s: have=%s expected=%s (amm=%s escrow=%s auction=%s pfand=%s liquid_backing=%s)",
-				denom, act.String(), exp.String(), amm.String(), esc.String(), auc.String(), pfd.String(), lb.String(),
+				"module balance mismatch for %s: have=%s expected=%s (amm=%s escrow=%s auction=%s pfand=%s)",
+				denom, act.String(), exp.String(), amm.String(), esc.String(), auc.String(), pfd.String(),
 			)
 		}
 	}
@@ -187,7 +148,7 @@ func (k Keeper) tallyEscrowRequired(ctx context.Context) (sdk.Coins, error) {
 		if o.Status != whaleswapv1.OfferStatusOpen {
 			return false, nil
 		}
-		if k.isLiquidDenom(o.RemainingHave.Denom) {
+		if o.SettlementMode == whaleswapv1.SettlementMode_SETTLEMENT_LIQUID {
 			return false, nil
 		}
 		if o.RemainingHave.Amount.IsPositive() {
@@ -217,7 +178,7 @@ func (k Keeper) tallyPfandRequired(ctx context.Context) (sdk.Coins, error) {
 		if o.Status != whaleswapv1.OfferStatusOpen {
 			return false, nil
 		}
-		if !k.isLiquidDenom(o.RemainingHave.Denom) {
+		if o.SettlementMode != whaleswapv1.SettlementMode_SETTLEMENT_LIQUID {
 			return false, nil
 		}
 		if o.PfandLocked.Amount.IsPositive() {
@@ -248,8 +209,8 @@ func (k Keeper) checkEscrowInvariant(ctx context.Context) error {
 		if o.Status != whaleswapv1.OfferStatusOpen {
 			return false, nil
 		}
-		// Only normal offers escrow base have in module
-		if k.isLiquidDenom(o.RemainingHave.Denom) {
+		// Only escrow-mode offers escrow base have in module
+		if o.SettlementMode == whaleswapv1.SettlementMode_SETTLEMENT_LIQUID {
 			return false, nil
 		}
 		if !o.RemainingHave.Amount.IsPositive() {
@@ -288,7 +249,7 @@ func (k Keeper) checkPfandInvariant(ctx context.Context) error {
 		if o.Status != whaleswapv1.OfferStatusOpen {
 			return false, nil
 		}
-		if k.isLiquidDenom(o.RemainingHave.Denom) {
+		if o.SettlementMode == whaleswapv1.SettlementMode_SETTLEMENT_LIQUID {
 			// Liquid-have: require pfand
 			if o.PfandLocked.Amount.IsPositive() {
 				denom := o.PfandLocked.Denom

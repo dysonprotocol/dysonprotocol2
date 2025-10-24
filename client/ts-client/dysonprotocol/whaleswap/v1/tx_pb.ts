@@ -9,6 +9,31 @@ import { Coin } from "../../../cosmos/base/v1beta1/coin_pb.js";
 import { Params } from "./params_pb.js";
 
 /**
+ * SettlementMode selects how offers fund the "have" side:
+ * - ESCROW: Escrow base have in the module at offer creation.
+ * - LIQUID: Do not escrow base; lock PFAND and settle from maker balance at
+ * take.
+ *
+ * @generated from enum dysonprotocol.whaleswap.v1.SettlementMode
+ */
+export enum SettlementMode {
+  /**
+   * @generated from enum value: SETTLEMENT_ESCROW = 0;
+   */
+  SETTLEMENT_ESCROW = 0,
+
+  /**
+   * @generated from enum value: SETTLEMENT_LIQUID = 1;
+   */
+  SETTLEMENT_LIQUID = 1,
+}
+// Retrieve enum metadata with: proto3.getEnumType(SettlementMode)
+proto3.util.setEnumType(SettlementMode, "dysonprotocol.whaleswap.v1.SettlementMode", [
+  { no: 0, name: "SETTLEMENT_ESCROW" },
+  { no: 1, name: "SETTLEMENT_LIQUID" },
+]);
+
+/**
  * Create a pool.
  *
  * Behavior:
@@ -783,200 +808,14 @@ export class MsgPoolSwapResponse extends Message<MsgPoolSwapResponse> {
 }
 
 /**
- * Convert solid denom to liquid wrapper L(denom).
- *
- * @generated from message dysonprotocol.whaleswap.v1.MsgConvertToLiquid
- */
-export class MsgConvertToLiquid extends Message<MsgConvertToLiquid> {
-  /**
-   * @generated from field: string caller = 1;
-   */
-  caller = "";
-
-  /**
-   * @generated from field: string denom = 2;
-   */
-  denom = "";
-
-  /**
-   * sdk.Int string
-   *
-   * @generated from field: string amount = 3;
-   */
-  amount = "";
-
-  constructor(data?: PartialMessage<MsgConvertToLiquid>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgConvertToLiquid";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "caller", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "amount", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgConvertToLiquid {
-    return new MsgConvertToLiquid().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgConvertToLiquid {
-    return new MsgConvertToLiquid().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgConvertToLiquid {
-    return new MsgConvertToLiquid().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: MsgConvertToLiquid | PlainMessage<MsgConvertToLiquid> | undefined, b: MsgConvertToLiquid | PlainMessage<MsgConvertToLiquid> | undefined): boolean {
-    return proto3.util.equals(MsgConvertToLiquid, a, b);
-  }
-}
-
-/**
- * @generated from message dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse
- */
-export class MsgConvertToLiquidResponse extends Message<MsgConvertToLiquidResponse> {
-  /**
-   * @generated from field: string liquid_denom = 1;
-   */
-  liquidDenom = "";
-
-  /**
-   * sdk.Int string
-   *
-   * @generated from field: string amount = 2;
-   */
-  amount = "";
-
-  constructor(data?: PartialMessage<MsgConvertToLiquidResponse>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "liquid_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "amount", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgConvertToLiquidResponse {
-    return new MsgConvertToLiquidResponse().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgConvertToLiquidResponse {
-    return new MsgConvertToLiquidResponse().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgConvertToLiquidResponse {
-    return new MsgConvertToLiquidResponse().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: MsgConvertToLiquidResponse | PlainMessage<MsgConvertToLiquidResponse> | undefined, b: MsgConvertToLiquidResponse | PlainMessage<MsgConvertToLiquidResponse> | undefined): boolean {
-    return proto3.util.equals(MsgConvertToLiquidResponse, a, b);
-  }
-}
-
-/**
- * Convert liquid denom L(denom) to solid denom.
- *
- * @generated from message dysonprotocol.whaleswap.v1.MsgConvertToSolid
- */
-export class MsgConvertToSolid extends Message<MsgConvertToSolid> {
-  /**
-   * @generated from field: string caller = 1;
-   */
-  caller = "";
-
-  /**
-   * @generated from field: string liquid_denom = 2;
-   */
-  liquidDenom = "";
-
-  /**
-   * sdk.Int string
-   *
-   * @generated from field: string amount = 3;
-   */
-  amount = "";
-
-  constructor(data?: PartialMessage<MsgConvertToSolid>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgConvertToSolid";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "caller", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "liquid_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "amount", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgConvertToSolid {
-    return new MsgConvertToSolid().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgConvertToSolid {
-    return new MsgConvertToSolid().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgConvertToSolid {
-    return new MsgConvertToSolid().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: MsgConvertToSolid | PlainMessage<MsgConvertToSolid> | undefined, b: MsgConvertToSolid | PlainMessage<MsgConvertToSolid> | undefined): boolean {
-    return proto3.util.equals(MsgConvertToSolid, a, b);
-  }
-}
-
-/**
- * @generated from message dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse
- */
-export class MsgConvertToSolidResponse extends Message<MsgConvertToSolidResponse> {
-  /**
-   * @generated from field: cosmos.base.v1beta1.Coin amount_out = 1;
-   */
-  amountOut?: Coin;
-
-  constructor(data?: PartialMessage<MsgConvertToSolidResponse>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "amount_out", kind: "message", T: Coin },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgConvertToSolidResponse {
-    return new MsgConvertToSolidResponse().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgConvertToSolidResponse {
-    return new MsgConvertToSolidResponse().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgConvertToSolidResponse {
-    return new MsgConvertToSolidResponse().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: MsgConvertToSolidResponse | PlainMessage<MsgConvertToSolidResponse> | undefined, b: MsgConvertToSolidResponse | PlainMessage<MsgConvertToSolidResponse> | undefined): boolean {
-    return proto3.util.equals(MsgConvertToSolidResponse, a, b);
-  }
-}
-
-/**
  * Make an orderbook offer.
  *
  * Constraints and semantics:
  * - have and want must be different denoms and strictly positive.
- * - want denom must be a solid denom; liquid want is disallowed.
- * - If have denom is liquid, the transaction locks PFAND per module params.
+ * - Any denom allowed (including PFAND); settlement behavior controlled by
+ * settlement_mode.
+ * - If settlement_mode == LIQUID, the transaction locks PFAND per module
+ * params.
  * - The keeper computes GCD(have.amount, want.amount) to establish integral
  *   units for partial fills: unit_have = have/gcd, unit_want = want/gcd.
  * - RemainingUnits starts at gcd and decreases as fills occur.
@@ -999,6 +838,14 @@ export class MsgMakeOffer extends Message<MsgMakeOffer> {
    */
   want?: Coin;
 
+  /**
+   * settlement_mode determines whether base have is escrowed (ESCROW) or
+   * PFAND is locked and settlement occurs from maker balance at take (LIQUID).
+   *
+   * @generated from field: dysonprotocol.whaleswap.v1.SettlementMode settlement_mode = 4;
+   */
+  settlementMode = SettlementMode.SETTLEMENT_ESCROW;
+
   constructor(data?: PartialMessage<MsgMakeOffer>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1010,6 +857,7 @@ export class MsgMakeOffer extends Message<MsgMakeOffer> {
     { no: 1, name: "maker", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "have", kind: "message", T: Coin },
     { no: 3, name: "want", kind: "message", T: Coin },
+    { no: 4, name: "settlement_mode", kind: "enum", T: proto3.getEnumType(SettlementMode) },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgMakeOffer {
@@ -1166,8 +1014,7 @@ export class MsgTakeOfferResponse extends Message<MsgTakeOfferResponse> {
   sent: Coin[] = [];
 
   /**
-   * Total coins the taker received across executed trades (usually have denom,
-   * base denom when offers use liquid have).
+   * Total coins the taker received across executed trades (usually have denom).
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin received = 2;
    */
@@ -1203,12 +1050,11 @@ export class MsgTakeOfferResponse extends Message<MsgTakeOfferResponse> {
 }
 
 /**
- * Cancel an offer (maker or eligible third-party for liquid offers).
+ * Cancel an offer (maker or eligible third-party for liquid-mode offers).
  *
  * - Maker may always cancel open offers.
- * - For liquid-have offers, a third party is eligible if the maker's balance of
- *   the liquid have denom drops below one unit_have, enabling recovery via
- *   PFAND.
+ * - For liquid-mode offers, a third party is eligible if the maker's balance of
+ *   the have denom drops below one unit_have, enabling recovery via PFAND.
  *
  * @generated from message dysonprotocol.whaleswap.v1.MsgCancelOffer
  */
@@ -1284,7 +1130,7 @@ export class MsgCancelOfferResponse extends Message<MsgCancelOfferResponse> {
 }
 
 /**
- * Open an auction by escrowing exactly one solid denom amount.
+ * Open an auction by escrowing exactly one coin amount.
  *
  * - The escrowed `sell` coin is transferred from seller to module and marked by
  *   an NFT for redemption logic. `bid_denom` defines the quote asset.
@@ -1303,7 +1149,7 @@ export class MsgOpenAuction extends Message<MsgOpenAuction> {
   bidDenom = "";
 
   /**
-   * Explicit solid sell coin to escrow from seller → module.
+   * Explicit sell coin to escrow from seller → module.
    *
    * @generated from field: cosmos.base.v1beta1.Coin sell = 3;
    */

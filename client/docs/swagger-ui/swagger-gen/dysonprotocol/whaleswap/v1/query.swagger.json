@@ -1612,6 +1612,10 @@
         "pfand_locked": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
           "description": "pfand_locked is the PFAND coin locked for liquid-mode offers."
+        },
+        "settlement_mode": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.SettlementMode",
+          "description": "settlement_mode mirrors MsgMakeOffer.settlement_mode for this offer."
         }
       },
       "description": "OfferData mirrors orderbook offer state.\n\nStatus values: \"open\" | \"closed\" | \"cancelled\"."
@@ -2018,6 +2022,15 @@
         }
       }
     },
+    "dysonprotocol.whaleswap.v1.SettlementMode": {
+      "type": "string",
+      "enum": [
+        "SETTLEMENT_ESCROW",
+        "SETTLEMENT_LIQUID"
+      ],
+      "default": "SETTLEMENT_ESCROW",
+      "description": "SettlementMode selects how offers fund the \"have\" side:\n- ESCROW: Escrow base have in the module at offer creation.\n- LIQUID: Do not escrow base; lock PFAND and settle from maker balance at\ntake."
+    },
     "dysonprotocol.whaleswap.v1.SwapLeg": {
       "type": "object",
       "properties": {
@@ -2110,14 +2123,14 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "title": "Sum of remaining_have over all open non-liquid offers"
+          "title": "Sum of remaining_have over all open escrow-mode offers"
         },
         "escrowed_pfand": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "title": "Sum of pfand_locked over all open liquid-have offers"
+          "title": "Sum of pfand_locked over all open liquid-mode offers"
         },
         "escrowed_auction_coins": {
           "type": "array",
@@ -2125,13 +2138,6 @@
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
           "title": "Sum of auction sell escrows over all open auctions"
-        },
-        "escrowed_liquid_coins": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          },
-          "description": "Solid backing for liquid supply: for each liquid denom\nwhaleswap.dys/coins/X, this reports the required backing amount on solid\ndenom X."
         },
         "fees_earned": {
           "type": "array",

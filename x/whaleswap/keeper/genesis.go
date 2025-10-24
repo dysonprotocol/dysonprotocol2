@@ -99,7 +99,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 				panic(err)
 			}
 			// Tally escrow/pfand requirements for open offers
-			if k.isLiquidDenom(o.RemainingHave.Denom) {
+			if o.SettlementMode == whaleswapv1.SettlementMode_SETTLEMENT_LIQUID {
 				if o.PfandLocked.Amount.IsPositive() {
 					den := o.PfandLocked.Denom
 					if cur, ok := pfandRequired[den]; ok {

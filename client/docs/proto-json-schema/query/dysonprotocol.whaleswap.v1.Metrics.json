@@ -58,7 +58,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Sum of remaining_have over all open non-liquid offers"
+                        "description": "Sum of remaining_have over all open escrow-mode offers"
                     },
                     "escrowed_pfand": {
                         "items": {
@@ -66,7 +66,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Sum of pfand_locked over all open liquid-have offers"
+                        "description": "Sum of pfand_locked over all open liquid-mode offers"
                     },
                     "escrowed_auction_coins": {
                         "items": {
@@ -75,14 +75,6 @@
                         "additionalProperties": false,
                         "type": "array",
                         "description": "Sum of auction sell escrows over all open auctions"
-                    },
-                    "escrowed_liquid_coins": {
-                        "items": {
-                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-                        },
-                        "additionalProperties": false,
-                        "type": "array",
-                        "description": "Solid backing for liquid supply: for each liquid denom whaleswap.dys/coins/X, this reports the required backing amount on solid denom X."
                     },
                     "fees_earned": {
                         "items": {

@@ -7,7 +7,6 @@ import (
 
 	cosmossdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
-	nameservicev1 "dysonprotocol.com/x/nameservice/types"
 	whaleswap "dysonprotocol.com/x/whaleswap"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -43,12 +42,7 @@ func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "amounts must be > 0")
 	}
 
-	if k.bank.GetSupply(ctx, want.Denom).Amount.IsZero() {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "want denom has no supply: %s", want.Denom)
-	}
-	if k.isLiquidDenom(want.Denom) {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "want denom is liquid: %s", want.Denom)
-	}
+	// Any denoms allowed (including pfand); remove want supply gating
 	// Per-offer balance check: maker must currently hold at least `have` amount
 	balHaveCoin := k.bank.GetBalance(ctx, maker, have.Denom)
 	logger.Info("MakeOffer balance check", "maker_balance", balHaveCoin, "required_have", have)
@@ -56,9 +50,12 @@ func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "have exceeds maker balance: %s < %s", balHaveCoin.String(), have.String())
 	}
 
-	logger.Info("MakeOffer processing escrow/pfand", "have_denom_is_liquid", k.isLiquidDenom(have.Denom))
+	logger.Info("MakeOffer processing escrow/pfand")
 	pfandCoin := sdk.NewCoin(k.GetParams(ctx).PfandPerOffer.Denom, math.NewInt(0))
-	if k.isLiquidDenom(have.Denom) {
+	// Determine settlement mode: explicit only
+	mode := msg.SettlementMode
+	if mode == whaleswapv1.SettlementMode_SETTLEMENT_LIQUID {
+		// Liquid settlement mode: lock pfand (if > 0), do not escrow base have
 		req := k.GetParams(ctx).PfandPerOffer
 		if !req.Amount.IsZero() {
 			bal := k.bank.GetBalance(ctx, maker, req.Denom)
@@ -72,6 +69,7 @@ func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*
 		pfandCoin = k.GetParams(ctx).PfandPerOffer
 		logger.Info("MakeOffer pfand locked", "pfand_amount", pfandCoin)
 	} else {
+		// Escrow mode: escrow base have in module
 		if err := k.bank.SendCoinsFromAccountToModule(ctx, maker, whaleswap.ModuleName, sdk.NewCoins(have)); err != nil {
 			return nil, cosmossdkerrors.Wrapf(err, "failed to escrow have %s from maker %s", have.String(), msg.Maker)
 		}
@@ -114,6 +112,7 @@ func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*
 		UnitWantInt:      unitWant.String(),
 		RemainingUnits:   remainingUnits.String(),
 		PfandLocked:      pfandCoin,
+		SettlementMode:   mode,
 	}
 	if err := k.OffersMap.Set(ctx, id, offer); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to save offer %d", id)
@@ -210,15 +209,10 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 		haveDenom := offer.RemainingHave.Denom
 		maker := offer.Maker
 
-		// Aggregate outputs: pay maker solid want; pay taker solid have
+		// Aggregate outputs: pay maker solid want; pay taker have per settlement mode
 		outputsByAddr[maker] = outputsByAddr[maker].Add(sdk.NewCoin(wantDenom, requiredWant))
-		if k.isLiquidDenom(haveDenom) {
-			baseHave, derr := k.decodeLiquidDenom(haveDenom)
-			if derr != nil {
-				return nil, derr
-			}
-			outputsByAddr[msg.Taker] = outputsByAddr[msg.Taker].Add(sdk.NewCoin(baseHave, deliverHave))
-			// Aggregate inputs: maker supplies liquid have to be burned
+		if offer.SettlementMode == whaleswapv1.SettlementMode_SETTLEMENT_LIQUID {
+			outputsByAddr[msg.Taker] = outputsByAddr[msg.Taker].Add(sdk.NewCoin(haveDenom, deliverHave))
 			inputsByAddr[maker] = inputsByAddr[maker].Add(sdk.NewCoin(haveDenom, deliverHave))
 		} else {
 			outputsByAddr[msg.Taker] = outputsByAddr[msg.Taker].Add(sdk.NewCoin(haveDenom, deliverHave))
@@ -245,13 +239,8 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 			offer.RemainingWant.Amount = newUnits.Mul(unitWant)
 		}
 
-		// Determine received denom (unwrap liquid if needed)
+		// Received denom is always base have denom
 		recDenom := haveDenom
-		if k.isLiquidDenom(haveDenom) {
-			if baseHave, derr := k.decodeLiquidDenom(haveDenom); derr == nil {
-				recDenom = baseHave
-			}
-		}
 
 		// Build operation record with execution results
 		takeItemCopy := it
@@ -279,18 +268,14 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 			continue
 		}
 		for _, c := range coins {
-			if k.isLiquidDenom(c.Denom) {
-				continue
-			}
+			// all denoms are solid
 			makerWants = makerWants.Add(c)
 		}
 	}
 	takerCredits := sdk.NewCoins()
 	if tcoins, ok := outputsByAddr[msg.Taker]; ok {
 		for _, c := range tcoins {
-			if k.isLiquidDenom(c.Denom) {
-				continue
-			}
+			// all denoms are solid
 			takerCredits = takerCredits.Add(c)
 		}
 	}
@@ -327,46 +312,21 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 		if basePart.IsPositive() {
 			inputsByAddr[msg.Taker] = inputsByAddr[msg.Taker].Add(sdk.NewCoin(denom, basePart))
 		}
-		rem := deficit.Sub(basePart)
-		if rem.IsPositive() {
-			ldenom := whaleswapv1.LiquidDenom(denom)
-			liqBal := k.bank.GetBalance(ctx, taker, ldenom).Amount
-			if liqBal.LT(rem) {
-				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "taker insufficient %s: %s < %s", ldenom, liqBal.String(), rem.String())
-			}
-			inputsByAddr[msg.Taker] = inputsByAddr[msg.Taker].Add(sdk.NewCoin(ldenom, rem))
-		}
+		// No liquid remainder; module will cover remaining deficit
 	}
 
-	// Module receives all liquid inputs to burn; add as outputs to module
-	liquidToModule := sdk.NewCoins()
-	for _, coins := range inputsByAddr {
-		for _, c := range coins {
-			if k.isLiquidDenom(c.Denom) && c.Amount.IsPositive() {
-				liquidToModule = liquidToModule.Add(c)
-			}
-		}
-	}
-	if !liquidToModule.IsZero() {
-		outputsByAddr[moduleBech] = outputsByAddr[moduleBech].Add(liquidToModule...)
-	}
+	// No liquid inputs to route to module
 
 	// Module solid inputs to cover remaining solid outputs not funded by taker base
 	outputsSolidCoins := sdk.NewCoins()
 	for _, coins := range outputsByAddr {
 		for _, c := range coins {
-			if k.isLiquidDenom(c.Denom) {
-				continue
-			}
 			outputsSolidCoins = outputsSolidCoins.Add(c)
 		}
 	}
 	inputsSolidCoins := sdk.NewCoins()
 	for _, coins := range inputsByAddr {
 		for _, c := range coins {
-			if k.isLiquidDenom(c.Denom) {
-				continue
-			}
 			inputsSolidCoins = inputsSolidCoins.Add(c)
 		}
 	}
@@ -415,20 +375,7 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 		return nil, cosmossdkerrors.Wrap(err, "move coins failed")
 	}
 
-	toBurn := sdk.NewCoins()
-	if mcoins, ok := outputsByAddr[moduleBech]; ok {
-		for _, c := range mcoins {
-			if k.isLiquidDenom(c.Denom) && c.Amount.IsPositive() {
-				toBurn = toBurn.Add(c)
-			}
-		}
-	}
-	if !toBurn.IsZero() {
-		logger.Info("TakeOffer burning liquid coins", "amount", toBurn)
-		if _, err := k.nameSvc.BurnCoins(ctx, &nameservicev1.MsgBurnCoins{NameDestination: moduleBech, Amount: toBurn}); err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "burn liquid failed")
-		}
-	}
+	// No liquid burn required
 
 	// totalSent/Recv already accumulated
 
@@ -531,8 +478,8 @@ func (k Keeper) CancelOffer(ctx context.Context, msg *whaleswapv1.MsgCancelOffer
 	if err := k.reindexOfferOnStatusChange(ctx, prev, offer); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to reindex offer after cancel")
 	}
-	// Refund escrowed base have for normal offers
-	if !k.isLiquidDenom(offer.RemainingHave.Denom) && offer.RemainingHave.Amount.IsPositive() {
+	// Refund escrowed base have for escrow-mode offers
+	if offer.SettlementMode == whaleswapv1.SettlementMode_SETTLEMENT_ESCROW && offer.RemainingHave.Amount.IsPositive() {
 		if err := k.bank.SendCoinsFromModuleToAccount(ctx, whaleswap.ModuleName, maker, sdk.NewCoins(offer.RemainingHave)); err != nil {
 			return nil, cosmossdkerrors.Wrapf(err, "failed to refund escrowed have %s to maker %s", offer.RemainingHave.String(), offer.Maker)
 		}

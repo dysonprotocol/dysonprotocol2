@@ -34,15 +34,11 @@ func (k Keeper) OpenAuction(ctx context.Context, msg *whaleswapv1.MsgOpenAuction
 	if err := sdk.ValidateDenom(msg.Sell.Denom); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "invalid sell denom: %s", msg.Sell.Denom)
 	}
-	if k.isLiquidDenom(msg.Sell.Denom) {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "sell denom is liquid: %s", msg.Sell.Denom)
-	}
+	// No wrapper denoms exist
 	if err := sdk.ValidateDenom(msg.BidDenom); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "invalid bid denom: %s", msg.BidDenom)
 	}
-	if k.isLiquidDenom(msg.BidDenom) {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "bid denom is liquid: %s", msg.BidDenom)
-	}
+	// No wrapper denoms exist
 	if msg.Sell.Denom == msg.BidDenom {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "sell and bid denoms must differ: %s", msg.Sell.Denom)
 	}

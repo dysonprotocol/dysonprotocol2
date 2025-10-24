@@ -411,13 +411,8 @@ func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whal
 	}
 	// EventOfferTaken and EventPfandReleased emitted by recordTradeWithOperations (with proper IDs)
 
-	// Determine received denom (unwrap liquid if needed)
+	// Received denom is base have denom
 	recDenom := haveDenom
-	if k.isLiquidDenom(haveDenom) {
-		if baseHave, derr := k.decodeLiquidDenom(haveDenom); derr == nil {
-			recDenom = baseHave
-		}
-	}
 
 	// Build operation record with execution results
 	op := whaleswapv1.TradeOperation{
@@ -430,15 +425,8 @@ func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whal
 	makerWant := sdk.NewCoin(wantDenom, requiredWant)
 	var takerRecv sdk.Coin
 	var makerLiqIn sdk.Coin
-	if k.isLiquidDenom(haveDenom) {
-		baseHave, _ := k.decodeLiquidDenom(haveDenom)
-		takerRecv = sdk.NewCoin(baseHave, deliverHave)
-		makerLiqIn = sdk.NewCoin(haveDenom, deliverHave)
-		logger.Info("tradeApplyTakeItem liquid denom", "base_have", baseHave, "taker_recv", takerRecv, "maker_liq_in", makerLiqIn)
-	} else {
-		takerRecv = sdk.NewCoin(haveDenom, deliverHave)
-		logger.Info("tradeApplyTakeItem solid denom", "taker_recv", takerRecv)
-	}
+	takerRecv = sdk.NewCoin(haveDenom, deliverHave)
+	logger.Info("tradeApplyTakeItem solid denom", "taker_recv", takerRecv)
 	logger.Info("tradeApplyTakeItem completed", "maker", maker, "maker_want", makerWant, "taker_recv", takerRecv, "maker_liq_in", makerLiqIn, "pfand_released", pfandReleased)
 	return op, maker, makerWant, takerRecv, makerLiqIn, pfandReleased, nil
 }
@@ -457,9 +445,6 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 			continue
 		}
 		for _, c := range coins {
-			if k.isLiquidDenom(c.Denom) {
-				continue
-			}
 			makerWants = makerWants.Add(c)
 		}
 	}
@@ -467,9 +452,6 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 	takerCredits := sdk.NewCoins()
 	if tcoins, ok := outputsByAddr[traderBech]; ok {
 		for _, c := range tcoins {
-			if k.isLiquidDenom(c.Denom) {
-				continue
-			}
 			takerCredits = takerCredits.Add(c)
 		}
 	}
@@ -535,7 +517,7 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 			continue
 		}
 		deficit := wantAmt.Sub(credit)
-		// Cover with taker base then taker liquid
+		// Cover with taker base; module covers any remaining deficit
 		takerAddr, _ := sdk.AccAddressFromBech32(traderBech)
 		baseBal := k.bank.GetBalance(ctx, takerAddr, denom).Amount
 		basePart := baseBal
@@ -545,32 +527,18 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 		if basePart.IsPositive() {
 			inputsByAddr[traderBech] = inputsByAddr[traderBech].Add(sdk.NewCoin(denom, basePart))
 		}
-		rem := deficit.Sub(basePart)
-		if rem.IsPositive() {
-			ldenom := whaleswapv1.LiquidDenom(denom)
-			liqBal := k.bank.GetBalance(ctx, takerAddr, ldenom).Amount
-			if liqBal.LT(rem) {
-				return cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "taker insufficient %s: %s < %s", ldenom, liqBal.String(), rem.String())
-			}
-			inputsByAddr[traderBech] = inputsByAddr[traderBech].Add(sdk.NewCoin(ldenom, rem))
-		}
+		// No liquid remainder coverage
 	}
 	// Module covers remaining solid deficits
 	outputsSolid := sdk.NewCoins()
 	for _, coins := range outputsByAddr {
 		for _, c := range coins {
-			if k.isLiquidDenom(c.Denom) {
-				continue
-			}
 			outputsSolid = outputsSolid.Add(c)
 		}
 	}
 	inputsSolid := sdk.NewCoins()
 	for _, coins := range inputsByAddr {
 		for _, c := range coins {
-			if k.isLiquidDenom(c.Denom) {
-				continue
-			}
 			inputsSolid = inputsSolid.Add(c)
 		}
 	}
@@ -587,39 +555,9 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 		}
 	}
 	// Liquid inputs to module must also be outputs for burn
-	liquidToModule := sdk.NewCoins()
-	for _, coins := range inputsByAddr {
-		for _, c := range coins {
-			if k.isLiquidDenom(c.Denom) && c.Amount.IsPositive() {
-				liquidToModule = liquidToModule.Add(c)
-			}
-		}
-	}
-	if !liquidToModule.IsZero() {
-		outputsByAddr[moduleBech] = outputsByAddr[moduleBech].Add(liquidToModule...)
-		logger.Info("tradeNetAndCover added liquid to burn", "liquid_to_module", liquidToModule)
-	}
+	// No liquid inputs to burn
 	logger.Info("tradeNetAndCover completed", "final_inputs_count", len(inputsByAddr), "final_outputs_count", len(outputsByAddr))
 	return nil
 }
 
-// tradeBurnModuleLiquid burns any liquid coins sent to the module during settlement.
-func (k Keeper) tradeBurnModuleLiquid(ctx context.Context, outputsByAddr map[string]sdk.Coins) error {
-	logger := k.Logger(sdk.UnwrapSDKContext(ctx))
-
-	logger.Info("tradeBurnModuleLiquid starting", "outputs_by_addr_count", len(outputsByAddr))
-
-	moduleBech := k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String()
-	if mcoins, ok := outputsByAddr[moduleBech]; ok {
-		for _, c := range mcoins {
-			if k.isLiquidDenom(c.Denom) && c.Amount.IsPositive() {
-				logger.Info("tradeBurnModuleLiquid burning liquid coin", "coin", c)
-				if err := k.burnLiquid(ctx, c); err != nil {
-					return cosmossdkerrors.Wrap(err, "burn liquid failed")
-				}
-			}
-		}
-	}
-	logger.Info("tradeBurnModuleLiquid completed")
-	return nil
-}
+// No liquid burn step remains.

@@ -75,71 +75,6 @@
         ]
       }
     },
-    "dysonprotocol.whaleswap.v1.MsgConvertToLiquid": {
-      "post": {
-        "summary": "Wrapping (liquid conversions)",
-        "operationId": "dysonprotocol.whaleswap.v1.MsgConvertToLiquid",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/grpc.gateway.runtime.Error"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgConvertToLiquid"
-            }
-          }
-        ],
-        "tags": [
-          "Msg"
-        ]
-      }
-    },
-    "dysonprotocol.whaleswap.v1.MsgConvertToSolid": {
-      "post": {
-        "operationId": "dysonprotocol.whaleswap.v1.MsgConvertToSolid",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/grpc.gateway.runtime.Error"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgConvertToSolid"
-            }
-          }
-        ],
-        "tags": [
-          "Msg"
-        ]
-      }
-    },
     "dysonprotocol.whaleswap.v1.MsgCreatePool": {
       "post": {
         "summary": "AMM",
@@ -528,59 +463,10 @@
           "format": "uint64"
         }
       },
-      "description": "Cancel an offer (maker or eligible third-party for liquid offers).\n\n- Maker may always cancel open offers.\n- For liquid-have offers, a third party is eligible if the maker's balance of\n  the liquid have denom drops below one unit_have, enabling recovery via\n  PFAND."
+      "description": "Cancel an offer (maker or eligible third-party for liquid-mode offers).\n\n- Maker may always cancel open offers.\n- For liquid-mode offers, a third party is eligible if the maker's balance of\n  the have denom drops below one unit_have, enabling recovery via PFAND."
     },
     "dysonprotocol.whaleswap.v1.MsgCancelOfferResponse": {
       "type": "object"
-    },
-    "dysonprotocol.whaleswap.v1.MsgConvertToLiquid": {
-      "type": "object",
-      "properties": {
-        "caller": {
-          "type": "string"
-        },
-        "denom": {
-          "type": "string"
-        },
-        "amount": {
-          "type": "string"
-        }
-      },
-      "description": "Convert solid denom to liquid wrapper L(denom)."
-    },
-    "dysonprotocol.whaleswap.v1.MsgConvertToLiquidResponse": {
-      "type": "object",
-      "properties": {
-        "liquid_denom": {
-          "type": "string"
-        },
-        "amount": {
-          "type": "string"
-        }
-      }
-    },
-    "dysonprotocol.whaleswap.v1.MsgConvertToSolid": {
-      "type": "object",
-      "properties": {
-        "caller": {
-          "type": "string"
-        },
-        "liquid_denom": {
-          "type": "string"
-        },
-        "amount": {
-          "type": "string"
-        }
-      },
-      "description": "Convert liquid denom L(denom) to solid denom."
-    },
-    "dysonprotocol.whaleswap.v1.MsgConvertToSolidResponse": {
-      "type": "object",
-      "properties": {
-        "amount_out": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-        }
-      }
     },
     "dysonprotocol.whaleswap.v1.MsgCreatePool": {
       "type": "object",
@@ -634,9 +520,13 @@
         },
         "want": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "settlement_mode": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.SettlementMode",
+          "description": "settlement_mode determines whether base have is escrowed (ESCROW) or\nPFAND is locked and settlement occurs from maker balance at take (LIQUID)."
         }
       },
-      "description": "Make an orderbook offer.\n\nConstraints and semantics:\n- have and want must be different denoms and strictly positive.\n- want denom must be a solid denom; liquid want is disallowed.\n- If have denom is liquid, the transaction locks PFAND per module params.\n- The keeper computes GCD(have.amount, want.amount) to establish integral\n  units for partial fills: unit_have = have/gcd, unit_want = want/gcd.\n- RemainingUnits starts at gcd and decreases as fills occur."
+      "description": "Make an orderbook offer.\n\nConstraints and semantics:\n- have and want must be different denoms and strictly positive.\n- Any denom allowed (including PFAND); settlement behavior controlled by\nsettlement_mode.\n- If settlement_mode == LIQUID, the transaction locks PFAND per module\nparams.\n- The keeper computes GCD(have.amount, want.amount) to establish integral\n  units for partial fills: unit_have = have/gcd, unit_want = want/gcd.\n- RemainingUnits starts at gcd and decreases as fills occur."
     },
     "dysonprotocol.whaleswap.v1.MsgMakeOfferResponse": {
       "type": "object",
@@ -701,10 +591,10 @@
         },
         "sell": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "description": "Explicit solid sell coin to escrow from seller \u2192 module."
+          "description": "Explicit sell coin to escrow from seller \u2192 module."
         }
       },
-      "description": "Open an auction by escrowing exactly one solid denom amount.\n\n- The escrowed `sell` coin is transferred from seller to module and marked by\n  an NFT for redemption logic. `bid_denom` defines the quote asset."
+      "description": "Open an auction by escrowing exactly one coin amount.\n\n- The escrowed `sell` coin is transferred from seller to module and marked by\n  an NFT for redemption logic. `bid_denom` defines the quote asset."
     },
     "dysonprotocol.whaleswap.v1.MsgOpenAuctionResponse": {
       "type": "object",
@@ -829,7 +719,7 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "description": "Total coins the taker received across executed trades (usually have denom,\nbase denom when offers use liquid have)."
+          "description": "Total coins the taker received across executed trades (usually have denom)."
         }
       }
     },
@@ -908,6 +798,15 @@
           "format": "int64"
         }
       }
+    },
+    "dysonprotocol.whaleswap.v1.SettlementMode": {
+      "type": "string",
+      "enum": [
+        "SETTLEMENT_ESCROW",
+        "SETTLEMENT_LIQUID"
+      ],
+      "default": "SETTLEMENT_ESCROW",
+      "description": "SettlementMode selects how offers fund the \"have\" side:\n- ESCROW: Escrow base have in the module at offer creation.\n- LIQUID: Do not escrow base; lock PFAND and settle from maker balance at\ntake."
     },
     "dysonprotocol.whaleswap.v1.SwapLeg": {
       "type": "object",

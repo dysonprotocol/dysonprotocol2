@@ -6,7 +6,6 @@ import (
 	"cosmossdk.io/collections"
 	cosmossdkerrors "cosmossdk.io/errors"
 	cosmossdk_math "cosmossdk.io/math"
-	nameservicev1 "dysonprotocol.com/x/nameservice/types"
 	whaleswap "dysonprotocol.com/x/whaleswap"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -109,23 +108,10 @@ func (k Keeper) reindexOfferOnStatusChange(ctx context.Context, prev whaleswapv1
 	return nil
 }
 
-// ---- side-effect helpers (escrow / burn / send) ----
-
-// burnLiquid burns liquid coins held by the module account via nameservice.
-func (k Keeper) burnLiquid(ctx context.Context, coin sdk.Coin) error {
-	if !coin.Amount.IsPositive() {
-		return nil
-	}
-	_, err := k.nameSvc.BurnCoins(ctx, &nameservicev1.MsgBurnCoins{
-		NameDestination: k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String(),
-		Amount:          sdk.NewCoins(coin),
-	})
-	return err
-}
+// ---- side-effect helpers (escrow / send) ----
 
 // wsMoveCoins duplicates nameservice's moveCoins helper semantics, but allows whaleswap
-// to orchestrate a batch that may include non-liquid solid denoms moving from users
-// and liquid coins flowing to the whaleswap module.
+// to orchestrate a batch multisend for arbitrary denoms between participants via the module.
 func (k Keeper) wsMoveCoins(ctx context.Context, inputs []banktypes.Input, outputs []banktypes.Output) error {
 	// validate: non-empty, totals match, no negative
 	if len(inputs) == 0 || len(outputs) == 0 {

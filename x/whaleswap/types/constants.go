@@ -6,11 +6,10 @@ import (
 
 // Protocol identity constants (not runtime-configurable)
 const (
-	RootName           = "whaleswap.dys"
-	LiquidDenomPrefix  = "whaleswap.dys/coins/"
+	RootName = "whaleswap.dys"
+	// LiquidDenomPrefix removed with wrapper denoms
 	PoolsDenomPrefix   = "whaleswap.dys/pools/"
 	AuctionClassPrefix = "whaleswap.dys/auction/"
-	PfandDenom         = "whaleswap.dys/pfand"
 	MintFeeDenom       = "udys"
 
 	OfferStatusOpen      = "open"
@@ -21,8 +20,7 @@ const (
 	AuctionClassSymbol = "WSA"
 )
 
-// LiquidDenom builds the liquid wrapper denom for a solid denom.
-func LiquidDenom(solid string) string { return LiquidDenomPrefix + solid }
+// Liquid wrapper denoms removed; keep function deleted.
 
 // PoolSharesDenom builds the pool shares denom for a pool id.
 func PoolSharesDenom(id uint64) string { return fmt.Sprintf("%s%d", PoolsDenomPrefix, id) }

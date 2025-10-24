@@ -31,9 +31,9 @@ option go_package = "dysonprotocol.com/x/whaleswap/types";
 //   be either empty (unset) or contain exactly two coins whose denoms match the
 //   pool's reserve denoms, representing coin_b / coin_a.
 //
-// - Liquid denoms: The module uses a liquid wrapper L(denom) to represent
-//   tokenized credit balances. Some operations disallow liquid denoms on
-//   certain sides (e.g., offers.want).
+// - Settlement modes: Orderbook offers specify how the 'have' is funded:
+//   ESCROW (escrow base have at creation) or LIQUID (no escrow; lock PFAND and
+//   settle from maker balance at take).
 //
 // Msg defines the whaleswap Msg service.
 service Msg {
@@ -49,10 +49,6 @@ service Msg {
   // Mixed operations: combine orderbook takes and pool swaps in one tx
   rpc MakeTrade(MsgMakeTrade) returns (MsgMakeTradeResponse);
 
-  // Wrapping (liquid conversions)
-  rpc ConvertToLiquid(MsgConvertToLiquid) returns (MsgConvertToLiquidResponse);
-  rpc ConvertToSolid(MsgConvertToSolid) returns (MsgConvertToSolidResponse);
-
   // Orderbook
   rpc MakeOffer(MsgMakeOffer) returns (MsgMakeOfferResponse);
   rpc TakeOffer(MsgTakeOffer) returns (MsgTakeOfferResponse);
@@ -64,6 +60,15 @@ service Msg {
 
   // Params
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+}
+
+// SettlementMode selects how offers fund the "have" side:
+// - ESCROW: Escrow base have in the module at offer creation.
+// - LIQUID: Do not escrow base; lock PFAND and settle from maker balance at
+// take.
+enum SettlementMode {
+  SETTLEMENT_ESCROW = 0;
+  SETTLEMENT_LIQUID = 1;
 }
 
 // Create a pool.
@@ -246,35 +251,14 @@ message MsgPoolSwapResponse {
   ];
 }
 
-// Convert solid denom to liquid wrapper L(denom).
-message MsgConvertToLiquid {
-  option (cosmos.msg.v1.signer) = "caller";
-  string caller = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  string denom = 2;
-  string amount = 3; // sdk.Int string
-}
-message MsgConvertToLiquidResponse {
-  string liquid_denom = 1;
-  string amount = 2; // sdk.Int string
-}
-
-// Convert liquid denom L(denom) to solid denom.
-message MsgConvertToSolid {
-  option (cosmos.msg.v1.signer) = "caller";
-  string caller = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  string liquid_denom = 2;
-  string amount = 3; // sdk.Int string
-}
-message MsgConvertToSolidResponse {
-  cosmos.base.v1beta1.Coin amount_out = 1 [ (gogoproto.nullable) = false ];
-}
-
 // Make an orderbook offer.
 //
 // Constraints and semantics:
 // - have and want must be different denoms and strictly positive.
-// - want denom must be a solid denom; liquid want is disallowed.
-// - If have denom is liquid, the transaction locks PFAND per module params.
+// - Any denom allowed (including PFAND); settlement behavior controlled by
+// settlement_mode.
+// - If settlement_mode == LIQUID, the transaction locks PFAND per module
+// params.
 // - The keeper computes GCD(have.amount, want.amount) to establish integral
 //   units for partial fills: unit_have = have/gcd, unit_want = want/gcd.
 // - RemainingUnits starts at gcd and decreases as fills occur.
@@ -283,6 +267,9 @@ message MsgMakeOffer {
   string maker = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   cosmos.base.v1beta1.Coin have = 2 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin want = 3 [ (gogoproto.nullable) = false ];
+  // settlement_mode determines whether base have is escrowed (ESCROW) or
+  // PFAND is locked and settlement occurs from maker balance at take (LIQUID).
+  SettlementMode settlement_mode = 4;
 }
 message MsgMakeOfferResponse { uint64 offer_id = 1; }
 
@@ -305,8 +292,7 @@ message MsgTakeOfferResponse {
     (amino.dont_omitempty) = true,
     (amino.encoding) = "legacy_coins"
   ];
-  // Total coins the taker received across executed trades (usually have denom,
-  // base denom when offers use liquid have).
+  // Total coins the taker received across executed trades (usually have denom).
   repeated cosmos.base.v1beta1.Coin received = 2 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
@@ -315,12 +301,11 @@ message MsgTakeOfferResponse {
   ];
 }
 
-// Cancel an offer (maker or eligible third-party for liquid offers).
+// Cancel an offer (maker or eligible third-party for liquid-mode offers).
 //
 // - Maker may always cancel open offers.
-// - For liquid-have offers, a third party is eligible if the maker's balance of
-//   the liquid have denom drops below one unit_have, enabling recovery via
-//   PFAND.
+// - For liquid-mode offers, a third party is eligible if the maker's balance of
+//   the have denom drops below one unit_have, enabling recovery via PFAND.
 message MsgCancelOffer {
   option (cosmos.msg.v1.signer) = "closer";
   string closer = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
@@ -328,7 +313,7 @@ message MsgCancelOffer {
 }
 message MsgCancelOfferResponse {}
 
-// Open an auction by escrowing exactly one solid denom amount.
+// Open an auction by escrowing exactly one coin amount.
 //
 // - The escrowed `sell` coin is transferred from seller to module and marked by
 //   an NFT for redemption logic. `bid_denom` defines the quote asset.
@@ -336,7 +321,7 @@ message MsgOpenAuction {
   option (cosmos.msg.v1.signer) = "seller";
   string seller = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   string bid_denom = 2;
-  // Explicit solid sell coin to escrow from seller → module.
+  // Explicit sell coin to escrow from seller → module.
   cosmos.base.v1beta1.Coin sell = 3 [ (gogoproto.nullable) = false ];
 }
 message MsgOpenAuctionResponse { uint64 auction_id = 1; }

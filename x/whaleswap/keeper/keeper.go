@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/store"
@@ -385,21 +384,7 @@ func (k Keeper) burnModule(ctx context.Context, coins sdk.Coins) error {
 	return k.bank.BurnCoins(ctx, whaleswap.ModuleName, coins)
 }
 
-// ----- Orderbook + liquid helpers -----
-
-const liquidPrefix = whaleswapv1.LiquidDenomPrefix
-
-func (k Keeper) isLiquidDenom(denom string) bool {
-	return strings.HasPrefix(denom, liquidPrefix)
-}
-
-// decodeLiquidDenom strips whaleswap.dys/coins/ prefix and returns the solid denom
-func (k Keeper) decodeLiquidDenom(liquid string) (string, error) {
-	if !k.isLiquidDenom(liquid) {
-		return "", fmt.Errorf("invalid liquid denom: %s", liquid)
-	}
-	return strings.TrimPrefix(liquid, liquidPrefix), nil
-}
+// ----- Orderbook helpers -----
 
 // gcdInt computes GCD(a,b) using Euclidean algorithm
 func (k Keeper) gcdInt(a, b cosmossdk_math.Int) cosmossdk_math.Int {

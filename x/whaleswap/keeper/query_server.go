@@ -4,7 +4,6 @@ import (
 	"context"
 
 	cosmossdkerrors "cosmossdk.io/errors"
-	whaleswap "dysonprotocol.com/x/whaleswap"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -51,23 +50,6 @@ func (k Keeper) Metrics(ctx context.Context, _ *whaleswapv1.QueryMetricsRequest)
 		}
 		return false, nil
 	})
-	// Liquid-backing remainder: module solids minus (amm + escrowOffers + auctions + pfand)
-	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
-	actual := k.bank.SpendableCoins(ctx, moduleAddr)
-	parts := sdk.NewCoins().Add(amm...).Add(escrowOffers...).Add(auctionCoins...).Add(pfand...)
-	actualSolids := sdk.NewCoins()
-	for _, c := range actual {
-		if !k.isLiquidDenom(c.Denom) && c.Amount.IsPositive() {
-			actualSolids = actualSolids.Add(c)
-		}
-	}
-	liquidBacking := sdk.NewCoins()
-	for _, c := range actualSolids {
-		rem := c.Amount.Sub(parts.AmountOf(c.Denom))
-		if rem.IsPositive() {
-			liquidBacking = liquidBacking.Add(sdk.NewCoin(c.Denom, rem))
-		}
-	}
 	// num_trades by iterating trades map (sequence may include gaps)
 	var numTrades uint64
 	_ = k.TradesMap.Walk(ctx, nil, func(_ uint64, _ whaleswapv1.Trade) (bool, error) {
@@ -80,7 +62,6 @@ func (k Keeper) Metrics(ctx context.Context, _ *whaleswapv1.QueryMetricsRequest)
 		EscrowedOfferCoins:   escrowOffers,
 		EscrowedPfand:        pfand,
 		EscrowedAuctionCoins: auctionCoins,
-		EscrowedLiquidCoins:  liquidBacking,
 		FeesEarned:           fees,
 	}
 	return &whaleswapv1.QueryMetricsResponse{Metrics: m}, nil

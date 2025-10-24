@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { MsgAddLiquidity, MsgAddLiquidityResponse, MsgCancelOffer, MsgCancelOfferResponse, MsgConvertToLiquid, MsgConvertToLiquidResponse, MsgConvertToSolid, MsgConvertToSolidResponse, MsgCreatePool, MsgCreatePoolResponse, MsgMakeOffer, MsgMakeOfferResponse, MsgMakeTrade, MsgMakeTradeResponse, MsgOpenAuction, MsgOpenAuctionResponse, MsgPoolSwap, MsgPoolSwapResponse, MsgRedeemAuction, MsgRedeemAuctionResponse, MsgRemoveLiquidity, MsgRemoveLiquidityResponse, MsgTakeOffer, MsgTakeOfferResponse, MsgUpdateParams, MsgUpdateParamsResponse, MsgUpdatePoolConfig, MsgUpdatePoolConfigResponse } from "./tx_pb.js";
+import { MsgAddLiquidity, MsgAddLiquidityResponse, MsgCancelOffer, MsgCancelOfferResponse, MsgCreatePool, MsgCreatePoolResponse, MsgMakeOffer, MsgMakeOfferResponse, MsgMakeTrade, MsgMakeTradeResponse, MsgOpenAuction, MsgOpenAuctionResponse, MsgPoolSwap, MsgPoolSwapResponse, MsgRedeemAuction, MsgRedeemAuctionResponse, MsgRemoveLiquidity, MsgRemoveLiquidityResponse, MsgTakeOffer, MsgTakeOfferResponse, MsgUpdateParams, MsgUpdateParamsResponse, MsgUpdatePoolConfig, MsgUpdatePoolConfigResponse } from "./tx_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -27,9 +27,9 @@ import { MethodKind } from "@bufbuild/protobuf";
  *   be either empty (unset) or contain exactly two coins whose denoms match the
  *   pool's reserve denoms, representing coin_b / coin_a.
  *
- * - Liquid denoms: The module uses a liquid wrapper L(denom) to represent
- *   tokenized credit balances. Some operations disallow liquid denoms on
- *   certain sides (e.g., offers.want).
+ * - Settlement modes: Orderbook offers specify how the 'have' is funded:
+ *   ESCROW (escrow base have at creation) or LIQUID (no escrow; lock PFAND and
+ *   settle from maker balance at take).
  *
  * Msg defines the whaleswap Msg service.
  *
@@ -94,26 +94,6 @@ export const Msg = {
       name: "MakeTrade",
       I: MsgMakeTrade,
       O: MsgMakeTradeResponse,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * Wrapping (liquid conversions)
-     *
-     * @generated from rpc dysonprotocol.whaleswap.v1.Msg.ConvertToLiquid
-     */
-    convertToLiquid: {
-      name: "ConvertToLiquid",
-      I: MsgConvertToLiquid,
-      O: MsgConvertToLiquidResponse,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * @generated from rpc dysonprotocol.whaleswap.v1.Msg.ConvertToSolid
-     */
-    convertToSolid: {
-      name: "ConvertToSolid",
-      I: MsgConvertToSolid,
-      O: MsgConvertToSolidResponse,
       kind: MethodKind.Unary,
     },
     /**
