@@ -52,9 +52,9 @@
     },
     "response": {
         "$schema": "http://json-schema.org/draft-04/schema#",
-        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAuctionsResponse",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAuctionsBySellerResponse",
         "definitions": {
-            "dysonprotocol.whaleswap.v1.QueryAuctionsResponse": {
+            "dysonprotocol.whaleswap.v1.QueryAuctionsBySellerResponse": {
                 "properties": {
                     "auctions": {
                         "items": {
@@ -70,7 +70,7 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Auctions Response"
+                "title": "Query Auctions By Seller Response"
             },
             "cosmos.base.query.v1beta1.PageResponse": {
                 "properties": {

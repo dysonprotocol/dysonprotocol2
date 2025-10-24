@@ -506,7 +506,20 @@ func (k Keeper) CancelOffer(ctx context.Context, msg *whaleswapv1.MsgCancelOffer
 		}
 	}
 	if !eligible {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrUnauthorized, "not eligible to cancel offer")
+		// Compute diagnostics for detailed error context
+		diagHaveDenom := offer.RemainingHave.Denom
+		diagUnitHave := offer.UnitHaveInt
+		diagMakerBal := k.bank.GetBalance(ctx, maker, diagHaveDenom).Amount
+		return nil, cosmossdkerrors.Wrapf(
+			sdkerrors.ErrUnauthorized,
+			"not eligible to cancel offer: closer=%s maker=%s pfand_locked=%s have_denom=%s unit_have_int=%s maker_balance=%s",
+			msg.Closer,
+			offer.Maker,
+			pfandLocked.String(),
+			diagHaveDenom,
+			diagUnitHave,
+			diagMakerBal.String(),
+		)
 	}
 
 	offer.Status = whaleswapv1.OfferStatusCancelled

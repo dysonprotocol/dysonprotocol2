@@ -21,9 +21,9 @@
     },
     "response": {
         "$schema": "http://json-schema.org/draft-04/schema#",
-        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAuctionResponse",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse",
         "definitions": {
-            "dysonprotocol.whaleswap.v1.QueryAuctionResponse": {
+            "dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse": {
                 "properties": {
                     "auction": {
                         "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord",
@@ -32,7 +32,7 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Auction Response"
+                "title": "Query Auction By NFT Response"
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {

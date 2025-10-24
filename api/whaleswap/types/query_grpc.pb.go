@@ -60,21 +60,21 @@ type QueryClient interface {
 	Pools(ctx context.Context, in *QueryPoolsRequest, opts ...grpc.CallOption) (*QueryPoolsResponse, error)
 	// PoolsByPair returns all pools matching the provided denom pair with
 	// pagination. Denom order in the request is irrelevant.
-	PoolsByPair(ctx context.Context, in *QueryPoolsByPairRequest, opts ...grpc.CallOption) (*QueryPoolsResponse, error)
+	PoolsByPair(ctx context.Context, in *QueryPoolsByPairRequest, opts ...grpc.CallOption) (*QueryPoolsByPairResponse, error)
 	// PoolsByDenom returns all pools that include the provided denom on either
 	// side of the pair. This leverages a reverse index keyed by denom.
-	PoolsByDenom(ctx context.Context, in *QueryPoolsByDenomRequest, opts ...grpc.CallOption) (*QueryPoolsResponse, error)
+	PoolsByDenom(ctx context.Context, in *QueryPoolsByDenomRequest, opts ...grpc.CallOption) (*QueryPoolsByDenomResponse, error)
 	// PoolBySharesDenom returns the pool that mints the provided shares denom.
-	PoolBySharesDenom(ctx context.Context, in *QueryPoolBySharesDenomRequest, opts ...grpc.CallOption) (*QueryPoolResponse, error)
+	PoolBySharesDenom(ctx context.Context, in *QueryPoolBySharesDenomRequest, opts ...grpc.CallOption) (*QueryPoolBySharesDenomResponse, error)
 	// PoolsByPairPriceRange returns pools for a given pair whose instantaneous
 	// price (derived from reserves, P = coin_b/coin_a) falls within the optional
 	// [min_price, max_price] range. Prices are expressed as cosmos.Dec strings.
 	// If neither bound is provided, it returns all pools for the pair.
-	PoolsByPairPriceRange(ctx context.Context, in *QueryPoolsByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryPoolsResponse, error)
+	PoolsByPairPriceRange(ctx context.Context, in *QueryPoolsByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryPoolsByPairPriceRangeResponse, error)
 	// PoolsByOwner returns pools where the requested owner holds a non-zero
 	// balance of pool shares. This may be implemented via a filtered scan unless
 	// the application maintains a dedicated reverse index.
-	PoolsByOwner(ctx context.Context, in *QueryPoolsByOwnerRequest, opts ...grpc.CallOption) (*QueryPoolsResponse, error)
+	PoolsByOwner(ctx context.Context, in *QueryPoolsByOwnerRequest, opts ...grpc.CallOption) (*QueryPoolsByOwnerResponse, error)
 	// Offers
 	Offer(ctx context.Context, in *QueryOfferRequest, opts ...grpc.CallOption) (*QueryOfferResponse, error)
 	OffersByOwner(ctx context.Context, in *QueryOffersByOwnerRequest, opts ...grpc.CallOption) (*QueryOffersByOwnerResponse, error)
@@ -83,17 +83,17 @@ type QueryClient interface {
 	// OffersByDenom returns offers that mention the provided denom either as the
 	// have or want side, depending on the optional role filter. When role is
 	// unset or empty, both sides are considered.
-	OffersByDenom(ctx context.Context, in *QueryOffersByDenomRequest, opts ...grpc.CallOption) (*QueryOffersResponse, error)
+	OffersByDenom(ctx context.Context, in *QueryOffersByDenomRequest, opts ...grpc.CallOption) (*QueryOffersByDenomResponse, error)
 	// OffersByPairPriceRange returns offers for a pair (order of have/want is
 	// irrelevant; the implementation canonicalizes to pairKey) whose price lies
 	// within the optional [min_price, max_price] range. Prices are cosmos.Dec
 	// strings representing want-per-have (high-per-low orientation), so lower is
 	// better for takers paying want to receive have.
-	OffersByPairPriceRange(ctx context.Context, in *QueryOffersByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryOffersResponse, error)
+	OffersByPairPriceRange(ctx context.Context, in *QueryOffersByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryOffersByPairPriceRangeResponse, error)
 	// OffersBest returns up to `limit` best-priced offers for the given pair
 	// (treating price as want-per-have, sorted ascending). This is a convenience
 	// endpoint for top-of-book queries.
-	OffersBest(ctx context.Context, in *QueryOffersBestRequest, opts ...grpc.CallOption) (*QueryOffersResponse, error)
+	OffersBest(ctx context.Context, in *QueryOffersBestRequest, opts ...grpc.CallOption) (*QueryOffersBestResponse, error)
 	// Trades
 	// Get a single trade by id
 	Trade(ctx context.Context, in *QueryTradeRequest, opts ...grpc.CallOption) (*QueryTradeResponse, error)
@@ -110,17 +110,17 @@ type QueryClient interface {
 	// List auctions with optional filters and pagination
 	Auctions(ctx context.Context, in *QueryAuctionsRequest, opts ...grpc.CallOption) (*QueryAuctionsResponse, error)
 	// AuctionsBySeller returns auctions opened by the specified seller address.
-	AuctionsBySeller(ctx context.Context, in *QueryAuctionsBySellerRequest, opts ...grpc.CallOption) (*QueryAuctionsResponse, error)
+	AuctionsBySeller(ctx context.Context, in *QueryAuctionsBySellerRequest, opts ...grpc.CallOption) (*QueryAuctionsBySellerResponse, error)
 	// AuctionByNFT returns the auction associated with the specific NFT
 	// (class_id, nft_id) used as the escrow marker.
-	AuctionByNFT(ctx context.Context, in *QueryAuctionByNFTRequest, opts ...grpc.CallOption) (*QueryAuctionResponse, error)
+	AuctionByNFT(ctx context.Context, in *QueryAuctionByNFTRequest, opts ...grpc.CallOption) (*QueryAuctionByNFTResponse, error)
 	// AuctionsByPairPriceRange returns auctions for a given (sell,bid) pair whose
 	// effective price (bid-per-sell) falls within [min_price, max_price].
 	// IMPORTANT: This endpoint requires iterating relevant NFTs/auctions and
 	// computing the current effective price from valuation or current bid and the
 	// redeemable sell-coin amount. It is designed for UI discovery and may be
 	// more expensive than index-backed queries.
-	AuctionsByPairPriceRange(ctx context.Context, in *QueryAuctionsByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryAuctionsResponse, error)
+	AuctionsByPairPriceRange(ctx context.Context, in *QueryAuctionsByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryAuctionsByPairPriceRangeResponse, error)
 	// Metrics returns a breakdown of module-expected balances by subsystem
 	// and summary counters for invariants and monitoring.
 	Metrics(ctx context.Context, in *QueryMetricsRequest, opts ...grpc.CallOption) (*QueryMetricsResponse, error)
@@ -164,9 +164,9 @@ func (c *queryClient) Pools(ctx context.Context, in *QueryPoolsRequest, opts ...
 	return out, nil
 }
 
-func (c *queryClient) PoolsByPair(ctx context.Context, in *QueryPoolsByPairRequest, opts ...grpc.CallOption) (*QueryPoolsResponse, error) {
+func (c *queryClient) PoolsByPair(ctx context.Context, in *QueryPoolsByPairRequest, opts ...grpc.CallOption) (*QueryPoolsByPairResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryPoolsResponse)
+	out := new(QueryPoolsByPairResponse)
 	err := c.cc.Invoke(ctx, Query_PoolsByPair_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -174,9 +174,9 @@ func (c *queryClient) PoolsByPair(ctx context.Context, in *QueryPoolsByPairReque
 	return out, nil
 }
 
-func (c *queryClient) PoolsByDenom(ctx context.Context, in *QueryPoolsByDenomRequest, opts ...grpc.CallOption) (*QueryPoolsResponse, error) {
+func (c *queryClient) PoolsByDenom(ctx context.Context, in *QueryPoolsByDenomRequest, opts ...grpc.CallOption) (*QueryPoolsByDenomResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryPoolsResponse)
+	out := new(QueryPoolsByDenomResponse)
 	err := c.cc.Invoke(ctx, Query_PoolsByDenom_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -184,9 +184,9 @@ func (c *queryClient) PoolsByDenom(ctx context.Context, in *QueryPoolsByDenomReq
 	return out, nil
 }
 
-func (c *queryClient) PoolBySharesDenom(ctx context.Context, in *QueryPoolBySharesDenomRequest, opts ...grpc.CallOption) (*QueryPoolResponse, error) {
+func (c *queryClient) PoolBySharesDenom(ctx context.Context, in *QueryPoolBySharesDenomRequest, opts ...grpc.CallOption) (*QueryPoolBySharesDenomResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryPoolResponse)
+	out := new(QueryPoolBySharesDenomResponse)
 	err := c.cc.Invoke(ctx, Query_PoolBySharesDenom_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -194,9 +194,9 @@ func (c *queryClient) PoolBySharesDenom(ctx context.Context, in *QueryPoolByShar
 	return out, nil
 }
 
-func (c *queryClient) PoolsByPairPriceRange(ctx context.Context, in *QueryPoolsByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryPoolsResponse, error) {
+func (c *queryClient) PoolsByPairPriceRange(ctx context.Context, in *QueryPoolsByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryPoolsByPairPriceRangeResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryPoolsResponse)
+	out := new(QueryPoolsByPairPriceRangeResponse)
 	err := c.cc.Invoke(ctx, Query_PoolsByPairPriceRange_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -204,9 +204,9 @@ func (c *queryClient) PoolsByPairPriceRange(ctx context.Context, in *QueryPoolsB
 	return out, nil
 }
 
-func (c *queryClient) PoolsByOwner(ctx context.Context, in *QueryPoolsByOwnerRequest, opts ...grpc.CallOption) (*QueryPoolsResponse, error) {
+func (c *queryClient) PoolsByOwner(ctx context.Context, in *QueryPoolsByOwnerRequest, opts ...grpc.CallOption) (*QueryPoolsByOwnerResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryPoolsResponse)
+	out := new(QueryPoolsByOwnerResponse)
 	err := c.cc.Invoke(ctx, Query_PoolsByOwner_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -244,9 +244,9 @@ func (c *queryClient) Offers(ctx context.Context, in *QueryOffersRequest, opts .
 	return out, nil
 }
 
-func (c *queryClient) OffersByDenom(ctx context.Context, in *QueryOffersByDenomRequest, opts ...grpc.CallOption) (*QueryOffersResponse, error) {
+func (c *queryClient) OffersByDenom(ctx context.Context, in *QueryOffersByDenomRequest, opts ...grpc.CallOption) (*QueryOffersByDenomResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryOffersResponse)
+	out := new(QueryOffersByDenomResponse)
 	err := c.cc.Invoke(ctx, Query_OffersByDenom_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -254,9 +254,9 @@ func (c *queryClient) OffersByDenom(ctx context.Context, in *QueryOffersByDenomR
 	return out, nil
 }
 
-func (c *queryClient) OffersByPairPriceRange(ctx context.Context, in *QueryOffersByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryOffersResponse, error) {
+func (c *queryClient) OffersByPairPriceRange(ctx context.Context, in *QueryOffersByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryOffersByPairPriceRangeResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryOffersResponse)
+	out := new(QueryOffersByPairPriceRangeResponse)
 	err := c.cc.Invoke(ctx, Query_OffersByPairPriceRange_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -264,9 +264,9 @@ func (c *queryClient) OffersByPairPriceRange(ctx context.Context, in *QueryOffer
 	return out, nil
 }
 
-func (c *queryClient) OffersBest(ctx context.Context, in *QueryOffersBestRequest, opts ...grpc.CallOption) (*QueryOffersResponse, error) {
+func (c *queryClient) OffersBest(ctx context.Context, in *QueryOffersBestRequest, opts ...grpc.CallOption) (*QueryOffersBestResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryOffersResponse)
+	out := new(QueryOffersBestResponse)
 	err := c.cc.Invoke(ctx, Query_OffersBest_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -354,9 +354,9 @@ func (c *queryClient) Auctions(ctx context.Context, in *QueryAuctionsRequest, op
 	return out, nil
 }
 
-func (c *queryClient) AuctionsBySeller(ctx context.Context, in *QueryAuctionsBySellerRequest, opts ...grpc.CallOption) (*QueryAuctionsResponse, error) {
+func (c *queryClient) AuctionsBySeller(ctx context.Context, in *QueryAuctionsBySellerRequest, opts ...grpc.CallOption) (*QueryAuctionsBySellerResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryAuctionsResponse)
+	out := new(QueryAuctionsBySellerResponse)
 	err := c.cc.Invoke(ctx, Query_AuctionsBySeller_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -364,9 +364,9 @@ func (c *queryClient) AuctionsBySeller(ctx context.Context, in *QueryAuctionsByS
 	return out, nil
 }
 
-func (c *queryClient) AuctionByNFT(ctx context.Context, in *QueryAuctionByNFTRequest, opts ...grpc.CallOption) (*QueryAuctionResponse, error) {
+func (c *queryClient) AuctionByNFT(ctx context.Context, in *QueryAuctionByNFTRequest, opts ...grpc.CallOption) (*QueryAuctionByNFTResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryAuctionResponse)
+	out := new(QueryAuctionByNFTResponse)
 	err := c.cc.Invoke(ctx, Query_AuctionByNFT_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -374,9 +374,9 @@ func (c *queryClient) AuctionByNFT(ctx context.Context, in *QueryAuctionByNFTReq
 	return out, nil
 }
 
-func (c *queryClient) AuctionsByPairPriceRange(ctx context.Context, in *QueryAuctionsByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryAuctionsResponse, error) {
+func (c *queryClient) AuctionsByPairPriceRange(ctx context.Context, in *QueryAuctionsByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryAuctionsByPairPriceRangeResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryAuctionsResponse)
+	out := new(QueryAuctionsByPairPriceRangeResponse)
 	err := c.cc.Invoke(ctx, Query_AuctionsByPairPriceRange_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -407,21 +407,21 @@ type QueryServer interface {
 	Pools(context.Context, *QueryPoolsRequest) (*QueryPoolsResponse, error)
 	// PoolsByPair returns all pools matching the provided denom pair with
 	// pagination. Denom order in the request is irrelevant.
-	PoolsByPair(context.Context, *QueryPoolsByPairRequest) (*QueryPoolsResponse, error)
+	PoolsByPair(context.Context, *QueryPoolsByPairRequest) (*QueryPoolsByPairResponse, error)
 	// PoolsByDenom returns all pools that include the provided denom on either
 	// side of the pair. This leverages a reverse index keyed by denom.
-	PoolsByDenom(context.Context, *QueryPoolsByDenomRequest) (*QueryPoolsResponse, error)
+	PoolsByDenom(context.Context, *QueryPoolsByDenomRequest) (*QueryPoolsByDenomResponse, error)
 	// PoolBySharesDenom returns the pool that mints the provided shares denom.
-	PoolBySharesDenom(context.Context, *QueryPoolBySharesDenomRequest) (*QueryPoolResponse, error)
+	PoolBySharesDenom(context.Context, *QueryPoolBySharesDenomRequest) (*QueryPoolBySharesDenomResponse, error)
 	// PoolsByPairPriceRange returns pools for a given pair whose instantaneous
 	// price (derived from reserves, P = coin_b/coin_a) falls within the optional
 	// [min_price, max_price] range. Prices are expressed as cosmos.Dec strings.
 	// If neither bound is provided, it returns all pools for the pair.
-	PoolsByPairPriceRange(context.Context, *QueryPoolsByPairPriceRangeRequest) (*QueryPoolsResponse, error)
+	PoolsByPairPriceRange(context.Context, *QueryPoolsByPairPriceRangeRequest) (*QueryPoolsByPairPriceRangeResponse, error)
 	// PoolsByOwner returns pools where the requested owner holds a non-zero
 	// balance of pool shares. This may be implemented via a filtered scan unless
 	// the application maintains a dedicated reverse index.
-	PoolsByOwner(context.Context, *QueryPoolsByOwnerRequest) (*QueryPoolsResponse, error)
+	PoolsByOwner(context.Context, *QueryPoolsByOwnerRequest) (*QueryPoolsByOwnerResponse, error)
 	// Offers
 	Offer(context.Context, *QueryOfferRequest) (*QueryOfferResponse, error)
 	OffersByOwner(context.Context, *QueryOffersByOwnerRequest) (*QueryOffersByOwnerResponse, error)
@@ -430,17 +430,17 @@ type QueryServer interface {
 	// OffersByDenom returns offers that mention the provided denom either as the
 	// have or want side, depending on the optional role filter. When role is
 	// unset or empty, both sides are considered.
-	OffersByDenom(context.Context, *QueryOffersByDenomRequest) (*QueryOffersResponse, error)
+	OffersByDenom(context.Context, *QueryOffersByDenomRequest) (*QueryOffersByDenomResponse, error)
 	// OffersByPairPriceRange returns offers for a pair (order of have/want is
 	// irrelevant; the implementation canonicalizes to pairKey) whose price lies
 	// within the optional [min_price, max_price] range. Prices are cosmos.Dec
 	// strings representing want-per-have (high-per-low orientation), so lower is
 	// better for takers paying want to receive have.
-	OffersByPairPriceRange(context.Context, *QueryOffersByPairPriceRangeRequest) (*QueryOffersResponse, error)
+	OffersByPairPriceRange(context.Context, *QueryOffersByPairPriceRangeRequest) (*QueryOffersByPairPriceRangeResponse, error)
 	// OffersBest returns up to `limit` best-priced offers for the given pair
 	// (treating price as want-per-have, sorted ascending). This is a convenience
 	// endpoint for top-of-book queries.
-	OffersBest(context.Context, *QueryOffersBestRequest) (*QueryOffersResponse, error)
+	OffersBest(context.Context, *QueryOffersBestRequest) (*QueryOffersBestResponse, error)
 	// Trades
 	// Get a single trade by id
 	Trade(context.Context, *QueryTradeRequest) (*QueryTradeResponse, error)
@@ -457,17 +457,17 @@ type QueryServer interface {
 	// List auctions with optional filters and pagination
 	Auctions(context.Context, *QueryAuctionsRequest) (*QueryAuctionsResponse, error)
 	// AuctionsBySeller returns auctions opened by the specified seller address.
-	AuctionsBySeller(context.Context, *QueryAuctionsBySellerRequest) (*QueryAuctionsResponse, error)
+	AuctionsBySeller(context.Context, *QueryAuctionsBySellerRequest) (*QueryAuctionsBySellerResponse, error)
 	// AuctionByNFT returns the auction associated with the specific NFT
 	// (class_id, nft_id) used as the escrow marker.
-	AuctionByNFT(context.Context, *QueryAuctionByNFTRequest) (*QueryAuctionResponse, error)
+	AuctionByNFT(context.Context, *QueryAuctionByNFTRequest) (*QueryAuctionByNFTResponse, error)
 	// AuctionsByPairPriceRange returns auctions for a given (sell,bid) pair whose
 	// effective price (bid-per-sell) falls within [min_price, max_price].
 	// IMPORTANT: This endpoint requires iterating relevant NFTs/auctions and
 	// computing the current effective price from valuation or current bid and the
 	// redeemable sell-coin amount. It is designed for UI discovery and may be
 	// more expensive than index-backed queries.
-	AuctionsByPairPriceRange(context.Context, *QueryAuctionsByPairPriceRangeRequest) (*QueryAuctionsResponse, error)
+	AuctionsByPairPriceRange(context.Context, *QueryAuctionsByPairPriceRangeRequest) (*QueryAuctionsByPairPriceRangeResponse, error)
 	// Metrics returns a breakdown of module-expected balances by subsystem
 	// and summary counters for invariants and monitoring.
 	Metrics(context.Context, *QueryMetricsRequest) (*QueryMetricsResponse, error)
@@ -490,19 +490,19 @@ func (UnimplementedQueryServer) Pool(context.Context, *QueryPoolRequest) (*Query
 func (UnimplementedQueryServer) Pools(context.Context, *QueryPoolsRequest) (*QueryPoolsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Pools not implemented")
 }
-func (UnimplementedQueryServer) PoolsByPair(context.Context, *QueryPoolsByPairRequest) (*QueryPoolsResponse, error) {
+func (UnimplementedQueryServer) PoolsByPair(context.Context, *QueryPoolsByPairRequest) (*QueryPoolsByPairResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PoolsByPair not implemented")
 }
-func (UnimplementedQueryServer) PoolsByDenom(context.Context, *QueryPoolsByDenomRequest) (*QueryPoolsResponse, error) {
+func (UnimplementedQueryServer) PoolsByDenom(context.Context, *QueryPoolsByDenomRequest) (*QueryPoolsByDenomResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PoolsByDenom not implemented")
 }
-func (UnimplementedQueryServer) PoolBySharesDenom(context.Context, *QueryPoolBySharesDenomRequest) (*QueryPoolResponse, error) {
+func (UnimplementedQueryServer) PoolBySharesDenom(context.Context, *QueryPoolBySharesDenomRequest) (*QueryPoolBySharesDenomResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PoolBySharesDenom not implemented")
 }
-func (UnimplementedQueryServer) PoolsByPairPriceRange(context.Context, *QueryPoolsByPairPriceRangeRequest) (*QueryPoolsResponse, error) {
+func (UnimplementedQueryServer) PoolsByPairPriceRange(context.Context, *QueryPoolsByPairPriceRangeRequest) (*QueryPoolsByPairPriceRangeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PoolsByPairPriceRange not implemented")
 }
-func (UnimplementedQueryServer) PoolsByOwner(context.Context, *QueryPoolsByOwnerRequest) (*QueryPoolsResponse, error) {
+func (UnimplementedQueryServer) PoolsByOwner(context.Context, *QueryPoolsByOwnerRequest) (*QueryPoolsByOwnerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PoolsByOwner not implemented")
 }
 func (UnimplementedQueryServer) Offer(context.Context, *QueryOfferRequest) (*QueryOfferResponse, error) {
@@ -514,13 +514,13 @@ func (UnimplementedQueryServer) OffersByOwner(context.Context, *QueryOffersByOwn
 func (UnimplementedQueryServer) Offers(context.Context, *QueryOffersRequest) (*QueryOffersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Offers not implemented")
 }
-func (UnimplementedQueryServer) OffersByDenom(context.Context, *QueryOffersByDenomRequest) (*QueryOffersResponse, error) {
+func (UnimplementedQueryServer) OffersByDenom(context.Context, *QueryOffersByDenomRequest) (*QueryOffersByDenomResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OffersByDenom not implemented")
 }
-func (UnimplementedQueryServer) OffersByPairPriceRange(context.Context, *QueryOffersByPairPriceRangeRequest) (*QueryOffersResponse, error) {
+func (UnimplementedQueryServer) OffersByPairPriceRange(context.Context, *QueryOffersByPairPriceRangeRequest) (*QueryOffersByPairPriceRangeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OffersByPairPriceRange not implemented")
 }
-func (UnimplementedQueryServer) OffersBest(context.Context, *QueryOffersBestRequest) (*QueryOffersResponse, error) {
+func (UnimplementedQueryServer) OffersBest(context.Context, *QueryOffersBestRequest) (*QueryOffersBestResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OffersBest not implemented")
 }
 func (UnimplementedQueryServer) Trade(context.Context, *QueryTradeRequest) (*QueryTradeResponse, error) {
@@ -547,13 +547,13 @@ func (UnimplementedQueryServer) Auction(context.Context, *QueryAuctionRequest) (
 func (UnimplementedQueryServer) Auctions(context.Context, *QueryAuctionsRequest) (*QueryAuctionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Auctions not implemented")
 }
-func (UnimplementedQueryServer) AuctionsBySeller(context.Context, *QueryAuctionsBySellerRequest) (*QueryAuctionsResponse, error) {
+func (UnimplementedQueryServer) AuctionsBySeller(context.Context, *QueryAuctionsBySellerRequest) (*QueryAuctionsBySellerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuctionsBySeller not implemented")
 }
-func (UnimplementedQueryServer) AuctionByNFT(context.Context, *QueryAuctionByNFTRequest) (*QueryAuctionResponse, error) {
+func (UnimplementedQueryServer) AuctionByNFT(context.Context, *QueryAuctionByNFTRequest) (*QueryAuctionByNFTResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuctionByNFT not implemented")
 }
-func (UnimplementedQueryServer) AuctionsByPairPriceRange(context.Context, *QueryAuctionsByPairPriceRangeRequest) (*QueryAuctionsResponse, error) {
+func (UnimplementedQueryServer) AuctionsByPairPriceRange(context.Context, *QueryAuctionsByPairPriceRangeRequest) (*QueryAuctionsByPairPriceRangeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuctionsByPairPriceRange not implemented")
 }
 func (UnimplementedQueryServer) Metrics(context.Context, *QueryMetricsRequest) (*QueryMetricsResponse, error) {

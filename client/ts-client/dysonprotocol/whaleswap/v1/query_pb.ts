@@ -288,6 +288,49 @@ export class QueryPoolsByPairRequest extends Message<QueryPoolsByPairRequest> {
 }
 
 /**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryPoolsByPairResponse
+ */
+export class QueryPoolsByPairResponse extends Message<QueryPoolsByPairResponse> {
+  /**
+   * @generated from field: repeated dysonprotocol.whaleswap.v1.Pool pools = 1;
+   */
+  pools: Pool[] = [];
+
+  /**
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryPoolsByPairResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPoolsByPairResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "pools", kind: "message", T: Pool, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPoolsByPairResponse {
+    return new QueryPoolsByPairResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPoolsByPairResponse {
+    return new QueryPoolsByPairResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPoolsByPairResponse {
+    return new QueryPoolsByPairResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryPoolsByPairResponse | PlainMessage<QueryPoolsByPairResponse> | undefined, b: QueryPoolsByPairResponse | PlainMessage<QueryPoolsByPairResponse> | undefined): boolean {
+    return proto3.util.equals(QueryPoolsByPairResponse, a, b);
+  }
+}
+
+/**
  * QueryPoolsByDenomRequest lists pools containing the provided denom on either
  * side.
  *
@@ -336,6 +379,49 @@ export class QueryPoolsByDenomRequest extends Message<QueryPoolsByDenomRequest> 
 }
 
 /**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryPoolsByDenomResponse
+ */
+export class QueryPoolsByDenomResponse extends Message<QueryPoolsByDenomResponse> {
+  /**
+   * @generated from field: repeated dysonprotocol.whaleswap.v1.Pool pools = 1;
+   */
+  pools: Pool[] = [];
+
+  /**
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryPoolsByDenomResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPoolsByDenomResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "pools", kind: "message", T: Pool, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPoolsByDenomResponse {
+    return new QueryPoolsByDenomResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPoolsByDenomResponse {
+    return new QueryPoolsByDenomResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPoolsByDenomResponse {
+    return new QueryPoolsByDenomResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryPoolsByDenomResponse | PlainMessage<QueryPoolsByDenomResponse> | undefined, b: QueryPoolsByDenomResponse | PlainMessage<QueryPoolsByDenomResponse> | undefined): boolean {
+    return proto3.util.equals(QueryPoolsByDenomResponse, a, b);
+  }
+}
+
+/**
  * QueryPoolBySharesDenomRequest selects the pool that mints the given shares
  * denom.
  *
@@ -372,6 +458,43 @@ export class QueryPoolBySharesDenomRequest extends Message<QueryPoolBySharesDeno
 
   static equals(a: QueryPoolBySharesDenomRequest | PlainMessage<QueryPoolBySharesDenomRequest> | undefined, b: QueryPoolBySharesDenomRequest | PlainMessage<QueryPoolBySharesDenomRequest> | undefined): boolean {
     return proto3.util.equals(QueryPoolBySharesDenomRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryPoolBySharesDenomResponse
+ */
+export class QueryPoolBySharesDenomResponse extends Message<QueryPoolBySharesDenomResponse> {
+  /**
+   * @generated from field: dysonprotocol.whaleswap.v1.Pool pool = 1;
+   */
+  pool?: Pool;
+
+  constructor(data?: PartialMessage<QueryPoolBySharesDenomResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPoolBySharesDenomResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "pool", kind: "message", T: Pool },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPoolBySharesDenomResponse {
+    return new QueryPoolBySharesDenomResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPoolBySharesDenomResponse {
+    return new QueryPoolBySharesDenomResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPoolBySharesDenomResponse {
+    return new QueryPoolBySharesDenomResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryPoolBySharesDenomResponse | PlainMessage<QueryPoolBySharesDenomResponse> | undefined, b: QueryPoolBySharesDenomResponse | PlainMessage<QueryPoolBySharesDenomResponse> | undefined): boolean {
+    return proto3.util.equals(QueryPoolBySharesDenomResponse, a, b);
   }
 }
 
@@ -443,6 +566,49 @@ export class QueryPoolsByPairPriceRangeRequest extends Message<QueryPoolsByPairP
 }
 
 /**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryPoolsByPairPriceRangeResponse
+ */
+export class QueryPoolsByPairPriceRangeResponse extends Message<QueryPoolsByPairPriceRangeResponse> {
+  /**
+   * @generated from field: repeated dysonprotocol.whaleswap.v1.Pool pools = 1;
+   */
+  pools: Pool[] = [];
+
+  /**
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryPoolsByPairPriceRangeResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPoolsByPairPriceRangeResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "pools", kind: "message", T: Pool, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPoolsByPairPriceRangeResponse {
+    return new QueryPoolsByPairPriceRangeResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPoolsByPairPriceRangeResponse {
+    return new QueryPoolsByPairPriceRangeResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPoolsByPairPriceRangeResponse {
+    return new QueryPoolsByPairPriceRangeResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryPoolsByPairPriceRangeResponse | PlainMessage<QueryPoolsByPairPriceRangeResponse> | undefined, b: QueryPoolsByPairPriceRangeResponse | PlainMessage<QueryPoolsByPairPriceRangeResponse> | undefined): boolean {
+    return proto3.util.equals(QueryPoolsByPairPriceRangeResponse, a, b);
+  }
+}
+
+/**
  * QueryPoolsByOwnerRequest returns pools where the owner holds non-zero shares.
  *
  * @generated from message dysonprotocol.whaleswap.v1.QueryPoolsByOwnerRequest
@@ -484,6 +650,49 @@ export class QueryPoolsByOwnerRequest extends Message<QueryPoolsByOwnerRequest> 
 
   static equals(a: QueryPoolsByOwnerRequest | PlainMessage<QueryPoolsByOwnerRequest> | undefined, b: QueryPoolsByOwnerRequest | PlainMessage<QueryPoolsByOwnerRequest> | undefined): boolean {
     return proto3.util.equals(QueryPoolsByOwnerRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryPoolsByOwnerResponse
+ */
+export class QueryPoolsByOwnerResponse extends Message<QueryPoolsByOwnerResponse> {
+  /**
+   * @generated from field: repeated dysonprotocol.whaleswap.v1.Pool pools = 1;
+   */
+  pools: Pool[] = [];
+
+  /**
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryPoolsByOwnerResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPoolsByOwnerResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "pools", kind: "message", T: Pool, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPoolsByOwnerResponse {
+    return new QueryPoolsByOwnerResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPoolsByOwnerResponse {
+    return new QueryPoolsByOwnerResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPoolsByOwnerResponse {
+    return new QueryPoolsByOwnerResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryPoolsByOwnerResponse | PlainMessage<QueryPoolsByOwnerResponse> | undefined, b: QueryPoolsByOwnerResponse | PlainMessage<QueryPoolsByOwnerResponse> | undefined): boolean {
+    return proto3.util.equals(QueryPoolsByOwnerResponse, a, b);
   }
 }
 
@@ -805,6 +1014,49 @@ export class QueryOffersByDenomRequest extends Message<QueryOffersByDenomRequest
 }
 
 /**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryOffersByDenomResponse
+ */
+export class QueryOffersByDenomResponse extends Message<QueryOffersByDenomResponse> {
+  /**
+   * @generated from field: repeated dysonprotocol.whaleswap.v1.OfferData offers = 1;
+   */
+  offers: OfferData[] = [];
+
+  /**
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryOffersByDenomResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryOffersByDenomResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "offers", kind: "message", T: OfferData, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryOffersByDenomResponse {
+    return new QueryOffersByDenomResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryOffersByDenomResponse {
+    return new QueryOffersByDenomResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryOffersByDenomResponse {
+    return new QueryOffersByDenomResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryOffersByDenomResponse | PlainMessage<QueryOffersByDenomResponse> | undefined, b: QueryOffersByDenomResponse | PlainMessage<QueryOffersByDenomResponse> | undefined): boolean {
+    return proto3.util.equals(QueryOffersByDenomResponse, a, b);
+  }
+}
+
+/**
  * QueryOffersByPairPriceRangeRequest filters offers for a pair by price range.
  * Prices are expressed as want-per-have (high-per-low orientation) cosmos.Dec
  * strings.
@@ -870,6 +1122,49 @@ export class QueryOffersByPairPriceRangeRequest extends Message<QueryOffersByPai
 }
 
 /**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryOffersByPairPriceRangeResponse
+ */
+export class QueryOffersByPairPriceRangeResponse extends Message<QueryOffersByPairPriceRangeResponse> {
+  /**
+   * @generated from field: repeated dysonprotocol.whaleswap.v1.OfferData offers = 1;
+   */
+  offers: OfferData[] = [];
+
+  /**
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryOffersByPairPriceRangeResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryOffersByPairPriceRangeResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "offers", kind: "message", T: OfferData, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryOffersByPairPriceRangeResponse {
+    return new QueryOffersByPairPriceRangeResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryOffersByPairPriceRangeResponse {
+    return new QueryOffersByPairPriceRangeResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryOffersByPairPriceRangeResponse {
+    return new QueryOffersByPairPriceRangeResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryOffersByPairPriceRangeResponse | PlainMessage<QueryOffersByPairPriceRangeResponse> | undefined, b: QueryOffersByPairPriceRangeResponse | PlainMessage<QueryOffersByPairPriceRangeResponse> | undefined): boolean {
+    return proto3.util.equals(QueryOffersByPairPriceRangeResponse, a, b);
+  }
+}
+
+/**
  * QueryOffersBestRequest fetches up to `limit` best-priced offers for a pair.
  *
  * @generated from message dysonprotocol.whaleswap.v1.QueryOffersBestRequest
@@ -919,6 +1214,43 @@ export class QueryOffersBestRequest extends Message<QueryOffersBestRequest> {
 
   static equals(a: QueryOffersBestRequest | PlainMessage<QueryOffersBestRequest> | undefined, b: QueryOffersBestRequest | PlainMessage<QueryOffersBestRequest> | undefined): boolean {
     return proto3.util.equals(QueryOffersBestRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryOffersBestResponse
+ */
+export class QueryOffersBestResponse extends Message<QueryOffersBestResponse> {
+  /**
+   * @generated from field: repeated dysonprotocol.whaleswap.v1.OfferData offers = 1;
+   */
+  offers: OfferData[] = [];
+
+  constructor(data?: PartialMessage<QueryOffersBestResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryOffersBestResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "offers", kind: "message", T: OfferData, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryOffersBestResponse {
+    return new QueryOffersBestResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryOffersBestResponse {
+    return new QueryOffersBestResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryOffersBestResponse {
+    return new QueryOffersBestResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryOffersBestResponse | PlainMessage<QueryOffersBestResponse> | undefined, b: QueryOffersBestResponse | PlainMessage<QueryOffersBestResponse> | undefined): boolean {
+    return proto3.util.equals(QueryOffersBestResponse, a, b);
   }
 }
 
@@ -1650,6 +1982,49 @@ export class QueryAuctionsBySellerRequest extends Message<QueryAuctionsBySellerR
 }
 
 /**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryAuctionsBySellerResponse
+ */
+export class QueryAuctionsBySellerResponse extends Message<QueryAuctionsBySellerResponse> {
+  /**
+   * @generated from field: repeated dysonprotocol.whaleswap.v1.AuctionRecord auctions = 1;
+   */
+  auctions: AuctionRecord[] = [];
+
+  /**
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryAuctionsBySellerResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryAuctionsBySellerResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "auctions", kind: "message", T: AuctionRecord, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryAuctionsBySellerResponse {
+    return new QueryAuctionsBySellerResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryAuctionsBySellerResponse {
+    return new QueryAuctionsBySellerResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryAuctionsBySellerResponse {
+    return new QueryAuctionsBySellerResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryAuctionsBySellerResponse | PlainMessage<QueryAuctionsBySellerResponse> | undefined, b: QueryAuctionsBySellerResponse | PlainMessage<QueryAuctionsBySellerResponse> | undefined): boolean {
+    return proto3.util.equals(QueryAuctionsBySellerResponse, a, b);
+  }
+}
+
+/**
  * QueryAuctionByNFTRequest selects an auction by the escrow NFT identity.
  *
  * @generated from message dysonprotocol.whaleswap.v1.QueryAuctionByNFTRequest
@@ -1691,6 +2066,43 @@ export class QueryAuctionByNFTRequest extends Message<QueryAuctionByNFTRequest> 
 
   static equals(a: QueryAuctionByNFTRequest | PlainMessage<QueryAuctionByNFTRequest> | undefined, b: QueryAuctionByNFTRequest | PlainMessage<QueryAuctionByNFTRequest> | undefined): boolean {
     return proto3.util.equals(QueryAuctionByNFTRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse
+ */
+export class QueryAuctionByNFTResponse extends Message<QueryAuctionByNFTResponse> {
+  /**
+   * @generated from field: dysonprotocol.whaleswap.v1.AuctionRecord auction = 1;
+   */
+  auction?: AuctionRecord;
+
+  constructor(data?: PartialMessage<QueryAuctionByNFTResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "auction", kind: "message", T: AuctionRecord },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryAuctionByNFTResponse {
+    return new QueryAuctionByNFTResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryAuctionByNFTResponse {
+    return new QueryAuctionByNFTResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryAuctionByNFTResponse {
+    return new QueryAuctionByNFTResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryAuctionByNFTResponse | PlainMessage<QueryAuctionByNFTResponse> | undefined, b: QueryAuctionByNFTResponse | PlainMessage<QueryAuctionByNFTResponse> | undefined): boolean {
+    return proto3.util.equals(QueryAuctionByNFTResponse, a, b);
   }
 }
 
@@ -1756,6 +2168,49 @@ export class QueryAuctionsByPairPriceRangeRequest extends Message<QueryAuctionsB
 
   static equals(a: QueryAuctionsByPairPriceRangeRequest | PlainMessage<QueryAuctionsByPairPriceRangeRequest> | undefined, b: QueryAuctionsByPairPriceRangeRequest | PlainMessage<QueryAuctionsByPairPriceRangeRequest> | undefined): boolean {
     return proto3.util.equals(QueryAuctionsByPairPriceRangeRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryAuctionsByPairPriceRangeResponse
+ */
+export class QueryAuctionsByPairPriceRangeResponse extends Message<QueryAuctionsByPairPriceRangeResponse> {
+  /**
+   * @generated from field: repeated dysonprotocol.whaleswap.v1.AuctionRecord auctions = 1;
+   */
+  auctions: AuctionRecord[] = [];
+
+  /**
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryAuctionsByPairPriceRangeResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryAuctionsByPairPriceRangeResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "auctions", kind: "message", T: AuctionRecord, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryAuctionsByPairPriceRangeResponse {
+    return new QueryAuctionsByPairPriceRangeResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryAuctionsByPairPriceRangeResponse {
+    return new QueryAuctionsByPairPriceRangeResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryAuctionsByPairPriceRangeResponse {
+    return new QueryAuctionsByPairPriceRangeResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryAuctionsByPairPriceRangeResponse | PlainMessage<QueryAuctionsByPairPriceRangeResponse> | undefined, b: QueryAuctionsByPairPriceRangeResponse | PlainMessage<QueryAuctionsByPairPriceRangeResponse> | undefined): boolean {
+    return proto3.util.equals(QueryAuctionsByPairPriceRangeResponse, a, b);
   }
 }
 

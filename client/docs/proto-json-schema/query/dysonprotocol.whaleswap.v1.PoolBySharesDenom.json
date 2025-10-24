@@ -18,9 +18,9 @@
     },
     "response": {
         "$schema": "http://json-schema.org/draft-04/schema#",
-        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolResponse",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolBySharesDenomResponse",
         "definitions": {
-            "dysonprotocol.whaleswap.v1.QueryPoolResponse": {
+            "dysonprotocol.whaleswap.v1.QueryPoolBySharesDenomResponse": {
                 "properties": {
                     "pool": {
                         "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool",
@@ -29,7 +29,7 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Pool Response"
+                "title": "Query Pool By Shares Denom Response"
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {

@@ -256,12 +256,44 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		&whaleswapv1.QueryOfferRequest{}, &whaleswapv1.QueryOfferResponse{},
 		&whaleswapv1.QueryOffersRequest{}, &whaleswapv1.QueryOffersResponse{},
 		&whaleswapv1.QueryOffersByOwnerRequest{}, &whaleswapv1.QueryOffersByOwnerResponse{},
-		&whaleswapv1.QueryOffersByDenomRequest{}, &whaleswapv1.QueryOffersResponse{},
-		&whaleswapv1.QueryOffersByPairPriceRangeRequest{}, &whaleswapv1.QueryOffersResponse{},
-		&whaleswapv1.QueryOffersBestRequest{}, &whaleswapv1.QueryOffersResponse{},
+		&whaleswapv1.QueryOffersByDenomRequest{}, &whaleswapv1.QueryOffersByDenomResponse{},
+		&whaleswapv1.QueryOffersByPairPriceRangeRequest{}, &whaleswapv1.QueryOffersByPairPriceRangeResponse{},
+		&whaleswapv1.QueryOffersBestRequest{}, &whaleswapv1.QueryOffersBestResponse{},
 		&whaleswapv1.QueryTradesByOfferRequest{}, &whaleswapv1.QueryTradesByOfferResponse{},
 		&whaleswapv1.QueryTradesByTakerRequest{}, &whaleswapv1.QueryTradesByTakerResponse{},
 		&whaleswapv1.QueryParamsRequest{}, &whaleswapv1.QueryParamsResponse{},
+
+		// Offer queries
+		&whaleswapv1.QueryOfferRequest{}, &whaleswapv1.QueryOfferResponse{},
+		&whaleswapv1.QueryOffersRequest{}, &whaleswapv1.QueryOffersResponse{},
+		&whaleswapv1.QueryOffersByOwnerRequest{}, &whaleswapv1.QueryOffersByOwnerResponse{},
+		&whaleswapv1.QueryOffersByDenomRequest{}, &whaleswapv1.QueryOffersByDenomResponse{},
+		&whaleswapv1.QueryOffersByPairPriceRangeRequest{}, &whaleswapv1.QueryOffersByPairPriceRangeResponse{},
+		&whaleswapv1.QueryOffersBestRequest{}, &whaleswapv1.QueryOffersBestResponse{},
+
+		// Trade queries
+		&whaleswapv1.QueryTradeRequest{}, &whaleswapv1.QueryTradeResponse{},
+		&whaleswapv1.QueryTradesRequest{}, &whaleswapv1.QueryTradesResponse{},
+		&whaleswapv1.QueryTradesByOfferRequest{}, &whaleswapv1.QueryTradesByOfferResponse{},
+		&whaleswapv1.QueryTradesByTakerRequest{}, &whaleswapv1.QueryTradesByTakerResponse{},
+		&whaleswapv1.QueryTradesByPoolRequest{}, &whaleswapv1.QueryTradesByPoolResponse{},
+		&whaleswapv1.QueryTradesByAuctionRequest{}, &whaleswapv1.QueryTradesByAuctionResponse{},
+
+		// Pool queries
+		&whaleswapv1.QueryPoolRequest{}, &whaleswapv1.QueryPoolResponse{},
+		&whaleswapv1.QueryPoolsRequest{}, &whaleswapv1.QueryPoolsResponse{},
+		&whaleswapv1.QueryPoolsByDenomRequest{}, &whaleswapv1.QueryPoolsByDenomResponse{},
+		&whaleswapv1.QueryPoolBySharesDenomRequest{}, &whaleswapv1.QueryPoolBySharesDenomResponse{},
+		&whaleswapv1.QueryPoolsByPairPriceRangeRequest{}, &whaleswapv1.QueryPoolsByPairPriceRangeResponse{},
+		&whaleswapv1.QueryPoolsByOwnerRequest{}, &whaleswapv1.QueryPoolsByOwnerResponse{},
+		&whaleswapv1.QueryPoolsByPairRequest{}, &whaleswapv1.QueryPoolsByPairResponse{},
+
+		// Auction queries
+		&whaleswapv1.QueryAuctionRequest{}, &whaleswapv1.QueryAuctionResponse{},
+		&whaleswapv1.QueryAuctionsRequest{}, &whaleswapv1.QueryAuctionsResponse{},
+		&whaleswapv1.QueryAuctionsBySellerRequest{}, &whaleswapv1.QueryAuctionsBySellerResponse{},
+		&whaleswapv1.QueryAuctionByNFTRequest{}, &whaleswapv1.QueryAuctionByNFTResponse{},
+		&whaleswapv1.QueryAuctionsByPairPriceRangeRequest{}, &whaleswapv1.QueryAuctionsByPairPriceRangeResponse{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registrar, &scripttypes.Msg_serviceDesc)

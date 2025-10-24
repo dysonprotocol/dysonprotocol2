@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { QueryAuctionByNFTRequest, QueryAuctionRequest, QueryAuctionResponse, QueryAuctionsByPairPriceRangeRequest, QueryAuctionsBySellerRequest, QueryAuctionsRequest, QueryAuctionsResponse, QueryMetricsRequest, QueryMetricsResponse, QueryOfferRequest, QueryOfferResponse, QueryOffersBestRequest, QueryOffersByDenomRequest, QueryOffersByOwnerRequest, QueryOffersByOwnerResponse, QueryOffersByPairPriceRangeRequest, QueryOffersRequest, QueryOffersResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolBySharesDenomRequest, QueryPoolRequest, QueryPoolResponse, QueryPoolsByDenomRequest, QueryPoolsByOwnerRequest, QueryPoolsByPairPriceRangeRequest, QueryPoolsByPairRequest, QueryPoolsRequest, QueryPoolsResponse, QueryTradeRequest, QueryTradeResponse, QueryTradesByAuctionRequest, QueryTradesByAuctionResponse, QueryTradesByOfferRequest, QueryTradesByOfferResponse, QueryTradesByPoolRequest, QueryTradesByPoolResponse, QueryTradesByTakerRequest, QueryTradesByTakerResponse, QueryTradesRequest, QueryTradesResponse } from "./query_pb.js";
+import { QueryAuctionByNFTRequest, QueryAuctionByNFTResponse, QueryAuctionRequest, QueryAuctionResponse, QueryAuctionsByPairPriceRangeRequest, QueryAuctionsByPairPriceRangeResponse, QueryAuctionsBySellerRequest, QueryAuctionsBySellerResponse, QueryAuctionsRequest, QueryAuctionsResponse, QueryMetricsRequest, QueryMetricsResponse, QueryOfferRequest, QueryOfferResponse, QueryOffersBestRequest, QueryOffersBestResponse, QueryOffersByDenomRequest, QueryOffersByDenomResponse, QueryOffersByOwnerRequest, QueryOffersByOwnerResponse, QueryOffersByPairPriceRangeRequest, QueryOffersByPairPriceRangeResponse, QueryOffersRequest, QueryOffersResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolBySharesDenomRequest, QueryPoolBySharesDenomResponse, QueryPoolRequest, QueryPoolResponse, QueryPoolsByDenomRequest, QueryPoolsByDenomResponse, QueryPoolsByOwnerRequest, QueryPoolsByOwnerResponse, QueryPoolsByPairPriceRangeRequest, QueryPoolsByPairPriceRangeResponse, QueryPoolsByPairRequest, QueryPoolsByPairResponse, QueryPoolsRequest, QueryPoolsResponse, QueryTradeRequest, QueryTradeResponse, QueryTradesByAuctionRequest, QueryTradesByAuctionResponse, QueryTradesByOfferRequest, QueryTradesByOfferResponse, QueryTradesByPoolRequest, QueryTradesByPoolResponse, QueryTradesByTakerRequest, QueryTradesByTakerResponse, QueryTradesRequest, QueryTradesResponse } from "./query_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -54,7 +54,7 @@ export const Query = {
     poolsByPair: {
       name: "PoolsByPair",
       I: QueryPoolsByPairRequest,
-      O: QueryPoolsResponse,
+      O: QueryPoolsByPairResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -66,7 +66,7 @@ export const Query = {
     poolsByDenom: {
       name: "PoolsByDenom",
       I: QueryPoolsByDenomRequest,
-      O: QueryPoolsResponse,
+      O: QueryPoolsByDenomResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -77,7 +77,7 @@ export const Query = {
     poolBySharesDenom: {
       name: "PoolBySharesDenom",
       I: QueryPoolBySharesDenomRequest,
-      O: QueryPoolResponse,
+      O: QueryPoolBySharesDenomResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -91,7 +91,7 @@ export const Query = {
     poolsByPairPriceRange: {
       name: "PoolsByPairPriceRange",
       I: QueryPoolsByPairPriceRangeRequest,
-      O: QueryPoolsResponse,
+      O: QueryPoolsByPairPriceRangeResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -104,7 +104,7 @@ export const Query = {
     poolsByOwner: {
       name: "PoolsByOwner",
       I: QueryPoolsByOwnerRequest,
-      O: QueryPoolsResponse,
+      O: QueryPoolsByOwnerResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -148,7 +148,7 @@ export const Query = {
     offersByDenom: {
       name: "OffersByDenom",
       I: QueryOffersByDenomRequest,
-      O: QueryOffersResponse,
+      O: QueryOffersByDenomResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -163,7 +163,7 @@ export const Query = {
     offersByPairPriceRange: {
       name: "OffersByPairPriceRange",
       I: QueryOffersByPairPriceRangeRequest,
-      O: QueryOffersResponse,
+      O: QueryOffersByPairPriceRangeResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -176,7 +176,7 @@ export const Query = {
     offersBest: {
       name: "OffersBest",
       I: QueryOffersBestRequest,
-      O: QueryOffersResponse,
+      O: QueryOffersBestResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -272,7 +272,7 @@ export const Query = {
     auctionsBySeller: {
       name: "AuctionsBySeller",
       I: QueryAuctionsBySellerRequest,
-      O: QueryAuctionsResponse,
+      O: QueryAuctionsBySellerResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -284,7 +284,7 @@ export const Query = {
     auctionByNFT: {
       name: "AuctionByNFT",
       I: QueryAuctionByNFTRequest,
-      O: QueryAuctionResponse,
+      O: QueryAuctionByNFTResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -300,7 +300,7 @@ export const Query = {
     auctionsByPairPriceRange: {
       name: "AuctionsByPairPriceRange",
       I: QueryAuctionsByPairPriceRangeRequest,
-      O: QueryAuctionsResponse,
+      O: QueryAuctionsByPairPriceRangeResponse,
       kind: MethodKind.Unary,
     },
     /**

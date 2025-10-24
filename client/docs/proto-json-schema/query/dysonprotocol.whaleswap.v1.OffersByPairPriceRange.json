@@ -61,9 +61,9 @@
     },
     "response": {
         "$schema": "http://json-schema.org/draft-04/schema#",
-        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryOffersResponse",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryOffersByPairPriceRangeResponse",
         "definitions": {
-            "dysonprotocol.whaleswap.v1.QueryOffersResponse": {
+            "dysonprotocol.whaleswap.v1.QueryOffersByPairPriceRangeResponse": {
                 "properties": {
                     "offers": {
                         "items": {
@@ -79,7 +79,7 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Offers Response"
+                "title": "Query Offers By Pair Price Range Response"
             },
             "cosmos.base.query.v1beta1.PageResponse": {
                 "properties": {

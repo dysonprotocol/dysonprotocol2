@@ -80,6 +80,8 @@ sim_log_file
 x/genutil/config
 x/genutil/data
 *.fail
+coverage.*
+coverage_last.*
 
 # Vagrant
 .vagrant/

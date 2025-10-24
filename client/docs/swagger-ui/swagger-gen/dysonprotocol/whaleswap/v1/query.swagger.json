@@ -90,7 +90,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAuctionResponse"
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse"
             }
           },
           "default": {
@@ -127,7 +127,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAuctionsResponse"
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAuctionsByPairPriceRangeResponse"
             }
           },
           "default": {
@@ -209,7 +209,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAuctionsResponse"
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAuctionsBySellerResponse"
             }
           },
           "default": {
@@ -399,7 +399,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryOffersResponse"
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryOffersBestResponse"
             }
           },
           "default": {
@@ -443,7 +443,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryOffersResponse"
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryOffersByDenomResponse"
             }
           },
           "default": {
@@ -513,7 +513,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryOffersResponse"
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryOffersByPairPriceRangeResponse"
             }
           },
           "default": {
@@ -776,7 +776,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolsResponse"
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolsByDenomResponse"
             }
           },
           "default": {
@@ -840,7 +840,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolsResponse"
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolsByPairResponse"
             }
           },
           "default": {
@@ -910,7 +910,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolsResponse"
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolsByPairPriceRangeResponse"
             }
           },
           "default": {
@@ -993,7 +993,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolResponse"
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolBySharesDenomResponse"
             }
           },
           "default": {
@@ -1024,7 +1024,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolsResponse"
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolsByOwnerResponse"
             }
           },
           "default": {
@@ -1705,11 +1705,47 @@
       },
       "description": "Pool describes AMM pool state.\n\nNotes:\n- coin_a.denom < coin_b.denom lexicographically (canonical order)\n- fee_pct is a decimal string in [0,1)\n- min_price/max_price are optional decimal strings defining a price band over\n  P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +\u221e)) the pool\n  behaves as constant-product (v2). If set, concentrated-liquidity math\n  applies.\n- coin_a.amount/coin_b.amount are sdk.Int strings.\n- The instantaneous price used by price-based queries is derived from\n  reserves as P = coin_b / coin_a, consistent with the notes above."
     },
+    "dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse": {
+      "type": "object",
+      "properties": {
+        "auction": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord"
+        }
+      }
+    },
     "dysonprotocol.whaleswap.v1.QueryAuctionResponse": {
       "type": "object",
       "properties": {
         "auction": {
           "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.QueryAuctionsByPairPriceRangeResponse": {
+      "type": "object",
+      "properties": {
+        "auctions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.QueryAuctionsBySellerResponse": {
+      "type": "object",
+      "properties": {
+        "auctions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
         }
       }
     },
@@ -1743,7 +1779,46 @@
         }
       }
     },
+    "dysonprotocol.whaleswap.v1.QueryOffersBestResponse": {
+      "type": "object",
+      "properties": {
+        "offers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
+          }
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.QueryOffersByDenomResponse": {
+      "type": "object",
+      "properties": {
+        "offers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+        }
+      }
+    },
     "dysonprotocol.whaleswap.v1.QueryOffersByOwnerResponse": {
+      "type": "object",
+      "properties": {
+        "offers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.QueryOffersByPairPriceRangeResponse": {
       "type": "object",
       "properties": {
         "offers": {
@@ -1779,11 +1854,75 @@
         }
       }
     },
+    "dysonprotocol.whaleswap.v1.QueryPoolBySharesDenomResponse": {
+      "type": "object",
+      "properties": {
+        "pool": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
+        }
+      }
+    },
     "dysonprotocol.whaleswap.v1.QueryPoolResponse": {
       "type": "object",
       "properties": {
         "pool": {
           "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.QueryPoolsByDenomResponse": {
+      "type": "object",
+      "properties": {
+        "pools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.QueryPoolsByOwnerResponse": {
+      "type": "object",
+      "properties": {
+        "pools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.QueryPoolsByPairPriceRangeResponse": {
+      "type": "object",
+      "properties": {
+        "pools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.QueryPoolsByPairResponse": {
+      "type": "object",
+      "properties": {
+        "pools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
         }
       }
     },

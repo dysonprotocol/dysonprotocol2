@@ -99,6 +99,141 @@ def query_account_balance(address, denom):
     return int(result.get("balance", {}).get("amount", "0"))
 
 
+def query_offer(offer_id):
+    """Query single offer by ID."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryOfferRequest",
+            "offer_id": offer_id,
+        }
+    )
+    return result.get("offer", {})
+
+
+def query_offers_by_owner(owner, status=""):
+    """Query offers by owner and optional status."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryOffersByOwnerRequest",
+            "owner": owner,
+            "status": status,
+        }
+    )
+    return result.get("offers", [])
+
+
+def query_offers_by_denom(denom, role=""):
+    """Query offers mentioning denom on have or want side."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryOffersByDenomRequest",
+            "denom": denom,
+            "role": role,
+        }
+    )
+    return result.get("offers", [])
+
+
+def query_pool(pool_id):
+    """Query single pool by ID."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryPoolRequest",
+            "pool_id": pool_id,
+        }
+    )
+    return result.get("pool", {})
+
+
+def query_pools_by_pair(base_denom, quote_denom):
+    """Query pools for a denom pair."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryPoolsByPairRequest",
+            "base_denom": base_denom,
+            "quote_denom": quote_denom,
+        }
+    )
+    return result.get("pools", [])
+
+
+def query_pools_by_denom(denom):
+    """Query pools containing a specific denom."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryPoolsByDenomRequest",
+            "denom": denom,
+        }
+    )
+    return result.get("pools", [])
+
+
+def query_trade(trade_id):
+    """Query single trade by ID."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryTradeRequest",
+            "trade_id": trade_id,
+        }
+    )
+    return result.get("trade", {})
+
+
+def query_trades_by_taker(taker):
+    """Query trades by taker address."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryTradesByTakerRequest",
+            "taker": taker,
+        }
+    )
+    return result.get("trades", [])
+
+
+def query_trades_by_pool(pool_id):
+    """Query trades for a pool."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryTradesByPoolRequest",
+            "pool_id": pool_id,
+        }
+    )
+    return result.get("trades", [])
+
+
+def query_trades_by_offer(offer_id):
+    """Query trades for an offer."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryTradesByOfferRequest",
+            "offer_id": offer_id,
+        }
+    )
+    return result.get("trades", [])
+
+
+def query_auction(auction_id):
+    """Query single auction by ID."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryAuctionRequest",
+            "auction_id": auction_id,
+        }
+    )
+    return result.get("auction", {})
+
+
+def query_auctions_by_seller(seller):
+    """Query auctions by seller address."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryAuctionsBySellerRequest",
+            "seller": seller,
+        }
+    )
+    return result.get("auctions", [])
+
+
 def capture_balances(denoms, accounts):
     """Capture account balances."""
     account_balances = {}
@@ -238,4 +373,49 @@ def execute_messages_sequentially(messages, denoms, accounts, authority):
         "message_count": len(messages),
         "message_results": message_results,
         "template_vars": template_vars,
+    }
+
+
+def create_and_query_pools(
+    messages, base_denom, quote_denom, denoms, accounts, authority
+):
+    """
+    Create pools via _msg (MsgSudo) and immediately query PoolsByPair and PoolsByDenom
+    within the same script run to avoid persistence boundaries between calls.
+
+    Returns:
+        {
+            "success": bool,
+            "message_count": int,
+            "pair": [...],   # pools for (base, quote)
+            "denom": [...],  # pools containing base_denom
+        }
+    """
+    sudo_msg = {
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": authority,
+        "messages": messages,
+    }
+    sudo_result = _msg(sudo_msg)
+    ok = bool(sudo_result and sudo_result.get("results"))
+
+    pair_res = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryPoolsByPairRequest",
+            "base_denom": base_denom,
+            "quote_denom": quote_denom,
+        }
+    )
+    denom_res = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryPoolsByDenomRequest",
+            "denom": base_denom,
+        }
+    )
+
+    return {
+        "success": ok,
+        "message_count": len(messages),
+        "pair": pair_res.get("pools", []),
+        "denom": denom_res.get("pools", []),
     }

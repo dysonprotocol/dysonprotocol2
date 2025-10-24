@@ -73,7 +73,7 @@ endif
 ldflags := $(strip $(ldflags))
 
 BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
-ifeq ($(COVERAGE_ENABLED),true)
+ifneq ($(COVERAGE_ENABLED),)
   BUILD_FLAGS += -cover
 endif
 # check for nostrip option

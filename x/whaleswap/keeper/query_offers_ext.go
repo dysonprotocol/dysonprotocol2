@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
-func (k Keeper) OffersByDenom(ctx context.Context, req *whaleswapv1.QueryOffersByDenomRequest) (*whaleswapv1.QueryOffersResponse, error) {
+func (k Keeper) OffersByDenom(ctx context.Context, req *whaleswapv1.QueryOffersByDenomRequest) (*whaleswapv1.QueryOffersByDenomResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryOffersByDenomRequest{}
 	}
@@ -39,7 +39,7 @@ func (k Keeper) OffersByDenom(ctx context.Context, req *whaleswapv1.QueryOffersB
 		if err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "paginate offers by have failed")
 		}
-		return &whaleswapv1.QueryOffersResponse{Offers: results, Pagination: pageRes}, nil
+		return &whaleswapv1.QueryOffersByDenomResponse{Offers: results, Pagination: pageRes}, nil
 	}
 	if role == "want" {
 		results, pageRes, err := query.CollectionFilteredPaginate(
@@ -61,7 +61,7 @@ func (k Keeper) OffersByDenom(ctx context.Context, req *whaleswapv1.QueryOffersB
 		if err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "paginate offers by want failed")
 		}
-		return &whaleswapv1.QueryOffersResponse{Offers: results, Pagination: pageRes}, nil
+		return &whaleswapv1.QueryOffersByDenomResponse{Offers: results, Pagination: pageRes}, nil
 	}
 	// role empty -> either side: fallback to filtered scan
 	results, pageRes, err := query.CollectionFilteredPaginate(
@@ -79,10 +79,10 @@ func (k Keeper) OffersByDenom(ctx context.Context, req *whaleswapv1.QueryOffersB
 	if err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "paginate offers by denom failed")
 	}
-	return &whaleswapv1.QueryOffersResponse{Offers: results, Pagination: pageRes}, nil
+	return &whaleswapv1.QueryOffersByDenomResponse{Offers: results, Pagination: pageRes}, nil
 }
 
-func (k Keeper) OffersByPairPriceRange(ctx context.Context, req *whaleswapv1.QueryOffersByPairPriceRangeRequest) (*whaleswapv1.QueryOffersResponse, error) {
+func (k Keeper) OffersByPairPriceRange(ctx context.Context, req *whaleswapv1.QueryOffersByPairPriceRangeRequest) (*whaleswapv1.QueryOffersByPairPriceRangeResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryOffersByPairPriceRangeRequest{}
 	}
@@ -145,10 +145,10 @@ func (k Keeper) OffersByPairPriceRange(ctx context.Context, req *whaleswapv1.Que
 	if perr != nil {
 		return nil, cosmossdkerrors.Wrap(perr, "OffersByPairPriceRange paginate failed")
 	}
-	return &whaleswapv1.QueryOffersResponse{Offers: results, Pagination: pageRes}, nil
+	return &whaleswapv1.QueryOffersByPairPriceRangeResponse{Offers: results, Pagination: pageRes}, nil
 }
 
-func (k Keeper) OffersBest(ctx context.Context, req *whaleswapv1.QueryOffersBestRequest) (*whaleswapv1.QueryOffersResponse, error) {
+func (k Keeper) OffersBest(ctx context.Context, req *whaleswapv1.QueryOffersBestRequest) (*whaleswapv1.QueryOffersBestResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryOffersBestRequest{}
 	}
@@ -192,5 +192,5 @@ func (k Keeper) OffersBest(ctx context.Context, req *whaleswapv1.QueryOffersBest
 	if err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "OffersBest paginate failed")
 	}
-	return &whaleswapv1.QueryOffersResponse{Offers: offers}, nil
+	return &whaleswapv1.QueryOffersBestResponse{Offers: offers}, nil
 }

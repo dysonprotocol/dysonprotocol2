@@ -22,6 +22,7 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "coins must contain exactly 2 entries, got %d", len(msg.Coins))
 	}
 
+	logger.Info("CreatePool sorting/validating inputs")
 	msg.Coins.Sort()
 	msg.MinPrice.Sort()
 	msg.MaxPrice.Sort()
@@ -41,6 +42,12 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		}
 	}
 	denom1, denom2 := msg.Coins[0].Denom, msg.Coins[1].Denom
+	logger.Info("CreatePool canonicalized denoms", "denom1", denom1, "denom2", denom2)
+
+	// Reject liquid wrapper denoms in pools (module must never hold liquids)
+	if k.isLiquidDenom(denom1) || k.isLiquidDenom(denom2) {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "pool coins must be solid (no liquid denoms): %s,%s", denom1, denom2)
+	}
 
 	if msg.FeePct != "" {
 		fee, err := math.LegacyNewDecFromStr(msg.FeePct)

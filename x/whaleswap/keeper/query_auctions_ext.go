@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
-func (k Keeper) AuctionsBySeller(ctx context.Context, req *whaleswapv1.QueryAuctionsBySellerRequest) (*whaleswapv1.QueryAuctionsResponse, error) {
+func (k Keeper) AuctionsBySeller(ctx context.Context, req *whaleswapv1.QueryAuctionsBySellerRequest) (*whaleswapv1.QueryAuctionsBySellerResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryAuctionsBySellerRequest{}
 	}
@@ -28,10 +28,10 @@ func (k Keeper) AuctionsBySeller(ctx context.Context, req *whaleswapv1.QueryAuct
 	if err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "AuctionsBySeller paginate failed")
 	}
-	return &whaleswapv1.QueryAuctionsResponse{Auctions: results, Pagination: pageRes}, nil
+	return &whaleswapv1.QueryAuctionsBySellerResponse{Auctions: results, Pagination: pageRes}, nil
 }
 
-func (k Keeper) AuctionByNFT(ctx context.Context, req *whaleswapv1.QueryAuctionByNFTRequest) (*whaleswapv1.QueryAuctionResponse, error) {
+func (k Keeper) AuctionByNFT(ctx context.Context, req *whaleswapv1.QueryAuctionByNFTRequest) (*whaleswapv1.QueryAuctionByNFTResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryAuctionByNFTRequest{}
 	}
@@ -53,10 +53,10 @@ func (k Keeper) AuctionByNFT(ctx context.Context, req *whaleswapv1.QueryAuctionB
 	if matched == nil {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrNotFound, "auction not found for NFT")
 	}
-	return &whaleswapv1.QueryAuctionResponse{Auction: matched}, nil
+	return &whaleswapv1.QueryAuctionByNFTResponse{Auction: matched}, nil
 }
 
-func (k Keeper) AuctionsByPairPriceRange(ctx context.Context, req *whaleswapv1.QueryAuctionsByPairPriceRangeRequest) (*whaleswapv1.QueryAuctionsResponse, error) {
+func (k Keeper) AuctionsByPairPriceRange(ctx context.Context, req *whaleswapv1.QueryAuctionsByPairPriceRangeRequest) (*whaleswapv1.QueryAuctionsByPairPriceRangeResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryAuctionsByPairPriceRangeRequest{}
 	}
@@ -97,5 +97,5 @@ func (k Keeper) AuctionsByPairPriceRange(ctx context.Context, req *whaleswapv1.Q
 	if perr != nil {
 		return nil, cosmossdkerrors.Wrap(perr, "AuctionsByPairPriceRange paginate failed")
 	}
-	return &whaleswapv1.QueryAuctionsResponse{Auctions: results, Pagination: pageRes}, nil
+	return &whaleswapv1.QueryAuctionsByPairPriceRangeResponse{Auctions: results, Pagination: pageRes}, nil
 }

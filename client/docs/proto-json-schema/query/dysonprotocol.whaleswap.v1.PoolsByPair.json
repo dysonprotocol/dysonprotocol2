@@ -57,9 +57,9 @@
     },
     "response": {
         "$schema": "http://json-schema.org/draft-04/schema#",
-        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolsResponse",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolsByPairResponse",
         "definitions": {
-            "dysonprotocol.whaleswap.v1.QueryPoolsResponse": {
+            "dysonprotocol.whaleswap.v1.QueryPoolsByPairResponse": {
                 "properties": {
                     "pools": {
                         "items": {
@@ -75,7 +75,7 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Pools Response"
+                "title": "Query Pools By Pair Response"
             },
             "cosmos.base.query.v1beta1.PageResponse": {
                 "properties": {
