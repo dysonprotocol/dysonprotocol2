@@ -16,11 +16,10 @@ import (
 func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whaleswapv1.SwapLeg, note string) (whaleswapv1.TradeOperation, sdk.Coin, sdk.Coin, error) {
 	logger := k.Logger(sdk.UnwrapSDKContext(ctx))
 
-	logger.Info("tradeApplySwapLeg starting", "trader", trader, "pool_id", leg.PoolId, "swap_in", leg.SwapIn, "swap_out", leg.SwapOut)
-
 	if leg == nil || leg.PoolId == 0 {
 		return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool_id required")
 	}
+	logger.Info("tradeApplySwapLeg starting", "trader", trader, "pool_id", leg.PoolId, "swap_in", leg.SwapIn, "swap_out", leg.SwapOut)
 	pool, gerr := k.PoolsMap.Get(ctx, leg.PoolId)
 	if gerr != nil {
 		return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, gerr
@@ -350,11 +349,10 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whaleswapv1.TakeItem, note string) (whaleswapv1.TradeOperation, string, sdk.Coin, sdk.Coin, sdk.Coin, sdk.Coin, error) {
 	logger := k.Logger(sdk.UnwrapSDKContext(ctx))
 
-	logger.Info("tradeApplyTakeItem starting", "taker", taker, "offer_id", item.OfferId, "take_units", item.TakeUnits)
-
 	if item == nil || item.OfferId == 0 {
 		return whaleswapv1.TradeOperation{}, "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "offer_id required")
 	}
+	logger.Info("tradeApplyTakeItem starting", "taker", taker, "offer_id", item.OfferId, "take_units", item.TakeUnits)
 	offer, err := k.OffersMap.Get(ctx, item.OfferId)
 	if err != nil {
 		return whaleswapv1.TradeOperation{}, "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrNotFound, "offer not found: %d", item.OfferId)
@@ -426,6 +424,20 @@ func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whal
 	var takerRecv sdk.Coin
 	var makerLiqIn sdk.Coin
 	takerRecv = sdk.NewCoin(haveDenom, deliverHave)
+	// Liquid vs Escrow settlement handling:
+	// In LIQUID mode, the maker must fund base-have. Require sufficient balance and add as maker input.
+	// In ESCROW mode, the module funds base-have (added later by caller); makerLiqIn remains zero.
+	if offer.SettlementMode == whaleswapv1.SettlementMode_SETTLEMENT_LIQUID {
+		makerAddr, addrErr := sdk.AccAddressFromBech32(maker)
+		if addrErr != nil {
+			return whaleswapv1.TradeOperation{}, "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(addrErr, "invalid maker address")
+		}
+		bal := k.bank.GetBalance(ctx, makerAddr, haveDenom).Amount
+		if bal.LT(deliverHave) {
+			return whaleswapv1.TradeOperation{}, "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "maker lacks base-have for liquid settlement %s: %s < %s", haveDenom, bal.String(), deliverHave.String())
+		}
+		makerLiqIn = sdk.NewCoin(haveDenom, deliverHave)
+	}
 	logger.Info("tradeApplyTakeItem solid denom", "taker_recv", takerRecv)
 	logger.Info("tradeApplyTakeItem completed", "maker", maker, "maker_want", makerWant, "taker_recv", takerRecv, "maker_liq_in", makerLiqIn, "pfand_released", pfandReleased)
 	return op, maker, makerWant, takerRecv, makerLiqIn, pfandReleased, nil
@@ -435,7 +447,7 @@ func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whal
 func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsByAddr, outputsByAddr map[string]sdk.Coins) error {
 	logger := k.Logger(sdk.UnwrapSDKContext(ctx))
 
-	logger.Info("tradeNetAndCover starting", "trader_bech", traderBech, "inputs_by_addr_count", len(inputsByAddr), "outputs_by_addr_count", len(outputsByAddr))
+	logger.Info("x/whaleswap tradeNetAndCover starting", "trader_bech", traderBech, "inputs_by_addr_count", len(inputsByAddr), "outputs_by_addr_count", len(outputsByAddr))
 
 	moduleBech := k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String()
 	// maker wants (solid) - exclude trader
@@ -456,6 +468,7 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 		}
 	}
 	// First pass: compute nettable per denom and reduce trader credits accordingly
+	logger.Info("x/whaleswap tradeNetAndCover maker wants and taker credits", "maker_wants", makerWants, "taker_credits", takerCredits)
 	for _, want := range makerWants {
 		denom := want.Denom
 		wantAmt := want.Amount
@@ -465,50 +478,40 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 			nettable = wantAmt
 		}
 		if nettable.IsPositive() {
+			logger.Info("x/whaleswap tradeNetAndCover netting trader credits to maker wants", "denom", denom, "nettable", nettable)
 			if coins, ok := outputsByAddr[traderBech]; ok {
 				outputsByAddr[traderBech] = coins.Sub(sdk.NewCoin(denom, nettable))
 				if outputsByAddr[traderBech].IsZero() {
 					delete(outputsByAddr, traderBech)
 				}
 			}
-			// Also reduce module inputs for this denom by the same nettable amount (caps to available),
-			// because those trader credits were funded by module (AMM or escrow) and have been netted away.
-			if mcoins, ok := inputsByAddr[moduleBech]; ok {
-				mAmt := mcoins.AmountOf(denom)
-				use := nettable
-				if mAmt.LT(use) {
-					use = mAmt
-				}
-				if use.IsPositive() {
-					inputsByAddr[moduleBech] = inputsByAddr[moduleBech].Sub(sdk.NewCoin(denom, use))
-					if inputsByAddr[moduleBech].IsZero() {
-						delete(inputsByAddr, moduleBech)
+			// Do NOT reduce module inputs here; module inputs (escrow/pfand/amm) must persist to fund obligations.
+			// Reduce makers' wants by the same nettable amount across all makers ONLY if module isn't funding this denom
+			if inputsByAddr[moduleBech].AmountOf(denom).IsZero() {
+				remain := nettable
+				for addr, coins := range outputsByAddr {
+					if addr == traderBech || addr == moduleBech {
+						continue
 					}
-				}
-			}
-			// Also reduce makers' wants by the same nettable amount across all makers
-			remain := nettable
-			for addr, coins := range outputsByAddr {
-				if addr == traderBech || addr == moduleBech {
-					continue
-				}
-				// find available amount for denom at this maker row
-				avail := coins.AmountOf(denom)
-				if avail.IsZero() {
-					continue
-				}
-				use := avail
-				if remain.LT(avail) {
-					use = remain
-				}
-				if use.IsPositive() {
-					outputsByAddr[addr] = outputsByAddr[addr].Sub(sdk.NewCoin(denom, use))
-					if outputsByAddr[addr].IsZero() {
-						delete(outputsByAddr, addr)
+					// find available amount for denom at this maker row
+					avail := coins.AmountOf(denom)
+					if avail.IsZero() {
+						continue
 					}
-					remain = remain.Sub(use)
-					if remain.IsZero() {
-						break
+					use := avail
+					if remain.LT(avail) {
+						use = remain
+					}
+					if use.IsPositive() {
+						logger.Info("x/whaleswap tradeNetAndCover reducing maker want row", "maker", addr, "denom", denom, "use", use)
+						outputsByAddr[addr] = outputsByAddr[addr].Sub(sdk.NewCoin(denom, use))
+						if outputsByAddr[addr].IsZero() {
+							delete(outputsByAddr, addr)
+						}
+						remain = remain.Sub(use)
+						if remain.IsZero() {
+							break
+						}
 					}
 				}
 			}
@@ -517,7 +520,8 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 			continue
 		}
 		deficit := wantAmt.Sub(credit)
-		// Cover with taker base; module covers any remaining deficit
+		// Cover with taker base; no module payer-of-last-resort
+		logger.Info("x/whaleswap tradeNetAndCover covering maker want deficit from taker base", "denom", denom, "deficit", deficit)
 		takerAddr, _ := sdk.AccAddressFromBech32(traderBech)
 		baseBal := k.bank.GetBalance(ctx, takerAddr, denom).Amount
 		basePart := baseBal
@@ -525,11 +529,12 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 			basePart = deficit
 		}
 		if basePart.IsPositive() {
+			logger.Info("x/whaleswap tradeNetAndCover adding taker input", "denom", denom, "amount", basePart)
 			inputsByAddr[traderBech] = inputsByAddr[traderBech].Add(sdk.NewCoin(denom, basePart))
 		}
 		// No liquid remainder coverage
 	}
-	// Module covers remaining solid deficits
+	// Validate per-denom inputs cover outputs after maker/taker/module (escrow) contributions.
 	outputsSolid := sdk.NewCoins()
 	for _, coins := range outputsByAddr {
 		for _, c := range coins {
@@ -542,21 +547,23 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 			inputsSolid = inputsSolid.Add(c)
 		}
 	}
-	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
-	for _, out := range outputsSolid {
-		den := out.Denom
-		need := out.Amount.Sub(inputsSolid.AmountOf(den))
-		if need.IsPositive() {
-			bal := k.bank.GetBalance(ctx, moduleAddr, den).Amount
-			if bal.LT(need) {
-				return cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "module backing insufficient %s: %s < %s", den, bal.String(), need.String())
-			}
-			inputsByAddr[moduleBech] = inputsByAddr[moduleBech].Add(sdk.NewCoin(den, need))
+	// Compute union of denoms present
+	seen := map[string]struct{}{}
+	for _, c := range outputsSolid {
+		seen[c.Denom] = struct{}{}
+	}
+	for _, c := range inputsSolid {
+		seen[c.Denom] = struct{}{}
+	}
+	for den := range seen {
+		outAmt := outputsSolid.AmountOf(den)
+		inAmt := inputsSolid.AmountOf(den)
+		if outAmt.GT(inAmt) {
+			logger.Info("x/whaleswap tradeNetAndCover insufficient inputs", "denom", den, "inputs", inAmt.String(), "outputs", outAmt.String(), "inputs_by_addr", inputsByAddr, "outputs_by_addr", outputsByAddr)
+			return cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "insufficient inputs for %s: %s < %s", den, inAmt.String(), outAmt.String())
 		}
 	}
-	// Liquid inputs to module must also be outputs for burn
-	// No liquid inputs to burn
-	logger.Info("tradeNetAndCover completed", "final_inputs_count", len(inputsByAddr), "final_outputs_count", len(outputsByAddr))
+	logger.Info("x/whaleswap tradeNetAndCover completed", "final_inputs_count", len(inputsByAddr), "final_outputs_count", len(outputsByAddr), "final_inputs", inputsByAddr, "final_outputs", outputsByAddr)
 	return nil
 }
 

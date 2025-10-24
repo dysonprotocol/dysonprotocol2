@@ -12,11 +12,11 @@ Non-goals (initial cut): on-chain scripting hooks, cross-chain.
 
 - No attachments: module handlers move funds via bank keeper. Script-style attached MsgSend is not used.
 - Mint fee semantics: nameservice skips fees when destination is the module account; module mints to itself then forwards. Direct user mints (if any) still owe fees.
-- Liquid denom format: `whaleswap.dys/coins/<solid>` (no base64). Shares: `whaleswap.dys/pools/{pool_id}`.
+- Shares denom: `whaleswap.dys/pools/{pool_id}`.
 - Single-pool swaps only. Multi-hop is achieved by multiple messages in one tx.
 - Per-leg XOR rule: each SwapLeg must specify exactly one of swap_in or swap_out (not both). Use message-level max_input (vector caps) and min_output (vector guarantees) to assert end-of-tx constraints across legs.
 - Authority: module account must control `whaleswap.dys` root for mint/burn/class ops.
-- Orderbook settlement uses TAKE_ALL-only with a single aggregated multi-send via an internal whaleswap helper (`wsMoveCoins`); liquid inputs collected at the module are burned post-settlement.
+- Orderbook settlement uses TAKE_ALL-only with a single aggregated multi-send via an internal whaleswap helper (`wsMoveCoins`).
 
 
 ### 2. External dependencies and authorities
@@ -31,15 +31,14 @@ Non-goals (initial cut): on-chain scripting hooks, cross-chain.
 
 ### 3. Denoms and notation
 
-- Solid denom S: a base on-ledger denom like `DYS_ROOT/foo`.
-- Liquid denom L(S): wrapper minted by Whaleswap for S, defined as `whaleswap.dys/coins/<S>` (no encoding).
+- Any denom allowed everywhere (including PFAND). The module does not define wrapper denoms.
 - Shares denom for pools: `whaleswap.dys/pools/{pool_id}`.
 - Price convention (AMM): P = reserve2 / reserve1 ("price of coin2 in coin1 units").
 
 
 ### 4. Module parameters
 
-- pfand_per_offer: sdk.Coin. Locked when creating a liquid offer; released on close/cancel per rules.
+- pfand_per_offer: sdk.Coin. Locked when creating a liquid-mode offer; released on close/cancel per rules.
 - auction knobs (strings matching nameservice types/validation):
   - valuation_fee_pct (Dec in [0,1])
   - valuation_period (duration string)
@@ -47,7 +46,7 @@ Non-goals (initial cut): on-chain scripting hooks, cross-chain.
   - min_bid_percent_increase (Dec in [0,1])
 
 Notes:
-- Nameservice `mint_fee_per_coin` remains the source of truth for mint fees; however, when minting to a module account, the nameservice skips fee collection. Whaleswap mints shares and liquid wrappers to the `whaleswap` module account and then forwards them to users, so no mint fee is charged along this path. Direct mints to non-module destinations still require the fee.
+- Nameservice `mint_fee_per_coin` remains the source of truth for mint fees; however, when minting to a module account, the nameservice skips fee collection. Whaleswap mints shares to the `whaleswap` module account and then forwards them to users, so no mint fee is charged along this path. Direct mints to non-module destinations still require the fee.
 
 
 ### 5. State model (keys and indexes)
@@ -66,7 +65,7 @@ Notes:
   - block_height (int64), created (time), updated (time), num_trades (uint64)
 
 - Orderbook Offers: `oid|{id}` → OfferData
-  - Maker, status {open|closed|cancelled}, have/want coins, remaining, unit ints, remaining_units, pfand_locked
+  - Maker, status {open|closed|cancelled}, have/want coins, remaining, unit ints, remaining_units, pfand_locked, settlement_mode
   - Indexes:
     - `maker|{maker}|status|{status}|id|{id}` → `oid|{id}`
     - Price trees (lexicographic):
@@ -188,37 +187,30 @@ Notes
 - Mode selection is implicit: if min_price/max_price are unset (or represent [0, +∞)), behavior is Mode A; otherwise Mode B.
 
 
-### 7. Liquid conversions (wrapping)
+### 7. Orderbook DEX
+
+Settlement modes
+- SettlementMode = ESCROW | LIQUID
+  - ESCROW: escrow base `have` in module at creation.
+  - LIQUID: do not escrow base; lock `pfand_per_offer` and settle from maker balance at take.
 
 Msgs
-- ConvertToLiquid(denom, amount)
-  - Move `amount` of solid denom caller → module (escrow backing).
-  - Mint L(denom) to the module account (fee skipped due to module destination) and forward to caller.
-
-- ConvertToSolid(liquid_denom, amount)
-  - Move liquid from caller → module; burn; send solid to caller; require module escrow ≥ amount.
-
-Notes
-- Due to module authority and nameservice behavior, mint fees are skipped for module-destination mints and thus are not required for ConvertToLiquid. Backing is always enforced and must equal or exceed burned liquid on ConvertToSolid.
-
-
-### 8. Orderbook DEX
-
-Msgs
-- MakeOffer(have, want)
-  - Normal: have is solid; escrow have in module (bank send user→module). No pfand.
-  - Liquid: have is liquid L(S); require maker holds ≥ pfand_per_offer; move pfand maker→module; no have attachments.
+- MakeOffer(have, want, settlement_mode)
+  - Any denoms allowed (including PFAND). `have != want`, amounts > 0.
+  - ESCROW: escrow `have` to module.
+  - LIQUID: lock `pfand_per_offer` from maker; no base escrow.
+  - Units: gcd(have.amount, want.amount) defines unit_have/unit_want and remaining_units.
 
 - TakeOffer(trades[])
   - Atomic TAKE_ALL-only settlement. Any infeasible leg aborts the entire batch.
-  - Planning: iterate legs, compute `take_units`, aggregate maker wants (solid), taker credits (solid base-have; liquid-have decoded to base), and include pfand to taker on close. Emit `offer_taken` and `pfand_released` during planning; events roll back on failure.
-  - Netting: reduce the taker’s output for each solid denom by min(credits, maker wants) before computing the taker’s deficit. Fund deficits from taker base first, then taker liquid L(denom) (to be burned).
-  - Aggregation: build bank inputs/outputs across all participants. The whaleswap module contributes solid backing and receives liquid inflows to burn.
-  - Settlement: call internal `wsMoveCoins` once to pull all inputs into the module and fan out outputs; then burn all liquid denoms now held by the module. Persist trades, update offers, and remove reverse indexes on close.
-  - Constraints: want must be solid; liquid wants are rejected at MakeOffer.
+  - Planning: iterate legs, compute `take_units`; aggregate maker wants (want denoms), taker credits (have denoms), and include PFAND to taker on close.
+  - Netting: for each denom, net trader credits against maker wants; fund remaining deficits from trader base; module covers any remainder.
+  - Aggregation: build bank inputs/outputs across all participants. The whaleswap module contributes coins from escrow/AMM reserves/PFAND.
+  - Settlement: call internal `wsMoveCoins` once to pull all inputs into the module and fan out outputs. Persist trades, update offers, and remove reverse indexes on close.
 
 - CancelOffer(offer_id)
-  - Maker can cancel open; third-party may cancel liquid offers if maker lacks ≥ 1 unit of L(have); pfand sent to closer.
+  - Maker can cancel open offers.
+  - Third-party may cancel liquid-mode offers if maker’s balance of `have` < 1 unit_have; PFAND is sent to closer.
 
 Indexes and queries
 - Offers primary: `OffersMap[id]` → OfferData
@@ -229,53 +221,33 @@ Indexes and queries
 - Trades primary/indexes: by `offer_id`, by `taker`
 
 
-### 9. Auctions
+### 8. Auctions
 
 Msgs
 - OpenAuction(sell, bid_denom)
-  - Move explicit solid `sell` coin from seller → module (escrow).
+  - Move explicit `sell` coin from seller → module (escrow).
   - Create/upsert NFT class `whaleswap.dys/auction/{bid_denom}`.
-  - Set class policy from whaleswap params: always_listed=true; valuation_fee_pct; valuation_period; bid_timeout; minimum_bid_percent_increase. All setter errors are propagated (tx fails if any policy update fails).
+  - Set class policy from whaleswap params: always_listed=true; valuation_fee_pct; valuation_period; bid_timeout; minimum_bid_percentIncrease. All setter errors are propagated (tx fails if any policy update fails).
   - Set allowed_denoms to only `bid_denom` (error if setter fails).
   - Mint NFT with id equal to the allocated `auction_id` (zero-padded) to seller.
-  - Store `AuctionRecord` keyed by `auction_id`.
-  - Populate reverse indexes:
-    - (sell_denom, bid_denom, auction_id) → auction_id
-    - (bid_denom, sell_denom, auction_id) → auction_id
+  - Reverse indexes: (sell,bid,auction_id) and (bid,sell,auction_id).
 
 - RedeemAuction(auction_id)
-  - Authority: current NFT owner only (not necessarily original seller). Owner is fetched at execution time from NFT keeper.
-  - Guard: only if no current bidder (checked via nameservice NFT data `current_bidder == ""`).
-  - Escrow check: pre-validate module has ≥ the escrowed `sell` coin; otherwise fail with ErrInsufficientFunds.
-  - Settlement: send escrowed `sell` to owner; burn the NFT.
-  - Indexing: remove reverse index entries first, then delete the primary `AuctionRecord`; any index removal error aborts the tx.
+  - Authority: current NFT owner only. Only if no current bidder.
+  - Escrow check: module must have ≥ the escrowed `sell` coin.
+  - Settlement: send escrowed `sell` to owner; burn NFT; remove reverse indexes and record.
 
 
-### 10. Advanced composed execution (atomic multi-op match-and-settle)
-
-This section was removed. The module will not implement composed execution in the MVP.
-
-
-### 11. Queries (gRPC + CLI)
+### 9. Queries (gRPC + CLI)
 
 - Pools: Get(pool_id), List(pagination). Return reserves, fee_pct, band, owner, timestamps, num_trades.
 - Offers: Get(id), ByOwner(owner,status), Offers(have_denom?, want_denom?) with pagination.
-  - ByOwner requires `owner`; when `status` provided, the `(owner,status,id)` index is used; otherwise a filtered scan is used.
-  - Offers list prefers reverse indexes when filters are provided:
-    - both have and want: use normalized `(low|high, price, id)` index and verify exact direction
-    - only have: use `(have, id)` index and optionally filter `want`
-    - only want: use `(want, id)` index and optionally filter `have`
-    - neither: full scan of primary map
 - Trades: ByOffer(offer_id), ByTaker(addr).
 - Auctions: Get(id), List with optional filters (sell_denom?, bid_denom?) and pagination.
-  - If both filters: use (sell,bid,auction_id) index.
-  - If only sell_denom: use (sell,*,auction_id) index.
-  - If only bid_denom: use (bid,*,auction_id) index.
-  - If neither: paginate primary map.
 - Params: Get.
 
 
-### 12. Genesis
+### 10. Genesis
 
 - Contents: params, counters, pools, offers, trades, auctions.
 - Validate: denoms format, params ranges, unique shares denom per pool, no duplicate indexes, counters ≥ max id in state.
@@ -283,38 +255,51 @@ This section was removed. The module will not implement composed execution in th
 - Export/import symmetric.
 
 
-### 13. Errors and validation (high level)
+### 11. Errors and validation (high level)
 
 - Denoms must be valid; coin amounts must be > 0 (except zero in specific system fields).
 - AMM swap: reject output ≤ 0, reserve depletion, price band violations.
 - Add/remove liquidity: owner-only; must keep price within band; shares > 0.
-- Orderbook: forbid liquid attachments at make; want must be solid; all computed amounts integral.
-- Liquid conversions: enforce fee sufficiency; escrow backing checks.
-- Auctions: enforce valid denoms (`sdk.ValidateDenom`); reject liquid `sell`/`bid` denoms; propagate errors from all class policy setters; owner-based redeem; explicit escrow insufficiency errors; reverse indexes must be removed on redeem.
+- Orderbook: units computed via GCD; invariants enforced; settlement per mode.
+- Auctions: enforce valid denoms; propagate errors from all class policy setters; owner-based redeem; explicit escrow insufficiency errors; reverse indexes removal required.
 
 
-### 14. Math and rounding policy
+### 12. Math and rounding policy
 
 - Prefer sdk.Int storage for amounts; use math.Dec for fee_pct and price bounds.
 - AMM swap: `out = R_out - ceil(k / (R_in + effective_in))` with `effective_in = in * (1 - fee_pct)`.
 - Shares mint/burn: floor for proportional calculations; reject if both outs floor to 0.
 
 
-### 15. Events (selected)
+### 13. Events (selected)
 
-- pool_created(pool_id), poolupdate(pool_id), pool_swap(pool_id), pool_liquidity_added(pool_id), pool_liquidity_removed(pool_id), pool_owner_changed(pool_id)
+- pool_created(pool_id), poolupdate(pool_id), pool_swap(pool_id), pool_liquidity_added(pool_id), pool_liquidity_removed(pool_id)
 - offer_created(offer_id), offer_taken(offer_id, trade_id), offer_cancelled(offer_id), pfand_locked(amount), pfand_released(amount)
-  - Note: orderbook take emits events during planning; Cosmos SDK rolls them back if the tx fails.
 - auction_created(auction_id), auction_redeemed(auction_id)
+
+
+### 14. Testing plan (outline)
+
+- Unit tests: AMM math (ceil/floor, price band enforcement, fee application), orderbook settlement paths, auctions.
+- E2E tests (pytest):
+  - AMM owner-only add/remove; swap inside band; reject outside band; fee accrual observed.
+  - Orderbook: escrow vs liquid settlement; cancel eligibility; pfand release paths.
+  - Auctions open/redeem with class policy setup.
+
+
+### 15. Future extensions (non-blocking)
+
+- Concentrated liquidity per tick ranges; multi-fee tiers.
+- Pool pause/guardians; TWAP oracles.
+- Batch auctions integrated with AMM inventory.
 
 
 ### 16. Testing plan (outline)
 
-- Unit tests: AMM math (ceil/floor, price band enforcement, fee application), orderbook settlement paths, auctions, conversions.
+- Unit tests: AMM math (ceil/floor, price band enforcement, fee application), orderbook settlement paths, auctions.
 - E2E tests (pytest):
-  - Liquid convert in/out with mint fees.
   - AMM owner-only add/remove; swap inside band; reject outside band; fee accrual observed.
-  - Orderbook: normal vs liquid offers; take (base+liquid mix); cancel eligibility; pfand release paths.
+  - Orderbook: escrow vs liquid settlement; cancel eligibility; pfand release paths.
   - Auctions open/redeem with class policy setup.
 
 
@@ -326,7 +311,7 @@ This section was removed. The module will not implement composed execution in th
 
 Module authority differences vs scripts (important):
 - Fee semantics: scripts required attached `udys` to pay nameservice mint fees. The module mints to its own account and then forwards coins, so nameservice skips fees in these paths. Direct user-facing mints (if any) would still require fees.
-- Liquid denom format: the module uses a direct prefix `whaleswap.dys/coins/<solid>` instead of base64url encoding.
+- Wrappers removed: no liquid denom format; the module accepts any base denoms. Liquid semantics are modeled via SettlementMode (ESCROW/LIQUID) on offers.
 - Shares minting: initial and incremental share mints occur to the module account first (no fee), then are sent to LPs.
 
 
@@ -356,8 +341,7 @@ Module authority differences vs scripts (important):
     - TradesByTaker(taker) (done)
   - Indexing: add secondary indexes (owner+status, have/want) via `collections` for performance; optionally start with filtered scan for MVP.
 
-- Liquid conversions (files: `x/whaleswap/keeper/msg_convert.go`, `keeper.go`)
-  - Fee semantics updated: module mints to module account (fee skipped) then forwards. Documented above. (done)
+- Liquid conversions: removed. Use SettlementMode on offers; no wrapper denoms.
 
 - Auctions (files: `x/whaleswap/keeper/msg_auction.go`, `query_auctions.go`, `keeper.go`)
   - Implement MsgOpenAuction (escrow exactly one solid denom; set class/policy via nameservice; mint NFT to seller; record).
@@ -570,7 +554,7 @@ I'll expand the whaleswap AutoCLI options to be multiline and add Short, Long, a
 
 - Reformatted x/whaleswap/module/autocli.go with multiline keyed fields and added Short, Long, and Example for every whaleswap query and tx RPC:
   - Query: Params, Pool, Pools, Offer, OffersByOwner, Offers, TradesByOffer, TradesByTaker, Auction, Auctions.
-  - Tx: CreatePool, UpdatePoolConfig, AddLiquidity, RemoveLiquidity, PoolSwap, ConvertToLiquid, ConvertToSolid, MakeOffer, TakeOffer, CancelOffer, OpenAuction, RedeemAuction, UpdateParams.
+- Tx: CreatePool, UpdatePoolConfig, AddLiquidity, RemoveLiquidity, PoolSwap, MakeOffer, TakeOffer, CancelOffer, OpenAuction, RedeemAuction, UpdateParams.
   - Added positional arg descriptors where applicable.
   - Lints clean.
 
@@ -637,9 +621,7 @@ Here are the main edge cases and undefined/underspecified behaviors to firm up:
   - NFT class reuse per bid_denom: If policy/allowed denoms change later, clarify effects on existing auctions; define idempotence of SaveClass/policy setters.
   - Reverse index deletion: Ensure idempotence and behavior if redeem is called twice or after out-of-band burn.
 
-- Conversions (wrapping)
-  - Backing underflow: ConvertToSolid aborts if backing < amount. Define whether partial redemption is allowed (currently no). Confirm no fee charged on module-destination mints and that direct user mints still require fee.
-  - Liquid denom format: whaleswap.dys/coins/<solid>. Disallow nested wrapping and clarify errors if given already-liquid denom to ConvertToLiquid.
+- Conversions (wrapping): removed. No wrapper denoms; section obsolete.
 
 - Params/authority
   - UpdateParams authority: Clarify who is the authority (gov module address) and error code if mismatched. Document that pfand_per_offer denom/amount zero is valid (disables pfand).

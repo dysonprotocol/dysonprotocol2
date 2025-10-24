@@ -14,15 +14,14 @@ def test_make_trade_module_coverage_fail(chainnet, ws_setup_env, ws_create_offer
     maker = env["acc2"]["name"]
     drain_rcpt = env["acc3"]["addr"]
 
-    # Drain ALL B (solid + liquid) from taker
-    lb = "whaleswap.dys/coins/" + b
+    # Drain ALL B from taker (base only; no liquid wrappers)
     txd = dysond(
         "tx",
         "bank",
         "send",
         taker_name,
         drain_rcpt,
-        f"300{b},300{lb}",
+        f"300{b}",
         "--from",
         taker_name,
         "--gas",
@@ -33,7 +32,7 @@ def test_make_trade_module_coverage_fail(chainnet, ws_setup_env, ws_create_offer
     # Offer requiring 90 B per unit
     oid = ws_create_offer(maker, have=f"10{a}", want=f"900{b}")
 
-    # Attempt take (no liquid cap, no B available): expect failure
+    # Attempt take (no B available): expect failure due to insufficient taker base B
     out = dysond(
         "tx",
         "whaleswap",
@@ -48,7 +47,5 @@ def test_make_trade_module_coverage_fail(chainnet, ws_setup_env, ws_create_offer
     )
     assert isinstance(out, str), f"expected raw error string, got {type(out)}: {out}"
     low = out.lower()
-    expected = f"taker insufficient whaleswap.dys/coins/{b}".lower()
-    assert (
-        expected in low
-    ), f"missing expected taker-insufficient liquid {b} error: {out}"
+    expected = f"insufficient inputs for {b}".lower()
+    assert expected in low, f"missing expected insufficient inputs for {b} error: {out}"

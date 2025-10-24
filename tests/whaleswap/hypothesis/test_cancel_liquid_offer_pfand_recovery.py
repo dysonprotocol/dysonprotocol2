@@ -1,7 +1,7 @@
 """
-Isolated PFAND recovery test for CancelOffer with liquid-have offers.
+Isolated PFAND recovery test for CancelOffer with liquid-mode offers.
 
-This test enables PFAND explicitly before any liquid operations to ensure
+This test enables PFAND explicitly before any operations to ensure
 third-party cancel eligibility is evaluated with pfand_locked > 0.
 """
 
@@ -38,8 +38,7 @@ def test_cancel_liquid_offer_pfand_recovery(
 
     foo_name = registered_names["foo_name"]
     bar_name = registered_names["bar_name"]
-    liquid_foo = f"whaleswap.dys/coins/{foo_name}"
-    denoms = [foo_name, bar_name, liquid_foo, "udys", "whaleswap.dys/pfand"]
+    denoms = [foo_name, bar_name, "udys"]
 
     messages = []
 
@@ -59,34 +58,27 @@ def test_cancel_liquid_offer_pfand_recovery(
         }
     )
 
-    # Wrap to liquid
-    messages.append(
-        {
-            "@type": "/dysonprotocol.whaleswap.v1.MsgConvertToLiquid",
-            "caller": accounts["alice_addr"],
-            "denom": foo_name,
-            "amount": str(liquid_offer_amount + 1000),
-        }
-    )
-
-    # Make liquid offer (locks PFAND)
+    # Make liquid-mode offer (locks PFAND, no escrow)
     messages.append(
         {
             "@type": "/dysonprotocol.whaleswap.v1.MsgMakeOffer",
             "maker": accounts["alice_addr"],
-            "have": {"denom": liquid_foo, "amount": str(liquid_offer_amount)},
-            "want": {"denom": bar_name, "amount": str(liquid_offer_amount)},
+            "have": {"denom": foo_name, "amount": str(liquid_offer_amount)},
+            # Choose want = have - 1 to force gcd=1 → unit_have = have
+            "want": {"denom": bar_name, "amount": str(liquid_offer_amount - 1)},
+            "settlement_mode": "SETTLEMENT_LIQUID",
         }
     )
 
-    # Drain alice's liquid balance below unit_have (send to bob)
-    actual_drain = liquid_offer_amount + 1000
+    # Drain alice's BASE balance below unit_have (send to bob)
+    # registered_names minted 1_000_000 units to alice; leave (have-1) so balance < unit_have
+    actual_drain = 1_000_000 - (liquid_offer_amount - 1)
     messages.append(
         {
             "@type": "/cosmos.bank.v1beta1.MsgSend",
             "from_address": accounts["alice_addr"],
             "to_address": accounts["bob_addr"],
-            "amount": [{"denom": liquid_foo, "amount": str(actual_drain)}],
+            "amount": [{"denom": foo_name, "amount": str(actual_drain)}],
         }
     )
 
@@ -95,7 +87,7 @@ def test_cancel_liquid_offer_pfand_recovery(
         {
             "@type": "/dysonprotocol.whaleswap.v1.MsgCancelOffer",
             "closer": accounts["bob_addr"],
-            "offer_id": "{{ msg_2['offer_id'] }}",
+            "offer_id": "{{ msg_1['offer_id'] }}",
         }
     )
 
@@ -110,4 +102,4 @@ def test_cancel_liquid_offer_pfand_recovery(
     assert result[
         "success"
     ], f"PFAND recovery failed: offer={liquid_offer_amount}, drain={drain_amount}"
-    assert result["message_count"] == 5
+    assert result["message_count"] == 4

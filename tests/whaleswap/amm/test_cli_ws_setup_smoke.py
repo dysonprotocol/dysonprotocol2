@@ -15,15 +15,11 @@ def test_ws_setup_env_balances(chainnet, ws_setup_env):
     a3 = env["acc3"]["addr"]
 
     denoms = env["denoms"]
-    ldenoms = env["liquid_denoms"]
+    # liquid denoms removed in settlement-mode rewrite
 
     for addr in [a1, a2, a3]:
         bm = _bal_map(dysond, addr)
         for d in denoms:
             assert (
                 bm.get(d, 0) == 300
-            ), f"missing 300 solid of {d} for {addr}: {json.dumps(bm, indent=2)}"
-        for ld in ldenoms:
-            assert (
-                bm.get(ld, 0) == 300
-            ), f"missing 300 liquid of {ld} for {addr}: {json.dumps(bm, indent=2)}"
+            ), f"missing 300 base of {d} for {addr}: {json.dumps(bm, indent=2)}"

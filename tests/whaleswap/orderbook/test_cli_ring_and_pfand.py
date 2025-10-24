@@ -201,37 +201,18 @@ def test_ring_with_liquid_and_pfand(chainnet, generate_account, faucet, register
         == 0
     )
 
-    def ldenom(d):
-        return f"whaleswap.dys/coins/{d}"
-
-    for mname, denom in [
-        (maker_a_name, coin_a),
-        (maker_b_name, coin_b),
-        (maker_c_name, coin_c),
-    ]:
-        res = dysond(
-            "tx",
-            "whaleswap",
-            "convert-to-liquid",
-            "--denom",
-            denom,
-            "--amount",
-            "2",
-            "--from",
-            mname,
-        )
-        assert (
-            res.get("code", 1) == 0
-        ), f"convert-to-liquid failed: {json.dumps(res, indent=2)}"
+    # No liquid conversions; use base coins with settlement-liquid offers
 
     tx_a = dysond(
         "tx",
         "whaleswap",
         "make-offer",
         "--have",
-        f"2{ldenom(coin_a)}",
+        f"2{coin_a}",
         "--want",
         f"1{coin_b}",
+        "--settlement-mode",
+        "settlement-liquid",
         "--from",
         maker_a_name,
     )
@@ -240,9 +221,11 @@ def test_ring_with_liquid_and_pfand(chainnet, generate_account, faucet, register
         "whaleswap",
         "make-offer",
         "--have",
-        f"2{ldenom(coin_b)}",
+        f"2{coin_b}",
         "--want",
         f"1{coin_c}",
+        "--settlement-mode",
+        "settlement-liquid",
         "--from",
         maker_b_name,
     )
@@ -251,9 +234,11 @@ def test_ring_with_liquid_and_pfand(chainnet, generate_account, faucet, register
         "whaleswap",
         "make-offer",
         "--have",
-        f"2{ldenom(coin_c)}",
+        f"2{coin_c}",
         "--want",
         f"1{coin_a}",
+        "--settlement-mode",
+        "settlement-liquid",
         "--from",
         maker_c_name,
     )

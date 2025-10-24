@@ -12,8 +12,9 @@ CURRENT_DIR = $(shell pwd)
 # Build tags
 build_tags = netgo
 
-# Coverage support
-COVERAGE_ENABLED ?= false
+# Coverage: if COVERAGE_PACKAGES is non-empty, coverage is enabled
+# Comma-separated list of packages to include in coverage (can be overridden)
+COVERAGE_PACKAGES ?=
 ifeq ($(LEDGER_ENABLED),true)
   ifeq ($(OS),Windows_NT)
     GCCEXE = $(shell where gcc.exe 2> NUL)
@@ -73,7 +74,7 @@ endif
 ldflags := $(strip $(ldflags))
 
 BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
-ifneq ($(COVERAGE_ENABLED),)
+ifneq ($(strip $(COVERAGE_PACKAGES)),)
   BUILD_FLAGS += -cover
 endif
 # check for nostrip option
@@ -133,39 +134,23 @@ test: install
 	@echo "--> running pytest"
 	@TMP_ROOT=$$(mktemp -d /tmp/dyson-test.XXXXXX); \
 	echo "Using temporary directory: $$TMP_ROOT"; \
-	if [ -n "$(COVERAGE_ENABLED)" ]; then \
-		echo "--> Coverage enabled, setting up coverage collection"; \
-		COV_DIR=$$TMP_ROOT/coverage; \
-		mkdir -p $$COV_DIR; \
-		export GOCOVERDIR=$$COV_DIR; \
-		echo "Coverage data will be written to: $$COV_DIR"; \
-		if [ "$(COVERAGE_ENABLED)" = "true" ]; then \
-			COVERAGE_PACKAGES="dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper"; \
-		else \
-			COVERAGE_PACKAGES="$(COVERAGE_ENABLED)"; \
-		fi; \
-		echo "Coverage packages: $$COVERAGE_PACKAGES"; \
+	if [ -n "$(COVERAGE_PACKAGES)" ]; then \
+		GOCOVERDIR="$(CURDIR)/coverage"; \
+		rm -rf "$$GOCOVERDIR"; \
+		mkdir -p "$$GOCOVERDIR"; \
+		export GOCOVERDIR; \
+		echo "Go coverage enabled. Writing to $$GOCOVERDIR"; \
+		echo "Coverage packages: $(COVERAGE_PACKAGES)"; \
 	fi; \
-	DYSON_BASE_DIR=$$TMP_ROOT/test-dysonchains python -u -m pytest --ff --capture=fd --showlocals --durations=0 $(PYTEST_ARGS); \
+	GOCOVERDIR=$$GOCOVERDIR DYSON_BASE_DIR=$$TMP_ROOT/test-dysonchains python -u -m pytest --ff --capture=fd --showlocals --durations=0 $(PYTEST_ARGS); \
 	TEST_EXIT_CODE=$$?; \
-	if [ -n "$(COVERAGE_ENABLED)" ] && [ -d "$$COV_DIR" ]; then \
-		echo "Generating coverage report from $$COV_DIR..."; \
-		go tool covdata percent -i=$$COV_DIR \
-		  -pkg="$$COVERAGE_PACKAGES" \
-		  | column -t; \
-		echo "Converting to text format..."; \
-		go tool covdata textfmt -i=$$COV_DIR \
-		  -pkg="$$COVERAGE_PACKAGES" \
-		  -o=coverage.out; \
-		echo "Coverage report saved to coverage.out"; \
-		go tool cover -html=coverage.out -o=coverage.html; \
-		echo "Coverage report saved to coverage.html"; \
+	if [ -n "$(COVERAGE_PACKAGES)" ] && [ -d "$$GOCOVERDIR" ]; then \
+		echo "Generating go coverage reports from $$GOCOVERDIR"; \
+		PKG_FLAG=""; if [ -n "$(COVERAGE_PACKAGES)" ]; then PKG_FLAG="-pkg=$(COVERAGE_PACKAGES)"; fi; \
+		go tool covdata textfmt -i="$$GOCOVERDIR" $$PKG_FLAG -o=coverage.out; \
 		go tool cover -func=coverage.out -o=coverage.txt; \
-		echo "Coverage report saved to coverage.txt"; \
-		echo "To view HTML report:"; \
-		echo "open coverage.html"; \
-		echo "To view function-level coverage:"; \
-		echo "open coverage.txt"; \
+		go tool cover -html=coverage.out -o=coverage.html; \
+		echo "Coverage reports written: coverage.out, coverage.txt, coverage.html"; \
 	fi; \
 	echo "Cleaning up temporary directory"; \
 	rm -rf $$TMP_ROOT; \

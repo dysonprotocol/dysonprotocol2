@@ -38,7 +38,6 @@ def test_make_trade_pfand_release_on_close(chainnet, ws_setup_env):
     maker_addr = env["acc2"]["addr"]
     taker_addr = env["acc1"]["addr"]
     a = env["denoms"][0]
-    la = env["liquid_denoms"][0]
 
     # Gov: set pfand_per_offer > 0 via MsgSubmitProposal(MsgUpdateParams)
     cur = dysond("query", "whaleswap", "params")["params"]
@@ -106,15 +105,17 @@ def test_make_trade_pfand_release_on_close(chainnet, ws_setup_env):
     _ = dysond("tx", "bank", "send", "alice", maker_addr, "2000000udys")
     _ = dysond("tx", "bank", "send", "alice", taker_addr, "2000000udys")
 
-    # Maker creates an offer with have as liquid a, want as 1 udys per unit (3 units total)
+    # Maker creates an offer (liquid-mode): have base 'a', want 1 udys per unit (3 units total)
     mk = dysond(
         "tx",
         "whaleswap",
         "make-offer",
         "--have",
-        f"12{la}",
+        f"12{a}",
         "--want",
         "3udys",
+        "--settlement-mode",
+        "settlement-liquid",
         "--from",
         maker,
     )
@@ -240,7 +241,7 @@ def test_pfand_amount_stored_not_param_dependent(chainnet, ws_setup_env):
 
     maker = env["acc2"]["name"]
     maker_addr = env["acc2"]["addr"]
-    la = env["liquid_denoms"][0]
+    a = env["denoms"][0]
 
     # Step 1: Set pfand_per_offer = 5 udys
     auth = (
@@ -307,15 +308,17 @@ def test_pfand_amount_stored_not_param_dependent(chainnet, ws_setup_env):
     maker_bal_before = dysond("query", "bank", "balance", maker_addr, "udys")
     maker_udys_before = int(maker_bal_before["balance"]["amount"])
 
-    # Step 2: Maker creates liquid offer (locks 5 udys)
+    # Step 2: Maker creates liquid-mode offer (locks 5 udys)
     mk = dysond(
         "tx",
         "whaleswap",
         "make-offer",
         "--have",
-        f"10{la}",
+        f"10{a}",
         "--want",
         "10udys",
+        "--settlement-mode",
+        "settlement-liquid",
         "--from",
         maker,
     )

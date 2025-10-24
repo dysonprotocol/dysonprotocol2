@@ -140,24 +140,7 @@ def test_make_trade_pfand_release_accounting(
     )
     assert send_tx.get("code", 1) == 0
 
-    # Convert some alice.dys to liquid for Alice's offer
-    liquid_denom = f"whaleswap.dys/coins/{name}"
-    convert_amt = "200"
-    convert_tx = dysond(
-        "tx",
-        "whaleswap",
-        "convert-to-liquid",
-        "--denom",
-        name,
-        "--amount",
-        convert_amt,
-        "--from",
-        alice_name,
-        "-y",
-    )
-    assert convert_tx.get("code", 1) == 0
-
-    # Alice makes liquid offer: have 100 liquid alice.dys, want 100 udys
+    # Alice makes liquid-mode offer: have 100 alice.dys (base), want 100 udys
     # This locks pfand (100 udys as configured in pfand_per_offer parameter)
     have_amt = 100
     want_amt = 100
@@ -166,9 +149,11 @@ def test_make_trade_pfand_release_accounting(
         "whaleswap",
         "make-offer",
         "--have",
-        f"{have_amt}{liquid_denom}",
+        f"{have_amt}{name}",
         "--want",
         f"{want_amt}udys",
+        "--settlement-mode",
+        "settlement-liquid",
         "--from",
         alice_name,
         "-y",
@@ -197,12 +182,12 @@ def test_make_trade_pfand_release_accounting(
     # Pfand amount equals the pfand_per_offer parameter amount (100 udys)
     assert pfand_amount == have_amt, f"Expected pfand {have_amt}, got {pfand_amount}"
 
-    # Get module balance before take
+    # Get module udys balance before take (pfand denom)
     module_addr = dysond("query", "auth", "module-account", "whaleswap")["account"][
         "value"
     ]["address"]
-    mod_bal_before = dysond("query", "bank", "balance", module_addr, name)
-    mod_alice_dys_before = int(mod_bal_before["balance"]["amount"])
+    mod_bal_before = dysond("query", "bank", "balance", module_addr, "udys")
+    mod_udys_before = int(mod_bal_before["balance"]["amount"])
 
     # Bob takes ENTIRE offer via MakeTrade (closes it, triggers pfand release)
     # This will FAIL with invariant error if pfand accounting is broken
@@ -240,12 +225,12 @@ def test_make_trade_pfand_release_accounting(
     pfand_released_amt = int(pfand_coin["amount"])
     assert pfand_released_amt == pfand_amount
 
-    # Verify module balance decreased by pfand amount
-    mod_bal_after = dysond("query", "bank", "balance", module_addr, name)
-    mod_alice_dys_after = int(mod_bal_after["balance"]["amount"])
+    # Verify module udys balance decreased by pfand amount
+    mod_bal_after = dysond("query", "bank", "balance", module_addr, "udys")
+    mod_udys_after = int(mod_bal_after["balance"]["amount"])
 
     expected_decrease = pfand_amount
-    actual_decrease = mod_alice_dys_before - mod_alice_dys_after
+    actual_decrease = mod_udys_before - mod_udys_after
     assert (
         actual_decrease == expected_decrease
     ), f"Module balance change mismatch: expected decrease of {expected_decrease}, got {actual_decrease}"

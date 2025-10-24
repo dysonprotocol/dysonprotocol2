@@ -55,6 +55,10 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		outputsByAddr[addr] = outputsByAddr[addr].Add(c)
 	}
 
+	// Resolve key addresses
+	moduleBech := k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String()
+	traderBech := msg.Trader
+
 	// Execute operations in order, mutating pools/offers and accumulating
 	logger.Info("MakeTrade processing operations", "operations_count", len(msg.Operations))
 	var operations []whaleswapv1.TradeOperation
@@ -63,6 +67,7 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		amount  sdk.Coin
 	}
 	var pfandReleases []pfandRelease
+	pfandCredits := sdk.NewCoins()
 	seenPools := make(map[uint64]bool)
 	seenOffers := make(map[uint64]bool)
 	seenAuctions := make(map[uint64]bool)
@@ -71,10 +76,10 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		switch v := op.Op.(type) {
 		case *whaleswapv1.TradeOperation_Swap:
 			leg := v.Swap
-			logger.Info("MakeTrade processing swap operation", "operation_idx", i, "pool_id", leg.PoolId, "swap_in", leg.SwapIn, "swap_out", leg.SwapOut)
 			if leg == nil || leg.PoolId == 0 {
 				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap leg invalid")
 			}
+			logger.Info("MakeTrade processing swap operation", "operation_idx", i, "pool_id", leg.PoolId, "swap_in", leg.SwapIn, "swap_out", leg.SwapOut)
 			if seenPools[leg.PoolId] {
 				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate pool_id %d in operations", leg.PoolId)
 			}
@@ -97,10 +102,10 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 
 		case *whaleswapv1.TradeOperation_Take:
 			item := v.Take
-			logger.Info("MakeTrade processing take operation", "operation_idx", i, "offer_id", item.OfferId, "take_units", item.TakeUnits)
 			if item == nil {
 				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "take item missing")
 			}
+			logger.Info("MakeTrade processing take operation", "operation_idx", i, "offer_id", item.OfferId, "take_units", item.TakeUnits)
 			if item.OfferId > 0 && seenOffers[item.OfferId] {
 				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate offer_id %d in operations", item.OfferId)
 			}
@@ -109,7 +114,7 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 			if terr != nil {
 				return nil, terr
 			}
-			logger.Info("MakeTrade take operation applied", "operation_idx", i, "maker", maker, "maker_want", makerWant, "taker_recv", takerRecv, "maker_liq_in", makerLiqIn, "pfand", pfand)
+			logger.Info("x/whaleswap MakeTrade take operation applied", "operation_idx", i, "maker", maker, "maker_want", makerWant, "taker_recv", takerRecv, "maker_liq_in", makerLiqIn, "pfand", pfand)
 			operations = append(operations, tradeOp)
 			// For self-takes (taker == maker), makerWant is a self-payment that nets to zero - don't add to outputs
 			if maker != msg.Trader {
@@ -117,12 +122,18 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 			}
 			// DON'T add taker input explicitly - let tradeNetAndCover determine it via coverage
 			addOut(msg.Trader, takerRecv)
+			// Settlement funding
 			if makerLiqIn.IsValid() && makerLiqIn.Amount.IsPositive() {
+				// LIQUID: maker funds base-have
 				addIn(maker, makerLiqIn)
+			} else {
+				// ESCROW: module funds base-have from escrowed balances
+				addIn(moduleBech, takerRecv)
 			}
 			if pfand.IsValid() && pfand.Amount.IsPositive() {
-				addOut(msg.Trader, pfand)
+				// Accumulate PFAND credit to trader (released on close), to be applied pre-netting
 				pfandReleases = append(pfandReleases, pfandRelease{offerId: item.OfferId, amount: pfand})
+				pfandCredits = pfandCredits.Add(pfand)
 			}
 
 		case *whaleswapv1.TradeOperation_Auction:
@@ -143,9 +154,6 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 
 	logger.Info("MakeTrade operations completed", "amm_deltas", deltaByDenom, "pfand_releases", len(pfandReleases))
 
-	moduleBech := k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String()
-	traderBech := msg.Trader
-
 	logger.Info("MakeTrade converting AMM deltas to inputs/outputs", "module_addr", moduleBech, "trader_addr", traderBech)
 	// Convert AMM module deltas to inputs/outputs entries (trader <-> module)
 	for denom, modAmt := range deltaByDenom {
@@ -161,15 +169,26 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		}
 	}
 
+	// Apply PFAND releases (module -> trader) before netting so ordering of operations (SWAP vs TAKE) is irrelevant.
+	// Also log explicit PFAND credits and add to aggregators as effective inputs.
+	if !pfandCredits.IsZero() {
+		logger.Info("x/whaleswap MakeTrade applying PFAND credits pre-netting", "pfand", pfandCredits)
+		for _, c := range pfandCredits {
+			addIn(moduleBech, c)
+			addOut(traderBech, c)
+		}
+	}
+
 	// Orderbook-style netting and coverage
-	logger.Info("MakeTrade before netting and coverage", "inputs_by_addr", inputsByAddr, "outputs_by_addr", outputsByAddr)
+	logger.Info("x/whaleswap MakeTrade before netting and coverage", "inputs_by_addr", inputsByAddr, "outputs_by_addr", outputsByAddr, "pfand", pfandCredits)
 	if err := k.tradeNetAndCover(ctx, traderBech, inputsByAddr, outputsByAddr); err != nil {
 		return nil, err
 	}
-	logger.Info("MakeTrade after netting and coverage", "inputs_by_addr", inputsByAddr, "outputs_by_addr", outputsByAddr)
+	logger.Info("x/whaleswap MakeTrade after netting and coverage", "inputs_by_addr", inputsByAddr, "outputs_by_addr", outputsByAddr)
 
 	// Self-net trader debits and credits by denom to allow circular profit without explicit debits.
 	// Keep totals balanced by subtracting the same amount from the module's symmetric entries.
+	// IMPORTANT: Do NOT self-net PFAND denoms; those flows must persist (module -> trader release and trader -> maker payment).
 	{
 		trIn := inputsByAddr[traderBech]
 		trOut := outputsByAddr[traderBech]

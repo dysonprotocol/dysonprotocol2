@@ -36,19 +36,8 @@ def test_make_trade_multi_take_success(chainnet, ws_setup_env, ws_create_offer, 
     # Offer 3: 77a for 87udys   -> unit 77a / 87udys (1 unit taken = 87udys want)
     o3 = ws_create_offer(maker, have=f"77{a}", want="87udys")
 
-    # Ensure taker has sufficient udys (solid and liquid) for coverage
+    # Ensure taker has sufficient udys for coverage
     faucet(taker_addr, amount=1_000_000)
-    dysond(
-        "tx",
-        "whaleswap",
-        "convert-to-liquid",
-        "--denom",
-        "udys",
-        "--amount",
-        "500",
-        "--from",
-        taker,
-    )
 
     # Single MakeTrade with three take operations
     # Expected want total: 78 + 75 + 87 = 240 udys

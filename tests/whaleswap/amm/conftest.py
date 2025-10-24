@@ -14,10 +14,9 @@ def ws_setup_env(chainnet, generate_account, faucet):
     Single-tx dyslang setup for whaleswap tests:
     - register 1 name
     - mint 3 denoms name/coin/a, name/coin/b, name/coin/c with 1800 units each
-    - convert 900 units of each to liquid (keep 900 solid, 900 liquid)
-    - distribute to three accounts: for each denom, send 300 solid and 300 liquid to each
+    - distribute to three accounts: for each denom, send 300 base to each
 
-    Returns dict with keys: owner_name, owner_addr, acc1, acc2, acc3, name, denoms, liquid_denoms
+    Returns dict with keys: owner_name, owner_addr, acc1, acc2, acc3, name, denoms
     """
     dysond = chainnet[0]
 
@@ -91,25 +90,11 @@ def setup(name, salt, acc1, acc2, acc3):
         "mint_fee": {"denom": "udys", "amount": str(fee)},
     })
 
-    # Convert 900 units of each denom to liquid (wrap)
-    for d in denoms:
-        _msg({
-            "@type": "/dysonprotocol.whaleswap.v1.MsgConvertToLiquid",
-            "caller": owner,
-            "denom": d,
-            "amount": "900",
-        })
-
-    # Helper to build liquid denom
-    def L(solid):
-        return "whaleswap.dys/coins/" + solid
-
-    # Distribute 300 solid + 300 liquid for each denom to each of the 3 accounts
+    # Distribute 300 base for each denom to each of the 3 accounts
     for r in [acc1, acc2, acc3]:
         sends = []
         for d in denoms:
             sends.append({"denom": d, "amount": "300"})
-            sends.append({"denom": L(d), "amount": "300"})
         # Coins array must be sorted by denom for Cosmos SDK validation
         sends = sorted(sends, key=lambda x: x["denom"])
         _msg({
@@ -122,7 +107,6 @@ def setup(name, salt, acc1, acc2, acc3):
     return {
         "name": name,
         "denoms": denoms,
-        "liquid_denoms": [L(x) for x in denoms],
         "owner": owner,
     }
 """
@@ -149,8 +133,6 @@ def setup(name, salt, acc1, acc2, acc3):
     assert tx.get("code", 1) == 0, f"setup script failed: {json.dumps(tx, indent=2)}"
 
     denoms = [f"{name}/coin/a", f"{name}/coin/b", f"{name}/coin/c"]
-    lprefix = "whaleswap.dys/coins/"
-
     return {
         "owner_name": owner_name,
         "owner_addr": owner_addr,
@@ -159,7 +141,6 @@ def setup(name, salt, acc1, acc2, acc3):
         "acc3": {"name": a3_name, "addr": a3_addr},
         "name": name,
         "denoms": denoms,
-        "liquid_denoms": [lprefix + d for d in denoms],
     }
 
 

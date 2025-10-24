@@ -127,30 +127,17 @@ def test_ring_trade_banded_auction(
     owner = env["owner_name"]
     _mint(dysond, owner, b, 50)
     _mint(dysond, owner, a, 50)
-    # send 20b to maker_solid, 20l/a to maker_liq
+    # send 20b to maker_solid, 20a to maker_liq
     send_b = dysond(
         "tx", "bank", "send", owner, maker_solid_addr, f"20{b}", "--from", owner
     )
     assert send_b.get("code", 1) == 0, f"send b failed: {json.dumps(send_b, indent=2)}"
-    lA = "whaleswap.dys/coins/" + a
-    conv = dysond(
-        "tx",
-        "whaleswap",
-        "convert-to-liquid",
-        "--denom",
-        a,
-        "--amount",
-        "20",
-        "--from",
-        owner,
-    )
-    assert conv.get("code", 1) == 0, f"convert failed: {json.dumps(conv, indent=2)}"
-    send_lA = dysond(
-        "tx", "bank", "send", owner, maker_liq_addr, f"20{lA}", "--from", owner
+    send_a_liq = dysond(
+        "tx", "bank", "send", owner, maker_liq_addr, f"20{a}", "--from", owner
     )
     assert (
-        send_lA.get("code", 1) == 0
-    ), f"send lA failed: {json.dumps(send_lA, indent=2)}"
+        send_a_liq.get("code", 1) == 0
+    ), f"send a to maker_liq failed: {json.dumps(send_a_liq, indent=2)}"
 
     make1 = dysond(
         "tx",
@@ -184,9 +171,11 @@ def test_ring_trade_banded_auction(
         "whaleswap",
         "make-offer",
         "--have",
-        f"20{lA}",
+        f"20{a}",
         "--want",
         f"20{b}",
+        "--settlement-mode",
+        "settlement-liquid",
         "--from",
         maker_liq,
     )

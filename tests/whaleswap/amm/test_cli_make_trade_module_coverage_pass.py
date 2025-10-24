@@ -27,15 +27,14 @@ def test_make_trade_module_coverage_pass(chainnet, ws_setup_env, ws_create_offer
     maker = env["acc2"]["name"]
     drain_rcpt = env["acc3"]["addr"]
 
-    # Move all solid B out and leave exactly 90 liquid B with taker
-    lb = "whaleswap.dys/coins/" + b
+    # Move all solid B out and leave exactly 90 B with taker
     txd1 = dysond(
         "tx",
         "bank",
         "send",
         taker_name,
         drain_rcpt,
-        f"300{b},210{lb}",
+        f"210{b}",
         "--from",
         taker_name,
         "--gas",
@@ -56,7 +55,7 @@ def test_make_trade_module_coverage_pass(chainnet, ws_setup_env, ws_create_offer
         "--max-input",
         "100udys",
         "--max-input",
-        f"90{lb}",
+        f"90{b}",
         "--op",
         json.dumps(_take(offer, 1)),
         "--from",
@@ -70,9 +69,7 @@ def test_make_trade_module_coverage_pass(chainnet, ws_setup_env, ws_create_offer
     in_b = sum([amt for (amt, den) in debits if den == b])
     out_b = sum([amt for (amt, den) in credits if den == b])
     out_a = sum([amt for (amt, den) in credits if den == a])
-    assert (
-        in_b == 0
-    ), f"taker debited B unexpectedly: {in_b} tx={json.dumps(tx, indent=2)}"
+    assert in_b == 90, f"taker B debit mismatch: {in_b} tx={json.dumps(tx, indent=2)}"
     assert (
         out_b == 0
     ), f"taker credited B unexpectedly: {out_b} tx={json.dumps(tx, indent=2)}"
@@ -85,10 +82,11 @@ def test_make_trade_module_coverage_pass(chainnet, ws_setup_env, ws_create_offer
     assert (
         a in pre_taker and a in post_taker
     ), f"missing denom a: pre={pre_taker} post={post_taker}"
-    # solid B was drained; ensure it is absent both before and after
+    # After draining 210B, taker has exactly 90B pre-trade; post-trade, taker has no B
     assert (
-        b not in pre_taker and b not in post_taker
-    ), f"unexpected solid B presence: pre={pre_taker} post={post_taker}"
+        b in pre_taker and pre_taker[b] == 90
+    ), f"pre B balance wrong: pre={pre_taker}"
+    assert b not in post_taker, f"post B should be absent: post={post_taker}"
     assert b in pre_maker and b in post_maker
     assert (
         post_taker[a] == pre_taker[a] + 1

@@ -4,7 +4,7 @@
 
 - Tests must stop attaching MsgSend for fees; module minting to itself skips nameservice fees in wrapping/LP flows.
 - Use single-pool `swap --pool-id` everywhere; multi-hop = multiple msgs.
-- Liquid denom shape is `whaleswap.dys/coins/<solid>`; update string asserts accordingly.
+- Wrappers removed: no liquid denom usage in tests. Use SettlementMode (ESCROW/LIQUID) with base denoms.
 - Module account owns `whaleswap.dys` root; tests can assert authority by querying nameservice owner to be the module address.
 - Orderbook TakeOffer is TAKE_ALL only (no modes, no `--take` flag). All legs are planned, netted, and settled via one aggregated multi-send from the whaleswap module helper, followed by burning any liquid inputs at the module. Liquid wants are disallowed at MakeOffer.
 
@@ -175,8 +175,7 @@ def amm_create(denom_a, amt_a, denom_b, amt_b):
 Example CLI:
 ```bash
 dysond tx whaleswap make-offer --have=100udys --want=50ufoo --from alice
-dysond tx whaleswap convert-to-liquid --denom=udys --amount=100 --from alice
-dysond tx whaleswap make-offer --have=100whaleswap.dys/coins/udys --want=50ufoo --from alice
+dysond tx whaleswap make-offer --have=100udys --want=50ufoo --settlement-mode settlement-liquid --from alice
 dysond tx whaleswap take-offer --trades offer_id=1,take_units=10 --trades offer_id=2 --from bob
 dysond tx whaleswap cancel-offer --offer-id=2 --from bob
 ```

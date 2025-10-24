@@ -14,6 +14,9 @@ import tempfile
 import shutil
 from pathlib import Path
 
+# Apply docs marker to all tests in this module
+pytestmark = pytest.mark.docs
+
 
 class NotebookExecutionError(Exception):
     """Custom exception for notebook execution failures."""
@@ -108,8 +111,8 @@ def execute_notebook(notebook_path, dyson_home, env=None):
     print(
         f"Executing notebook to markdown: {notebook_path.name} -> {markdown_path.name}"
     )
-
-    env = env or os.environ.copy()
+    env = env or {}
+    env.update(os.environ.copy())
     env["DYSON_HOME"] = dyson_home
 
     result = subprocess.run(
@@ -207,45 +210,15 @@ def test_notebook_execution(notebook_path, chainnet):
     dyson_home = dysond_bin("config", "home").strip()
     print(f"Dyson home: {dyson_home}")
 
-    # Create a temporary directory for the dysond wrapper
-    with tempfile.TemporaryDirectory() as temp_dir:
-        # Create a dysond wrapper script that includes the --home parameter
-        wrapper_script = Path(temp_dir) / "dysond"
+    # Execute the notebook with a clean env that sets DYSON_HOME; coverage vars pass through
+    env = os.environ.copy()
+    env["DYSON_HOME"] = dyson_home
 
-        # Find the real dysond binary
-        real_dysond = subprocess.run(
-            ["which", "dysond"], capture_output=True, text=True
-        ).stdout.strip()
-        assert real_dysond, "dysond binary not found in PATH"
+    success, markdown_path, stderr = execute_notebook(notebook_path, dyson_home, env)
 
-        # Write the wrapper script as a Python script to handle piping better
-        wrapper_content = f"""#!/usr/bin/env python3
-import sys
-import subprocess
-import os
-
-# Wrapper script to automatically include --home parameter for test node
-args = ["{real_dysond}", "--home", "{dyson_home}"] + sys.argv[1:]
-# Execute the command, preserving stdout/stderr behavior
-os.execvp("{real_dysond}", args)
-"""
-        wrapper_script.write_text(wrapper_content)
-        wrapper_script.chmod(0o755)
-
-        # Set up environment variables for notebook execution
-        env = os.environ.copy()
-        env["DYSON_HOME"] = dyson_home
-        # Put our wrapper script at the front of PATH so it's used instead of the real dysond
-        env["PATH"] = f"{temp_dir}:{env.get('PATH', '')}"
-
-        # Execute the notebook with the modified environment
-        success, markdown_path, stderr = execute_notebook(
-            notebook_path, dyson_home, env
-        )
-
-        assert (
-            success
-        ), f"Notebook execution failed: {notebook_path}\nMarkdown output: {markdown_path}\nSTDERR:\n{stderr}"
+    assert (
+        success
+    ), f"Notebook execution failed: {notebook_path}\nMarkdown output: {markdown_path}\nSTDERR:\n{stderr}"
 
 
 @pytest.mark.docs

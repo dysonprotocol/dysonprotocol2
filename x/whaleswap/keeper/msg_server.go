@@ -18,12 +18,6 @@ var _ whaleswapv1.MsgServer = Keeper{}
 
 // PoolSwap: see msg_pool_swap.go
 
-// ConvertToLiquid: see msg_convert.go
-
-// ConvertToSolid: see msg_convert.go
-
-// no-op placeholder removed: liquid denom is plain prefix + solid denom
-
 // MakeOffer: see msg_orderbook.go
 
 // TakeOffer: see msg_orderbook.go

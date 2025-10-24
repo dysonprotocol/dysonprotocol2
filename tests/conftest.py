@@ -22,7 +22,7 @@ import warnings
 from typing import List, Tuple, Iterable
 from textwrap import dedent
 
-NUM_CHAINS = 1
+NUM_CHAINS = 2
 NUM_NODES = 1
 
 # Global constants
@@ -352,7 +352,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
             "--block-speed",
             "500ms",
             "--no-blocks-timeout",
-            "5",
+            "15",
             "--logs",
         ],
         preexec_fn=os.setsid,
@@ -491,6 +491,10 @@ def faucet(chainnet):
             denom: The denom of the coins to send.
             amount: The amount of coins to send.
         """
+
+        # Normalize amount to integer if provided as string
+        if isinstance(amount, str):
+            amount = int(amount)
 
         # Check alice's balance before attempting transfer
         alice_balances = dysond_bin("query", "bank", "balances", "alice")

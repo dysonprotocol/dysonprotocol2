@@ -134,6 +134,45 @@ def query_offers_by_denom(denom, role=""):
     return result.get("offers", [])
 
 
+def create_and_query_offers(
+    messages, owner, status, have_denom, role, denoms, accounts, authority
+):
+    """
+    Create offers via MsgSudo and then query OffersByOwner and OffersByDenom
+    within the same script run to avoid cross-call persistence boundaries.
+
+    Returns dict with keys: success, message_count, owner_offers, denom_offers
+    """
+    sudo_msg = {
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": authority,
+        "messages": messages,
+    }
+    sudo_result = _msg(sudo_msg)
+    ok = bool(sudo_result and sudo_result.get("results"))
+
+    owner_res = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryOffersByOwnerRequest",
+            "owner": owner,
+            "status": status,
+        }
+    )
+    denom_res = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryOffersByDenomRequest",
+            "denom": have_denom,
+            "role": role,
+        }
+    )
+    return {
+        "success": ok,
+        "message_count": len(messages),
+        "owner_offers": owner_res.get("offers", []),
+        "denom_offers": denom_res.get("offers", []),
+    }
+
+
 def query_pool(pool_id):
     """Query single pool by ID."""
     result = _query(
@@ -199,6 +238,66 @@ def query_trades_by_pool(pool_id):
         }
     )
     return result.get("trades", [])
+
+
+def create_and_query_trades(
+    messages, taker, base_denom, quote_denom, denoms, accounts, authority
+):
+    """
+    Execute trade-related messages (e.g., create pool, make trade) sequentially (handles
+    templates like {{ msg_0['pool_id'] }}), then query TradesByTaker and TradesByPool
+    within the same script run.
+
+    Returns dict with keys: success, message_count, taker_trades, pool_trades
+    """
+    # Execute messages with template substitution support
+    seq_res = execute_messages_sequentially(messages, denoms, accounts, authority)
+    ok = bool(seq_res and seq_res.get("message_results"))
+
+    # Prefer pool_id from template_vars (MsgCreatePool response)
+    pool_id = None
+    tv = seq_res.get("template_vars", {}) if seq_res else {}
+    if isinstance(tv, dict) and "msg_0" in tv and isinstance(tv["msg_0"], dict):
+        pool_id = tv["msg_0"].get("pool_id")
+
+    # Fallback: query by pair if pool_id not available
+    if pool_id is None:
+        pair_res = _query(
+            {
+                "@type": "/dysonprotocol.whaleswap.v1.QueryPoolsByPairRequest",
+                "base_denom": base_denom,
+                "quote_denom": quote_denom,
+            }
+        )
+        pools = pair_res.get("pools", [])
+        if isinstance(pools, list) and len(pools) > 0:
+            pool_id = pools[0].get("pool_id")
+
+    # Queries within same run
+    taker_res = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryTradesByTakerRequest",
+            "taker": taker,
+        }
+    )
+    taker_trades = taker_res.get("trades", [])
+
+    pool_trades = []
+    if pool_id is not None:
+        pool_res = _query(
+            {
+                "@type": "/dysonprotocol.whaleswap.v1.QueryTradesByPoolRequest",
+                "pool_id": pool_id,
+            }
+        )
+        pool_trades = pool_res.get("trades", [])
+
+    return {
+        "success": ok,
+        "message_count": len(messages),
+        "taker_trades": taker_trades,
+        "pool_trades": pool_trades,
+    }
 
 
 def query_trades_by_offer(offer_id):

@@ -2,8 +2,7 @@
 
 This notebook demonstrates end-to-end usage of the Whaleswap module:
 - AMM pools (create/update/liquidity, exact-in and exact-out swaps)
-- Orderbook offers (make/take)
-- Liquid conversions
+- Orderbook offers (make/take) with SettlementMode (ESCROW/LIQUID)
 - Auctions (open + redeem without active bid)
 - Discovery queries and metrics
 
@@ -12,6 +11,15 @@ We’ll register `foo.dys` and `bar.dys` and mint those denoms for use in demos.
 ## Setup
 
 We’ll use `alice`, `bob`, and `charlie`. We'll register two names `foo.dys` and `bar.dys` via commit–reveal and then mint coins under these names for Whaleswap operations.
+
+
+```bash
+%%bash
+dysond keys show -a alice
+```
+
+    dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej
+
 
 
 ```python
@@ -43,6 +51,31 @@ def sh(line):
     BOB  : dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el
     CHARLIE: dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e
 
+
+
+```python
+# Robust shell helper: parse JSON even when extra lines precede it (e.g., gas estimate)
+import json, re
+from IPython.core.getipython import get_ipython
+from IPython.core.magic import register_line_magic
+
+@register_line_magic
+def sh(line: str):
+    ip = get_ipython()
+    out_lines = ip.getoutput(line) if ip else []
+    joined = "\n".join(out_lines)
+    # Find first JSON object/array in the output (nbconvert may include log lines before JSON)
+    m = re.search(r"(\{[\s\S]*|\[[\s\S]*)", joined)
+    if m:
+        snippet = m.group(1)
+        try:
+            return json.loads(snippet)
+        except json.JSONDecodeError:
+            pass
+    print("Error parsing as json: ", joined)
+    return joined
+
+```
 
 ## Register `foo.dys` and `bar.dys` (commit–reveal)
 
@@ -301,7 +334,7 @@ We’ll seed a pool with initial reserves and a fee (e.g., 0.3%).
 
 ```python
 # Create the pool with two repeated --coins flags; fee 0.003
-create_pool_tx = %sh dysond tx whaleswap create-pool --coins "100000$FOO_NAME" --coins "100000$BAR_NAME" --fee-pct "0.003" --from alice -y -o json | dysond query wait-tx -o json
+create_pool_tx = %sh dysond tx whaleswap create-pool --coins "100000$FOO_NAME" --coins "100000$BAR_NAME" --fee-pct "0.003" --from alice --gas auto -y -o json | dysond query wait-tx -o json
 assert create_pool_tx['code'] == 0, create_pool_tx['raw_log']
 
 # Resolve pool_id by pair
@@ -325,9 +358,9 @@ print("POOL_ID:", POOL_ID)
        {'denom': 'foo.dys', 'amount': '100000'}],
       'shares_denom': 'whaleswap.dys/pools/1',
       'fee_pct': '0.003',
-      'block_height': '26',
-      'created': '2025-10-22T13:45:18.46848Z',
-      'updated': '2025-10-22T13:45:18.46848Z'}}
+      'block_height': '69',
+      'created': '2025-10-24T22:20:36.124475Z',
+      'updated': '2025-10-24T22:20:36.124475Z'}}
 
 
 
@@ -348,7 +381,7 @@ SHARES = pool_info['pool']['shares_denom']
 ADD1 = f"10000{DENOM0}"
 ADD2 = f"10000{DENOM1}"
 
-add_liq_tx = %sh dysond tx whaleswap add-liquidity --pool-id "{POOL_ID}" --amount1 "{ADD1}" --amount2 "{ADD2}" --from alice -y -o json | dysond query wait-tx -o json
+add_liq_tx = %sh dysond tx whaleswap add-liquidity --pool-id "{POOL_ID}" --amount1 "{ADD1}" --amount2 "{ADD2}" --from alice --gas auto -y -o json | dysond query wait-tx -o json
 
 print("add-liquidity raw:")
 assert add_liq_tx['code'] == 0, add_liq_tx['raw_log']
@@ -363,7 +396,7 @@ assert avail > 0, "No shares available"
 
 # Remove a small portion of liquidity (ensure >0 and small)
 REMOVE_SHARES = avail // 10
-rm_liq_tx = %sh dysond tx whaleswap remove-liquidity --pool-id "{POOL_ID}" --shares "{REMOVE_SHARES}" --from alice -y -o json | dysond query wait-tx -o json
+rm_liq_tx = %sh dysond tx whaleswap remove-liquidity --pool-id "{POOL_ID}" --shares "{REMOVE_SHARES}" --from alice --gas auto -y -o json | dysond query wait-tx -o json
 assert rm_liq_tx['code'] == 0, rm_liq_tx['raw_log']
 
 events = [e for e in rm_liq_tx['events'] if e['type'].startswith('dysonprotocol')]
@@ -481,24 +514,18 @@ We show:
 
 
 ```python
-# Fund demo accounts for swaps, takes, and liquid conversions
+# Fund demo accounts for swaps and takes
 # - Bob needs foo.dys and bar.dys (for pool swap and taking Alice's offer)
-# - Charlie needs foo.dys (to convert to liquid and back)
 
-tx = %sh dysond tx bank send alice "$BOB" "100000$FOO_NAME" -y -o json | dysond query wait-tx -o json
+tx = sh(f'dysond tx bank send alice "{BOB}" "100000{FOO_NAME}" -y -o json | dysond query wait-tx -o json')
 assert tx['code'] == 0, tx['raw_log']
 
-tx = %sh dysond tx bank send alice "$BOB" "100000$BAR_NAME" -y -o json | dysond query wait-tx -o json
-assert tx['code'] == 0, tx['raw_log']
-
-tx = %sh dysond tx bank send alice "$CHARLIE" "5000$FOO_NAME" -y -o json | dysond query wait-tx -o json
+tx = sh(f'dysond tx bank send alice "{BOB}" "100000{BAR_NAME}" -y -o json | dysond query wait-tx -o json')
 assert tx['code'] == 0, tx['raw_log']
 
 # (Optional) quick balance peek
 print("Bob balances:")
 ! dysond query bank balances "$BOB" -o json | jq -M
-print("Charlie balances:")
-! dysond query bank balances "$CHARLIE" -o json | jq -M
 ```
 
     Bob balances:
@@ -521,26 +548,6 @@ print("Charlie balances:")
       ],
       "pagination": {
         "total": "3"
-      }
-    }
-
-
-    Charlie balances:
-
-
-    {
-      "balances": [
-        {
-          "denom": "foo.dys",
-          "amount": "5000"
-        },
-        {
-          "denom": "udys",
-          "amount": "10000000000"
-        }
-      ],
-      "pagination": {
-        "total": "2"
       }
     }
 
@@ -783,9 +790,9 @@ print(json.dumps(events, indent=2))
         ],
         "shares_denom": "whaleswap.dys/pools/1",
         "fee_pct": "0.0025",
-        "block_height": "34",
-        "created": "2025-10-22T13:45:18.46848Z",
-        "updated": "2025-10-22T13:45:23.271821Z",
+        "block_height": "79",
+        "created": "2025-10-24T22:20:36.124475Z",
+        "updated": "2025-10-24T22:20:43.293702Z",
         "num_trades": "2",
         "fees_earned": [
           {
@@ -854,8 +861,8 @@ print(json.dumps(events, indent=2))
           "offer_id": "1",
           "status": "open",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "36",
-          "updated_timestamp": "2025-10-22T13:45:23.807248Z",
+          "updated_height": "82",
+          "updated_timestamp": "2025-10-24T22:20:44.934769Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"
@@ -876,7 +883,7 @@ print(json.dumps(events, indent=2))
           "unit_want_int": "2",
           "remaining_units": "200",
           "pfand_locked": {
-            "denom": "whaleswap.dys/pfand",
+            "denom": "udys",
             "amount": "0"
           }
         }
@@ -947,62 +954,21 @@ print(json.dumps(events, indent=2))
     ]
 
 
-## Liquid conversions
+## Liquid-mode offers (no wrappers)
 
-Convert solid → liquid and back.
+Create an offer with SettlementMode LIQUID (no escrow; locks PFAND) and take it.
 
 
 ```python
-# Charlie converts foo.dys to liquid and then back
-to_liq_tx = %sh dysond tx whaleswap convert-to-liquid --denom "$FOO_NAME" --amount "250" --from charlie -y -o json | dysond query wait-tx -o json
-assert to_liq_tx['code'] == 0, to_liq_tx['raw_log']
-print("Converted to liquid")
-events = [e for e in to_liq_tx['events'] if e['type'].startswith('dysonprotocol')]
-print(json.dumps(events, indent=2))
+# Alice makes a liquid-mode offer: have 100 foo.dys, want 90 bar.dys
+mk = %sh dysond tx whaleswap make-offer --have "100$FOO_NAME" --want "90$BAR_NAME" --settlement-mode settlement-liquid --from alice -y -o json | dysond query wait-tx -o json
+assert mk['code'] == 0, mk['raw_log']
+offer_id = int([a['value'] for e in mk['events'] for a in e['attributes'] if a['key']=='offer_id'][0])
 
-
-LIQ_DENOM = f"whaleswap.dys/coins/{FOO_NAME}"
-to_sol_tx = %sh dysond tx whaleswap convert-to-solid --liquid-denom "$LIQ_DENOM" --amount "100" --from charlie -y -o json | dysond query wait-tx -o json
-assert to_sol_tx['code'] == 0, to_sol_tx['raw_log']
-print("Converted back to solid")
-events = [e for e in to_sol_tx['events'] if e['type'].startswith('dysonprotocol')]
-print(json.dumps(events, indent=2))
+# Bob takes the offer fully (CLI --trades key=value)
+tk = %sh dysond tx whaleswap take-offer --trades "offer_id=$offer_id" --from bob -y -o json | dysond query wait-tx -o json
+assert tk['code'] == 0, tk['raw_log']
 ```
-
-    Converted to liquid
-    [
-      {
-        "type": "dysonprotocol.nameservice.v1.EventCoinsMinted",
-        "attributes": [
-          {
-            "key": "msg_index",
-            "value": "0",
-            "index": true
-          }
-        ]
-      }
-    ]
-
-
-    Converted back to solid
-    [
-      {
-        "type": "dysonprotocol.nameservice.v1.EventCoinsBurned",
-        "attributes": [
-          {
-            "key": "amount",
-            "value": "[{\"denom\":\"whaleswap.dys/coins/foo.dys\",\"amount\":\"100\"}]",
-            "index": true
-          },
-          {
-            "key": "msg_index",
-            "value": "0",
-            "index": true
-          }
-        ]
-      }
-    ]
-
 
 ## Auctions: open and redeem (no active bid)
 
@@ -1408,7 +1374,7 @@ else:
           },
           {
             "key": "trade_id",
-            "value": "\"4\"",
+            "value": "\"5\"",
             "index": true
           },
           {
@@ -1433,7 +1399,7 @@ else:
           },
           {
             "key": "trade_id",
-            "value": "\"4\"",
+            "value": "\"5\"",
             "index": true
           },
           {
@@ -1454,10 +1420,10 @@ else:
     Recent trade with note:
     {
       "trade": {
-        "trade_id": "4",
+        "trade_id": "5",
         "trader": "dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el",
-        "height": "42",
-        "timestamp": "2025-10-22T13:45:26.997762Z",
+        "height": "89",
+        "timestamp": "2025-10-24T22:20:49.488768Z",
         "operations": [
           {
             "Op": {
@@ -1544,13 +1510,15 @@ print("Module metrics:")
           ],
           "shares_denom": "whaleswap.dys/pools/1",
           "fee_pct": "0.0025",
-          "block_height": "42",
-          "created": "2025-10-22T13:45:18.46848Z",
-          "updated": "2025-10-22T13:45:26.997762Z",
+          "block_height": "89",
+          "created": "2025-10-24T22:20:36.124475Z",
+          "updated": "2025-10-24T22:20:49.488768Z",
           "num_trades": "3",
           "fees_earned": [
             {
               "denom": "foo.dys",
+
+
               "amount": "4"
             }
           ]
@@ -1571,8 +1539,8 @@ print("Module metrics:")
           "offer_id": "1",
           "status": "closed",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "37",
-          "updated_timestamp": "2025-10-22T13:45:24.336479Z",
+          "updated_height": "83",
+          "updated_timestamp": "2025-10-24T22:20:45.5848Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"
@@ -1593,13 +1561,44 @@ print("Module metrics:")
           "unit_want_int": "2",
           "remaining_units": "0",
           "pfand_locked": {
-            "denom": "whaleswap.dys/pfand",
+            "denom": "udys",
             "amount": "0"
           }
+        },
+        {
+          "offer_id": "2",
+          "status": "closed",
+          "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
+          "updated_height": "85",
+          "updated_timestamp": "2025-10-24T22:20:46.875755Z",
+          "initial_have": {
+            "denom": "foo.dys",
+            "amount": "100"
+          },
+          "initial_want": {
+            "denom": "bar.dys",
+            "amount": "90"
+          },
+          "remaining_have": {
+            "denom": "foo.dys",
+            "amount": "0"
+          },
+          "remaining_want": {
+            "denom": "bar.dys",
+            "amount": "0"
+          },
+          "unit_have_int": "10",
+          "unit_want_int": "9",
+          "remaining_units": "0",
+          "pfand_locked": {
+            "denom": "udys",
+            "amount": "1"
+          },
+          "settlement_mode": "SETTLEMENT_LIQUID"
         }
       ],
       "pagination": {
-        "total": "1"
+        "total": "2"
       }
     }
 
@@ -1617,7 +1616,7 @@ print("Module metrics:")
 
     {
       "metrics": {
-        "num_trades": "4",
+        "num_trades": "5",
         "escrowed_pool_coins": [
           {
             "denom": "bar.dys",
@@ -1626,12 +1625,6 @@ print("Module metrics:")
           {
             "denom": "foo.dys",
             "amount": "100054"
-          }
-        ],
-        "escrowed_liquid_coins": [
-          {
-            "denom": "foo.dys",
-            "amount": "150"
           }
         ],
         "fees_earned": [
@@ -1648,8 +1641,7 @@ print("Module metrics:")
 
 - Registered `foo.dys` and `bar.dys`, minted denoms, and created an AMM pool with fee control and liquidity ops.
 - Performed pool swaps (exact-in and exact-out).
-- Demonstrated orderbook make/take using coins.
-- Wrapped and unwrapped liquid coins.
+- Demonstrated orderbook make/take using coins with SettlementMode (ESCROW/LIQUID).
 - Opened and redeemed an auction without active bids.
 - Ran discovery queries and fetched module metrics.
 

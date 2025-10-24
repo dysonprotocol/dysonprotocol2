@@ -36,7 +36,7 @@ import json
     {
       "balance": {
         "denom": "udys",
-        "amount": "9958979973"
+        "amount": "9999979996"
       }
     }
 
@@ -73,7 +73,7 @@ args = shlex.quote(json.dumps([ALICE, "udys"]))
 ```
 
     {
-      "result": "{\"cumsize\":4777,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":25,\"result\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"9958979973\",\"denom\":\"udys\"}},\"script_gas_consumed\":1009242,\"stdout\":\"\"}",
+      "result": "{\"cumsize\":4777,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":25,\"result\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"9999979996\",\"denom\":\"udys\"}},\"script_gas_consumed\":1009239,\"stdout\":\"\"}",
       "attached_message_results": []
     }
 
@@ -97,8 +97,8 @@ import json
 ```
 
     {
-      "height": "254",
-      "txhash": "5C797694985EF945ECC9E590724F4096177F8865A768761A70844117FA9A1440",
+      "height": "100",
+      "txhash": "63ED4A2ABA4DDD43337B57FE4CE0904B912EE5DF9C96BBB169C91044C99A3217",
       "codespace": "",
       "code": 0,
       "data": "12260A242F636F736D6F732E62616E6B2E763162657461312E4D736753656E64526573706F6E7365",
@@ -115,7 +115,7 @@ import json
           "attributes": [
             {
               "key": "acc_seq",
-              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/67",
+              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/21",
               "index": true
             }
           ]
@@ -125,7 +125,7 @@ import json
           "attributes": [
             {
               "key": "signature",
-              "value": "GHXvRxIZyG3j5JUugRk4ztk6a4TIUv4th4olmJgTmwszktUmNH1g1Di6fjY6b/gp5VdfZ83UHPuLOOe6en0jcw==",
+              "value": "wrin4YlTdk32D7+MA3etcmfgIxWa1cwUREMO9dLv59AW40VTO2yftPck9e7NrFcB/vaJWBg+wlzzBIr7MaxuuQ==",
               "index": true
             }
           ]
@@ -272,16 +272,16 @@ args = shlex.quote(json.dumps([BOB, 123, "udys"]))
 ```
 
     {
-      "height": "256",
-      "txhash": "2F8D7DC0C5DFF47A7FCA23D32B75EDB897D7FF7F8A6D411CA18B2A7418064ACA",
+      "height": "102",
+      "txhash": "82B93FA517A54F58D4EF21C74DC0D68C620D4B0C16F48E6F84101E99A6AC4E23",
       "codespace": "sdk",
       "code": 11,
       "data": "",
-      "raw_log": "out of gas in location: script exec base cost; gasWanted: 200000, gasUsed: 1034332: out of gas",
+      "raw_log": "out of gas in location: script exec base cost; gasWanted: 200000, gasUsed: 1034329: out of gas",
       "logs": [],
       "info": "",
       "gas_wanted": "200000",
-      "gas_used": "1034332",
+      "gas_used": "1034329",
       "tx": null,
       "timestamp": "",
       "events": [
@@ -290,7 +290,7 @@ args = shlex.quote(json.dumps([BOB, 123, "udys"]))
           "attributes": [
             {
               "key": "acc_seq",
-              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/68",
+              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/22",
               "index": true
             }
           ]
@@ -300,7 +300,7 @@ args = shlex.quote(json.dumps([BOB, 123, "udys"]))
           "attributes": [
             {
               "key": "signature",
-              "value": "gaoiHnrq35L0IUGovFIWWoKicUBLf0JBvrxbrN7Unx5BnphqolkhXwEq6Zox5AJNbZEbZ2ciL5Up2gjIQrXgiQ==",
+              "value": "dmuYCa7MLta4WoXVFRgvKdiLxuiZSq8v+S59JZ+enqMYYcT4GUeQ6SBzoeTiMujSxvRoYw4K/uByskJQYTw6cQ==",
               "index": true
             }
           ]

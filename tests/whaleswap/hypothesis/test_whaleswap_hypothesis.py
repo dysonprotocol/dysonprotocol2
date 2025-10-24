@@ -404,45 +404,39 @@ def test_liquidity_full_exit_deletes_pool(
 
 
 # ============================================================================
-# STRATEGY 2: LIQUID WRAPPING ROUND-TRIPS
+# STRATEGY 2: LIQUID-MODE OFFERS (no wrapping)
 # ============================================================================
 
 
 @given(
-    wrap_amount=st.integers(min_value=100, max_value=5000),
     offer_amount=st.integers(min_value=50, max_value=3000),
-    unwrap_amount=st.integers(min_value=50, max_value=4000),
 )
 @settings(
     max_examples=30,
     deadline=None,
     suppress_health_check=[HealthCheck.function_scoped_fixture],
 )
-def test_liquid_wrap_offer_unwrap_backing(
+def test_liquid_mode_offer_pfand_lock(
     chainnet,
     hypo_accounts,
     registered_names,
     executor_script_path,
     gov_addr,
-    wrap_amount,
     offer_amount,
-    unwrap_amount,
 ):
     """
-    Test ConvertToLiquid → MakeOffer with liquid have → ConvertToSolid.
-    Tests PFAND locking and backing calculation with offers.
+    Test MakeOffer with settlement_mode=LIQUID (base denoms) and PFAND locking.
     """
     dysond = chainnet[0]
     accounts = hypo_accounts
 
     foo_name = registered_names["foo_name"]
     bar_name = registered_names["bar_name"]
-    liquid_foo = f"whaleswap.dys/coins/{foo_name}"
-    denoms = [foo_name, bar_name, liquid_foo, "udys", "whaleswap.dys/pfand"]
+    denoms = [foo_name, bar_name, "udys"]
 
     messages = []
 
-    # Enable PFAND so liquid offers lock deposit and third-party cancel is eligible
+    # Enable PFAND so liquid-mode offers lock deposit
     messages.append(
         {
             "@type": "/dysonprotocol.whaleswap.v1.MsgUpdateParams",
@@ -458,36 +452,14 @@ def test_liquid_wrap_offer_unwrap_backing(
         }
     )
 
-    # (PFAND already enabled above)
-
-    # Wrap foo to liquid
-    messages.append(
-        {
-            "@type": "/dysonprotocol.whaleswap.v1.MsgConvertToLiquid",
-            "caller": accounts["alice_addr"],
-            "denom": foo_name,
-            "amount": str(wrap_amount),
-        }
-    )
-
-    # Make offer with liquid have (locks PFAND, no escrow)
-    actual_offer = min(offer_amount, wrap_amount - 10)
+    # Make offer with liquid settlement mode (locks PFAND, no escrow)
     messages.append(
         {
             "@type": "/dysonprotocol.whaleswap.v1.MsgMakeOffer",
             "maker": accounts["alice_addr"],
-            "have": {"denom": liquid_foo, "amount": str(actual_offer)},
-            "want": {"denom": bar_name, "amount": str(actual_offer)},
-        }
-    )
-
-    # Unwrap remaining liquid
-    messages.append(
-        {
-            "@type": "/dysonprotocol.whaleswap.v1.MsgConvertToSolid",
-            "caller": accounts["alice_addr"],
-            "liquid_denom": liquid_foo,
-            "amount": str(min(unwrap_amount, wrap_amount - actual_offer - 10)),
+            "have": {"denom": foo_name, "amount": str(offer_amount)},
+            "want": {"denom": bar_name, "amount": str(offer_amount)},
+            "settlement_mode": "SETTLEMENT_LIQUID",
         }
     )
 
@@ -499,10 +471,8 @@ def test_liquid_wrap_offer_unwrap_backing(
         [messages, denoms, [accounts["alice_addr"]], gov_addr],
     )
 
-    assert result[
-        "success"
-    ], f"Wrap-offer-unwrap failed: wrap={wrap_amount}, offer={offer_amount}, unwrap={unwrap_amount}"
-    assert result["message_count"] == 3
+    assert result["success"], f"LIQUID-mode offer failed: offer={offer_amount}"
+    assert result["message_count"] == 2
 
 
 # ============================================================================
@@ -616,8 +586,7 @@ def test_cancel_liquid_offer_pfand_recovery_gcd1(
 
     foo_name = registered_names["foo_name"]
     bar_name = registered_names["bar_name"]
-    liquid_foo = f"whaleswap.dys/coins/{foo_name}"
-    denoms = [foo_name, bar_name, liquid_foo, "udys", "whaleswap.dys/pfand"]
+    denoms = [foo_name, bar_name, "udys", "whaleswap.dys/pfand"]
 
     x = 200  # any integer >= 2
 
@@ -637,31 +606,23 @@ def test_cancel_liquid_offer_pfand_recovery_gcd1(
             },
         }
     )
-    # Wrap exactly x units
-    messages.append(
-        {
-            "@type": "/dysonprotocol.whaleswap.v1.MsgConvertToLiquid",
-            "caller": accounts["alice_addr"],
-            "denom": foo_name,
-            "amount": str(x),
-        }
-    )
-    # Make liquid offer with gcd=1 (have=x, want=x-1)
+    # Make liquid-mode offer with gcd=1 (have=x, want=x-1)
     messages.append(
         {
             "@type": "/dysonprotocol.whaleswap.v1.MsgMakeOffer",
             "maker": accounts["alice_addr"],
-            "have": {"denom": liquid_foo, "amount": str(x)},
+            "have": {"denom": foo_name, "amount": str(x)},
             "want": {"denom": bar_name, "amount": str(x - 1)},
+            "settlement_mode": "SETTLEMENT_LIQUID",
         }
     )
-    # Drain 1 unit so maker balance becomes x-1 < unit_have(=x)
+    # Drain a large amount so maker balance becomes < unit_have(=x)
     messages.append(
         {
             "@type": "/cosmos.bank.v1beta1.MsgSend",
             "from_address": accounts["alice_addr"],
             "to_address": accounts["bob_addr"],
-            "amount": [{"denom": liquid_foo, "amount": "1"}],
+            "amount": [{"denom": foo_name, "amount": "999999"}],
         }
     )
     # Third-party cancel by bob
@@ -682,7 +643,7 @@ def test_cancel_liquid_offer_pfand_recovery_gcd1(
     )
 
     assert result["success"], "PFAND recovery (gcd=1) failed"
-    assert result["message_count"] == 5
+    assert result["message_count"] == len(messages)
 
 
 # ============================================================================
@@ -737,40 +698,34 @@ def test_query_offers_by_owner_and_denom(
             }
         )
 
-    # Execute all offers
-    result = execute_via_script(
+    # Create and query within a single script run (persistence boundary avoided)
+    cq = execute_via_script(
         dysond,
         executor_script_path,
         gov_addr,
-        "execute_messages_sequentially",
-        [messages, denoms, [accounts["alice_addr"]], gov_addr],
+        "create_and_query_offers",
+        [
+            messages,
+            accounts["alice_addr"],
+            "open",
+            foo_name,
+            "have",
+            denoms,
+            [accounts["alice_addr"]],
+            gov_addr,
+        ],
     )
 
-    assert result["success"], f"Offer creation failed: num={actual_num}"
-    assert result["message_count"] == actual_num
+    assert cq["success"], f"Offer creation failed: num={actual_num}"
+    assert cq["message_count"] == actual_num
 
-    # Query offers by owner
-    query_result = execute_via_script(
-        dysond,
-        executor_script_path,
-        gov_addr,
-        "query_offers_by_owner",
-        [accounts["alice_addr"], "open"],
-    )
+    owner_offers = cq.get("owner_offers", [])
+    denom_offers = cq.get("denom_offers", [])
     assert (
-        len(query_result) >= actual_num
-    ), f"Expected at least {actual_num} offers, got {len(query_result)}"
-
-    # Query offers by denom (have side)
-    denom_result = execute_via_script(
-        dysond,
-        executor_script_path,
-        gov_addr,
-        "query_offers_by_denom",
-        [foo_name, "have"],
-    )
+        len(owner_offers) >= actual_num
+    ), f"Expected at least {actual_num} offers, got {len(owner_offers)}"
     assert (
-        len(denom_result) >= actual_num
+        len(denom_offers) >= actual_num
     ), f"Expected at least {actual_num} offers for denom {foo_name}"
 
 
@@ -831,36 +786,29 @@ def test_query_trades_after_operations(
         }
     )
 
-    result = execute_via_script(
+    cq = execute_via_script(
         dysond,
         executor_script_path,
         gov_addr,
-        "execute_messages_sequentially",
-        [messages, denoms, [accounts["alice_addr"]], gov_addr],
+        "create_and_query_trades",
+        [
+            messages,
+            accounts["alice_addr"],
+            accounts["alice_addr"],
+            bar_name,
+            denoms,
+            [accounts["alice_addr"]],
+            gov_addr,
+        ],
     )
 
-    assert result["success"], f"Trade execution failed: swap={swap_amount}"
+    assert cq["success"], f"Trade execution failed: swap={swap_amount}"
+    assert cq["message_count"] == 2
 
-    # Query trades by taker
-    taker_trades = execute_via_script(
-        dysond,
-        executor_script_path,
-        gov_addr,
-        "query_trades_by_taker",
-        [accounts["alice_addr"]],
-    )
+    taker_trades = cq.get("taker_trades", [])
+    pool_trades = cq.get("pool_trades", [])
     assert len(taker_trades) >= 1, f"Expected at least 1 trade for taker"
-
-    # Query trades by pool
-    pool_id = result["template_vars"]["msg_0"]["pool_id"]
-    pool_trades = execute_via_script(
-        dysond,
-        executor_script_path,
-        gov_addr,
-        "query_trades_by_pool",
-        [pool_id],
-    )
-    assert len(pool_trades) >= 1, f"Expected at least 1 trade for pool {pool_id}"
+    assert len(pool_trades) >= 1, f"Expected at least 1 trade for the created pool"
 
 
 # ============================================================================
@@ -909,29 +857,37 @@ def test_auction_lifecycle_trade_recording(
         }
     )
 
-    # Simulate winning bid by transferring NFT and setting valuation
-    # Note: This requires nameservice operations which we handle via MsgSudo
+    # Simulate winning bid via proper bidding flow: fund bob, bob places bid, alice accepts
     assume(simulate_winning_bid)
 
-    # Move NFT from alice to bob (simulates bid claim)
+    # Fund bob with bid denom
     messages.append(
         {
-            "@type": "/dysonprotocol.nameservice.v1.MsgMoveNft",
-            "name_destination": gov_addr,
-            "class_id": f"whaleswap.dys/auctions/{bar_name}",
-            "nft_id": "{{ '%010d' % int(msg_0['auction_id']) }}",
+            "@type": "/cosmos.bank.v1beta1.MsgSend",
+            "from_address": accounts["alice_addr"],
             "to_address": accounts["bob_addr"],
+            "amount": [{"denom": bar_name, "amount": str(sell_amount * 2)}],
         }
     )
 
-    # Set valuation on NFT (simulates accepted bid)
+    # Bob places a bid on the auction NFT
     messages.append(
         {
-            "@type": "/dysonprotocol.nameservice.v1.MsgSetValuation",
-            "owner": accounts["bob_addr"],
-            "class_id": f"whaleswap.dys/auctions/{bar_name}",
-            "nft_id": "{{ '%010d' % int(msg_0['auction_id']) }}",
-            "valuation": {"denom": bar_name, "amount": str(sell_amount * 2)},
+            "@type": "/dysonprotocol.nameservice.v1.MsgPlaceBid",
+            "bidder": accounts["bob_addr"],
+            "nft_class_id": f"whaleswap.dys/auction/{bar_name}",
+            "nft_id": "{{ ('0000000000' + str(int(msg_0['auction_id'])))[-10:] }}",
+            "bid_amount": {"denom": bar_name, "amount": str(sell_amount * 2)},
+        }
+    )
+
+    # Alice accepts the bid
+    messages.append(
+        {
+            "@type": "/dysonprotocol.nameservice.v1.MsgAcceptBid",
+            "owner": accounts["alice_addr"],
+            "nft_class_id": f"whaleswap.dys/auction/{bar_name}",
+            "nft_id": "{{ ('0000000000' + str(int(msg_0['auction_id'])))[-10:] }}",
         }
     )
 
@@ -955,7 +911,7 @@ def test_auction_lifecycle_trade_recording(
     assert result[
         "success"
     ], f"Auction lifecycle failed: sell={sell_amount}, bid={simulate_winning_bid}"
-    assert result["message_count"] == 4
+    assert result["message_count"] == 5
 
     # Query auction by seller
     seller_auctions = execute_via_script(
