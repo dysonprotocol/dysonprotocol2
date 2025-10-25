@@ -145,8 +145,6 @@ def test_make_trade_pfand_release_on_close(chainnet, ws_setup_env):
         "1udys",
         "--from",
         taker,
-        "--gas",
-        "auto",
     )
     assert t1.get("code", 1) == 0, f"partial take failed: {json.dumps(t1, indent=2)}"
     q1 = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id))
@@ -170,8 +168,6 @@ def test_make_trade_pfand_release_on_close(chainnet, ws_setup_env):
         "2udys",
         "--from",
         taker,
-        "--gas",
-        "auto",
     )
     assert t2.get("code", 1) == 0, f"close take failed: {json.dumps(t2, indent=2)}"
 

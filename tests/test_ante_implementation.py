@@ -167,8 +167,6 @@ def ping():
         simple_code,
         "--from",
         script_owner_name,
-        "--gas",
-        "1500000",
     )
     assert update_result.get("code", 1) == 0, "Failed to update script"
 
@@ -191,10 +189,10 @@ def ping():
             "ping",
             "--from",
             account_name,
-            "--fees",
-            "0udys",
             "--gas",
             "1500000",
+            "--fees",
+            "0udys",
             "--offline",
             "--account-number",
             "0",
@@ -275,8 +273,6 @@ def check_func():
         test_code,
         "--from",
         script_owner_name,
-        "--gas",
-        "1500000",
     )
     assert update_result.get("code", 1) == 0, (
         f"Failed to update script. Code: {update_result.get('code')}, "
@@ -309,8 +305,6 @@ def check_func():
         account_name,
         "--fees",
         "0udys",
-        "--gas",
-        "1500000",
     )
 
     assert (

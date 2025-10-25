@@ -34,8 +34,6 @@ def test_rest_subscription_event_merge_and_trigger_count(
         "--from",
         creator_name,
         "--yes",
-        "--gas",
-        "auto",
     )
     assert del_tx.get("code", 1) == 0, f"delegate failed: {del_tx}"
 
@@ -56,8 +54,6 @@ def show_event(event=None):
         "--from",
         creator_name,
         "--yes",
-        "--gas",
-        "auto",
     )
     assert up.get("code", 1) == 0, f"script update failed: {up}"
 
@@ -77,8 +73,6 @@ def emit_evt():
         "--from",
         creator_name,
         "--yes",
-        "--gas",
-        "auto",
     )
     assert up2.get("code", 1) == 0
 
@@ -119,8 +113,6 @@ def emit_evt():
             "emit_evt",
             "--from",
             creator_name,
-            "--gas",
-            "auto",
         )
         assert exec_emit.get("code", 1) == 0
 

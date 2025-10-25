@@ -11,8 +11,6 @@ def test_make_trade_invalid_op_unknown_field_fails(chainnet, ws_setup_env):
         '{"foo": {"bar": 1}}',
         "--from",
         taker_name,
-        "--gas",
-        "auto",
         raw=True,
     )
     low = (out or "").lower()

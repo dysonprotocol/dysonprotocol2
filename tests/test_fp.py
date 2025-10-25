@@ -286,55 +286,61 @@ def simple_fp_test(iterations=5):
 def test_fp_benchmark_comprehensive(chainnet, generate_account, faucet):
     """Test floating-point benchmark with multiple iteration counts via tx script exec"""
     dysond = chainnet[0]
-    
+
     # Generate account for testing
     [alice_name, alice_address] = generate_account("alice")
     faucet(alice_address, denom="udys", amount="100000000")  # 100 DYS
-    
+
     # Write script to temporary file
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
         f.write(FP_BENCHMARK_SCRIPT)
         script_path = f.name
-    
+
     # Update script for alice
     update_result = dysond(
-        "tx", "script", "update",
-        "--code-path", script_path,
-        "--from", alice_name,
-        "--gas", "auto",
-        "-y"
+        "tx", "script", "update", "--code-path", script_path, "--from", alice_name, "-y"
     )
-    assert update_result.get("code", 1) == 0, f"Failed to update script: {update_result}"
-    
+    assert (
+        update_result.get("code", 1) == 0
+    ), f"Failed to update script: {update_result}"
+
     # Test different iteration counts with detailed output
     test_cases = [
         {"function": "simple_fp_test", "iterations": 100, "name": "small"},
-        {"function": "simple_fp_test", "iterations": 200, "name": "medium"}, 
+        {"function": "simple_fp_test", "iterations": 200, "name": "medium"},
         {"function": "simple_fp_test", "iterations": 300, "name": "large"},
     ]
-    
+
     results = {}
-    
+
     # Execute benchmark for each iteration count
     for case in test_cases:
         function_name = case["function"]
         iterations = case["iterations"]
         name = case["name"]
-        
+
         # Execute the benchmark function
         exec_result = dysond(
-            "tx", "script", "exec",
-            "--script-address", alice_address,
-            "--function-name", function_name,
-            "--args", f"[{iterations}]",
-            "--from", alice_name,
-            "--gas", "auto", 
-            "--gas-adjustment", "1.5",
-            "-y"
+            "tx",
+            "script",
+            "exec",
+            "--script-address",
+            alice_address,
+            "--function-name",
+            function_name,
+            "--args",
+            f"[{iterations}]",
+            "--from",
+            alice_name,
+            "--gas",
+            "6000000",
+            "-y",
         )
-        
-        assert exec_result.get("code", 1) == 0, f"Failed to execute {name} benchmark: {exec_result.get('raw_log', 'No error log')}"
-        
+
+        assert (
+            exec_result.get("code", 1) == 0
+        ), f"Failed to execute {name} benchmark: {exec_result.get('raw_log', 'No error log')}"
+
         # Extract response from events
         events_by_type = {
             event.get("type"): event for event in exec_result.get("events", [])
@@ -345,77 +351,109 @@ def test_fp_benchmark_comprehensive(chainnet, generate_account, faucet):
 
         exec_event = events_by_type["dysonprotocol.script.v1.EventExecScript"]
         attrs_by_key = {
-            attr.get("key"): attr.get("value") for attr in exec_event.get("attributes", [])
+            attr.get("key"): attr.get("value")
+            for attr in exec_event.get("attributes", [])
         }
-        assert "response" in attrs_by_key, f"No response attribute found in {name} EventExecScript"
+        assert (
+            "response" in attrs_by_key
+        ), f"No response attribute found in {name} EventExecScript"
 
         response_json = attrs_by_key["response"]
         response_data = json.loads(response_json)
         result_data = json.loads(response_data.get("result", "{}"))
         result = result_data.get("result")
-        
+
         # Validate basic structure
-        assert isinstance(result, dict), f"Expected dict for {name} ({iterations} iterations) but got {type(result)}: {result}"
-        assert "total_hash" in result, f"Missing 'total_hash' key in {name} result: {result}"
+        assert isinstance(
+            result, dict
+        ), f"Expected dict for {name} ({iterations} iterations) but got {type(result)}: {result}"
+        assert (
+            "total_hash" in result
+        ), f"Missing 'total_hash' key in {name} result: {result}"
         assert "result" in result, f"Missing 'result' key in {name} result: {result}"
-        assert "iterations" in result, f"Missing 'iterations' key in {name} result: {result}"
-        
+        assert (
+            "iterations" in result
+        ), f"Missing 'iterations' key in {name} result: {result}"
+
         # Verify iteration count matches expected
         actual_iterations = result["iterations"]
-        assert actual_iterations == iterations, f"{name}: expected {iterations} iterations, got {actual_iterations}"
-        
+        assert (
+            actual_iterations == iterations
+        ), f"{name}: expected {iterations} iterations, got {actual_iterations}"
+
         # Store result for hash comparison
         results[name] = {
             "iterations": iterations,
             "hash": result["total_hash"],
-            "result": result["result"]
+            "result": result["result"],
         }
-        
-        print(f"✓ {name.capitalize()} benchmark ({iterations} iterations): {result['total_hash'][:16]}...")
-    
+
+        print(
+            f"✓ {name.capitalize()} benchmark ({iterations} iterations): {result['total_hash'][:16]}..."
+        )
+
     # Verify different iteration counts produce different hashes
     small_hash = results["small"]["hash"]
     medium_hash = results["medium"]["hash"]
     large_hash = results["large"]["hash"]
-    
-    assert small_hash != medium_hash, f"Small (5) and medium (10) iterations should produce different hashes: {small_hash} vs {medium_hash}"
-    assert medium_hash != large_hash, f"Medium (10) and large (50) iterations should produce different hashes: {medium_hash} vs {large_hash}"
-    assert small_hash != large_hash, f"Small (5) and large (50) iterations should produce different hashes: {small_hash} vs {large_hash}"
-    
+
+    assert (
+        small_hash != medium_hash
+    ), f"Small (5) and medium (10) iterations should produce different hashes: {small_hash} vs {medium_hash}"
+    assert (
+        medium_hash != large_hash
+    ), f"Medium (10) and large (50) iterations should produce different hashes: {medium_hash} vs {large_hash}"
+    assert (
+        small_hash != large_hash
+    ), f"Small (5) and large (50) iterations should produce different hashes: {small_hash} vs {large_hash}"
+
     # Test hash consistency - same iteration count should produce same hash
     repeat_result = dysond(
-        "tx", "script", "exec",
-        "--script-address", alice_address,
-        "--function-name", "simple_fp_test",
-        "--args", f"[{test_cases[0]['iterations']}]",
-        "--from", alice_name,
-        "--gas", "auto",
-        "--gas-adjustment", "1.5",
-        "-y"
+        "tx",
+        "script",
+        "exec",
+        "--script-address",
+        alice_address,
+        "--function-name",
+        "simple_fp_test",
+        "--args",
+        f"[{test_cases[0]['iterations']}]",
+        "--from",
+        alice_name,
+        "--gas-adjustment",
+        "1.5",
+        "-y",
     )
-    
-    assert repeat_result.get("code", 1) == 0, f"Failed to execute repeat benchmark: {repeat_result.get('raw_log', 'No error log')}"
-    
+
+    assert (
+        repeat_result.get("code", 1) == 0
+    ), f"Failed to execute repeat benchmark: {repeat_result.get('raw_log', 'No error log')}"
+
     # Extract response from repeat execution
     repeat_events_by_type = {
         event.get("type"): event for event in repeat_result.get("events", [])
     }
     repeat_exec_event = repeat_events_by_type["dysonprotocol.script.v1.EventExecScript"]
     repeat_attrs_by_key = {
-        attr.get("key"): attr.get("value") for attr in repeat_exec_event.get("attributes", [])
+        attr.get("key"): attr.get("value")
+        for attr in repeat_exec_event.get("attributes", [])
     }
     repeat_response_json = repeat_attrs_by_key["response"]
     repeat_response_data = json.loads(repeat_response_json)
     repeat_result_data = json.loads(repeat_response_data.get("result", "{}"))
     repeat_hash = repeat_result_data.get("result")["total_hash"]
-    
-    assert repeat_hash == small_hash, f"Same iteration count should produce same hash: {small_hash} vs {repeat_hash}"
-    
+
+    assert (
+        repeat_hash == small_hash
+    ), f"Same iteration count should produce same hash: {small_hash} vs {repeat_hash}"
+
     print(f"✓ All benchmarks completed successfully")
     print(f"  - Small ({test_cases[0]['iterations']} iterations): {small_hash[:16]}...")
-    print(f"  - Medium ({test_cases[1]['iterations']} iterations): {medium_hash[:16]}...")
+    print(
+        f"  - Medium ({test_cases[1]['iterations']} iterations): {medium_hash[:16]}..."
+    )
     print(f"  - Large ({test_cases[2]['iterations']} iterations): {large_hash[:16]}...")
     print(f"✓ Hash consistency verified")
-    
+
     # Clean up temporary file
     os.unlink(script_path)

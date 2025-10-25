@@ -23,9 +23,7 @@ def test_dyslang_subscription_flow(chainnet, generate_account, faucet):
         "--from",
         name,
         "--yes",
-        "--gas",
-        "auto",
-    )
+        )
     assert del_tx.get("code", 1) == 0, f"delegate failed: {del_tx}"
 
     # Emitter (keep show defined; update script to include both functions)
@@ -51,9 +49,7 @@ def go():
         "--from",
         name,
         "--yes",
-        "--gas",
-        "auto",
-    )
+         )
     assert up2.get("code", 1) == 0
 
     # Subscribe to type alpha
@@ -119,9 +115,7 @@ def go():
         "go",
         "--from",
         name,
-        "--gas",
-        "auto",
-    )
+         )
     assert ex.get("code", 1) == 0
 
     # Wait until exactly one task exists for this creator

@@ -46,8 +46,6 @@ def test_storage_get_by_name_success(chainnet, generate_account, faucet, registe
         key,
         "--data",
         value,
-        "--gas",
-        "auto",
     )
     assert tx.get("code") == 0, f"storage set failed: {tx}"
 

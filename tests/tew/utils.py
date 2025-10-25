@@ -218,8 +218,6 @@ def initialize_test_l1_l2(
         json.dumps([instance_id]),
         "--from",
         l1_operator_name,
-        "--gas",
-        "10000000",
     )
     assert init_result.get("code", 1) == 0, f"Failed to initialize L1: {init_result}"
 
@@ -249,8 +247,6 @@ def initialize_test_l1_l2(
             json.dumps([instance_id, chain_id, l1_operator_addr]),
             "--from",
             l1_operator_name,
-            "--gas",
-            "10000000",
         )
         assert (
             init_l2_result.get("code", 1) == 0

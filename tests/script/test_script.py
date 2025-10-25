@@ -29,8 +29,6 @@ def wsgi(environ, start_response):
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "auto",
     )
     print(f"Update script result: {update_result}")
     assert update_result.get("code", 1) == 0, "Failed to update script"
@@ -111,8 +109,6 @@ def add(a, b):
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "auto",
     )
     assert update_result.get("code", 1) == 0, "Failed to update script"
     args = [5, 7]
@@ -129,8 +125,6 @@ def add(a, b):
         args_json,
         "--from",
         alice_name,
-        "--gas",
-        "auto",
     )
     assert exec_result.get("code", 1) == 0, "Failed to execute script"
     # Extract response from events using dict comprehension
@@ -951,8 +945,6 @@ def check_storage_write():
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "auto",
     )
     assert (
         update_result.get("code", 1) == 0
@@ -1127,8 +1119,6 @@ MyObject()
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "auto",
     )
     assert (
         update_result.get("code", 1) == 0
@@ -1160,8 +1150,6 @@ def normal_function():
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "auto",
     )
     assert (
         update_result.get("code", 1) == 0
@@ -1180,8 +1168,6 @@ def normal_function():
         "[]",
         "--from",
         alice_name,
-        "--gas",
-        "auto",
     )
     # Check that the execution failed with the expected error
     assert exec_result.get("code", 0) != 0, "Expected script execution to fail"
@@ -1215,8 +1201,6 @@ def test_function():
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "auto",
     )
     assert (
         update_result.get("code", 1) == 0
@@ -1235,8 +1219,6 @@ def test_function():
         "[]",
         "--from",
         alice_name,
-        "--gas",
-        "auto",
     )
     # Check that the execution failed with the expected error
     assert exec_result.get("code", 0) != 0, "Expected script execution to fail"
@@ -1265,8 +1247,6 @@ def test_call():
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "auto",
     )
     assert (
         update_result.get("code", 1) == 0
@@ -1285,8 +1265,6 @@ def test_call():
         "[]",
         "--from",
         alice_name,
-        "--gas",
-        "auto",
     )
     # Check that the execution failed with the expected error
     assert exec_result.get("code", 0) != 0, "Expected script execution to fail"
@@ -1323,8 +1301,6 @@ def test_method_call():
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "auto",
     )
     assert (
         update_result.get("code", 1) == 0
@@ -1343,8 +1319,6 @@ def test_method_call():
         "[]",
         "--from",
         alice_name,
-        "--gas",
-        "auto",
     )
 
     # Check that the execution failed with the expected error
@@ -1399,8 +1373,6 @@ def regular_function():
         "[]",
         "--from",
         alice_name,
-        "--gas",
-        "auto",
     )
     assert (
         exec_result.get("code", 1) == 0
@@ -1466,8 +1438,6 @@ def test_indirect():
         "[]",
         "--from",
         alice_name,
-        "--gas",
-        "auto",
     )
     # This may or may not fail depending on how thorough the restriction is
     print(f"Indirect access result: {exec_result.get('code', 'N/A')}")

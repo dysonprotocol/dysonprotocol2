@@ -42,8 +42,6 @@ def test_storage_params_governance_update_size_enforcement(
         test_key,
         "--data",
         test_data_original,
-        "--gas",
-        "auto",
     )
     assert (
         result_original["code"] == 0
@@ -146,8 +144,6 @@ def test_storage_params_governance_update_size_enforcement(
             test_key,
             "--data",
             test_data_original,
-            "--gas",
-            "auto",
         )
     print("✅ Upload at original limit fails with lowered limit")
 
@@ -202,8 +198,6 @@ def test_storage_params_governance_update_size_enforcement(
         test_key,
         "--data",
         test_data_original,
-        "--gas",
-        "auto",
     )
     assert (
         result_restored["code"] == 0
@@ -343,8 +337,6 @@ def test_storage_size_enforcement(chainnet, generate_account, faucet):
         test_key_at_limit,
         "--data",
         test_data_at_limit,
-        "--gas",
-        "auto",
     )
 
     # Validate response type and structure
@@ -384,8 +376,6 @@ def test_storage_size_enforcement(chainnet, generate_account, faucet):
             test_key_over_limit,
             "--data",
             test_data_over_limit,
-            "--gas",
-            "auto",
         )
 
     print(f"✅ Data over limit ({max_size + 1} bytes) correctly fails")
@@ -403,8 +393,6 @@ def test_storage_size_enforcement(chainnet, generate_account, faucet):
             test_key_at_limit,
             "--data",
             test_data_over_limit,
-            "--gas",
-            "auto",
         )
 
     print("✅ Updating existing entry to exceed limit correctly fails")
@@ -550,8 +538,6 @@ def test_storage_params_adaptive_size_testing(chainnet, generate_account, faucet
         test_key,
         "--data",
         test_data_original,
-        "--gas",
-        "auto",
     )
     assert (
         result_original["code"] == 0
@@ -588,8 +574,6 @@ def test_storage_params_adaptive_size_testing(chainnet, generate_account, faucet
             test_key_over,
             "--data",
             test_data_over,
-            "--gas",
-            "auto",
         )
     print("✅ Upload over limit by 1 byte correctly fails")
 
@@ -612,8 +596,6 @@ def test_storage_params_adaptive_size_testing(chainnet, generate_account, faucet
         test_key_below,
         "--data",
         below_limit_data,
-        "--gas",
-        "auto",
     )
     assert (
         below_result["code"] == 0

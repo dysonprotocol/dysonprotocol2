@@ -5,12 +5,15 @@ def test_take_mode_first_executes_only_first_feasible(
     chainnet, generate_account, faucet, register_name
 ):
     dysond = chainnet[0]
-    [maker1_name, maker1_addr] = generate_account("ob_maker_first1")
-    faucet(maker1_addr, amount=2_000_000)
-    [maker2_name, maker2_addr] = generate_account("ob_maker_first2")
-    faucet(maker2_addr, amount=2_000_000)
-    [taker_name, taker_addr] = generate_account("ob_taker_first")
-    faucet(taker_addr, amount=1_000_000)
+    [maker1_name, maker1_addr] = generate_account(
+        "ob_maker_first1", faucet_amount=2_000_000
+    )
+    [maker2_name, maker2_addr] = generate_account(
+        "ob_maker_first2", faucet_amount=2_000_000
+    )
+    [taker_name, taker_addr] = generate_account(
+        "ob_taker_first", faucet_amount=1_000_000
+    )
 
     name = register_name(dysond, maker1_name, maker1_addr, "1000udys")
     params = dysond("query", "nameservice", "params")
@@ -119,12 +122,13 @@ def test_take_mode_any_executes_feasible_subset(
     chainnet, generate_account, faucet, register_name
 ):
     dysond = chainnet[0]
-    [maker1_name, maker1_addr] = generate_account("ob_maker_any1")
-    faucet(maker1_addr, amount=2_000_000)
-    [maker2_name, maker2_addr] = generate_account("ob_maker_any2")
-    faucet(maker2_addr, amount=2_000_000)
-    [taker_name, taker_addr] = generate_account("ob_taker_any")
-    faucet(taker_addr, amount=1_000_000)
+    [maker1_name, maker1_addr] = generate_account(
+        "ob_maker_any1", faucet_amount=2_000_000
+    )
+    [maker2_name, maker2_addr] = generate_account(
+        "ob_maker_any2", faucet_amount=2_000_000
+    )
+    [taker_name, taker_addr] = generate_account("ob_taker_any", faucet_amount=1_000_000)
 
     name = register_name(dysond, maker1_name, maker1_addr, "1000udys")
     params = dysond("query", "nameservice", "params")
@@ -226,12 +230,13 @@ def test_take_mode_all_requires_all_success(
     chainnet, generate_account, faucet, register_name
 ):
     dysond = chainnet[0]
-    [maker1_name, maker1_addr] = generate_account("ob_maker_all1")
-    faucet(maker1_addr, amount=2_000_000)
-    [maker2_name, maker2_addr] = generate_account("ob_maker_all2")
-    faucet(maker2_addr, amount=2_000_000)
-    [taker_name, taker_addr] = generate_account("ob_taker_all")
-    faucet(taker_addr, amount=1_000_000)
+    [maker1_name, maker1_addr] = generate_account(
+        "ob_maker_all1", faucet_amount=2_000_000
+    )
+    [maker2_name, maker2_addr] = generate_account(
+        "ob_maker_all2", faucet_amount=2_000_000
+    )
+    [taker_name, taker_addr] = generate_account("ob_taker_all", faucet_amount=1_000_000)
 
     name = register_name(dysond, maker1_name, maker1_addr, "1000udys")
     params = dysond("query", "nameservice", "params")

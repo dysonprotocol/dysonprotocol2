@@ -18,8 +18,6 @@ def add(a, b:
         "update",
         "--code",
         bad_code,
-        "--gas",
-        "1500000",
         "--from",
         alice_name,
         "--keyring-backend",

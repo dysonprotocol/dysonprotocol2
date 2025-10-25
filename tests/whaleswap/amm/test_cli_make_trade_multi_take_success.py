@@ -56,8 +56,6 @@ def test_make_trade_multi_take_success(chainnet, ws_setup_env, ws_create_offer, 
         json.dumps(_take(o2, 1)),
         "--op",
         json.dumps(_take(o3, 1)),
-        "--gas",
-        "auto",
     )
 
     # Transaction should succeed (the bug that caused invariant failure has been fixed)

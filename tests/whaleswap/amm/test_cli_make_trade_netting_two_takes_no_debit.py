@@ -45,8 +45,6 @@ def test_make_trade_netting_two_takes_no_debit(chainnet, ws_setup_env, ws_create
         json.dumps(_take(offer2, 1)),
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert tx.get("code", 1) == 0, f"make-trade failed: {json.dumps(tx, indent=2)}"
 

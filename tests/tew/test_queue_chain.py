@@ -115,9 +115,7 @@ def validate_wrapper_pattern():
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "50000000",
-    )
+         )
     assert (
         update_result.get("code", 1) == 0
     ), f"Failed to update script: {update_result}"
@@ -139,9 +137,7 @@ def validate_wrapper_pattern():
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "5000000",
-    )
+         )
 
     assert (
         exec_result.get("code", 1) == 0
@@ -187,9 +183,7 @@ def validate_wrapper_pattern():
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "5000000",
-    )
+           )
 
     assert (
         exec_result.get("code", 1) == 0
@@ -230,9 +224,7 @@ def validate_wrapper_pattern():
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "5000000",
-    )
+         )
 
     assert (
         exec_result.get("code", 1) == 0

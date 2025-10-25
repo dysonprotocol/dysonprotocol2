@@ -11,7 +11,13 @@ def _extract_exec_result(tx):
 
 def _script_update(dysond, owner_name: str, code: str):
     res = dysond(
-        "tx", "script", "update", "--code", code, "--from", owner_name, "--gas", "auto"
+        "tx",
+        "script",
+        "update",
+        "--code",
+        code,
+        "--from",
+        owner_name,
     )
     assert res.get("code", 1) == 0, f"script update failed: {json.dumps(res, indent=2)}"
 

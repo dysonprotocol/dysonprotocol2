@@ -37,8 +37,6 @@ def test_make_trade_module_coverage_pass(chainnet, ws_setup_env, ws_create_offer
         f"210{b}",
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert txd1.get("code", 1) == 0, f"drain part1 failed: {json.dumps(txd1, indent=2)}"
 
@@ -60,8 +58,6 @@ def test_make_trade_module_coverage_pass(chainnet, ws_setup_env, ws_create_offer
         json.dumps(_take(offer, 1)),
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert tx.get("code", 1) == 0, f"make-trade failed: {json.dumps(tx, indent=2)}"
 

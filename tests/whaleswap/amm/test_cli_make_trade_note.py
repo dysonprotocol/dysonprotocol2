@@ -20,8 +20,6 @@ def test_make_trade_note_recorded(chainnet, ws_setup_env):
         f"100{b}",
         "--from",
         trader_name,
-        "--gas",
-        "auto",
     )
     assert txp.get("code", 1) == 0, f"create-pool failed: {json.dumps(txp, indent=2)}"
     ev_pc = [
@@ -48,8 +46,6 @@ def test_make_trade_note_recorded(chainnet, ws_setup_env):
         note_text,
         "--from",
         trader_name,
-        "--gas",
-        "auto",
     )
     assert tx.get("code", 1) == 0, f"make-trade failed: {json.dumps(tx, indent=2)}"
 
@@ -103,8 +99,6 @@ def test_make_trade_note_length_validation(chainnet, ws_setup_env):
         f"100{b}",
         "--from",
         trader_name,
-        "--gas",
-        "auto",
     )
     assert txp.get("code", 1) == 0, f"create-pool failed: {json.dumps(txp, indent=2)}"
     ev_pc = [
@@ -132,11 +126,14 @@ def test_make_trade_note_length_validation(chainnet, ws_setup_env):
         "--from",
         trader_name,
         "--gas",
-        "auto",
+        "100000000",  # raw=True requires gas flag
         raw=True,
     )
-    assert isinstance(out, str), f"expected error string, got: {out}"
-    assert "note too long" in out, f"expected 'note too long' error, got: {out}"
+    # raw=True with --gas returns dict for failed transactions
+    assert isinstance(out, dict), f"expected dict response, got: {type(out)}"
+    assert out.get("code", 0) != 0, f"expected transaction to fail, got success: {out}"
+    raw_log = out.get("raw_log", "").lower()
+    assert "note too long" in raw_log, f"expected 'note too long' error, got: {out}"
 
 
 def test_params_max_note_length_default(chainnet):

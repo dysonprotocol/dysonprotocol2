@@ -32,8 +32,6 @@ def test_cli_make_trade_caps_duplicate_normalization_pass(chainnet, ws_setup_env
         f"20{b}",
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert (
         "code" in txp and txp["code"] == 0
@@ -59,8 +57,6 @@ def test_cli_make_trade_caps_duplicate_normalization_pass(chainnet, ws_setup_env
         json.dumps(op),
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert (
         "code" in tx and tx["code"] == 0

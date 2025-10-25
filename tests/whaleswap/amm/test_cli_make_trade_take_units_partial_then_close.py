@@ -56,8 +56,6 @@ def test_make_trade_take_units_partial_then_close(chainnet, faucet, ws_setup_env
         f"1{denom}",
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert tx1.get("code", 1) == 0, f"partial take failed: {json.dumps(tx1, indent=2)}"
     q1 = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id))
@@ -78,8 +76,6 @@ def test_make_trade_take_units_partial_then_close(chainnet, faucet, ws_setup_env
         f"4{denom}",
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert tx2.get("code", 1) == 0, f"close take failed: {json.dumps(tx2, indent=2)}"
     q2 = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id))

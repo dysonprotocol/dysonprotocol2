@@ -13,8 +13,6 @@ def test_make_trade_empty_operations_fails(chainnet, ws_setup_env):
         "make-trade",
         "--from",
         taker_name,
-        "--gas",
-        "auto",
         raw=True,
     )
 

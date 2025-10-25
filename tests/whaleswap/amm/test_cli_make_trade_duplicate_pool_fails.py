@@ -20,8 +20,6 @@ def test_make_trade_duplicate_pool_id_fails(chainnet, ws_setup_env):
         f"100{b}",
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert txp["code"] == 0, f"create-pool failed: {json.dumps(txp, indent=2)}"
     events = {e["type"]: e for e in txp["events"]}

@@ -37,8 +37,6 @@ def test_parity_make_trade_vs_pool_swap_v2_exact_in(chainnet, ws_setup_env):
         f"100{b}",
         "--from",
         taker,
-        "--gas",
-        "auto",
     )
     assert tx1.get("code", 1) == 0, json.dumps(tx1, indent=2)
     ev_pc1 = [
@@ -60,8 +58,6 @@ def test_parity_make_trade_vs_pool_swap_v2_exact_in(chainnet, ws_setup_env):
         f"100{b}",
         "--from",
         taker,
-        "--gas",
-        "auto",
     )
     assert tx2.get("code", 1) == 0, json.dumps(tx2, indent=2)
     ev_pc2 = [
@@ -88,8 +84,6 @@ def test_parity_make_trade_vs_pool_swap_v2_exact_in(chainnet, ws_setup_env):
         json.dumps(leg_swap),
         "--from",
         taker,
-        "--gas",
-        "auto",
     )
     assert ps.get("code", 1) == 0, json.dumps(ps, indent=2)
     transfers_ps = [e for e in ps.get("events", []) if e.get("type") == "transfer"]
@@ -133,8 +127,6 @@ def test_parity_make_trade_vs_pool_swap_v2_exact_in(chainnet, ws_setup_env):
         json.dumps(op),
         "--from",
         taker,
-        "--gas",
-        "auto",
     )
     assert mt.get("code", 1) == 0, json.dumps(mt, indent=2)
     transfers_mt = [e for e in mt.get("events", []) if e.get("type") == "transfer"]

@@ -55,8 +55,6 @@ def test_make_trade_take_units_overflow_fails(chainnet, faucet, ws_setup_env):
         taker_name,
         "--max-input",
         "100udys",
-        "--gas",
-        "200000",
         "--yes",
     )
     assert isinstance(tx, dict), f"non-dict tx response: {tx}"

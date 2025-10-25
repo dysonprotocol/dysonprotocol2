@@ -72,8 +72,6 @@ def test_storage_metrics_min_stake_calculation(chainnet, generate_account):
         test_data,
         "--from",
         test_account_name,
-        "--gas",
-        "auto",
     )
 
     assert isinstance(

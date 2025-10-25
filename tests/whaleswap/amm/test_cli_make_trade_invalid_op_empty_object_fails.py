@@ -12,10 +12,13 @@ def test_make_trade_invalid_op_empty_object_fails(chainnet, ws_setup_env):
         "--from",
         taker_name,
         "--gas",
-        "auto",
+        "100000000",  # raw=True requires gas flag
         raw=True,
     )
-    err = (out or "").lower()
+    # raw=True with --gas returns dict for failed transactions
+    assert isinstance(out, dict), f"expected dict response, got: {type(out)}"
+    assert out.get("code", 0) != 0, f"expected transaction to fail, got success: {out}"
+    raw_log = out.get("raw_log", "").lower()
     assert (
-        "operation must be swap, take, or auction" in err
-    ), f"Expected keeper validation error for empty op. Full: {out}"
+        "operation must be swap, take, or auction" in raw_log
+    ), f"unexpected error message: {out}"

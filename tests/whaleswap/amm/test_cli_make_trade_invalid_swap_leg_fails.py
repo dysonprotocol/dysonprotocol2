@@ -20,8 +20,6 @@ def test_make_trade_invalid_swap_leg_pool_id_zero_fails(chainnet, ws_setup_env):
         f"100{b}",
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert txp["code"] == 0, f"create-pool failed: {json.dumps(txp, indent=2)}"
 
@@ -37,14 +35,16 @@ def test_make_trade_invalid_swap_leg_pool_id_zero_fails(chainnet, ws_setup_env):
         "--from",
         taker_name,
         "--gas",
-        "auto",
+        "100000000",  # raw=True requires gas flag
         raw=True,
     )
 
     # Expect failure with a helpful error mentioning swap leg invalid
-    assert isinstance(out, str), f"expected error string, got: {out}"
-    low = (out or "").lower()
-    assert "swap leg invalid" in low, f"unexpected error message: {out}"
+    # raw=True with --gas returns dict for failed transactions
+    assert isinstance(out, dict), f"expected dict response, got: {type(out)}"
+    assert out.get("code", 0) != 0, f"expected transaction to fail, got success: {out}"
+    raw_log = out.get("raw_log", "").lower()
+    assert "swap leg invalid" in raw_log, f"unexpected error message: {out}"
 
 
 def test_make_trade_invalid_swap_leg_empty_object_fails(chainnet, ws_setup_env):
@@ -65,8 +65,6 @@ def test_make_trade_invalid_swap_leg_empty_object_fails(chainnet, ws_setup_env):
         f"100{b}",
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert txp["code"] == 0, f"create-pool failed: {json.dumps(txp, indent=2)}"
 
@@ -82,11 +80,13 @@ def test_make_trade_invalid_swap_leg_empty_object_fails(chainnet, ws_setup_env):
         "--from",
         taker_name,
         "--gas",
-        "auto",
+        "100000000",  # raw=True requires gas flag
         raw=True,
     )
 
     # Expect failure with a helpful error mentioning swap leg invalid
-    assert isinstance(out, str), f"expected error string, got: {out}"
-    low = (out or "").lower()
-    assert "swap leg invalid" in low, f"unexpected error message: {out}"
+    # raw=True with --gas returns dict for failed transactions
+    assert isinstance(out, dict), f"expected dict response, got: {type(out)}"
+    assert out.get("code", 0) != 0, f"expected transaction to fail, got success: {out}"
+    raw_log = out.get("raw_log", "").lower()
+    assert "swap leg invalid" in raw_log, f"unexpected error message: {out}"

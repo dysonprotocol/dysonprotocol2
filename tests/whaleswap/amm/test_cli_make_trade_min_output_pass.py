@@ -38,8 +38,6 @@ def test_make_trade_min_output_pass(chainnet, ws_setup_env):
         f"100{b}",
         "--from",
         taker,
-        "--gas",
-        "auto",
     )
     assert txp.get("code", 1) == 0, f"create-pool failed: {json.dumps(txp, indent=2)}"
     ev_pc = [
@@ -70,8 +68,6 @@ def test_make_trade_min_output_pass(chainnet, ws_setup_env):
         f"1{b}",
         "--from",
         taker,
-        "--gas",
-        "auto",
     )
     assert tx.get("code", 1) == 0, f"min-output pass failed: {json.dumps(tx, indent=2)}"
     transfers = [e for e in tx.get("events", []) if e.get("type") == "transfer"]

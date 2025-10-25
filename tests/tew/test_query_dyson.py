@@ -36,8 +36,6 @@ def test_l2_query_dyson_functionality(chainnet, generate_account, faucet):
         "--from",
         tew_name,
         "--yes",
-        "--gas",
-        "auto",
     )
     assert tew_delegate.get("code", 1) == 0, f"TEW delegation failed: {tew_delegate}"
     user_delegate = dysond_bin(
@@ -49,8 +47,6 @@ def test_l2_query_dyson_functionality(chainnet, generate_account, faucet):
         "--from",
         user_name,
         "--yes",
-        "--gas",
-        "auto",
     )
     assert user_delegate.get("code", 1) == 0, f"User delegation failed: {user_delegate}"
     print("✓ Delegated stake for TEW operator and user")
@@ -71,8 +67,6 @@ def test_l2_query_dyson_functionality(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "auto",
         "--gas-adjustment",
         "1.5",
     )
@@ -101,8 +95,6 @@ def test_l2_query_dyson_functionality(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "auto",
         "--gas-adjustment",
         "1.5",
     )
@@ -125,8 +117,6 @@ def test_l2_query_dyson_functionality(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "auto",
         "--gas-adjustment",
         "1.5",
     )
@@ -150,8 +140,6 @@ def test_l2_query_dyson_functionality(chainnet, generate_account, faucet):
         "--from",
         user_name,
         "--yes",
-        "--gas",
-        "auto",
         "--gas-adjustment",
         "1.5",
     )
@@ -280,8 +268,6 @@ msg_id
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "auto",
         "--gas-adjustment",
         "1.5",
     )

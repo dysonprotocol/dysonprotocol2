@@ -41,8 +41,6 @@ def test_submit_l2_block_basic(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "10000000",
     )
     assert (
         update_result.get("code", 1) == 0
@@ -64,8 +62,6 @@ def test_submit_l2_block_basic(chainnet, generate_account, faucet):
         json.dumps(["test_instance"]),
         "--from",
         l1_operator_name,
-        "--gas",
-        "10000000",
     )
     assert init_result.get("code", 1) == 0, f"Failed to initialize L1: {init_result}"
     print("✓ L1 initialized")
@@ -83,8 +79,6 @@ def test_submit_l2_block_basic(chainnet, generate_account, faucet):
         json.dumps(["Hello from L1!", "test_instance"]),
         "--from",
         l1_operator_name,
-        "--gas",
-        "10000000",
     )
     assert (
         greeting_result.get("code", 1) == 0
@@ -247,8 +241,6 @@ def test_submit_l2_block_basic(chainnet, generate_account, faucet):
         json.dumps([json.dumps(signed_l2_block), "test_instance"]),
         "--from",
         submitter_name,  # Different account submitting!
-        "--gas",
-        "10000000",
     )
     assert (
         submit_result.get("code", 1) == 0
@@ -343,8 +335,6 @@ def test_submit_l2_block_sequence_enforcement(chainnet, generate_account, faucet
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "10000000",
     )
     assert (
         update_result.get("code", 1) == 0
@@ -426,8 +416,6 @@ def test_submit_l2_block_sequence_enforcement(chainnet, generate_account, faucet
         json.dumps([json.dumps(signed_l2_block), "seq_test"]),
         "--from",
         l1_operator_name,
-        "--gas",
-        "10000000",
     )
     assert submit_result.get("code", 1) == 0
 
@@ -506,8 +494,6 @@ def test_submit_l2_block_sequence_enforcement(chainnet, generate_account, faucet
         json.dumps([json.dumps(signed_l2_block2), "seq_test"]),
         "--from",
         l1_operator_name,
-        "--gas",
-        "10000000",
     )
     assert submit_result2.get("code", 1) == 0
 
@@ -588,8 +574,6 @@ def test_multiple_submitters(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "10000000",
     )
     assert update_result.get("code", 1) == 0
 
@@ -661,8 +645,6 @@ def test_multiple_submitters(chainnet, generate_account, faucet):
         json.dumps([json.dumps(signed_l2_block), "multi_test"]),
         "--from",
         submitter1_name,
-        "--gas",
-        "10000000",
     )
     assert submit1_result.get("code", 1) == 0
     print("✓ First submission successful")
@@ -682,8 +664,6 @@ def test_multiple_submitters(chainnet, generate_account, faucet):
         json.dumps([json.dumps(signed_l2_block), "multi_test"]),
         "--from",
         submitter2_name,
-        "--gas",
-        "10000000",
     )
     assert submit2_result.get("code", 1) == 0
 

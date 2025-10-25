@@ -36,8 +36,6 @@ def test_cli_invariant_bug_part1_metrics_count_closed_offer_escrow(
         f"200{foo_denom},200{bar_denom}",
         "--from",
         env["acc3"]["name"],
-        "--gas",
-        "auto",
     )
 
     dysond(
@@ -50,8 +48,6 @@ def test_cli_invariant_bug_part1_metrics_count_closed_offer_escrow(
         f"30{bar_denom}",
         "--from",
         acc1_name,
-        "--gas",
-        "auto",
     )
 
     offer_id = ws_create_offer(
@@ -71,8 +67,6 @@ def test_cli_invariant_bug_part1_metrics_count_closed_offer_escrow(
         f"1{bar_denom}",
         "--from",
         acc1_name,
-        "--gas",
-        "500000",
     )
     assert close_tx["code"] == 0
 
@@ -146,8 +140,6 @@ def test_cli_invariant_bug_part2_make_offer_fails_after_closed_offer(
         f"200{foo_denom},200{bar_denom}",
         "--from",
         env["acc3"]["name"],
-        "--gas",
-        "auto",
     )
 
     dysond(
@@ -160,8 +152,6 @@ def test_cli_invariant_bug_part2_make_offer_fails_after_closed_offer(
         f"30{bar_denom}",
         "--from",
         acc1_name,
-        "--gas",
-        "auto",
     )
 
     offer_id = ws_create_offer(
@@ -181,8 +171,6 @@ def test_cli_invariant_bug_part2_make_offer_fails_after_closed_offer(
         f"1{bar_denom}",
         "--from",
         acc1_name,
-        "--gas",
-        "500000",
     )
     assert close_tx["code"] == 0
 
@@ -223,8 +211,6 @@ def test_cli_invariant_make_trade_should_call_assert_invariants(
         f"100{foo_denom},100{bar_denom}",
         "--from",
         acc2_name,
-        "--gas",
-        "auto",
     )
 
     pool_tx = dysond(
@@ -237,8 +223,6 @@ def test_cli_invariant_make_trade_should_call_assert_invariants(
         f"50{bar_denom}",
         "--from",
         acc1_name,
-        "--gas",
-        "auto",
     )
     assert pool_tx["code"] == 0
 
@@ -257,8 +241,6 @@ def test_cli_invariant_make_trade_should_call_assert_invariants(
         f"1{bar_denom}",
         "--from",
         acc1_name,
-        "--gas",
-        "500000",
     )
     assert trade_tx["code"] == 0
 

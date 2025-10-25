@@ -70,8 +70,6 @@ def deployed_demo_script(chainnet, api_address):
         account_name,
         "--chain-id",
         chain_id,
-        "--gas",
-        "auto",
         "--gas-adjustment",
         "1.3",
     )
@@ -103,8 +101,6 @@ def deployed_demo_script(chainnet, api_address):
             storage_key,
             "--data-path",
             str(local_path),
-            "--gas",
-            "auto",
             "--gas-prices",
             "0udys",
             "--from",

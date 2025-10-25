@@ -48,6 +48,14 @@
       }
     },
     {
+      "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/whaleswap/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Query_Params": "Query_WhaleswapParams"
+        }
+      }
+    },
+    {
       "url": "./client/docs/swagger-ui/swagger-gen/cosmos/auth/v1beta1/query.swagger.json",
       "operationIds": {
         "rename": {
@@ -221,6 +229,9 @@
     },
     {
       "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/nft/v1beta1/tx.swagger.json"
+    },
+    {
+      "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/whaleswap/v1/tx.swagger.json"
     },
     {
       "url": "./client/docs/swagger-ui/swagger-gen/dysonprotocol/script/v1/tx.swagger.json"

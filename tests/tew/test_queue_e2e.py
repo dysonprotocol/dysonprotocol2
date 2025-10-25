@@ -38,8 +38,6 @@ def test_l1_l2_greeting_echo_flow(chainnet, generate_account, faucet):
         "--from",
         tew_name,
         "--yes",
-        "--gas",
-        "auto",
     )
     assert delegate_result["code"] == 0, f"Delegation failed: {delegate_result}"
     print("✓ Delegated stake for TEW operator to satisfy storage stake validation")
@@ -60,8 +58,6 @@ def test_l1_l2_greeting_echo_flow(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "10000000",
     )
     assert (
         update_result.get("code", 1) == 0
@@ -88,8 +84,6 @@ def test_l1_l2_greeting_echo_flow(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "10000000",
     )
     assert exec_result.get("code", 1) == 0, f"Failed to initialize L1: {exec_result}"
     print("✓ L1 initialized")
@@ -112,8 +106,6 @@ def test_l1_l2_greeting_echo_flow(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "10000000",
     )
     assert (
         exec_result.get("code", 1) == 0
@@ -139,8 +131,6 @@ def test_l1_l2_greeting_echo_flow(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "10000000",
     )
     assert exec_result.get("code", 1) == 0, f"Failed to send greeting: {exec_result}"
 
@@ -308,8 +298,6 @@ def test_l1_l2_greeting_echo_flow(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "10000000",
     )
     assert exec_result.get("code", 1) == 0, f"Failed to submit L2 block: {exec_result}"
 
@@ -347,8 +335,6 @@ def test_l1_l2_greeting_echo_flow(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
-        "--gas",
-        "10000000",
     )
     assert (
         exec_result.get("code", 1) == 0

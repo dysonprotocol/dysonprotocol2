@@ -15,7 +15,7 @@ import io
 import signal
 import atexit
 from typing import Dict
-from tests.utils import poll_until_condition
+from utils import poll_until_condition
 import secrets  # new
 import ast
 import warnings
@@ -205,7 +205,9 @@ def make_run_command(dysond_bin, node_home):
                 # Ensure --yes is present for tx commands
                 if "--yes" not in args and "-y" not in args:
                     commands += ["--yes"]
-                if "--gas" not in args:
+
+                # This must be set for all tx commands that dont set gas themselves
+                if "--gas" not in args:  #
                     commands += ["--gas", "2000000"]
                 # Run the tx command
                 original_out = subprocess.run(commands, capture_output=True, text=True)
@@ -944,14 +946,14 @@ def generate_name() -> str:
 
 @pytest.fixture(scope="session")
 def register_name():
-    """Fixture providing a helper to register a new name via commit/reveal.
+    """Fixture providing a helper to register a new name via a single tx script exec.
 
     Usage::
 
         def test_something(chainnet, generate_account, register_name):
             dysond_bin = chainnet[0]
             owner_keychain_name, owner_addr = generate_account("owner")
-            name = register_name(dysond_bin, owner_keychain_name, owner_addr)
+            name = register_name(dysond_bin, owner_keychain_name, owner_addr, "10udys")
     """
 
     def _register(
@@ -960,46 +962,70 @@ def register_name():
         name = generate_name()
         salt = secrets.token_hex(8)
 
-        # Compute commitment hash
-        commitment = dysond_bin(
-            "query",
-            "nameservice",
-            "compute-hash",
-            "--name",
-            name,
-            "--salt",
-            salt,
-            "--committer",
+        extra_code = """
+import re
+from dys import _msg, _query, get_executor_address
+
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {"denom": m.group(2), "amount": m.group(1)}
+
+def register(name, salt, valuation):
+    owner = get_executor_address()
+    # Compute commitment hash
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    # Commit then reveal
+    _msg({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    })
+    _msg({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    # Set destination to owner so future name-bound ops authorize correctly
+    _msg({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": owner,
+    })
+
+    return name
+"""
+
+        args = json.dumps([name, salt, valuation])
+        tx = dysond_bin(
+            "tx",
+            "script",
+            "exec",
+            "--script-address",
             owner_addr,
-        )["hex_hash"]
-
-        # Commit
-        commit_resp = dysond_bin(
-            "tx",
-            "nameservice",
-            "commit",
-            "--commitment",
-            commitment,
-            "--valuation",
-            valuation,
+            "--function-name",
+            "register",
+            "--args",
+            args,
             "--from",
             owner_keychain_name,
+            "--gas",
+            "100000000",
+            "--extra-code",
+            extra_code,
         )
-        assert commit_resp["code"] == 0, commit_resp.get("raw_log")
-
-        # Reveal
-        reveal_resp = dysond_bin(
-            "tx",
-            "nameservice",
-            "reveal",
-            "--name",
-            name,
-            "--salt",
-            salt,
-            "--from",
-            owner_keychain_name,
-        )
-        assert reveal_resp["code"] == 0, reveal_resp.get("raw_log")
+        assert tx.get("code", 1) == 0, f"register_name script failed: {tx}"
 
         return name
 
@@ -1062,7 +1088,7 @@ def fresh_denoms(chainnet, whales_scripts_loaded):
                 "--from",
                 owner_name,
                 "--gas",
-                "auto",
+                "100000000",
             )
             assert resp.get("code", 1) == 0, f"mint failed: {resp}"
             out.append(denom)
@@ -1198,3 +1224,146 @@ def pytest_collection_finish(session):
             It may be required to rewrite a test to achieve this, and that is ok.
             """
         )
+
+
+# -----------------------------------------------------------------------------
+# Whaleswap environment setup fixture (moved from tests/whaleswap/amm/conftest.py)
+# -----------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="function")
+def ws_setup_env(chainnet, generate_account, faucet):
+    """
+    Single-tx dyslang setup for whaleswap tests:
+    - register 1 name
+    - mint 3 denoms name/coin/a, name/coin/b, name/coin/c with 1800 units each
+    - distribute to three accounts: for each denom, send 300 base to each
+
+    Returns dict with keys: owner_name, owner_addr, acc1, acc2, acc3, name, denoms
+    """
+    dysond = chainnet[0]
+
+    # Create owner and recipients
+    [owner_name, owner_addr] = generate_account("ws_owner", faucet_amount=2_000_000)
+    [a1_name, a1_addr] = generate_account("ws_a1", faucet_amount=1)
+    [a2_name, a2_addr] = generate_account("ws_a2", faucet_amount=1)
+    [a3_name, a3_addr] = generate_account("ws_a3", faucet_amount=1)
+
+    # Ensure owner has enough udys to pay mint fees and gas
+    faucet(owner_addr, amount=5_000_000)
+
+    import random, string  # local imports
+
+    name = "".join(random.choices(string.ascii_lowercase, k=6)) + ".dys"
+    salt = "s" + "".join(random.choices(string.ascii_lowercase + string.digits, k=7))
+
+    # Dyslang script executed with --extra-code to avoid persistent script updates
+    extra_code = """
+import json
+from dys import _msg, _query, get_executor_address
+
+def setup(name, salt, acc1, acc2, acc3):
+    owner = get_executor_address()
+
+    # Compute commitment hash
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    # Commit then reveal
+    _msg({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "10"},
+    })
+    _msg({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    # Set destination to owner so MintCoins authz passes (dest == signer)
+    _msg({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": owner,
+    })
+
+    denoms = [f"{name}/coin/a", f"{name}/coin/b", f"{name}/coin/c"]
+
+    # Compute mint fee = ceil(sum(units) * mint_fee_per_coin)
+    params = _query({"@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"})["params"]
+    fee_per = float(params["mint_fee_per_coin"]) if params.get("mint_fee_per_coin") else 0.0
+    total_units = 1800 * 3
+    fee = int(-(-total_units * fee_per // 1))
+
+    # Mint 1800 units of each denom to owner
+    _msg({
+        "@type": "/dysonprotocol.nameservice.v1.MsgMintCoins",
+        "name_destination": owner,
+        "amount": [
+            {"denom": denoms[0], "amount": "1800"},
+            {"denom": denoms[1], "amount": "1800"},
+            {"denom": denoms[2], "amount": "1800"},
+        ],
+        "mint_fee": {"denom": "udys", "amount": str(fee)},
+    })
+
+    # Distribute 300 base for each denom to each of the 3 accounts
+    for r in [acc1, acc2, acc3]:
+        sends = []
+        for d in denoms:
+            sends.append({"denom": d, "amount": "300"})
+        # Coins array must be sorted by denom for Cosmos SDK validation
+        sends = sorted(sends, key=lambda x: x["denom"])
+        _msg({
+            "@type": "/cosmos.bank.v1beta1.MsgSend",
+            "from_address": owner,
+            "to_address": r,
+            "amount": sends,
+        })
+
+    return {
+        "name": name,
+        "denoms": denoms,
+        "owner": owner,
+    }
+"""
+
+    args = json.dumps([name, salt, a1_addr, a2_addr, a3_addr])
+    tx = dysond(
+        "tx",
+        "script",
+        "exec",
+        "--script-address",
+        owner_addr,
+        "--function-name",
+        "setup",
+        "--args",
+        args,
+        "--from",
+        owner_name,
+        "--gas",
+        "100000000",
+        "--extra-code",
+        extra_code,
+    )
+
+    assert tx.get("code", 1) == 0, f"setup script failed: {json.dumps(tx, indent=2)}"
+
+    denoms = [f"{name}/coin/a", f"{name}/coin/b", f"{name}/coin/c"]
+    return {
+        "owner_name": owner_name,
+        "owner_addr": owner_addr,
+        "acc1": {"name": a1_name, "addr": a1_addr},
+        "acc2": {"name": a2_name, "addr": a2_addr},
+        "acc3": {"name": a3_name, "addr": a3_addr},
+        "name": name,
+        "denoms": denoms,
+    }

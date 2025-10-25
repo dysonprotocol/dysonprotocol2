@@ -42,8 +42,6 @@ def emit_payment():
         "--from",
         creator_name,
         "--yes",
-        "--gas",
-        "auto",
     )
     assert up.get("code", 1) == 0, f"script update failed: {up}"
 
@@ -59,8 +57,6 @@ def emit_payment():
         "--from",
         creator_name,
         "--yes",
-        "--gas",
-        "auto",
     )
     assert up2.get("code", 1) == 0
 
@@ -79,8 +75,6 @@ def emit_payment():
         "--from",
         creator_name,
         "--yes",
-        "--gas",
-        "auto",
     )
     assert del_tx.get("code", 1) == 0, f"delegate failed: {del_tx}"
 
@@ -139,8 +133,6 @@ def emit_payment():
         "emit_payment",
         "--from",
         creator_name,
-        "--gas",
-        "auto",
     )
     assert exec_emit.get("code", 1) == 0, f"emit tx failed: {exec_emit}"
 

@@ -91,8 +91,6 @@ def register_and_mint(name, salt, amount):
         json.dumps([name, salt, 100000]),
         "--from",
         alice_name,
-        "--gas",
-        "auto",
         "--extra-code",
         setup_script,
     )

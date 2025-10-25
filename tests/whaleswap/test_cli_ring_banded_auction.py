@@ -1,6 +1,5 @@
 import json
 from decimal import Decimal, ROUND_CEILING
-from tests.whaleswap.amm.conftest import ws_setup_env  # noqa: F401
 
 
 def _parse_pool_id_attr(attrs):
@@ -64,8 +63,6 @@ def test_ring_trade_banded_auction(
         f"2{b}",
         "--from",
         taker,
-        "--gas",
-        "auto",
     )
     assert tx_v3.get("code", 1) == 0, json.dumps(tx_v3, indent=2)
     ev_pc = [
@@ -101,8 +98,6 @@ def test_ring_trade_banded_auction(
         f"100{c}",
         "--from",
         taker,
-        "--gas",
-        "auto",
     )
     assert tx_v2.get("code", 1) == 0, json.dumps(tx_v2, indent=2)
     ev_pc2 = [
@@ -137,7 +132,7 @@ def test_ring_trade_banded_auction(
         "--from",
         taker,
         "--gas",
-        "auto",
+        "100000000",  # raw=True requires gas flag
         raw=True,
     )
     low = (out_fail or "").lower()
@@ -285,7 +280,7 @@ def test_ring_trade_banded_auction(
         "--from",
         taker,
         "--gas",
-        "2000000",
+        "2000000",  # make-trade with multiple ops requires explicit gas
     )
     assert (
         tx_mt.get("code", 1) == 0

@@ -55,8 +55,6 @@ def test_make_trade_two_makers_multi_take_single_settlement(
         json.dumps(_take(o2, 1)),
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert isinstance(tx, dict), f"bad tx result: {tx}"
     assert "code" in tx and tx["code"] == 0, f"tx failed: {json.dumps(tx, indent=2)}"

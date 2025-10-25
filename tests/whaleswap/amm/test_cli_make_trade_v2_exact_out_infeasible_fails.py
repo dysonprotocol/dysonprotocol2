@@ -19,8 +19,6 @@ def test_make_trade_v2_exact_out_infeasible_fails(chainnet, ws_setup_env):
         f"10{b}",
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert txp.get("code", 1) == 0, f"create-pool failed: {json.dumps(txp, indent=2)}"
     ev_pc = [
@@ -49,8 +47,11 @@ def test_make_trade_v2_exact_out_infeasible_fails(chainnet, ws_setup_env):
         "--from",
         taker_name,
         "--gas",
-        "auto",
+        "100000000",  # raw=True requires gas flag
         raw=True,
     )
-    low = (out or "").lower()
-    assert "exact-out equals/exceeds reserve" in low, f"Unexpected error: {out}"
+    # raw=True with --gas returns dict for failed transactions
+    assert isinstance(out, dict), f"expected dict response, got: {type(out)}"
+    assert out.get("code", 0) != 0, f"expected transaction to fail, got success: {out}"
+    raw_log = out.get("raw_log", "").lower()
+    assert "exact-out equals/exceeds reserve" in raw_log, f"unexpected error: {out}"

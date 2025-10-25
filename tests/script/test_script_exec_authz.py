@@ -191,8 +191,6 @@ def get_info():
             tx_file.name,
             "--from",
             bob_name,
-            "--gas",
-            "1000000",  # specify gas to skip pre tx validation and get the actual code error
         )
 
     assert (
@@ -329,8 +327,6 @@ def some_function():
             tx_file.name,
             "--from",
             bob_name,
-            "--gas",
-            "1000000",  # specify gas to skip pre tx validation and get the actual code error
         )
 
     # With the simplified logic, if function_name is provided, it must be in the list

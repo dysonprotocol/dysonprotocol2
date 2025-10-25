@@ -40,8 +40,6 @@ def _create_pool(dysond, creator_name, a, b, ai=10, bi=10):
         f"{bi}{b}",
         "--from",
         creator_name,
-        "--gas",
-        "auto",
     )
     assert tx.get("code", 1) == 0, f"create-pool failed: {json.dumps(tx, indent=2)}"
     assert "events" in tx, f"no events in tx: {json.dumps(tx, indent=2)}"
@@ -125,8 +123,6 @@ def test_parity_swap_then_take_vs_take_then_swap(chainnet, ws_setup_env):
         json.dumps(op2),
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert tx1.get("code", 1) == 0, f"route1 failed: {json.dumps(tx1, indent=2)}"
     d1, c1 = _sum_transfers(tx1, taker_addr)
@@ -152,8 +148,6 @@ def test_parity_swap_then_take_vs_take_then_swap(chainnet, ws_setup_env):
         json.dumps(_swap_in_op(pid, denom_in=a, amount_in=5)),
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert tx2.get("code", 1) == 0, f"route2 failed: {json.dumps(tx2, indent=2)}"
     d2, c2 = _sum_transfers(tx2, taker_addr)

@@ -223,8 +223,6 @@ class TestStorageStakingParameters:
                     large_data,
                     "--from",
                     test_account,
-                    "--gas",
-                    "auto",
                 )
 
         # Now set multiplier to zero and verify storage succeeds
@@ -300,8 +298,6 @@ class TestStorageStakingParameters:
             large_data,
             "--from",
             test_account,
-            "--gas",
-            "auto",
         )
         assert storage_result["code"] == 0
 
@@ -375,8 +371,6 @@ class TestStorageStakingMetrics:
             delegation_amount,
             "--from",
             test_account_name,
-            "--gas",
-            "auto",
         )
         assert delegate_result["code"] == 0
 
@@ -489,8 +483,6 @@ class TestStorageStakingMetrics:
             "",
             "--from",
             test_account_name,
-            "--gas",
-            "auto",
         )
         assert empty_result["code"] == 0
 
@@ -560,8 +552,6 @@ class TestStorageStakingMetrics:
             max_data,
             "--from",
             test_account_name,
-            "--gas",
-            "auto",
         )
         assert max_storage_result["code"] == 0
 

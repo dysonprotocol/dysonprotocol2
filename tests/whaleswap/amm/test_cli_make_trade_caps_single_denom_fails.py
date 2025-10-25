@@ -19,8 +19,6 @@ def test_make_trade_caps_single_denom_fails(chainnet, ws_setup_env):
         f"10{b}",
         "--from",
         taker,
-        "--gas",
-        "auto",
     )
     assert txp.get("code", 1) == 0, f"create-pool failed: {json.dumps(txp, indent=2)}"
     ev_pc = [
@@ -48,8 +46,6 @@ def test_make_trade_caps_single_denom_fails(chainnet, ws_setup_env):
         json.dumps(op),
         "--from",
         taker,
-        "--gas",
-        "auto",
         raw=True,
     )
     low = (out or "").lower()

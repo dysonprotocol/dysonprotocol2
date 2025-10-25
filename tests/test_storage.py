@@ -18,8 +18,6 @@ def _stake(dysond, faucet_fn, name, addr, stake_amount="100000udys", topup=20000
         "--from",
         name,
         "--yes",
-        "--gas",
-        "auto",
     )
     assert res["code"] == 0, f"Delegation failed: {res}"
 
@@ -1797,8 +1795,6 @@ def test_storage_pagination_nuance_key_format_via_script(
         dummy_script,
         "--from",
         user_name,
-        "--gas",
-        "auto",
     )
 
     script_addr = user_addr
@@ -1906,8 +1902,6 @@ def test_storage_pagination_nuance_key_format_via_tx_script(
         dummy_script,
         "--from",
         user_name,
-        "--gas",
-        "auto",
     )
     script_addr = user_addr
 
@@ -1972,8 +1966,6 @@ def run_tests():
         script_code,
         "--from",
         user_name,
-        "--gas",
-        "auto",
         "-y",
     )
 

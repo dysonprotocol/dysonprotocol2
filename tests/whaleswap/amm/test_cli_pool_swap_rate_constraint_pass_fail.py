@@ -43,8 +43,6 @@ def test_pool_swap_rate_constraint_pass_fail(chainnet, ws_setup_env):
         f"100{b}",
         "--from",
         taker,
-        "--gas",
-        "auto",
     )
     assert txp.get("code", 1) == 0, f"create-pool failed: {json.dumps(txp, indent=2)}"
     ev_pc = [

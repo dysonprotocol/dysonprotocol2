@@ -202,8 +202,6 @@ def test_make_trade_pfand_release_accounting(
         "--op",
         f'{{"take": {{"offer_id": "{offer_id}"}}}}',
         "-y",
-        "--gas",
-        "auto",
     )
 
     # Verify transaction succeeded (if bug exists, invariant will fail here)

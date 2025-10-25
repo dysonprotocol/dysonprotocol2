@@ -42,8 +42,6 @@ def test_cli_make_trade_missing_taker_input_accounting(
         f"200{foo_denom},200{bar_denom}",
         "--from",
         acc3_name,
-        "--gas",
-        "auto",
     )
 
     dysond(
@@ -56,8 +54,6 @@ def test_cli_make_trade_missing_taker_input_accounting(
         f"30{bar_denom}",
         "--from",
         acc1_name,
-        "--gas",
-        "auto",
     )
 
     # Create LARGE offer matching your live system: acc2 offers bar, wants foo
@@ -81,8 +77,6 @@ def test_cli_make_trade_missing_taker_input_accounting(
         f"1{bar_denom}",
         "--from",
         acc1_name,
-        "--gas",
-        "500000",
     )
 
     # With the fix: addIn(trader, makerWant) properly records taker's input

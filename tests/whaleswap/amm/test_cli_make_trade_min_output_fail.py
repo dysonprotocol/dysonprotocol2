@@ -28,8 +28,6 @@ def test_make_trade_min_output_fail(chainnet, ws_setup_env):
         f"60{b}",
         "--from",
         taker,
-        "--gas",
-        "auto",
     )
     assert txp.get("code", 1) == 0, f"create-pool failed: {json.dumps(txp, indent=2)}"
     ev_pc = [
@@ -60,8 +58,6 @@ def test_make_trade_min_output_fail(chainnet, ws_setup_env):
         f"1000{b}",
         "--from",
         taker,
-        "--gas",
-        "200000",
         "--yes",
     )
     assert isinstance(tx, dict), f"non-dict tx response: {tx}"

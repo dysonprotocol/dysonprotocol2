@@ -44,8 +44,6 @@ def test_make_trade_v2_exact_out_happy(chainnet, ws_setup_env):
         f"10{b}",
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert txp.get("code", 1) == 0, f"create-pool failed: {json.dumps(txp, indent=2)}"
     ev_pc = [
@@ -80,8 +78,6 @@ def test_make_trade_v2_exact_out_happy(chainnet, ws_setup_env):
         json.dumps(op),
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert (
         tx.get("code", 1) == 0

@@ -27,8 +27,6 @@ def test_cli_events_indexing_trades(chainnet, ws_setup_env, ws_create_offer):
         json.dumps(_take(oid, 1)),
         "--from",
         taker_name,
-        "--gas",
-        "auto",
     )
     assert isinstance(tx, dict), f"bad tx result: {tx}"
     assert "code" in tx and tx["code"] == 0, f"tx failed: {json.dumps(tx, indent=2)}"

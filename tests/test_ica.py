@@ -35,8 +35,6 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         str(abs_ica_script_path),
         "--from",
         alice_name,
-        "--gas",
-        "2000000",
     )
     print(f"📝 Script deployment result: {update_result}")
     assert (
@@ -105,8 +103,6 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         json.dumps(register_args),
         "--from",
         alice_name,
-        "--gas",
-        "2000000",
     )
     print(f"🔗 ICA registration result: {register_result}")
     assert (
@@ -408,8 +404,6 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         json.dumps([controller_connection_id]),
         "--from",
         alice_name,
-        "--gas",
-        "2000000",
     )
     print(f"📍 Final ICA address result: {ica_address_result}")
     assert (
@@ -471,8 +465,6 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         json.dumps(fund_args),
         "--from",
         alice_name,
-        "--gas",
-        "2000000",
     )
     print(f"💰 Fund result: {fund_result}")
     assert fund_result.get("code", 1) == 0, f"Failed to fund ICA account: {fund_result}"
@@ -491,8 +483,6 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         json.dumps([controller_connection_id]),
         "--from",
         alice_name,
-        "--gas",
-        "2000000",
     )
     print(f"📊 Query request result: {query_result}")
     assert (
@@ -596,8 +586,6 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         '["balance_query"]',
         "--from",
         alice_name,
-        "--gas",
-        "2000000",
     )
     print(f"🔍 List callbacks result: {list_callbacks_result}")
 
@@ -692,8 +680,6 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         json.dumps(withdraw_args),
         "--from",
         alice_name,
-        "--gas",
-        "2000000",
     )
     print(f"💸 Withdraw result: {withdraw_result}")
     assert (
