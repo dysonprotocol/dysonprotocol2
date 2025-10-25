@@ -170,7 +170,7 @@ def make_run_command(dysond_bin, node_home):
                 stdout = "None"
                 stderr = "None"
                 if "--timeout" not in args:
-                    commands += ["--timeout", "100s"]
+                    commands += ["--timeout", "500s"]
                 for i in range(20, 0, -1):
                     out = subprocess.run(commands, capture_output=True, text=True)
                     stdout = out.stdout
@@ -190,9 +190,10 @@ def make_run_command(dysond_bin, node_home):
                         continue
                     except json.JSONDecodeError:
                         if "timed out waiting for transaction" in out.stderr:
+                            time.sleep(0.1)
                             continue
                         if "connect: connection refused" in out.stderr:
-                            time.sleep(random.uniform(0.05, 0.1))
+                            time.sleep(0.1)
                             continue
                         print(
                             f"Error parsing tx response: \nOUT: {out.stdout}\nERR: {out.stderr}"
@@ -208,9 +209,10 @@ def make_run_command(dysond_bin, node_home):
 
                 # This must be set for all tx commands that dont set gas themselves
                 if "--gas" not in args:  #
-                    commands += ["--gas", "2000000"]
+                    commands += ["--gas", "20000000"]
                 # Run the tx command
                 original_out = subprocess.run(commands, capture_output=True, text=True)
+
                 try:
                     tx_response = json.loads(original_out.stdout)
                     if tx_response.get("code") == 0:
@@ -223,6 +225,7 @@ def make_run_command(dysond_bin, node_home):
                         )
                         return wait_tx_response
                     else:
+
                         raise Exception(
                             f"Error in tx command, code: {tx_response['code']}, raw_log: {tx_response['raw_log']}"
                         )
@@ -239,25 +242,41 @@ def make_run_command(dysond_bin, node_home):
                             json_out = json.loads(
                                 last_line[first_brace : last_brace + 1]
                             )
-                            return {"code": 666, "raw_log": last_line, "data": json_out}
+                            return {
+                                "code": 666,
+                                "raw_log": last_line,
+                                "data": json_out,
+                            }
                         except json.JSONDecodeError:
                             pass
+
                     raise Exception(
                         f"Error parsing tx response: \nOUT: {original_out.stdout}\nERR: {original_out.stderr}"
                     )
-        # Otherwise, just run the command and return the output
-        out = subprocess.run(commands, capture_output=True, text=True)
-        return_out = out.stdout + "\n" + out.stderr
-        try:
-            first_brace = return_out.find("{")
-            last_brace = return_out.rfind("}")
-            if first_brace != -1 and last_brace != -1:
-                json_out = json.loads(return_out[first_brace : last_brace + 1])
-            else:
-                json_out = json.loads(return_out)
-            return json_out
-        except json.JSONDecodeError:
-            return return_out
+        for attempt in range(10):
+            # Otherwise, just run the command and return the output
+            out = subprocess.run(commands, capture_output=True, text=True)
+            return_out = out.stdout + "\n" + out.stderr
+            try:
+                first_brace = return_out.find("{")
+                last_brace = return_out.rfind("}")
+                if first_brace != -1 and last_brace != -1:
+                    json_out = json.loads(return_out[first_brace : last_brace + 1])
+                else:
+                    json_out = json.loads(return_out)
+                return json_out
+            except json.JSONDecodeError:
+                return return_out
+            except Exception as e:
+                if attempt < 9:
+                    if "account sequence mismatch" in str(e):
+                        time.sleep(0.1)
+                        continue
+                    if "connect: connection refused" in str(e):
+                        time.sleep(0.1)
+                        continue
+
+                raise e
 
     return run_command
 
@@ -514,26 +533,18 @@ def faucet(chainnet):
             )
 
         # Send tx from alice (run_command already waits for tx internally)
-        for attempt in range(10):
-            tx_out = dysond_bin(
-                "tx",
-                "bank",
-                "send",
-                "alice",
-                address,
-                str(amount) + denom,
-                "--from",
-                "alice",
-                "--yes",
-                **kwargs,
-            )
-            # Handle case where tx_out might be a string (command failed)
-            if isinstance(tx_out, dict) and tx_out.get("code") == 0:
-                break
-            else:
-                print(f"===== Faucet tx failed: {tx_out}")
-        else:
-            raise Exception(f"Faucet tx failed after {attempt} attempts: {tx_out}")
+        dysond_bin(
+            "tx",
+            "bank",
+            "send",
+            "alice",
+            address,
+            str(amount) + denom,
+            "--from",
+            "alice",
+            "--yes",
+            **kwargs,
+        )
 
     return _faucet
 

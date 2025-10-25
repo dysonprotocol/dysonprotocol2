@@ -12,7 +12,7 @@ T = TypeVar("T")
 def poll_until_condition(
     check_func: Callable[[], T],
     timeout: int = 30,
-    poll_interval: float = 0.05,
+    poll_interval: float = 0.2,  # any faster will DOS the node
     error_message: str = "Condition not met within timeout",
 ) -> T:
     """

@@ -764,6 +764,30 @@ def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
         _ibc_progress_snapshot("poll-withdraw-callback")
         return status == "success"
 
+    # Poll: withdrawal packet has been acknowledged (sequence 2 leaves packet commitments)
+    def _withdrawal_packet_acknowledged():
+        """Check if withdrawal packet (sequence 2) has been acknowledged by host"""
+        try_commit = chain_a(
+            "query", "ibc", "channel", "packet-commitments", ctrl_port, ctrl_chan_id
+        )
+        seqs = [int(c.get("sequence", 0)) for c in try_commit.get("commitments", [])]
+        print(f"🛰️  Pending sequences on {ctrl_port}/{ctrl_chan_id}: {seqs}")
+        is_acked = 2 not in seqs
+        (
+            print(f"✅ Withdrawal packet acknowledged")
+            if is_acked
+            else print(f"⏳ Withdrawal packet still pending (seq 2 in {seqs})")
+        )
+        return is_acked
+
+    print(f"⏳ Waiting for withdrawal packet to be acknowledged...")
+    poll_until_condition(
+        _withdrawal_packet_acknowledged,
+        timeout=30,
+        poll_interval=1,
+        error_message="Withdrawal packet not acknowledged by host",
+    )
+
     poll_until_condition(
         _withdrawal_callback_received,
         timeout=10,

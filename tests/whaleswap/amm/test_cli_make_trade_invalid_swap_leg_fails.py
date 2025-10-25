@@ -26,25 +26,18 @@ def test_make_trade_invalid_swap_leg_pool_id_zero_fails(chainnet, ws_setup_env):
     # Attempt swap with pool_id = 0 - should fail
     invalid_swap = {"swap": {"pool_id": 0, "swap_in": {"denom": a, "amount": "5"}}}
 
-    out = dysond(
-        "tx",
-        "whaleswap",
-        "make-trade",
-        "--op",
-        json.dumps(invalid_swap),
-        "--from",
-        taker_name,
-        "--gas",
-        "100000000",  # raw=True requires gas flag
-        raw=True,
-    )
-
-    # Expect failure with a helpful error mentioning swap leg invalid
-    # raw=True with --gas returns dict for failed transactions
-    assert isinstance(out, dict), f"expected dict response, got: {type(out)}"
-    assert out.get("code", 0) != 0, f"expected transaction to fail, got success: {out}"
-    raw_log = out.get("raw_log", "").lower()
-    assert "swap leg invalid" in raw_log, f"unexpected error message: {out}"
+    with pytest.raises(Exception, match="swap leg invalid"):
+        dysond(
+            "tx",
+            "whaleswap",
+            "make-trade",
+            "--op",
+            json.dumps(invalid_swap),
+            "--from",
+            taker_name,
+            "--gas",
+            "auto",
+        )
 
 
 def test_make_trade_invalid_swap_leg_empty_object_fails(chainnet, ws_setup_env):
@@ -71,22 +64,15 @@ def test_make_trade_invalid_swap_leg_empty_object_fails(chainnet, ws_setup_env):
     # Attempt swap with empty swap object - should fail (pool_id defaults to 0)
     invalid_swap = {"swap": {}}
 
-    out = dysond(
-        "tx",
-        "whaleswap",
-        "make-trade",
-        "--op",
-        json.dumps(invalid_swap),
-        "--from",
-        taker_name,
-        "--gas",
-        "100000000",  # raw=True requires gas flag
-        raw=True,
-    )
-
-    # Expect failure with a helpful error mentioning swap leg invalid
-    # raw=True with --gas returns dict for failed transactions
-    assert isinstance(out, dict), f"expected dict response, got: {type(out)}"
-    assert out.get("code", 0) != 0, f"expected transaction to fail, got success: {out}"
-    raw_log = out.get("raw_log", "").lower()
-    assert "swap leg invalid" in raw_log, f"unexpected error message: {out}"
+    with pytest.raises(Exception, match="swap leg invalid"):
+        dysond(
+            "tx",
+            "whaleswap",
+            "make-trade",
+            "--op",
+            json.dumps(invalid_swap),
+            "--from",
+            taker_name,
+            "--gas",
+            "auto",
+        )

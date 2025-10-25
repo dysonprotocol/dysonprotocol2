@@ -298,7 +298,16 @@ def test_fp_benchmark_comprehensive(chainnet, generate_account, faucet):
 
     # Update script for alice
     update_result = dysond(
-        "tx", "script", "update", "--code-path", script_path, "--from", alice_name, "-y"
+        "tx",
+        "script",
+        "update",
+        "--code-path",
+        script_path,
+        "--from",
+        alice_name,
+        "--gas",
+        "auto",  # Keep auto gas for script update
+        "-y",
     )
     assert (
         update_result.get("code", 1) == 0
@@ -333,7 +342,9 @@ def test_fp_benchmark_comprehensive(chainnet, generate_account, faucet):
             "--from",
             alice_name,
             "--gas",
-            "6000000",
+            "auto",  # Keep auto gas for script execution
+            "--gas-adjustment",
+            "1.5",
             "-y",
         )
 
@@ -420,6 +431,8 @@ def test_fp_benchmark_comprehensive(chainnet, generate_account, faucet):
         f"[{test_cases[0]['iterations']}]",
         "--from",
         alice_name,
+        "--gas",
+        "auto",  # Keep auto gas for script execution
         "--gas-adjustment",
         "1.5",
         "-y",

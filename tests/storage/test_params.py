@@ -42,6 +42,8 @@ def test_storage_params_governance_update_size_enforcement(
         test_key,
         "--data",
         test_data_original,
+        "--gas",
+        "10000000",  # Storage operations have high gas costs that scale with data size (WritePerByte)
     )
     assert (
         result_original["code"] == 0
@@ -144,6 +146,8 @@ def test_storage_params_governance_update_size_enforcement(
             test_key,
             "--data",
             test_data_original,
+            "--gas",
+            "auto",  # use "auto" so that the rejection is now and not when in the block
         )
     print("✅ Upload at original limit fails with lowered limit")
 
@@ -198,6 +202,8 @@ def test_storage_params_governance_update_size_enforcement(
         test_key,
         "--data",
         test_data_original,
+        "--gas",
+        "auto",  # use "auto" so that the rejection is now and not when in the block
     )
     assert (
         result_restored["code"] == 0
@@ -335,6 +341,8 @@ def test_storage_size_enforcement(chainnet, generate_account, faucet):
         user_name,
         "--index",
         test_key_at_limit,
+        "--gas",
+        "10000000",  # Storage operations have high gas costs that scale with data size (WritePerByte)
         "--data",
         test_data_at_limit,
     )
@@ -376,6 +384,8 @@ def test_storage_size_enforcement(chainnet, generate_account, faucet):
             test_key_over_limit,
             "--data",
             test_data_over_limit,
+            "--gas",
+            "auto",  # Storage operations have gas costs that scale with data size (WritePerByte)
         )
 
     print(f"✅ Data over limit ({max_size + 1} bytes) correctly fails")
@@ -393,6 +403,8 @@ def test_storage_size_enforcement(chainnet, generate_account, faucet):
             test_key_at_limit,
             "--data",
             test_data_over_limit,
+            "--gas",
+            "auto",  # Storage operations have gas costs that scale with data size (WritePerByte)
         )
 
     print("✅ Updating existing entry to exceed limit correctly fails")
@@ -538,6 +550,8 @@ def test_storage_params_adaptive_size_testing(chainnet, generate_account, faucet
         test_key,
         "--data",
         test_data_original,
+        "--gas",
+        "10000000",  # Storage operations have high gas costs that scale with data size (WritePerByte)
     )
     assert (
         result_original["code"] == 0
@@ -574,6 +588,8 @@ def test_storage_params_adaptive_size_testing(chainnet, generate_account, faucet
             test_key_over,
             "--data",
             test_data_over,
+            "--gas",
+            "auto",  # Storage operations have gas costs that scale with data size (WritePerByte)
         )
     print("✅ Upload over limit by 1 byte correctly fails")
 
@@ -596,6 +612,8 @@ def test_storage_params_adaptive_size_testing(chainnet, generate_account, faucet
         test_key_below,
         "--data",
         below_limit_data,
+        "--gas",
+        "10000000",  # Storage operations have high gas costs that scale with data size (WritePerByte)
     )
     assert (
         below_result["code"] == 0

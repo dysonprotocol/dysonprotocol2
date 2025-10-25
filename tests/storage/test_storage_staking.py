@@ -223,6 +223,8 @@ class TestStorageStakingParameters:
                     large_data,
                     "--from",
                     test_account,
+                    "--gas",
+                    "auto",  # use "auto" so that the rejection is now and not when in the block
                 )
 
         # Now set multiplier to zero and verify storage succeeds
@@ -552,8 +554,10 @@ class TestStorageStakingMetrics:
             max_data,
             "--from",
             test_account_name,
+            "--gas",
+            "auto",  # use "auto" so that the rejection is now and not when in the block
         )
-        assert max_storage_result["code"] == 0
+        assert max_storage_result["code"] == 0, max_storage_result["raw_log"]
 
         # Verify metrics
         metrics = dysond("query", "storage", "metrics", test_addr)
@@ -634,7 +638,10 @@ class TestStorageStakingMetrics:
         # Wait for proposal to pass
         def check_proposal_status():
             result = dysond("query", "gov", "proposal", proposal_id)
-            status = result.get("proposal", {}).get("status", "UNKNOWN")
+
+            status = isinstance(result, dict) and result.get("proposal", {}).get(
+                "status", "UNKNOWN"
+            )
             final_states = [
                 "PROPOSAL_STATUS_PASSED",
                 "PROPOSAL_STATUS_REJECTED",

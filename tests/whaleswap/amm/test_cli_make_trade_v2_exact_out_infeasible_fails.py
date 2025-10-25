@@ -1,4 +1,5 @@
 import json
+import pytest
 
 
 def test_make_trade_v2_exact_out_infeasible_fails(chainnet, ws_setup_env):
@@ -36,22 +37,17 @@ def test_make_trade_v2_exact_out_infeasible_fails(chainnet, ws_setup_env):
             "swap_out": {"denom": b, "amount": "10"},
         }
     }
-    out = dysond(
-        "tx",
-        "whaleswap",
-        "make-trade",
-        "--max-input",
-        f"100000{a}",
-        "--op",
-        json.dumps(op),
-        "--from",
-        taker_name,
-        "--gas",
-        "100000000",  # raw=True requires gas flag
-        raw=True,
-    )
-    # raw=True with --gas returns dict for failed transactions
-    assert isinstance(out, dict), f"expected dict response, got: {type(out)}"
-    assert out.get("code", 0) != 0, f"expected transaction to fail, got success: {out}"
-    raw_log = out.get("raw_log", "").lower()
-    assert "exact-out equals/exceeds reserve" in raw_log, f"unexpected error: {out}"
+    with pytest.raises(Exception, match="exact-out equals/exceeds reserve"):
+        dysond(
+            "tx",
+            "whaleswap",
+            "make-trade",
+            "--max-input",
+            f"100000{a}",
+            "--op",
+            json.dumps(op),
+            "--from",
+            taker_name,
+            "--gas",
+            "auto",
+        )

@@ -22,6 +22,8 @@ def add(a, b:
         alice_name,
         "--keyring-backend",
         "test",
+        "--gas",
+        "2000000",  # script update needs significant gas for validation/formatting
         "--yes",
         raw=True,
     )
@@ -29,8 +31,8 @@ def add(a, b:
         "txhash" in tx_broadcast
     ), f"Expected txhash in broadcast response. Full: {json.dumps(tx_broadcast, indent=2)}"
 
-    # Wait for inclusion with generous timeout to ensure JSON
-    wait = dysond_bin("query", "wait-tx", tx_broadcast["txhash"], "--timeout", "100s")
+    # Wait for inclusion - script update should fail with syntax error
+    wait = dysond_bin("query", "wait-tx", tx_broadcast["txhash"])
     assert (
         wait.get("code", 0) != 0
     ), f"Expected failure for invalid code. Full: {json.dumps(wait, indent=2)}"

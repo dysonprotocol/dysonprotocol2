@@ -1,4 +1,5 @@
 import json
+import pytest
 
 
 def test_make_trade_note_recorded(chainnet, ws_setup_env):
@@ -7,7 +8,7 @@ def test_make_trade_note_recorded(chainnet, ws_setup_env):
     a = env["denoms"][0]
     b = env["denoms"][1]
     trader_name = env["acc1"]["name"]
-    trader_addr = env["acc1"]["addr"]
+    _ = env["acc1"]["addr"]
 
     # Create pool
     txp = dysond(
@@ -113,27 +114,22 @@ def test_make_trade_note_length_validation(chainnet, ws_setup_env):
     # Attempt make-trade with note exceeding max_note_length
     long_note = "x" * (max_len + 1)
     op = {"swap": {"pool_id": pool_id, "swap_in": {"denom": a, "amount": "5"}}}
-    out = dysond(
-        "tx",
-        "whaleswap",
-        "make-trade",
-        "--max-input",
-        f"10{a}",
-        "--op",
-        json.dumps(op),
-        "--trade-note",
-        long_note,
-        "--from",
-        trader_name,
-        "--gas",
-        "100000000",  # raw=True requires gas flag
-        raw=True,
-    )
-    # raw=True with --gas returns dict for failed transactions
-    assert isinstance(out, dict), f"expected dict response, got: {type(out)}"
-    assert out.get("code", 0) != 0, f"expected transaction to fail, got success: {out}"
-    raw_log = out.get("raw_log", "").lower()
-    assert "note too long" in raw_log, f"expected 'note too long' error, got: {out}"
+    with pytest.raises(Exception, match="note too long"):
+        dysond(
+            "tx",
+            "whaleswap",
+            "make-trade",
+            "--max-input",
+            f"10{a}",
+            "--op",
+            json.dumps(op),
+            "--trade-note",
+            long_note,
+            "--from",
+            trader_name,
+            "--gas",
+            "auto",
+        )
 
 
 def test_params_max_note_length_default(chainnet):

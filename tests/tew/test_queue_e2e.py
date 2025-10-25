@@ -58,6 +58,10 @@ def test_l1_l2_greeting_echo_flow(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
+        "--gas",
+        "auto",
+        "--gas-adjustment",
+        "1.5",
     )
     assert (
         update_result.get("code", 1) == 0
@@ -84,6 +88,10 @@ def test_l1_l2_greeting_echo_flow(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
+        "--gas",
+        "auto",
+        "--gas-adjustment",
+        "1.5",
     )
     assert exec_result.get("code", 1) == 0, f"Failed to initialize L1: {exec_result}"
     print("✓ L1 initialized")
@@ -106,6 +114,10 @@ def test_l1_l2_greeting_echo_flow(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
+        "--gas",
+        "auto",
+        "--gas-adjustment",
+        "1.5",
     )
     assert (
         exec_result.get("code", 1) == 0
@@ -131,6 +143,10 @@ def test_l1_l2_greeting_echo_flow(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
+        "--gas",
+        "auto",
+        "--gas-adjustment",
+        "1.5",
     )
     assert exec_result.get("code", 1) == 0, f"Failed to send greeting: {exec_result}"
 
@@ -145,6 +161,7 @@ def test_l1_l2_greeting_echo_flow(chainnet, generate_account, faucet):
         attr.get("key"): attr.get("value") for attr in exec_event.get("attributes", [])
     }
     response_json = attrs_by_key.get("response")
+    assert response_json, f"No response found in EventExecScript: {exec_event}"
     response_data = json.loads(response_json)
     result_data = json.loads(response_data.get("result", "{}"))
     result = result_data.get("result")
@@ -298,6 +315,10 @@ def test_l1_l2_greeting_echo_flow(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
+        "--gas",
+        "auto",
+        "--gas-adjustment",
+        "1.5",
     )
     assert exec_result.get("code", 1) == 0, f"Failed to submit L2 block: {exec_result}"
 

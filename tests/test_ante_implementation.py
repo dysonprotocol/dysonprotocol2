@@ -273,6 +273,8 @@ def check_func():
         test_code,
         "--from",
         script_owner_name,
+        "--gas",
+        "auto",
     )
     assert update_result.get("code", 1) == 0, (
         f"Failed to update script. Code: {update_result.get('code')}, "

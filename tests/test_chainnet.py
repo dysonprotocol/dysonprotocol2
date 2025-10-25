@@ -37,6 +37,8 @@ def test_chainnet_bank_send(chainnet, generate_account, faucet):
             str(send_amt) + "udys",
             "--from",
             alice_name,
+            "--gas",
+            "auto",
         )
         assert tx_out["code"] == 0, f"Transaction failed: {tx_out.get('raw_log', '')}"
 

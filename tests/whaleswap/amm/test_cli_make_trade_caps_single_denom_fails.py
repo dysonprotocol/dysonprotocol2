@@ -1,4 +1,5 @@
 import json
+import pytest
 
 
 def test_make_trade_caps_single_denom_fails(chainnet, ws_setup_env):
@@ -36,17 +37,17 @@ def test_make_trade_caps_single_denom_fails(chainnet, ws_setup_env):
             "swap_out": {"denom": b, "amount": "5"},
         }
     }
-    out = dysond(
-        "tx",
-        "whaleswap",
-        "make-trade",
-        "--max-input",
-        f"1{a}",
-        "--op",
-        json.dumps(op),
-        "--from",
-        taker,
-        raw=True,
-    )
-    low = (out or "").lower()
-    assert "debit exceeds cap for" in low, f"Expected cap failure. Full: {out}"
+    with pytest.raises(Exception, match="debit exceeds cap"):
+        dysond(
+            "tx",
+            "whaleswap",
+            "make-trade",
+            "--max-input",
+            f"1{a}",
+            "--op",
+            json.dumps(op),
+            "--from",
+            taker,
+            "--gas",
+            "auto",
+        )

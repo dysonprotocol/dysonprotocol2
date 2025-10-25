@@ -1,5 +1,6 @@
 import json
 from decimal import Decimal, ROUND_CEILING
+import pytest
 
 
 def _parse_pool_id_attr(attrs):
@@ -123,20 +124,19 @@ def test_ring_trade_banded_auction(
 
     # Intentional failure: PoolSwap exact-out near band without cap for A (defaults 0) => should fail on cap
     leg_fail = {"pool_id": pid_v3, "swap_out": {"denom": b, "amount": "1"}}
-    out_fail = dysond(
-        "tx",
-        "whaleswap",
-        "swap",
-        "--legs",
-        json.dumps(leg_fail),
-        "--from",
-        taker,
-        "--gas",
-        "100000000",  # raw=True requires gas flag
-        raw=True,
-    )
-    low = (out_fail or "").lower()
-    assert "debit exceeds cap" in low, f"unexpected error for missing cap: {out_fail}"
+
+    with pytest.raises(Exception, match="debit exceeds cap"):
+        dysond(
+            "tx",
+            "whaleswap",
+            "swap",
+            "--legs",
+            json.dumps(leg_fail),
+            "--from",
+            taker,
+            "--gas",
+            "auto",  # Gas auto so that the rejection is now and not when in the block
+        )
 
     # Create two offers: solid maker B->C and liquid-have maker l/A->B
     [maker_solid, maker_solid_addr] = generate_account("ring_maker_solid")

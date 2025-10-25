@@ -67,6 +67,8 @@ def test_l2_query_dyson_functionality(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
+        "--gas",
+        "auto",
         "--gas-adjustment",
         "1.5",
     )
@@ -95,6 +97,8 @@ def test_l2_query_dyson_functionality(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
+        "--gas",
+        "auto",
         "--gas-adjustment",
         "1.5",
     )
@@ -117,6 +121,8 @@ def test_l2_query_dyson_functionality(chainnet, generate_account, faucet):
         "--keyring-backend",
         "test",
         "--yes",
+        "--gas",
+        "auto",
         "--gas-adjustment",
         "1.5",
     )
@@ -140,6 +146,8 @@ def test_l2_query_dyson_functionality(chainnet, generate_account, faucet):
         "--from",
         user_name,
         "--yes",
+        "--gas",
+        "auto",
         "--gas-adjustment",
         "1.5",
     )
@@ -268,6 +276,8 @@ msg_id
         "--keyring-backend",
         "test",
         "--yes",
+        "--gas",
+        "auto",
         "--gas-adjustment",
         "1.5",
     )
