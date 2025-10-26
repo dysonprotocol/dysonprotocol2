@@ -69,6 +69,14 @@
                     },
                     "max_note_length": {
                         "type": "integer"
+                    },
+                    "block_delay_before_close": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE PARAMETERS \u2550\u2550\u2550\u2550\u2550 Block delay before position owner can close position"
+                    },
+                    "block_delay_before_liquidation": {
+                        "type": "string",
+                        "description": "Block delay before liquidation can be finalized after initialization"
                     }
                 },
                 "additionalProperties": false,

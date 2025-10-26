@@ -101,6 +101,46 @@
                         "additionalProperties": false,
                         "type": "array",
                         "description": "cumulative swap fees retained by the pool (accrue to LPs)"
+                    },
+                    "interest_rate_coin1": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE FIELDS \u2550\u2550\u2550\u2550\u2550 Annual interest rate for borrows in coin1 denom"
+                    },
+                    "interest_rate_coin2": {
+                        "type": "string",
+                        "description": "Annual interest rate for borrows in coin2 denom"
+                    },
+                    "interest_earned": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Total accrued interest (yield for LPs)"
+                    },
+                    "total_borrowed": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Total borrowed (aggregate for cap enforcement)"
+                    },
+                    "min_collateral_ratio": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 PER-POOL LEVERAGE RISK PARAMETERS \u2550\u2550\u2550\u2550\u2550 Minimum collateral ratio required at position open"
+                    },
+                    "max_leverage_ratio": {
+                        "type": "string",
+                        "description": "Maximum leverage ratio allowed (collateral + borrowed) / collateral"
+                    },
+                    "liquidation_threshold": {
+                        "type": "string",
+                        "description": "Collateral ratio threshold below which position is liquidatable"
+                    },
+                    "max_borrow_percent": {
+                        "type": "string",
+                        "description": "Maximum borrow capacity as percentage of reserve (applies symmetrically to both coins)"
                     }
                 },
                 "additionalProperties": false,

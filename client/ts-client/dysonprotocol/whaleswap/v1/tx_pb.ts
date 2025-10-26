@@ -7,6 +7,7 @@ import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialM
 import { Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 import { Coin } from "../../../cosmos/base/v1beta1/coin_pb.js";
 import { Params } from "./params_pb.js";
+import { PositionType } from "./leverage_pb.js";
 
 /**
  * SettlementMode selects how offers fund the "have" side:
@@ -79,6 +80,27 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
    */
   feePct = "";
 
+  /**
+   * cosmos.Dec string (e.g., "1.5")
+   *
+   * @generated from field: string min_collateral_ratio = 6;
+   */
+  minCollateralRatio = "";
+
+  /**
+   * cosmos.Dec string (e.g., "20.0")
+   *
+   * @generated from field: string max_leverage_ratio = 7;
+   */
+  maxLeverageRatio = "";
+
+  /**
+   * cosmos.Dec string in [0,1], applies to both coins
+   *
+   * @generated from field: string max_borrow_percent = 8;
+   */
+  maxBorrowPercent = "";
+
   constructor(data?: PartialMessage<MsgCreatePool>) {
     super();
     proto3.util.initPartial(data, this);
@@ -92,6 +114,9 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
     { no: 3, name: "min_price", kind: "message", T: Coin, repeated: true },
     { no: 4, name: "max_price", kind: "message", T: Coin, repeated: true },
     { no: 5, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "min_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "max_leverage_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 8, name: "max_borrow_percent", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgCreatePool {
@@ -187,6 +212,29 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
    */
   maxPrice: Coin[] = [];
 
+  /**
+   * Leverage configuration (optional; empty means no change)
+   *
+   * cosmos.Dec string
+   *
+   * @generated from field: string min_collateral_ratio = 6;
+   */
+  minCollateralRatio = "";
+
+  /**
+   * cosmos.Dec string
+   *
+   * @generated from field: string max_leverage_ratio = 7;
+   */
+  maxLeverageRatio = "";
+
+  /**
+   * cosmos.Dec string
+   *
+   * @generated from field: string max_borrow_percent = 8;
+   */
+  maxBorrowPercent = "";
+
   constructor(data?: PartialMessage<MsgUpdatePoolConfig>) {
     super();
     proto3.util.initPartial(data, this);
@@ -200,6 +248,9 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
     { no: 3, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "min_price", kind: "message", T: Coin, repeated: true },
     { no: 5, name: "max_price", kind: "message", T: Coin, repeated: true },
+    { no: 6, name: "min_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "max_leverage_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 8, name: "max_borrow_percent", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgUpdatePoolConfig {
@@ -1371,6 +1422,508 @@ export class MsgUpdateParamsResponse extends Message<MsgUpdateParamsResponse> {
 
   static equals(a: MsgUpdateParamsResponse | PlainMessage<MsgUpdateParamsResponse> | undefined, b: MsgUpdateParamsResponse | PlainMessage<MsgUpdateParamsResponse> | undefined): boolean {
     return proto3.util.equals(MsgUpdateParamsResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.MsgOpenPosition
+ */
+export class MsgOpenPosition extends Message<MsgOpenPosition> {
+  /**
+   * @generated from field: string trader = 1;
+   */
+  trader = "";
+
+  /**
+   * @generated from field: uint64 pool_id = 2;
+   */
+  poolId = protoInt64.zero;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin collateral = 3;
+   */
+  collateral?: Coin;
+
+  /**
+   * @generated from field: string borrow_amount = 4;
+   */
+  borrowAmount = "";
+
+  /**
+   * @generated from field: dysonprotocol.whaleswap.v1.PositionType position_type = 5;
+   */
+  positionType = PositionType.UNSPECIFIED;
+
+  constructor(data?: PartialMessage<MsgOpenPosition>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgOpenPosition";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "trader", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 3, name: "collateral", kind: "message", T: Coin },
+    { no: 4, name: "borrow_amount", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "position_type", kind: "enum", T: proto3.getEnumType(PositionType) },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgOpenPosition {
+    return new MsgOpenPosition().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgOpenPosition {
+    return new MsgOpenPosition().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgOpenPosition {
+    return new MsgOpenPosition().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgOpenPosition | PlainMessage<MsgOpenPosition> | undefined, b: MsgOpenPosition | PlainMessage<MsgOpenPosition> | undefined): boolean {
+    return proto3.util.equals(MsgOpenPosition, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.MsgOpenPositionResponse
+ */
+export class MsgOpenPositionResponse extends Message<MsgOpenPositionResponse> {
+  /**
+   * @generated from field: uint64 position_id = 1;
+   */
+  positionId = protoInt64.zero;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin held = 2;
+   */
+  held?: Coin;
+
+  constructor(data?: PartialMessage<MsgOpenPositionResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgOpenPositionResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 2, name: "held", kind: "message", T: Coin },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgOpenPositionResponse {
+    return new MsgOpenPositionResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgOpenPositionResponse {
+    return new MsgOpenPositionResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgOpenPositionResponse {
+    return new MsgOpenPositionResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgOpenPositionResponse | PlainMessage<MsgOpenPositionResponse> | undefined, b: MsgOpenPositionResponse | PlainMessage<MsgOpenPositionResponse> | undefined): boolean {
+    return proto3.util.equals(MsgOpenPositionResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.MsgClosePosition
+ */
+export class MsgClosePosition extends Message<MsgClosePosition> {
+  /**
+   * @generated from field: string user = 1;
+   */
+  user = "";
+
+  /**
+   * @generated from field: uint64 pool_id = 2;
+   */
+  poolId = protoInt64.zero;
+
+  /**
+   * @generated from field: uint64 position_id = 3;
+   */
+  positionId = protoInt64.zero;
+
+  constructor(data?: PartialMessage<MsgClosePosition>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgClosePosition";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 3, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgClosePosition {
+    return new MsgClosePosition().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgClosePosition {
+    return new MsgClosePosition().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgClosePosition {
+    return new MsgClosePosition().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgClosePosition | PlainMessage<MsgClosePosition> | undefined, b: MsgClosePosition | PlainMessage<MsgClosePosition> | undefined): boolean {
+    return proto3.util.equals(MsgClosePosition, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.MsgClosePositionResponse
+ */
+export class MsgClosePositionResponse extends Message<MsgClosePositionResponse> {
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin profit = 1;
+   */
+  profit?: Coin;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin accrued_interest = 2;
+   */
+  accruedInterest?: Coin;
+
+  constructor(data?: PartialMessage<MsgClosePositionResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgClosePositionResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "profit", kind: "message", T: Coin },
+    { no: 2, name: "accrued_interest", kind: "message", T: Coin },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgClosePositionResponse {
+    return new MsgClosePositionResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgClosePositionResponse {
+    return new MsgClosePositionResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgClosePositionResponse {
+    return new MsgClosePositionResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgClosePositionResponse | PlainMessage<MsgClosePositionResponse> | undefined, b: MsgClosePositionResponse | PlainMessage<MsgClosePositionResponse> | undefined): boolean {
+    return proto3.util.equals(MsgClosePositionResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.MsgAddCollateral
+ */
+export class MsgAddCollateral extends Message<MsgAddCollateral> {
+  /**
+   * @generated from field: string user = 1;
+   */
+  user = "";
+
+  /**
+   * @generated from field: uint64 pool_id = 2;
+   */
+  poolId = protoInt64.zero;
+
+  /**
+   * @generated from field: uint64 position_id = 3;
+   */
+  positionId = protoInt64.zero;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin collateral = 4;
+   */
+  collateral?: Coin;
+
+  constructor(data?: PartialMessage<MsgAddCollateral>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgAddCollateral";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 3, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 4, name: "collateral", kind: "message", T: Coin },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgAddCollateral {
+    return new MsgAddCollateral().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgAddCollateral {
+    return new MsgAddCollateral().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgAddCollateral {
+    return new MsgAddCollateral().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgAddCollateral | PlainMessage<MsgAddCollateral> | undefined, b: MsgAddCollateral | PlainMessage<MsgAddCollateral> | undefined): boolean {
+    return proto3.util.equals(MsgAddCollateral, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.MsgAddCollateralResponse
+ */
+export class MsgAddCollateralResponse extends Message<MsgAddCollateralResponse> {
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin new_collateral = 1;
+   */
+  newCollateral?: Coin;
+
+  /**
+   * @generated from field: string new_collateral_ratio = 2;
+   */
+  newCollateralRatio = "";
+
+  constructor(data?: PartialMessage<MsgAddCollateralResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgAddCollateralResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "new_collateral", kind: "message", T: Coin },
+    { no: 2, name: "new_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgAddCollateralResponse {
+    return new MsgAddCollateralResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgAddCollateralResponse {
+    return new MsgAddCollateralResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgAddCollateralResponse {
+    return new MsgAddCollateralResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgAddCollateralResponse | PlainMessage<MsgAddCollateralResponse> | undefined, b: MsgAddCollateralResponse | PlainMessage<MsgAddCollateralResponse> | undefined): boolean {
+    return proto3.util.equals(MsgAddCollateralResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.MsgInitializeLiquidation
+ */
+export class MsgInitializeLiquidation extends Message<MsgInitializeLiquidation> {
+  /**
+   * @generated from field: string initializer = 1;
+   */
+  initializer = "";
+
+  /**
+   * @generated from field: string user = 2;
+   */
+  user = "";
+
+  /**
+   * @generated from field: uint64 pool_id = 3;
+   */
+  poolId = protoInt64.zero;
+
+  /**
+   * @generated from field: uint64 position_id = 4;
+   */
+  positionId = protoInt64.zero;
+
+  constructor(data?: PartialMessage<MsgInitializeLiquidation>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgInitializeLiquidation";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "initializer", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 4, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgInitializeLiquidation {
+    return new MsgInitializeLiquidation().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgInitializeLiquidation {
+    return new MsgInitializeLiquidation().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgInitializeLiquidation {
+    return new MsgInitializeLiquidation().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgInitializeLiquidation | PlainMessage<MsgInitializeLiquidation> | undefined, b: MsgInitializeLiquidation | PlainMessage<MsgInitializeLiquidation> | undefined): boolean {
+    return proto3.util.equals(MsgInitializeLiquidation, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.MsgInitializeLiquidationResponse
+ */
+export class MsgInitializeLiquidationResponse extends Message<MsgInitializeLiquidationResponse> {
+  /**
+   * @generated from field: string collateral_ratio = 1;
+   */
+  collateralRatio = "";
+
+  /**
+   * @generated from field: string liquidation_threshold = 2;
+   */
+  liquidationThreshold = "";
+
+  constructor(data?: PartialMessage<MsgInitializeLiquidationResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgInitializeLiquidationResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "liquidation_threshold", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgInitializeLiquidationResponse {
+    return new MsgInitializeLiquidationResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgInitializeLiquidationResponse {
+    return new MsgInitializeLiquidationResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgInitializeLiquidationResponse {
+    return new MsgInitializeLiquidationResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgInitializeLiquidationResponse | PlainMessage<MsgInitializeLiquidationResponse> | undefined, b: MsgInitializeLiquidationResponse | PlainMessage<MsgInitializeLiquidationResponse> | undefined): boolean {
+    return proto3.util.equals(MsgInitializeLiquidationResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation
+ */
+export class MsgFinalizeLiquidation extends Message<MsgFinalizeLiquidation> {
+  /**
+   * @generated from field: string liquidator = 1;
+   */
+  liquidator = "";
+
+  /**
+   * @generated from field: string user = 2;
+   */
+  user = "";
+
+  /**
+   * @generated from field: uint64 pool_id = 3;
+   */
+  poolId = protoInt64.zero;
+
+  /**
+   * @generated from field: uint64 position_id = 4;
+   */
+  positionId = protoInt64.zero;
+
+  constructor(data?: PartialMessage<MsgFinalizeLiquidation>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "liquidator", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 4, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgFinalizeLiquidation {
+    return new MsgFinalizeLiquidation().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgFinalizeLiquidation {
+    return new MsgFinalizeLiquidation().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgFinalizeLiquidation {
+    return new MsgFinalizeLiquidation().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgFinalizeLiquidation | PlainMessage<MsgFinalizeLiquidation> | undefined, b: MsgFinalizeLiquidation | PlainMessage<MsgFinalizeLiquidation> | undefined): boolean {
+    return proto3.util.equals(MsgFinalizeLiquidation, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.MsgFinalizeLiquidationResponse
+ */
+export class MsgFinalizeLiquidationResponse extends Message<MsgFinalizeLiquidationResponse> {
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin collateral_received = 1;
+   */
+  collateralReceived?: Coin;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin repayment_amount = 2;
+   */
+  repaymentAmount?: Coin;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin accrued_interest = 3;
+   */
+  accruedInterest?: Coin;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin pool_loss = 4;
+   */
+  poolLoss?: Coin;
+
+  constructor(data?: PartialMessage<MsgFinalizeLiquidationResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgFinalizeLiquidationResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "collateral_received", kind: "message", T: Coin },
+    { no: 2, name: "repayment_amount", kind: "message", T: Coin },
+    { no: 3, name: "accrued_interest", kind: "message", T: Coin },
+    { no: 4, name: "pool_loss", kind: "message", T: Coin },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgFinalizeLiquidationResponse {
+    return new MsgFinalizeLiquidationResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgFinalizeLiquidationResponse {
+    return new MsgFinalizeLiquidationResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgFinalizeLiquidationResponse {
+    return new MsgFinalizeLiquidationResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgFinalizeLiquidationResponse | PlainMessage<MsgFinalizeLiquidationResponse> | undefined, b: MsgFinalizeLiquidationResponse | PlainMessage<MsgFinalizeLiquidationResponse> | undefined): boolean {
+    return proto3.util.equals(MsgFinalizeLiquidationResponse, a, b);
   }
 }
 

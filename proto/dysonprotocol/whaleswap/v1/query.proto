@@ -7,6 +7,7 @@ import "cosmos/base/query/v1beta1/pagination.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos_proto/cosmos.proto";
 import "dysonprotocol/whaleswap/v1/whaleswap.proto";
+import "dysonprotocol/whaleswap/v1/leverage.proto";
 import "dysonprotocol/whaleswap/v1/params.proto";
 
 option go_package = "dysonprotocol.com/x/whaleswap/types";
@@ -32,7 +33,7 @@ service Query {
     option (google.api.http).get = "/dysonprotocol/whaleswap/v1/pools/by_pair";
   }
   // PoolsByDenom returns all pools that include the provided denom on either
-  // side of the pair. This leverages a reverse index keyed by denom.
+  // side of the pair.
   rpc PoolsByDenom(QueryPoolsByDenomRequest)
       returns (QueryPoolsByDenomResponse) {
     option (google.api.http).get = "/dysonprotocol/whaleswap/v1/pools/by_denom";
@@ -165,6 +166,24 @@ service Query {
       returns (QueryAuctionsByPairPriceRangeResponse) {
     option (google.api.http).get =
         "/dysonprotocol/whaleswap/v1/auctions/by_pair_price";
+  }
+
+  // Leverage
+  rpc Position(QueryPositionRequest) returns (QueryPositionResponse) {
+    option (google.api.http).get =
+        "/dysonprotocol/whaleswap/v1/positions/{position_id}";
+  }
+  // QueryPositionsByUser lists all positions for a user with optional filters
+  rpc PositionsByUser(QueryPositionsByUserRequest)
+      returns (QueryPositionsByUserResponse) {
+    option (google.api.http).get =
+        "/dysonprotocol/whaleswap/v1/positions/user/{user}";
+  }
+  // QueryPositionsByPool lists all positions in a pool
+  rpc PositionsByPool(QueryPositionsByPoolRequest)
+      returns (QueryPositionsByPoolResponse) {
+    option (google.api.http).get =
+        "/dysonprotocol/whaleswap/v1/positions/pool/{pool_id}";
   }
 
   // Metrics returns a breakdown of module-expected balances by subsystem
@@ -421,3 +440,94 @@ message QueryAuctionsByPairPriceRangeResponse {
 
 message QueryMetricsRequest {}
 message QueryMetricsResponse { TradeMetrics metrics = 1; }
+// ═════════════════════════════════
+// Leverage Queries
+// ═════════════════════════════════
+
+// QueryPositionRequest queries a single position by ID
+message QueryPositionRequest { uint64 position_id = 1; }
+
+// HealthStatus enum for position health
+enum PositionHealthStatus {
+  POSITION_HEALTH_STATUS_UNSPECIFIED = 0;
+  POSITION_HEALTH_STATUS_HEALTHY = 1;
+  POSITION_HEALTH_STATUS_AT_RISK = 2;
+  POSITION_HEALTH_STATUS_LIQUIDATABLE = 3;
+}
+
+message QueryPositionResponse {
+  LeveragePosition position = 1 [ (gogoproto.nullable) = false ];
+
+  // Health Information
+  PositionHealthStatus health_status = 2;
+  string current_collateral_ratio = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string liquidation_threshold = 4 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string collateral_value = 5 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string debt_with_interest = 6 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  bool can_close_by_owner = 7;
+  uint64 blocks_until_closeable = 8;
+  bool can_initialize_liquidation = 9;
+  bool can_finalize_liquidation = 10;
+
+  // Interest Information
+  cosmos.base.v1beta1.Coin borrowed = 11 [ (gogoproto.nullable) = false ];
+  string accrued_interest = 12 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  cosmos.base.v1beta1.Coin total_repayment = 13
+      [ (gogoproto.nullable) = false ];
+  uint64 time_elapsed = 14;
+  string annual_rate = 15 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// QueryPositionsByUserRequest lists all positions for a user with optional
+// filters
+message QueryPositionsByUserRequest {
+  string user = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Optional: filter by borrowed denom
+  string borrowed_denom = 2;
+  // Optional: filter by collateral denom
+  string collateral_denom = 3;
+  // Optional: filter by pool_id (cannot combine with borrowed/collateral
+  // denoms)
+  uint64 pool_id = 4;
+  cosmos.base.query.v1beta1.PageRequest pagination = 5;
+}
+
+message QueryPositionsByUserResponse {
+  repeated LeveragePosition positions = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryPositionsByPoolRequest lists all positions in a pool
+message QueryPositionsByPoolRequest {
+  uint64 pool_id = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+message QueryPositionsByPoolResponse {
+  repeated LeveragePosition positions = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}

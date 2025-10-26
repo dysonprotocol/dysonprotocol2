@@ -176,7 +176,7 @@ watch:
 
 init-localnet: 
 	@echo "--> Initializing dyson local chain"
-	./scripts/chainnet.py generate --chains 1 --nodes 2 --hermes-config --base-dir $${DYSON_BASE_DIR:-$$HOME/.dysonchains}
+	./scripts/chainnet.py generate --chains 1 --nodes 1 --hermes-config --base-dir $${DYSON_BASE_DIR:-$$HOME/.dysonchains}
 	./scripts/chainnet.py setup --force --config-file $${DYSON_BASE_DIR:-$$HOME/.dysonchains}/chains.json
 
 

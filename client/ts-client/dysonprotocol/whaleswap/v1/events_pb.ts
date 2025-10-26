@@ -573,3 +573,374 @@ export class EventTradeRecorded extends Message<EventTradeRecorded> {
   }
 }
 
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened
+ */
+export class EventLeveragePositionOpened extends Message<EventLeveragePositionOpened> {
+  /**
+   * @generated from field: uint64 position_id = 1;
+   */
+  positionId = protoInt64.zero;
+
+  /**
+   * @generated from field: string user = 2;
+   */
+  user = "";
+
+  /**
+   * @generated from field: uint64 pool_id = 3;
+   */
+  poolId = protoInt64.zero;
+
+  /**
+   * @generated from field: string position_type = 4;
+   */
+  positionType = "";
+
+  /**
+   * @generated from field: string collateral_denom = 5;
+   */
+  collateralDenom = "";
+
+  /**
+   * @generated from field: string collateral_amount = 6;
+   */
+  collateralAmount = "";
+
+  /**
+   * @generated from field: string borrowed_denom = 7;
+   */
+  borrowedDenom = "";
+
+  /**
+   * @generated from field: string borrowed_amount = 8;
+   */
+  borrowedAmount = "";
+
+  /**
+   * @generated from field: string held_denom = 9;
+   */
+  heldDenom = "";
+
+  /**
+   * @generated from field: string held_amount = 10;
+   */
+  heldAmount = "";
+
+  constructor(data?: PartialMessage<EventLeveragePositionOpened>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 2, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 4, name: "position_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "collateral_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "collateral_amount", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "borrowed_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 8, name: "borrowed_amount", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 9, name: "held_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 10, name: "held_amount", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): EventLeveragePositionOpened {
+    return new EventLeveragePositionOpened().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): EventLeveragePositionOpened {
+    return new EventLeveragePositionOpened().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): EventLeveragePositionOpened {
+    return new EventLeveragePositionOpened().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: EventLeveragePositionOpened | PlainMessage<EventLeveragePositionOpened> | undefined, b: EventLeveragePositionOpened | PlainMessage<EventLeveragePositionOpened> | undefined): boolean {
+    return proto3.util.equals(EventLeveragePositionOpened, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.EventLeveragePositionClosed
+ */
+export class EventLeveragePositionClosed extends Message<EventLeveragePositionClosed> {
+  /**
+   * @generated from field: uint64 position_id = 1;
+   */
+  positionId = protoInt64.zero;
+
+  /**
+   * @generated from field: string user = 2;
+   */
+  user = "";
+
+  /**
+   * @generated from field: uint64 pool_id = 3;
+   */
+  poolId = protoInt64.zero;
+
+  /**
+   * @generated from field: string position_type = 4;
+   */
+  positionType = "";
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin profit = 5;
+   */
+  profit?: Coin;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin accrued_interest = 6;
+   */
+  accruedInterest?: Coin;
+
+  constructor(data?: PartialMessage<EventLeveragePositionClosed>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 2, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 4, name: "position_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "profit", kind: "message", T: Coin },
+    { no: 6, name: "accrued_interest", kind: "message", T: Coin },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): EventLeveragePositionClosed {
+    return new EventLeveragePositionClosed().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): EventLeveragePositionClosed {
+    return new EventLeveragePositionClosed().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): EventLeveragePositionClosed {
+    return new EventLeveragePositionClosed().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: EventLeveragePositionClosed | PlainMessage<EventLeveragePositionClosed> | undefined, b: EventLeveragePositionClosed | PlainMessage<EventLeveragePositionClosed> | undefined): boolean {
+    return proto3.util.equals(EventLeveragePositionClosed, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded
+ */
+export class EventLeverageCollateralAdded extends Message<EventLeverageCollateralAdded> {
+  /**
+   * @generated from field: uint64 position_id = 1;
+   */
+  positionId = protoInt64.zero;
+
+  /**
+   * @generated from field: string user = 2;
+   */
+  user = "";
+
+  /**
+   * @generated from field: uint64 pool_id = 3;
+   */
+  poolId = protoInt64.zero;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin collateral_added = 4;
+   */
+  collateralAdded?: Coin;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin new_collateral = 5;
+   */
+  newCollateral?: Coin;
+
+  /**
+   * @generated from field: string new_collateral_ratio = 6;
+   */
+  newCollateralRatio = "";
+
+  constructor(data?: PartialMessage<EventLeverageCollateralAdded>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 2, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 4, name: "collateral_added", kind: "message", T: Coin },
+    { no: 5, name: "new_collateral", kind: "message", T: Coin },
+    { no: 6, name: "new_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): EventLeverageCollateralAdded {
+    return new EventLeverageCollateralAdded().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): EventLeverageCollateralAdded {
+    return new EventLeverageCollateralAdded().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): EventLeverageCollateralAdded {
+    return new EventLeverageCollateralAdded().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: EventLeverageCollateralAdded | PlainMessage<EventLeverageCollateralAdded> | undefined, b: EventLeverageCollateralAdded | PlainMessage<EventLeverageCollateralAdded> | undefined): boolean {
+    return proto3.util.equals(EventLeverageCollateralAdded, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized
+ */
+export class EventLeverageLiquidationInitialized extends Message<EventLeverageLiquidationInitialized> {
+  /**
+   * @generated from field: uint64 position_id = 1;
+   */
+  positionId = protoInt64.zero;
+
+  /**
+   * @generated from field: string user = 2;
+   */
+  user = "";
+
+  /**
+   * @generated from field: uint64 pool_id = 3;
+   */
+  poolId = protoInt64.zero;
+
+  /**
+   * @generated from field: string collateral_ratio = 4;
+   */
+  collateralRatio = "";
+
+  /**
+   * @generated from field: string liquidation_threshold = 5;
+   */
+  liquidationThreshold = "";
+
+  /**
+   * @generated from field: uint64 block_height = 6;
+   */
+  blockHeight = protoInt64.zero;
+
+  constructor(data?: PartialMessage<EventLeverageLiquidationInitialized>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 2, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 4, name: "collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "liquidation_threshold", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "block_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): EventLeverageLiquidationInitialized {
+    return new EventLeverageLiquidationInitialized().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): EventLeverageLiquidationInitialized {
+    return new EventLeverageLiquidationInitialized().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): EventLeverageLiquidationInitialized {
+    return new EventLeverageLiquidationInitialized().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: EventLeverageLiquidationInitialized | PlainMessage<EventLeverageLiquidationInitialized> | undefined, b: EventLeverageLiquidationInitialized | PlainMessage<EventLeverageLiquidationInitialized> | undefined): boolean {
+    return proto3.util.equals(EventLeverageLiquidationInitialized, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized
+ */
+export class EventLeverageLiquidationFinalized extends Message<EventLeverageLiquidationFinalized> {
+  /**
+   * @generated from field: uint64 position_id = 1;
+   */
+  positionId = protoInt64.zero;
+
+  /**
+   * @generated from field: string user = 2;
+   */
+  user = "";
+
+  /**
+   * @generated from field: string liquidator = 3;
+   */
+  liquidator = "";
+
+  /**
+   * @generated from field: uint64 pool_id = 4;
+   */
+  poolId = protoInt64.zero;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin collateral_received = 5;
+   */
+  collateralReceived?: Coin;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin repayment_amount = 6;
+   */
+  repaymentAmount?: Coin;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin accrued_interest = 7;
+   */
+  accruedInterest?: Coin;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin pool_loss = 8;
+   */
+  poolLoss?: Coin;
+
+  constructor(data?: PartialMessage<EventLeverageLiquidationFinalized>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 2, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "liquidator", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 5, name: "collateral_received", kind: "message", T: Coin },
+    { no: 6, name: "repayment_amount", kind: "message", T: Coin },
+    { no: 7, name: "accrued_interest", kind: "message", T: Coin },
+    { no: 8, name: "pool_loss", kind: "message", T: Coin },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): EventLeverageLiquidationFinalized {
+    return new EventLeverageLiquidationFinalized().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): EventLeverageLiquidationFinalized {
+    return new EventLeverageLiquidationFinalized().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): EventLeverageLiquidationFinalized {
+    return new EventLeverageLiquidationFinalized().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: EventLeverageLiquidationFinalized | PlainMessage<EventLeverageLiquidationFinalized> | undefined, b: EventLeverageLiquidationFinalized | PlainMessage<EventLeverageLiquidationFinalized> | undefined): boolean {
+    return proto3.util.equals(EventLeverageLiquidationFinalized, a, b);
+  }
+}
+

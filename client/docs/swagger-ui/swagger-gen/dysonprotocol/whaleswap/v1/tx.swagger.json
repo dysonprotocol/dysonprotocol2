@@ -11,6 +11,38 @@
     "application/json"
   ],
   "paths": {
+    "dysonprotocol.whaleswap.v1.MsgAddCollateral": {
+      "post": {
+        "operationId": "dysonprotocol.whaleswap.v1.MsgAddCollateral",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgAddCollateralResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgAddCollateral"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
     "dysonprotocol.whaleswap.v1.MsgAddLiquidity": {
       "post": {
         "operationId": "dysonprotocol.whaleswap.v1.MsgAddLiquidity",
@@ -75,6 +107,38 @@
         ]
       }
     },
+    "dysonprotocol.whaleswap.v1.MsgClosePosition": {
+      "post": {
+        "operationId": "dysonprotocol.whaleswap.v1.MsgClosePosition",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgClosePositionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgClosePosition"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
     "dysonprotocol.whaleswap.v1.MsgCreatePool": {
       "post": {
         "summary": "AMM",
@@ -100,6 +164,70 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgCreatePool"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation": {
+      "post": {
+        "operationId": "dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgFinalizeLiquidationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "dysonprotocol.whaleswap.v1.MsgInitializeLiquidation": {
+      "post": {
+        "operationId": "dysonprotocol.whaleswap.v1.MsgInitializeLiquidation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgInitializeLiquidationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgInitializeLiquidation"
             }
           }
         ],
@@ -199,6 +327,39 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgOpenAuction"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "dysonprotocol.whaleswap.v1.MsgOpenPosition": {
+      "post": {
+        "summary": "Leverage",
+        "operationId": "dysonprotocol.whaleswap.v1.MsgOpenPosition",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgOpenPositionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgOpenPosition"
             }
           }
         ],
@@ -424,6 +585,36 @@
       },
       "title": "AuctionRedeem operation for recording auction redemption in Trade history"
     },
+    "dysonprotocol.whaleswap.v1.MsgAddCollateral": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "string"
+        },
+        "pool_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "position_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "collateral": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.MsgAddCollateralResponse": {
+      "type": "object",
+      "properties": {
+        "new_collateral": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "new_collateral_ratio": {
+          "type": "string"
+        }
+      }
+    },
     "dysonprotocol.whaleswap.v1.MsgAddLiquidity": {
       "type": "object",
       "properties": {
@@ -468,6 +659,33 @@
     "dysonprotocol.whaleswap.v1.MsgCancelOfferResponse": {
       "type": "object"
     },
+    "dysonprotocol.whaleswap.v1.MsgClosePosition": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "string"
+        },
+        "pool_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "position_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.MsgClosePositionResponse": {
+      "type": "object",
+      "properties": {
+        "profit": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "accrued_interest": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        }
+      }
+    },
     "dysonprotocol.whaleswap.v1.MsgCreatePool": {
       "type": "object",
       "properties": {
@@ -496,6 +714,15 @@
         },
         "fee_pct": {
           "type": "string"
+        },
+        "min_collateral_ratio": {
+          "type": "string"
+        },
+        "max_leverage_ratio": {
+          "type": "string"
+        },
+        "max_borrow_percent": {
+          "type": "string"
         }
       },
       "description": "Create a pool.\n\nBehavior:\n- If min_price/max_price are both unset (or effectively encode [0, +\u221e)), the\n  pool behaves as constant product (v2).\n- If a finite band is provided, concentrated-liquidity math applies within\n  [min_price, max_price] where price is coin_b / coin_a (see conventions)."
@@ -506,6 +733,72 @@
         "pool_id": {
           "type": "string",
           "format": "uint64"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation": {
+      "type": "object",
+      "properties": {
+        "liquidator": {
+          "type": "string"
+        },
+        "user": {
+          "type": "string"
+        },
+        "pool_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "position_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.MsgFinalizeLiquidationResponse": {
+      "type": "object",
+      "properties": {
+        "collateral_received": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "repayment_amount": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "accrued_interest": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "pool_loss": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.MsgInitializeLiquidation": {
+      "type": "object",
+      "properties": {
+        "initializer": {
+          "type": "string"
+        },
+        "user": {
+          "type": "string"
+        },
+        "pool_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "position_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.MsgInitializeLiquidationResponse": {
+      "type": "object",
+      "properties": {
+        "collateral_ratio": {
+          "type": "string"
+        },
+        "liquidation_threshold": {
+          "type": "string"
         }
       }
     },
@@ -602,6 +895,39 @@
         "auction_id": {
           "type": "string",
           "format": "uint64"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.MsgOpenPosition": {
+      "type": "object",
+      "properties": {
+        "trader": {
+          "type": "string"
+        },
+        "pool_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "collateral": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "borrow_amount": {
+          "type": "string"
+        },
+        "position_type": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.PositionType"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.MsgOpenPositionResponse": {
+      "type": "object",
+      "properties": {
+        "position_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "held": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
         }
       }
     },
@@ -763,6 +1089,16 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           }
+        },
+        "min_collateral_ratio": {
+          "type": "string",
+          "title": "Leverage configuration (optional; empty means no change)"
+        },
+        "max_leverage_ratio": {
+          "type": "string"
+        },
+        "max_borrow_percent": {
+          "type": "string"
         }
       },
       "description": "Update pool config (owner-only: majority of shares > 50%).\n\nNotes:\n- Empty string/empty arrays indicate no change for that field.\n- Price bands follow the same two-coin ratio rules as in MsgCreatePool."
@@ -796,8 +1132,27 @@
         "max_note_length": {
           "type": "integer",
           "format": "int64"
+        },
+        "block_delay_before_close": {
+          "type": "string",
+          "format": "uint64",
+          "title": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE PARAMETERS \u2550\u2550\u2550\u2550\u2550\nBlock delay before position owner can close position"
+        },
+        "block_delay_before_liquidation": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Block delay before liquidation can be finalized after initialization"
         }
       }
+    },
+    "dysonprotocol.whaleswap.v1.PositionType": {
+      "type": "string",
+      "enum": [
+        "POSITION_TYPE_UNSPECIFIED",
+        "POSITION_TYPE_LONG",
+        "POSITION_TYPE_SHORT"
+      ],
+      "default": "POSITION_TYPE_UNSPECIFIED"
     },
     "dysonprotocol.whaleswap.v1.SettlementMode": {
       "type": "string",

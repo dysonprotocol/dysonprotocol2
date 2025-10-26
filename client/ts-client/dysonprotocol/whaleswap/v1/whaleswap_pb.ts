@@ -92,6 +92,65 @@ export class Pool extends Message<Pool> {
    */
   feesEarned: Coin[] = [];
 
+  /**
+   * ═════ LEVERAGE FIELDS ═════
+   * Annual interest rate for borrows in coin1 denom
+   *
+   * @generated from field: string interest_rate_coin1 = 15;
+   */
+  interestRateCoin1 = "";
+
+  /**
+   * Annual interest rate for borrows in coin2 denom
+   *
+   * @generated from field: string interest_rate_coin2 = 16;
+   */
+  interestRateCoin2 = "";
+
+  /**
+   * Total accrued interest (yield for LPs)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin interest_earned = 19;
+   */
+  interestEarned: Coin[] = [];
+
+  /**
+   * Total borrowed (aggregate for cap enforcement)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin total_borrowed = 20;
+   */
+  totalBorrowed: Coin[] = [];
+
+  /**
+   * ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+   * Minimum collateral ratio required at position open
+   *
+   * @generated from field: string min_collateral_ratio = 21;
+   */
+  minCollateralRatio = "";
+
+  /**
+   * Maximum leverage ratio allowed (collateral + borrowed) / collateral
+   *
+   * @generated from field: string max_leverage_ratio = 22;
+   */
+  maxLeverageRatio = "";
+
+  /**
+   * Collateral ratio threshold below which position is liquidatable
+   *
+   * @generated from field: string liquidation_threshold = 23;
+   */
+  liquidationThreshold = "";
+
+  /**
+   * Maximum borrow capacity as percentage of reserve (applies symmetrically to
+   * both coins)
+   *
+   * @generated from field: string max_borrow_percent = 24;
+   */
+  maxBorrowPercent = "";
+
   constructor(data?: PartialMessage<Pool>) {
     super();
     proto3.util.initPartial(data, this);
@@ -111,6 +170,14 @@ export class Pool extends Message<Pool> {
     { no: 12, name: "updated", kind: "message", T: Timestamp },
     { no: 13, name: "num_trades", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 14, name: "fees_earned", kind: "message", T: Coin, repeated: true },
+    { no: 15, name: "interest_rate_coin1", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 16, name: "interest_rate_coin2", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 19, name: "interest_earned", kind: "message", T: Coin, repeated: true },
+    { no: 20, name: "total_borrowed", kind: "message", T: Coin, repeated: true },
+    { no: 21, name: "min_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 22, name: "max_leverage_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 23, name: "liquidation_threshold", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 24, name: "max_borrow_percent", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Pool {

@@ -48,4 +48,13 @@ message Params {
   ];
   uint32 max_note_length = 6
       [ (gogoproto.moretags) = "yaml:\"max_note_length\"" ];
+
+  // ═════ LEVERAGE PARAMETERS ═════
+  // Block delay before position owner can close position
+  uint64 block_delay_before_close = 7
+      [ (gogoproto.moretags) = "yaml:\"block_delay_before_close\"" ];
+
+  // Block delay before liquidation can be finalized after initialization
+  uint64 block_delay_before_liquidation = 8
+      [ (gogoproto.moretags) = "yaml:\"block_delay_before_liquidation\"" ];
 }

@@ -34,6 +34,18 @@
                     "fee_pct": {
                         "type": "string",
                         "description": "cosmos.Dec string in [0,1)"
+                    },
+                    "min_collateral_ratio": {
+                        "type": "string",
+                        "description": "cosmos.Dec string (e.g., \"1.5\")"
+                    },
+                    "max_leverage_ratio": {
+                        "type": "string",
+                        "description": "cosmos.Dec string (e.g., \"20.0\")"
+                    },
+                    "max_borrow_percent": {
+                        "type": "string",
+                        "description": "cosmos.Dec string in [0,1], applies to both coins"
                     }
                 },
                 "additionalProperties": false,

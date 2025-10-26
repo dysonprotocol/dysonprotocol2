@@ -1,0 +1,46 @@
+syntax = "proto3";
+package dysonprotocol.whaleswap.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos_proto/cosmos.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "dysonprotocol.com/x/whaleswap/types";
+
+// ═════════════════════════════════
+// Leverage State Types
+// ═════════════════════════════════
+
+enum PositionType {
+  POSITION_TYPE_UNSPECIFIED = 0;
+  POSITION_TYPE_LONG = 1;
+  POSITION_TYPE_SHORT = 2;
+}
+
+enum LiquidationStatus {
+  LIQUIDATION_STATUS_UNSPECIFIED = 0;
+  LIQUIDATION_STATUS_NONE = 1;
+  LIQUIDATION_STATUS_INITIALIZED = 2;
+}
+
+// LeveragePosition represents an active leverage position for a trader.
+message LeveragePosition {
+  uint64 position_id = 1;
+  uint64 pool_id = 2;
+  string user = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  PositionType position_type = 4;
+
+  cosmos.base.v1beta1.Coin borrowed = 5 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin held = 6 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin collateral = 7 [ (gogoproto.nullable) = false ];
+
+  google.protobuf.Timestamp borrow_time = 8 [ (gogoproto.stdtime) = true ];
+
+  uint64 created_block_height = 9;
+  uint64 liquidation_initialized_block_height = 10;
+  LiquidationStatus liquidation_status = 11;
+
+  cosmos.base.v1beta1.Coin accrued_interest = 12
+      [ (gogoproto.nullable) = false ];
+}

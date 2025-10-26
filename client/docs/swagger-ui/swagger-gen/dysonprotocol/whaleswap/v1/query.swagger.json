@@ -770,7 +770,7 @@
     },
     "/dysonprotocol/whaleswap/v1/pools/by_denom": {
       "get": {
-        "summary": "PoolsByDenom returns all pools that include the provided denom on either\nside of the pair. This leverages a reverse index keyed by denom.",
+        "summary": "PoolsByDenom returns all pools that include the provided denom on either\nside of the pair.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolsByDenomRequest",
         "responses": {
           "200": {
@@ -1101,6 +1101,189 @@
         "parameters": [
           {
             "name": "pool_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/dysonprotocol/whaleswap/v1/positions/pool/{pool_id}": {
+      "get": {
+        "summary": "QueryPositionsByPool lists all positions in a pool",
+        "operationId": "dysonprotocol.whaleswap.v1.QueryPositionsByPoolRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPositionsByPoolResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pool_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.key",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/dysonprotocol/whaleswap/v1/positions/user/{user}": {
+      "get": {
+        "summary": "QueryPositionsByUser lists all positions for a user with optional filters",
+        "operationId": "dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPositionsByUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "borrowed_denom",
+            "description": "Optional: filter by borrowed denom.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "collateral_denom",
+            "description": "Optional: filter by collateral denom.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pool_id",
+            "description": "Optional: filter by pool_id (cannot combine with borrowed/collateral\ndenoms).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.key",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/dysonprotocol/whaleswap/v1/positions/{position_id}": {
+      "get": {
+        "summary": "Leverage",
+        "operationId": "dysonprotocol.whaleswap.v1.QueryPositionRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPositionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "position_id",
             "in": "path",
             "required": true,
             "type": "string",
@@ -1567,6 +1750,62 @@
       },
       "title": "AuctionRedeem operation for recording auction redemption in Trade history"
     },
+    "dysonprotocol.whaleswap.v1.LeveragePosition": {
+      "type": "object",
+      "properties": {
+        "position_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "pool_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "user": {
+          "type": "string"
+        },
+        "position_type": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.PositionType"
+        },
+        "borrowed": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "held": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "collateral": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "borrow_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_block_height": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "liquidation_initialized_block_height": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "liquidation_status": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.LiquidationStatus"
+        },
+        "accrued_interest": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        }
+      },
+      "description": "LeveragePosition represents an active leverage position for a trader."
+    },
+    "dysonprotocol.whaleswap.v1.LiquidationStatus": {
+      "type": "string",
+      "enum": [
+        "LIQUIDATION_STATUS_UNSPECIFIED",
+        "LIQUIDATION_STATUS_NONE",
+        "LIQUIDATION_STATUS_INITIALIZED"
+      ],
+      "default": "LIQUIDATION_STATUS_UNSPECIFIED"
+    },
     "dysonprotocol.whaleswap.v1.OfferData": {
       "type": "object",
       "properties": {
@@ -1646,6 +1885,16 @@
         "max_note_length": {
           "type": "integer",
           "format": "int64"
+        },
+        "block_delay_before_close": {
+          "type": "string",
+          "format": "uint64",
+          "title": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE PARAMETERS \u2550\u2550\u2550\u2550\u2550\nBlock delay before position owner can close position"
+        },
+        "block_delay_before_liquidation": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Block delay before liquidation can be finalized after initialization"
         }
       }
     },
@@ -1705,9 +1954,67 @@
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
           "title": "cumulative swap fees retained by the pool (accrue to LPs)"
+        },
+        "interest_rate_coin1": {
+          "type": "string",
+          "title": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE FIELDS \u2550\u2550\u2550\u2550\u2550\nAnnual interest rate for borrows in coin1 denom"
+        },
+        "interest_rate_coin2": {
+          "type": "string",
+          "title": "Annual interest rate for borrows in coin2 denom"
+        },
+        "interest_earned": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Total accrued interest (yield for LPs)"
+        },
+        "total_borrowed": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Total borrowed (aggregate for cap enforcement)"
+        },
+        "min_collateral_ratio": {
+          "type": "string",
+          "title": "\u2550\u2550\u2550\u2550\u2550 PER-POOL LEVERAGE RISK PARAMETERS \u2550\u2550\u2550\u2550\u2550\nMinimum collateral ratio required at position open"
+        },
+        "max_leverage_ratio": {
+          "type": "string",
+          "title": "Maximum leverage ratio allowed (collateral + borrowed) / collateral"
+        },
+        "liquidation_threshold": {
+          "type": "string",
+          "title": "Collateral ratio threshold below which position is liquidatable"
+        },
+        "max_borrow_percent": {
+          "type": "string",
+          "title": "Maximum borrow capacity as percentage of reserve (applies symmetrically to\nboth coins)"
         }
       },
       "description": "Pool describes AMM pool state.\n\nNotes:\n- coin_a.denom < coin_b.denom lexicographically (canonical order)\n- fee_pct is a decimal string in [0,1)\n- min_price/max_price are optional decimal strings defining a price band over\n  P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +\u221e)) the pool\n  behaves as constant-product (v2). If set, concentrated-liquidity math\n  applies.\n- coin_a.amount/coin_b.amount are sdk.Int strings.\n- The instantaneous price used by price-based queries is derived from\n  reserves as P = coin_b / coin_a, consistent with the notes above."
+    },
+    "dysonprotocol.whaleswap.v1.PositionHealthStatus": {
+      "type": "string",
+      "enum": [
+        "POSITION_HEALTH_STATUS_UNSPECIFIED",
+        "POSITION_HEALTH_STATUS_HEALTHY",
+        "POSITION_HEALTH_STATUS_AT_RISK",
+        "POSITION_HEALTH_STATUS_LIQUIDATABLE"
+      ],
+      "default": "POSITION_HEALTH_STATUS_UNSPECIFIED",
+      "title": "HealthStatus enum for position health"
+    },
+    "dysonprotocol.whaleswap.v1.PositionType": {
+      "type": "string",
+      "enum": [
+        "POSITION_TYPE_UNSPECIFIED",
+        "POSITION_TYPE_LONG",
+        "POSITION_TYPE_SHORT"
+      ],
+      "default": "POSITION_TYPE_UNSPECIFIED"
     },
     "dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse": {
       "type": "object",
@@ -1937,6 +2244,88 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.QueryPositionResponse": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.LeveragePosition"
+        },
+        "health_status": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.PositionHealthStatus",
+          "title": "Health Information"
+        },
+        "current_collateral_ratio": {
+          "type": "string"
+        },
+        "liquidation_threshold": {
+          "type": "string"
+        },
+        "collateral_value": {
+          "type": "string"
+        },
+        "debt_with_interest": {
+          "type": "string"
+        },
+        "can_close_by_owner": {
+          "type": "boolean"
+        },
+        "blocks_until_closeable": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "can_initialize_liquidation": {
+          "type": "boolean"
+        },
+        "can_finalize_liquidation": {
+          "type": "boolean"
+        },
+        "borrowed": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "title": "Interest Information"
+        },
+        "accrued_interest": {
+          "type": "string"
+        },
+        "total_repayment": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "time_elapsed": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "annual_rate": {
+          "type": "string"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.QueryPositionsByPoolResponse": {
+      "type": "object",
+      "properties": {
+        "positions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.LeveragePosition"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.QueryPositionsByUserResponse": {
+      "type": "object",
+      "properties": {
+        "positions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.LeveragePosition"
           }
         },
         "pagination": {

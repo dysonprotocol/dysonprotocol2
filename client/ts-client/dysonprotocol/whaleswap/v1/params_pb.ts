@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
-import { Duration, Message, proto3 } from "@bufbuild/protobuf";
+import { Duration, Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 import { Coin } from "../../../cosmos/base/v1beta1/coin_pb.js";
 
 /**
@@ -54,6 +54,21 @@ export class Params extends Message<Params> {
    */
   maxNoteLength = 0;
 
+  /**
+   * ═════ LEVERAGE PARAMETERS ═════
+   * Block delay before position owner can close position
+   *
+   * @generated from field: uint64 block_delay_before_close = 7;
+   */
+  blockDelayBeforeClose = protoInt64.zero;
+
+  /**
+   * Block delay before liquidation can be finalized after initialization
+   *
+   * @generated from field: uint64 block_delay_before_liquidation = 8;
+   */
+  blockDelayBeforeLiquidation = protoInt64.zero;
+
   constructor(data?: PartialMessage<Params>) {
     super();
     proto3.util.initPartial(data, this);
@@ -68,6 +83,8 @@ export class Params extends Message<Params> {
     { no: 4, name: "bid_timeout", kind: "message", T: Duration },
     { no: 5, name: "minimum_bid_percent_increase", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "max_note_length", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 7, name: "block_delay_before_close", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 8, name: "block_delay_before_liquidation", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Params {

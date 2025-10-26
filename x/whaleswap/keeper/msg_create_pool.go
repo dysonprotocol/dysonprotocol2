@@ -56,6 +56,40 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		}
 	}
 
+	// Validate leverage configuration fields (required)
+	if msg.MinCollateralRatio == "" {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "min_collateral_ratio is required")
+	}
+	minCR, err := math.LegacyNewDecFromStr(msg.MinCollateralRatio)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid min_collateral_ratio: %v", err)
+	}
+	if minCR.LTE(math.LegacyNewDec(1)) {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_collateral_ratio must be > 1: %s", minCR.String())
+	}
+
+	if msg.MaxLeverageRatio == "" {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "max_leverage_ratio is required")
+	}
+	maxLev, err := math.LegacyNewDecFromStr(msg.MaxLeverageRatio)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid max_leverage_ratio: %v", err)
+	}
+	if maxLev.LTE(math.LegacyNewDec(1)) {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_leverage_ratio must be > 1: %s", maxLev.String())
+	}
+
+	if msg.MaxBorrowPercent == "" {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "max_borrow_percent is required")
+	}
+	maxBorrow, err := math.LegacyNewDecFromStr(msg.MaxBorrowPercent)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid max_borrow_percent: %v", err)
+	}
+	if maxBorrow.IsNegative() || maxBorrow.GT(math.LegacyNewDec(1)) {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_borrow_percent must be in [0,1]: %s", maxBorrow.String())
+	}
+
 	hasBounds := len(msg.MinPrice) > 0 || len(msg.MaxPrice) > 0
 	if hasBounds != (len(msg.MinPrice) > 0 && len(msg.MaxPrice) > 0) {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_price and max_price must both be set or both unset")
@@ -123,16 +157,19 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 
 	t := sdkCtx.BlockTime()
 	pool := whaleswapv1.Pool{
-		PoolId:      id,
-		Coins:       msg.Coins,
-		SharesDenom: sharesDenom,
-		FeePct:      msg.FeePct,
-		MinPrice:    msg.MinPrice,
-		MaxPrice:    msg.MaxPrice,
-		BlockHeight: uint64(sdkCtx.BlockHeight()),
-		Created:     &t,
-		Updated:     &t,
-		NumTrades:   0,
+		PoolId:             id,
+		Coins:              msg.Coins,
+		SharesDenom:        sharesDenom,
+		FeePct:             msg.FeePct,
+		MinPrice:           msg.MinPrice,
+		MaxPrice:           msg.MaxPrice,
+		BlockHeight:        uint64(sdkCtx.BlockHeight()),
+		Created:            &t,
+		Updated:            &t,
+		NumTrades:          0,
+		MinCollateralRatio: msg.MinCollateralRatio,
+		MaxLeverageRatio:   msg.MaxLeverageRatio,
+		MaxBorrowPercent:   msg.MaxBorrowPercent,
 	}
 
 	logger.Info("CreatePool calculating initial shares", "has_bounds", hasBounds)

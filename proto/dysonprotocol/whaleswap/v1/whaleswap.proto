@@ -53,6 +53,39 @@ message Pool {
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
+
+  // ═════ LEVERAGE FIELDS ═════
+  // Annual interest rate for borrows in coin1 denom
+  string interest_rate_coin1 = 15 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+
+  // Annual interest rate for borrows in coin2 denom
+  string interest_rate_coin2 = 16 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+
+  // Total accrued interest (yield for LPs)
+  repeated cosmos.base.v1beta1.Coin interest_earned = 19 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+
+  // Total borrowed (aggregate for cap enforcement)
+  repeated cosmos.base.v1beta1.Coin total_borrowed = 20 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+
+  // ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+  // Minimum collateral ratio required at position open
+  string min_collateral_ratio = 21 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+
+  // Maximum leverage ratio allowed (collateral + borrowed) / collateral
+  string max_leverage_ratio = 22 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+
+  // Collateral ratio threshold below which position is liquidatable
+  string liquidation_threshold = 23 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+
+  // Maximum borrow capacity as percentage of reserve (applies symmetrically to
+  // both coins)
+  string max_borrow_percent = 24 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
 }
 
 // OfferData mirrors orderbook offer state.

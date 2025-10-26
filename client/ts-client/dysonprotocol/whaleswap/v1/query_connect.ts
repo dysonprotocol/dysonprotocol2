@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { QueryAuctionByNFTRequest, QueryAuctionByNFTResponse, QueryAuctionRequest, QueryAuctionResponse, QueryAuctionsByPairPriceRangeRequest, QueryAuctionsByPairPriceRangeResponse, QueryAuctionsBySellerRequest, QueryAuctionsBySellerResponse, QueryAuctionsRequest, QueryAuctionsResponse, QueryMetricsRequest, QueryMetricsResponse, QueryOfferRequest, QueryOfferResponse, QueryOffersBestRequest, QueryOffersBestResponse, QueryOffersByDenomRequest, QueryOffersByDenomResponse, QueryOffersByOwnerRequest, QueryOffersByOwnerResponse, QueryOffersByPairPriceRangeRequest, QueryOffersByPairPriceRangeResponse, QueryOffersRequest, QueryOffersResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolBySharesDenomRequest, QueryPoolBySharesDenomResponse, QueryPoolRequest, QueryPoolResponse, QueryPoolsByDenomRequest, QueryPoolsByDenomResponse, QueryPoolsByOwnerRequest, QueryPoolsByOwnerResponse, QueryPoolsByPairPriceRangeRequest, QueryPoolsByPairPriceRangeResponse, QueryPoolsByPairRequest, QueryPoolsByPairResponse, QueryPoolsRequest, QueryPoolsResponse, QueryTradeRequest, QueryTradeResponse, QueryTradesByAuctionRequest, QueryTradesByAuctionResponse, QueryTradesByOfferRequest, QueryTradesByOfferResponse, QueryTradesByPoolRequest, QueryTradesByPoolResponse, QueryTradesByTakerRequest, QueryTradesByTakerResponse, QueryTradesRequest, QueryTradesResponse } from "./query_pb.js";
+import { QueryAuctionByNFTRequest, QueryAuctionByNFTResponse, QueryAuctionRequest, QueryAuctionResponse, QueryAuctionsByPairPriceRangeRequest, QueryAuctionsByPairPriceRangeResponse, QueryAuctionsBySellerRequest, QueryAuctionsBySellerResponse, QueryAuctionsRequest, QueryAuctionsResponse, QueryMetricsRequest, QueryMetricsResponse, QueryOfferRequest, QueryOfferResponse, QueryOffersBestRequest, QueryOffersBestResponse, QueryOffersByDenomRequest, QueryOffersByDenomResponse, QueryOffersByOwnerRequest, QueryOffersByOwnerResponse, QueryOffersByPairPriceRangeRequest, QueryOffersByPairPriceRangeResponse, QueryOffersRequest, QueryOffersResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolBySharesDenomRequest, QueryPoolBySharesDenomResponse, QueryPoolRequest, QueryPoolResponse, QueryPoolsByDenomRequest, QueryPoolsByDenomResponse, QueryPoolsByOwnerRequest, QueryPoolsByOwnerResponse, QueryPoolsByPairPriceRangeRequest, QueryPoolsByPairPriceRangeResponse, QueryPoolsByPairRequest, QueryPoolsByPairResponse, QueryPoolsRequest, QueryPoolsResponse, QueryPositionRequest, QueryPositionResponse, QueryPositionsByPoolRequest, QueryPositionsByPoolResponse, QueryPositionsByUserRequest, QueryPositionsByUserResponse, QueryTradeRequest, QueryTradeResponse, QueryTradesByAuctionRequest, QueryTradesByAuctionResponse, QueryTradesByOfferRequest, QueryTradesByOfferResponse, QueryTradesByPoolRequest, QueryTradesByPoolResponse, QueryTradesByTakerRequest, QueryTradesByTakerResponse, QueryTradesRequest, QueryTradesResponse } from "./query_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -59,7 +59,7 @@ export const Query = {
     },
     /**
      * PoolsByDenom returns all pools that include the provided denom on either
-     * side of the pair. This leverages a reverse index keyed by denom.
+     * side of the pair.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Query.PoolsByDenom
      */
@@ -301,6 +301,39 @@ export const Query = {
       name: "AuctionsByPairPriceRange",
       I: QueryAuctionsByPairPriceRangeRequest,
       O: QueryAuctionsByPairPriceRangeResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Leverage
+     *
+     * @generated from rpc dysonprotocol.whaleswap.v1.Query.Position
+     */
+    position: {
+      name: "Position",
+      I: QueryPositionRequest,
+      O: QueryPositionResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * QueryPositionsByUser lists all positions for a user with optional filters
+     *
+     * @generated from rpc dysonprotocol.whaleswap.v1.Query.PositionsByUser
+     */
+    positionsByUser: {
+      name: "PositionsByUser",
+      I: QueryPositionsByUserRequest,
+      O: QueryPositionsByUserResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * QueryPositionsByPool lists all positions in a pool
+     *
+     * @generated from rpc dysonprotocol.whaleswap.v1.Query.PositionsByPool
+     */
+    positionsByPool: {
+      name: "PositionsByPool",
+      I: QueryPositionsByPoolRequest,
+      O: QueryPositionsByPoolResponse,
       kind: MethodKind.Unary,
     },
     /**

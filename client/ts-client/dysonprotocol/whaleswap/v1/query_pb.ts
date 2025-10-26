@@ -8,6 +8,42 @@ import { Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 import { Params } from "./params_pb.js";
 import { AuctionRecord, OfferData, Pool, Trade, TradeMetrics } from "./whaleswap_pb.js";
 import { PageRequest, PageResponse } from "../../../cosmos/base/query/v1beta1/pagination_pb.js";
+import { LeveragePosition } from "./leverage_pb.js";
+import { Coin } from "../../../cosmos/base/v1beta1/coin_pb.js";
+
+/**
+ * HealthStatus enum for position health
+ *
+ * @generated from enum dysonprotocol.whaleswap.v1.PositionHealthStatus
+ */
+export enum PositionHealthStatus {
+  /**
+   * @generated from enum value: POSITION_HEALTH_STATUS_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: POSITION_HEALTH_STATUS_HEALTHY = 1;
+   */
+  HEALTHY = 1,
+
+  /**
+   * @generated from enum value: POSITION_HEALTH_STATUS_AT_RISK = 2;
+   */
+  AT_RISK = 2,
+
+  /**
+   * @generated from enum value: POSITION_HEALTH_STATUS_LIQUIDATABLE = 3;
+   */
+  LIQUIDATABLE = 3,
+}
+// Retrieve enum metadata with: proto3.getEnumType(PositionHealthStatus)
+proto3.util.setEnumType(PositionHealthStatus, "dysonprotocol.whaleswap.v1.PositionHealthStatus", [
+  { no: 0, name: "POSITION_HEALTH_STATUS_UNSPECIFIED" },
+  { no: 1, name: "POSITION_HEALTH_STATUS_HEALTHY" },
+  { no: 2, name: "POSITION_HEALTH_STATUS_AT_RISK" },
+  { no: 3, name: "POSITION_HEALTH_STATUS_LIQUIDATABLE" },
+]);
 
 /**
  * @generated from message dysonprotocol.whaleswap.v1.QueryParamsRequest
@@ -2279,6 +2315,372 @@ export class QueryMetricsResponse extends Message<QueryMetricsResponse> {
 
   static equals(a: QueryMetricsResponse | PlainMessage<QueryMetricsResponse> | undefined, b: QueryMetricsResponse | PlainMessage<QueryMetricsResponse> | undefined): boolean {
     return proto3.util.equals(QueryMetricsResponse, a, b);
+  }
+}
+
+/**
+ * QueryPositionRequest queries a single position by ID
+ *
+ * @generated from message dysonprotocol.whaleswap.v1.QueryPositionRequest
+ */
+export class QueryPositionRequest extends Message<QueryPositionRequest> {
+  /**
+   * @generated from field: uint64 position_id = 1;
+   */
+  positionId = protoInt64.zero;
+
+  constructor(data?: PartialMessage<QueryPositionRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPositionRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPositionRequest {
+    return new QueryPositionRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPositionRequest {
+    return new QueryPositionRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPositionRequest {
+    return new QueryPositionRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryPositionRequest | PlainMessage<QueryPositionRequest> | undefined, b: QueryPositionRequest | PlainMessage<QueryPositionRequest> | undefined): boolean {
+    return proto3.util.equals(QueryPositionRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryPositionResponse
+ */
+export class QueryPositionResponse extends Message<QueryPositionResponse> {
+  /**
+   * @generated from field: dysonprotocol.whaleswap.v1.LeveragePosition position = 1;
+   */
+  position?: LeveragePosition;
+
+  /**
+   * Health Information
+   *
+   * @generated from field: dysonprotocol.whaleswap.v1.PositionHealthStatus health_status = 2;
+   */
+  healthStatus = PositionHealthStatus.UNSPECIFIED;
+
+  /**
+   * @generated from field: string current_collateral_ratio = 3;
+   */
+  currentCollateralRatio = "";
+
+  /**
+   * @generated from field: string liquidation_threshold = 4;
+   */
+  liquidationThreshold = "";
+
+  /**
+   * @generated from field: string collateral_value = 5;
+   */
+  collateralValue = "";
+
+  /**
+   * @generated from field: string debt_with_interest = 6;
+   */
+  debtWithInterest = "";
+
+  /**
+   * @generated from field: bool can_close_by_owner = 7;
+   */
+  canCloseByOwner = false;
+
+  /**
+   * @generated from field: uint64 blocks_until_closeable = 8;
+   */
+  blocksUntilCloseable = protoInt64.zero;
+
+  /**
+   * @generated from field: bool can_initialize_liquidation = 9;
+   */
+  canInitializeLiquidation = false;
+
+  /**
+   * @generated from field: bool can_finalize_liquidation = 10;
+   */
+  canFinalizeLiquidation = false;
+
+  /**
+   * Interest Information
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin borrowed = 11;
+   */
+  borrowed?: Coin;
+
+  /**
+   * @generated from field: string accrued_interest = 12;
+   */
+  accruedInterest = "";
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin total_repayment = 13;
+   */
+  totalRepayment?: Coin;
+
+  /**
+   * @generated from field: uint64 time_elapsed = 14;
+   */
+  timeElapsed = protoInt64.zero;
+
+  /**
+   * @generated from field: string annual_rate = 15;
+   */
+  annualRate = "";
+
+  constructor(data?: PartialMessage<QueryPositionResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPositionResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "position", kind: "message", T: LeveragePosition },
+    { no: 2, name: "health_status", kind: "enum", T: proto3.getEnumType(PositionHealthStatus) },
+    { no: 3, name: "current_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "liquidation_threshold", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "collateral_value", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "debt_with_interest", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "can_close_by_owner", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 8, name: "blocks_until_closeable", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 9, name: "can_initialize_liquidation", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 10, name: "can_finalize_liquidation", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 11, name: "borrowed", kind: "message", T: Coin },
+    { no: 12, name: "accrued_interest", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 13, name: "total_repayment", kind: "message", T: Coin },
+    { no: 14, name: "time_elapsed", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 15, name: "annual_rate", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPositionResponse {
+    return new QueryPositionResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPositionResponse {
+    return new QueryPositionResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPositionResponse {
+    return new QueryPositionResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryPositionResponse | PlainMessage<QueryPositionResponse> | undefined, b: QueryPositionResponse | PlainMessage<QueryPositionResponse> | undefined): boolean {
+    return proto3.util.equals(QueryPositionResponse, a, b);
+  }
+}
+
+/**
+ * QueryPositionsByUserRequest lists all positions for a user with optional
+ * filters
+ *
+ * @generated from message dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest
+ */
+export class QueryPositionsByUserRequest extends Message<QueryPositionsByUserRequest> {
+  /**
+   * @generated from field: string user = 1;
+   */
+  user = "";
+
+  /**
+   * Optional: filter by borrowed denom
+   *
+   * @generated from field: string borrowed_denom = 2;
+   */
+  borrowedDenom = "";
+
+  /**
+   * Optional: filter by collateral denom
+   *
+   * @generated from field: string collateral_denom = 3;
+   */
+  collateralDenom = "";
+
+  /**
+   * Optional: filter by pool_id (cannot combine with borrowed/collateral
+   * denoms)
+   *
+   * @generated from field: uint64 pool_id = 4;
+   */
+  poolId = protoInt64.zero;
+
+  /**
+   * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 5;
+   */
+  pagination?: PageRequest;
+
+  constructor(data?: PartialMessage<QueryPositionsByUserRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "borrowed_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "collateral_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 5, name: "pagination", kind: "message", T: PageRequest },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPositionsByUserRequest {
+    return new QueryPositionsByUserRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPositionsByUserRequest {
+    return new QueryPositionsByUserRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPositionsByUserRequest {
+    return new QueryPositionsByUserRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryPositionsByUserRequest | PlainMessage<QueryPositionsByUserRequest> | undefined, b: QueryPositionsByUserRequest | PlainMessage<QueryPositionsByUserRequest> | undefined): boolean {
+    return proto3.util.equals(QueryPositionsByUserRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryPositionsByUserResponse
+ */
+export class QueryPositionsByUserResponse extends Message<QueryPositionsByUserResponse> {
+  /**
+   * @generated from field: repeated dysonprotocol.whaleswap.v1.LeveragePosition positions = 1;
+   */
+  positions: LeveragePosition[] = [];
+
+  /**
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryPositionsByUserResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPositionsByUserResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "positions", kind: "message", T: LeveragePosition, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPositionsByUserResponse {
+    return new QueryPositionsByUserResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPositionsByUserResponse {
+    return new QueryPositionsByUserResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPositionsByUserResponse {
+    return new QueryPositionsByUserResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryPositionsByUserResponse | PlainMessage<QueryPositionsByUserResponse> | undefined, b: QueryPositionsByUserResponse | PlainMessage<QueryPositionsByUserResponse> | undefined): boolean {
+    return proto3.util.equals(QueryPositionsByUserResponse, a, b);
+  }
+}
+
+/**
+ * QueryPositionsByPoolRequest lists all positions in a pool
+ *
+ * @generated from message dysonprotocol.whaleswap.v1.QueryPositionsByPoolRequest
+ */
+export class QueryPositionsByPoolRequest extends Message<QueryPositionsByPoolRequest> {
+  /**
+   * @generated from field: uint64 pool_id = 1;
+   */
+  poolId = protoInt64.zero;
+
+  /**
+   * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 2;
+   */
+  pagination?: PageRequest;
+
+  constructor(data?: PartialMessage<QueryPositionsByPoolRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPositionsByPoolRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 2, name: "pagination", kind: "message", T: PageRequest },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPositionsByPoolRequest {
+    return new QueryPositionsByPoolRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPositionsByPoolRequest {
+    return new QueryPositionsByPoolRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPositionsByPoolRequest {
+    return new QueryPositionsByPoolRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryPositionsByPoolRequest | PlainMessage<QueryPositionsByPoolRequest> | undefined, b: QueryPositionsByPoolRequest | PlainMessage<QueryPositionsByPoolRequest> | undefined): boolean {
+    return proto3.util.equals(QueryPositionsByPoolRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryPositionsByPoolResponse
+ */
+export class QueryPositionsByPoolResponse extends Message<QueryPositionsByPoolResponse> {
+  /**
+   * @generated from field: repeated dysonprotocol.whaleswap.v1.LeveragePosition positions = 1;
+   */
+  positions: LeveragePosition[] = [];
+
+  /**
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryPositionsByPoolResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPositionsByPoolResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "positions", kind: "message", T: LeveragePosition, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPositionsByPoolResponse {
+    return new QueryPositionsByPoolResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPositionsByPoolResponse {
+    return new QueryPositionsByPoolResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPositionsByPoolResponse {
+    return new QueryPositionsByPoolResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryPositionsByPoolResponse | PlainMessage<QueryPositionsByPoolResponse> | undefined, b: QueryPositionsByPoolResponse | PlainMessage<QueryPositionsByPoolResponse> | undefined): boolean {
+    return proto3.util.equals(QueryPositionsByPoolResponse, a, b);
   }
 }
 

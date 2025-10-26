@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { MsgAddLiquidity, MsgAddLiquidityResponse, MsgCancelOffer, MsgCancelOfferResponse, MsgCreatePool, MsgCreatePoolResponse, MsgMakeOffer, MsgMakeOfferResponse, MsgMakeTrade, MsgMakeTradeResponse, MsgOpenAuction, MsgOpenAuctionResponse, MsgPoolSwap, MsgPoolSwapResponse, MsgRedeemAuction, MsgRedeemAuctionResponse, MsgRemoveLiquidity, MsgRemoveLiquidityResponse, MsgTakeOffer, MsgTakeOfferResponse, MsgUpdateParams, MsgUpdateParamsResponse, MsgUpdatePoolConfig, MsgUpdatePoolConfigResponse } from "./tx_pb.js";
+import { MsgAddCollateral, MsgAddCollateralResponse, MsgAddLiquidity, MsgAddLiquidityResponse, MsgCancelOffer, MsgCancelOfferResponse, MsgClosePosition, MsgClosePositionResponse, MsgCreatePool, MsgCreatePoolResponse, MsgFinalizeLiquidation, MsgFinalizeLiquidationResponse, MsgInitializeLiquidation, MsgInitializeLiquidationResponse, MsgMakeOffer, MsgMakeOfferResponse, MsgMakeTrade, MsgMakeTradeResponse, MsgOpenAuction, MsgOpenAuctionResponse, MsgOpenPosition, MsgOpenPositionResponse, MsgPoolSwap, MsgPoolSwapResponse, MsgRedeemAuction, MsgRedeemAuctionResponse, MsgRemoveLiquidity, MsgRemoveLiquidityResponse, MsgTakeOffer, MsgTakeOfferResponse, MsgUpdateParams, MsgUpdateParamsResponse, MsgUpdatePoolConfig, MsgUpdatePoolConfigResponse } from "./tx_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -143,6 +143,53 @@ export const Msg = {
       name: "RedeemAuction",
       I: MsgRedeemAuction,
       O: MsgRedeemAuctionResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Leverage
+     *
+     * @generated from rpc dysonprotocol.whaleswap.v1.Msg.OpenPosition
+     */
+    openPosition: {
+      name: "OpenPosition",
+      I: MsgOpenPosition,
+      O: MsgOpenPositionResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc dysonprotocol.whaleswap.v1.Msg.ClosePosition
+     */
+    closePosition: {
+      name: "ClosePosition",
+      I: MsgClosePosition,
+      O: MsgClosePositionResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc dysonprotocol.whaleswap.v1.Msg.AddCollateral
+     */
+    addCollateral: {
+      name: "AddCollateral",
+      I: MsgAddCollateral,
+      O: MsgAddCollateralResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc dysonprotocol.whaleswap.v1.Msg.InitializeLiquidation
+     */
+    initializeLiquidation: {
+      name: "InitializeLiquidation",
+      I: MsgInitializeLiquidation,
+      O: MsgInitializeLiquidationResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc dysonprotocol.whaleswap.v1.Msg.FinalizeLiquidation
+     */
+    finalizeLiquidation: {
+      name: "FinalizeLiquidation",
+      I: MsgFinalizeLiquidation,
+      O: MsgFinalizeLiquidationResponse,
       kind: MethodKind.Unary,
     },
     /**

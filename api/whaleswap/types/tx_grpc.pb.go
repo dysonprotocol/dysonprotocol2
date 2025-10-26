@@ -19,18 +19,23 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Msg_CreatePool_FullMethodName       = "/dysonprotocol.whaleswap.v1.Msg/CreatePool"
-	Msg_UpdatePoolConfig_FullMethodName = "/dysonprotocol.whaleswap.v1.Msg/UpdatePoolConfig"
-	Msg_AddLiquidity_FullMethodName     = "/dysonprotocol.whaleswap.v1.Msg/AddLiquidity"
-	Msg_RemoveLiquidity_FullMethodName  = "/dysonprotocol.whaleswap.v1.Msg/RemoveLiquidity"
-	Msg_PoolSwap_FullMethodName         = "/dysonprotocol.whaleswap.v1.Msg/PoolSwap"
-	Msg_MakeTrade_FullMethodName        = "/dysonprotocol.whaleswap.v1.Msg/MakeTrade"
-	Msg_MakeOffer_FullMethodName        = "/dysonprotocol.whaleswap.v1.Msg/MakeOffer"
-	Msg_TakeOffer_FullMethodName        = "/dysonprotocol.whaleswap.v1.Msg/TakeOffer"
-	Msg_CancelOffer_FullMethodName      = "/dysonprotocol.whaleswap.v1.Msg/CancelOffer"
-	Msg_OpenAuction_FullMethodName      = "/dysonprotocol.whaleswap.v1.Msg/OpenAuction"
-	Msg_RedeemAuction_FullMethodName    = "/dysonprotocol.whaleswap.v1.Msg/RedeemAuction"
-	Msg_UpdateParams_FullMethodName     = "/dysonprotocol.whaleswap.v1.Msg/UpdateParams"
+	Msg_CreatePool_FullMethodName            = "/dysonprotocol.whaleswap.v1.Msg/CreatePool"
+	Msg_UpdatePoolConfig_FullMethodName      = "/dysonprotocol.whaleswap.v1.Msg/UpdatePoolConfig"
+	Msg_AddLiquidity_FullMethodName          = "/dysonprotocol.whaleswap.v1.Msg/AddLiquidity"
+	Msg_RemoveLiquidity_FullMethodName       = "/dysonprotocol.whaleswap.v1.Msg/RemoveLiquidity"
+	Msg_PoolSwap_FullMethodName              = "/dysonprotocol.whaleswap.v1.Msg/PoolSwap"
+	Msg_MakeTrade_FullMethodName             = "/dysonprotocol.whaleswap.v1.Msg/MakeTrade"
+	Msg_MakeOffer_FullMethodName             = "/dysonprotocol.whaleswap.v1.Msg/MakeOffer"
+	Msg_TakeOffer_FullMethodName             = "/dysonprotocol.whaleswap.v1.Msg/TakeOffer"
+	Msg_CancelOffer_FullMethodName           = "/dysonprotocol.whaleswap.v1.Msg/CancelOffer"
+	Msg_OpenAuction_FullMethodName           = "/dysonprotocol.whaleswap.v1.Msg/OpenAuction"
+	Msg_RedeemAuction_FullMethodName         = "/dysonprotocol.whaleswap.v1.Msg/RedeemAuction"
+	Msg_OpenPosition_FullMethodName          = "/dysonprotocol.whaleswap.v1.Msg/OpenPosition"
+	Msg_ClosePosition_FullMethodName         = "/dysonprotocol.whaleswap.v1.Msg/ClosePosition"
+	Msg_AddCollateral_FullMethodName         = "/dysonprotocol.whaleswap.v1.Msg/AddCollateral"
+	Msg_InitializeLiquidation_FullMethodName = "/dysonprotocol.whaleswap.v1.Msg/InitializeLiquidation"
+	Msg_FinalizeLiquidation_FullMethodName   = "/dysonprotocol.whaleswap.v1.Msg/FinalizeLiquidation"
+	Msg_UpdateParams_FullMethodName          = "/dysonprotocol.whaleswap.v1.Msg/UpdateParams"
 )
 
 // MsgClient is the client API for Msg service.
@@ -77,6 +82,12 @@ type MsgClient interface {
 	// Auctions
 	OpenAuction(ctx context.Context, in *MsgOpenAuction, opts ...grpc.CallOption) (*MsgOpenAuctionResponse, error)
 	RedeemAuction(ctx context.Context, in *MsgRedeemAuction, opts ...grpc.CallOption) (*MsgRedeemAuctionResponse, error)
+	// Leverage
+	OpenPosition(ctx context.Context, in *MsgOpenPosition, opts ...grpc.CallOption) (*MsgOpenPositionResponse, error)
+	ClosePosition(ctx context.Context, in *MsgClosePosition, opts ...grpc.CallOption) (*MsgClosePositionResponse, error)
+	AddCollateral(ctx context.Context, in *MsgAddCollateral, opts ...grpc.CallOption) (*MsgAddCollateralResponse, error)
+	InitializeLiquidation(ctx context.Context, in *MsgInitializeLiquidation, opts ...grpc.CallOption) (*MsgInitializeLiquidationResponse, error)
+	FinalizeLiquidation(ctx context.Context, in *MsgFinalizeLiquidation, opts ...grpc.CallOption) (*MsgFinalizeLiquidationResponse, error)
 	// Params
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 }
@@ -199,6 +210,56 @@ func (c *msgClient) RedeemAuction(ctx context.Context, in *MsgRedeemAuction, opt
 	return out, nil
 }
 
+func (c *msgClient) OpenPosition(ctx context.Context, in *MsgOpenPosition, opts ...grpc.CallOption) (*MsgOpenPositionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgOpenPositionResponse)
+	err := c.cc.Invoke(ctx, Msg_OpenPosition_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) ClosePosition(ctx context.Context, in *MsgClosePosition, opts ...grpc.CallOption) (*MsgClosePositionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgClosePositionResponse)
+	err := c.cc.Invoke(ctx, Msg_ClosePosition_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) AddCollateral(ctx context.Context, in *MsgAddCollateral, opts ...grpc.CallOption) (*MsgAddCollateralResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgAddCollateralResponse)
+	err := c.cc.Invoke(ctx, Msg_AddCollateral_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) InitializeLiquidation(ctx context.Context, in *MsgInitializeLiquidation, opts ...grpc.CallOption) (*MsgInitializeLiquidationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgInitializeLiquidationResponse)
+	err := c.cc.Invoke(ctx, Msg_InitializeLiquidation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) FinalizeLiquidation(ctx context.Context, in *MsgFinalizeLiquidation, opts ...grpc.CallOption) (*MsgFinalizeLiquidationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgFinalizeLiquidationResponse)
+	err := c.cc.Invoke(ctx, Msg_FinalizeLiquidation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MsgUpdateParamsResponse)
@@ -253,6 +314,12 @@ type MsgServer interface {
 	// Auctions
 	OpenAuction(context.Context, *MsgOpenAuction) (*MsgOpenAuctionResponse, error)
 	RedeemAuction(context.Context, *MsgRedeemAuction) (*MsgRedeemAuctionResponse, error)
+	// Leverage
+	OpenPosition(context.Context, *MsgOpenPosition) (*MsgOpenPositionResponse, error)
+	ClosePosition(context.Context, *MsgClosePosition) (*MsgClosePositionResponse, error)
+	AddCollateral(context.Context, *MsgAddCollateral) (*MsgAddCollateralResponse, error)
+	InitializeLiquidation(context.Context, *MsgInitializeLiquidation) (*MsgInitializeLiquidationResponse, error)
+	FinalizeLiquidation(context.Context, *MsgFinalizeLiquidation) (*MsgFinalizeLiquidationResponse, error)
 	// Params
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 	mustEmbedUnimplementedMsgServer()
@@ -297,6 +364,21 @@ func (UnimplementedMsgServer) OpenAuction(context.Context, *MsgOpenAuction) (*Ms
 }
 func (UnimplementedMsgServer) RedeemAuction(context.Context, *MsgRedeemAuction) (*MsgRedeemAuctionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RedeemAuction not implemented")
+}
+func (UnimplementedMsgServer) OpenPosition(context.Context, *MsgOpenPosition) (*MsgOpenPositionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OpenPosition not implemented")
+}
+func (UnimplementedMsgServer) ClosePosition(context.Context, *MsgClosePosition) (*MsgClosePositionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ClosePosition not implemented")
+}
+func (UnimplementedMsgServer) AddCollateral(context.Context, *MsgAddCollateral) (*MsgAddCollateralResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddCollateral not implemented")
+}
+func (UnimplementedMsgServer) InitializeLiquidation(context.Context, *MsgInitializeLiquidation) (*MsgInitializeLiquidationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InitializeLiquidation not implemented")
+}
+func (UnimplementedMsgServer) FinalizeLiquidation(context.Context, *MsgFinalizeLiquidation) (*MsgFinalizeLiquidationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FinalizeLiquidation not implemented")
 }
 func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
@@ -520,6 +602,96 @@ func _Msg_RedeemAuction_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_OpenPosition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgOpenPosition)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).OpenPosition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_OpenPosition_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).OpenPosition(ctx, req.(*MsgOpenPosition))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_ClosePosition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgClosePosition)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).ClosePosition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_ClosePosition_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).ClosePosition(ctx, req.(*MsgClosePosition))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_AddCollateral_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgAddCollateral)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).AddCollateral(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_AddCollateral_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).AddCollateral(ctx, req.(*MsgAddCollateral))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_InitializeLiquidation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgInitializeLiquidation)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).InitializeLiquidation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_InitializeLiquidation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).InitializeLiquidation(ctx, req.(*MsgInitializeLiquidation))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_FinalizeLiquidation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgFinalizeLiquidation)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).FinalizeLiquidation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_FinalizeLiquidation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).FinalizeLiquidation(ctx, req.(*MsgFinalizeLiquidation))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgUpdateParams)
 	if err := dec(in); err != nil {
@@ -588,6 +760,26 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RedeemAuction",
 			Handler:    _Msg_RedeemAuction_Handler,
+		},
+		{
+			MethodName: "OpenPosition",
+			Handler:    _Msg_OpenPosition_Handler,
+		},
+		{
+			MethodName: "ClosePosition",
+			Handler:    _Msg_ClosePosition_Handler,
+		},
+		{
+			MethodName: "AddCollateral",
+			Handler:    _Msg_AddCollateral_Handler,
+		},
+		{
+			MethodName: "InitializeLiquidation",
+			Handler:    _Msg_InitializeLiquidation_Handler,
+		},
+		{
+			MethodName: "FinalizeLiquidation",
+			Handler:    _Msg_FinalizeLiquidation_Handler,
 		},
 		{
 			MethodName: "UpdateParams",

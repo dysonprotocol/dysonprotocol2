@@ -28,6 +28,18 @@
                         },
                         "additionalProperties": false,
                         "type": "array"
+                    },
+                    "min_collateral_ratio": {
+                        "type": "string",
+                        "description": "Leverage configuration (optional; empty means no change)  cosmos.Dec string"
+                    },
+                    "max_leverage_ratio": {
+                        "type": "string",
+                        "description": "cosmos.Dec string"
+                    },
+                    "max_borrow_percent": {
+                        "type": "string",
+                        "description": "cosmos.Dec string"
                     }
                 },
                 "additionalProperties": false,

@@ -33,6 +33,39 @@ func (k Keeper) UpdatePoolConfig(ctx context.Context, msg *whaleswapv1.MsgUpdate
 		}
 		pool.FeePct = msg.FeePct
 	}
+
+	// Update leverage configuration fields if provided
+	if msg.MinCollateralRatio != "" {
+		minCR, err := math.LegacyNewDecFromStr(msg.MinCollateralRatio)
+		if err != nil {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid min_collateral_ratio: %v", err)
+		}
+		if minCR.LTE(math.LegacyNewDec(1)) {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_collateral_ratio must be > 1: %s", minCR.String())
+		}
+		pool.MinCollateralRatio = msg.MinCollateralRatio
+	}
+	if msg.MaxLeverageRatio != "" {
+		maxLev, err := math.LegacyNewDecFromStr(msg.MaxLeverageRatio)
+		if err != nil {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid max_leverage_ratio: %v", err)
+		}
+		if maxLev.LTE(math.LegacyNewDec(1)) {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_leverage_ratio must be > 1: %s", maxLev.String())
+		}
+		pool.MaxLeverageRatio = msg.MaxLeverageRatio
+	}
+	if msg.MaxBorrowPercent != "" {
+		maxBorrow, err := math.LegacyNewDecFromStr(msg.MaxBorrowPercent)
+		if err != nil {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid max_borrow_percent: %v", err)
+		}
+		if maxBorrow.IsNegative() || maxBorrow.GT(math.LegacyNewDec(1)) {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_borrow_percent must be in [0,1]: %s", maxBorrow.String())
+		}
+		pool.MaxBorrowPercent = msg.MaxBorrowPercent
+	}
+
 	// Bands: compare prices using cross-multiplication on ints; avoid Decs
 	if len(msg.MinPrice) > 0 || len(msg.MaxPrice) > 0 {
 		if len(pool.Coins) != 2 {

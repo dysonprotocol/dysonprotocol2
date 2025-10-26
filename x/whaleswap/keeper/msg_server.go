@@ -31,3 +31,12 @@ var _ whaleswapv1.MsgServer = Keeper{}
 // ComposeOperations removed from proto; no method required.
 
 // UpdateParams: see msg_update_params.go
+
+// Leverage Message Handlers
+
+// OpenLongPosition: see msg_leverage_open.go
+// OpenShortPosition: see msg_leverage_open.go
+// ClosePosition: see msg_leverage_handlers.go
+// AddCollateral: see leverage_collateral.go
+// InitializeLiquidation: see msg_leverage_handlers.go
+// FinalizeLiquidation: see msg_leverage_handlers.go

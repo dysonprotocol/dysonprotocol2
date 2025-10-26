@@ -6033,6 +6033,4034 @@ func (x *fastReflection_EventTradeRecorded) ProtoMethods() *protoiface.Methods {
 	}
 }
 
+var (
+	md_EventLeveragePositionOpened                   protoreflect.MessageDescriptor
+	fd_EventLeveragePositionOpened_position_id       protoreflect.FieldDescriptor
+	fd_EventLeveragePositionOpened_user              protoreflect.FieldDescriptor
+	fd_EventLeveragePositionOpened_pool_id           protoreflect.FieldDescriptor
+	fd_EventLeveragePositionOpened_position_type     protoreflect.FieldDescriptor
+	fd_EventLeveragePositionOpened_collateral_denom  protoreflect.FieldDescriptor
+	fd_EventLeveragePositionOpened_collateral_amount protoreflect.FieldDescriptor
+	fd_EventLeveragePositionOpened_borrowed_denom    protoreflect.FieldDescriptor
+	fd_EventLeveragePositionOpened_borrowed_amount   protoreflect.FieldDescriptor
+	fd_EventLeveragePositionOpened_held_denom        protoreflect.FieldDescriptor
+	fd_EventLeveragePositionOpened_held_amount       protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_dysonprotocol_whaleswap_v1_events_proto_init()
+	md_EventLeveragePositionOpened = File_dysonprotocol_whaleswap_v1_events_proto.Messages().ByName("EventLeveragePositionOpened")
+	fd_EventLeveragePositionOpened_position_id = md_EventLeveragePositionOpened.Fields().ByName("position_id")
+	fd_EventLeveragePositionOpened_user = md_EventLeveragePositionOpened.Fields().ByName("user")
+	fd_EventLeveragePositionOpened_pool_id = md_EventLeveragePositionOpened.Fields().ByName("pool_id")
+	fd_EventLeveragePositionOpened_position_type = md_EventLeveragePositionOpened.Fields().ByName("position_type")
+	fd_EventLeveragePositionOpened_collateral_denom = md_EventLeveragePositionOpened.Fields().ByName("collateral_denom")
+	fd_EventLeveragePositionOpened_collateral_amount = md_EventLeveragePositionOpened.Fields().ByName("collateral_amount")
+	fd_EventLeveragePositionOpened_borrowed_denom = md_EventLeveragePositionOpened.Fields().ByName("borrowed_denom")
+	fd_EventLeveragePositionOpened_borrowed_amount = md_EventLeveragePositionOpened.Fields().ByName("borrowed_amount")
+	fd_EventLeveragePositionOpened_held_denom = md_EventLeveragePositionOpened.Fields().ByName("held_denom")
+	fd_EventLeveragePositionOpened_held_amount = md_EventLeveragePositionOpened.Fields().ByName("held_amount")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventLeveragePositionOpened)(nil)
+
+type fastReflection_EventLeveragePositionOpened EventLeveragePositionOpened
+
+func (x *EventLeveragePositionOpened) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventLeveragePositionOpened)(x)
+}
+
+func (x *EventLeveragePositionOpened) slowProtoReflect() protoreflect.Message {
+	mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventLeveragePositionOpened_messageType fastReflection_EventLeveragePositionOpened_messageType
+var _ protoreflect.MessageType = fastReflection_EventLeveragePositionOpened_messageType{}
+
+type fastReflection_EventLeveragePositionOpened_messageType struct{}
+
+func (x fastReflection_EventLeveragePositionOpened_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventLeveragePositionOpened)(nil)
+}
+func (x fastReflection_EventLeveragePositionOpened_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventLeveragePositionOpened)
+}
+func (x fastReflection_EventLeveragePositionOpened_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventLeveragePositionOpened
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventLeveragePositionOpened) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventLeveragePositionOpened
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventLeveragePositionOpened) Type() protoreflect.MessageType {
+	return _fastReflection_EventLeveragePositionOpened_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventLeveragePositionOpened) New() protoreflect.Message {
+	return new(fastReflection_EventLeveragePositionOpened)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventLeveragePositionOpened) Interface() protoreflect.ProtoMessage {
+	return (*EventLeveragePositionOpened)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventLeveragePositionOpened) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.PositionId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PositionId)
+		if !f(fd_EventLeveragePositionOpened_position_id, value) {
+			return
+		}
+	}
+	if x.User != "" {
+		value := protoreflect.ValueOfString(x.User)
+		if !f(fd_EventLeveragePositionOpened_user, value) {
+			return
+		}
+	}
+	if x.PoolId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PoolId)
+		if !f(fd_EventLeveragePositionOpened_pool_id, value) {
+			return
+		}
+	}
+	if x.PositionType != "" {
+		value := protoreflect.ValueOfString(x.PositionType)
+		if !f(fd_EventLeveragePositionOpened_position_type, value) {
+			return
+		}
+	}
+	if x.CollateralDenom != "" {
+		value := protoreflect.ValueOfString(x.CollateralDenom)
+		if !f(fd_EventLeveragePositionOpened_collateral_denom, value) {
+			return
+		}
+	}
+	if x.CollateralAmount != "" {
+		value := protoreflect.ValueOfString(x.CollateralAmount)
+		if !f(fd_EventLeveragePositionOpened_collateral_amount, value) {
+			return
+		}
+	}
+	if x.BorrowedDenom != "" {
+		value := protoreflect.ValueOfString(x.BorrowedDenom)
+		if !f(fd_EventLeveragePositionOpened_borrowed_denom, value) {
+			return
+		}
+	}
+	if x.BorrowedAmount != "" {
+		value := protoreflect.ValueOfString(x.BorrowedAmount)
+		if !f(fd_EventLeveragePositionOpened_borrowed_amount, value) {
+			return
+		}
+	}
+	if x.HeldDenom != "" {
+		value := protoreflect.ValueOfString(x.HeldDenom)
+		if !f(fd_EventLeveragePositionOpened_held_denom, value) {
+			return
+		}
+	}
+	if x.HeldAmount != "" {
+		value := protoreflect.ValueOfString(x.HeldAmount)
+		if !f(fd_EventLeveragePositionOpened_held_amount, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventLeveragePositionOpened) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.position_id":
+		return x.PositionId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.user":
+		return x.User != ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.pool_id":
+		return x.PoolId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.position_type":
+		return x.PositionType != ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.collateral_denom":
+		return x.CollateralDenom != ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.collateral_amount":
+		return x.CollateralAmount != ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.borrowed_denom":
+		return x.BorrowedDenom != ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.borrowed_amount":
+		return x.BorrowedAmount != ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.held_denom":
+		return x.HeldDenom != ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.held_amount":
+		return x.HeldAmount != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeveragePositionOpened) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.position_id":
+		x.PositionId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.user":
+		x.User = ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.pool_id":
+		x.PoolId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.position_type":
+		x.PositionType = ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.collateral_denom":
+		x.CollateralDenom = ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.collateral_amount":
+		x.CollateralAmount = ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.borrowed_denom":
+		x.BorrowedDenom = ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.borrowed_amount":
+		x.BorrowedAmount = ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.held_denom":
+		x.HeldDenom = ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.held_amount":
+		x.HeldAmount = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventLeveragePositionOpened) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.position_id":
+		value := x.PositionId
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.user":
+		value := x.User
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.pool_id":
+		value := x.PoolId
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.position_type":
+		value := x.PositionType
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.collateral_denom":
+		value := x.CollateralDenom
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.collateral_amount":
+		value := x.CollateralAmount
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.borrowed_denom":
+		value := x.BorrowedDenom
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.borrowed_amount":
+		value := x.BorrowedAmount
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.held_denom":
+		value := x.HeldDenom
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.held_amount":
+		value := x.HeldAmount
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeveragePositionOpened) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.position_id":
+		x.PositionId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.user":
+		x.User = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.pool_id":
+		x.PoolId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.position_type":
+		x.PositionType = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.collateral_denom":
+		x.CollateralDenom = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.collateral_amount":
+		x.CollateralAmount = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.borrowed_denom":
+		x.BorrowedDenom = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.borrowed_amount":
+		x.BorrowedAmount = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.held_denom":
+		x.HeldDenom = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.held_amount":
+		x.HeldAmount = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeveragePositionOpened) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.position_id":
+		panic(fmt.Errorf("field position_id of message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.user":
+		panic(fmt.Errorf("field user of message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.pool_id":
+		panic(fmt.Errorf("field pool_id of message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.position_type":
+		panic(fmt.Errorf("field position_type of message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.collateral_denom":
+		panic(fmt.Errorf("field collateral_denom of message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.collateral_amount":
+		panic(fmt.Errorf("field collateral_amount of message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.borrowed_denom":
+		panic(fmt.Errorf("field borrowed_denom of message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.borrowed_amount":
+		panic(fmt.Errorf("field borrowed_amount of message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.held_denom":
+		panic(fmt.Errorf("field held_denom of message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.held_amount":
+		panic(fmt.Errorf("field held_amount of message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventLeveragePositionOpened) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.position_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.user":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.pool_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.position_type":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.collateral_denom":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.collateral_amount":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.borrowed_denom":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.borrowed_amount":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.held_denom":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened.held_amount":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventLeveragePositionOpened) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in dysonprotocol.whaleswap.v1.EventLeveragePositionOpened", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventLeveragePositionOpened) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeveragePositionOpened) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventLeveragePositionOpened) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventLeveragePositionOpened) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventLeveragePositionOpened)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.PositionId != 0 {
+			n += 1 + runtime.Sov(uint64(x.PositionId))
+		}
+		l = len(x.User)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.PoolId != 0 {
+			n += 1 + runtime.Sov(uint64(x.PoolId))
+		}
+		l = len(x.PositionType)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.CollateralDenom)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.CollateralAmount)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.BorrowedDenom)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.BorrowedAmount)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.HeldDenom)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.HeldAmount)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventLeveragePositionOpened)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.HeldAmount) > 0 {
+			i -= len(x.HeldAmount)
+			copy(dAtA[i:], x.HeldAmount)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.HeldAmount)))
+			i--
+			dAtA[i] = 0x52
+		}
+		if len(x.HeldDenom) > 0 {
+			i -= len(x.HeldDenom)
+			copy(dAtA[i:], x.HeldDenom)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.HeldDenom)))
+			i--
+			dAtA[i] = 0x4a
+		}
+		if len(x.BorrowedAmount) > 0 {
+			i -= len(x.BorrowedAmount)
+			copy(dAtA[i:], x.BorrowedAmount)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.BorrowedAmount)))
+			i--
+			dAtA[i] = 0x42
+		}
+		if len(x.BorrowedDenom) > 0 {
+			i -= len(x.BorrowedDenom)
+			copy(dAtA[i:], x.BorrowedDenom)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.BorrowedDenom)))
+			i--
+			dAtA[i] = 0x3a
+		}
+		if len(x.CollateralAmount) > 0 {
+			i -= len(x.CollateralAmount)
+			copy(dAtA[i:], x.CollateralAmount)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.CollateralAmount)))
+			i--
+			dAtA[i] = 0x32
+		}
+		if len(x.CollateralDenom) > 0 {
+			i -= len(x.CollateralDenom)
+			copy(dAtA[i:], x.CollateralDenom)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.CollateralDenom)))
+			i--
+			dAtA[i] = 0x2a
+		}
+		if len(x.PositionType) > 0 {
+			i -= len(x.PositionType)
+			copy(dAtA[i:], x.PositionType)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PositionType)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if x.PoolId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PoolId))
+			i--
+			dAtA[i] = 0x18
+		}
+		if len(x.User) > 0 {
+			i -= len(x.User)
+			copy(dAtA[i:], x.User)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.User)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.PositionId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PositionId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventLeveragePositionOpened)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventLeveragePositionOpened: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventLeveragePositionOpened: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PositionId", wireType)
+				}
+				x.PositionId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PositionId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field User", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.User = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PoolId", wireType)
+				}
+				x.PoolId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PoolId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PositionType", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.PositionType = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CollateralDenom", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.CollateralDenom = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 6:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CollateralAmount", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.CollateralAmount = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 7:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BorrowedDenom", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.BorrowedDenom = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 8:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BorrowedAmount", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.BorrowedAmount = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 9:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field HeldDenom", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.HeldDenom = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 10:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field HeldAmount", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.HeldAmount = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventLeveragePositionClosed                  protoreflect.MessageDescriptor
+	fd_EventLeveragePositionClosed_position_id      protoreflect.FieldDescriptor
+	fd_EventLeveragePositionClosed_user             protoreflect.FieldDescriptor
+	fd_EventLeveragePositionClosed_pool_id          protoreflect.FieldDescriptor
+	fd_EventLeveragePositionClosed_position_type    protoreflect.FieldDescriptor
+	fd_EventLeveragePositionClosed_profit           protoreflect.FieldDescriptor
+	fd_EventLeveragePositionClosed_accrued_interest protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_dysonprotocol_whaleswap_v1_events_proto_init()
+	md_EventLeveragePositionClosed = File_dysonprotocol_whaleswap_v1_events_proto.Messages().ByName("EventLeveragePositionClosed")
+	fd_EventLeveragePositionClosed_position_id = md_EventLeveragePositionClosed.Fields().ByName("position_id")
+	fd_EventLeveragePositionClosed_user = md_EventLeveragePositionClosed.Fields().ByName("user")
+	fd_EventLeveragePositionClosed_pool_id = md_EventLeveragePositionClosed.Fields().ByName("pool_id")
+	fd_EventLeveragePositionClosed_position_type = md_EventLeveragePositionClosed.Fields().ByName("position_type")
+	fd_EventLeveragePositionClosed_profit = md_EventLeveragePositionClosed.Fields().ByName("profit")
+	fd_EventLeveragePositionClosed_accrued_interest = md_EventLeveragePositionClosed.Fields().ByName("accrued_interest")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventLeveragePositionClosed)(nil)
+
+type fastReflection_EventLeveragePositionClosed EventLeveragePositionClosed
+
+func (x *EventLeveragePositionClosed) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventLeveragePositionClosed)(x)
+}
+
+func (x *EventLeveragePositionClosed) slowProtoReflect() protoreflect.Message {
+	mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventLeveragePositionClosed_messageType fastReflection_EventLeveragePositionClosed_messageType
+var _ protoreflect.MessageType = fastReflection_EventLeveragePositionClosed_messageType{}
+
+type fastReflection_EventLeveragePositionClosed_messageType struct{}
+
+func (x fastReflection_EventLeveragePositionClosed_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventLeveragePositionClosed)(nil)
+}
+func (x fastReflection_EventLeveragePositionClosed_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventLeveragePositionClosed)
+}
+func (x fastReflection_EventLeveragePositionClosed_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventLeveragePositionClosed
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventLeveragePositionClosed) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventLeveragePositionClosed
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventLeveragePositionClosed) Type() protoreflect.MessageType {
+	return _fastReflection_EventLeveragePositionClosed_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventLeveragePositionClosed) New() protoreflect.Message {
+	return new(fastReflection_EventLeveragePositionClosed)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventLeveragePositionClosed) Interface() protoreflect.ProtoMessage {
+	return (*EventLeveragePositionClosed)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventLeveragePositionClosed) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.PositionId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PositionId)
+		if !f(fd_EventLeveragePositionClosed_position_id, value) {
+			return
+		}
+	}
+	if x.User != "" {
+		value := protoreflect.ValueOfString(x.User)
+		if !f(fd_EventLeveragePositionClosed_user, value) {
+			return
+		}
+	}
+	if x.PoolId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PoolId)
+		if !f(fd_EventLeveragePositionClosed_pool_id, value) {
+			return
+		}
+	}
+	if x.PositionType != "" {
+		value := protoreflect.ValueOfString(x.PositionType)
+		if !f(fd_EventLeveragePositionClosed_position_type, value) {
+			return
+		}
+	}
+	if x.Profit != nil {
+		value := protoreflect.ValueOfMessage(x.Profit.ProtoReflect())
+		if !f(fd_EventLeveragePositionClosed_profit, value) {
+			return
+		}
+	}
+	if x.AccruedInterest != nil {
+		value := protoreflect.ValueOfMessage(x.AccruedInterest.ProtoReflect())
+		if !f(fd_EventLeveragePositionClosed_accrued_interest, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventLeveragePositionClosed) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.position_id":
+		return x.PositionId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.user":
+		return x.User != ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.pool_id":
+		return x.PoolId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.position_type":
+		return x.PositionType != ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.profit":
+		return x.Profit != nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.accrued_interest":
+		return x.AccruedInterest != nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeveragePositionClosed) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.position_id":
+		x.PositionId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.user":
+		x.User = ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.pool_id":
+		x.PoolId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.position_type":
+		x.PositionType = ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.profit":
+		x.Profit = nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.accrued_interest":
+		x.AccruedInterest = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventLeveragePositionClosed) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.position_id":
+		value := x.PositionId
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.user":
+		value := x.User
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.pool_id":
+		value := x.PoolId
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.position_type":
+		value := x.PositionType
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.profit":
+		value := x.Profit
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.accrued_interest":
+		value := x.AccruedInterest
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionClosed does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeveragePositionClosed) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.position_id":
+		x.PositionId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.user":
+		x.User = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.pool_id":
+		x.PoolId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.position_type":
+		x.PositionType = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.profit":
+		x.Profit = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.accrued_interest":
+		x.AccruedInterest = value.Message().Interface().(*v1beta1.Coin)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeveragePositionClosed) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.profit":
+		if x.Profit == nil {
+			x.Profit = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.Profit.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.accrued_interest":
+		if x.AccruedInterest == nil {
+			x.AccruedInterest = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.AccruedInterest.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.position_id":
+		panic(fmt.Errorf("field position_id of message dysonprotocol.whaleswap.v1.EventLeveragePositionClosed is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.user":
+		panic(fmt.Errorf("field user of message dysonprotocol.whaleswap.v1.EventLeveragePositionClosed is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.pool_id":
+		panic(fmt.Errorf("field pool_id of message dysonprotocol.whaleswap.v1.EventLeveragePositionClosed is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.position_type":
+		panic(fmt.Errorf("field position_type of message dysonprotocol.whaleswap.v1.EventLeveragePositionClosed is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventLeveragePositionClosed) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.position_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.user":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.pool_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.position_type":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.profit":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.accrued_interest":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventLeveragePositionClosed) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in dysonprotocol.whaleswap.v1.EventLeveragePositionClosed", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventLeveragePositionClosed) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeveragePositionClosed) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventLeveragePositionClosed) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventLeveragePositionClosed) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventLeveragePositionClosed)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.PositionId != 0 {
+			n += 1 + runtime.Sov(uint64(x.PositionId))
+		}
+		l = len(x.User)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.PoolId != 0 {
+			n += 1 + runtime.Sov(uint64(x.PoolId))
+		}
+		l = len(x.PositionType)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.Profit != nil {
+			l = options.Size(x.Profit)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.AccruedInterest != nil {
+			l = options.Size(x.AccruedInterest)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventLeveragePositionClosed)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.AccruedInterest != nil {
+			encoded, err := options.Marshal(x.AccruedInterest)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x32
+		}
+		if x.Profit != nil {
+			encoded, err := options.Marshal(x.Profit)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x2a
+		}
+		if len(x.PositionType) > 0 {
+			i -= len(x.PositionType)
+			copy(dAtA[i:], x.PositionType)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PositionType)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if x.PoolId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PoolId))
+			i--
+			dAtA[i] = 0x18
+		}
+		if len(x.User) > 0 {
+			i -= len(x.User)
+			copy(dAtA[i:], x.User)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.User)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.PositionId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PositionId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventLeveragePositionClosed)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventLeveragePositionClosed: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventLeveragePositionClosed: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PositionId", wireType)
+				}
+				x.PositionId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PositionId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field User", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.User = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PoolId", wireType)
+				}
+				x.PoolId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PoolId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PositionType", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.PositionType = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Profit", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.Profit == nil {
+					x.Profit = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Profit); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 6:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AccruedInterest", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.AccruedInterest == nil {
+					x.AccruedInterest = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.AccruedInterest); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventLeverageCollateralAdded                      protoreflect.MessageDescriptor
+	fd_EventLeverageCollateralAdded_position_id          protoreflect.FieldDescriptor
+	fd_EventLeverageCollateralAdded_user                 protoreflect.FieldDescriptor
+	fd_EventLeverageCollateralAdded_pool_id              protoreflect.FieldDescriptor
+	fd_EventLeverageCollateralAdded_collateral_added     protoreflect.FieldDescriptor
+	fd_EventLeverageCollateralAdded_new_collateral       protoreflect.FieldDescriptor
+	fd_EventLeverageCollateralAdded_new_collateral_ratio protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_dysonprotocol_whaleswap_v1_events_proto_init()
+	md_EventLeverageCollateralAdded = File_dysonprotocol_whaleswap_v1_events_proto.Messages().ByName("EventLeverageCollateralAdded")
+	fd_EventLeverageCollateralAdded_position_id = md_EventLeverageCollateralAdded.Fields().ByName("position_id")
+	fd_EventLeverageCollateralAdded_user = md_EventLeverageCollateralAdded.Fields().ByName("user")
+	fd_EventLeverageCollateralAdded_pool_id = md_EventLeverageCollateralAdded.Fields().ByName("pool_id")
+	fd_EventLeverageCollateralAdded_collateral_added = md_EventLeverageCollateralAdded.Fields().ByName("collateral_added")
+	fd_EventLeverageCollateralAdded_new_collateral = md_EventLeverageCollateralAdded.Fields().ByName("new_collateral")
+	fd_EventLeverageCollateralAdded_new_collateral_ratio = md_EventLeverageCollateralAdded.Fields().ByName("new_collateral_ratio")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventLeverageCollateralAdded)(nil)
+
+type fastReflection_EventLeverageCollateralAdded EventLeverageCollateralAdded
+
+func (x *EventLeverageCollateralAdded) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventLeverageCollateralAdded)(x)
+}
+
+func (x *EventLeverageCollateralAdded) slowProtoReflect() protoreflect.Message {
+	mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[15]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventLeverageCollateralAdded_messageType fastReflection_EventLeverageCollateralAdded_messageType
+var _ protoreflect.MessageType = fastReflection_EventLeverageCollateralAdded_messageType{}
+
+type fastReflection_EventLeverageCollateralAdded_messageType struct{}
+
+func (x fastReflection_EventLeverageCollateralAdded_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventLeverageCollateralAdded)(nil)
+}
+func (x fastReflection_EventLeverageCollateralAdded_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventLeverageCollateralAdded)
+}
+func (x fastReflection_EventLeverageCollateralAdded_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventLeverageCollateralAdded
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventLeverageCollateralAdded) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventLeverageCollateralAdded
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventLeverageCollateralAdded) Type() protoreflect.MessageType {
+	return _fastReflection_EventLeverageCollateralAdded_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventLeverageCollateralAdded) New() protoreflect.Message {
+	return new(fastReflection_EventLeverageCollateralAdded)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventLeverageCollateralAdded) Interface() protoreflect.ProtoMessage {
+	return (*EventLeverageCollateralAdded)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventLeverageCollateralAdded) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.PositionId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PositionId)
+		if !f(fd_EventLeverageCollateralAdded_position_id, value) {
+			return
+		}
+	}
+	if x.User != "" {
+		value := protoreflect.ValueOfString(x.User)
+		if !f(fd_EventLeverageCollateralAdded_user, value) {
+			return
+		}
+	}
+	if x.PoolId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PoolId)
+		if !f(fd_EventLeverageCollateralAdded_pool_id, value) {
+			return
+		}
+	}
+	if x.CollateralAdded != nil {
+		value := protoreflect.ValueOfMessage(x.CollateralAdded.ProtoReflect())
+		if !f(fd_EventLeverageCollateralAdded_collateral_added, value) {
+			return
+		}
+	}
+	if x.NewCollateral != nil {
+		value := protoreflect.ValueOfMessage(x.NewCollateral.ProtoReflect())
+		if !f(fd_EventLeverageCollateralAdded_new_collateral, value) {
+			return
+		}
+	}
+	if x.NewCollateralRatio != "" {
+		value := protoreflect.ValueOfString(x.NewCollateralRatio)
+		if !f(fd_EventLeverageCollateralAdded_new_collateral_ratio, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventLeverageCollateralAdded) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.position_id":
+		return x.PositionId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.user":
+		return x.User != ""
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.pool_id":
+		return x.PoolId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.collateral_added":
+		return x.CollateralAdded != nil
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral":
+		return x.NewCollateral != nil
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral_ratio":
+		return x.NewCollateralRatio != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageCollateralAdded) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.position_id":
+		x.PositionId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.user":
+		x.User = ""
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.pool_id":
+		x.PoolId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.collateral_added":
+		x.CollateralAdded = nil
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral":
+		x.NewCollateral = nil
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral_ratio":
+		x.NewCollateralRatio = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventLeverageCollateralAdded) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.position_id":
+		value := x.PositionId
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.user":
+		value := x.User
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.pool_id":
+		value := x.PoolId
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.collateral_added":
+		value := x.CollateralAdded
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral":
+		value := x.NewCollateral
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral_ratio":
+		value := x.NewCollateralRatio
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageCollateralAdded) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.position_id":
+		x.PositionId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.user":
+		x.User = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.pool_id":
+		x.PoolId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.collateral_added":
+		x.CollateralAdded = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral":
+		x.NewCollateral = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral_ratio":
+		x.NewCollateralRatio = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageCollateralAdded) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.collateral_added":
+		if x.CollateralAdded == nil {
+			x.CollateralAdded = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.CollateralAdded.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral":
+		if x.NewCollateral == nil {
+			x.NewCollateral = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.NewCollateral.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.position_id":
+		panic(fmt.Errorf("field position_id of message dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.user":
+		panic(fmt.Errorf("field user of message dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.pool_id":
+		panic(fmt.Errorf("field pool_id of message dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral_ratio":
+		panic(fmt.Errorf("field new_collateral_ratio of message dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventLeverageCollateralAdded) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.position_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.user":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.pool_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.collateral_added":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral_ratio":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventLeverageCollateralAdded) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventLeverageCollateralAdded) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageCollateralAdded) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventLeverageCollateralAdded) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventLeverageCollateralAdded) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventLeverageCollateralAdded)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.PositionId != 0 {
+			n += 1 + runtime.Sov(uint64(x.PositionId))
+		}
+		l = len(x.User)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.PoolId != 0 {
+			n += 1 + runtime.Sov(uint64(x.PoolId))
+		}
+		if x.CollateralAdded != nil {
+			l = options.Size(x.CollateralAdded)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.NewCollateral != nil {
+			l = options.Size(x.NewCollateral)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.NewCollateralRatio)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventLeverageCollateralAdded)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.NewCollateralRatio) > 0 {
+			i -= len(x.NewCollateralRatio)
+			copy(dAtA[i:], x.NewCollateralRatio)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NewCollateralRatio)))
+			i--
+			dAtA[i] = 0x32
+		}
+		if x.NewCollateral != nil {
+			encoded, err := options.Marshal(x.NewCollateral)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x2a
+		}
+		if x.CollateralAdded != nil {
+			encoded, err := options.Marshal(x.CollateralAdded)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if x.PoolId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PoolId))
+			i--
+			dAtA[i] = 0x18
+		}
+		if len(x.User) > 0 {
+			i -= len(x.User)
+			copy(dAtA[i:], x.User)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.User)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.PositionId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PositionId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventLeverageCollateralAdded)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventLeverageCollateralAdded: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventLeverageCollateralAdded: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PositionId", wireType)
+				}
+				x.PositionId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PositionId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field User", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.User = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PoolId", wireType)
+				}
+				x.PoolId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PoolId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CollateralAdded", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.CollateralAdded == nil {
+					x.CollateralAdded = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.CollateralAdded); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NewCollateral", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.NewCollateral == nil {
+					x.NewCollateral = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.NewCollateral); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 6:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NewCollateralRatio", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.NewCollateralRatio = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventLeverageLiquidationInitialized                       protoreflect.MessageDescriptor
+	fd_EventLeverageLiquidationInitialized_position_id           protoreflect.FieldDescriptor
+	fd_EventLeverageLiquidationInitialized_user                  protoreflect.FieldDescriptor
+	fd_EventLeverageLiquidationInitialized_pool_id               protoreflect.FieldDescriptor
+	fd_EventLeverageLiquidationInitialized_collateral_ratio      protoreflect.FieldDescriptor
+	fd_EventLeverageLiquidationInitialized_liquidation_threshold protoreflect.FieldDescriptor
+	fd_EventLeverageLiquidationInitialized_block_height          protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_dysonprotocol_whaleswap_v1_events_proto_init()
+	md_EventLeverageLiquidationInitialized = File_dysonprotocol_whaleswap_v1_events_proto.Messages().ByName("EventLeverageLiquidationInitialized")
+	fd_EventLeverageLiquidationInitialized_position_id = md_EventLeverageLiquidationInitialized.Fields().ByName("position_id")
+	fd_EventLeverageLiquidationInitialized_user = md_EventLeverageLiquidationInitialized.Fields().ByName("user")
+	fd_EventLeverageLiquidationInitialized_pool_id = md_EventLeverageLiquidationInitialized.Fields().ByName("pool_id")
+	fd_EventLeverageLiquidationInitialized_collateral_ratio = md_EventLeverageLiquidationInitialized.Fields().ByName("collateral_ratio")
+	fd_EventLeverageLiquidationInitialized_liquidation_threshold = md_EventLeverageLiquidationInitialized.Fields().ByName("liquidation_threshold")
+	fd_EventLeverageLiquidationInitialized_block_height = md_EventLeverageLiquidationInitialized.Fields().ByName("block_height")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventLeverageLiquidationInitialized)(nil)
+
+type fastReflection_EventLeverageLiquidationInitialized EventLeverageLiquidationInitialized
+
+func (x *EventLeverageLiquidationInitialized) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventLeverageLiquidationInitialized)(x)
+}
+
+func (x *EventLeverageLiquidationInitialized) slowProtoReflect() protoreflect.Message {
+	mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[16]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventLeverageLiquidationInitialized_messageType fastReflection_EventLeverageLiquidationInitialized_messageType
+var _ protoreflect.MessageType = fastReflection_EventLeverageLiquidationInitialized_messageType{}
+
+type fastReflection_EventLeverageLiquidationInitialized_messageType struct{}
+
+func (x fastReflection_EventLeverageLiquidationInitialized_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventLeverageLiquidationInitialized)(nil)
+}
+func (x fastReflection_EventLeverageLiquidationInitialized_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventLeverageLiquidationInitialized)
+}
+func (x fastReflection_EventLeverageLiquidationInitialized_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventLeverageLiquidationInitialized
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventLeverageLiquidationInitialized) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventLeverageLiquidationInitialized
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventLeverageLiquidationInitialized) Type() protoreflect.MessageType {
+	return _fastReflection_EventLeverageLiquidationInitialized_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventLeverageLiquidationInitialized) New() protoreflect.Message {
+	return new(fastReflection_EventLeverageLiquidationInitialized)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventLeverageLiquidationInitialized) Interface() protoreflect.ProtoMessage {
+	return (*EventLeverageLiquidationInitialized)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventLeverageLiquidationInitialized) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.PositionId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PositionId)
+		if !f(fd_EventLeverageLiquidationInitialized_position_id, value) {
+			return
+		}
+	}
+	if x.User != "" {
+		value := protoreflect.ValueOfString(x.User)
+		if !f(fd_EventLeverageLiquidationInitialized_user, value) {
+			return
+		}
+	}
+	if x.PoolId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PoolId)
+		if !f(fd_EventLeverageLiquidationInitialized_pool_id, value) {
+			return
+		}
+	}
+	if x.CollateralRatio != "" {
+		value := protoreflect.ValueOfString(x.CollateralRatio)
+		if !f(fd_EventLeverageLiquidationInitialized_collateral_ratio, value) {
+			return
+		}
+	}
+	if x.LiquidationThreshold != "" {
+		value := protoreflect.ValueOfString(x.LiquidationThreshold)
+		if !f(fd_EventLeverageLiquidationInitialized_liquidation_threshold, value) {
+			return
+		}
+	}
+	if x.BlockHeight != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.BlockHeight)
+		if !f(fd_EventLeverageLiquidationInitialized_block_height, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventLeverageLiquidationInitialized) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.position_id":
+		return x.PositionId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.user":
+		return x.User != ""
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.pool_id":
+		return x.PoolId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.collateral_ratio":
+		return x.CollateralRatio != ""
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.liquidation_threshold":
+		return x.LiquidationThreshold != ""
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.block_height":
+		return x.BlockHeight != uint64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageLiquidationInitialized) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.position_id":
+		x.PositionId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.user":
+		x.User = ""
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.pool_id":
+		x.PoolId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.collateral_ratio":
+		x.CollateralRatio = ""
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.liquidation_threshold":
+		x.LiquidationThreshold = ""
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.block_height":
+		x.BlockHeight = uint64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventLeverageLiquidationInitialized) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.position_id":
+		value := x.PositionId
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.user":
+		value := x.User
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.pool_id":
+		value := x.PoolId
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.collateral_ratio":
+		value := x.CollateralRatio
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.liquidation_threshold":
+		value := x.LiquidationThreshold
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.block_height":
+		value := x.BlockHeight
+		return protoreflect.ValueOfUint64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageLiquidationInitialized) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.position_id":
+		x.PositionId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.user":
+		x.User = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.pool_id":
+		x.PoolId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.collateral_ratio":
+		x.CollateralRatio = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.liquidation_threshold":
+		x.LiquidationThreshold = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.block_height":
+		x.BlockHeight = value.Uint()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageLiquidationInitialized) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.position_id":
+		panic(fmt.Errorf("field position_id of message dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.user":
+		panic(fmt.Errorf("field user of message dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.pool_id":
+		panic(fmt.Errorf("field pool_id of message dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.collateral_ratio":
+		panic(fmt.Errorf("field collateral_ratio of message dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.liquidation_threshold":
+		panic(fmt.Errorf("field liquidation_threshold of message dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.block_height":
+		panic(fmt.Errorf("field block_height of message dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventLeverageLiquidationInitialized) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.position_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.user":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.pool_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.collateral_ratio":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.liquidation_threshold":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized.block_height":
+		return protoreflect.ValueOfUint64(uint64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventLeverageLiquidationInitialized) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventLeverageLiquidationInitialized) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageLiquidationInitialized) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventLeverageLiquidationInitialized) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventLeverageLiquidationInitialized) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventLeverageLiquidationInitialized)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.PositionId != 0 {
+			n += 1 + runtime.Sov(uint64(x.PositionId))
+		}
+		l = len(x.User)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.PoolId != 0 {
+			n += 1 + runtime.Sov(uint64(x.PoolId))
+		}
+		l = len(x.CollateralRatio)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.LiquidationThreshold)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.BlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockHeight))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventLeverageLiquidationInitialized)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.BlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockHeight))
+			i--
+			dAtA[i] = 0x30
+		}
+		if len(x.LiquidationThreshold) > 0 {
+			i -= len(x.LiquidationThreshold)
+			copy(dAtA[i:], x.LiquidationThreshold)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LiquidationThreshold)))
+			i--
+			dAtA[i] = 0x2a
+		}
+		if len(x.CollateralRatio) > 0 {
+			i -= len(x.CollateralRatio)
+			copy(dAtA[i:], x.CollateralRatio)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.CollateralRatio)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if x.PoolId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PoolId))
+			i--
+			dAtA[i] = 0x18
+		}
+		if len(x.User) > 0 {
+			i -= len(x.User)
+			copy(dAtA[i:], x.User)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.User)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.PositionId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PositionId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventLeverageLiquidationInitialized)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventLeverageLiquidationInitialized: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventLeverageLiquidationInitialized: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PositionId", wireType)
+				}
+				x.PositionId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PositionId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field User", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.User = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PoolId", wireType)
+				}
+				x.PoolId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PoolId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CollateralRatio", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.CollateralRatio = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LiquidationThreshold", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.LiquidationThreshold = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 6:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+				}
+				x.BlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.BlockHeight |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventLeverageLiquidationFinalized                     protoreflect.MessageDescriptor
+	fd_EventLeverageLiquidationFinalized_position_id         protoreflect.FieldDescriptor
+	fd_EventLeverageLiquidationFinalized_user                protoreflect.FieldDescriptor
+	fd_EventLeverageLiquidationFinalized_liquidator          protoreflect.FieldDescriptor
+	fd_EventLeverageLiquidationFinalized_pool_id             protoreflect.FieldDescriptor
+	fd_EventLeverageLiquidationFinalized_collateral_received protoreflect.FieldDescriptor
+	fd_EventLeverageLiquidationFinalized_repayment_amount    protoreflect.FieldDescriptor
+	fd_EventLeverageLiquidationFinalized_accrued_interest    protoreflect.FieldDescriptor
+	fd_EventLeverageLiquidationFinalized_pool_loss           protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_dysonprotocol_whaleswap_v1_events_proto_init()
+	md_EventLeverageLiquidationFinalized = File_dysonprotocol_whaleswap_v1_events_proto.Messages().ByName("EventLeverageLiquidationFinalized")
+	fd_EventLeverageLiquidationFinalized_position_id = md_EventLeverageLiquidationFinalized.Fields().ByName("position_id")
+	fd_EventLeverageLiquidationFinalized_user = md_EventLeverageLiquidationFinalized.Fields().ByName("user")
+	fd_EventLeverageLiquidationFinalized_liquidator = md_EventLeverageLiquidationFinalized.Fields().ByName("liquidator")
+	fd_EventLeverageLiquidationFinalized_pool_id = md_EventLeverageLiquidationFinalized.Fields().ByName("pool_id")
+	fd_EventLeverageLiquidationFinalized_collateral_received = md_EventLeverageLiquidationFinalized.Fields().ByName("collateral_received")
+	fd_EventLeverageLiquidationFinalized_repayment_amount = md_EventLeverageLiquidationFinalized.Fields().ByName("repayment_amount")
+	fd_EventLeverageLiquidationFinalized_accrued_interest = md_EventLeverageLiquidationFinalized.Fields().ByName("accrued_interest")
+	fd_EventLeverageLiquidationFinalized_pool_loss = md_EventLeverageLiquidationFinalized.Fields().ByName("pool_loss")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventLeverageLiquidationFinalized)(nil)
+
+type fastReflection_EventLeverageLiquidationFinalized EventLeverageLiquidationFinalized
+
+func (x *EventLeverageLiquidationFinalized) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventLeverageLiquidationFinalized)(x)
+}
+
+func (x *EventLeverageLiquidationFinalized) slowProtoReflect() protoreflect.Message {
+	mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[17]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventLeverageLiquidationFinalized_messageType fastReflection_EventLeverageLiquidationFinalized_messageType
+var _ protoreflect.MessageType = fastReflection_EventLeverageLiquidationFinalized_messageType{}
+
+type fastReflection_EventLeverageLiquidationFinalized_messageType struct{}
+
+func (x fastReflection_EventLeverageLiquidationFinalized_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventLeverageLiquidationFinalized)(nil)
+}
+func (x fastReflection_EventLeverageLiquidationFinalized_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventLeverageLiquidationFinalized)
+}
+func (x fastReflection_EventLeverageLiquidationFinalized_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventLeverageLiquidationFinalized
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventLeverageLiquidationFinalized) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventLeverageLiquidationFinalized
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventLeverageLiquidationFinalized) Type() protoreflect.MessageType {
+	return _fastReflection_EventLeverageLiquidationFinalized_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventLeverageLiquidationFinalized) New() protoreflect.Message {
+	return new(fastReflection_EventLeverageLiquidationFinalized)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventLeverageLiquidationFinalized) Interface() protoreflect.ProtoMessage {
+	return (*EventLeverageLiquidationFinalized)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventLeverageLiquidationFinalized) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.PositionId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PositionId)
+		if !f(fd_EventLeverageLiquidationFinalized_position_id, value) {
+			return
+		}
+	}
+	if x.User != "" {
+		value := protoreflect.ValueOfString(x.User)
+		if !f(fd_EventLeverageLiquidationFinalized_user, value) {
+			return
+		}
+	}
+	if x.Liquidator != "" {
+		value := protoreflect.ValueOfString(x.Liquidator)
+		if !f(fd_EventLeverageLiquidationFinalized_liquidator, value) {
+			return
+		}
+	}
+	if x.PoolId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PoolId)
+		if !f(fd_EventLeverageLiquidationFinalized_pool_id, value) {
+			return
+		}
+	}
+	if x.CollateralReceived != nil {
+		value := protoreflect.ValueOfMessage(x.CollateralReceived.ProtoReflect())
+		if !f(fd_EventLeverageLiquidationFinalized_collateral_received, value) {
+			return
+		}
+	}
+	if x.RepaymentAmount != nil {
+		value := protoreflect.ValueOfMessage(x.RepaymentAmount.ProtoReflect())
+		if !f(fd_EventLeverageLiquidationFinalized_repayment_amount, value) {
+			return
+		}
+	}
+	if x.AccruedInterest != nil {
+		value := protoreflect.ValueOfMessage(x.AccruedInterest.ProtoReflect())
+		if !f(fd_EventLeverageLiquidationFinalized_accrued_interest, value) {
+			return
+		}
+	}
+	if x.PoolLoss != nil {
+		value := protoreflect.ValueOfMessage(x.PoolLoss.ProtoReflect())
+		if !f(fd_EventLeverageLiquidationFinalized_pool_loss, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventLeverageLiquidationFinalized) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.position_id":
+		return x.PositionId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.user":
+		return x.User != ""
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.liquidator":
+		return x.Liquidator != ""
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.pool_id":
+		return x.PoolId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.collateral_received":
+		return x.CollateralReceived != nil
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.repayment_amount":
+		return x.RepaymentAmount != nil
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.accrued_interest":
+		return x.AccruedInterest != nil
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.pool_loss":
+		return x.PoolLoss != nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageLiquidationFinalized) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.position_id":
+		x.PositionId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.user":
+		x.User = ""
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.liquidator":
+		x.Liquidator = ""
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.pool_id":
+		x.PoolId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.collateral_received":
+		x.CollateralReceived = nil
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.repayment_amount":
+		x.RepaymentAmount = nil
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.accrued_interest":
+		x.AccruedInterest = nil
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.pool_loss":
+		x.PoolLoss = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventLeverageLiquidationFinalized) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.position_id":
+		value := x.PositionId
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.user":
+		value := x.User
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.liquidator":
+		value := x.Liquidator
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.pool_id":
+		value := x.PoolId
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.collateral_received":
+		value := x.CollateralReceived
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.repayment_amount":
+		value := x.RepaymentAmount
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.accrued_interest":
+		value := x.AccruedInterest
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.pool_loss":
+		value := x.PoolLoss
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageLiquidationFinalized) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.position_id":
+		x.PositionId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.user":
+		x.User = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.liquidator":
+		x.Liquidator = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.pool_id":
+		x.PoolId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.collateral_received":
+		x.CollateralReceived = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.repayment_amount":
+		x.RepaymentAmount = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.accrued_interest":
+		x.AccruedInterest = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.pool_loss":
+		x.PoolLoss = value.Message().Interface().(*v1beta1.Coin)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageLiquidationFinalized) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.collateral_received":
+		if x.CollateralReceived == nil {
+			x.CollateralReceived = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.CollateralReceived.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.repayment_amount":
+		if x.RepaymentAmount == nil {
+			x.RepaymentAmount = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.RepaymentAmount.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.accrued_interest":
+		if x.AccruedInterest == nil {
+			x.AccruedInterest = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.AccruedInterest.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.pool_loss":
+		if x.PoolLoss == nil {
+			x.PoolLoss = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.PoolLoss.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.position_id":
+		panic(fmt.Errorf("field position_id of message dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.user":
+		panic(fmt.Errorf("field user of message dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.liquidator":
+		panic(fmt.Errorf("field liquidator of message dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.pool_id":
+		panic(fmt.Errorf("field pool_id of message dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventLeverageLiquidationFinalized) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.position_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.user":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.liquidator":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.pool_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.collateral_received":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.repayment_amount":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.accrued_interest":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.pool_loss":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventLeverageLiquidationFinalized) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventLeverageLiquidationFinalized) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageLiquidationFinalized) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventLeverageLiquidationFinalized) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventLeverageLiquidationFinalized) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventLeverageLiquidationFinalized)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.PositionId != 0 {
+			n += 1 + runtime.Sov(uint64(x.PositionId))
+		}
+		l = len(x.User)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.Liquidator)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.PoolId != 0 {
+			n += 1 + runtime.Sov(uint64(x.PoolId))
+		}
+		if x.CollateralReceived != nil {
+			l = options.Size(x.CollateralReceived)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.RepaymentAmount != nil {
+			l = options.Size(x.RepaymentAmount)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.AccruedInterest != nil {
+			l = options.Size(x.AccruedInterest)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.PoolLoss != nil {
+			l = options.Size(x.PoolLoss)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventLeverageLiquidationFinalized)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.PoolLoss != nil {
+			encoded, err := options.Marshal(x.PoolLoss)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x42
+		}
+		if x.AccruedInterest != nil {
+			encoded, err := options.Marshal(x.AccruedInterest)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x3a
+		}
+		if x.RepaymentAmount != nil {
+			encoded, err := options.Marshal(x.RepaymentAmount)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x32
+		}
+		if x.CollateralReceived != nil {
+			encoded, err := options.Marshal(x.CollateralReceived)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x2a
+		}
+		if x.PoolId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PoolId))
+			i--
+			dAtA[i] = 0x20
+		}
+		if len(x.Liquidator) > 0 {
+			i -= len(x.Liquidator)
+			copy(dAtA[i:], x.Liquidator)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Liquidator)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if len(x.User) > 0 {
+			i -= len(x.User)
+			copy(dAtA[i:], x.User)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.User)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.PositionId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PositionId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventLeverageLiquidationFinalized)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventLeverageLiquidationFinalized: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventLeverageLiquidationFinalized: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PositionId", wireType)
+				}
+				x.PositionId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PositionId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field User", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.User = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Liquidator", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Liquidator = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PoolId", wireType)
+				}
+				x.PoolId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PoolId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CollateralReceived", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.CollateralReceived == nil {
+					x.CollateralReceived = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.CollateralReceived); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 6:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field RepaymentAmount", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.RepaymentAmount == nil {
+					x.RepaymentAmount = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.RepaymentAmount); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 7:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AccruedInterest", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.AccruedInterest == nil {
+					x.AccruedInterest = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.AccruedInterest); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 8:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PoolLoss", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.PoolLoss == nil {
+					x.PoolLoss = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.PoolLoss); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
 // Code generated by protoc-gen-go. DO NOT EDIT.
 // versions:
 // 	protoc-gen-go v1.27.0
@@ -6607,6 +10635,429 @@ func (x *EventTradeRecorded) GetNote() string {
 	return ""
 }
 
+type EventLeveragePositionOpened struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PositionId       uint64 `protobuf:"varint,1,opt,name=position_id,json=positionId,proto3" json:"position_id,omitempty"`
+	User             string `protobuf:"bytes,2,opt,name=user,proto3" json:"user,omitempty"`
+	PoolId           uint64 `protobuf:"varint,3,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
+	PositionType     string `protobuf:"bytes,4,opt,name=position_type,json=positionType,proto3" json:"position_type,omitempty"`
+	CollateralDenom  string `protobuf:"bytes,5,opt,name=collateral_denom,json=collateralDenom,proto3" json:"collateral_denom,omitempty"`
+	CollateralAmount string `protobuf:"bytes,6,opt,name=collateral_amount,json=collateralAmount,proto3" json:"collateral_amount,omitempty"`
+	BorrowedDenom    string `protobuf:"bytes,7,opt,name=borrowed_denom,json=borrowedDenom,proto3" json:"borrowed_denom,omitempty"`
+	BorrowedAmount   string `protobuf:"bytes,8,opt,name=borrowed_amount,json=borrowedAmount,proto3" json:"borrowed_amount,omitempty"`
+	HeldDenom        string `protobuf:"bytes,9,opt,name=held_denom,json=heldDenom,proto3" json:"held_denom,omitempty"`
+	HeldAmount       string `protobuf:"bytes,10,opt,name=held_amount,json=heldAmount,proto3" json:"held_amount,omitempty"`
+}
+
+func (x *EventLeveragePositionOpened) Reset() {
+	*x = EventLeveragePositionOpened{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventLeveragePositionOpened) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventLeveragePositionOpened) ProtoMessage() {}
+
+// Deprecated: Use EventLeveragePositionOpened.ProtoReflect.Descriptor instead.
+func (*EventLeveragePositionOpened) Descriptor() ([]byte, []int) {
+	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *EventLeveragePositionOpened) GetPositionId() uint64 {
+	if x != nil {
+		return x.PositionId
+	}
+	return 0
+}
+
+func (x *EventLeveragePositionOpened) GetUser() string {
+	if x != nil {
+		return x.User
+	}
+	return ""
+}
+
+func (x *EventLeveragePositionOpened) GetPoolId() uint64 {
+	if x != nil {
+		return x.PoolId
+	}
+	return 0
+}
+
+func (x *EventLeveragePositionOpened) GetPositionType() string {
+	if x != nil {
+		return x.PositionType
+	}
+	return ""
+}
+
+func (x *EventLeveragePositionOpened) GetCollateralDenom() string {
+	if x != nil {
+		return x.CollateralDenom
+	}
+	return ""
+}
+
+func (x *EventLeveragePositionOpened) GetCollateralAmount() string {
+	if x != nil {
+		return x.CollateralAmount
+	}
+	return ""
+}
+
+func (x *EventLeveragePositionOpened) GetBorrowedDenom() string {
+	if x != nil {
+		return x.BorrowedDenom
+	}
+	return ""
+}
+
+func (x *EventLeveragePositionOpened) GetBorrowedAmount() string {
+	if x != nil {
+		return x.BorrowedAmount
+	}
+	return ""
+}
+
+func (x *EventLeveragePositionOpened) GetHeldDenom() string {
+	if x != nil {
+		return x.HeldDenom
+	}
+	return ""
+}
+
+func (x *EventLeveragePositionOpened) GetHeldAmount() string {
+	if x != nil {
+		return x.HeldAmount
+	}
+	return ""
+}
+
+type EventLeveragePositionClosed struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PositionId      uint64        `protobuf:"varint,1,opt,name=position_id,json=positionId,proto3" json:"position_id,omitempty"`
+	User            string        `protobuf:"bytes,2,opt,name=user,proto3" json:"user,omitempty"`
+	PoolId          uint64        `protobuf:"varint,3,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
+	PositionType    string        `protobuf:"bytes,4,opt,name=position_type,json=positionType,proto3" json:"position_type,omitempty"`
+	Profit          *v1beta1.Coin `protobuf:"bytes,5,opt,name=profit,proto3" json:"profit,omitempty"`
+	AccruedInterest *v1beta1.Coin `protobuf:"bytes,6,opt,name=accrued_interest,json=accruedInterest,proto3" json:"accrued_interest,omitempty"`
+}
+
+func (x *EventLeveragePositionClosed) Reset() {
+	*x = EventLeveragePositionClosed{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventLeveragePositionClosed) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventLeveragePositionClosed) ProtoMessage() {}
+
+// Deprecated: Use EventLeveragePositionClosed.ProtoReflect.Descriptor instead.
+func (*EventLeveragePositionClosed) Descriptor() ([]byte, []int) {
+	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *EventLeveragePositionClosed) GetPositionId() uint64 {
+	if x != nil {
+		return x.PositionId
+	}
+	return 0
+}
+
+func (x *EventLeveragePositionClosed) GetUser() string {
+	if x != nil {
+		return x.User
+	}
+	return ""
+}
+
+func (x *EventLeveragePositionClosed) GetPoolId() uint64 {
+	if x != nil {
+		return x.PoolId
+	}
+	return 0
+}
+
+func (x *EventLeveragePositionClosed) GetPositionType() string {
+	if x != nil {
+		return x.PositionType
+	}
+	return ""
+}
+
+func (x *EventLeveragePositionClosed) GetProfit() *v1beta1.Coin {
+	if x != nil {
+		return x.Profit
+	}
+	return nil
+}
+
+func (x *EventLeveragePositionClosed) GetAccruedInterest() *v1beta1.Coin {
+	if x != nil {
+		return x.AccruedInterest
+	}
+	return nil
+}
+
+type EventLeverageCollateralAdded struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PositionId         uint64        `protobuf:"varint,1,opt,name=position_id,json=positionId,proto3" json:"position_id,omitempty"`
+	User               string        `protobuf:"bytes,2,opt,name=user,proto3" json:"user,omitempty"`
+	PoolId             uint64        `protobuf:"varint,3,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
+	CollateralAdded    *v1beta1.Coin `protobuf:"bytes,4,opt,name=collateral_added,json=collateralAdded,proto3" json:"collateral_added,omitempty"`
+	NewCollateral      *v1beta1.Coin `protobuf:"bytes,5,opt,name=new_collateral,json=newCollateral,proto3" json:"new_collateral,omitempty"`
+	NewCollateralRatio string        `protobuf:"bytes,6,opt,name=new_collateral_ratio,json=newCollateralRatio,proto3" json:"new_collateral_ratio,omitempty"`
+}
+
+func (x *EventLeverageCollateralAdded) Reset() {
+	*x = EventLeverageCollateralAdded{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[15]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventLeverageCollateralAdded) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventLeverageCollateralAdded) ProtoMessage() {}
+
+// Deprecated: Use EventLeverageCollateralAdded.ProtoReflect.Descriptor instead.
+func (*EventLeverageCollateralAdded) Descriptor() ([]byte, []int) {
+	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *EventLeverageCollateralAdded) GetPositionId() uint64 {
+	if x != nil {
+		return x.PositionId
+	}
+	return 0
+}
+
+func (x *EventLeverageCollateralAdded) GetUser() string {
+	if x != nil {
+		return x.User
+	}
+	return ""
+}
+
+func (x *EventLeverageCollateralAdded) GetPoolId() uint64 {
+	if x != nil {
+		return x.PoolId
+	}
+	return 0
+}
+
+func (x *EventLeverageCollateralAdded) GetCollateralAdded() *v1beta1.Coin {
+	if x != nil {
+		return x.CollateralAdded
+	}
+	return nil
+}
+
+func (x *EventLeverageCollateralAdded) GetNewCollateral() *v1beta1.Coin {
+	if x != nil {
+		return x.NewCollateral
+	}
+	return nil
+}
+
+func (x *EventLeverageCollateralAdded) GetNewCollateralRatio() string {
+	if x != nil {
+		return x.NewCollateralRatio
+	}
+	return ""
+}
+
+type EventLeverageLiquidationInitialized struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PositionId           uint64 `protobuf:"varint,1,opt,name=position_id,json=positionId,proto3" json:"position_id,omitempty"`
+	User                 string `protobuf:"bytes,2,opt,name=user,proto3" json:"user,omitempty"`
+	PoolId               uint64 `protobuf:"varint,3,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
+	CollateralRatio      string `protobuf:"bytes,4,opt,name=collateral_ratio,json=collateralRatio,proto3" json:"collateral_ratio,omitempty"`
+	LiquidationThreshold string `protobuf:"bytes,5,opt,name=liquidation_threshold,json=liquidationThreshold,proto3" json:"liquidation_threshold,omitempty"`
+	BlockHeight          uint64 `protobuf:"varint,6,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (x *EventLeverageLiquidationInitialized) Reset() {
+	*x = EventLeverageLiquidationInitialized{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[16]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventLeverageLiquidationInitialized) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventLeverageLiquidationInitialized) ProtoMessage() {}
+
+// Deprecated: Use EventLeverageLiquidationInitialized.ProtoReflect.Descriptor instead.
+func (*EventLeverageLiquidationInitialized) Descriptor() ([]byte, []int) {
+	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *EventLeverageLiquidationInitialized) GetPositionId() uint64 {
+	if x != nil {
+		return x.PositionId
+	}
+	return 0
+}
+
+func (x *EventLeverageLiquidationInitialized) GetUser() string {
+	if x != nil {
+		return x.User
+	}
+	return ""
+}
+
+func (x *EventLeverageLiquidationInitialized) GetPoolId() uint64 {
+	if x != nil {
+		return x.PoolId
+	}
+	return 0
+}
+
+func (x *EventLeverageLiquidationInitialized) GetCollateralRatio() string {
+	if x != nil {
+		return x.CollateralRatio
+	}
+	return ""
+}
+
+func (x *EventLeverageLiquidationInitialized) GetLiquidationThreshold() string {
+	if x != nil {
+		return x.LiquidationThreshold
+	}
+	return ""
+}
+
+func (x *EventLeverageLiquidationInitialized) GetBlockHeight() uint64 {
+	if x != nil {
+		return x.BlockHeight
+	}
+	return 0
+}
+
+type EventLeverageLiquidationFinalized struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PositionId         uint64        `protobuf:"varint,1,opt,name=position_id,json=positionId,proto3" json:"position_id,omitempty"`
+	User               string        `protobuf:"bytes,2,opt,name=user,proto3" json:"user,omitempty"`
+	Liquidator         string        `protobuf:"bytes,3,opt,name=liquidator,proto3" json:"liquidator,omitempty"`
+	PoolId             uint64        `protobuf:"varint,4,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
+	CollateralReceived *v1beta1.Coin `protobuf:"bytes,5,opt,name=collateral_received,json=collateralReceived,proto3" json:"collateral_received,omitempty"`
+	RepaymentAmount    *v1beta1.Coin `protobuf:"bytes,6,opt,name=repayment_amount,json=repaymentAmount,proto3" json:"repayment_amount,omitempty"`
+	AccruedInterest    *v1beta1.Coin `protobuf:"bytes,7,opt,name=accrued_interest,json=accruedInterest,proto3" json:"accrued_interest,omitempty"`
+	PoolLoss           *v1beta1.Coin `protobuf:"bytes,8,opt,name=pool_loss,json=poolLoss,proto3" json:"pool_loss,omitempty"`
+}
+
+func (x *EventLeverageLiquidationFinalized) Reset() {
+	*x = EventLeverageLiquidationFinalized{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[17]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventLeverageLiquidationFinalized) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventLeverageLiquidationFinalized) ProtoMessage() {}
+
+// Deprecated: Use EventLeverageLiquidationFinalized.ProtoReflect.Descriptor instead.
+func (*EventLeverageLiquidationFinalized) Descriptor() ([]byte, []int) {
+	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *EventLeverageLiquidationFinalized) GetPositionId() uint64 {
+	if x != nil {
+		return x.PositionId
+	}
+	return 0
+}
+
+func (x *EventLeverageLiquidationFinalized) GetUser() string {
+	if x != nil {
+		return x.User
+	}
+	return ""
+}
+
+func (x *EventLeverageLiquidationFinalized) GetLiquidator() string {
+	if x != nil {
+		return x.Liquidator
+	}
+	return ""
+}
+
+func (x *EventLeverageLiquidationFinalized) GetPoolId() uint64 {
+	if x != nil {
+		return x.PoolId
+	}
+	return 0
+}
+
+func (x *EventLeverageLiquidationFinalized) GetCollateralReceived() *v1beta1.Coin {
+	if x != nil {
+		return x.CollateralReceived
+	}
+	return nil
+}
+
+func (x *EventLeverageLiquidationFinalized) GetRepaymentAmount() *v1beta1.Coin {
+	if x != nil {
+		return x.RepaymentAmount
+	}
+	return nil
+}
+
+func (x *EventLeverageLiquidationFinalized) GetAccruedInterest() *v1beta1.Coin {
+	if x != nil {
+		return x.AccruedInterest
+	}
+	return nil
+}
+
+func (x *EventLeverageLiquidationFinalized) GetPoolLoss() *v1beta1.Coin {
+	if x != nil {
+		return x.PoolLoss
+	}
+	return nil
+}
+
 var File_dysonprotocol_whaleswap_v1_events_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_whaleswap_v1_events_proto_rawDesc = []byte{
@@ -6687,10 +11138,114 @@ var file_dysonprotocol_whaleswap_v1_events_proto_rawDesc = []byte{
 	0x12, 0x25, 0x0a, 0x0e, 0x6e, 0x75, 0x6d, 0x5f, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f,
 	0x6e, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x0d, 0x6e, 0x75, 0x6d, 0x4f, 0x70, 0x65,
 	0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x6f, 0x74, 0x65, 0x18,
-	0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x6f, 0x74, 0x65, 0x42, 0x25, 0x5a, 0x23, 0x64,
-	0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79, 0x70,
-	0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x6f, 0x74, 0x65, 0x22, 0xf8, 0x02, 0x0a, 0x1b,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x50, 0x6f, 0x73,
+	0x69, 0x74, 0x69, 0x6f, 0x6e, 0x4f, 0x70, 0x65, 0x6e, 0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x70,
+	0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
+	0x52, 0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04,
+	0x75, 0x73, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72,
+	0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x23, 0x0a, 0x0d, 0x70, 0x6f, 0x73,
+	0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x0c, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x12, 0x29,
+	0x0a, 0x10, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x64, 0x65, 0x6e,
+	0x6f, 0x6d, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74,
+	0x65, 0x72, 0x61, 0x6c, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12, 0x2b, 0x0a, 0x11, 0x63, 0x6f, 0x6c,
+	0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x06,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x10, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c,
+	0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x25, 0x0a, 0x0e, 0x62, 0x6f, 0x72, 0x72, 0x6f, 0x77,
+	0x65, 0x64, 0x5f, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d,
+	0x62, 0x6f, 0x72, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12, 0x27, 0x0a,
+	0x0f, 0x62, 0x6f, 0x72, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x5f, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74,
+	0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x62, 0x6f, 0x72, 0x72, 0x6f, 0x77, 0x65, 0x64,
+	0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x68, 0x65, 0x6c, 0x64, 0x5f, 0x64,
+	0x65, 0x6e, 0x6f, 0x6d, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x68, 0x65, 0x6c, 0x64,
+	0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12, 0x1f, 0x0a, 0x0b, 0x68, 0x65, 0x6c, 0x64, 0x5f, 0x61, 0x6d,
+	0x6f, 0x75, 0x6e, 0x74, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x68, 0x65, 0x6c, 0x64,
+	0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x95, 0x02, 0x0a, 0x1b, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e,
+	0x43, 0x6c, 0x6f, 0x73, 0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69,
+	0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x6f, 0x73,
+	0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x12, 0x17, 0x0a, 0x07, 0x70,
+	0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f,
+	0x6f, 0x6c, 0x49, 0x64, 0x12, 0x23, 0x0a, 0x0d, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e,
+	0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x70, 0x6f, 0x73,
+	0x69, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x12, 0x37, 0x0a, 0x06, 0x70, 0x72, 0x6f,
+	0x66, 0x69, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e,
+	0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06, 0x70, 0x72, 0x6f, 0x66,
+	0x69, 0x74, 0x12, 0x4a, 0x0a, 0x10, 0x61, 0x63, 0x63, 0x72, 0x75, 0x65, 0x64, 0x5f, 0x69, 0x6e,
+	0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74,
+	0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0f, 0x61,
+	0x63, 0x63, 0x72, 0x75, 0x65, 0x64, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x22, 0xb2,
+	0x02, 0x0a, 0x1c, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65,
+	0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x41, 0x64, 0x64, 0x65, 0x64, 0x12,
+	0x1f, 0x0a, 0x0b, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64,
+	0x12, 0x12, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
+	0x75, 0x73, 0x65, 0x72, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x4a, 0x0a,
+	0x10, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x61, 0x64, 0x64, 0x65,
+	0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f,
+	0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74,
+	0x65, 0x72, 0x61, 0x6c, 0x41, 0x64, 0x64, 0x65, 0x64, 0x12, 0x46, 0x0a, 0x0e, 0x6e, 0x65, 0x77,
+	0x5f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x18, 0x05, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e,
+	0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde,
+	0x1f, 0x00, 0x52, 0x0d, 0x6e, 0x65, 0x77, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61,
+	0x6c, 0x12, 0x30, 0x0a, 0x14, 0x6e, 0x65, 0x77, 0x5f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65,
+	0x72, 0x61, 0x6c, 0x5f, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x12, 0x6e, 0x65, 0x77, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x52, 0x61,
+	0x74, 0x69, 0x6f, 0x22, 0xf6, 0x01, 0x0a, 0x23, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x65, 0x76,
+	0x65, 0x72, 0x61, 0x67, 0x65, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x69, 0x7a, 0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x70,
+	0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
+	0x52, 0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04,
+	0x75, 0x73, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72,
+	0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x29, 0x0a, 0x10, 0x63, 0x6f, 0x6c,
+	0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x18, 0x04, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x0f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x52,
+	0x61, 0x74, 0x69, 0x6f, 0x12, 0x33, 0x0a, 0x15, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x5f, 0x74, 0x68, 0x72, 0x65, 0x73, 0x68, 0x6f, 0x6c, 0x64, 0x18, 0x05, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x14, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x54, 0x68, 0x72, 0x65, 0x73, 0x68, 0x6f, 0x6c, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f,
+	0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xb9, 0x03, 0x0a,
+	0x21, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x4c, 0x69,
+	0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x46, 0x69, 0x6e, 0x61, 0x6c, 0x69, 0x7a,
+	0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f,
+	0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x12, 0x1e, 0x0a, 0x0a, 0x6c, 0x69, 0x71, 0x75, 0x69,
+	0x64, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x6c, 0x69, 0x71,
+	0x75, 0x69, 0x64, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f,
+	0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64,
+	0x12, 0x50, 0x0a, 0x13, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x72,
+	0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65,
+	0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x12,
+	0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76,
+	0x65, 0x64, 0x12, 0x4a, 0x0a, 0x10, 0x72, 0x65, 0x70, 0x61, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x5f,
+	0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74,
+	0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0f, 0x72,
+	0x65, 0x70, 0x61, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x4a,
+	0x0a, 0x10, 0x61, 0x63, 0x63, 0x72, 0x75, 0x65, 0x64, 0x5f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x65,
+	0x73, 0x74, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43,
+	0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0f, 0x61, 0x63, 0x63, 0x72, 0x75,
+	0x65, 0x64, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x12, 0x3c, 0x0a, 0x09, 0x70, 0x6f,
+	0x6f, 0x6c, 0x5f, 0x6c, 0x6f, 0x73, 0x73, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65,
+	0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x08,
+	0x70, 0x6f, 0x6f, 0x6c, 0x4c, 0x6f, 0x73, 0x73, 0x42, 0x25, 0x5a, 0x23, 0x64, 0x79, 0x73, 0x6f,
+	0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f,
+	0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -6705,31 +11260,44 @@ func file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP() []byte {
 	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescData
 }
 
-var file_dysonprotocol_whaleswap_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_dysonprotocol_whaleswap_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_dysonprotocol_whaleswap_v1_events_proto_goTypes = []interface{}{
-	(*EventPoolCreated)(nil),          // 0: dysonprotocol.whaleswap.v1.EventPoolCreated
-	(*EventPoolUpdate)(nil),           // 1: dysonprotocol.whaleswap.v1.EventPoolUpdate
-	(*EventPoolSwap)(nil),             // 2: dysonprotocol.whaleswap.v1.EventPoolSwap
-	(*EventPoolLiquidityAdded)(nil),   // 3: dysonprotocol.whaleswap.v1.EventPoolLiquidityAdded
-	(*EventPoolLiquidityRemoved)(nil), // 4: dysonprotocol.whaleswap.v1.EventPoolLiquidityRemoved
-	(*EventOfferCreated)(nil),         // 5: dysonprotocol.whaleswap.v1.EventOfferCreated
-	(*EventOfferTaken)(nil),           // 6: dysonprotocol.whaleswap.v1.EventOfferTaken
-	(*EventOfferCancelled)(nil),       // 7: dysonprotocol.whaleswap.v1.EventOfferCancelled
-	(*EventPfandLocked)(nil),          // 8: dysonprotocol.whaleswap.v1.EventPfandLocked
-	(*EventPfandReleased)(nil),        // 9: dysonprotocol.whaleswap.v1.EventPfandReleased
-	(*EventAuctionCreated)(nil),       // 10: dysonprotocol.whaleswap.v1.EventAuctionCreated
-	(*EventAuctionRedeemed)(nil),      // 11: dysonprotocol.whaleswap.v1.EventAuctionRedeemed
-	(*EventTradeRecorded)(nil),        // 12: dysonprotocol.whaleswap.v1.EventTradeRecorded
-	(*v1beta1.Coin)(nil),              // 13: cosmos.base.v1beta1.Coin
+	(*EventPoolCreated)(nil),                    // 0: dysonprotocol.whaleswap.v1.EventPoolCreated
+	(*EventPoolUpdate)(nil),                     // 1: dysonprotocol.whaleswap.v1.EventPoolUpdate
+	(*EventPoolSwap)(nil),                       // 2: dysonprotocol.whaleswap.v1.EventPoolSwap
+	(*EventPoolLiquidityAdded)(nil),             // 3: dysonprotocol.whaleswap.v1.EventPoolLiquidityAdded
+	(*EventPoolLiquidityRemoved)(nil),           // 4: dysonprotocol.whaleswap.v1.EventPoolLiquidityRemoved
+	(*EventOfferCreated)(nil),                   // 5: dysonprotocol.whaleswap.v1.EventOfferCreated
+	(*EventOfferTaken)(nil),                     // 6: dysonprotocol.whaleswap.v1.EventOfferTaken
+	(*EventOfferCancelled)(nil),                 // 7: dysonprotocol.whaleswap.v1.EventOfferCancelled
+	(*EventPfandLocked)(nil),                    // 8: dysonprotocol.whaleswap.v1.EventPfandLocked
+	(*EventPfandReleased)(nil),                  // 9: dysonprotocol.whaleswap.v1.EventPfandReleased
+	(*EventAuctionCreated)(nil),                 // 10: dysonprotocol.whaleswap.v1.EventAuctionCreated
+	(*EventAuctionRedeemed)(nil),                // 11: dysonprotocol.whaleswap.v1.EventAuctionRedeemed
+	(*EventTradeRecorded)(nil),                  // 12: dysonprotocol.whaleswap.v1.EventTradeRecorded
+	(*EventLeveragePositionOpened)(nil),         // 13: dysonprotocol.whaleswap.v1.EventLeveragePositionOpened
+	(*EventLeveragePositionClosed)(nil),         // 14: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed
+	(*EventLeverageCollateralAdded)(nil),        // 15: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded
+	(*EventLeverageLiquidationInitialized)(nil), // 16: dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized
+	(*EventLeverageLiquidationFinalized)(nil),   // 17: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized
+	(*v1beta1.Coin)(nil),                        // 18: cosmos.base.v1beta1.Coin
 }
 var file_dysonprotocol_whaleswap_v1_events_proto_depIdxs = []int32{
-	13, // 0: dysonprotocol.whaleswap.v1.EventPfandLocked.amount:type_name -> cosmos.base.v1beta1.Coin
-	13, // 1: dysonprotocol.whaleswap.v1.EventPfandReleased.amount:type_name -> cosmos.base.v1beta1.Coin
-	2,  // [2:2] is the sub-list for method output_type
-	2,  // [2:2] is the sub-list for method input_type
-	2,  // [2:2] is the sub-list for extension type_name
-	2,  // [2:2] is the sub-list for extension extendee
-	0,  // [0:2] is the sub-list for field type_name
+	18, // 0: dysonprotocol.whaleswap.v1.EventPfandLocked.amount:type_name -> cosmos.base.v1beta1.Coin
+	18, // 1: dysonprotocol.whaleswap.v1.EventPfandReleased.amount:type_name -> cosmos.base.v1beta1.Coin
+	18, // 2: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.profit:type_name -> cosmos.base.v1beta1.Coin
+	18, // 3: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.accrued_interest:type_name -> cosmos.base.v1beta1.Coin
+	18, // 4: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.collateral_added:type_name -> cosmos.base.v1beta1.Coin
+	18, // 5: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral:type_name -> cosmos.base.v1beta1.Coin
+	18, // 6: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.collateral_received:type_name -> cosmos.base.v1beta1.Coin
+	18, // 7: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.repayment_amount:type_name -> cosmos.base.v1beta1.Coin
+	18, // 8: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.accrued_interest:type_name -> cosmos.base.v1beta1.Coin
+	18, // 9: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.pool_loss:type_name -> cosmos.base.v1beta1.Coin
+	10, // [10:10] is the sub-list for method output_type
+	10, // [10:10] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_dysonprotocol_whaleswap_v1_events_proto_init() }
@@ -6895,6 +11463,66 @@ func file_dysonprotocol_whaleswap_v1_events_proto_init() {
 				return nil
 			}
 		}
+		file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventLeveragePositionOpened); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventLeveragePositionClosed); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventLeverageCollateralAdded); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventLeverageLiquidationInitialized); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventLeverageLiquidationFinalized); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -6902,7 +11530,7 @@ func file_dysonprotocol_whaleswap_v1_events_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_dysonprotocol_whaleswap_v1_events_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

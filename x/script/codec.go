@@ -262,6 +262,7 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		&whaleswapv1.QueryTradesByOfferRequest{}, &whaleswapv1.QueryTradesByOfferResponse{},
 		&whaleswapv1.QueryTradesByTakerRequest{}, &whaleswapv1.QueryTradesByTakerResponse{},
 		&whaleswapv1.QueryParamsRequest{}, &whaleswapv1.QueryParamsResponse{},
+		&whaleswapv1.QueryMetricsRequest{}, &whaleswapv1.QueryMetricsResponse{},
 
 		// Offer queries
 		&whaleswapv1.QueryOfferRequest{}, &whaleswapv1.QueryOfferResponse{},
@@ -294,6 +295,11 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		&whaleswapv1.QueryAuctionsBySellerRequest{}, &whaleswapv1.QueryAuctionsBySellerResponse{},
 		&whaleswapv1.QueryAuctionByNFTRequest{}, &whaleswapv1.QueryAuctionByNFTResponse{},
 		&whaleswapv1.QueryAuctionsByPairPriceRangeRequest{}, &whaleswapv1.QueryAuctionsByPairPriceRangeResponse{},
+
+		// Leverage queries
+		&whaleswapv1.QueryPositionRequest{}, &whaleswapv1.QueryPositionResponse{},
+		&whaleswapv1.QueryPositionsByUserRequest{}, &whaleswapv1.QueryPositionsByUserResponse{},
+		&whaleswapv1.QueryPositionsByPoolRequest{}, &whaleswapv1.QueryPositionsByPoolResponse{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registrar, &scripttypes.Msg_serviceDesc)

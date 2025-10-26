@@ -43,6 +43,11 @@ var (
 	TradesByOfferPrefix   = collections.NewPrefix(16)
 	TradesByTraderPrefix  = collections.NewPrefix(17)
 	TradesByAuctionPrefix = collections.NewPrefix(18)
+	// Leverage
+	LeveragePositionSeqPrefix = collections.NewPrefix(19)
+	LeveragePositionsPrefix   = collections.NewPrefix(20)
+	PositionsByUserPrefix     = collections.NewPrefix(21)
+	PositionsByPoolPrefix     = collections.NewPrefix(22)
 )
 
 type Keeper struct {
@@ -81,6 +86,11 @@ type Keeper struct {
 	// Reverse indexes
 	AuctionsBySellBid collections.Map[collections.Triple[string, string, uint64], uint64]
 	AuctionsByBidSell collections.Map[collections.Triple[string, string, uint64], uint64]
+	// Leverage
+	leveragePositionSeq  collections.Sequence
+	LeveragePositions    collections.Map[uint64, whaleswapv1.LeveragePosition]
+	PositionsByUserIndex collections.Map[collections.Pair[string, uint64], uint64]
+	PositionsByPoolIndex collections.Map[collections.Pair[uint64, uint64], uint64]
 }
 
 func NewKeeper(
@@ -212,6 +222,29 @@ func NewKeeper(
 		AuctionsByBidSellPrefix,
 		"auctions_by_bid_sell",
 		collections.TripleKeyCodec(collections.StringKey, collections.StringKey, collections.Uint64Key),
+		collections.Uint64Value,
+	)
+	// Leverage
+	k.leveragePositionSeq = collections.NewSequence(sb, LeveragePositionSeqPrefix, "leverage_position_seq")
+	k.LeveragePositions = collections.NewMap(
+		sb,
+		LeveragePositionsPrefix,
+		"leverage_positions",
+		collections.Uint64Key,
+		codec.CollValue[whaleswapv1.LeveragePosition](cdc),
+	)
+	k.PositionsByUserIndex = collections.NewMap(
+		sb,
+		PositionsByUserPrefix,
+		"positions_by_user",
+		collections.PairKeyCodec(collections.StringKey, collections.Uint64Key),
+		collections.Uint64Value,
+	)
+	k.PositionsByPoolIndex = collections.NewMap(
+		sb,
+		PositionsByPoolPrefix,
+		"positions_by_pool",
+		collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key),
 		collections.Uint64Value,
 	)
 	schema, err := sb.Build()

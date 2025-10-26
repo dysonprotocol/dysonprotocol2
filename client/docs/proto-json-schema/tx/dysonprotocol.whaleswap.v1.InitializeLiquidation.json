@@ -1,0 +1,46 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgInitializeLiquidation",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.MsgInitializeLiquidation": {
+                "properties": {
+                    "initializer": {
+                        "type": "string"
+                    },
+                    "user": {
+                        "type": "string"
+                    },
+                    "pool_id": {
+                        "type": "string"
+                    },
+                    "position_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Initialize Liquidation"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgInitializeLiquidationResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.MsgInitializeLiquidationResponse": {
+                "properties": {
+                    "collateral_ratio": {
+                        "type": "string"
+                    },
+                    "liquidation_threshold": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Initialize Liquidation Response"
+            }
+        }
+    }
+}

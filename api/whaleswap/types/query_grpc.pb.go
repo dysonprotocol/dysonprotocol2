@@ -44,6 +44,9 @@ const (
 	Query_AuctionsBySeller_FullMethodName         = "/dysonprotocol.whaleswap.v1.Query/AuctionsBySeller"
 	Query_AuctionByNFT_FullMethodName             = "/dysonprotocol.whaleswap.v1.Query/AuctionByNFT"
 	Query_AuctionsByPairPriceRange_FullMethodName = "/dysonprotocol.whaleswap.v1.Query/AuctionsByPairPriceRange"
+	Query_Position_FullMethodName                 = "/dysonprotocol.whaleswap.v1.Query/Position"
+	Query_PositionsByUser_FullMethodName          = "/dysonprotocol.whaleswap.v1.Query/PositionsByUser"
+	Query_PositionsByPool_FullMethodName          = "/dysonprotocol.whaleswap.v1.Query/PositionsByPool"
 	Query_Metrics_FullMethodName                  = "/dysonprotocol.whaleswap.v1.Query/Metrics"
 )
 
@@ -62,7 +65,7 @@ type QueryClient interface {
 	// pagination. Denom order in the request is irrelevant.
 	PoolsByPair(ctx context.Context, in *QueryPoolsByPairRequest, opts ...grpc.CallOption) (*QueryPoolsByPairResponse, error)
 	// PoolsByDenom returns all pools that include the provided denom on either
-	// side of the pair. This leverages a reverse index keyed by denom.
+	// side of the pair.
 	PoolsByDenom(ctx context.Context, in *QueryPoolsByDenomRequest, opts ...grpc.CallOption) (*QueryPoolsByDenomResponse, error)
 	// PoolBySharesDenom returns the pool that mints the provided shares denom.
 	PoolBySharesDenom(ctx context.Context, in *QueryPoolBySharesDenomRequest, opts ...grpc.CallOption) (*QueryPoolBySharesDenomResponse, error)
@@ -121,6 +124,12 @@ type QueryClient interface {
 	// redeemable sell-coin amount. It is designed for UI discovery and may be
 	// more expensive than index-backed queries.
 	AuctionsByPairPriceRange(ctx context.Context, in *QueryAuctionsByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryAuctionsByPairPriceRangeResponse, error)
+	// Leverage
+	Position(ctx context.Context, in *QueryPositionRequest, opts ...grpc.CallOption) (*QueryPositionResponse, error)
+	// QueryPositionsByUser lists all positions for a user with optional filters
+	PositionsByUser(ctx context.Context, in *QueryPositionsByUserRequest, opts ...grpc.CallOption) (*QueryPositionsByUserResponse, error)
+	// QueryPositionsByPool lists all positions in a pool
+	PositionsByPool(ctx context.Context, in *QueryPositionsByPoolRequest, opts ...grpc.CallOption) (*QueryPositionsByPoolResponse, error)
 	// Metrics returns a breakdown of module-expected balances by subsystem
 	// and summary counters for invariants and monitoring.
 	Metrics(ctx context.Context, in *QueryMetricsRequest, opts ...grpc.CallOption) (*QueryMetricsResponse, error)
@@ -384,6 +393,36 @@ func (c *queryClient) AuctionsByPairPriceRange(ctx context.Context, in *QueryAuc
 	return out, nil
 }
 
+func (c *queryClient) Position(ctx context.Context, in *QueryPositionRequest, opts ...grpc.CallOption) (*QueryPositionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryPositionResponse)
+	err := c.cc.Invoke(ctx, Query_Position_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) PositionsByUser(ctx context.Context, in *QueryPositionsByUserRequest, opts ...grpc.CallOption) (*QueryPositionsByUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryPositionsByUserResponse)
+	err := c.cc.Invoke(ctx, Query_PositionsByUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) PositionsByPool(ctx context.Context, in *QueryPositionsByPoolRequest, opts ...grpc.CallOption) (*QueryPositionsByPoolResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryPositionsByPoolResponse)
+	err := c.cc.Invoke(ctx, Query_PositionsByPool_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) Metrics(ctx context.Context, in *QueryMetricsRequest, opts ...grpc.CallOption) (*QueryMetricsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(QueryMetricsResponse)
@@ -409,7 +448,7 @@ type QueryServer interface {
 	// pagination. Denom order in the request is irrelevant.
 	PoolsByPair(context.Context, *QueryPoolsByPairRequest) (*QueryPoolsByPairResponse, error)
 	// PoolsByDenom returns all pools that include the provided denom on either
-	// side of the pair. This leverages a reverse index keyed by denom.
+	// side of the pair.
 	PoolsByDenom(context.Context, *QueryPoolsByDenomRequest) (*QueryPoolsByDenomResponse, error)
 	// PoolBySharesDenom returns the pool that mints the provided shares denom.
 	PoolBySharesDenom(context.Context, *QueryPoolBySharesDenomRequest) (*QueryPoolBySharesDenomResponse, error)
@@ -468,6 +507,12 @@ type QueryServer interface {
 	// redeemable sell-coin amount. It is designed for UI discovery and may be
 	// more expensive than index-backed queries.
 	AuctionsByPairPriceRange(context.Context, *QueryAuctionsByPairPriceRangeRequest) (*QueryAuctionsByPairPriceRangeResponse, error)
+	// Leverage
+	Position(context.Context, *QueryPositionRequest) (*QueryPositionResponse, error)
+	// QueryPositionsByUser lists all positions for a user with optional filters
+	PositionsByUser(context.Context, *QueryPositionsByUserRequest) (*QueryPositionsByUserResponse, error)
+	// QueryPositionsByPool lists all positions in a pool
+	PositionsByPool(context.Context, *QueryPositionsByPoolRequest) (*QueryPositionsByPoolResponse, error)
 	// Metrics returns a breakdown of module-expected balances by subsystem
 	// and summary counters for invariants and monitoring.
 	Metrics(context.Context, *QueryMetricsRequest) (*QueryMetricsResponse, error)
@@ -555,6 +600,15 @@ func (UnimplementedQueryServer) AuctionByNFT(context.Context, *QueryAuctionByNFT
 }
 func (UnimplementedQueryServer) AuctionsByPairPriceRange(context.Context, *QueryAuctionsByPairPriceRangeRequest) (*QueryAuctionsByPairPriceRangeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuctionsByPairPriceRange not implemented")
+}
+func (UnimplementedQueryServer) Position(context.Context, *QueryPositionRequest) (*QueryPositionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Position not implemented")
+}
+func (UnimplementedQueryServer) PositionsByUser(context.Context, *QueryPositionsByUserRequest) (*QueryPositionsByUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PositionsByUser not implemented")
+}
+func (UnimplementedQueryServer) PositionsByPool(context.Context, *QueryPositionsByPoolRequest) (*QueryPositionsByPoolResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PositionsByPool not implemented")
 }
 func (UnimplementedQueryServer) Metrics(context.Context, *QueryMetricsRequest) (*QueryMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Metrics not implemented")
@@ -1030,6 +1084,60 @@ func _Query_AuctionsByPairPriceRange_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_Position_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPositionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Position(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_Position_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Position(ctx, req.(*QueryPositionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_PositionsByUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPositionsByUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).PositionsByUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_PositionsByUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).PositionsByUser(ctx, req.(*QueryPositionsByUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_PositionsByPool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPositionsByPoolRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).PositionsByPool(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_PositionsByPool_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).PositionsByPool(ctx, req.(*QueryPositionsByPoolRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_Metrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryMetricsRequest)
 	if err := dec(in); err != nil {
@@ -1154,6 +1262,18 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AuctionsByPairPriceRange",
 			Handler:    _Query_AuctionsByPairPriceRange_Handler,
+		},
+		{
+			MethodName: "Position",
+			Handler:    _Query_Position_Handler,
+		},
+		{
+			MethodName: "PositionsByUser",
+			Handler:    _Query_PositionsByUser_Handler,
+		},
+		{
+			MethodName: "PositionsByPool",
+			Handler:    _Query_PositionsByPool_Handler,
 		},
 		{
 			MethodName: "Metrics",

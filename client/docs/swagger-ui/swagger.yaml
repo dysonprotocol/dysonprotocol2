@@ -6223,6 +6223,18 @@ paths:
                   max_note_length:
                     type: integer
                     format: int64
+                  block_delay_before_close:
+                    type: string
+                    format: uint64
+                    title: |-
+                      ═════ LEVERAGE PARAMETERS ═════
+                      Block delay before position owner can close position
+                  block_delay_before_liquidation:
+                    type: string
+                    format: uint64
+                    title: >-
+                      Block delay before liquidation can be finalized after
+                      initialization
         default:
           description: An unexpected error response.
           schema:
@@ -6376,6 +6388,74 @@ paths:
                       title: >-
                         cumulative swap fees retained by the pool (accrue to
                         LPs)
+                    interest_rate_coin1:
+                      type: string
+                      title: |-
+                        ═════ LEVERAGE FIELDS ═════
+                        Annual interest rate for borrows in coin1 denom
+                    interest_rate_coin2:
+                      type: string
+                      title: Annual interest rate for borrows in coin2 denom
+                    interest_earned:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Total accrued interest (yield for LPs)
+                    total_borrowed:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Total borrowed (aggregate for cap enforcement)
+                    min_collateral_ratio:
+                      type: string
+                      title: |-
+                        ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+                        Minimum collateral ratio required at position open
+                    max_leverage_ratio:
+                      type: string
+                      title: >-
+                        Maximum leverage ratio allowed (collateral + borrowed) /
+                        collateral
+                    liquidation_threshold:
+                      type: string
+                      title: >-
+                        Collateral ratio threshold below which position is
+                        liquidatable
+                    max_borrow_percent:
+                      type: string
+                      title: >-
+                        Maximum borrow capacity as percentage of reserve
+                        (applies symmetrically to
+
+                        both coins)
                   description: >-
                     Pool describes AMM pool state.
 
@@ -6477,7 +6557,7 @@ paths:
     get:
       summary: |-
         PoolsByDenom returns all pools that include the provided denom on either
-        side of the pair. This leverages a reverse index keyed by denom.
+        side of the pair.
       operationId: dysonprotocol.whaleswap.v1.QueryPoolsByDenomRequest
       responses:
         '200':
@@ -6605,6 +6685,74 @@ paths:
                       title: >-
                         cumulative swap fees retained by the pool (accrue to
                         LPs)
+                    interest_rate_coin1:
+                      type: string
+                      title: |-
+                        ═════ LEVERAGE FIELDS ═════
+                        Annual interest rate for borrows in coin1 denom
+                    interest_rate_coin2:
+                      type: string
+                      title: Annual interest rate for borrows in coin2 denom
+                    interest_earned:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Total accrued interest (yield for LPs)
+                    total_borrowed:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Total borrowed (aggregate for cap enforcement)
+                    min_collateral_ratio:
+                      type: string
+                      title: |-
+                        ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+                        Minimum collateral ratio required at position open
+                    max_leverage_ratio:
+                      type: string
+                      title: >-
+                        Maximum leverage ratio allowed (collateral + borrowed) /
+                        collateral
+                    liquidation_threshold:
+                      type: string
+                      title: >-
+                        Collateral ratio threshold below which position is
+                        liquidatable
+                    max_borrow_percent:
+                      type: string
+                      title: >-
+                        Maximum borrow capacity as percentage of reserve
+                        (applies symmetrically to
+
+                        both coins)
                   description: >-
                     Pool describes AMM pool state.
 
@@ -6838,6 +6986,74 @@ paths:
                       title: >-
                         cumulative swap fees retained by the pool (accrue to
                         LPs)
+                    interest_rate_coin1:
+                      type: string
+                      title: |-
+                        ═════ LEVERAGE FIELDS ═════
+                        Annual interest rate for borrows in coin1 denom
+                    interest_rate_coin2:
+                      type: string
+                      title: Annual interest rate for borrows in coin2 denom
+                    interest_earned:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Total accrued interest (yield for LPs)
+                    total_borrowed:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Total borrowed (aggregate for cap enforcement)
+                    min_collateral_ratio:
+                      type: string
+                      title: |-
+                        ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+                        Minimum collateral ratio required at position open
+                    max_leverage_ratio:
+                      type: string
+                      title: >-
+                        Maximum leverage ratio allowed (collateral + borrowed) /
+                        collateral
+                    liquidation_threshold:
+                      type: string
+                      title: >-
+                        Collateral ratio threshold below which position is
+                        liquidatable
+                    max_borrow_percent:
+                      type: string
+                      title: >-
+                        Maximum borrow capacity as percentage of reserve
+                        (applies symmetrically to
+
+                        both coins)
                   description: >-
                     Pool describes AMM pool state.
 
@@ -7082,6 +7298,74 @@ paths:
                       title: >-
                         cumulative swap fees retained by the pool (accrue to
                         LPs)
+                    interest_rate_coin1:
+                      type: string
+                      title: |-
+                        ═════ LEVERAGE FIELDS ═════
+                        Annual interest rate for borrows in coin1 denom
+                    interest_rate_coin2:
+                      type: string
+                      title: Annual interest rate for borrows in coin2 denom
+                    interest_earned:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Total accrued interest (yield for LPs)
+                    total_borrowed:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Total borrowed (aggregate for cap enforcement)
+                    min_collateral_ratio:
+                      type: string
+                      title: |-
+                        ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+                        Minimum collateral ratio required at position open
+                    max_leverage_ratio:
+                      type: string
+                      title: >-
+                        Maximum leverage ratio allowed (collateral + borrowed) /
+                        collateral
+                    liquidation_threshold:
+                      type: string
+                      title: >-
+                        Collateral ratio threshold below which position is
+                        liquidatable
+                    max_borrow_percent:
+                      type: string
+                      title: >-
+                        Maximum borrow capacity as percentage of reserve
+                        (applies symmetrically to
+
+                        both coins)
                   description: >-
                     Pool describes AMM pool state.
 
@@ -7318,6 +7602,72 @@ paths:
 
                         signatures required by gogoproto.
                     title: cumulative swap fees retained by the pool (accrue to LPs)
+                  interest_rate_coin1:
+                    type: string
+                    title: |-
+                      ═════ LEVERAGE FIELDS ═════
+                      Annual interest rate for borrows in coin1 denom
+                  interest_rate_coin2:
+                    type: string
+                    title: Annual interest rate for borrows in coin2 denom
+                  interest_earned:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    title: Total accrued interest (yield for LPs)
+                  total_borrowed:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    title: Total borrowed (aggregate for cap enforcement)
+                  min_collateral_ratio:
+                    type: string
+                    title: |-
+                      ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+                      Minimum collateral ratio required at position open
+                  max_leverage_ratio:
+                    type: string
+                    title: >-
+                      Maximum leverage ratio allowed (collateral + borrowed) /
+                      collateral
+                  liquidation_threshold:
+                    type: string
+                    title: >-
+                      Collateral ratio threshold below which position is
+                      liquidatable
+                  max_borrow_percent:
+                    type: string
+                    title: >-
+                      Maximum borrow capacity as percentage of reserve (applies
+                      symmetrically to
+
+                      both coins)
                 description: >-
                   Pool describes AMM pool state.
 
@@ -7504,6 +7854,74 @@ paths:
                       title: >-
                         cumulative swap fees retained by the pool (accrue to
                         LPs)
+                    interest_rate_coin1:
+                      type: string
+                      title: |-
+                        ═════ LEVERAGE FIELDS ═════
+                        Annual interest rate for borrows in coin1 denom
+                    interest_rate_coin2:
+                      type: string
+                      title: Annual interest rate for borrows in coin2 denom
+                    interest_earned:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Total accrued interest (yield for LPs)
+                    total_borrowed:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Total borrowed (aggregate for cap enforcement)
+                    min_collateral_ratio:
+                      type: string
+                      title: |-
+                        ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+                        Minimum collateral ratio required at position open
+                    max_leverage_ratio:
+                      type: string
+                      title: >-
+                        Maximum leverage ratio allowed (collateral + borrowed) /
+                        collateral
+                    liquidation_threshold:
+                      type: string
+                      title: >-
+                        Collateral ratio threshold below which position is
+                        liquidatable
+                    max_borrow_percent:
+                      type: string
+                      title: >-
+                        Maximum borrow capacity as percentage of reserve
+                        (applies symmetrically to
+
+                        both coins)
                   description: >-
                     Pool describes AMM pool state.
 
@@ -7727,6 +8145,72 @@ paths:
 
                         signatures required by gogoproto.
                     title: cumulative swap fees retained by the pool (accrue to LPs)
+                  interest_rate_coin1:
+                    type: string
+                    title: |-
+                      ═════ LEVERAGE FIELDS ═════
+                      Annual interest rate for borrows in coin1 denom
+                  interest_rate_coin2:
+                    type: string
+                    title: Annual interest rate for borrows in coin2 denom
+                  interest_earned:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    title: Total accrued interest (yield for LPs)
+                  total_borrowed:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    title: Total borrowed (aggregate for cap enforcement)
+                  min_collateral_ratio:
+                    type: string
+                    title: |-
+                      ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+                      Minimum collateral ratio required at position open
+                  max_leverage_ratio:
+                    type: string
+                    title: >-
+                      Maximum leverage ratio allowed (collateral + borrowed) /
+                      collateral
+                  liquidation_threshold:
+                    type: string
+                    title: >-
+                      Collateral ratio threshold below which position is
+                      liquidatable
+                  max_borrow_percent:
+                    type: string
+                    title: >-
+                      Maximum borrow capacity as percentage of reserve (applies
+                      symmetrically to
+
+                      both coins)
                 description: >-
                   Pool describes AMM pool state.
 
@@ -7772,6 +8256,606 @@ paths:
                       format: byte
       parameters:
         - name: pool_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
+  /dysonprotocol/whaleswap/v1/positions/pool/{pool_id}:
+    get:
+      summary: QueryPositionsByPool lists all positions in a pool
+      operationId: dysonprotocol.whaleswap.v1.QueryPositionsByPoolRequest
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              positions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    position_id:
+                      type: string
+                      format: uint64
+                    pool_id:
+                      type: string
+                      format: uint64
+                    user:
+                      type: string
+                    position_type:
+                      type: string
+                      enum:
+                        - POSITION_TYPE_UNSPECIFIED
+                        - POSITION_TYPE_LONG
+                        - POSITION_TYPE_SHORT
+                      default: POSITION_TYPE_UNSPECIFIED
+                    borrowed:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    held:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    collateral:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    borrow_time:
+                      type: string
+                      format: date-time
+                    created_block_height:
+                      type: string
+                      format: uint64
+                    liquidation_initialized_block_height:
+                      type: string
+                      format: uint64
+                    liquidation_status:
+                      type: string
+                      enum:
+                        - LIQUIDATION_STATUS_UNSPECIFIED
+                        - LIQUIDATION_STATUS_NONE
+                        - LIQUIDATION_STATUS_INITIALIZED
+                      default: LIQUIDATION_STATUS_UNSPECIFIED
+                    accrued_interest:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                  description: >-
+                    LeveragePosition represents an active leverage position for
+                    a trader.
+              pagination:
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: pool_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+        - name: pagination.key
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /dysonprotocol/whaleswap/v1/positions/user/{user}:
+    get:
+      summary: >-
+        QueryPositionsByUser lists all positions for a user with optional
+        filters
+      operationId: dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              positions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    position_id:
+                      type: string
+                      format: uint64
+                    pool_id:
+                      type: string
+                      format: uint64
+                    user:
+                      type: string
+                    position_type:
+                      type: string
+                      enum:
+                        - POSITION_TYPE_UNSPECIFIED
+                        - POSITION_TYPE_LONG
+                        - POSITION_TYPE_SHORT
+                      default: POSITION_TYPE_UNSPECIFIED
+                    borrowed:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    held:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    collateral:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    borrow_time:
+                      type: string
+                      format: date-time
+                    created_block_height:
+                      type: string
+                      format: uint64
+                    liquidation_initialized_block_height:
+                      type: string
+                      format: uint64
+                    liquidation_status:
+                      type: string
+                      enum:
+                        - LIQUIDATION_STATUS_UNSPECIFIED
+                        - LIQUIDATION_STATUS_NONE
+                        - LIQUIDATION_STATUS_INITIALIZED
+                      default: LIQUIDATION_STATUS_UNSPECIFIED
+                    accrued_interest:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                  description: >-
+                    LeveragePosition represents an active leverage position for
+                    a trader.
+              pagination:
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: user
+          in: path
+          required: true
+          type: string
+        - name: borrowed_denom
+          description: 'Optional: filter by borrowed denom.'
+          in: query
+          required: false
+          type: string
+        - name: collateral_denom
+          description: 'Optional: filter by collateral denom.'
+          in: query
+          required: false
+          type: string
+        - name: pool_id
+          description: |-
+            Optional: filter by pool_id (cannot combine with borrowed/collateral
+            denoms).
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.key
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /dysonprotocol/whaleswap/v1/positions/{position_id}:
+    get:
+      summary: Leverage
+      operationId: dysonprotocol.whaleswap.v1.QueryPositionRequest
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              position:
+                type: object
+                properties:
+                  position_id:
+                    type: string
+                    format: uint64
+                  pool_id:
+                    type: string
+                    format: uint64
+                  user:
+                    type: string
+                  position_type:
+                    type: string
+                    enum:
+                      - POSITION_TYPE_UNSPECIFIED
+                      - POSITION_TYPE_LONG
+                      - POSITION_TYPE_SHORT
+                    default: POSITION_TYPE_UNSPECIFIED
+                  borrowed:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                  held:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                  collateral:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                  borrow_time:
+                    type: string
+                    format: date-time
+                  created_block_height:
+                    type: string
+                    format: uint64
+                  liquidation_initialized_block_height:
+                    type: string
+                    format: uint64
+                  liquidation_status:
+                    type: string
+                    enum:
+                      - LIQUIDATION_STATUS_UNSPECIFIED
+                      - LIQUIDATION_STATUS_NONE
+                      - LIQUIDATION_STATUS_INITIALIZED
+                    default: LIQUIDATION_STATUS_UNSPECIFIED
+                  accrued_interest:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                description: >-
+                  LeveragePosition represents an active leverage position for a
+                  trader.
+              health_status:
+                title: Health Information
+                type: string
+                enum:
+                  - POSITION_HEALTH_STATUS_UNSPECIFIED
+                  - POSITION_HEALTH_STATUS_HEALTHY
+                  - POSITION_HEALTH_STATUS_AT_RISK
+                  - POSITION_HEALTH_STATUS_LIQUIDATABLE
+                default: POSITION_HEALTH_STATUS_UNSPECIFIED
+              current_collateral_ratio:
+                type: string
+              liquidation_threshold:
+                type: string
+              collateral_value:
+                type: string
+              debt_with_interest:
+                type: string
+              can_close_by_owner:
+                type: boolean
+              blocks_until_closeable:
+                type: string
+                format: uint64
+              can_initialize_liquidation:
+                type: boolean
+              can_finalize_liquidation:
+                type: boolean
+              borrowed:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+                title: Interest Information
+              accrued_interest:
+                type: string
+              total_repayment:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              time_elapsed:
+                type: string
+                format: uint64
+              annual_rate:
+                type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: position_id
           in: path
           required: true
           type: string
@@ -30717,6 +31801,86 @@ paths:
               account.
       tags:
         - Msg
+  dysonprotocol.whaleswap.v1.MsgAddCollateral:
+    post:
+      operationId: dysonprotocol.whaleswap.v1.MsgAddCollateral
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              new_collateral:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              new_collateral_ratio:
+                type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              user:
+                type: string
+              pool_id:
+                type: string
+                format: uint64
+              position_id:
+                type: string
+                format: uint64
+              collateral:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+      tags:
+        - Msg
   dysonprotocol.whaleswap.v1.MsgAddLiquidity:
     post:
       operationId: dysonprotocol.whaleswap.v1.MsgAddLiquidity
@@ -30850,6 +32014,84 @@ paths:
                 the have denom drops below one unit_have, enabling recovery via PFAND.
       tags:
         - Msg
+  dysonprotocol.whaleswap.v1.MsgClosePosition:
+    post:
+      operationId: dysonprotocol.whaleswap.v1.MsgClosePosition
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              profit:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              accrued_interest:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              user:
+                type: string
+              pool_id:
+                type: string
+                format: uint64
+              position_id:
+                type: string
+                format: uint64
+      tags:
+        - Msg
   dysonprotocol.whaleswap.v1.MsgCreatePool:
     post:
       summary: AMM
@@ -30960,6 +32202,12 @@ paths:
                     signatures required by gogoproto.
               fee_pct:
                 type: string
+              min_collateral_ratio:
+                type: string
+              max_leverage_ratio:
+                type: string
+              max_borrow_percent:
+                type: string
             description: >-
               Create a pool.
 
@@ -30972,6 +32220,170 @@ paths:
               - If a finite band is provided, concentrated-liquidity math
               applies within
                 [min_price, max_price] where price is coin_b / coin_a (see conventions).
+      tags:
+        - Msg
+  dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation:
+    post:
+      operationId: dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              collateral_received:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              repayment_amount:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              accrued_interest:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              pool_loss:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              liquidator:
+                type: string
+              user:
+                type: string
+              pool_id:
+                type: string
+                format: uint64
+              position_id:
+                type: string
+                format: uint64
+      tags:
+        - Msg
+  dysonprotocol.whaleswap.v1.MsgInitializeLiquidation:
+    post:
+      operationId: dysonprotocol.whaleswap.v1.MsgInitializeLiquidation
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              collateral_ratio:
+                type: string
+              liquidation_threshold:
+                type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              initializer:
+                type: string
+              user:
+                type: string
+              pool_id:
+                type: string
+                format: uint64
+              position_id:
+                type: string
+                format: uint64
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgMakeOffer:
@@ -31359,6 +32771,94 @@ paths:
               - The escrowed `sell` coin is transferred from seller to module
               and marked by
                 an NFT for redemption logic. `bid_denom` defines the quote asset.
+      tags:
+        - Msg
+  dysonprotocol.whaleswap.v1.MsgOpenPosition:
+    post:
+      summary: Leverage
+      operationId: dysonprotocol.whaleswap.v1.MsgOpenPosition
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              position_id:
+                type: string
+                format: uint64
+              held:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              trader:
+                type: string
+              pool_id:
+                type: string
+                format: uint64
+              collateral:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              borrow_amount:
+                type: string
+              position_type:
+                type: string
+                enum:
+                  - POSITION_TYPE_UNSPECIFIED
+                  - POSITION_TYPE_LONG
+                  - POSITION_TYPE_SHORT
+                default: POSITION_TYPE_UNSPECIFIED
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgPoolSwap:
@@ -31801,6 +33301,18 @@ paths:
                   max_note_length:
                     type: integer
                     format: int64
+                  block_delay_before_close:
+                    type: string
+                    format: uint64
+                    title: |-
+                      ═════ LEVERAGE PARAMETERS ═════
+                      Block delay before position owner can close position
+                  block_delay_before_liquidation:
+                    type: string
+                    format: uint64
+                    title: >-
+                      Block delay before liquidation can be finalized after
+                      initialization
             description: UpdateParams is the Msg/UpdateParams request type.
       tags:
         - Msg
@@ -31883,6 +33395,13 @@ paths:
                     method
 
                     signatures required by gogoproto.
+              min_collateral_ratio:
+                type: string
+                title: Leverage configuration (optional; empty means no change)
+              max_leverage_ratio:
+                type: string
+              max_borrow_percent:
+                type: string
             description: >-
               Update pool config (owner-only: majority of shares > 50%).
 
@@ -43162,6 +44681,96 @@ definitions:
         type: string
         format: uint64
     title: AuctionRedeem operation for recording auction redemption in Trade history
+  dysonprotocol.whaleswap.v1.LeveragePosition:
+    type: object
+    properties:
+      position_id:
+        type: string
+        format: uint64
+      pool_id:
+        type: string
+        format: uint64
+      user:
+        type: string
+      position_type:
+        type: string
+        enum:
+          - POSITION_TYPE_UNSPECIFIED
+          - POSITION_TYPE_LONG
+          - POSITION_TYPE_SHORT
+        default: POSITION_TYPE_UNSPECIFIED
+      borrowed:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      held:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      collateral:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      borrow_time:
+        type: string
+        format: date-time
+      created_block_height:
+        type: string
+        format: uint64
+      liquidation_initialized_block_height:
+        type: string
+        format: uint64
+      liquidation_status:
+        type: string
+        enum:
+          - LIQUIDATION_STATUS_UNSPECIFIED
+          - LIQUIDATION_STATUS_NONE
+          - LIQUIDATION_STATUS_INITIALIZED
+        default: LIQUIDATION_STATUS_UNSPECIFIED
+      accrued_interest:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+    description: LeveragePosition represents an active leverage position for a trader.
+  dysonprotocol.whaleswap.v1.LiquidationStatus:
+    type: string
+    enum:
+      - LIQUIDATION_STATUS_UNSPECIFIED
+      - LIQUIDATION_STATUS_NONE
+      - LIQUIDATION_STATUS_INITIALIZED
+    default: LIQUIDATION_STATUS_UNSPECIFIED
   dysonprotocol.whaleswap.v1.OfferData:
     type: object
     properties:
@@ -43293,6 +44902,16 @@ definitions:
       max_note_length:
         type: integer
         format: int64
+      block_delay_before_close:
+        type: string
+        format: uint64
+        title: |-
+          ═════ LEVERAGE PARAMETERS ═════
+          Block delay before position owner can close position
+      block_delay_before_liquidation:
+        type: string
+        format: uint64
+        title: Block delay before liquidation can be finalized after initialization
   dysonprotocol.whaleswap.v1.Pool:
     type: object
     properties:
@@ -43388,6 +45007,62 @@ definitions:
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
         title: cumulative swap fees retained by the pool (accrue to LPs)
+      interest_rate_coin1:
+        type: string
+        title: |-
+          ═════ LEVERAGE FIELDS ═════
+          Annual interest rate for borrows in coin1 denom
+      interest_rate_coin2:
+        type: string
+        title: Annual interest rate for borrows in coin2 denom
+      interest_earned:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+        title: Total accrued interest (yield for LPs)
+      total_borrowed:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+        title: Total borrowed (aggregate for cap enforcement)
+      min_collateral_ratio:
+        type: string
+        title: |-
+          ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+          Minimum collateral ratio required at position open
+      max_leverage_ratio:
+        type: string
+        title: Maximum leverage ratio allowed (collateral + borrowed) / collateral
+      liquidation_threshold:
+        type: string
+        title: Collateral ratio threshold below which position is liquidatable
+      max_borrow_percent:
+        type: string
+        title: >-
+          Maximum borrow capacity as percentage of reserve (applies
+          symmetrically to
+
+          both coins)
     description: >-
       Pool describes AMM pool state.
 
@@ -43407,6 +45082,22 @@ definitions:
 
       - The instantaneous price used by price-based queries is derived from
         reserves as P = coin_b / coin_a, consistent with the notes above.
+  dysonprotocol.whaleswap.v1.PositionHealthStatus:
+    type: string
+    enum:
+      - POSITION_HEALTH_STATUS_UNSPECIFIED
+      - POSITION_HEALTH_STATUS_HEALTHY
+      - POSITION_HEALTH_STATUS_AT_RISK
+      - POSITION_HEALTH_STATUS_LIQUIDATABLE
+    default: POSITION_HEALTH_STATUS_UNSPECIFIED
+    title: HealthStatus enum for position health
+  dysonprotocol.whaleswap.v1.PositionType:
+    type: string
+    enum:
+      - POSITION_TYPE_UNSPECIFIED
+      - POSITION_TYPE_LONG
+      - POSITION_TYPE_SHORT
+    default: POSITION_TYPE_UNSPECIFIED
   dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse:
     type: object
     properties:
@@ -44608,6 +46299,18 @@ definitions:
           max_note_length:
             type: integer
             format: int64
+          block_delay_before_close:
+            type: string
+            format: uint64
+            title: |-
+              ═════ LEVERAGE PARAMETERS ═════
+              Block delay before position owner can close position
+          block_delay_before_liquidation:
+            type: string
+            format: uint64
+            title: >-
+              Block delay before liquidation can be finalized after
+              initialization
   dysonprotocol.whaleswap.v1.QueryPoolBySharesDenomResponse:
     type: object
     properties:
@@ -44721,6 +46424,70 @@ definitions:
 
                 signatures required by gogoproto.
             title: cumulative swap fees retained by the pool (accrue to LPs)
+          interest_rate_coin1:
+            type: string
+            title: |-
+              ═════ LEVERAGE FIELDS ═════
+              Annual interest rate for borrows in coin1 denom
+          interest_rate_coin2:
+            type: string
+            title: Annual interest rate for borrows in coin2 denom
+          interest_earned:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            title: Total accrued interest (yield for LPs)
+          total_borrowed:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            title: Total borrowed (aggregate for cap enforcement)
+          min_collateral_ratio:
+            type: string
+            title: |-
+              ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+              Minimum collateral ratio required at position open
+          max_leverage_ratio:
+            type: string
+            title: >-
+              Maximum leverage ratio allowed (collateral + borrowed) /
+              collateral
+          liquidation_threshold:
+            type: string
+            title: Collateral ratio threshold below which position is liquidatable
+          max_borrow_percent:
+            type: string
+            title: >-
+              Maximum borrow capacity as percentage of reserve (applies
+              symmetrically to
+
+              both coins)
         description: >-
           Pool describes AMM pool state.
 
@@ -44853,6 +46620,70 @@ definitions:
 
                 signatures required by gogoproto.
             title: cumulative swap fees retained by the pool (accrue to LPs)
+          interest_rate_coin1:
+            type: string
+            title: |-
+              ═════ LEVERAGE FIELDS ═════
+              Annual interest rate for borrows in coin1 denom
+          interest_rate_coin2:
+            type: string
+            title: Annual interest rate for borrows in coin2 denom
+          interest_earned:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            title: Total accrued interest (yield for LPs)
+          total_borrowed:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            title: Total borrowed (aggregate for cap enforcement)
+          min_collateral_ratio:
+            type: string
+            title: |-
+              ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+              Minimum collateral ratio required at position open
+          max_leverage_ratio:
+            type: string
+            title: >-
+              Maximum leverage ratio allowed (collateral + borrowed) /
+              collateral
+          liquidation_threshold:
+            type: string
+            title: Collateral ratio threshold below which position is liquidatable
+          max_borrow_percent:
+            type: string
+            title: >-
+              Maximum borrow capacity as percentage of reserve (applies
+              symmetrically to
+
+              both coins)
         description: >-
           Pool describes AMM pool state.
 
@@ -44988,6 +46819,70 @@ definitions:
 
                   signatures required by gogoproto.
               title: cumulative swap fees retained by the pool (accrue to LPs)
+            interest_rate_coin1:
+              type: string
+              title: |-
+                ═════ LEVERAGE FIELDS ═════
+                Annual interest rate for borrows in coin1 denom
+            interest_rate_coin2:
+              type: string
+              title: Annual interest rate for borrows in coin2 denom
+            interest_earned:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Total accrued interest (yield for LPs)
+            total_borrowed:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Total borrowed (aggregate for cap enforcement)
+            min_collateral_ratio:
+              type: string
+              title: |-
+                ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+                Minimum collateral ratio required at position open
+            max_leverage_ratio:
+              type: string
+              title: >-
+                Maximum leverage ratio allowed (collateral + borrowed) /
+                collateral
+            liquidation_threshold:
+              type: string
+              title: Collateral ratio threshold below which position is liquidatable
+            max_borrow_percent:
+              type: string
+              title: >-
+                Maximum borrow capacity as percentage of reserve (applies
+                symmetrically to
+
+                both coins)
           description: >-
             Pool describes AMM pool state.
 
@@ -45150,6 +47045,70 @@ definitions:
 
                   signatures required by gogoproto.
               title: cumulative swap fees retained by the pool (accrue to LPs)
+            interest_rate_coin1:
+              type: string
+              title: |-
+                ═════ LEVERAGE FIELDS ═════
+                Annual interest rate for borrows in coin1 denom
+            interest_rate_coin2:
+              type: string
+              title: Annual interest rate for borrows in coin2 denom
+            interest_earned:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Total accrued interest (yield for LPs)
+            total_borrowed:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Total borrowed (aggregate for cap enforcement)
+            min_collateral_ratio:
+              type: string
+              title: |-
+                ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+                Minimum collateral ratio required at position open
+            max_leverage_ratio:
+              type: string
+              title: >-
+                Maximum leverage ratio allowed (collateral + borrowed) /
+                collateral
+            liquidation_threshold:
+              type: string
+              title: Collateral ratio threshold below which position is liquidatable
+            max_borrow_percent:
+              type: string
+              title: >-
+                Maximum borrow capacity as percentage of reserve (applies
+                symmetrically to
+
+                both coins)
           description: >-
             Pool describes AMM pool state.
 
@@ -45312,6 +47271,70 @@ definitions:
 
                   signatures required by gogoproto.
               title: cumulative swap fees retained by the pool (accrue to LPs)
+            interest_rate_coin1:
+              type: string
+              title: |-
+                ═════ LEVERAGE FIELDS ═════
+                Annual interest rate for borrows in coin1 denom
+            interest_rate_coin2:
+              type: string
+              title: Annual interest rate for borrows in coin2 denom
+            interest_earned:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Total accrued interest (yield for LPs)
+            total_borrowed:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Total borrowed (aggregate for cap enforcement)
+            min_collateral_ratio:
+              type: string
+              title: |-
+                ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+                Minimum collateral ratio required at position open
+            max_leverage_ratio:
+              type: string
+              title: >-
+                Maximum leverage ratio allowed (collateral + borrowed) /
+                collateral
+            liquidation_threshold:
+              type: string
+              title: Collateral ratio threshold below which position is liquidatable
+            max_borrow_percent:
+              type: string
+              title: >-
+                Maximum borrow capacity as percentage of reserve (applies
+                symmetrically to
+
+                both coins)
           description: >-
             Pool describes AMM pool state.
 
@@ -45474,6 +47497,70 @@ definitions:
 
                   signatures required by gogoproto.
               title: cumulative swap fees retained by the pool (accrue to LPs)
+            interest_rate_coin1:
+              type: string
+              title: |-
+                ═════ LEVERAGE FIELDS ═════
+                Annual interest rate for borrows in coin1 denom
+            interest_rate_coin2:
+              type: string
+              title: Annual interest rate for borrows in coin2 denom
+            interest_earned:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Total accrued interest (yield for LPs)
+            total_borrowed:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Total borrowed (aggregate for cap enforcement)
+            min_collateral_ratio:
+              type: string
+              title: |-
+                ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+                Minimum collateral ratio required at position open
+            max_leverage_ratio:
+              type: string
+              title: >-
+                Maximum leverage ratio allowed (collateral + borrowed) /
+                collateral
+            liquidation_threshold:
+              type: string
+              title: Collateral ratio threshold below which position is liquidatable
+            max_borrow_percent:
+              type: string
+              title: >-
+                Maximum borrow capacity as percentage of reserve (applies
+                symmetrically to
+
+                both coins)
           description: >-
             Pool describes AMM pool state.
 
@@ -45636,6 +47723,70 @@ definitions:
 
                   signatures required by gogoproto.
               title: cumulative swap fees retained by the pool (accrue to LPs)
+            interest_rate_coin1:
+              type: string
+              title: |-
+                ═════ LEVERAGE FIELDS ═════
+                Annual interest rate for borrows in coin1 denom
+            interest_rate_coin2:
+              type: string
+              title: Annual interest rate for borrows in coin2 denom
+            interest_earned:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Total accrued interest (yield for LPs)
+            total_borrowed:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Total borrowed (aggregate for cap enforcement)
+            min_collateral_ratio:
+              type: string
+              title: |-
+                ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
+                Minimum collateral ratio required at position open
+            max_leverage_ratio:
+              type: string
+              title: >-
+                Maximum leverage ratio allowed (collateral + borrowed) /
+                collateral
+            liquidation_threshold:
+              type: string
+              title: Collateral ratio threshold below which position is liquidatable
+            max_borrow_percent:
+              type: string
+              title: >-
+                Maximum borrow capacity as percentage of reserve (applies
+                symmetrically to
+
+                both coins)
           description: >-
             Pool describes AMM pool state.
 
@@ -45656,6 +47807,418 @@ definitions:
             - The instantaneous price used by price-based queries is derived
             from
               reserves as P = coin_b / coin_a, consistent with the notes above.
+      pagination:
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+  dysonprotocol.whaleswap.v1.QueryPositionResponse:
+    type: object
+    properties:
+      position:
+        type: object
+        properties:
+          position_id:
+            type: string
+            format: uint64
+          pool_id:
+            type: string
+            format: uint64
+          user:
+            type: string
+          position_type:
+            type: string
+            enum:
+              - POSITION_TYPE_UNSPECIFIED
+              - POSITION_TYPE_LONG
+              - POSITION_TYPE_SHORT
+            default: POSITION_TYPE_UNSPECIFIED
+          borrowed:
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+          held:
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+          collateral:
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+          borrow_time:
+            type: string
+            format: date-time
+          created_block_height:
+            type: string
+            format: uint64
+          liquidation_initialized_block_height:
+            type: string
+            format: uint64
+          liquidation_status:
+            type: string
+            enum:
+              - LIQUIDATION_STATUS_UNSPECIFIED
+              - LIQUIDATION_STATUS_NONE
+              - LIQUIDATION_STATUS_INITIALIZED
+            default: LIQUIDATION_STATUS_UNSPECIFIED
+          accrued_interest:
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+        description: LeveragePosition represents an active leverage position for a trader.
+      health_status:
+        title: Health Information
+        type: string
+        enum:
+          - POSITION_HEALTH_STATUS_UNSPECIFIED
+          - POSITION_HEALTH_STATUS_HEALTHY
+          - POSITION_HEALTH_STATUS_AT_RISK
+          - POSITION_HEALTH_STATUS_LIQUIDATABLE
+        default: POSITION_HEALTH_STATUS_UNSPECIFIED
+      current_collateral_ratio:
+        type: string
+      liquidation_threshold:
+        type: string
+      collateral_value:
+        type: string
+      debt_with_interest:
+        type: string
+      can_close_by_owner:
+        type: boolean
+      blocks_until_closeable:
+        type: string
+        format: uint64
+      can_initialize_liquidation:
+        type: boolean
+      can_finalize_liquidation:
+        type: boolean
+      borrowed:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        title: Interest Information
+      accrued_interest:
+        type: string
+      total_repayment:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      time_elapsed:
+        type: string
+        format: uint64
+      annual_rate:
+        type: string
+  dysonprotocol.whaleswap.v1.QueryPositionsByPoolResponse:
+    type: object
+    properties:
+      positions:
+        type: array
+        items:
+          type: object
+          properties:
+            position_id:
+              type: string
+              format: uint64
+            pool_id:
+              type: string
+              format: uint64
+            user:
+              type: string
+            position_type:
+              type: string
+              enum:
+                - POSITION_TYPE_UNSPECIFIED
+                - POSITION_TYPE_LONG
+                - POSITION_TYPE_SHORT
+              default: POSITION_TYPE_UNSPECIFIED
+            borrowed:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            held:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            collateral:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            borrow_time:
+              type: string
+              format: date-time
+            created_block_height:
+              type: string
+              format: uint64
+            liquidation_initialized_block_height:
+              type: string
+              format: uint64
+            liquidation_status:
+              type: string
+              enum:
+                - LIQUIDATION_STATUS_UNSPECIFIED
+                - LIQUIDATION_STATUS_NONE
+                - LIQUIDATION_STATUS_INITIALIZED
+              default: LIQUIDATION_STATUS_UNSPECIFIED
+            accrued_interest:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+          description: >-
+            LeveragePosition represents an active leverage position for a
+            trader.
+      pagination:
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+  dysonprotocol.whaleswap.v1.QueryPositionsByUserResponse:
+    type: object
+    properties:
+      positions:
+        type: array
+        items:
+          type: object
+          properties:
+            position_id:
+              type: string
+              format: uint64
+            pool_id:
+              type: string
+              format: uint64
+            user:
+              type: string
+            position_type:
+              type: string
+              enum:
+                - POSITION_TYPE_UNSPECIFIED
+                - POSITION_TYPE_LONG
+                - POSITION_TYPE_SHORT
+              default: POSITION_TYPE_UNSPECIFIED
+            borrowed:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            held:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            collateral:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            borrow_time:
+              type: string
+              format: date-time
+            created_block_height:
+              type: string
+              format: uint64
+            liquidation_initialized_block_height:
+              type: string
+              format: uint64
+            liquidation_status:
+              type: string
+              enum:
+                - LIQUIDATION_STATUS_UNSPECIFIED
+                - LIQUIDATION_STATUS_NONE
+                - LIQUIDATION_STATUS_INITIALIZED
+              default: LIQUIDATION_STATUS_UNSPECIFIED
+            accrued_interest:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+          description: >-
+            LeveragePosition represents an active leverage position for a
+            trader.
       pagination:
         type: object
         properties:
@@ -68306,6 +70869,46 @@ definitions:
   dysonprotocol.nft.v1beta1.MsgSendResponse:
     type: object
     description: MsgSendResponse defines the Msg/Send response type.
+  dysonprotocol.whaleswap.v1.MsgAddCollateral:
+    type: object
+    properties:
+      user:
+        type: string
+      pool_id:
+        type: string
+        format: uint64
+      position_id:
+        type: string
+        format: uint64
+      collateral:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+  dysonprotocol.whaleswap.v1.MsgAddCollateralResponse:
+    type: object
+    properties:
+      new_collateral:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      new_collateral_ratio:
+        type: string
   dysonprotocol.whaleswap.v1.MsgAddLiquidity:
     type: object
     properties:
@@ -68364,6 +70967,44 @@ definitions:
         the have denom drops below one unit_have, enabling recovery via PFAND.
   dysonprotocol.whaleswap.v1.MsgCancelOfferResponse:
     type: object
+  dysonprotocol.whaleswap.v1.MsgClosePosition:
+    type: object
+    properties:
+      user:
+        type: string
+      pool_id:
+        type: string
+        format: uint64
+      position_id:
+        type: string
+        format: uint64
+  dysonprotocol.whaleswap.v1.MsgClosePositionResponse:
+    type: object
+    properties:
+      profit:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      accrued_interest:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
   dysonprotocol.whaleswap.v1.MsgCreatePool:
     type: object
     properties:
@@ -68422,6 +71063,12 @@ definitions:
             signatures required by gogoproto.
       fee_pct:
         type: string
+      min_collateral_ratio:
+        type: string
+      max_leverage_ratio:
+        type: string
+      max_borrow_percent:
+        type: string
     description: >-
       Create a pool.
 
@@ -68439,6 +71086,90 @@ definitions:
       pool_id:
         type: string
         format: uint64
+  dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation:
+    type: object
+    properties:
+      liquidator:
+        type: string
+      user:
+        type: string
+      pool_id:
+        type: string
+        format: uint64
+      position_id:
+        type: string
+        format: uint64
+  dysonprotocol.whaleswap.v1.MsgFinalizeLiquidationResponse:
+    type: object
+    properties:
+      collateral_received:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      repayment_amount:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      accrued_interest:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      pool_loss:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+  dysonprotocol.whaleswap.v1.MsgInitializeLiquidation:
+    type: object
+    properties:
+      initializer:
+        type: string
+      user:
+        type: string
+      pool_id:
+        type: string
+        format: uint64
+      position_id:
+        type: string
+        format: uint64
+  dysonprotocol.whaleswap.v1.MsgInitializeLiquidationResponse:
+    type: object
+    properties:
+      collateral_ratio:
+        type: string
+      liquidation_threshold:
+        type: string
   dysonprotocol.whaleswap.v1.MsgMakeOffer:
     type: object
     properties:
@@ -68690,6 +71421,53 @@ definitions:
       auction_id:
         type: string
         format: uint64
+  dysonprotocol.whaleswap.v1.MsgOpenPosition:
+    type: object
+    properties:
+      trader:
+        type: string
+      pool_id:
+        type: string
+        format: uint64
+      collateral:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      borrow_amount:
+        type: string
+      position_type:
+        type: string
+        enum:
+          - POSITION_TYPE_UNSPECIFIED
+          - POSITION_TYPE_LONG
+          - POSITION_TYPE_SHORT
+        default: POSITION_TYPE_UNSPECIFIED
+  dysonprotocol.whaleswap.v1.MsgOpenPositionResponse:
+    type: object
+    properties:
+      position_id:
+        type: string
+        format: uint64
+      held:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
   dysonprotocol.whaleswap.v1.MsgPoolSwap:
     type: object
     properties:
@@ -68932,6 +71710,18 @@ definitions:
           max_note_length:
             type: integer
             format: int64
+          block_delay_before_close:
+            type: string
+            format: uint64
+            title: |-
+              ═════ LEVERAGE PARAMETERS ═════
+              Block delay before position owner can close position
+          block_delay_before_liquidation:
+            type: string
+            format: uint64
+            title: >-
+              Block delay before liquidation can be finalized after
+              initialization
     description: UpdateParams is the Msg/UpdateParams request type.
   dysonprotocol.whaleswap.v1.MsgUpdateParamsResponse:
     type: object
@@ -68974,6 +71764,13 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
+      min_collateral_ratio:
+        type: string
+        title: Leverage configuration (optional; empty means no change)
+      max_leverage_ratio:
+        type: string
+      max_borrow_percent:
+        type: string
     description: |-
       Update pool config (owner-only: majority of shares > 50%).
 

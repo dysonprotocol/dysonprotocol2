@@ -66,3 +66,63 @@ message EventTradeRecorded {
   uint32 num_operations = 3;
   string note = 4;
 }
+
+// ═════════════════════════════════
+// Leverage Events
+// ═════════════════════════════════
+
+message EventLeveragePositionOpened {
+  uint64 position_id = 1;
+  string user = 2;
+  uint64 pool_id = 3;
+  string position_type = 4;
+  string collateral_denom = 5;
+  string collateral_amount = 6;
+  string borrowed_denom = 7;
+  string borrowed_amount = 8;
+  string held_denom = 9;
+  string held_amount = 10;
+}
+
+message EventLeveragePositionClosed {
+  uint64 position_id = 1;
+  string user = 2;
+  uint64 pool_id = 3;
+  string position_type = 4;
+  cosmos.base.v1beta1.Coin profit = 5 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin accrued_interest = 6
+      [ (gogoproto.nullable) = false ];
+}
+
+message EventLeverageCollateralAdded {
+  uint64 position_id = 1;
+  string user = 2;
+  uint64 pool_id = 3;
+  cosmos.base.v1beta1.Coin collateral_added = 4
+      [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin new_collateral = 5 [ (gogoproto.nullable) = false ];
+  string new_collateral_ratio = 6;
+}
+
+message EventLeverageLiquidationInitialized {
+  uint64 position_id = 1;
+  string user = 2;
+  uint64 pool_id = 3;
+  string collateral_ratio = 4;
+  string liquidation_threshold = 5;
+  uint64 block_height = 6;
+}
+
+message EventLeverageLiquidationFinalized {
+  uint64 position_id = 1;
+  string user = 2;
+  string liquidator = 3;
+  uint64 pool_id = 4;
+  cosmos.base.v1beta1.Coin collateral_received = 5
+      [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin repayment_amount = 6
+      [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin accrued_interest = 7
+      [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin pool_loss = 8 [ (gogoproto.nullable) = false ];
+}

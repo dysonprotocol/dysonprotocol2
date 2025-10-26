@@ -17,13 +17,15 @@ import (
 )
 
 var (
-	md_Params                              protoreflect.MessageDescriptor
-	fd_Params_pfand_per_offer              protoreflect.FieldDescriptor
-	fd_Params_valuation_fee_pct            protoreflect.FieldDescriptor
-	fd_Params_valuation_period             protoreflect.FieldDescriptor
-	fd_Params_bid_timeout                  protoreflect.FieldDescriptor
-	fd_Params_minimum_bid_percent_increase protoreflect.FieldDescriptor
-	fd_Params_max_note_length              protoreflect.FieldDescriptor
+	md_Params                                protoreflect.MessageDescriptor
+	fd_Params_pfand_per_offer                protoreflect.FieldDescriptor
+	fd_Params_valuation_fee_pct              protoreflect.FieldDescriptor
+	fd_Params_valuation_period               protoreflect.FieldDescriptor
+	fd_Params_bid_timeout                    protoreflect.FieldDescriptor
+	fd_Params_minimum_bid_percent_increase   protoreflect.FieldDescriptor
+	fd_Params_max_note_length                protoreflect.FieldDescriptor
+	fd_Params_block_delay_before_close       protoreflect.FieldDescriptor
+	fd_Params_block_delay_before_liquidation protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -35,6 +37,8 @@ func init() {
 	fd_Params_bid_timeout = md_Params.Fields().ByName("bid_timeout")
 	fd_Params_minimum_bid_percent_increase = md_Params.Fields().ByName("minimum_bid_percent_increase")
 	fd_Params_max_note_length = md_Params.Fields().ByName("max_note_length")
+	fd_Params_block_delay_before_close = md_Params.Fields().ByName("block_delay_before_close")
+	fd_Params_block_delay_before_liquidation = md_Params.Fields().ByName("block_delay_before_liquidation")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -138,6 +142,18 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
+	if x.BlockDelayBeforeClose != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.BlockDelayBeforeClose)
+		if !f(fd_Params_block_delay_before_close, value) {
+			return
+		}
+	}
+	if x.BlockDelayBeforeLiquidation != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.BlockDelayBeforeLiquidation)
+		if !f(fd_Params_block_delay_before_liquidation, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -165,6 +181,10 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.MinimumBidPercentIncrease != ""
 	case "dysonprotocol.whaleswap.v1.Params.max_note_length":
 		return x.MaxNoteLength != uint32(0)
+	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_close":
+		return x.BlockDelayBeforeClose != uint64(0)
+	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_liquidation":
+		return x.BlockDelayBeforeLiquidation != uint64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -193,6 +213,10 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.MinimumBidPercentIncrease = ""
 	case "dysonprotocol.whaleswap.v1.Params.max_note_length":
 		x.MaxNoteLength = uint32(0)
+	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_close":
+		x.BlockDelayBeforeClose = uint64(0)
+	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_liquidation":
+		x.BlockDelayBeforeLiquidation = uint64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -227,6 +251,12 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "dysonprotocol.whaleswap.v1.Params.max_note_length":
 		value := x.MaxNoteLength
 		return protoreflect.ValueOfUint32(value)
+	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_close":
+		value := x.BlockDelayBeforeClose
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_liquidation":
+		value := x.BlockDelayBeforeLiquidation
+		return protoreflect.ValueOfUint64(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -259,6 +289,10 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.MinimumBidPercentIncrease = value.Interface().(string)
 	case "dysonprotocol.whaleswap.v1.Params.max_note_length":
 		x.MaxNoteLength = uint32(value.Uint())
+	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_close":
+		x.BlockDelayBeforeClose = value.Uint()
+	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_liquidation":
+		x.BlockDelayBeforeLiquidation = value.Uint()
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -300,6 +334,10 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field minimum_bid_percent_increase of message dysonprotocol.whaleswap.v1.Params is not mutable"))
 	case "dysonprotocol.whaleswap.v1.Params.max_note_length":
 		panic(fmt.Errorf("field max_note_length of message dysonprotocol.whaleswap.v1.Params is not mutable"))
+	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_close":
+		panic(fmt.Errorf("field block_delay_before_close of message dysonprotocol.whaleswap.v1.Params is not mutable"))
+	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_liquidation":
+		panic(fmt.Errorf("field block_delay_before_liquidation of message dysonprotocol.whaleswap.v1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -328,6 +366,10 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 		return protoreflect.ValueOfString("")
 	case "dysonprotocol.whaleswap.v1.Params.max_note_length":
 		return protoreflect.ValueOfUint32(uint32(0))
+	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_close":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_liquidation":
+		return protoreflect.ValueOfUint64(uint64(0))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -420,6 +462,12 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.MaxNoteLength != 0 {
 			n += 1 + runtime.Sov(uint64(x.MaxNoteLength))
 		}
+		if x.BlockDelayBeforeClose != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockDelayBeforeClose))
+		}
+		if x.BlockDelayBeforeLiquidation != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockDelayBeforeLiquidation))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -448,6 +496,16 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.BlockDelayBeforeLiquidation != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockDelayBeforeLiquidation))
+			i--
+			dAtA[i] = 0x40
+		}
+		if x.BlockDelayBeforeClose != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockDelayBeforeClose))
+			i--
+			dAtA[i] = 0x38
 		}
 		if x.MaxNoteLength != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxNoteLength))
@@ -750,6 +808,44 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 						break
 					}
 				}
+			case 7:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockDelayBeforeClose", wireType)
+				}
+				x.BlockDelayBeforeClose = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.BlockDelayBeforeClose |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 8:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockDelayBeforeLiquidation", wireType)
+				}
+				x.BlockDelayBeforeLiquidation = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.BlockDelayBeforeLiquidation |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -817,6 +913,11 @@ type Params struct {
 	// required over the current valuation for a new bid to be accepted.
 	MinimumBidPercentIncrease string `protobuf:"bytes,5,opt,name=minimum_bid_percent_increase,json=minimumBidPercentIncrease,proto3" json:"minimum_bid_percent_increase,omitempty"`
 	MaxNoteLength             uint32 `protobuf:"varint,6,opt,name=max_note_length,json=maxNoteLength,proto3" json:"max_note_length,omitempty"`
+	// ═════ LEVERAGE PARAMETERS ═════
+	// Block delay before position owner can close position
+	BlockDelayBeforeClose uint64 `protobuf:"varint,7,opt,name=block_delay_before_close,json=blockDelayBeforeClose,proto3" json:"block_delay_before_close,omitempty"`
+	// Block delay before liquidation can be finalized after initialization
+	BlockDelayBeforeLiquidation uint64 `protobuf:"varint,8,opt,name=block_delay_before_liquidation,json=blockDelayBeforeLiquidation,proto3" json:"block_delay_before_liquidation,omitempty"`
 }
 
 func (x *Params) Reset() {
@@ -881,6 +982,20 @@ func (x *Params) GetMaxNoteLength() uint32 {
 	return 0
 }
 
+func (x *Params) GetBlockDelayBeforeClose() uint64 {
+	if x != nil {
+		return x.BlockDelayBeforeClose
+	}
+	return 0
+}
+
+func (x *Params) GetBlockDelayBeforeLiquidation() uint64 {
+	if x != nil {
+		return x.BlockDelayBeforeLiquidation
+	}
+	return 0
+}
+
 var File_dysonprotocol_whaleswap_v1_params_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_whaleswap_v1_params_proto_rawDesc = []byte{
@@ -895,7 +1010,7 @@ var file_dysonprotocol_whaleswap_v1_params_proto_rawDesc = []byte{
 	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x62,
 	0x61, 0x73, 0x65, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2f, 0x63, 0x6f, 0x69, 0x6e,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xc6, 0x04, 0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x94, 0x06, 0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d,
 	0x73, 0x12, 0x61, 0x0a, 0x0f, 0x70, 0x66, 0x61, 0x6e, 0x64, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x6f,
 	0x66, 0x66, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73,
 	0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31,
@@ -931,10 +1046,23 @@ var file_dysonprotocol_whaleswap_v1_params_proto_rawDesc = []byte{
 	0x61, 0x78, 0x5f, 0x6e, 0x6f, 0x74, 0x65, 0x5f, 0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x18, 0x06,
 	0x20, 0x01, 0x28, 0x0d, 0x42, 0x1a, 0xf2, 0xde, 0x1f, 0x16, 0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22,
 	0x6d, 0x61, 0x78, 0x5f, 0x6e, 0x6f, 0x74, 0x65, 0x5f, 0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x22,
-	0x52, 0x0d, 0x6d, 0x61, 0x78, 0x4e, 0x6f, 0x74, 0x65, 0x4c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x42,
-	0x25, 0x5a, 0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70,
-	0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x52, 0x0d, 0x6d, 0x61, 0x78, 0x4e, 0x6f, 0x74, 0x65, 0x4c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x12,
+	0x5c, 0x0a, 0x18, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x64, 0x65, 0x6c, 0x61, 0x79, 0x5f, 0x62,
+	0x65, 0x66, 0x6f, 0x72, 0x65, 0x5f, 0x63, 0x6c, 0x6f, 0x73, 0x65, 0x18, 0x07, 0x20, 0x01, 0x28,
+	0x04, 0x42, 0x23, 0xf2, 0xde, 0x1f, 0x1f, 0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x62, 0x6c, 0x6f,
+	0x63, 0x6b, 0x5f, 0x64, 0x65, 0x6c, 0x61, 0x79, 0x5f, 0x62, 0x65, 0x66, 0x6f, 0x72, 0x65, 0x5f,
+	0x63, 0x6c, 0x6f, 0x73, 0x65, 0x22, 0x52, 0x15, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x44, 0x65, 0x6c,
+	0x61, 0x79, 0x42, 0x65, 0x66, 0x6f, 0x72, 0x65, 0x43, 0x6c, 0x6f, 0x73, 0x65, 0x12, 0x6e, 0x0a,
+	0x1e, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x64, 0x65, 0x6c, 0x61, 0x79, 0x5f, 0x62, 0x65, 0x66,
+	0x6f, 0x72, 0x65, 0x5f, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18,
+	0x08, 0x20, 0x01, 0x28, 0x04, 0x42, 0x29, 0xf2, 0xde, 0x1f, 0x25, 0x79, 0x61, 0x6d, 0x6c, 0x3a,
+	0x22, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x64, 0x65, 0x6c, 0x61, 0x79, 0x5f, 0x62, 0x65, 0x66,
+	0x6f, 0x72, 0x65, 0x5f, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22,
+	0x52, 0x1b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x44, 0x65, 0x6c, 0x61, 0x79, 0x42, 0x65, 0x66, 0x6f,
+	0x72, 0x65, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x42, 0x25, 0x5a,
+	0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74,
+	0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
