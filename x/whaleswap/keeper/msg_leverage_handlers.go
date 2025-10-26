@@ -83,7 +83,6 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		PositionId:      msg.PositionId,
 		User:            msg.User,
 		PoolId:          pos.PoolId,
-		PositionType:    pos.PositionType.String(),
 		Profit:          profit,
 		AccruedInterest: interestCoin,
 	}); err != nil {

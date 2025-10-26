@@ -902,20 +902,21 @@
       "type": "object",
       "properties": {
         "trader": {
-          "type": "string"
+          "type": "string",
+          "description": "trader: account opening the synthetic leveraged position. Collateral will\nbe escrowed from this address into the module account; no borrowed/held\ncoins are transferred to the trader in synthetic mode."
         },
         "pool_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "pool_id: target two-asset pool providing price reference and borrow caps.\nThe two allowed denoms for collateral/borrow/held must match this pool."
         },
         "collateral": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "collateral: coin to escrow as security. Must be positive and one of the\npool denoms."
         },
         "borrow": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-        },
-        "position_type": {
-          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.PositionType"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "borrow: liability coin. Must be positive and one of the pool denoms.\nInterest accrues on this amount until close/liquidation."
         }
       }
     },
@@ -1144,15 +1145,6 @@
           "title": "Block delay before liquidation can be finalized after initialization"
         }
       }
-    },
-    "dysonprotocol.whaleswap.v1.PositionType": {
-      "type": "string",
-      "enum": [
-        "POSITION_TYPE_UNSPECIFIED",
-        "POSITION_TYPE_LONG",
-        "POSITION_TYPE_SHORT"
-      ],
-      "default": "POSITION_TYPE_UNSPECIFIED"
     },
     "dysonprotocol.whaleswap.v1.SettlementMode": {
       "type": "string",

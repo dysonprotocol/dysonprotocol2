@@ -8285,13 +8285,6 @@ paths:
                       format: uint64
                     user:
                       type: string
-                    position_type:
-                      type: string
-                      enum:
-                        - POSITION_TYPE_UNSPECIFIED
-                        - POSITION_TYPE_LONG
-                        - POSITION_TYPE_SHORT
-                      default: POSITION_TYPE_UNSPECIFIED
                     borrowed:
                       type: object
                       properties:
@@ -8477,13 +8470,6 @@ paths:
                       format: uint64
                     user:
                       type: string
-                    position_type:
-                      type: string
-                      enum:
-                        - POSITION_TYPE_UNSPECIFIED
-                        - POSITION_TYPE_LONG
-                        - POSITION_TYPE_SHORT
-                      default: POSITION_TYPE_UNSPECIFIED
                     borrowed:
                       type: object
                       properties:
@@ -8682,13 +8668,6 @@ paths:
                     format: uint64
                   user:
                     type: string
-                  position_type:
-                    type: string
-                    enum:
-                      - POSITION_TYPE_UNSPECIFIED
-                      - POSITION_TYPE_LONG
-                      - POSITION_TYPE_SHORT
-                    default: POSITION_TYPE_UNSPECIFIED
                   borrowed:
                     type: object
                     properties:
@@ -32832,9 +32811,23 @@ paths:
             properties:
               trader:
                 type: string
+                description: >-
+                  trader: account opening the synthetic leveraged position.
+                  Collateral will
+
+                  be escrowed from this address into the module account; no
+                  borrowed/held
+
+                  coins are transferred to the trader in synthetic mode.
               pool_id:
                 type: string
                 format: uint64
+                description: >-
+                  pool_id: target two-asset pool providing price reference and
+                  borrow caps.
+
+                  The two allowed denoms for collateral/borrow/held must match
+                  this pool.
               collateral:
                 type: object
                 properties:
@@ -32865,13 +32858,6 @@ paths:
                   method
 
                   signatures required by gogoproto.
-              position_type:
-                type: string
-                enum:
-                  - POSITION_TYPE_UNSPECIFIED
-                  - POSITION_TYPE_LONG
-                  - POSITION_TYPE_SHORT
-                default: POSITION_TYPE_UNSPECIFIED
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgPoolSwap:
@@ -44705,13 +44691,6 @@ definitions:
         format: uint64
       user:
         type: string
-      position_type:
-        type: string
-        enum:
-          - POSITION_TYPE_UNSPECIFIED
-          - POSITION_TYPE_LONG
-          - POSITION_TYPE_SHORT
-        default: POSITION_TYPE_UNSPECIFIED
       borrowed:
         type: object
         properties:
@@ -45104,13 +45083,6 @@ definitions:
       - POSITION_HEALTH_STATUS_LIQUIDATABLE
     default: POSITION_HEALTH_STATUS_UNSPECIFIED
     title: HealthStatus enum for position health
-  dysonprotocol.whaleswap.v1.PositionType:
-    type: string
-    enum:
-      - POSITION_TYPE_UNSPECIFIED
-      - POSITION_TYPE_LONG
-      - POSITION_TYPE_SHORT
-    default: POSITION_TYPE_UNSPECIFIED
   dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse:
     type: object
     properties:
@@ -47860,13 +47832,6 @@ definitions:
             format: uint64
           user:
             type: string
-          position_type:
-            type: string
-            enum:
-              - POSITION_TYPE_UNSPECIFIED
-              - POSITION_TYPE_LONG
-              - POSITION_TYPE_SHORT
-            default: POSITION_TYPE_UNSPECIFIED
           borrowed:
             type: object
             properties:
@@ -48018,13 +47983,6 @@ definitions:
               format: uint64
             user:
               type: string
-            position_type:
-              type: string
-              enum:
-                - POSITION_TYPE_UNSPECIFIED
-                - POSITION_TYPE_LONG
-                - POSITION_TYPE_SHORT
-              default: POSITION_TYPE_UNSPECIFIED
             borrowed:
               type: object
               properties:
@@ -48146,13 +48104,6 @@ definitions:
               format: uint64
             user:
               type: string
-            position_type:
-              type: string
-              enum:
-                - POSITION_TYPE_UNSPECIFIED
-                - POSITION_TYPE_LONG
-                - POSITION_TYPE_SHORT
-              default: POSITION_TYPE_UNSPECIFIED
             borrowed:
               type: object
               properties:
@@ -71439,9 +71390,23 @@ definitions:
     properties:
       trader:
         type: string
+        description: >-
+          trader: account opening the synthetic leveraged position. Collateral
+          will
+
+          be escrowed from this address into the module account; no
+          borrowed/held
+
+          coins are transferred to the trader in synthetic mode.
       pool_id:
         type: string
         format: uint64
+        description: >-
+          pool_id: target two-asset pool providing price reference and borrow
+          caps.
+
+          The two allowed denoms for collateral/borrow/held must match this
+          pool.
       collateral:
         type: object
         properties:
@@ -71466,13 +71431,6 @@ definitions:
 
           NOTE: The amount field is an Int which implements the custom method
           signatures required by gogoproto.
-      position_type:
-        type: string
-        enum:
-          - POSITION_TYPE_UNSPECIFIED
-          - POSITION_TYPE_LONG
-          - POSITION_TYPE_SHORT
-        default: POSITION_TYPE_UNSPECIFIED
   dysonprotocol.whaleswap.v1.MsgOpenPositionResponse:
     type: object
     properties:

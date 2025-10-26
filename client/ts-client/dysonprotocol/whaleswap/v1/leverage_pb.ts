@@ -8,32 +8,6 @@ import { Message, proto3, protoInt64, Timestamp } from "@bufbuild/protobuf";
 import { Coin } from "../../../cosmos/base/v1beta1/coin_pb.js";
 
 /**
- * @generated from enum dysonprotocol.whaleswap.v1.PositionType
- */
-export enum PositionType {
-  /**
-   * @generated from enum value: POSITION_TYPE_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
-
-  /**
-   * @generated from enum value: POSITION_TYPE_LONG = 1;
-   */
-  LONG = 1,
-
-  /**
-   * @generated from enum value: POSITION_TYPE_SHORT = 2;
-   */
-  SHORT = 2,
-}
-// Retrieve enum metadata with: proto3.getEnumType(PositionType)
-proto3.util.setEnumType(PositionType, "dysonprotocol.whaleswap.v1.PositionType", [
-  { no: 0, name: "POSITION_TYPE_UNSPECIFIED" },
-  { no: 1, name: "POSITION_TYPE_LONG" },
-  { no: 2, name: "POSITION_TYPE_SHORT" },
-]);
-
-/**
  * @generated from enum dysonprotocol.whaleswap.v1.LiquidationStatus
  */
 export enum LiquidationStatus {
@@ -79,11 +53,6 @@ export class LeveragePosition extends Message<LeveragePosition> {
    * @generated from field: string user = 3;
    */
   user = "";
-
-  /**
-   * @generated from field: dysonprotocol.whaleswap.v1.PositionType position_type = 4;
-   */
-  positionType = PositionType.UNSPECIFIED;
 
   /**
    * @generated from field: cosmos.base.v1beta1.Coin borrowed = 5;
@@ -136,7 +105,6 @@ export class LeveragePosition extends Message<LeveragePosition> {
     { no: 1, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 3, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "position_type", kind: "enum", T: proto3.getEnumType(PositionType) },
     { no: 5, name: "borrowed", kind: "message", T: Coin },
     { no: 6, name: "held", kind: "message", T: Coin },
     { no: 7, name: "collateral", kind: "message", T: Coin },

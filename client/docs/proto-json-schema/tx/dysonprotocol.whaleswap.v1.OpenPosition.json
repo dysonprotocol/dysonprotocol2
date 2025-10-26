@@ -6,38 +6,22 @@
             "dysonprotocol.whaleswap.v1.MsgOpenPosition": {
                 "properties": {
                     "trader": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "trader: account opening the synthetic leveraged position. Collateral will be escrowed from this address into the module account; no borrowed/held coins are transferred to the trader in synthetic mode."
                     },
                     "pool_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "pool_id: target two-asset pool providing price reference and borrow caps. The two allowed denoms for collateral/borrow/held must match this pool."
                     },
                     "collateral": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "collateral: coin to escrow as security. Must be positive and one of the pool denoms."
                     },
                     "borrow": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
-                    },
-                    "position_type": {
-                        "enum": [
-                            "POSITION_TYPE_UNSPECIFIED",
-                            0,
-                            "POSITION_TYPE_LONG",
-                            1,
-                            "POSITION_TYPE_SHORT",
-                            2
-                        ],
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "integer"
-                            }
-                        ],
-                        "title": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n Leverage State Types\n \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
-                        "description": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 Leverage State Types \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+                        "additionalProperties": false,
+                        "description": "borrow: liability coin. Must be positive and one of the pool denoms. Interest accrues on this amount until close/liquidation."
                     }
                 },
                 "additionalProperties": false,

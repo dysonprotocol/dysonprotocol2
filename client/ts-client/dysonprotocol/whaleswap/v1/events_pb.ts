@@ -593,11 +593,6 @@ export class EventLeveragePositionOpened extends Message<EventLeveragePositionOp
   poolId = protoInt64.zero;
 
   /**
-   * @generated from field: string position_type = 4;
-   */
-  positionType = "";
-
-  /**
    * @generated from field: string collateral_denom = 5;
    */
   collateralDenom = "";
@@ -618,14 +613,20 @@ export class EventLeveragePositionOpened extends Message<EventLeveragePositionOp
   borrowedAmount = "";
 
   /**
-   * @generated from field: string held_denom = 9;
+   * Observability fields
+   *
+   * cosmos.Dec string
+   *
+   * @generated from field: string entry_price_held_per_borrow = 11;
    */
-  heldDenom = "";
+  entryPriceHeldPerBorrow = "";
 
   /**
-   * @generated from field: string held_amount = 10;
+   * cosmos.Dec string at entry
+   *
+   * @generated from field: string collateral_ratio = 12;
    */
-  heldAmount = "";
+  collateralRatio = "";
 
   constructor(data?: PartialMessage<EventLeveragePositionOpened>) {
     super();
@@ -638,13 +639,12 @@ export class EventLeveragePositionOpened extends Message<EventLeveragePositionOp
     { no: 1, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 2, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 4, name: "position_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "collateral_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "collateral_amount", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 7, name: "borrowed_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 8, name: "borrowed_amount", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 9, name: "held_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 10, name: "held_amount", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 11, name: "entry_price_held_per_borrow", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 12, name: "collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): EventLeveragePositionOpened {
@@ -684,11 +684,6 @@ export class EventLeveragePositionClosed extends Message<EventLeveragePositionCl
   poolId = protoInt64.zero;
 
   /**
-   * @generated from field: string position_type = 4;
-   */
-  positionType = "";
-
-  /**
    * @generated from field: cosmos.base.v1beta1.Coin profit = 5;
    */
   profit?: Coin;
@@ -709,7 +704,6 @@ export class EventLeveragePositionClosed extends Message<EventLeveragePositionCl
     { no: 1, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 2, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 4, name: "position_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "profit", kind: "message", T: Coin },
     { no: 6, name: "accrued_interest", kind: "message", T: Coin },
   ]);

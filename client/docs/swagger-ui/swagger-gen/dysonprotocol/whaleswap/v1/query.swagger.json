@@ -1764,9 +1764,6 @@
         "user": {
           "type": "string"
         },
-        "position_type": {
-          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.PositionType"
-        },
         "borrowed": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
         },
@@ -2006,15 +2003,6 @@
       ],
       "default": "POSITION_HEALTH_STATUS_UNSPECIFIED",
       "title": "HealthStatus enum for position health"
-    },
-    "dysonprotocol.whaleswap.v1.PositionType": {
-      "type": "string",
-      "enum": [
-        "POSITION_TYPE_UNSPECIFIED",
-        "POSITION_TYPE_LONG",
-        "POSITION_TYPE_SHORT"
-      ],
-      "default": "POSITION_TYPE_UNSPECIFIED"
     },
     "dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse": {
       "type": "object",

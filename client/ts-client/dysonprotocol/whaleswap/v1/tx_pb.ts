@@ -7,7 +7,6 @@ import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialM
 import { Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 import { Coin } from "../../../cosmos/base/v1beta1/coin_pb.js";
 import { Params } from "./params_pb.js";
-import { PositionType } from "./leverage_pb.js";
 
 /**
  * SettlementMode selects how offers fund the "have" side:
@@ -1430,29 +1429,37 @@ export class MsgUpdateParamsResponse extends Message<MsgUpdateParamsResponse> {
  */
 export class MsgOpenPosition extends Message<MsgOpenPosition> {
   /**
+   * trader: account opening the synthetic leveraged position. Collateral will
+   * be escrowed from this address into the module account; no borrowed/held
+   * coins are transferred to the trader in synthetic mode.
+   *
    * @generated from field: string trader = 1;
    */
   trader = "";
 
   /**
+   * pool_id: target two-asset pool providing price reference and borrow caps.
+   * The two allowed denoms for collateral/borrow/held must match this pool.
+   *
    * @generated from field: uint64 pool_id = 2;
    */
   poolId = protoInt64.zero;
 
   /**
+   * collateral: coin to escrow as security. Must be positive and one of the
+   * pool denoms.
+   *
    * @generated from field: cosmos.base.v1beta1.Coin collateral = 3;
    */
   collateral?: Coin;
 
   /**
+   * borrow: liability coin. Must be positive and one of the pool denoms.
+   * Interest accrues on this amount until close/liquidation.
+   *
    * @generated from field: cosmos.base.v1beta1.Coin borrow = 4;
    */
   borrow?: Coin;
-
-  /**
-   * @generated from field: dysonprotocol.whaleswap.v1.PositionType position_type = 5;
-   */
-  positionType = PositionType.UNSPECIFIED;
 
   constructor(data?: PartialMessage<MsgOpenPosition>) {
     super();
@@ -1466,7 +1473,6 @@ export class MsgOpenPosition extends Message<MsgOpenPosition> {
     { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 3, name: "collateral", kind: "message", T: Coin },
     { no: 4, name: "borrow", kind: "message", T: Coin },
-    { no: 5, name: "position_type", kind: "enum", T: proto3.getEnumType(PositionType) },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgOpenPosition {

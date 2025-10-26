@@ -75,20 +75,19 @@ message EventLeveragePositionOpened {
   uint64 position_id = 1;
   string user = 2;
   uint64 pool_id = 3;
-  string position_type = 4;
   string collateral_denom = 5;
   string collateral_amount = 6;
   string borrowed_denom = 7;
   string borrowed_amount = 8;
-  string held_denom = 9;
-  string held_amount = 10;
+  // Observability fields
+  string entry_price_held_per_borrow = 11; // cosmos.Dec string
+  string collateral_ratio = 12;            // cosmos.Dec string at entry
 }
 
 message EventLeveragePositionClosed {
   uint64 position_id = 1;
   string user = 2;
   uint64 pool_id = 3;
-  string position_type = 4;
   cosmos.base.v1beta1.Coin profit = 5 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin accrued_interest = 6
       [ (gogoproto.nullable) = false ];
