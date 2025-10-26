@@ -911,8 +911,8 @@
         "collateral": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
         },
-        "borrow_amount": {
-          "type": "string"
+        "borrow": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
         },
         "position_type": {
           "$ref": "#/definitions/dysonprotocol.whaleswap.v1.PositionType"

@@ -11,45 +11,53 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// openPosition is the generic implementation for both long and short positions.
-func (k Keeper) openPosition(ctx context.Context, trader string, poolID uint64, collateral sdk.Coin, borrowAmount math.Int, isLong bool) (posID uint64, heldCoin sdk.Coin, err error) {
+// OpenPosition creates a leveraged position (long or short).
+func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPosition) (*whaleswapv1.MsgOpenPositionResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
+	isLong := msg.PositionType == whaleswapv1.PositionType_POSITION_TYPE_LONG
+	sdkCtx.Logger().Info("OpenPosition: called", "trader", msg.Trader, "poolID", msg.PoolId, "positionType", msg.PositionType.String(), "isLong", isLong)
+
 	// Load and validate pool
-	pool, err := k.PoolsMap.Get(ctx, poolID)
+	pool, err := k.PoolsMap.Get(ctx, msg.PoolId)
 	if err != nil {
-		return 0, sdk.Coin{}, cosmossdkerrors.Wrapf(err, "pool %d not found", poolID)
+		return nil, cosmossdkerrors.Wrapf(err, "pool %d not found", msg.PoolId)
 	}
+	sdkCtx.Logger().Info("OpenPosition: loaded pool", "poolID", msg.PoolId, "coin0", pool.Coins[0].Denom, "coin1", pool.Coins[1].Denom, "isLong", isLong)
+
 	if len(pool.Coins) != 2 {
-		return 0, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves")
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves")
 	}
-	if !collateral.IsValid() || !collateral.Amount.IsPositive() {
-		return 0, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid collateral")
+	if !msg.Collateral.IsValid() || !msg.Collateral.Amount.IsPositive() {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid collateral")
 	}
-	if !borrowAmount.IsPositive() {
-		return 0, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid borrow_amount")
+	if !msg.Borrow.IsValid() || !msg.Borrow.Amount.IsPositive() {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid borrow")
 	}
 
-	// Select coins based on position type
+	// Validate borrow denom is in pool and determine held denom
 	var borrowDenom, heldDenom string
-	if isLong {
+	if msg.Borrow.Denom == pool.Coins[0].Denom {
 		borrowDenom = pool.Coins[0].Denom
 		heldDenom = pool.Coins[1].Denom
-	} else {
+	} else if msg.Borrow.Denom == pool.Coins[1].Denom {
 		borrowDenom = pool.Coins[1].Denom
 		heldDenom = pool.Coins[0].Denom
+	} else {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "borrow denom %s not in pool (coins: %s, %s)", msg.Borrow.Denom, pool.Coins[0].Denom, pool.Coins[1].Denom)
 	}
+	sdkCtx.Logger().Info("OpenPosition: borrow denom validated", "borrowDenom", borrowDenom, "heldDenom", heldDenom, "positionType", msg.PositionType.String())
 
 	// Validate borrow cap
-	if err := k.validateBorrowCap(ctx, &pool, borrowDenom, borrowAmount); err != nil {
-		return 0, sdk.Coin{}, err
+	if err := k.validateBorrowCap(ctx, &pool, borrowDenom, msg.Borrow.Amount); err != nil {
+		return nil, err
 	}
 
-	// Compute entry price and collateral ratio
+	// Compute entry price: coin[1] / coin[0]
 	price := math.LegacyNewDecFromInt(pool.Coins[1].Amount).Quo(math.LegacyNewDecFromInt(pool.Coins[0].Amount))
 
-	collateralValue := math.LegacyNewDecFromInt(collateral.Amount)
-	debtValue := math.LegacyNewDecFromInt(borrowAmount)
+	collateralValue := math.LegacyNewDecFromInt(msg.Collateral.Amount)
+	debtValue := math.LegacyNewDecFromInt(msg.Borrow.Amount)
 	cr := collateralValue.Quo(debtValue)
 
 	// Use pool-specific min CR threshold
@@ -61,7 +69,7 @@ func (k Keeper) openPosition(ctx context.Context, trader string, poolID uint64, 
 		}
 	}
 	if cr.LT(minCR) {
-		return 0, sdk.Coin{}, cosmossdkerrors.Wrapf(whaleswapv1.ErrInsufficientCollateral, "CR %s < min_cr %s", cr.String(), minCR.String())
+		return nil, cosmossdkerrors.Wrapf(whaleswapv1.ErrInsufficientCollateral, "CR %s < min_cr %s", cr.String(), minCR.String())
 	}
 
 	// Validate max leverage (collateral + borrowed) / collateral
@@ -74,40 +82,41 @@ func (k Keeper) openPosition(ctx context.Context, trader string, poolID uint64, 
 		}
 	}
 	if leverage.GT(maxLeverage) {
-		return 0, sdk.Coin{}, cosmossdkerrors.Wrapf(whaleswapv1.ErrInvalidCollateralRatio, "leverage %s exceeds max %s", leverage.String(), maxLeverage.String())
+		return nil, cosmossdkerrors.Wrapf(whaleswapv1.ErrInvalidCollateralRatio, "leverage %s exceeds max %s", leverage.String(), maxLeverage.String())
 	}
 
 	// Allocate position ID
-	posID, err = k.leveragePositionSeq.Next(ctx)
+	posID, err := k.leveragePositionSeq.Next(ctx)
 	if err != nil {
-		return 0, sdk.Coin{}, cosmossdkerrors.Wrap(err, "failed to allocate position ID")
+		return nil, cosmossdkerrors.Wrap(err, "failed to allocate position ID")
 	}
 
-	userAddr, err := k.addr(ctx, trader)
+	userAddr, err := k.addr(ctx, msg.Trader)
 	if err != nil {
-		return 0, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidAddress, err.Error())
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidAddress, err.Error())
 	}
 
 	// Transfer collateral to module
-	if err := k.sendToModule(ctx, userAddr, sdk.NewCoins(collateral)); err != nil {
-		return 0, sdk.Coin{}, cosmossdkerrors.Wrap(err, "failed to transfer collateral")
+	if err := k.sendToModule(ctx, userAddr, sdk.NewCoins(msg.Collateral)); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to transfer collateral")
 	}
 
 	// Borrow from pool (update pool.total_borrowed)
-	borrowed := sdk.NewCoin(borrowDenom, borrowAmount)
+	borrowed := sdk.NewCoin(borrowDenom, msg.Borrow.Amount)
 	totalBorrowed := sdk.NewCoins(pool.TotalBorrowed...).Add(borrowed)
 	pool.TotalBorrowed = totalBorrowed
-	if err := k.PoolsMap.Set(ctx, poolID, pool); err != nil {
-		return 0, sdk.Coin{}, cosmossdkerrors.Wrap(err, "failed to update pool")
+	if err := k.PoolsMap.Set(ctx, msg.PoolId, pool); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update pool")
 	}
 
 	// Compute held amount from swap
 	var heldAmt math.Int
 	if isLong {
-		heldAmt = math.LegacyNewDecFromInt(borrowAmount).Mul(price).TruncateInt()
+		heldAmt = math.LegacyNewDecFromInt(msg.Borrow.Amount).Mul(price).TruncateInt()
 	} else {
-		heldAmt = math.LegacyNewDecFromInt(borrowAmount).Quo(price).TruncateInt()
+		heldAmt = math.LegacyNewDecFromInt(msg.Borrow.Amount).Quo(price).TruncateInt()
 	}
+	sdkCtx.Logger().Info("OpenPosition: held amount calculated", "isLong", isLong, "borrowAmount", msg.Borrow.Amount, "price", price.String(), "heldAmt", heldAmt)
 
 	// Create position
 	now := sdkCtx.BlockTime()
@@ -115,41 +124,42 @@ func (k Keeper) openPosition(ctx context.Context, trader string, poolID uint64, 
 	if !isLong {
 		posType = whaleswapv1.PositionType_POSITION_TYPE_SHORT
 	}
+	posTypeStr := "LONG"
+	if !isLong {
+		posTypeStr = "SHORT"
+	}
 
 	pos := whaleswapv1.LeveragePosition{
 		PositionId:         posID,
-		PoolId:             poolID,
-		User:               trader,
+		PoolId:             msg.PoolId,
+		User:               msg.Trader,
 		PositionType:       posType,
-		Borrowed:           sdk.NewCoin(borrowDenom, borrowAmount),
+		Borrowed:           sdk.NewCoin(borrowDenom, msg.Borrow.Amount),
 		Held:               sdk.NewCoin(heldDenom, heldAmt),
-		Collateral:         collateral,
+		Collateral:         msg.Collateral,
 		BorrowTime:         &now,
 		CreatedBlockHeight: uint64(sdkCtx.BlockHeight()),
 		LiquidationStatus:  whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE,
 		AccruedInterest:    sdk.NewCoin(borrowDenom, math.ZeroInt()),
 	}
+	sdkCtx.Logger().Info("OpenPosition: position created", "posID", posID, "posType", posTypeStr, "borrowDenom", pos.Borrowed.Denom, "heldDenom", pos.Held.Denom)
 
 	if err := k.LeveragePositions.Set(ctx, posID, pos); err != nil {
-		return 0, sdk.Coin{}, cosmossdkerrors.Wrap(err, "failed to save position")
+		return nil, cosmossdkerrors.Wrap(err, "failed to save position")
 	}
 
-	if err := k.PositionsByUserIndex.Set(ctx, collections.Join(trader, posID), posID); err != nil {
-		return 0, sdk.Coin{}, cosmossdkerrors.Wrap(err, "failed to index position by user")
+	if err := k.PositionsByUserIndex.Set(ctx, collections.Join(msg.Trader, posID), posID); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to index position by user")
 	}
-	if err := k.PositionsByPoolIndex.Set(ctx, collections.Join(poolID, posID), posID); err != nil {
-		return 0, sdk.Coin{}, cosmossdkerrors.Wrap(err, "failed to index position by pool")
+	if err := k.PositionsByPoolIndex.Set(ctx, collections.Join(msg.PoolId, posID), posID); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to index position by pool")
 	}
 
 	// Emit event
-	posTypeStr := "LONG"
-	if !isLong {
-		posTypeStr = "SHORT"
-	}
 	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventLeveragePositionOpened{
 		PositionId:       posID,
-		User:             trader,
-		PoolId:           poolID,
+		User:             msg.Trader,
+		PoolId:           msg.PoolId,
 		PositionType:     posTypeStr,
 		CollateralDenom:  pos.Collateral.Denom,
 		CollateralAmount: pos.Collateral.Amount.String(),
@@ -158,23 +168,15 @@ func (k Keeper) openPosition(ctx context.Context, trader string, poolID uint64, 
 		HeldDenom:        pos.Held.Denom,
 		HeldAmount:       pos.Held.Amount.String(),
 	}); err != nil {
-		return 0, sdk.Coin{}, cosmossdkerrors.Wrap(err, "failed to emit event")
+		return nil, cosmossdkerrors.Wrap(err, "failed to emit event")
 	}
 
-	return posID, sdk.NewCoin(heldDenom, heldAmt), nil
-}
-
-// OpenPosition creates a leveraged position (long or short).
-func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPosition) (*whaleswapv1.MsgOpenPositionResponse, error) {
-	isLong := msg.PositionType == whaleswapv1.PositionType_POSITION_TYPE_LONG
-	posID, held, err := k.openPosition(ctx, msg.Trader, msg.PoolId, msg.Collateral, msg.BorrowAmount, isLong)
-	if err != nil {
-		return nil, err
-	}
+	heldCoin := sdk.NewCoin(heldDenom, heldAmt)
+	sdkCtx.Logger().Info("OpenPosition: success", "posID", posID, "heldDenom", heldCoin.Denom, "heldAmount", heldCoin.Amount)
 
 	return &whaleswapv1.MsgOpenPositionResponse{
 		PositionId: posID,
-		Held:       held,
+		Held:       heldCoin,
 	}, nil
 }
 

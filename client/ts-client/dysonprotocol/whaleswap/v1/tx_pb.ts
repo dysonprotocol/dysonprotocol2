@@ -1445,9 +1445,9 @@ export class MsgOpenPosition extends Message<MsgOpenPosition> {
   collateral?: Coin;
 
   /**
-   * @generated from field: string borrow_amount = 4;
+   * @generated from field: cosmos.base.v1beta1.Coin borrow = 4;
    */
-  borrowAmount = "";
+  borrow?: Coin;
 
   /**
    * @generated from field: dysonprotocol.whaleswap.v1.PositionType position_type = 5;
@@ -1465,7 +1465,7 @@ export class MsgOpenPosition extends Message<MsgOpenPosition> {
     { no: 1, name: "trader", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 3, name: "collateral", kind: "message", T: Coin },
-    { no: 4, name: "borrow_amount", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "borrow", kind: "message", T: Coin },
     { no: 5, name: "position_type", kind: "enum", T: proto3.getEnumType(PositionType) },
   ]);
 

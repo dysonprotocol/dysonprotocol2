@@ -32850,8 +32850,21 @@ paths:
                   method
 
                   signatures required by gogoproto.
-              borrow_amount:
-                type: string
+              borrow:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
               position_type:
                 type: string
                 enum:
@@ -71441,8 +71454,18 @@ definitions:
 
           NOTE: The amount field is an Int which implements the custom method
           signatures required by gogoproto.
-      borrow_amount:
-        type: string
+      borrow:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
       position_type:
         type: string
         enum:
