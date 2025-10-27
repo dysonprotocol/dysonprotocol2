@@ -6,6 +6,7 @@ import (
 	"cosmossdk.io/collections"
 	cosmossdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
+	whaleswap "dysonprotocol.com/x/whaleswap"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -133,9 +134,30 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		return nil, cosmossdkerrors.Wrap(err, "failed to update pool")
 	}
 
-	// Compute held amount: borrow_amount * priceHeldPerBorrow
-	heldAmt := math.LegacyNewDecFromInt(msg.Borrow.Amount).Mul(priceHeldPerBorrow).TruncateInt()
-	sdkCtx.Logger().Info("OpenPosition: held amount calculated", "borrowDenom", borrowDenom, "heldDenom", heldDenom, "borrowAmount", msg.Borrow.Amount, "price", priceHeldPerBorrow.String(), "heldAmt", heldAmt)
+	// Loan: move borrowed denom from whaleswap module to borrow vault
+	borrowVault := k.leverageBorrowVaultBech(ctx)
+	loan := sdk.NewCoin(borrowDenom, msg.Borrow.Amount)
+	if err := k.moveModuleToModule(ctx, whaleswap.ModuleName, whaleswap.LeverageBorrowVaultModuleName, sdk.NewCoins(loan)); err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "failed to disburse loan to borrow vault: %s", loan.String())
+	}
+
+	// Execute PoolSwap with borrow vault as trader (exact-in borrowed → held). Settlement will use wsMoveCoins.
+	ps := &whaleswapv1.MsgPoolSwap{
+		Trader:    borrowVault,
+		MaxInput:  sdk.NewCoins(loan),
+		Legs:      []whaleswapv1.SwapLeg{{PoolId: msg.PoolId, SwapIn: loan}},
+		MinOutput: sdk.NewCoins(),
+	}
+	psResp, psErr := k.PoolSwap(ctx, ps)
+	if psErr != nil {
+		return nil, cosmossdkerrors.Wrap(psErr, "failed PoolSwap for leverage open")
+	}
+	// Held amount received by borrow vault
+	heldAmt := psResp.AmountOut.AmountOf(heldDenom)
+	if !heldAmt.IsPositive() {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "swap produced no held output for %s", heldDenom)
+	}
+	sdkCtx.Logger().Info("OpenPosition: PoolSwap executed", "borrowDenom", borrowDenom, "heldDenom", heldDenom, "borrowAmount", loan.Amount, "heldAmt", heldAmt)
 
 	// Create position
 	now := sdkCtx.BlockTime()
@@ -182,6 +204,14 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 
 	heldCoin := sdk.NewCoin(heldDenom, heldAmt)
 	sdkCtx.Logger().Info("OpenPosition: success", "posID", posID, "heldDenom", heldCoin.Denom, "heldAmount", heldCoin.Amount)
+
+	// Invariants: AMM and unified module balances
+	if err := k.AssertAMMInvariants(ctx); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "AMM invariant after OpenPosition")
+	}
+	if err := k.AssertInvariants(ctx); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "invariant after OpenPosition")
+	}
 
 	return &whaleswapv1.MsgOpenPositionResponse{
 		PositionId: posID,

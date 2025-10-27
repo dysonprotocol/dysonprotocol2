@@ -105,6 +105,9 @@ var (
 		{Account: scriptv1.ModuleName},
 		{Account: storagev1.ModuleName},
 		{Account: crontaskv1.ModuleName},
+		// Whaleswap sub-accounts
+		{Account: whaleswapv1.LeverageVaultModuleName},
+		{Account: whaleswapv1.LeverageBorrowVaultModuleName},
 	}
 
 	// blocked account addresses
@@ -120,6 +123,8 @@ var (
 		scriptv1.ModuleName,
 		storagev1.ModuleName,
 		crontaskv1.ModuleName,
+		whaleswapv1.LeverageVaultModuleName,
+		whaleswapv1.LeverageBorrowVaultModuleName,
 		// We allow the following module accounts to receive funds:
 		// govtypes.ModuleName
 	}

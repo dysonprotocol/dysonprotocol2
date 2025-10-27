@@ -5,6 +5,7 @@ import (
 
 	cosmossdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
+	whaleswap "dysonprotocol.com/x/whaleswap"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -47,18 +48,93 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidAddress, err.Error())
 	}
 
-	// Profit = held value minus borrowed amount (simplified; actual swap/settlement omitted)
-	profit := pos.Held
+	// Swap held back to borrowed denom via PoolSwap using the borrow vault as trader
+	borrowVault := k.leverageBorrowVaultBech(ctx)
+	ps := &whaleswapv1.MsgPoolSwap{
+		Trader:    borrowVault,
+		MaxInput:  sdk.NewCoins(pos.Held),
+		Legs:      []whaleswapv1.SwapLeg{{PoolId: pos.PoolId, SwapIn: pos.Held}},
+		MinOutput: sdk.NewCoins(),
+	}
+	psResp, psErr := k.PoolSwap(ctx, ps)
+	if psErr != nil {
+		return nil, cosmossdkerrors.Wrap(psErr, "failed leverage close PoolSwap")
+	}
+	proceedsBorrow := psResp.AmountOut.AmountOf(pos.Borrowed.Denom)
+	if !proceedsBorrow.IsPositive() {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "close swap produced no %s output", pos.Borrowed.Denom)
+	}
 	repayment := k.ComputeEffectiveRepayment(pos.Borrowed.Amount, interest)
+	if proceedsBorrow.LT(repayment) {
+		// Insufficient to fully repay: charge remaining from collateral; profit zero
+		// TODO: look into allowing to be paid in the borrowed denom via a swap to the collateral denom
+		shortfall := repayment.Sub(proceedsBorrow)
+		// Burn from collateral denom converted to borrowed denom is not implemented; for now, cap at available collateral value by denom equality requirement
+		// Enforcement: collateral denom must equal borrowed denom to permit direct repayment
+		if pos.Collateral.Denom != pos.Borrowed.Denom {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "collateral denom must match borrowed denom for repayment shortfall in this version")
+		}
+		if pos.Collateral.Amount.LT(shortfall) {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "insufficient collateral to cover repayment shortfall: have=%s need=%s", pos.Collateral.Amount.String(), shortfall.String())
+		}
+		// Deduct shortfall from collateral, remaining collateral (if any) returned to user
+		pos.Collateral.Amount = pos.Collateral.Amount.Sub(shortfall)
+		proceedsBorrow = repayment
+	}
+	// Net profit in borrowed denom: proceeds - repayment (>= 0 by previous guard)
+	pnl := proceedsBorrow.Sub(repayment)
+	profit := sdk.NewCoin(pos.Borrowed.Denom, pnl)
 
-	// Return collateral to user
+	// Move repayment from borrow vault back to whaleswap module, then add to pool reserves
+	repaymentCoin := sdk.NewCoin(pos.Borrowed.Denom, repayment)
+	if err := k.moveModuleToModule(ctx, whaleswap.LeverageBorrowVaultModuleName, whaleswap.ModuleName, sdk.NewCoins(repaymentCoin)); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to transfer repayment to module")
+	}
+	if pos.Borrowed.Denom == pool.Coins[0].Denom {
+		pool.Coins = sdk.NewCoins(
+			sdk.NewCoin(pool.Coins[0].Denom, pool.Coins[0].Amount.Add(repayment)),
+			pool.Coins[1],
+		)
+	} else if pos.Borrowed.Denom == pool.Coins[1].Denom {
+		pool.Coins = sdk.NewCoins(
+			pool.Coins[0],
+			sdk.NewCoin(pool.Coins[1].Denom, pool.Coins[1].Amount.Add(repayment)),
+		)
+	} else {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "borrowed denom %s not in pool", pos.Borrowed.Denom)
+	}
+	if err := k.updatePool(ctx, &pool); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update pool after repayment")
+	}
+
+	// Repay by depositing borrowed denom into pool reserves (ledger move inside module)
+	// Note: tradeApplySwapLeg already decreased borrowed reserve by proceedsBorrow via the exact-in held swap.
+	// Add repayment to borrowed reserve so net delta equals -profit.
+	if pos.Borrowed.Denom == pool.Coins[0].Denom {
+		pool.Coins = sdk.NewCoins(
+			sdk.NewCoin(pool.Coins[0].Denom, pool.Coins[0].Amount.Add(repayment)),
+			pool.Coins[1],
+		)
+	} else if pos.Borrowed.Denom == pool.Coins[1].Denom {
+		pool.Coins = sdk.NewCoins(
+			pool.Coins[0],
+			sdk.NewCoin(pool.Coins[1].Denom, pool.Coins[1].Amount.Add(repayment)),
+		)
+	} else {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "borrowed denom %s not in pool", pos.Borrowed.Denom)
+	}
+	if err := k.updatePool(ctx, &pool); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update pool after repayment")
+	}
+
+	// Return remaining collateral to user
 	if err := k.sendFromModule(ctx, userAddr, sdk.NewCoins(pos.Collateral)); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to return collateral")
 	}
 
-	// Return profit to user (if positive)
+	// Return profit to user (if positive) from borrow vault
 	if profit.Amount.IsPositive() {
-		if err := k.sendFromModule(ctx, userAddr, sdk.NewCoins(profit)); err != nil {
+		if err := k.sendFromBorrowVault(ctx, userAddr, sdk.NewCoins(profit)); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to return profit")
 		}
 	}
@@ -87,6 +163,14 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		AccruedInterest: interestCoin,
 	}); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to emit event")
+	}
+
+	// Invariants after settlement
+	if err := k.AssertAMMInvariants(ctx); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "AMM invariant after ClosePosition")
+	}
+	if err := k.AssertInvariants(ctx); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "invariant after ClosePosition")
 	}
 
 	return &whaleswapv1.MsgClosePositionResponse{

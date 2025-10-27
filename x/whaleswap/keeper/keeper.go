@@ -417,6 +417,30 @@ func (k Keeper) burnModule(ctx context.Context, coins sdk.Coins) error {
 	return k.bank.BurnCoins(ctx, whaleswap.ModuleName, coins)
 }
 
+// Leverage vault module account helpers
+func (k Keeper) leverageVaultBech(ctx context.Context) string {
+	return k.accKeeper.GetModuleAddress(whaleswap.LeverageVaultModuleName).String()
+}
+func (k Keeper) leverageBorrowVaultBech(ctx context.Context) string {
+	return k.accKeeper.GetModuleAddress(whaleswap.LeverageBorrowVaultModuleName).String()
+}
+func (k Keeper) sendToLeverageVault(ctx context.Context, from sdk.AccAddress, coins sdk.Coins) error {
+	return k.bank.SendCoinsFromAccountToModule(ctx, from, whaleswap.LeverageVaultModuleName, coins)
+}
+func (k Keeper) sendFromLeverageVault(ctx context.Context, to sdk.AccAddress, coins sdk.Coins) error {
+	return k.bank.SendCoinsFromModuleToAccount(ctx, whaleswap.LeverageVaultModuleName, to, coins)
+}
+func (k Keeper) sendFromBorrowVault(ctx context.Context, to sdk.AccAddress, coins sdk.Coins) error {
+	return k.bank.SendCoinsFromModuleToAccount(ctx, whaleswap.LeverageBorrowVaultModuleName, to, coins)
+}
+func (k Keeper) moveBorrowVaultToVault(ctx context.Context, coins sdk.Coins) error {
+	return k.bank.SendCoinsFromModuleToModule(ctx, whaleswap.LeverageBorrowVaultModuleName, whaleswap.LeverageVaultModuleName, coins)
+}
+
+func (k Keeper) moveModuleToModule(ctx context.Context, fromModule, toModule string, coins sdk.Coins) error {
+	return k.bank.SendCoinsFromModuleToModule(ctx, fromModule, toModule, coins)
+}
+
 // ----- Orderbook helpers -----
 
 // gcdInt computes GCD(a,b) using Euclidean algorithm

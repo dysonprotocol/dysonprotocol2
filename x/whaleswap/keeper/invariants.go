@@ -44,6 +44,13 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 		return err
 	}
 
+	// Leverage components (only collateral affects module balances; held/borrowed are not bank movements)
+	leverageCollateral, _, _, err := k.tallyLeveragePositions(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Actual module balances (AMM reserves and internal escrows) — exclude vaults
 	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
 	actual := k.bank.SpendableCoins(ctx, moduleAddr)
 
@@ -58,8 +65,8 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 			)
 		}
 	}
-	// Build expected totals per denom (no liquid-backing component now)
-	expected := sdk.NewCoins().Add(ammRequired...).Add(escrowRequired...).Add(auctionRequired...).Add(pfandRequired...)
+	// Build expected totals per denom including leverage collateral.
+	// expected[d] = ammRequired[d] + escrowRequired[d] + auctionRequired[d] + pfandRequired[d] + leverageCollateral[d]
 
 	// No special-casing PFAND here: it's already included in pfandRequired and
 	// therefore in 'expected'. Per-denom equality below covers all pfand denoms
@@ -70,7 +77,19 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 
 	// Compare per-denom for exact equality; any deficit or excess is an invariant failure
 	denomSet := map[string]struct{}{}
-	for _, c := range expected {
+	for _, c := range ammRequired {
+		denomSet[c.Denom] = struct{}{}
+	}
+	for _, c := range escrowRequired {
+		denomSet[c.Denom] = struct{}{}
+	}
+	for _, c := range pfandRequired {
+		denomSet[c.Denom] = struct{}{}
+	}
+	for _, c := range auctionRequired {
+		denomSet[c.Denom] = struct{}{}
+	}
+	for _, c := range leverageCollateral {
 		denomSet[c.Denom] = struct{}{}
 	}
 	for _, c := range actual {
@@ -87,23 +106,74 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 	ammMap := toMap(ammRequired)
 	escMap := toMap(escrowRequired)
 	pfdMap := toMap(pfandRequired)
+	collMap := toMap(leverageCollateral)
 
 	for denom := range denomSet {
-		exp := expected.AmountOf(denom)
+		// Compute expected per denom with leverage collateral
+		amm := ammMap[denom]
+		esc := escMap[denom]
+		pfd := pfdMap[denom]
+		auc := auctionRequired.AmountOf(denom)
+		coll := collMap[denom]
+		exp := amm.Add(esc).Add(auc).Add(pfd).Add(coll)
 		act := actual.AmountOf(denom)
 		if !act.Equal(exp) {
-			amm := ammMap[denom]
-			esc := escMap[denom]
-			pfd := pfdMap[denom]
-			auc := auctionRequired.AmountOf(denom)
-			return cosmossdkerrors.Wrapf(
-				sdkerrors.ErrLogic,
-				"module balance mismatch for %s: have=%s expected=%s (amm=%s escrow=%s auction=%s pfand=%s)",
-				denom, act.String(), exp.String(), amm.String(), esc.String(), auc.String(), pfd.String(),
-			)
+			return cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+				"module balance mismatch for %s: have=%s expected=%s (amm=%s escrow=%s auction=%s pfand=%s collateral=%s)",
+				denom, act.String(), exp.String(), amm.String(), esc.String(), auc.String(), pfd.String(), coll.String())
 		}
 	}
 	return nil
+}
+
+// tallyLeveragePositions aggregates leverage-related coin components across all open positions.
+// Returns (collateral, held, borrowed) per denom.
+func (k Keeper) tallyLeveragePositions(ctx context.Context) (sdk.Coins, sdk.Coins, sdk.Coins, error) {
+	collReq := map[string]math.Int{}
+	heldReq := map[string]math.Int{}
+	borrReq := map[string]math.Int{}
+
+	if err := k.LeveragePositions.Walk(ctx, nil, func(_ uint64, pos whaleswapv1.LeveragePosition) (bool, error) {
+		if pos.Collateral.Amount.IsPositive() {
+			d := pos.Collateral.Denom
+			if cur, ok := collReq[d]; ok {
+				collReq[d] = cur.Add(pos.Collateral.Amount)
+			} else {
+				collReq[d] = pos.Collateral.Amount
+			}
+		}
+		if pos.Held.Amount.IsPositive() {
+			d := pos.Held.Denom
+			if cur, ok := heldReq[d]; ok {
+				heldReq[d] = cur.Add(pos.Held.Amount)
+			} else {
+				heldReq[d] = pos.Held.Amount
+			}
+		}
+		if pos.Borrowed.Amount.IsPositive() {
+			d := pos.Borrowed.Denom
+			if cur, ok := borrReq[d]; ok {
+				borrReq[d] = cur.Add(pos.Borrowed.Amount)
+			} else {
+				borrReq[d] = pos.Borrowed.Amount
+			}
+		}
+		return false, nil
+	}); err != nil {
+		return nil, nil, nil, cosmossdkerrors.Wrap(err, "walk leverage positions")
+	}
+
+	toCoins := func(m map[string]math.Int) sdk.Coins {
+		out := sdk.NewCoins()
+		for d, v := range m {
+			if v.IsPositive() {
+				out = out.Add(sdk.NewCoin(d, v))
+			}
+		}
+		return out
+	}
+
+	return toCoins(collReq), toCoins(heldReq), toCoins(borrReq), nil
 }
 
 func (k Keeper) tallyAuctionRequired(ctx context.Context) (sdk.Coins, error) {
