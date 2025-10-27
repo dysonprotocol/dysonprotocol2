@@ -411,8 +411,6 @@ def test_close_position_not_owner_direct(
         "tx",
         "whaleswap",
         "open-position",
-        "--trader",
-        alice_addr,
         "--pool-id",
         str(pool_id),
         "--collateral",
