@@ -41,6 +41,12 @@ def test_make_trade_rate_constraint_pass_fail(chainnet, ws_setup_env):
         f"100{a}",
         "--coins",
         f"100{b}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "3.0",
+        "--max-borrow-percent",
+        "0.8",
         "--from",
         taker,
     )

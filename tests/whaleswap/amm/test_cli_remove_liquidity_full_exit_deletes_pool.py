@@ -33,6 +33,12 @@ def test_remove_liquidity_full_exit_deletes_pool(
         "1000udys",
         "--coins",
         f"500{name}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "3.0",
+        "--max-borrow-percent",
+        "0.8",
         "--from",
         owner_name,
     )
@@ -53,21 +59,21 @@ def test_remove_liquidity_full_exit_deletes_pool(
     p_pre = dysond("query", "whaleswap", "pool", "--pool-id", str(pool_id))["pool"]
     coins = p_pre.get("coins", [])
     assert isinstance(coins, list) and len(coins) == 2, f"invalid pool coins: {p_pre}"
-    denom0 = coins[0]["denom"]
-    denom1 = coins[1]["denom"]
-    amt_udys = "200udys"
-    amt_name = f"100{name}"
-    amount1 = amt_udys if denom0 == "udys" else amt_name
-    amount2 = amt_udys if denom1 == "udys" else amt_name
+
+    # Build amounts using sorted denom mapping (no positional assumptions)
+    sorted_denoms = sorted([name, "udys"])
+    amount_map = {name: f"100{name}", "udys": "200udys"}
+    amount1 = amount_map[sorted_denoms[0]]
+    amount2 = amount_map[sorted_denoms[1]]
     add = dysond(
         "tx",
         "whaleswap",
         "add-liquidity",
         "--pool-id",
         str(pool_id),
-        "--amount1",
+        "--amounts",
         amount1,
-        "--amount2",
+        "--amounts",
         amount2,
         "--from",
         owner_name,

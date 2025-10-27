@@ -18,6 +18,12 @@ def test_make_trade_caps_single_denom_fails(chainnet, ws_setup_env):
         f"10{a}",
         "--coins",
         f"10{b}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "3.0",
+        "--max-borrow-percent",
+        "0.8",
         "--from",
         taker,
     )

@@ -11,19 +11,18 @@
                     "pool_id": {
                         "type": "string"
                     },
-                    "amount1": {
-                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
-                    },
-                    "amount2": {
-                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                    "amounts": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Add Liquidity",
-                "description": "Add liquidity (owner-only). Behavior depends on v2/v3 mode."
+                "description": "Add liquidity (owner-only). Behavior depends on v2/v3 mode. Amounts will be automatically sorted by denom to match pool's canonical order."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {

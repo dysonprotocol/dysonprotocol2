@@ -42,6 +42,12 @@ def test_create_pool_v3_with_band_success(
         "2udys",
         "--max-price",
         f"1{name}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "3.0",
+        "--max-borrow-percent",
+        "0.8",
         "--from",
         creator_name,
     )

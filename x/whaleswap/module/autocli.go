@@ -149,12 +149,13 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "AddLiquidity",
-					Use:       "add-liquidity --pool-id=<id> --amount1=<amountdenom> --amount2=<amountdenom>",
+					Use:       "add-liquidity --pool-id=<id> --amounts <coin> --amounts <coin>",
 					Short:     "Add liquidity to a pool (owner-only)",
 					Long: "Provide both coins to add liquidity to the pool.\n\n" +
+						"Amounts are provided via repeated --amounts flags (exactly two), one coin per flag. Order doesn't matter; the module canonicalizes by denom to match the pool's canonical order.\n" +
 						"v2 (no band): the pool refunds excess to preserve the current R2/R1 ratio; shares minted are min(pro_rata_by_coin1, pro_rata_by_coin2).\n" +
 						"v3 (band set): liquidity math uses sqrt-price band [Pmin,Pmax]; only the side that contributes to ΔL is consumed, the other is refunded.",
-					Example: "dysond tx whaleswap add-liquidity --pool-id=1 --amount1=1000udys --amount2=600ufoo",
+					Example: "dysond tx whaleswap add-liquidity --pool-id=1 --amounts 1000udys --amounts 600ufoo",
 				},
 				{
 					RpcMethod: "RemoveLiquidity",

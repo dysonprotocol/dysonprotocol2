@@ -37,6 +37,12 @@ def test_exact_out_v2_success(chainnet, generate_account, faucet, register_name)
         "1000udys",
         "--coins",
         f"500{foo}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "3.0",
+        "--max-borrow-percent",
+        "0.8",
         "--from",
         creator,
     )

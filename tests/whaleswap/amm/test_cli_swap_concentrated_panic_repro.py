@@ -50,6 +50,12 @@ def test_concentrated_swap_does_not_panic(
         f"1{custom}",  # base
         "--max-price",
         f"3udys",  # quote => 3/1 = 3.0
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "3.0",
+        "--max-borrow-percent",
+        "0.8",
         "--from",
         creator_name,
     )

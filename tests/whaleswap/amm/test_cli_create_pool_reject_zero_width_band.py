@@ -42,6 +42,12 @@ def test_create_pool_reject_zero_width_band(
         "1udys",
         "--max-price",
         f"2{name}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "3.0",
+        "--max-borrow-percent",
+        "0.8",
         "--from",
         creator_name,
     )

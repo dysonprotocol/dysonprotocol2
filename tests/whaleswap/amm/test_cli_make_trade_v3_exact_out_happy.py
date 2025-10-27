@@ -51,6 +51,12 @@ def test_make_trade_v3_exact_out_happy(chainnet, ws_setup_env):
         f"1{a}",
         "--max-price",
         f"2{b}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "3.0",
+        "--max-borrow-percent",
+        "0.8",
         "--from",
         taker_name,
     )

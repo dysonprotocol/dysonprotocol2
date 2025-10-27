@@ -52,6 +52,12 @@ def test_cycle_profit_mixed_swaps_offers(chainnet, ws_setup_env, ws_create_offer
             f"{amt_x}{denom_x}",
             "--coins",
             f"{amt_y}{denom_y}",
+            "--min-collateral-ratio",
+            "1.5",
+            "--max-leverage-ratio",
+            "3.0",
+            "--max-borrow-percent",
+            "0.8",
             "--from",
             creator,
         )

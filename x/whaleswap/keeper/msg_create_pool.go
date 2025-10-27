@@ -107,10 +107,15 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		if len(msg.MinPrice) != 2 || len(msg.MaxPrice) != 2 {
 			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_price and max_price must each have exactly two coins")
 		}
-		// the denoms must be the same as the coins and each other (canonical order)
-		if msg.MinPrice[0].Denom != denom1 || msg.MinPrice[1].Denom != denom2 || msg.MaxPrice[0].Denom != denom1 || msg.MaxPrice[1].Denom != denom2 {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_price and max_price must have the same denoms as coins")
+		// Ensure price bounds are sorted and match pool denoms (denom-based validation)
+		minPrice := sdk.NewCoins(msg.MinPrice...)
+		maxPrice := sdk.NewCoins(msg.MaxPrice...)
+		if minPrice[0].Denom != denom1 || minPrice[1].Denom != denom2 || maxPrice[0].Denom != denom1 || maxPrice[1].Denom != denom2 {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_price and max_price must have the same denoms as coins in canonical order")
 		}
+		// Update msg fields to use sorted versions
+		msg.MinPrice = minPrice
+		msg.MaxPrice = maxPrice
 		// integer cross-multiplication comparisons (avoid Decs):
 		// price = R_quote / R_base; min = minQuote/minBase; max = maxQuote/maxBase
 		minBase := msg.MinPrice[0].Amount

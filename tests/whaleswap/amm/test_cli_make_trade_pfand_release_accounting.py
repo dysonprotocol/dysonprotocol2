@@ -71,6 +71,13 @@ def test_make_trade_pfand_release_accounting(
                     "minimum_bid_percent_increase": cur.get(
                         "minimum_bid_percent_increase", "0"
                     ),
+                    "max_note_length": cur.get("max_note_length", 128),
+                    "block_delay_before_close": cur.get(
+                        "block_delay_before_close", "1"
+                    ),
+                    "block_delay_before_liquidation": cur.get(
+                        "block_delay_before_liquidation", "1"
+                    ),
                 },
             }
         ],
@@ -100,12 +107,26 @@ def test_make_trade_pfand_release_accounting(
     vt = dysond("tx", "gov", "vote", str(pid), "yes", "--from", "alice", "--yes")
     dysond("query", "wait-tx", vt["txhash"])
 
-    # Wait for proposal to pass
-    def _passed():
+    # Wait for proposal to reach final state
+    def _final():
         p = dysond("query", "gov", "proposal", str(pid))
-        return p.get("proposal", {}).get("status") == "PROPOSAL_STATUS_PASSED"
+        status = p.get("proposal", {}).get("status", "")
+        return status in [
+            "PROPOSAL_STATUS_PASSED",
+            "PROPOSAL_STATUS_REJECTED",
+            "PROPOSAL_STATUS_FAILED",
+        ]
 
-    poll_until_condition(_passed, timeout=30, poll_interval=1)
+    poll_until_condition(
+        _final, timeout=60, poll_interval=2, error_message="Proposal did not finalize"
+    )
+
+    # Verify proposal passed
+    final_prop = dysond("query", "gov", "proposal", str(pid))
+    final_status = final_prop.get("proposal", {}).get("status", "")
+    assert (
+        final_status == "PROPOSAL_STATUS_PASSED"
+    ), f"Proposal did not pass, status: {final_status}"
 
     # Register alice.dys and mint solid coins
     name = register_name(dysond, alice_name, alice_addr, "100udys")

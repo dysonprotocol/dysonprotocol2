@@ -49,6 +49,9 @@ def test_query_pools_by_pair_and_denom(
                     {"denom": bar_name, "amount": str(pool_reserves[i])},
                 ],
                 "fee_pct": "0.003",
+                "min_collateral_ratio": "1.5",
+                "max_leverage_ratio": "3.0",
+                "max_borrow_percent": "0.8",
             }
         )
 

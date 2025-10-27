@@ -64,6 +64,9 @@ messages = [
             {"denom": "bar.dys", "amount": "100000"},
         ],
         "fee_pct": "0.003",
+        "min_collateral_ratio": "1.5",
+        "max_leverage_ratio": "3.0",
+        "max_borrow_percent": "0.8",
         # pool_id will be automatically extracted from response
     },
     {

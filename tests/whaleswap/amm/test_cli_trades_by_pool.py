@@ -37,6 +37,12 @@ def test_trades_by_pool_lists_swaps_pagination(
         "1000udys",
         "--coins",
         f"500{denom}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "3.0",
+        "--max-borrow-percent",
+        "0.8",
         "--from",
         creator_name,
     )

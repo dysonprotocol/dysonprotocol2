@@ -31906,37 +31906,30 @@ paths:
               pool_id:
                 type: string
                 format: uint64
-              amount1:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
+              amounts:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    Coin defines a token with a denomination and an amount.
 
 
-                  NOTE: The amount field is an Int which implements the custom
-                  method
+                    NOTE: The amount field is an Int which implements the custom
+                    method
 
-                  signatures required by gogoproto.
-              amount2:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
+                    signatures required by gogoproto.
+            description: >-
+              Add liquidity (owner-only). Behavior depends on v2/v3 mode.
 
+              Amounts will be automatically sorted by denom to match pool's
+              canonical
 
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-            description: Add liquidity (owner-only). Behavior depends on v2/v3 mode.
+              order.
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgCancelOffer:
@@ -70881,31 +70874,24 @@ definitions:
       pool_id:
         type: string
         format: uint64
-      amount1:
-        type: object
-        properties:
-          denom:
-            type: string
-          amount:
-            type: string
-        description: |-
-          Coin defines a token with a denomination and an amount.
+      amounts:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            Coin defines a token with a denomination and an amount.
 
-          NOTE: The amount field is an Int which implements the custom method
-          signatures required by gogoproto.
-      amount2:
-        type: object
-        properties:
-          denom:
-            type: string
-          amount:
-            type: string
-        description: |-
-          Coin defines a token with a denomination and an amount.
-
-          NOTE: The amount field is an Int which implements the custom method
-          signatures required by gogoproto.
-    description: Add liquidity (owner-only). Behavior depends on v2/v3 mode.
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+    description: |-
+      Add liquidity (owner-only). Behavior depends on v2/v3 mode.
+      Amounts will be automatically sorted by denom to match pool's canonical
+      order.
   dysonprotocol.whaleswap.v1.MsgAddLiquidityResponse:
     type: object
     properties:

@@ -54,6 +54,8 @@ def test_cancel_liquid_offer_pfand_recovery(
                 "bid_timeout": "5s",
                 "minimum_bid_percent_increase": "0",
                 "max_note_length": 128,
+                "block_delay_before_close": "1",
+                "block_delay_before_liquidation": "1",
             },
         }
     )

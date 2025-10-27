@@ -63,6 +63,9 @@ def test_make_trade_single_swap_random_amount(
                 {"denom": bar_name, "amount": "100000"},
             ],
             "fee_pct": "0.003",
+        "min_collateral_ratio": "1.5",
+        "max_leverage_ratio": "3.0",
+        "max_borrow_percent": "0.8",
         }
     )
     messages.append(
@@ -155,6 +158,9 @@ def test_make_trade_take_offer_random_units(
                 {"denom": bar_name, "amount": "100000"},
             ],
             "fee_pct": "0.003",
+        "min_collateral_ratio": "1.5",
+        "max_leverage_ratio": "3.0",
+        "max_borrow_percent": "0.8",
         }
     )
     messages.append(
@@ -291,6 +297,9 @@ def test_liquidity_add_remove_cycles(
                 {"denom": bar_name, "amount": "100000"},
             ],
             "fee_pct": "0.003",
+        "min_collateral_ratio": "1.5",
+        "max_leverage_ratio": "3.0",
+        "max_borrow_percent": "0.8",
         }
     )
     messages.append(
@@ -303,15 +312,17 @@ def test_liquidity_add_remove_cycles(
     )
 
     # Add liquidity with potentially imbalanced amounts (tests refund logic)
-    # Amount denoms MUST match the pool's canonical (sorted) reserve order
+    # Amounts will be auto-sorted by denom to match pool's canonical order
     denom_a, denom_b = sorted([foo_name, bar_name])
     messages.append(
         {
             "@type": "/dysonprotocol.whaleswap.v1.MsgAddLiquidity",
             "signer": accounts["alice_addr"],
             "pool_id": "{{ msg_0['pool_id'] }}",
-            "amount1": {"denom": denom_a, "amount": str(add1)},
-            "amount2": {"denom": denom_b, "amount": str(add2)},
+            "amounts": [
+                {"denom": denom_a, "amount": str(add1)},
+                {"denom": denom_b, "amount": str(add2)},
+            ],
         }
     )
 
@@ -377,6 +388,9 @@ def test_liquidity_full_exit_deletes_pool(
                 {"denom": bar_name, "amount": "10000"},
             ],
             "fee_pct": "0.003",
+        "min_collateral_ratio": "1.5",
+        "max_leverage_ratio": "3.0",
+        "max_borrow_percent": "0.8",
         }
     )
 
@@ -448,6 +462,8 @@ def test_liquid_mode_offer_pfand_lock(
                 "bid_timeout": "5s",
                 "minimum_bid_percent_increase": "0",
                 "max_note_length": 128,
+                "block_delay_before_close": "1",
+                "block_delay_before_liquidation": "1",
             },
         }
     )
@@ -603,6 +619,8 @@ def test_cancel_liquid_offer_pfand_recovery_gcd1(
                 "bid_timeout": "5s",
                 "minimum_bid_percent_increase": "0",
                 "max_note_length": 128,
+                "block_delay_before_close": "1",
+                "block_delay_before_liquidation": "1",
             },
         }
     )
@@ -765,6 +783,9 @@ def test_query_trades_after_operations(
                 {"denom": bar_name, "amount": "10000"},
             ],
             "fee_pct": "0.003",
+        "min_collateral_ratio": "1.5",
+        "max_leverage_ratio": "3.0",
+        "max_borrow_percent": "0.8",
         }
     )
 

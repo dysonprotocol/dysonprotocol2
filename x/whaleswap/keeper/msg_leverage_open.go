@@ -44,11 +44,9 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	}
 
 	borrowDenom := msg.Borrow.Denom
-	var heldDenom string
-	if borrowDenom == pool.Coins[0].Denom {
-		heldDenom = pool.Coins[1].Denom
-	} else {
-		heldDenom = pool.Coins[0].Denom
+	heldDenom, err := k.getOtherDenom(&pool, borrowDenom)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to determine held denom: %v", err)
 	}
 	sdkCtx.Logger().Info("OpenPosition: borrow validated and held derived", "borrowDenom", borrowDenom, "heldDenom", heldDenom)
 
@@ -196,18 +194,13 @@ func (k Keeper) validateBorrowCap(ctx context.Context, pool *whaleswapv1.Pool, d
 		return cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool state")
 	}
 
-	var maxBorrowPctStr string
-	var reserveAmt math.Int
-
-	if denom == pool.Coins[0].Denom {
-		maxBorrowPctStr = pool.MaxBorrowPercent
-		reserveAmt = pool.Coins[0].Amount
-	} else if denom == pool.Coins[1].Denom {
-		maxBorrowPctStr = pool.MaxBorrowPercent
-		reserveAmt = pool.Coins[1].Amount
-	} else {
-		return cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "denom not in pool")
+	// Use AmountOf() instead of array indexing to avoid positional assumptions
+	reserveAmt := pool.Coins.AmountOf(denom)
+	if reserveAmt.IsZero() {
+		return cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "denom %s not in pool", denom)
 	}
+
+	maxBorrowPctStr := pool.MaxBorrowPercent
 
 	if maxBorrowPctStr == "" {
 		return cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "borrowing disabled for this denom")

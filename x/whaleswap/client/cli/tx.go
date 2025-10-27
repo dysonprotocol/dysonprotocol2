@@ -166,12 +166,28 @@ func CmdCreatePool() *cobra.Command {
 				}
 			}
 
+			minCollateralRatio, err := cmd.Flags().GetString("min-collateral-ratio")
+			if err != nil {
+				return fmt.Errorf("failed to read --min-collateral-ratio: %w", err)
+			}
+			maxLeverageRatio, err := cmd.Flags().GetString("max-leverage-ratio")
+			if err != nil {
+				return fmt.Errorf("failed to read --max-leverage-ratio: %w", err)
+			}
+			maxBorrowPercent, err := cmd.Flags().GetString("max-borrow-percent")
+			if err != nil {
+				return fmt.Errorf("failed to read --max-borrow-percent: %w", err)
+			}
+
 			msg := &whaleswaptypes.MsgCreatePool{
-				Creator:  clientCtx.GetFromAddress().String(),
-				Coins:    coinList,
-				MinPrice: minPrice,
-				MaxPrice: maxPrice,
-				FeePct:   feePct,
+				Creator:            clientCtx.GetFromAddress().String(),
+				Coins:              coinList,
+				MinPrice:           minPrice,
+				MaxPrice:           maxPrice,
+				FeePct:             feePct,
+				MinCollateralRatio: minCollateralRatio,
+				MaxLeverageRatio:   maxLeverageRatio,
+				MaxBorrowPercent:   maxBorrowPercent,
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -180,6 +196,9 @@ func CmdCreatePool() *cobra.Command {
 	cmd.Flags().String("fee-pct", "", "Optional swap fee percent (decimal in [0,1))")
 	cmd.Flags().StringArray("min-price", nil, "Repeatable; provide two flags to encode band min as coin_b/coin_a")
 	cmd.Flags().StringArray("max-price", nil, "Repeatable; provide two flags to encode band max as coin_b/coin_a")
+	cmd.Flags().String("min-collateral-ratio", "", "Minimum collateral ratio for leverage (required, e.g., 1.5)")
+	cmd.Flags().String("max-leverage-ratio", "", "Maximum leverage ratio (required, e.g., 3.0)")
+	cmd.Flags().String("max-borrow-percent", "", "Maximum borrow percent of reserves (required, e.g., 0.8)")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

@@ -15,7 +15,7 @@ import (
 func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidity) (*whaleswapv1.MsgAddLiquidityResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)
-	logger.Info("AddLiquidity starting", "pool_id", msg.PoolId, "signer", msg.Signer, "amount1", msg.Amount1, "amount2", msg.Amount2)
+	logger.Info("AddLiquidity starting", "pool_id", msg.PoolId, "signer", msg.Signer, "amounts", msg.Amounts)
 
 	pool, err := k.PoolsMap.Get(ctx, msg.PoolId)
 	if err != nil {
@@ -32,11 +32,18 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 	if len(pool.Coins) != 2 {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves")
 	}
-	// Pool reserves must be solid denoms (wrappers removed)
-	if msg.Amount1.Denom != pool.Coins[0].Denom || msg.Amount2.Denom != pool.Coins[1].Denom {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "amount denoms must match pool denoms")
+
+	// Validate amounts: must have exactly 2 denoms matching pool (already sorted by gogoproto)
+	if len(msg.Amounts) != 2 {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "must provide exactly 2 denoms")
 	}
-	if !msg.Amount1.Amount.IsPositive() || !msg.Amount2.Amount.IsPositive() {
+	if !msg.Amounts.IsValid() {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "amounts must be valid sorted coins")
+	}
+	if msg.Amounts[0].Denom != pool.Coins[0].Denom || msg.Amounts[1].Denom != pool.Coins[1].Denom {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "amount denoms must match pool denoms in canonical order: expected %s,%s got %s,%s", pool.Coins[0].Denom, pool.Coins[1].Denom, msg.Amounts[0].Denom, msg.Amounts[1].Denom)
+	}
+	if !msg.Amounts[0].Amount.IsPositive() || !msg.Amounts[1].Amount.IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "amounts must be > 0")
 	}
 
@@ -47,8 +54,8 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves")
 	}
 
-	add1 := msg.Amount1.Amount
-	add2 := msg.Amount2.Amount
+	add1 := msg.Amounts[0].Amount
+	add2 := msg.Amounts[1].Amount
 	orig1 := add1
 	orig2 := add2
 	refund1 := math.NewInt(0)

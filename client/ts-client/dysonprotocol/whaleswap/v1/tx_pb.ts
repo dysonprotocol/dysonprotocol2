@@ -302,6 +302,8 @@ export class MsgUpdatePoolConfigResponse extends Message<MsgUpdatePoolConfigResp
 
 /**
  * Add liquidity (owner-only). Behavior depends on v2/v3 mode.
+ * Amounts will be automatically sorted by denom to match pool's canonical
+ * order.
  *
  * @generated from message dysonprotocol.whaleswap.v1.MsgAddLiquidity
  */
@@ -317,14 +319,9 @@ export class MsgAddLiquidity extends Message<MsgAddLiquidity> {
   poolId = protoInt64.zero;
 
   /**
-   * @generated from field: cosmos.base.v1beta1.Coin amount1 = 3;
+   * @generated from field: repeated cosmos.base.v1beta1.Coin amounts = 3;
    */
-  amount1?: Coin;
-
-  /**
-   * @generated from field: cosmos.base.v1beta1.Coin amount2 = 4;
-   */
-  amount2?: Coin;
+  amounts: Coin[] = [];
 
   constructor(data?: PartialMessage<MsgAddLiquidity>) {
     super();
@@ -336,8 +333,7 @@ export class MsgAddLiquidity extends Message<MsgAddLiquidity> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "signer", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 3, name: "amount1", kind: "message", T: Coin },
-    { no: 4, name: "amount2", kind: "message", T: Coin },
+    { no: 3, name: "amounts", kind: "message", T: Coin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgAddLiquidity {

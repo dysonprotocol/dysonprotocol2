@@ -32,6 +32,12 @@ def test_pool_swap_v2_single_pool(chainnet, generate_account, faucet, register_n
         "1000udys",
         "--coins",
         f"500{name}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "3.0",
+        "--max-borrow-percent",
+        "0.8",
         "--from",
         creator_name,
     )

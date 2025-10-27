@@ -109,6 +109,12 @@ def register_and_mint(name, salt, amount):
         "999998900udys",
         "--fee-pct",
         "0.041",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "3.0",
+        "--max-borrow-percent",
+        "0.8",
         "--from",
         alice_name,
     )

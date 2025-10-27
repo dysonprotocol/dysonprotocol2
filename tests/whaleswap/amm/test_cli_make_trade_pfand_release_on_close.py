@@ -68,6 +68,13 @@ def test_make_trade_pfand_release_on_close(chainnet, ws_setup_env):
                     "minimum_bid_percent_increase": cur.get(
                         "minimum_bid_percent_increase", "0"
                     ),
+                    "max_note_length": cur.get("max_note_length", 128),
+                    "block_delay_before_close": cur.get(
+                        "block_delay_before_close", "1"
+                    ),
+                    "block_delay_before_liquidation": cur.get(
+                        "block_delay_before_liquidation", "1"
+                    ),
                 },
             }
         ],
@@ -267,6 +274,13 @@ def test_pfand_amount_stored_not_param_dependent(chainnet, ws_setup_env):
                     "minimum_bid_percent_increase": cur.get(
                         "minimum_bid_percent_increase", "0"
                     ),
+                    "max_note_length": cur.get("max_note_length", 128),
+                    "block_delay_before_close": cur.get(
+                        "block_delay_before_close", "1"
+                    ),
+                    "block_delay_before_liquidation": cur.get(
+                        "block_delay_before_liquidation", "1"
+                    ),
                 },
             }
         ],
@@ -339,6 +353,13 @@ def test_pfand_amount_stored_not_param_dependent(chainnet, ws_setup_env):
                     "bid_timeout": cur.get("bid_timeout", "5s"),
                     "minimum_bid_percent_increase": cur.get(
                         "minimum_bid_percent_increase", "0"
+                    ),
+                    "max_note_length": cur.get("max_note_length", 128),
+                    "block_delay_before_close": cur.get(
+                        "block_delay_before_close", "1"
+                    ),
+                    "block_delay_before_liquidation": cur.get(
+                        "block_delay_before_liquidation", "1"
                     ),
                 },
             }

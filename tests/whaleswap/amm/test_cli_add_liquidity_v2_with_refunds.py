@@ -31,6 +31,12 @@ def test_add_liquidity_v2(chainnet, generate_account, faucet, register_name):
         "1000udys",
         "--coins",
         f"500{name}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "3.0",
+        "--max-borrow-percent",
+        "0.8",
         "--from",
         owner_name,
     )
@@ -53,10 +59,12 @@ def test_add_liquidity_v2(chainnet, generate_account, faucet, register_name):
     assert (
         isinstance(coins, list) and len(coins) == 2
     ), f"invalid pool coins: {json.dumps(p_pre, indent=2)}"
-    denom0 = coins[0]["denom"]
-    denom1 = coins[1]["denom"]
-    a1 = "300udys" if denom0 == "udys" else f"50{name}"
-    a2 = "300udys" if denom1 == "udys" else f"50{name}"
+
+    # Build amounts using sorted denom mapping (no positional assumptions)
+    sorted_denoms = sorted([name, "udys"])
+    amount_map = {name: f"50{name}", "udys": "300udys"}
+    a1 = amount_map[sorted_denoms[0]]
+    a2 = amount_map[sorted_denoms[1]]
 
     # First, intentionally misproportional amounts – in v2 this SHOULD succeed with refunds
     # Compute expected refunds deterministically (no branching in test)
@@ -66,10 +74,10 @@ def test_add_liquidity_v2(chainnet, generate_account, faucet, register_name):
         ), f"coin '{coin_str}' must end with denom '{denom}'"
         return int(coin_str[: -len(denom)])
 
-    exR1 = int(p_pre["coins"][0]["amount"])  # denom0 reserve
-    exR2 = int(p_pre["coins"][1]["amount"])  # denom1 reserve
-    add1_i = _amt(a1, denom0)
-    add2_i = _amt(a2, denom1)
+    exR1 = int(p_pre["coins"][0]["amount"])  # sorted_denoms[0] reserve
+    exR2 = int(p_pre["coins"][1]["amount"])  # sorted_denoms[1] reserve
+    add1_i = _amt(a1, sorted_denoms[0])
+    add2_i = _amt(a2, sorted_denoms[1])
     # Ceil divisions to match keeper math; compute both sides and then take mins/max without branching
     targetA2 = (add1_i * exR2 + (exR1 - 1)) // exR1
     targetA1 = (add2_i * exR1 + (exR2 - 1)) // exR2
@@ -78,7 +86,7 @@ def test_add_liquidity_v2(chainnet, generate_account, faucet, register_name):
     refund1 = add1_i - eff1
     refund2 = add2_i - eff2
 
-    # Capture owner balances before tx for denom0/denom1
+    # Capture owner balances before tx using sorted denoms
     def _bal(addr, denom):
         b = dysond("query", "bank", "balances", addr)
         blist = b.get("balances", [])
@@ -86,8 +94,8 @@ def test_add_liquidity_v2(chainnet, generate_account, faucet, register_name):
             [int(c.get("amount", "0")) * int(c.get("denom") == denom) for c in blist]
         )
 
-    pre_b0 = _bal(owner_addr, denom0)
-    pre_b1 = _bal(owner_addr, denom1)
+    pre_b0 = _bal(owner_addr, sorted_denoms[0])
+    pre_b1 = _bal(owner_addr, sorted_denoms[1])
 
     bad = dysond(
         "tx",
@@ -95,9 +103,9 @@ def test_add_liquidity_v2(chainnet, generate_account, faucet, register_name):
         "add-liquidity",
         "--pool-id",
         str(pid),
-        "--amount1",
+        "--amounts",
         a1,
-        "--amount2",
+        "--amounts",
         a2,
         "--from",
         owner_name,
@@ -122,26 +130,27 @@ def test_add_liquidity_v2(chainnet, generate_account, faucet, register_name):
     ), f"no shares minted on misproportional add: {json.dumps(bad, indent=2)}"
 
     # Verify owner balance deltas equal effective adds (refunds implied)
-    post_b0 = _bal(owner_addr, denom0)
-    post_b1 = _bal(owner_addr, denom1)
+    post_b0 = _bal(owner_addr, sorted_denoms[0])
+    post_b1 = _bal(owner_addr, sorted_denoms[1])
     delta0 = pre_b0 - post_b0
     delta1 = pre_b1 - post_b1
     assert (
         delta0 == eff1 and delta1 == eff2
     ), f"unexpected balance deltas: expected ({eff1},{eff2}) got ({delta0},{delta1}); tx: {json.dumps(bad, indent=2)}"
 
-    # Now add proportionally to current reserves (coins[0]:coins[1] = 1:2)
-    prop_a = f"50{name}" if denom0 == name else "100udys"
-    prop_b = f"50{name}" if denom1 == name else "100udys"
+    # Now add proportionally to current reserves using sorted denoms
+    prop_amount_map = {name: f"50{name}", "udys": "100udys"}
+    prop_a = prop_amount_map[sorted_denoms[0]]
+    prop_b = prop_amount_map[sorted_denoms[1]]
     add_ok = dysond(
         "tx",
         "whaleswap",
         "add-liquidity",
         "--pool-id",
         str(pid),
-        "--amount1",
+        "--amounts",
         prop_a,
-        "--amount2",
+        "--amounts",
         prop_b,
         "--from",
         owner_name,
