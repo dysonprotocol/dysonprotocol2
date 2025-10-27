@@ -322,20 +322,28 @@ func (k Keeper) Sudo(ctx context.Context, msg *scripttypes.MsgSudo) (*scripttype
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
+	// Execute all sudo messages atomically using a single CacheContext.
+	// If any message fails, discard all state changes and events.
+	cacheCtx, write := sdkCtx.CacheContext()
+
 	// Unpack messages
 	msgs, err := script.GetMsgExecMessages(&scripttypes.MsgExec{AttachedMessages: msg.Messages})
 	if err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to unpack sudo messages")
 	}
 
-	// Execute each message without signer validation
-	results := make([]sdk.Msg, len(msgs))
+	// Execute each message without signer validation against the cached context
+	// Collect only non-nil results to avoid packing nil messages into response
+	results := make([]sdk.Msg, 0, len(msgs))
 	for i, execMsg := range msgs {
-		result, err := k.DispatchSudoMessage(sdkCtx, execMsg)
+		result, err := k.DispatchSudoMessage(cacheCtx, execMsg)
 		if err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to execute sudo message at index %d", i)
+			// Do not write cache; abort batch atomically with helpful context
+			return nil, cosmossdkerrors.Wrapf(err, "sudo message failed (index=%d type=%s)", i, sdk.MsgTypeURL(execMsg))
 		}
-		results[i] = result
+		if result != nil {
+			results = append(results, result)
+		}
 	}
 
 	// Pack results
@@ -344,6 +352,9 @@ func (k Keeper) Sudo(ctx context.Context, msg *scripttypes.MsgSudo) (*scripttype
 	if err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to pack sudo results")
 	}
+
+	// All succeeded: commit cached state and emit aggregated events to parent
+	write()
 
 	// Convert to response format
 	anyResults, err := script.GetAnyMessages(results)
