@@ -159,11 +159,10 @@ def demo_long_position(alice_addr, foo_name, bar_name):
         held_denom_response == bar_name
     ), f"LONG: held denom should be {bar_name}, got {held_denom_response}"
 
-    # Verify held amounts: borrow_amount * price(held/borrow)
-    # price = reserves[bar]/reserves[foo] = 10000/10000 = 1.0
+    # Verify held amounts include 0.3% fee and rounding in AMM swap
     assert (
-        held_amount_response == 500
-    ), f"LONG: held amount should be 500 (borrow * price), got {held_amount_response}"
+        held_amount_response == 498
+    ), f"LONG: held amount should be 498 with 0.3% fee, got {held_amount_response}"
 
 
 def test_open_short_position_basic(
@@ -301,11 +300,10 @@ def demo_short_position(alice_addr, foo_name, bar_name):
         held_denom_response == foo_name
     ), f"SHORT: held denom should be {foo_name}, got {held_denom_response}"
 
-    # Verify held amounts: borrow_amount / price(borrow/held)
-    # price(held/borrow) = reserves[foo]/reserves[bar] = 10000/10000 = 1.0
+    # Verify held amounts include 0.3% fee and rounding in AMM swap
     assert (
-        held_amount_response == 500
-    ), f"SHORT: held amount should be 500 (borrow / price), got {held_amount_response}"
+        held_amount_response == 498
+    ), f"SHORT: held amount should be 498 with 0.3% fee, got {held_amount_response}"
 
 
 def test_open_position_pool_not_found(

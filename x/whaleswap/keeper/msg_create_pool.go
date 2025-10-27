@@ -23,9 +23,10 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 	}
 
 	logger.Info("CreatePool sorting/validating inputs")
-	msg.Coins.Sort()
-	msg.MinPrice.Sort()
-	msg.MaxPrice.Sort()
+	// Sanitize user-provided repeated coin vectors to ensure canonical order and no zero coins.
+	msg.Coins = sdk.NewCoins(msg.Coins...)
+	msg.MinPrice = sdk.NewCoins(msg.MinPrice...)
+	msg.MaxPrice = sdk.NewCoins(msg.MaxPrice...)
 	err := msg.Coins.Validate()
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid coins: %v", err)

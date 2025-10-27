@@ -784,9 +784,25 @@ export class MsgMakeTrade extends Message<MsgMakeTrade> {
  */
 export class MsgMakeTradeResponse extends Message<MsgMakeTradeResponse> {
   /**
-   * @generated from field: repeated cosmos.base.v1beta1.Coin amount_out = 1;
+   * unique ID of the recorded trade
+   *
+   * @generated from field: uint64 trade_id = 2;
    */
-  amountOut: Coin[] = [];
+  tradeId = protoInt64.zero;
+
+  /**
+   * net debits from trader after netting/coverage/self-net by denom
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin trader_inputs = 3;
+   */
+  traderInputs: Coin[] = [];
+
+  /**
+   * net credits to trader after netting/coverage/self-net by denom
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin trader_outputs = 4;
+   */
+  traderOutputs: Coin[] = [];
 
   constructor(data?: PartialMessage<MsgMakeTradeResponse>) {
     super();
@@ -796,7 +812,9 @@ export class MsgMakeTradeResponse extends Message<MsgMakeTradeResponse> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "dysonprotocol.whaleswap.v1.MsgMakeTradeResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "amount_out", kind: "message", T: Coin, repeated: true },
+    { no: 2, name: "trade_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 3, name: "trader_inputs", kind: "message", T: Coin, repeated: true },
+    { no: 4, name: "trader_outputs", kind: "message", T: Coin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgMakeTradeResponse {

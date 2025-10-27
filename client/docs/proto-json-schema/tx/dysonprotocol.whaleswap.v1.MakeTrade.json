@@ -135,12 +135,25 @@
         "definitions": {
             "dysonprotocol.whaleswap.v1.MsgMakeTradeResponse": {
                 "properties": {
-                    "amount_out": {
+                    "trade_id": {
+                        "type": "string",
+                        "description": "unique ID of the recorded trade"
+                    },
+                    "trader_inputs": {
                         "items": {
                             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "net debits from trader after netting/coverage/self-net by denom"
+                    },
+                    "trader_outputs": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "net credits to trader after netting/coverage/self-net by denom"
                     }
                 },
                 "additionalProperties": false,

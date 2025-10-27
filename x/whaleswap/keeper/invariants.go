@@ -95,26 +95,13 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 	for _, c := range actual {
 		denomSet[c.Denom] = struct{}{}
 	}
-	// Build quick lookup maps for breakdown reporting
-	toMap := func(cs sdk.Coins) map[string]math.Int {
-		m := make(map[string]math.Int, len(cs))
-		for _, c := range cs {
-			m[c.Denom] = c.Amount
-		}
-		return m
-	}
-	ammMap := toMap(ammRequired)
-	escMap := toMap(escrowRequired)
-	pfdMap := toMap(pfandRequired)
-	collMap := toMap(leverageCollateral)
-
 	for denom := range denomSet {
 		// Compute expected per denom with leverage collateral
-		amm := ammMap[denom]
-		esc := escMap[denom]
-		pfd := pfdMap[denom]
+		amm := ammRequired.AmountOf(denom)
+		esc := escrowRequired.AmountOf(denom)
+		pfd := pfandRequired.AmountOf(denom)
 		auc := auctionRequired.AmountOf(denom)
-		coll := collMap[denom]
+		coll := leverageCollateral.AmountOf(denom)
 		exp := amm.Add(esc).Add(auc).Add(pfd).Add(coll)
 		act := actual.AmountOf(denom)
 		if !act.Equal(exp) {

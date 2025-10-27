@@ -33,7 +33,9 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves")
 	}
 
-	// Validate amounts: must have exactly 2 denoms matching pool (already sorted by gogoproto)
+	// Sanitize user-provided repeated coin vectors for amounts
+	msg.Amounts = sdk.NewCoins(msg.Amounts...)
+	// Validate amounts: must have exactly 2 denoms matching pool (already sorted)
 	if len(msg.Amounts) != 2 {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "must provide exactly 2 denoms")
 	}

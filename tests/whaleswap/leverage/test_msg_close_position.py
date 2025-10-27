@@ -361,6 +361,105 @@ def demo_not_owner(alice_addr, bob_addr, foo_name, bar_name):
     ), f"Expected 'unauthorized' in error, got: {exception_msg}"
 
 
+def test_close_position_not_owner_direct(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """Test that ClosePosition fails with 'unauthorized' when called by non-owner (direct dysond tx)."""
+    dysond = chainnet[0]
+    alice_name = leverage_accounts["alice"]["name"]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    bob_name = leverage_accounts["bob"]["name"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+
+    # Create pool via CLI (smaller amounts to avoid token depletion from session-scoped fixtures)
+    pool_result = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"5000{foo_name}",
+        "--coins",
+        f"5000{bar_name}",
+        "--fee-pct",
+        "0.003",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "20.0",
+        "--max-borrow-percent",
+        "0.8",
+        "--from",
+        alice_name,
+    )
+
+    assert pool_result.get("code", 1) == 0, f"Pool creation failed: {pool_result}"
+
+    # Extract pool_id
+    pool_id_attrs = [
+        attr.get("value")
+        for event in pool_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "pool_id"
+        and event.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    assert len(pool_id_attrs) > 0, "pool_id not found"
+    pool_id = int(pool_id_attrs[0].strip('"'))
+
+    # Alice opens a position
+    open_result = dysond(
+        "tx",
+        "whaleswap",
+        "open-position",
+        "--trader",
+        alice_addr,
+        "--pool-id",
+        str(pool_id),
+        "--collateral",
+        f"400{bar_name}",
+        "--borrow",
+        f"250{foo_name}",
+        "--from",
+        alice_name,
+    )
+    assert open_result.get("code", 1) == 0, f"Open position failed: {open_result}"
+
+    # Extract position_id
+    position_id_attrs = [
+        attr.get("value")
+        for event in open_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "position_id"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+    ]
+    assert len(position_id_attrs) > 0, "position_id not found"
+    position_id = int(position_id_attrs[0].strip('"'))
+
+    # Bob tries to close Alice's position - this should fail with "unauthorized"
+    close_result = dysond(
+        "tx",
+        "whaleswap",
+        "close-position",
+        "--position-id",
+        str(position_id),
+        "--from",
+        bob_name,
+    )
+
+    # The transaction should fail with "unauthorized" error
+    # Currently it panics instead of returning a proper error
+    assert (
+        close_result.get("code", 0) != 0
+    ), f"Expected close-position to fail, but it succeeded: {close_result}"
+
+    # Check that the error contains "unauthorized"
+    raw_log = close_result.get("raw_log", "").lower()
+    assert (
+        "unauthorized" in raw_log
+    ), f"Expected 'unauthorized' in error log, got: {raw_log}"
+
+
 def test_close_position_invalid_user_address(
     chainnet, leverage_accounts, leverage_names_and_coins
 ):

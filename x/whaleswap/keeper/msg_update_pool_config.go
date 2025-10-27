@@ -68,6 +68,9 @@ func (k Keeper) UpdatePoolConfig(ctx context.Context, msg *whaleswapv1.MsgUpdate
 
 	// Bands: compare prices using cross-multiplication on ints; avoid Decs
 	if len(msg.MinPrice) > 0 || len(msg.MaxPrice) > 0 {
+		// Sanitize band vectors first to drop zeros and canonicalize ordering
+		msg.MinPrice = sdk.NewCoins(msg.MinPrice...)
+		msg.MaxPrice = sdk.NewCoins(msg.MaxPrice...)
 		if len(pool.Coins) != 2 {
 			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid pool coins")
 		}

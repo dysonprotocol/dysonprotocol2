@@ -176,6 +176,9 @@ var (
 		ibctransfertypes.ModuleName:                 {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                         nil,
 		whaleswapv1.ModuleName:                      {authtypes.Burner},
+		// Whaleswap leverage vaults (module accounts)
+		whaleswapv1.LeverageVaultModuleName:       nil,
+		whaleswapv1.LeverageBorrowVaultModuleName: nil,
 	}
 )
 

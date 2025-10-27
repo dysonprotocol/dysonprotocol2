@@ -192,8 +192,6 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 	{
 		trIn := inputsByAddr[traderBech]
 		trOut := outputsByAddr[traderBech]
-		modIn := outputsByAddr[moduleBech] // module receives when trader pays
-		modOut := inputsByAddr[moduleBech] // module pays when trader receives
 		// Build union of denoms present in trader in/out
 		seen := map[string]struct{}{}
 		for _, c := range trIn {
@@ -224,13 +222,13 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 						delete(outputsByAddr, traderBech)
 					}
 				}
-				if modIn.AmountOf(d).IsPositive() {
+				if outputsByAddr[moduleBech].AmountOf(d).IsPositive() {
 					outputsByAddr[moduleBech] = outputsByAddr[moduleBech].Sub(sdk.NewCoin(d, n))
 					if outputsByAddr[moduleBech].IsZero() {
 						delete(outputsByAddr, moduleBech)
 					}
 				}
-				if modOut.AmountOf(d).IsPositive() {
+				if inputsByAddr[moduleBech].AmountOf(d).IsPositive() {
 					inputsByAddr[moduleBech] = inputsByAddr[moduleBech].Sub(sdk.NewCoin(d, n))
 					if inputsByAddr[moduleBech].IsZero() {
 						delete(inputsByAddr, moduleBech)
@@ -278,29 +276,28 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 			outputs = append(outputs, banktypes.Output{Address: addr, Coins: coins})
 		}
 	}
-	if len(inputs) == 0 && len(outputs) == 0 {
+	noSettlement := len(inputs) == 0 && len(outputs) == 0
+	if noSettlement {
 		// No settlement required after full netting and coverage.
 		logger.Info("MakeTrade no settlement required")
-		traderOutputs = outputsByAddr[traderBech]
-		logger.Info("MakeTrade completed without settlement", "trader_outputs", traderOutputs)
-		return &whaleswapv1.MsgMakeTradeResponse{AmountOut: traderOutputs}, nil
-	}
-	// Validate that both inputs and outputs are non-empty before calling wsMoveCoins
-	if len(inputs) == 0 || len(outputs) == 0 {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid netting result: inputs=%d, outputs=%d", len(inputs), len(outputs))
-	}
+	} else {
+		// Validate that both inputs and outputs are non-empty before calling wsMoveCoins
+		if len(inputs) == 0 || len(outputs) == 0 {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid netting result: inputs=%d, outputs=%d", len(inputs), len(outputs))
+		}
 
-	// Debug: log the inputs and outputs before calling wsMoveCoins
-	logger.Info("MakeTrade wsMoveCoins debug", "inputs_count", len(inputs), "outputs_count", len(outputs))
-	for i, in := range inputs {
-		logger.Info("MakeTrade input", "idx", i, "addr", in.Address, "coins", in.Coins.String())
-	}
-	for i, out := range outputs {
-		logger.Info("MakeTrade output", "idx", i, "addr", out.Address, "coins", out.Coins.String())
-	}
+		// Debug: log the inputs and outputs before calling wsMoveCoins
+		logger.Info("MakeTrade wsMoveCoins debug", "inputs_count", len(inputs), "outputs_count", len(outputs))
+		for i, in := range inputs {
+			logger.Info("MakeTrade input", "idx", i, "addr", in.Address, "coins", in.Coins.String())
+		}
+		for i, out := range outputs {
+			logger.Info("MakeTrade output", "idx", i, "addr", out.Address, "coins", out.Coins.String())
+		}
 
-	if err := k.wsMoveCoins(ctx, inputs, outputs); err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "move coins failed")
+		if err := k.wsMoveCoins(ctx, inputs, outputs); err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "move coins failed")
+		}
 	}
 
 	// Module balance invariants (like MakeOffer and TakeOffer)
@@ -333,8 +330,12 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 		}
 	}
 
-	logger.Info("MakeTrade completed successfully", "trade_id", tradeId, "trader_outputs", traderOutputs)
-	return &whaleswapv1.MsgMakeTradeResponse{AmountOut: traderOutputs}, nil
+	// Compute final trader inputs/outputs for response
+	finalTraderInputs := inputsByAddr[traderBech]
+	finalTraderOutputs := outputsByAddr[traderBech]
+
+	logger.Info("MakeTrade completed successfully", "trade_id", tradeId, "trader_inputs", finalTraderInputs, "trader_outputs", finalTraderOutputs)
+	return &whaleswapv1.MsgMakeTradeResponse{TradeId: tradeId, TraderInputs: finalTraderInputs, TraderOutputs: finalTraderOutputs}, nil
 }
 
 // executeSwapLegAndPersist mirrors one-leg logic from PoolSwap, updating pool and recording trade.

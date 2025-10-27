@@ -57,15 +57,9 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	}
 
 	// Compute entry price: held_per_borrow = held_reserve / borrow_reserve
-	// Find pool amounts for the specific denoms being borrowed and held
-	var borrowPoolAmount, heldPoolAmount math.Int
-	for _, coin := range pool.Coins {
-		if coin.Denom == borrowDenom {
-			borrowPoolAmount = coin.Amount
-		} else if coin.Denom == heldDenom {
-			heldPoolAmount = coin.Amount
-		}
-	}
+	// Find pool amounts for the specific denoms being borrowed and held using AmountOf
+	borrowPoolAmount := pool.Coins.AmountOf(borrowDenom)
+	heldPoolAmount := pool.Coins.AmountOf(heldDenom)
 	if !borrowPoolAmount.IsPositive() || !heldPoolAmount.IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves for price computation")
 	}
@@ -121,13 +115,19 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidAddress, err.Error())
 	}
 
-	// Transfer collateral to module
-	if err := k.sendToModule(ctx, userAddr, sdk.NewCoins(msg.Collateral)); err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "failed to transfer collateral")
-	}
+	// Defer collateral escrow until after PoolSwap so invariants inside PoolSwap do not require provisional position state
 
 	// Borrow from pool (update pool.total_borrowed)
 	borrowed := sdk.NewCoin(borrowDenom, msg.Borrow.Amount)
+	// Reduce pool reserves by the loan amount so that bank balances and pool reserves remain aligned.
+	// This makes the subsequent exact-in swap restore the input reserve, preserving AMM invariants.
+	currentReserve := pool.Coins.AmountOf(borrowDenom)
+	if currentReserve.IsZero() || currentReserve.LT(borrowed.Amount) {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "insufficient %s reserve to disburse loan: have=%s need=%s", borrowDenom, currentReserve.String(), borrowed.Amount.String())
+	}
+	// Update pool reserves using standard SDK coin subtraction
+	pool.Coins = pool.Coins.Sub(borrowed)
+	// Track outstanding borrowed
 	totalBorrowed := sdk.NewCoins(pool.TotalBorrowed...).Add(borrowed)
 	pool.TotalBorrowed = totalBorrowed
 	if err := k.PoolsMap.Set(ctx, msg.PoolId, pool); err != nil {
@@ -141,32 +141,47 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		return nil, cosmossdkerrors.Wrapf(err, "failed to disburse loan to borrow vault: %s", loan.String())
 	}
 
-	// Execute PoolSwap with borrow vault as trader (exact-in borrowed → held). Settlement will use wsMoveCoins.
-	ps := &whaleswapv1.MsgPoolSwap{
+	// Note: do NOT persist a provisional position before PoolSwap.
+	// PoolSwap asserts invariants that include leverage collateral from persisted positions.
+	// Persisting before escrow would count collateral in expectations while the module doesn't hold it yet.
+	now := sdkCtx.BlockTime()
+
+	// Execute MakeTrade with a single swap operation (exact-in borrowed → held). Settlement will use wsMoveCoins.
+	mt := &whaleswapv1.MsgMakeTrade{
 		Trader:    borrowVault,
 		MaxInput:  sdk.NewCoins(loan),
-		Legs:      []whaleswapv1.SwapLeg{{PoolId: msg.PoolId, SwapIn: loan}},
 		MinOutput: sdk.NewCoins(),
+		Operations: []whaleswapv1.TradeOperation{
+			{
+				Op: &whaleswapv1.TradeOperation_Swap{
+					Swap: &whaleswapv1.SwapLeg{PoolId: msg.PoolId, SwapIn: loan},
+				},
+			},
+		},
+		Note: "leverage-open",
 	}
-	psResp, psErr := k.PoolSwap(ctx, ps)
-	if psErr != nil {
-		return nil, cosmossdkerrors.Wrap(psErr, "failed PoolSwap for leverage open")
+	mtResp, mtErr := k.MakeTrade(ctx, mt)
+	if mtErr != nil {
+		return nil, cosmossdkerrors.Wrap(mtErr, "failed MakeTrade swap for leverage open")
 	}
 	// Held amount received by borrow vault
-	heldAmt := psResp.AmountOut.AmountOf(heldDenom)
+	heldAmt := mtResp.TraderOutputs.AmountOf(heldDenom)
 	if !heldAmt.IsPositive() {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "swap produced no held output for %s", heldDenom)
 	}
 	sdkCtx.Logger().Info("OpenPosition: PoolSwap executed", "borrowDenom", borrowDenom, "heldDenom", heldDenom, "borrowAmount", loan.Amount, "heldAmt", heldAmt)
 
-	// Create position
-	now := sdkCtx.BlockTime()
+	// Now escrow collateral to module (post-swap) so subsequent invariant checks see both collateral and position state together
+	if err := k.sendToModule(ctx, userAddr, sdk.NewCoins(msg.Collateral)); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to transfer collateral")
+	}
 
+	// Persist final position after swap and collateral escrow
 	pos := whaleswapv1.LeveragePosition{
 		PositionId:         posID,
 		PoolId:             msg.PoolId,
 		User:               msg.Trader,
-		Borrowed:           sdk.NewCoin(borrowDenom, msg.Borrow.Amount),
+		Borrowed:           borrowed,
 		Held:               sdk.NewCoin(heldDenom, heldAmt),
 		Collateral:         msg.Collateral,
 		BorrowTime:         &now,
@@ -175,7 +190,6 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		AccruedInterest:    sdk.NewCoin(borrowDenom, math.ZeroInt()),
 	}
 	sdkCtx.Logger().Info("OpenPosition: position created", "posID", posID, "borrowDenom", pos.Borrowed.Denom, "heldDenom", pos.Held.Denom)
-
 	if err := k.LeveragePositions.Set(ctx, posID, pos); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to save position")
 	}

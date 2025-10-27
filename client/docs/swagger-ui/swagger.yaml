@@ -32478,7 +32478,11 @@ paths:
           schema:
             type: object
             properties:
-              amount_out:
+              trade_id:
+                type: string
+                format: uint64
+                title: unique ID of the recorded trade
+              trader_inputs:
                 type: array
                 items:
                   type: object
@@ -32495,6 +32499,27 @@ paths:
                     method
 
                     signatures required by gogoproto.
+                title: >-
+                  net debits from trader after netting/coverage/self-net by
+                  denom
+              trader_outputs:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    Coin defines a token with a denomination and an amount.
+
+
+                    NOTE: The amount field is an Int which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                title: net credits to trader after netting/coverage/self-net by denom
         default:
           description: An unexpected error response.
           schema:
@@ -71325,7 +71350,11 @@ definitions:
   dysonprotocol.whaleswap.v1.MsgMakeTradeResponse:
     type: object
     properties:
-      amount_out:
+      trade_id:
+        type: string
+        format: uint64
+        title: unique ID of the recorded trade
+      trader_inputs:
         type: array
         items:
           type: object
@@ -71339,6 +71368,22 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
+        title: net debits from trader after netting/coverage/self-net by denom
+      trader_outputs:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+        title: net credits to trader after netting/coverage/self-net by denom
   dysonprotocol.whaleswap.v1.MsgOpenAuction:
     type: object
     properties:

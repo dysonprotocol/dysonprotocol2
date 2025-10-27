@@ -232,6 +232,33 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Example:   "dysond tx whaleswap redeem-auction --auction-id=7",
 				},
 				{
+					RpcMethod: "OpenPosition",
+					Use:       "open-position --pool-id <id> --collateral <coin> --borrow <coin>",
+					Short:     "Open a leveraged position (synthetic long/short)",
+					Long:      "Open a leveraged position against a two-asset pool. Collateral and borrow denoms must match pool reserves.",
+					Example:   "dysond tx whaleswap open-position --pool-id 1 --collateral 400udys --borrow 250ufoo",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						// Map signer field to standard --from flag for consistency with other commands
+						"trader":     {Name: "from", Usage: "Trader address (signer)"},
+						"pool_id":    {Name: "pool-id", Usage: "Target pool ID"},
+						"collateral": {Name: "collateral", Usage: "Collateral coin (e.g., 400udys)"},
+						"borrow":     {Name: "borrow", Usage: "Borrow coin (e.g., 250ufoo)"},
+					},
+				},
+				{
+					RpcMethod: "ClosePosition",
+					Use:       "close-position --position-id <id> [--pool-id <id>]",
+					Short:     "Close a leveraged position and settle",
+					Long:      "Close an existing leveraged position. Only the position owner may close before liquidation windows. The signer (--from) is used as the user.",
+					Example:   "dysond tx whaleswap close-position --position-id 7",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						// Map signer field to standard --from flag
+						"user":        {Name: "from", Usage: "Position owner (signer)"},
+						"pool_id":     {Name: "pool-id", Usage: "Pool ID (optional)"},
+						"position_id": {Name: "position-id", Usage: "Position ID"},
+					},
+				},
+				{
 					RpcMethod: "UpdateParams",
 					Use:       "update-params",
 					Short:     "Update whaleswap module params (authority only)",

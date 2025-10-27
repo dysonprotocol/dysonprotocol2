@@ -257,7 +257,19 @@ message MsgMakeTrade {
 }
 
 message MsgMakeTradeResponse {
-  repeated cosmos.base.v1beta1.Coin amount_out = 1 [
+  reserved 1;
+  reserved "amount_out";
+  // unique ID of the recorded trade
+  uint64 trade_id = 2;
+  // net debits from trader after netting/coverage/self-net by denom
+  repeated cosmos.base.v1beta1.Coin trader_inputs = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (amino.dont_omitempty) = true,
+    (amino.encoding) = "legacy_coins"
+  ];
+  // net credits to trader after netting/coverage/self-net by denom
+  repeated cosmos.base.v1beta1.Coin trader_outputs = 4 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (amino.dont_omitempty) = true,
