@@ -58,7 +58,8 @@ def test_close_position_happy_path_long(
     assert len(pool_id_attrs) > 0, "pool_id not found"
     pool_id = pool_id_attrs[0].strip('"')
 
-    # Open LONG position (borrow foo, hold bar)
+    # Open LONG position (borrow foo, hold bar, collateral in foo)
+    # Use same-denom collateral to test shortfall coverage when position goes underwater from fees
     open_result = dysond(
         "tx",
         "whaleswap",
@@ -66,7 +67,7 @@ def test_close_position_happy_path_long(
         "--pool-id",
         pool_id,
         "--collateral",
-        f"400{bar_name}",
+        f"400{foo_name}",
         "--borrow",
         f"250{foo_name}",
         "--from",
@@ -539,3 +540,226 @@ def demo_invalid_address(alice_addr, foo_name, bar_name):
     assert (
         "address" in exception_msg
     ), f"Expected 'address' in error, got: {exception_msg}"
+
+
+def test_close_position_cross_denom_underwater(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """Test closing underwater position with cross-denom collateral uses both swaps.
+
+    Scenario: User opens position with collateral in bar, borrows foo.
+    We manipulate the pool to make the position severely underwater where:
+    - swap(held) < repayment (underwater)
+    - swap(held) + swap(collateral) >= repayment (collateral covers shortfall)
+
+    This validates the cross-denom swap logic executes: held → foo + collateral → foo.
+    """
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    alice_name = leverage_accounts["alice"]["name"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+
+    # Create pool via CLI: 10000 foo, 10000 bar (1:1 initial price)
+    pool_result = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"10000{foo_name}",
+        "--coins",
+        f"10000{bar_name}",
+        "--fee-pct",
+        "0.003",
+        "--min-collateral-ratio",
+        "1.2",
+        "--max-leverage-ratio",
+        "10.0",
+        "--max-borrow-percent",
+        "0.8",
+        "--from",
+        alice_name,
+    )
+    assert pool_result.get("code", 1) == 0, f"Pool creation failed: {pool_result}"
+    pool_id_attrs = [
+        attr.get("value")
+        for event in pool_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "pool_id"
+        and event.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    assert len(pool_id_attrs) > 0, "pool_id not found"
+    pool_id = pool_id_attrs[0].strip('"')
+
+    # Check initial pool state
+    pool_query = dysond("query", "whaleswap", "pool", "--pool-id", pool_id)
+    initial_foo = int(pool_query["pool"]["coins"][0]["amount"])
+    initial_bar = int(pool_query["pool"]["coins"][1]["amount"])
+    assert initial_foo == 10000, f"Expected 10000 foo, got {initial_foo}"
+    assert initial_bar == 10000, f"Expected 10000 bar, got {initial_bar}"
+
+    # Open position: borrow 1000 foo, collateral 1500 bar (cross-denom)
+    # Position will swap borrowed foo → bar, so held will be bar
+    open_result = dysond(
+        "tx",
+        "whaleswap",
+        "open-position",
+        "--pool-id",
+        pool_id,
+        "--collateral",
+        f"1500{bar_name}",
+        "--borrow",
+        f"1000{foo_name}",
+        "--from",
+        alice_name,
+    )
+    assert open_result.get("code", 1) == 0, f"Open position failed: {open_result}"
+    position_id_attrs = [
+        attr.get("value")
+        for event in open_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "position_id"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+    ]
+    assert len(position_id_attrs) > 0, "position_id not found"
+    position_id = position_id_attrs[0].strip('"')
+
+    # Verify cross-denom setup from open event
+    open_events = [
+        e
+        for e in open_result.get("events", [])
+        if e.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+    ]
+    assert len(open_events) == 1, "Expected position opened event"
+
+    # Extract denoms from event to confirm cross-denom
+    borrowed_denom_attr = [
+        a
+        for a in open_events[0].get("attributes", [])
+        if a.get("key") == "borrowed_denom"
+    ]
+    collateral_denom_attr = [
+        a
+        for a in open_events[0].get("attributes", [])
+        if a.get("key") == "collateral_denom"
+    ]
+    assert len(borrowed_denom_attr) == 1, "Expected borrowed_denom in event"
+    assert len(collateral_denom_attr) == 1, "Expected collateral_denom in event"
+    assert (
+        borrowed_denom_attr[0].get("value", "").strip('"') == foo_name
+    ), "Borrowed should be foo"
+    assert (
+        collateral_denom_attr[0].get("value", "").strip('"') == bar_name
+    ), "Collateral should be bar"
+
+    # Manipulate pool to make position underwater:
+    # Dump massive amount of bar into pool to crash bar price
+    # This makes the held bar worth much less in foo terms
+    swap_leg_json = json.dumps(
+        {"pool_id": int(pool_id), "swap_in": {"denom": bar_name, "amount": "5000"}}
+    )
+    swap_result = dysond(
+        "tx",
+        "whaleswap",
+        "swap",
+        "--max-input",
+        f"5000{bar_name}",
+        "--legs",
+        swap_leg_json,
+        "--min-output",
+        f"1{foo_name}",
+        "--from",
+        alice_name,
+    )
+    assert (
+        swap_result.get("code", 1) == 0
+    ), f"Price manipulation swap failed: {swap_result}"
+
+    # Check pool state after manipulation
+    pool_after = dysond("query", "whaleswap", "pool", "--pool-id", pool_id)
+    foo_reserve = int(
+        [c for c in pool_after["pool"]["coins"] if c["denom"] == foo_name][0]["amount"]
+    )
+    bar_reserve = int(
+        [c for c in pool_after["pool"]["coins"] if c["denom"] == bar_name][0]["amount"]
+    )
+
+    # Now bar is severely devalued (much more bar than foo in pool)
+    assert (
+        bar_reserve > foo_reserve * 2
+    ), f"Expected bar severely devalued, foo={foo_reserve} bar={bar_reserve}"
+
+    # Get alice's balance before close
+    alice_balance_before = dysond("query", "bank", "balances", alice_addr)
+    foo_before = int(
+        [b for b in alice_balance_before["balances"] if b["denom"] == foo_name][0][
+            "amount"
+        ]
+    )
+    bar_before = int(
+        [b for b in alice_balance_before["balances"] if b["denom"] == bar_name][0][
+            "amount"
+        ]
+    )
+
+    # Close position - should trigger cross-denom underwater logic
+    # Expected: swap held (bar→foo) insufficient, then swap collateral (bar→foo)
+    close_result = dysond(
+        "tx",
+        "whaleswap",
+        "close-position",
+        "--position-id",
+        position_id,
+        "--from",
+        alice_name,
+    )
+    assert close_result.get("code", 1) == 0, f"Close position failed: {close_result}"
+
+    # Verify close event
+    close_events = [
+        event
+        for event in close_result.get("events", [])
+        if event.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed"
+    ]
+    assert (
+        len(close_events) == 1
+    ), f"Expected exactly 1 close event, got {len(close_events)}"
+
+    # Extract profit from event
+    profit_attrs = [
+        attr
+        for attr in close_events[0].get("attributes", [])
+        if attr.get("key") == "profit"
+    ]
+    assert len(profit_attrs) == 1, "Expected profit attribute"
+    profit_str = profit_attrs[0].get("value", "").strip('"')
+
+    # Verify profit is valid coin format (should be 0 or very small since underwater)
+    assert foo_name in profit_str, f"Expected profit in {foo_name}, got: {profit_str}"
+
+    # Get alice's balance after close
+    alice_balance_after = dysond("query", "bank", "balances", alice_addr)
+    foo_after = int(
+        [b for b in alice_balance_after["balances"] if b["denom"] == foo_name][0][
+            "amount"
+        ]
+    )
+    bar_after = int(
+        [b for b in alice_balance_after["balances"] if b["denom"] == bar_name][0][
+            "amount"
+        ]
+    )
+
+    # Verify collateral was consumed (not returned) since position was underwater
+    # Alice should have gotten back little to no collateral
+    collateral_returned = bar_after - bar_before
+    assert (
+        collateral_returned <= 100
+    ), f"Expected little collateral returned (underwater), got {collateral_returned}"
+
+    # Verify no significant foo profit (underwater position)
+    foo_gained = foo_after - foo_before
+    assert (
+        foo_gained <= 10
+    ), f"Expected no significant foo profit (underwater), got {foo_gained}"

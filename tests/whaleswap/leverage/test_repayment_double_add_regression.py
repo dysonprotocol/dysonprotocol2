@@ -1,12 +1,12 @@
 """
 Regression test for duplicate repayment addition in ClosePosition.
 
-This test proves a bug where ClosePosition adds the repayment to pool reserves twice,
-causing AMM invariants to fail. The correct behavior is that close-position should
-complete successfully on a standard open→close cycle.
-
-Current (buggy) behavior: the final close-position tx fails with an AMM invariant
-error (module balance below AMM reserves).
+This test verifies that ClosePosition correctly adds repayment to pool reserves only once,
+not twice. The test opens a position that goes slightly underwater due to swap fees,
+and verifies that:
+1. Close succeeds (no double-add causing invariant failure)
+2. Shortfall is covered by collateral (same-denom collateral case)
+3. User receives reduced collateral after shortfall deduction
 """
 
 import json
@@ -62,7 +62,8 @@ def test_close_position_happy_path_regression(
     ), f"pool_id not found. Full result: {json.dumps(pool_result, indent=2)}"
     pool_id = pool_id_attrs[0].strip('"')
 
-    # Open a position (borrow foo, hold bar)
+    # Open a position (borrow foo, hold bar, collateral in foo)
+    # Use same-denom collateral so underwater positions can cover shortfall with collateral
     open_result = dysond(
         "tx",
         "whaleswap",
@@ -70,7 +71,7 @@ def test_close_position_happy_path_regression(
         "--pool-id",
         pool_id,
         "--collateral",
-        f"400{bar_name}",
+        f"400{foo_name}",
         "--borrow",
         f"250{foo_name}",
         "--from",

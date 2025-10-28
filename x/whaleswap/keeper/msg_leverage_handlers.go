@@ -78,21 +78,130 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	}
 	repayment := k.ComputeEffectiveRepayment(pos.Borrowed.Amount, interest)
 
-	// Handle underwater positions (proceeds < repayment) by accepting partial repayment.
-	// Pool absorbs the loss rather than attempting complex nested swaps during settlement.
+	// Handle underwater positions (proceeds < repayment) using collateral to cover shortfall.
+	// This eliminates moral hazard where users could retrieve full collateral from underwater positions.
 	var actualRepayment, poolLoss, pnl math.Int
 	var profit sdk.Coin
+	var usedCrossDenomSwap bool // Track if we swapped collateral for cross-denom case
 
 	if proceedsBorrow.LT(repayment) {
-		// Underwater: accept what we can recover
-		actualRepayment = proceedsBorrow
-		poolLoss = repayment.Sub(proceedsBorrow)
-		pnl = math.ZeroInt()
-		profit = sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
-		sdkCtx.Logger().Info("ClosePosition underwater",
-			"proceeds", proceedsBorrow,
-			"repayment", repayment,
-			"pool_loss", poolLoss)
+		shortfall := repayment.Sub(proceedsBorrow)
+
+		// Check if collateral can cover the shortfall
+		if pos.Collateral.Denom == pos.Borrowed.Denom {
+			// Same denom: use collateral to cover shortfall directly
+			if pos.Collateral.Amount.LT(shortfall) {
+				// Collateral insufficient: user loses all collateral, pool still takes remaining loss
+				poolLoss = shortfall.Sub(pos.Collateral.Amount)
+				actualRepayment = proceedsBorrow.Add(pos.Collateral.Amount)
+				// Collateral already escrowed in module; it will be used for repayment instead of returned
+				// Set to zero so user doesn't get it back
+				collateralUsedForShortfall := pos.Collateral.Amount
+				pos.Collateral.Amount = math.ZeroInt()
+				pnl = math.ZeroInt()
+				profit = sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
+				sdkCtx.Logger().Info("ClosePosition underwater: collateral insufficient",
+					"proceeds", proceedsBorrow,
+					"repayment", repayment,
+					"collateral_used", collateralUsedForShortfall,
+					"pool_loss", poolLoss)
+			} else {
+				// Collateral sufficient: deduct shortfall from collateral, no pool loss
+				// Shortfall amount from escrowed collateral will be used for repayment (stays in module)
+				pos.Collateral.Amount = pos.Collateral.Amount.Sub(shortfall)
+				actualRepayment = repayment
+				poolLoss = math.ZeroInt()
+				pnl = math.ZeroInt()
+				profit = sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
+				sdkCtx.Logger().Info("ClosePosition underwater: collateral covers shortfall",
+					"proceeds", proceedsBorrow,
+					"repayment", repayment,
+					"shortfall", shortfall,
+					"collateral_remaining", pos.Collateral.Amount)
+			}
+		} else {
+			// Cross-denom collateral: swap collateral to borrowed denom to cover shortfall
+			// Save collateral amount before zeroing it out
+			collateralToSwap := pos.Collateral
+
+			// Zero out position collateral and persist BEFORE moving funds
+			// This prevents invariant checker from expecting it in module during swap
+			pos.Collateral.Amount = math.ZeroInt()
+			if err := k.LeveragePositions.Set(ctx, msg.PositionId, pos); err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "failed to update position before collateral swap")
+			}
+
+			// Now move collateral from module → borrow vault, then swap using borrow vault as trader
+			// This keeps fund flows clean: both swaps use borrow vault, proceeds combine there
+			if err := k.moveModuleToModule(ctx, whaleswap.ModuleName, whaleswap.LeverageBorrowVaultModuleName, sdk.NewCoins(collateralToSwap)); err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "failed to move collateral to borrow vault for swap")
+			}
+
+			collateralSwapMt := &whaleswapv1.MsgMakeTrade{
+				Trader:    borrowVault,
+				MaxInput:  sdk.NewCoins(collateralToSwap),
+				MinOutput: sdk.NewCoins(),
+				Operations: []whaleswapv1.TradeOperation{
+					{Op: &whaleswapv1.TradeOperation_Swap{
+						Swap: &whaleswapv1.SwapLeg{
+							PoolId: pos.PoolId,
+							SwapIn: collateralToSwap,
+						},
+					}},
+				},
+				Note: "leverage-close-collateral-swap",
+			}
+			collSwapResp, collSwapErr := k.MakeTrade(ctx, collateralSwapMt)
+			if collSwapErr != nil {
+				return nil, cosmossdkerrors.Wrap(collSwapErr, "failed to swap collateral for shortfall coverage")
+			}
+
+			// Reload pool after second swap
+			pool, err = k.PoolsMap.Get(ctx, pos.PoolId)
+			if err != nil {
+				return nil, cosmossdkerrors.Wrapf(err, "failed to reload pool after collateral swap %d", pos.PoolId)
+			}
+
+			// Collateral swap proceeds in borrowed denom (now in borrow vault alongside first swap proceeds)
+			collateralProceeds := collSwapResp.TraderOutputs.AmountOf(pos.Borrowed.Denom)
+			if !collateralProceeds.IsPositive() {
+				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "collateral swap produced no %s output", pos.Borrowed.Denom)
+			}
+
+			// Total proceeds from both swaps
+			totalProceeds := proceedsBorrow.Add(collateralProceeds)
+
+			// Settle based on total proceeds vs repayment
+			if totalProceeds.GTE(repayment) {
+				// Total proceeds cover full repayment
+				actualRepayment = repayment
+				poolLoss = math.ZeroInt()
+				pnl = totalProceeds.Sub(repayment)
+				profit = sdk.NewCoin(pos.Borrowed.Denom, pnl)
+				sdkCtx.Logger().Info("ClosePosition underwater: cross-denom collateral swap covered shortfall",
+					"held_proceeds", proceedsBorrow,
+					"collateral_proceeds", collateralProceeds,
+					"total_proceeds", totalProceeds,
+					"repayment", repayment,
+					"profit", pnl)
+			} else {
+				// Even after swapping all collateral, still underwater - pool takes loss
+				actualRepayment = totalProceeds
+				poolLoss = repayment.Sub(totalProceeds)
+				pnl = math.ZeroInt()
+				profit = sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
+				sdkCtx.Logger().Info("ClosePosition underwater: cross-denom collateral swap insufficient, pool takes loss",
+					"held_proceeds", proceedsBorrow,
+					"collateral_proceeds", collateralProceeds,
+					"total_proceeds", totalProceeds,
+					"repayment", repayment,
+					"pool_loss", poolLoss)
+			}
+
+			// Collateral was entirely consumed in swap, set to zero
+			pos.Collateral.Amount = math.ZeroInt()
+			usedCrossDenomSwap = true
+		}
 	} else {
 		// Profitable or break-even: full repayment
 		actualRepayment = repayment
@@ -107,26 +216,41 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		return nil, cosmossdkerrors.Wrapf(err, "failed to reload pool %d", pos.PoolId)
 	}
 
-	// Move actual repayment from borrow vault back to whaleswap module
-	repaymentCoin := sdk.NewCoin(pos.Borrowed.Denom, actualRepayment)
-	if err := k.moveModuleToModule(ctx, whaleswap.LeverageBorrowVaultModuleName, whaleswap.ModuleName, sdk.NewCoins(repaymentCoin)); err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "failed to transfer repayment to module")
+	// Move swap proceeds from borrow vault to module
+	// In cross-denom case, actualRepayment includes proceeds from both swaps (both in vault)
+	// In other cases, actualRepayment may include collateral from module + proceedsBorrow from vault
+	var proceedsToMove math.Int
+	if usedCrossDenomSwap {
+		// Both swaps executed in borrow vault, move total proceeds
+		proceedsToMove = actualRepayment
+	} else {
+		// Only first swap in vault; any collateral contribution is already in module
+		proceedsToMove = proceedsBorrow
+	}
+	proceedsCoin := sdk.NewCoin(pos.Borrowed.Denom, proceedsToMove)
+	if err := k.moveModuleToModule(ctx, whaleswap.LeverageBorrowVaultModuleName, whaleswap.ModuleName, sdk.NewCoins(proceedsCoin)); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to transfer proceeds to module")
 	}
 
-	// Restore pool reserves by adding back what we actually recovered.
+	// Restore pool reserves by adding back the full actualRepayment amount
+	// actualRepayment = proceedsBorrow (from vault, just moved) + collateral used (already in module)
 	// In OpenPosition we subtracted pos.Borrowed; here we add back actualRepayment.
 	// If actualRepayment < pos.Borrowed, pool.Coins ends up permanently lower (pool absorbs the loss).
+	repaymentCoin := sdk.NewCoin(pos.Borrowed.Denom, actualRepayment)
 	pool.Coins = pool.Coins.Add(repaymentCoin)
 	if err := k.updatePool(ctx, &pool); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to update pool after repayment")
 	}
 
-	// Return remaining collateral to user
-	if err := k.sendFromModule(ctx, userAddr, sdk.NewCoins(pos.Collateral)); err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "failed to return collateral")
+	// Return remaining collateral to user (if any left after covering shortfall)
+	if pos.Collateral.Amount.IsPositive() {
+		if err := k.sendFromModule(ctx, userAddr, sdk.NewCoins(pos.Collateral)); err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "failed to return collateral")
+		}
 	}
 
 	// Return profit to user (if positive) from borrow vault
+	// Both standard and cross-denom cases have proceeds/profit in borrow vault
 	if profit.Amount.IsPositive() {
 		if err := k.sendFromBorrowVault(ctx, userAddr, sdk.NewCoins(profit)); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to return profit")
