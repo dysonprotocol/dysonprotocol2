@@ -542,17 +542,18 @@ def demo_invalid_address(alice_addr, foo_name, bar_name):
     ), f"Expected 'address' in error, got: {exception_msg}"
 
 
-def test_close_position_cross_denom_underwater(
+def test_close_position_cross_denom_underwater_rejected(
     chainnet, leverage_accounts, leverage_names_and_coins
 ):
-    """Test closing underwater position with cross-denom collateral uses both swaps.
+    """Test closing underwater position with cross-denom collateral insufficient is rejected.
 
     Scenario: User opens position with collateral in bar, borrows foo.
     We manipulate the pool to make the position severely underwater where:
     - swap(held) < repayment (underwater)
-    - swap(held) + swap(collateral) >= repayment (collateral covers shortfall)
+    - swap(held) + swap(collateral) < repayment (collateral insufficient)
+    - Transaction is rejected to prevent pool loss
 
-    This validates the cross-denom swap logic executes: held → foo + collateral → foo.
+    This validates the cross-denom rejection logic when total proceeds are insufficient.
     """
     dysond = chainnet[0]
     alice_addr = leverage_accounts["alice"]["addr"]
@@ -703,8 +704,486 @@ def test_close_position_cross_denom_underwater(
         ]
     )
 
-    # Close position - should trigger cross-denom underwater logic
-    # Expected: swap held (bar→foo) insufficient, then swap collateral (bar→foo)
+    # Close position - should be rejected due to insufficient collateral
+    # Expected: swap held (bar→foo) insufficient, swap collateral (bar→foo) also insufficient
+    # Total proceeds < repayment → transaction rejected
+    close_result = dysond(
+        "tx",
+        "whaleswap",
+        "close-position",
+        "--position-id",
+        position_id,
+        "--from",
+        alice_name,
+    )
+    
+    # Verify transaction was rejected with insufficient collateral error
+    assert close_result.get("code", 0) != 0, f"Expected close to be rejected, but it succeeded: {close_result}"
+    assert close_result.get("code") == 1002, f"Expected error code 1002 (insufficient collateral), got: {close_result.get('code')}"
+    
+    raw_log = close_result.get("raw_log", "")
+    assert "insufficient collateral" in raw_log.lower(), f"Expected 'insufficient collateral' in error, got: {raw_log}"
+    assert "underwater" in raw_log.lower(), f"Expected 'underwater' in error, got: {raw_log}"
+    
+    # Verify alice's balance unchanged (transaction rejected, no state change)
+    alice_balance_after = dysond("query", "bank", "balances", alice_addr)
+    foo_after = int(
+        [b for b in alice_balance_after["balances"] if b["denom"] == foo_name][0][
+            "amount"
+        ]
+    )
+    bar_after = int(
+        [b for b in alice_balance_after["balances"] if b["denom"] == bar_name][0][
+            "amount"
+        ]
+    )
+
+    # Balances should be unchanged (transaction reverted)
+    assert foo_after == foo_before, f"Expected foo unchanged after rejection, before={foo_before} after={foo_after}"
+    assert bar_after == bar_before, f"Expected bar unchanged after rejection, before={bar_before} after={bar_after}"
+
+
+def test_close_position_same_denom_collateral_sufficient_underwater(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """Test closing underwater position where same-denom collateral covers the shortfall.
+    
+    Scenario: User opens position with collateral and borrow in same denom (foo).
+    We manipulate the pool to make position underwater but collateral sufficient:
+    - swap(held) < repayment (underwater)
+    - swap(held) + collateral >= repayment (collateral sufficient)
+    - pool receives full repayment, no loss
+    - user gets remaining collateral back
+    
+    This validates the same-denom collateral sufficient case in msg_leverage_handlers.go.
+    """
+    dysond = chainnet[0]
+    bob_addr = leverage_accounts["bob"]["addr"]
+    bob_name = leverage_accounts["bob"]["name"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+
+    # Create pool via CLI: 15000 foo, 15000 bar (1:1 initial price)
+    pool_result = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"15000{foo_name}",
+        "--coins",
+        f"15000{bar_name}",
+        "--fee-pct",
+        "0.003",
+        "--min-collateral-ratio",
+        "1.2",
+        "--max-leverage-ratio",
+        "10.0",
+        "--max-borrow-percent",
+        "0.8",
+        "--from",
+        bob_name,
+    )
+    assert pool_result.get("code", 1) == 0, f"Pool creation failed: {pool_result}"
+    pool_id_attrs = [
+        attr.get("value")
+        for event in pool_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "pool_id"
+        and event.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    assert len(pool_id_attrs) > 0, "pool_id not found"
+    pool_id = pool_id_attrs[0].strip('"')
+
+    # Open position: borrow 500 foo, collateral 800 foo (same-denom, meets min CR 1.6)
+    # Position will swap borrowed foo → bar, so held will be bar
+    open_result = dysond(
+        "tx",
+        "whaleswap",
+        "open-position",
+        "--pool-id",
+        pool_id,
+        "--collateral",
+        f"800{foo_name}",
+        "--borrow",
+        f"500{foo_name}",
+        "--from",
+        bob_name,
+    )
+    assert open_result.get("code", 1) == 0, f"Open position failed: {open_result}"
+    position_id_attrs = [
+        attr.get("value")
+        for event in open_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "position_id"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+    ]
+    assert len(position_id_attrs) > 0, "position_id not found"
+    position_id = position_id_attrs[0].strip('"')
+
+    # Manipulate pool severely to crash bar price (dump massive bar into pool)
+    # This makes the held bar worth much less when swapping back to foo
+    swap_leg_json = json.dumps(
+        {"pool_id": int(pool_id), "swap_in": {"denom": bar_name, "amount": "12000"}}
+    )
+    swap_result = dysond(
+        "tx",
+        "whaleswap",
+        "swap",
+        "--max-input",
+        f"12000{bar_name}",
+        "--legs",
+        swap_leg_json,
+        "--min-output",
+        f"1{foo_name}",
+        "--from",
+        bob_name,
+    )
+    assert (
+        swap_result.get("code", 1) == 0
+    ), f"Price manipulation swap failed: {swap_result}"
+
+    # Get pool state before close and bob's balance
+    pool_before = dysond("query", "whaleswap", "pool", "--pool-id", pool_id)
+    foo_reserve_before = int(
+        [c for c in pool_before["pool"]["coins"] if c["denom"] == foo_name][0]["amount"]
+    )
+    
+    bob_balance_before = dysond("query", "bank", "balances", bob_addr)
+    foo_balance_before = int(
+        [b for b in bob_balance_before["balances"] if b["denom"] == foo_name][0]["amount"]
+    )
+
+    # Close position - collateral will cover the shortfall
+    close_result = dysond(
+        "tx",
+        "whaleswap",
+        "close-position",
+        "--position-id",
+        position_id,
+        "--from",
+        bob_name,
+    )
+    assert close_result.get("code", 1) == 0, f"Close position failed: {close_result}"
+
+    # Verify close event
+    close_events = [
+        event
+        for event in close_result.get("events", [])
+        if event.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed"
+    ]
+    assert (
+        len(close_events) == 1
+    ), f"Expected exactly 1 close event, got {len(close_events)}"
+
+    # Extract profit from event (should be zero since underwater)
+    profit_attrs = [
+        attr
+        for attr in close_events[0].get("attributes", [])
+        if attr.get("key") == "profit"
+    ]
+    assert len(profit_attrs) == 1, "Expected profit attribute"
+    profit_str = profit_attrs[0].get("value", "").strip('"')
+    assert "0" in profit_str, f"Expected zero profit (underwater), got: {profit_str}"
+
+    # Get pool state after close
+    pool_after = dysond("query", "whaleswap", "pool", "--pool-id", pool_id)
+    foo_reserve_after = int(
+        [c for c in pool_after["pool"]["coins"] if c["denom"] == foo_name][0]["amount"]
+    )
+
+    # Verify pool received full repayment (no loss)
+    # Pool should have gained the borrowed amount back
+    assert (
+        foo_reserve_after > foo_reserve_before
+    ), f"Expected pool to gain from repayment, foo before={foo_reserve_before}, after={foo_reserve_after}"
+
+    # Get bob's balance to verify some collateral was returned
+    bob_balance_after = dysond("query", "bank", "balances", bob_addr)
+    foo_balance_after = int(
+        [b for b in bob_balance_after["balances"] if b["denom"] == foo_name][0]["amount"]
+    )
+    
+    # Bob should have received some collateral back (less than full 800 since position was underwater)
+    collateral_returned = foo_balance_after - foo_balance_before
+    assert collateral_returned > 0, f"Expected some collateral returned, got {collateral_returned}"
+    assert collateral_returned < 800, f"Expected partial collateral return (position was underwater), got {collateral_returned}"
+
+
+def test_close_position_cross_denom_swap_still_underwater(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """Test closing underwater position where cross-denom collateral swap still leaves pool with loss.
+    
+    Scenario: User opens position with collateral in bar, borrows foo.
+    We manipulate pool severely to make position extremely underwater where:
+    - swap(held) < repayment (underwater)
+    - swap(held) + swap(collateral) < repayment (still underwater, pool takes loss)
+    
+    This validates lines 187-199 in msg_leverage_handlers.go (cross-denom insufficient case).
+    """
+    dysond = chainnet[0]
+    charlie_addr = leverage_accounts["charlie"]["addr"]
+    charlie_name = leverage_accounts["charlie"]["name"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+
+    # Create pool via CLI: 15000 foo, 15000 bar (1:1 initial price)
+    pool_result = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"15000{foo_name}",
+        "--coins",
+        f"15000{bar_name}",
+        "--fee-pct",
+        "0.003",
+        "--min-collateral-ratio",
+        "1.2",
+        "--max-leverage-ratio",
+        "10.0",
+        "--max-borrow-percent",
+        "0.8",
+        "--from",
+        charlie_name,
+    )
+    assert pool_result.get("code", 1) == 0, f"Pool creation failed: {pool_result}"
+    pool_id_attrs = [
+        attr.get("value")
+        for event in pool_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "pool_id"
+        and event.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    assert len(pool_id_attrs) > 0, "pool_id not found"
+    pool_id = pool_id_attrs[0].strip('"')
+
+    # Open position: borrow 2000 foo, collateral 3000 bar (cross-denom)
+    # Position will swap borrowed foo → bar, so held will be bar
+    open_result = dysond(
+        "tx",
+        "whaleswap",
+        "open-position",
+        "--pool-id",
+        pool_id,
+        "--collateral",
+        f"3000{bar_name}",
+        "--borrow",
+        f"2000{foo_name}",
+        "--from",
+        charlie_name,
+    )
+    assert open_result.get("code", 1) == 0, f"Open position failed: {open_result}"
+    position_id_attrs = [
+        attr.get("value")
+        for event in open_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "position_id"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+    ]
+    assert len(position_id_attrs) > 0, "position_id not found"
+    position_id = position_id_attrs[0].strip('"')
+
+    # Manipulate pool severely to crash bar price
+    # This makes both held bar and collateral bar worth much less
+    swap_leg_json = json.dumps(
+        {"pool_id": int(pool_id), "swap_in": {"denom": bar_name, "amount": "3000"}}
+    )
+    swap_result = dysond(
+        "tx",
+        "whaleswap",
+        "swap",
+        "--max-input",
+        f"3000{bar_name}",
+        "--legs",
+        swap_leg_json,
+        "--min-output",
+        f"1{foo_name}",
+        "--from",
+        charlie_name,
+    )
+    assert (
+        swap_result.get("code", 1) == 0
+    ), f"Price manipulation swap failed: {swap_result}"
+
+    # Get pool state before close
+    pool_before = dysond("query", "whaleswap", "pool", "--pool-id", pool_id)
+    foo_reserve_before = int(
+        [c for c in pool_before["pool"]["coins"] if c["denom"] == foo_name][0]["amount"]
+    )
+
+    # Close position - even cross-denom swap of collateral won't cover full repayment
+    # Expected: swap held (bar→foo) insufficient, swap collateral (bar→foo) also insufficient, pool takes loss
+    close_result = dysond(
+        "tx",
+        "whaleswap",
+        "close-position",
+        "--position-id",
+        position_id,
+        "--from",
+        charlie_name,
+    )
+    assert close_result.get("code", 1) == 0, f"Close position failed: {close_result}"
+
+    # Verify close event
+    close_events = [
+        event
+        for event in close_result.get("events", [])
+        if event.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed"
+    ]
+    assert (
+        len(close_events) == 1
+    ), f"Expected exactly 1 close event, got {len(close_events)}"
+
+    # Extract profit from event (should be zero or minimal since very underwater)
+    profit_attrs = [
+        attr
+        for attr in close_events[0].get("attributes", [])
+        if attr.get("key") == "profit"
+    ]
+    assert len(profit_attrs) == 1, "Expected profit attribute"
+    profit_str = profit_attrs[0].get("value", "").strip('"')
+
+    # Get pool state after close
+    pool_after = dysond("query", "whaleswap", "pool", "--pool-id", pool_id)
+    foo_reserve_after = int(
+        [c for c in pool_after["pool"]["coins"] if c["denom"] == foo_name][0]["amount"]
+    )
+
+    # Verify pool took a loss (even with cross-denom collateral swap)
+    # Pool should have less foo than before close because total proceeds < repayment
+    assert (
+        foo_reserve_after < foo_reserve_before
+    ), f"Expected pool loss (underwater with cross-denom swap), foo before={foo_reserve_before}, after={foo_reserve_after}"
+
+    # Get charlie's balance - collateral should have been entirely consumed
+    charlie_balance_after = dysond("query", "bank", "balances", charlie_addr)
+    bar_after = int(
+        [b for b in charlie_balance_after["balances"] if b["denom"] == bar_name][0][
+            "amount"
+        ]
+    )
+    
+    # Charlie should have lost all collateral (was swapped to try to cover repayment)
+
+
+def test_close_position_same_denom_collateral_covers_shortfall(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """Test closing underwater position where same-denom collateral covers the shortfall.
+    
+    Scenario: User opens position with collateral and borrow in same denom (foo).
+    We manipulate the pool moderately to make position underwater but collateral sufficient:
+    - swap(held) < repayment (underwater)
+    - swap(held) + collateral >= repayment (collateral covers shortfall)
+    - no pool loss
+    
+    This validates lines 108-121 in msg_leverage_handlers.go (collateral sufficient case).
+    """
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    alice_name = leverage_accounts["alice"]["name"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+
+    # Create pool via CLI: 20000 foo, 20000 bar (1:1 initial price)
+    pool_result = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"20000{foo_name}",
+        "--coins",
+        f"20000{bar_name}",
+        "--fee-pct",
+        "0.003",
+        "--min-collateral-ratio",
+        "1.2",
+        "--max-leverage-ratio",
+        "10.0",
+        "--max-borrow-percent",
+        "0.8",
+        "--from",
+        alice_name,
+    )
+    assert pool_result.get("code", 1) == 0, f"Pool creation failed: {pool_result}"
+    pool_id_attrs = [
+        attr.get("value")
+        for event in pool_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "pool_id"
+        and event.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    assert len(pool_id_attrs) > 0, "pool_id not found"
+    pool_id = pool_id_attrs[0].strip('"')
+
+    # Open position: borrow 500 foo, collateral 1000 foo (same-denom, generous collateral)
+    # Position will swap borrowed foo → bar, so held will be bar
+    open_result = dysond(
+        "tx",
+        "whaleswap",
+        "open-position",
+        "--pool-id",
+        pool_id,
+        "--collateral",
+        f"1000{foo_name}",
+        "--borrow",
+        f"500{foo_name}",
+        "--from",
+        alice_name,
+    )
+    assert open_result.get("code", 1) == 0, f"Open position failed: {open_result}"
+    position_id_attrs = [
+        attr.get("value")
+        for event in open_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "position_id"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+    ]
+    assert len(position_id_attrs) > 0, "position_id not found"
+    position_id = position_id_attrs[0].strip('"')
+
+    # Manipulate pool moderately to crash bar price (not as severe as pool loss test)
+    # This makes held bar worth less, but collateral should cover shortfall
+    swap_leg_json = json.dumps(
+        {"pool_id": int(pool_id), "swap_in": {"denom": bar_name, "amount": "5000"}}
+    )
+    swap_result = dysond(
+        "tx",
+        "whaleswap",
+        "swap",
+        "--max-input",
+        f"5000{bar_name}",
+        "--legs",
+        swap_leg_json,
+        "--min-output",
+        f"1{foo_name}",
+        "--from",
+        alice_name,
+    )
+    assert (
+        swap_result.get("code", 1) == 0
+    ), f"Price manipulation swap failed: {swap_result}"
+
+    # Get pool state before close
+    pool_before = dysond("query", "whaleswap", "pool", "--pool-id", pool_id)
+    foo_reserve_before = int(
+        [c for c in pool_before["pool"]["coins"] if c["denom"] == foo_name][0]["amount"]
+    )
+
+    # Get alice's balance before close
+    alice_balance_before = dysond("query", "bank", "balances", alice_addr)
+    foo_before = int(
+        [b for b in alice_balance_before["balances"] if b["denom"] == foo_name][0][
+            "amount"
+        ]
+    )
+
+    # Close position - should use collateral to cover shortfall
+    # Expected: swap held (bar→foo) insufficient, but collateral (1000 foo) covers shortfall
     close_result = dysond(
         "tx",
         "whaleswap",
@@ -726,7 +1205,7 @@ def test_close_position_cross_denom_underwater(
         len(close_events) == 1
     ), f"Expected exactly 1 close event, got {len(close_events)}"
 
-    # Extract profit from event
+    # Extract profit from event (should be zero since underwater, but collateral covered shortfall)
     profit_attrs = [
         attr
         for attr in close_events[0].get("attributes", [])
@@ -734,9 +1213,20 @@ def test_close_position_cross_denom_underwater(
     ]
     assert len(profit_attrs) == 1, "Expected profit attribute"
     profit_str = profit_attrs[0].get("value", "").strip('"')
+    assert "0" in profit_str, f"Expected zero profit (underwater but covered), got: {profit_str}"
 
-    # Verify profit is valid coin format (should be 0 or very small since underwater)
-    assert foo_name in profit_str, f"Expected profit in {foo_name}, got: {profit_str}"
+    # Get pool state after close
+    pool_after = dysond("query", "whaleswap", "pool", "--pool-id", pool_id)
+    foo_reserve_after = int(
+        [c for c in pool_after["pool"]["coins"] if c["denom"] == foo_name][0]["amount"]
+    )
+
+    # Verify pool took NO loss (collateral covered the shortfall)
+    # Pool should have received back the full repayment (500 foo borrowed)
+    # Due to fees and timing, check that pool didn't decrease significantly
+    assert (
+        foo_reserve_after >= foo_reserve_before - 100
+    ), f"Expected no significant pool loss (collateral covered), foo before={foo_reserve_before}, after={foo_reserve_after}"
 
     # Get alice's balance after close
     alice_balance_after = dysond("query", "bank", "balances", alice_addr)
@@ -745,21 +1235,136 @@ def test_close_position_cross_denom_underwater(
             "amount"
         ]
     )
-    bar_after = int(
-        [b for b in alice_balance_after["balances"] if b["denom"] == bar_name][0][
-            "amount"
-        ]
+
+    # Verify alice got back some collateral (part was used to cover shortfall)
+    # She started with 1000 collateral, some was used, rest returned
+    foo_change = foo_after - foo_before
+    assert (
+        foo_change > 0
+    ), f"Expected some collateral returned (shortfall covered but position underwater), got {foo_change}"
+    assert (
+        foo_change < 1000
+    ), f"Expected partial collateral return (some used for shortfall), got {foo_change}"
+
+
+def test_close_position_profitable_same_denom(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """Happy path: proceedsBorrow >= repayment returns full collateral and profit to user.
+
+    Setup:
+    - Same-denom collateral/borrow (foo), held denom is bar.
+    - Manipulate pool price by swapping large foo->bar to make bar scarcer (bar appreciates).
+    - Close should yield positive profit and return all collateral.
+    """
+    dysond = chainnet[0]
+    charlie_name = leverage_accounts["charlie"]["name"]
+    charlie_addr = leverage_accounts["charlie"]["addr"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+
+    # Deep liquidity pool to reduce slippage during open; we'll move price afterwards
+    pool_result = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"20000{foo_name}",
+        "--coins",
+        f"20000{bar_name}",
+        "--fee-pct",
+        "0.003",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "20.0",
+        "--max-borrow-percent",
+        "0.8",
+        "--from",
+        charlie_name,
     )
+    assert pool_result.get("code", 1) == 0, f"Pool creation failed: {pool_result}"
+    pool_id_attrs = [
+        attr.get("value")
+        for event in pool_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "pool_id"
+        and event.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    assert len(pool_id_attrs) > 0, "pool_id not found"
+    pool_id = pool_id_attrs[0].strip('"')
 
-    # Verify collateral was consumed (not returned) since position was underwater
-    # Alice should have gotten back little to no collateral
-    collateral_returned = bar_after - bar_before
-    assert (
-        collateral_returned <= 100
-    ), f"Expected little collateral returned (underwater), got {collateral_returned}"
+    # Open position: borrow foo (250), collateral foo (400) => held will be bar
+    collateral_amt = 400
+    borrow_amt = 250
+    open_result = dysond(
+        "tx",
+        "whaleswap",
+        "open-position",
+        "--pool-id",
+        pool_id,
+        "--collateral",
+        f"{collateral_amt}{foo_name}",
+        "--borrow",
+        f"{borrow_amt}{foo_name}",
+        "--from",
+        charlie_name,
+    )
+    assert open_result.get("code", 1) == 0, f"Open position failed: {open_result}"
+    position_id_attrs = [
+        attr.get("value")
+        for event in open_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "position_id"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+    ]
+    assert len(position_id_attrs) > 0, "position_id not found"
+    position_id = position_id_attrs[0].strip('"')
 
-    # Verify no significant foo profit (underwater position)
-    foo_gained = foo_after - foo_before
-    assert (
-        foo_gained <= 10
-    ), f"Expected no significant foo profit (underwater), got {foo_gained}"
+    # Price manipulation: swap a large amount of foo -> bar to make bar scarcer (appreciate)
+    swap_leg_json = json.dumps({"pool_id": int(pool_id), "swap_in": {"denom": foo_name, "amount": "8000"}})
+    swap_result = dysond(
+        "tx",
+        "whaleswap",
+        "swap",
+        "--max-input",
+        f"8000{foo_name}",
+        "--legs",
+        swap_leg_json,
+        "--min-output",
+        f"1{bar_name}",
+        "--from",
+        charlie_name,
+    )
+    assert swap_result.get("code", 1) == 0, f"Price manipulation swap failed: {swap_result}"
+
+    # Charlie's foo before closing (collateral is currently escrowed)
+    bal_before = dysond("query", "bank", "balances", charlie_addr)
+    foo_before = int([b for b in bal_before["balances"] if b["denom"] == foo_name][0]["amount"])
+
+    # Close position → should return full collateral and positive profit in foo
+    close_result = dysond(
+        "tx",
+        "whaleswap",
+        "close-position",
+        "--position-id",
+        position_id,
+        "--from",
+        charlie_name,
+    )
+    assert close_result.get("code", 1) == 0, f"Close position failed: {close_result}"
+
+    # Profit event attribute should exist
+    close_events = [
+        e for e in close_result.get("events", []) if e.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed"
+    ]
+    assert len(close_events) == 1, "EventLeveragePositionClosed not found"
+    profit_attrs = [a for a in close_events[0].get("attributes", []) if a.get("key") == "profit"]
+    assert len(profit_attrs) == 1, "profit attribute not found"
+
+    # Charlie's foo increased by full collateral plus some profit
+    bal_after = dysond("query", "bank", "balances", charlie_addr)
+    foo_after = int([b for b in bal_after["balances"] if b["denom"] == foo_name][0]["amount"])
+    delta_foo = foo_after - foo_before
+    assert delta_foo > collateral_amt, f"Expected profit & collateral returned, delta={delta_foo}, collateral={collateral_amt}"
