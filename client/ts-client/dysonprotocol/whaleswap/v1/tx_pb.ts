@@ -234,6 +234,23 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
    */
   maxBorrowPercent = "";
 
+  /**
+   * Annual interest rates per reserve coin (optional; empty means no change)
+   * Example: "0.10" for 10% APR
+   *
+   * cosmos.Dec string
+   *
+   * @generated from field: string interest_rate_coin1 = 9;
+   */
+  interestRateCoin1 = "";
+
+  /**
+   * cosmos.Dec string
+   *
+   * @generated from field: string interest_rate_coin2 = 10;
+   */
+  interestRateCoin2 = "";
+
   constructor(data?: PartialMessage<MsgUpdatePoolConfig>) {
     super();
     proto3.util.initPartial(data, this);
@@ -250,6 +267,8 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
     { no: 6, name: "min_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 7, name: "max_leverage_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 8, name: "max_borrow_percent", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 9, name: "interest_rate_coin1", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 10, name: "interest_rate_coin2", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgUpdatePoolConfig {
@@ -1559,12 +1578,7 @@ export class MsgClosePosition extends Message<MsgClosePosition> {
   user = "";
 
   /**
-   * @generated from field: uint64 pool_id = 2;
-   */
-  poolId = protoInt64.zero;
-
-  /**
-   * @generated from field: uint64 position_id = 3;
+   * @generated from field: uint64 position_id = 2;
    */
   positionId = protoInt64.zero;
 
@@ -1577,8 +1591,7 @@ export class MsgClosePosition extends Message<MsgClosePosition> {
   static readonly typeName = "dysonprotocol.whaleswap.v1.MsgClosePosition";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 3, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 2, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgClosePosition {

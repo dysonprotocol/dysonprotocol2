@@ -1368,3 +1368,101 @@ def test_close_position_profitable_same_denom(
     foo_after = int([b for b in bal_after["balances"] if b["denom"] == foo_name][0]["amount"])
     delta_foo = foo_after - foo_before
     assert delta_foo > collateral_amt, f"Expected profit & collateral returned, delta={delta_foo}, collateral={collateral_amt}"
+
+
+def test_close_position_same_denom_insufficient_underwater_rejected(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """Reject when same-denom collateral is insufficient to cover shortfall.
+
+    Use UpdatePoolConfig to set very high APR so accrued interest forces
+    repayment > proceeds + collateral, triggering the same-denom rejection
+    branch.
+    """
+    dysond = chainnet[0]
+    alice_name = leverage_accounts["alice"]["name"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+
+    # Create pool (standard leverage settings)
+    pool_result = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"10000{foo_name}",
+        "--coins",
+        f"10000{bar_name}",
+        "--fee-pct",
+        "0.003",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "20.0",
+        "--max-borrow-percent",
+        "0.8",
+        "--from",
+        alice_name,
+    )
+    assert pool_result.get("code", 1) == 0, f"Pool creation failed: {pool_result}"
+    pool_id_attrs = [
+        attr.get("value")
+        for event in pool_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "pool_id"
+        and event.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    assert len(pool_id_attrs) > 0, "pool_id not found"
+    pool_id = pool_id_attrs[0].strip('"')
+
+    # Open same-denom position: collateral 2000 foo, borrow 1000 foo (CR=2.0)
+    open_result = dysond(
+        "tx",
+        "whaleswap",
+        "open-position",
+        "--pool-id",
+        pool_id,
+        "--collateral",
+        f"2000{foo_name}",
+        "--borrow",
+        f"1000{foo_name}",
+        "--from",
+        alice_name,
+    )
+    assert open_result.get("code", 1) == 0, f"Open position failed: {open_result}"
+    position_id_attrs = [
+        attr.get("value")
+        for event in open_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "position_id"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+    ]
+    assert len(position_id_attrs) > 0, "position_id not found"
+    position_id = position_id_attrs[0].strip('"')
+
+    # Set extremely high APR for both coins to force huge interest accrual
+    upd = dysond(
+        "tx",
+        "whaleswap",
+        "update-pool-config",
+        "--pool-id",
+        pool_id,
+        "--interest-rate-coin1",
+        "1000000000.0",
+        "--interest-rate-coin2",
+        "1000000000.0",
+        "--from",
+        alice_name,
+    )
+    assert upd.get("code", 1) == 0, f"update-pool-config failed: {upd}"
+
+    # Attempt to close; should be rejected due to insufficient same-denom collateral
+    close_result = dysond(
+        "tx", "whaleswap", "close-position", "--position-id", position_id, "--from", alice_name
+    )
+    assert close_result.get("code", 0) != 0, f"Expected close to be rejected, but it succeeded: {close_result}"
+    assert close_result.get("code") == 1002, f"Expected ErrInsufficientCollateral (1002), got: {close_result.get('code')}"
+    raw_log = close_result.get("raw_log", "").lower()
+    assert "insufficient collateral" in raw_log, f"Expected 'insufficient collateral' in error, got: {raw_log}"
+    assert "underwater" in raw_log, f"Expected 'underwater' in error, got: {raw_log}"

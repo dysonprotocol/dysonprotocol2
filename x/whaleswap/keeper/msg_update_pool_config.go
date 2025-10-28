@@ -66,6 +66,28 @@ func (k Keeper) UpdatePoolConfig(ctx context.Context, msg *whaleswapv1.MsgUpdate
 		pool.MaxBorrowPercent = msg.MaxBorrowPercent
 	}
 
+	// Interest rates (optional). Accept non-negative decimals. Upper bound is not enforced here.
+	if msg.InterestRateCoin1 != "" {
+		ir1, err := math.LegacyNewDecFromStr(msg.InterestRateCoin1)
+		if err != nil {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid interest_rate_coin1: %v", err)
+		}
+		if ir1.IsNegative() {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "interest_rate_coin1 must be >= 0: %s", ir1.String())
+		}
+		pool.InterestRateCoin1 = msg.InterestRateCoin1
+	}
+	if msg.InterestRateCoin2 != "" {
+		ir2, err := math.LegacyNewDecFromStr(msg.InterestRateCoin2)
+		if err != nil {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid interest_rate_coin2: %v", err)
+		}
+		if ir2.IsNegative() {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "interest_rate_coin2 must be >= 0: %s", ir2.String())
+		}
+		pool.InterestRateCoin2 = msg.InterestRateCoin2
+	}
+
 	// Bands: compare prices using cross-multiplication on ints; avoid Decs
 	if len(msg.MinPrice) > 0 || len(msg.MaxPrice) > 0 {
 		// Sanitize band vectors first to drop zeros and canonicalize ordering

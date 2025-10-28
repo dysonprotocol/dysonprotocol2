@@ -243,12 +243,23 @@ func CmdUpdatePoolConfig() *cobra.Command {
 				}
 			}
 
+			ir1, err := cmd.Flags().GetString("interest-rate-coin1")
+			if err != nil {
+				return fmt.Errorf("failed to read --interest-rate-coin1: %w", err)
+			}
+			ir2, err := cmd.Flags().GetString("interest-rate-coin2")
+			if err != nil {
+				return fmt.Errorf("failed to read --interest-rate-coin2: %w", err)
+			}
+
 			msg := &whaleswaptypes.MsgUpdatePoolConfig{
-				Signer:   clientCtx.GetFromAddress().String(),
-				PoolId:   poolID,
-				FeePct:   feePct,
-				MinPrice: minPrice,
-				MaxPrice: maxPrice,
+				Signer:            clientCtx.GetFromAddress().String(),
+				PoolId:            poolID,
+				FeePct:            feePct,
+				MinPrice:          minPrice,
+				MaxPrice:          maxPrice,
+				InterestRateCoin1: ir1,
+				InterestRateCoin2: ir2,
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -260,6 +271,8 @@ func CmdUpdatePoolConfig() *cobra.Command {
 	cmd.Flags().String("fee-pct", "", "Optional swap fee percent (decimal in [0,1))")
 	cmd.Flags().StringArray("min-price", nil, "Repeatable; provide two flags to encode band min as coin_b/coin_a")
 	cmd.Flags().StringArray("max-price", nil, "Repeatable; provide two flags to encode band max as coin_b/coin_a")
+	cmd.Flags().String("interest-rate-coin1", "", "Optional APR for coin1 (decimal, e.g., 0.10 for 10%)")
+	cmd.Flags().String("interest-rate-coin2", "", "Optional APR for coin2 (decimal, e.g., 0.10 for 10%)")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

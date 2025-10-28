@@ -149,6 +149,10 @@ message MsgUpdatePoolConfig {
   string min_collateral_ratio = 6; // cosmos.Dec string
   string max_leverage_ratio = 7;   // cosmos.Dec string
   string max_borrow_percent = 8;   // cosmos.Dec string
+  // Annual interest rates per reserve coin (optional; empty means no change)
+  // Example: "0.10" for 10% APR
+  string interest_rate_coin1 = 9;  // cosmos.Dec string
+  string interest_rate_coin2 = 10; // cosmos.Dec string
 }
 message MsgUpdatePoolConfigResponse {}
 
@@ -409,8 +413,7 @@ message MsgOpenPositionResponse {
 message MsgClosePosition {
   option (cosmos.msg.v1.signer) = "user";
   string user = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  uint64 pool_id = 2;
-  uint64 position_id = 3;
+  uint64 position_id = 2;
 }
 
 message MsgClosePositionResponse {

@@ -247,14 +247,13 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "ClosePosition",
-					Use:       "close-position --position-id <id> [--pool-id <id>]",
+					Use:       "close-position --position-id <id>",
 					Short:     "Close a leveraged position and settle",
 					Long:      "Close an existing leveraged position. Only the position owner may close before liquidation windows. The signer (--from) is used as the user.",
 					Example:   "dysond tx whaleswap close-position --position-id 7",
 					FlagOptions: map[string]*autocliv1.FlagOptions{
 						// Map signer field to standard --from flag
 						"user":        {Name: "from", Usage: "Position owner (signer)"},
-						"pool_id":     {Name: "pool-id", Usage: "Pool ID (optional)"},
 						"position_id": {Name: "position-id", Usage: "Position ID"},
 					},
 				},

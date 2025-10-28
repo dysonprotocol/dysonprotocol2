@@ -32056,9 +32056,6 @@ paths:
             properties:
               user:
                 type: string
-              pool_id:
-                type: string
-                format: uint64
               position_id:
                 type: string
                 format: uint64
@@ -33418,6 +33415,15 @@ paths:
               max_leverage_ratio:
                 type: string
               max_borrow_percent:
+                type: string
+              interest_rate_coin1:
+                type: string
+                title: >-
+                  Annual interest rates per reserve coin (optional; empty means
+                  no change)
+
+                  Example: "0.10" for 10% APR
+              interest_rate_coin2:
                 type: string
             description: >-
               Update pool config (owner-only: majority of shares > 50%).
@@ -70947,9 +70953,6 @@ definitions:
     properties:
       user:
         type: string
-      pool_id:
-        type: string
-        format: uint64
       position_id:
         type: string
         format: uint64
@@ -71782,6 +71785,15 @@ definitions:
       max_leverage_ratio:
         type: string
       max_borrow_percent:
+        type: string
+      interest_rate_coin1:
+        type: string
+        title: >-
+          Annual interest rates per reserve coin (optional; empty means no
+          change)
+
+          Example: "0.10" for 10% APR
+      interest_rate_coin2:
         type: string
     description: |-
       Update pool config (owner-only: majority of shares > 50%).
