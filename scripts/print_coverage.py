@@ -4,6 +4,7 @@ import sys
 import re
 from collections import defaultdict
 from pathlib import Path
+import os
 
 def parse_coverage_profile(profile_path):
     """Parse Go coverage profile and return list of (file, line, count)"""
@@ -52,11 +53,71 @@ def has_statement(coverage_data, filename, line_num):
     """Check if any block starts on this line (i.e., has a statement)"""
     return line_num in coverage_data.get(filename, {})
 
-def print_line_by_line(coverage_data, output_file=None):
-    out = open(output_file, 'w') if output_file else sys.stdout
+def print_file_coverage(filename, file_coverage, file_path, output_dir):
+    """Print coverage for a single file to its own output file"""
+    # Create output path: $output_dir/x/whaleswap/keeper/genesis.go.txt
+    relative_path = filename.replace("dysonprotocol.com/", "")
+    output_path = Path(output_dir) / f"{relative_path}.txt"
+    
+    # Create parent directories
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    statements = 0
+    covered = 0
+    
+    with open(output_path, 'w', encoding='utf-8') as out:
+        print(f"File: {filename}", file=out)
+        print(f"Source: {file_path}", file=out)
+        print(file=out)
+        
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as src:
+            lines = src.readlines()
 
+        # Track the most recent coverage count seen to propagate across following lines
+        last_display_count = None
+
+        for i, line in enumerate(lines, 1):
+            line = line.rstrip('\n')
+            # Use None to distinguish between lines that are in any block vs. outside all blocks
+            maybe_count = file_coverage.get(i)
+
+            # Update propagation source when this line has a coverage record (covered or not)
+            if maybe_count is not None:
+                last_display_count = maybe_count
+
+            # Count statements only where the coverage profile has a block entry starting/covering this line
+            if maybe_count is not None:
+                statements += 1
+                if maybe_count > 0:
+                    covered += 1
+
+            # Determine displayed prefix: propagate last seen count across subsequent code lines
+            # Avoid propagating across empty lines to reduce visual noise
+            display_count = last_display_count if (last_display_count is not None and line.strip() != "") else None
+
+            if display_count is not None:
+                prefix = f"{display_count:4d} "
+            else:
+                prefix = "     "  # no statement and no propagated context
+
+            # Only print non-empty lines or lines with coverage info
+            if prefix.strip() or line.strip():
+                print(f"{prefix} {i:4d}: {line}", file=out)
+
+        # Per-file summary
+        print(file=out)
+        coverage_pct = (covered / statements * 100) if statements > 0 else 0.0
+        print(f"Coverage: {coverage_pct:.1f}% ({covered}/{statements} statements)", file=out)
+    
+    return statements, covered
+
+
+def print_line_by_line(coverage_data, output_dir):
+    """Generate individual coverage files for each source file"""
     total_statements = 0
     total_covered = 0
+    files_processed = 0
+    files_not_found = []
 
     for filename in sorted(coverage_data.keys()):
         if not filename.startswith("dysonprotocol.com/"):
@@ -64,62 +125,46 @@ def print_line_by_line(coverage_data, output_file=None):
         
         file_path = Path(filename.replace("dysonprotocol.com/", ""))
         if not file_path.exists():
-            print(f"File: {filename}", file=out)
-            print(f"  [Source file not found]", file=out)
-            print(file=out)
+            files_not_found.append(filename)
             continue
 
-        print(f"File: {filename}", file=out)
-
         file_coverage = coverage_data[filename]
-        statements = 0
-        covered = 0
-
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as src:
-            lines = src.readlines()
-
-        for i, line in enumerate(lines, 1):
-            line = line.rstrip('\n')
-            count = file_coverage.get(i, 0)
-
-            # Count statements: any line with a coverage block starting on it
-            if i in file_coverage:
-                statements += 1
-                if count > 0:
-                    covered += 1
-
-            # Determine prefix
-            if count > 0:
-                prefix = f"{count:4d} "
-            elif i in file_coverage:
-                prefix = "   - "
-            else:
-                prefix = "     "  # no statement
-
-            # Only print non-empty lines or lines with coverage info
-            if prefix.strip() or line.strip():
-                print(f"{prefix} {i:4d}: {line}", file=out)
-
-        # Per-file summary
-        coverage_pct = (covered / statements * 100) if statements > 0 else 0.0
-        print(f"  Coverage: {coverage_pct:.1f}% ({covered}/{statements} statements)", file=out)
-        print(file=out)
-
+        statements, covered = print_file_coverage(filename, file_coverage, file_path, output_dir)
+        
         total_statements += statements
         total_covered += covered
+        files_processed += 1
 
-    # Overall summary
+    # Write summary file
+    summary_path = Path(output_dir) / "coverage_summary.txt"
+    with open(summary_path, 'w', encoding='utf-8') as out:
+        print(f"Coverage Summary", file=out)
+        print(f"================", file=out)
+        print(file=out)
+        print(f"Files processed: {files_processed}", file=out)
+        
+        if files_not_found:
+            print(f"Files not found: {len(files_not_found)}", file=out)
+            for fn in files_not_found:
+                print(f"  - {fn}", file=out)
+            print(file=out)
+        
+        if total_statements > 0:
+            overall_pct = total_covered / total_statements * 100
+            print(f"Overall Coverage: {overall_pct:.1f}% ({total_covered}/{total_statements} statements)", file=out)
+        else:
+            print(f"No statements found in coverage data", file=out)
+    
+    print(f"Coverage reports written to: {output_dir}/")
+    print(f"  - {files_processed} individual file reports")
+    print(f"  - Summary: {summary_path}")
     if total_statements > 0:
         overall_pct = total_covered / total_statements * 100
-        print(f"Overall Coverage: {overall_pct:.1f}% ({total_covered}/{total_statements} statements)", file=out)
-
-    if output_file:
-        out.close()
-        print(f"Line-by-line coverage written to: {output_file}")
+        print(f"  - Overall: {overall_pct:.1f}% ({total_covered}/{total_statements} statements)")
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: python3 print_coverage.py <coverage.out>", file=sys.stderr)
+    if len(sys.argv) < 2 or len(sys.argv) > 3:
+        print("Usage: python3 print_coverage.py <coverage.out> [output_dir]", file=sys.stderr)
         sys.exit(1)
 
     profile_path = sys.argv[1]
@@ -127,8 +172,15 @@ def main():
         print(f"Error: {profile_path} not found", file=sys.stderr)
         sys.exit(1)
 
+    # Default output directory is same as coverage.out location
+    if len(sys.argv) == 3:
+        output_dir = sys.argv[2]
+    else:
+        # Use coverage/ subdirectory in current directory
+        output_dir = "coverage"
+    
     coverage_data = parse_coverage_profile(profile_path)
-    print_line_by_line(coverage_data, output_file="coverage_lines.txt")
+    print_line_by_line(coverage_data, output_dir)
 
 if __name__ == "__main__":
     main()

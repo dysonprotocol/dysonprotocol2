@@ -136,8 +136,11 @@ test: install
 	echo "Using temporary directory: $$TMP_ROOT"; \
 	if [ -n "$(COVERAGE_PACKAGES)" ]; then \
 		GOCOVERDIR="$(CURDIR)/coverage"; \
+		echo "Removing $$GOCOVERDIR"; \
 		rm -rf "$$GOCOVERDIR"; \
+		echo "Creating $$GOCOVERDIR"; \
 		mkdir -p "$$GOCOVERDIR"; \
+		echo "Exporting GOCOVERDIR=$$GOCOVERDIR"; \
 		export GOCOVERDIR; \
 		echo "Go coverage enabled. Writing to $$GOCOVERDIR"; \
 		echo "Coverage packages: $(COVERAGE_PACKAGES)"; \
@@ -151,6 +154,8 @@ test: install
 		go tool cover -func=coverage.out -o=coverage.txt; \
 		go tool cover -html=coverage.out -o=coverage.html; \
 		echo "Coverage reports written: coverage.out, coverage.txt, coverage.html"; \
+		echo "Generating line-by-line coverage reports..."; \
+		python3 scripts/print_coverage.py coverage.out "$$GOCOVERDIR"; \
 	fi; \
 	echo "Cleaning up temporary directory"; \
 	rm -rf $$TMP_ROOT; \
