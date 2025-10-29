@@ -177,5 +177,58 @@ func ValidateGenesisState(s types.GenesisState) error {
 		}
 	}
 
+	// Leverage Positions
+	seenPositions := map[uint64]struct{}{}
+	for _, p := range s.Positions {
+		if p == nil {
+			return fmt.Errorf("nil position entry in genesis")
+		}
+		if _, dup := seenPositions[p.PositionId]; dup {
+			return fmt.Errorf("duplicate position_id: %d", p.PositionId)
+		}
+		seenPositions[p.PositionId] = struct{}{}
+
+		if p.User == "" {
+			return fmt.Errorf("position %d user cannot be empty", p.PositionId)
+		}
+		if _, err := sdk.AccAddressFromBech32(p.User); err != nil {
+			return fmt.Errorf("position %d user address invalid: %v", p.PositionId, err)
+		}
+		if p.PoolId == 0 {
+			return fmt.Errorf("position %d pool_id must be set", p.PositionId)
+		}
+		// Validate coins are non-negative
+		if p.Borrowed.Amount.IsNegative() {
+			return fmt.Errorf("position %d borrowed amount must be non-negative", p.PositionId)
+		}
+		if p.Held.Amount.IsNegative() {
+			return fmt.Errorf("position %d held amount must be non-negative", p.PositionId)
+		}
+		if p.Collateral.Amount.IsNegative() {
+			return fmt.Errorf("position %d collateral amount must be non-negative", p.PositionId)
+		}
+		if p.AccruedInterest.Amount.IsNegative() {
+			return fmt.Errorf("position %d accrued_interest amount must be non-negative", p.PositionId)
+		}
+		// Validate liquidation status
+		switch p.LiquidationStatus {
+		case types.LiquidationStatus_LIQUIDATION_STATUS_UNSPECIFIED,
+			types.LiquidationStatus_LIQUIDATION_STATUS_NONE,
+			types.LiquidationStatus_LIQUIDATION_STATUS_INITIALIZED:
+		default:
+			return fmt.Errorf("position %d invalid liquidation_status: %v", p.PositionId, p.LiquidationStatus)
+		}
+		// Validate interest rate array length (should be exactly 2 for canonical pool denoms)
+		if len(p.InterestRate) != 2 {
+			return fmt.Errorf("position %d interest_rate must have exactly 2 entries", p.PositionId)
+		}
+		// Validate min_collateral_ratio is a valid decimal
+		if p.MinCollateralRatio != "" {
+			if _, err := cosmossdk_math.LegacyNewDecFromStr(p.MinCollateralRatio); err != nil {
+				return fmt.Errorf("position %d invalid min_collateral_ratio: %v", p.PositionId, err)
+			}
+		}
+	}
+
 	return nil
 }

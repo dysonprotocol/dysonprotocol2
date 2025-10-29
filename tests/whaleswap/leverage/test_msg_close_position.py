@@ -1433,16 +1433,15 @@ def test_close_position_same_denom_insufficient_underwater_rejected(
 ):
     """Reject when same-denom collateral is insufficient to cover shortfall.
 
-    Use UpdatePoolConfig to set very high APR so accrued interest forces
-    repayment > proceeds + collateral, triggering the same-denom rejection
-    branch.
+    Use multi-block approach with UpdatePoolConfig to set very high APR so accrued interest forces
+    repayment > proceeds + collateral, triggering the same-denom rejection branch.
     """
     dysond = chainnet[0]
     alice_name = leverage_accounts["alice"]["name"]
     foo_name = leverage_names_and_coins["foo_name"]
     bar_name = leverage_names_and_coins["bar_name"]
 
-    # Create pool (standard leverage settings)
+    # Block 1: Create pool (standard leverage settings)
     pool_result = dysond(
         "tx",
         "whaleswap",
@@ -1475,7 +1474,7 @@ def test_close_position_same_denom_insufficient_underwater_rejected(
     assert len(pool_id_attrs) > 0, "pool_id not found"
     pool_id = pool_id_attrs[0].strip('"')
 
-    # Set extremely high APR for both coins to force huge interest accrual (do this BEFORE opening)
+    # Block 2: Set extremely high APR for both coins to force huge interest accrual
     upd = dysond(
         "tx",
         "whaleswap",
@@ -1483,15 +1482,16 @@ def test_close_position_same_denom_insufficient_underwater_rejected(
         "--pool-id",
         pool_id,
         "--interest-rate",
-        f"1000000000.0{foo_name}",
+        f"1000000000000000.0{foo_name}",  # 1e15 percent APR
         "--interest-rate",
-        f"1000000000.0{bar_name}",
+        f"1000000000000000.0{bar_name}",
         "--from",
         alice_name,
     )
     assert upd.get("code", 1) == 0, f"update-pool-config failed: {upd}"
 
-    # Open same-denom position: collateral 2000 foo, borrow 1000 foo (CR=2.0)
+    # Block 3: Open same-denom position: collateral 1500 foo, borrow 1000 foo (CR=1.5, minimum allowed)
+    # This makes it very close to underwater, so even small interest will trigger rejection
     open_result = dysond(
         "tx",
         "whaleswap",
@@ -1499,7 +1499,7 @@ def test_close_position_same_denom_insufficient_underwater_rejected(
         "--pool-id",
         pool_id,
         "--collateral",
-        f"2000{foo_name}",
+        f"1500{foo_name}",
         "--borrow",
         f"1000{foo_name}",
         "--from",
@@ -1517,14 +1517,30 @@ def test_close_position_same_denom_insufficient_underwater_rejected(
     assert len(position_id_attrs) > 0, "position_id not found"
     position_id = position_id_attrs[0].strip('"')
 
-    # Attempt to close; with block-time granularity, interest may be zero in fast runs; close should succeed
-    close_result = dysond(
-        "tx", "whaleswap", "close-position", "--position-id", position_id, "--from", alice_name
+    # Block 4: Wait for blocks to pass so interest can accrue
+    # Get initial height
+    initial_status = dysond("status")
+    initial_height = int(initial_status.get("sync_info", {}).get("latest_block_height", 0))
+    target_height = initial_height + 5  # Wait for at least 5 blocks to ensure time passage
+
+    def check_height_reached():
+        status_data = dysond("status")
+        current_height = int(status_data.get("sync_info", {}).get("latest_block_height", 0))
+        return current_height >= target_height
+
+    from utils import poll_until_condition
+    poll_until_condition(
+        check_height_reached,
+        timeout=15,
+        poll_interval=0.1,
+        error_message=f"Failed to advance 5 blocks from height {initial_height} to {target_height}"
     )
-    assert close_result.get("code", 1) == 0, f"Close position failed unexpectedly: {close_result}"
-    close_events = [
-        e
-        for e in close_result.get("events", [])
-        if e.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed"
-    ]
-    assert len(close_events) == 1, f"Expected close event, got: {close_result.get('events')}"
+
+    # Block 5: Attempt to close; extremely high APR should cause massive interest accrual making repayment > proceeds + collateral
+    with pytest.raises(Exception, match="insufficient collateral"):
+        result = dysond(
+            "tx", "whaleswap", "close-position", "--position-id", position_id, "--from", alice_name
+        ,"--gas", "auto")
+     
+        assert result.get("code", 1) != 0, f"Close position should be rejected with insufficient collateral: {result}"
+        assert "insufficient collateral" in result.get("raw_log", ""), f"Expected 'insufficient collateral' in error message: {result}"

@@ -162,7 +162,7 @@ def make_run_command(dysond_bin, node_home):
                 # if pyright_result.returncode != 0:
                 #    raise Exception(f"Pyright check failed for {code_path}:\n{pyright_result.stdout}\n{pyright_result.stderr}")
 
-        print(f"Running command: {shlex.join(commands)}")
+
         # if this is wait-tx and it has a "timed out waiting for transaction" error try again
         if not raw:
             if len(args) > 0 and args[0] == "query" and args[1] == "wait-tx":
@@ -170,11 +170,19 @@ def make_run_command(dysond_bin, node_home):
                 stdout = "None"
                 stderr = "None"
                 if "--timeout" not in args:
-                    commands += ["--timeout", "500s"]
+                    commands += ["--timeout", "100s"]
                 for i in range(20, 0, -1):
-                    out = subprocess.run(commands, capture_output=True, text=True)
+                    print(f"Waiting for tx confirmation... {i} attempts left")
+                    print(f"Commands: {shlex.join(commands)}")
+                    try:
+                        out = subprocess.run(commands, capture_output=True, text=True, timeout=1)
+                    except subprocess.TimeoutExpired as e:
+                        print(f"Timeout expired: {e}")
+                        continue
                     stdout = out.stdout
                     stderr = out.stderr
+                    print(f"Stdout: {stdout}")
+                    print(f"Stderr: {stderr}")
                     try:
                         # find the first and last curly braces in stdout
                         first_brace = stdout.find("{")
@@ -184,22 +192,23 @@ def make_run_command(dysond_bin, node_home):
                         else:
                             json_out = json.loads(stdout)
                         if (
-                            json_out.get("code") == 0 or i == 1
+                            'code' in json_out or i == 1
                         ):  # Last attempt should return the result
                             return json_out
                         continue
-                    except json.JSONDecodeError:
+                    except json.JSONDecodeError as e:
+                        print(
+                            f"Error parsing tx response: {e}\nOUT: {out.stdout}\nERR: {out.stderr}"
+                        )
                         if "timed out waiting for transaction" in out.stderr:
-                            time.sleep(0.1)
+                            time.sleep(0.1 * i)
                             continue
                         if "connect: connection refused" in out.stderr:
-                            time.sleep(0.1)
+                            time.sleep(0.1 * i)
                             continue
-                        print(
-                            f"Error parsing tx response: \nOUT: {out.stdout}\nERR: {out.stderr}"
-                        )
                         return stdout + "\n" + stderr
-                return stdout + "\n" + stderr
+                else:
+                    raise Exception(f"Error waiting for tx confirmation: {stderr}")
 
             # If this is an online tx command, execute and wait for confirmation
             if len(args) > 0 and args[0] == "tx" and "--offline" not in args:
@@ -211,6 +220,7 @@ def make_run_command(dysond_bin, node_home):
                 if "--gas" not in args:  #
                     commands += ["--gas", "20000000"]
                 # Run the tx command
+                print(f"Running command: {shlex.join(commands)}")
                 original_out = subprocess.run(commands, capture_output=True, text=True)
 
                 try:
@@ -255,29 +265,30 @@ def make_run_command(dysond_bin, node_home):
                     )
         for attempt in range(10):
             # Otherwise, just run the command and return the output
-            out = subprocess.run(commands, capture_output=True, text=True)
-            return_out = out.stdout + "\n" + out.stderr
             try:
+                print(f"Running command: {shlex.join(commands)}")
+                out = subprocess.run(commands, capture_output=True, text=True)
+                return_out = out.stdout + "\n" + out.stderr
                 first_brace = return_out.find("{")
                 last_brace = return_out.rfind("}")
-                if first_brace != -1 and last_brace != -1:
-                    json_out = json.loads(return_out[first_brace : last_brace + 1])
-                else:
-                    json_out = json.loads(return_out)
-                return json_out
-            except json.JSONDecodeError:
-                return return_out
+                try:
+                    if first_brace != -1 and last_brace != -1:
+                        json_out = json.loads(return_out[first_brace : last_brace + 1])
+                    else:
+                        json_out = json.loads(return_out)
+                    return json_out
+                except json.JSONDecodeError:
+                    return return_out
             except Exception as e:
-                if attempt < 9:
-                    if "account sequence mismatch" in str(e):
-                        time.sleep(0.1)
-                        continue
-                    if "connect: connection refused" in str(e):
-                        time.sleep(0.1)
-                        continue
-
-                raise e
-
+                print(f"Error running command: {commands}\n{e}")
+                if "account sequence mismatch" in str(e):
+                    time.sleep(0.1 * attempt)
+                    continue
+                if "connect: connection refused" in str(e):
+                    time.sleep(0.1 * attempt)
+                    continue
+        else:
+            raise Exception(f"Error running command: {commands}\n{return_out}")
     return run_command
 
 
@@ -370,7 +381,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
         "--config-file",
         str(config_path),
         "--block-speed",
-        "300ms",
+        "250ms",
         "--no-blocks-timeout",
         "15",
         #"--logs",

@@ -216,11 +216,43 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 		}
 	}
 
-	// Leverage positions: start sequence at 1
-	if err := k.leveragePositionSeq.Set(ctx, 1); err != nil {
-		panic(err)
+	// Leverage positions
+	leverageCollateral := map[string]cosmossdk_math.Int{}
+	var maxPositionID uint64
+	for _, p := range gs.Positions {
+		if p.PositionId > maxPositionID {
+			maxPositionID = p.PositionId
+		}
+		if err := k.LeveragePositions.Set(ctx, p.PositionId, *p); err != nil {
+			panic(err)
+		}
+		// Rebuild indexes
+		if err := k.PositionsByUserIndex.Set(ctx, collections.Join(p.User, p.PositionId), p.PositionId); err != nil {
+			panic(err)
+		}
+		if err := k.PositionsByPoolIndex.Set(ctx, collections.Join(p.PoolId, p.PositionId), p.PositionId); err != nil {
+			panic(err)
+		}
+		// Tally collateral requirements
+		if p.Collateral.Amount.IsPositive() {
+			den := p.Collateral.Denom
+			if cur, ok := leverageCollateral[den]; ok {
+				leverageCollateral[den] = cur.Add(p.Collateral.Amount)
+			} else {
+				leverageCollateral[den] = p.Collateral.Amount
+			}
+		}
 	}
-	// Validate module balances cover all required components per denom (AMM reserves + offer escrow + pfand + auctions)
+	if maxPositionID > 0 {
+		if err := k.leveragePositionSeq.Set(ctx, maxPositionID+1); err != nil {
+			panic(err)
+		}
+	} else {
+		if err := k.leveragePositionSeq.Set(ctx, 1); err != nil {
+			panic(err)
+		}
+	}
+	// Validate module balances cover all required components per denom (AMM reserves + offer escrow + pfand + auctions + leverage collateral)
 	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
 	denomSet := map[string]struct{}{}
 	for d := range ammRequired {
@@ -233,6 +265,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 		denomSet[d] = struct{}{}
 	}
 	for d := range auctionRequired {
+		denomSet[d] = struct{}{}
+	}
+	for d := range leverageCollateral {
 		denomSet[d] = struct{}{}
 	}
 	for denom := range denomSet {
@@ -249,10 +284,13 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 		if v, ok := auctionRequired[denom]; ok {
 			need = need.Add(v)
 		}
+		if v, ok := leverageCollateral[denom]; ok {
+			need = need.Add(v)
+		}
 		balAmt := k.bank.GetBalance(ctx, moduleAddr, denom).Amount
 		if balAmt.LT(need) {
 			panic(fmt.Sprintf(
-				"genesis module balance deficit for %s: have=%s need=%s (amm=%s escrow=%s pfand=%s auction=%s)",
+				"genesis module balance deficit for %s: have=%s need=%s (amm=%s escrow=%s pfand=%s auction=%s collateral=%s)",
 				denom,
 				balAmt.String(),
 				need.String(),
@@ -260,6 +298,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 				escrowRequired[denom].String(),
 				pfandRequired[denom].String(),
 				auctionRequired[denom].String(),
+				leverageCollateral[denom].String(),
 			))
 		}
 	}
@@ -301,6 +340,13 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		auctions = append(auctions, &v)
 		return false, nil
 	})
+	// Collect leverage positions
+	var positions []*types.LeveragePosition
+	_ = k.LeveragePositions.Walk(ctx, nil, func(key uint64, value types.LeveragePosition) (bool, error) {
+		v := value
+		positions = append(positions, &v)
+		return false, nil
+	})
 
-	return &types.GenesisState{Params: p, Pools: pools, Offers: offers, Trades: trades, Auctions: auctions}
+	return &types.GenesisState{Params: p, Pools: pools, Offers: offers, Trades: trades, Auctions: auctions, Positions: positions}
 }
