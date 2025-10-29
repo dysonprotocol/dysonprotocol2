@@ -45,21 +45,21 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 	if msg.Amounts[0].Denom != pool.Coins[0].Denom || msg.Amounts[1].Denom != pool.Coins[1].Denom {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "amount denoms must match pool denoms in canonical order: expected %s,%s got %s,%s", pool.Coins[0].Denom, pool.Coins[1].Denom, msg.Amounts[0].Denom, msg.Amounts[1].Denom)
 	}
-	if !msg.Amounts[0].Amount.IsPositive() || !msg.Amounts[1].Amount.IsPositive() {
+	if !msg.Amounts[0].IsPositive() || !msg.Amounts[1].IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "amounts must be > 0")
 	}
 
-	exR1 := pool.Coins[0].Amount
-	exR2 := pool.Coins[1].Amount
-	logger.Info("AddLiquidity current reserves", "r1", sdk.NewCoin(pool.Coins[0].Denom, exR1), "r2", sdk.NewCoin(pool.Coins[1].Denom, exR2))
+	exR1 := pool.Coins[0]
+	exR2 := pool.Coins[1]
+	logger.Info("AddLiquidity current reserves", "r1", exR1, "r2", exR2)
 	if !exR1.IsPositive() || !exR2.IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves")
 	}
 
-	add1 := msg.Amounts[0].Amount
-	add2 := msg.Amounts[1].Amount
-	orig1 := add1
-	orig2 := add2
+	add1 := msg.Amounts[0]
+	add2 := msg.Amounts[1]
+	orig1 := add1.Amount
+	orig2 := add2.Amount
 	refund1 := math.NewInt(0)
 	refund2 := math.NewInt(0)
 	var dL math.LegacyDec
@@ -70,7 +70,7 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		if err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to compute current sqrt price")
 		}
-		sp, err := k.poolSqrtPrice(pool, pool.Coins[0].Denom, pool.Coins[1].Denom)
+		sp, err := k.poolSqrtPrice(pool, exR1.Denom, exR2.Denom)
 		if err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to compute liquidity for reserves")
 		}
@@ -81,36 +81,47 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		// if sa < sp < sb: ΔL0 from dx and ΔL1 from dy; take min
 		one := math.LegacyNewDec(1)
 		_ = one // silence linter if unused in this snippet
-		dx := math.LegacyNewDecFromInt(add1)
-		dy := math.LegacyNewDecFromInt(add2)
+		dx := add1.Amount.ToLegacyDec()
+		dy := add2.Amount.ToLegacyDec()
 		// dL will be set by the branch below and later used to mint shares
+
+		// NOTE: Lines 87-96 (boundary conditions sp <= sa and sp >= sb) are unreachable
+		// in practice because:
+		// 1. Pool creation validates initial price must be strictly within (sa, sb)
+		// 2. MsgPoolSwap validates resulting price must remain within [min_price, max_price]
+		// These branches are defensive code for edge cases (manual state manipulation,
+		// future features, or mathematical completeness). They cannot be triggered via
+		// normal AddLiquidity calls following standard pool creation and swaps.
 		if sp.LTE(sa) {
+			// UNREACHABLE via normal operations: price cannot go below min_price
 			dL = dx.Mul(sa).Mul(sb).Quo(sb.Sub(sa))
 			// token2 ignored; full refund
-			refund2 = add2
-			add2 = math.NewInt(0)
+			refund2 = add2.Amount
+			add2 = sdk.NewCoin(add2.Denom, math.NewInt(0))
 		} else if sp.GTE(sb) {
+			// UNREACHABLE via normal operations: price cannot go above max_price
 			dL = dy.Quo(sb.Sub(sa))
-			refund1 = add1
-			add1 = math.NewInt(0)
+			refund1 = add1.Amount
+			add1 = sdk.NewCoin(add1.Denom, math.NewInt(0))
 		} else {
+			// NORMAL CASE: price within band (sa < sp < sb)
 			dL0 := dx.Mul(sp).Mul(sb).Quo(sb.Sub(sp))
 			dL1 := dy.Quo(sp.Sub(sa))
 			if dL0.LTE(dL1) {
 				dL = dL0
 				// compute required dy to match dL: dy* = dL * (sp - sa)
 				reqDy := dL.Mul(sp.Sub(sa)).TruncateInt()
-				if add2.GT(reqDy) {
-					refund2 = add2.Sub(reqDy)
-					add2 = reqDy
+				if add2.Amount.GT(reqDy) {
+					refund2 = add2.Amount.Sub(reqDy)
+					add2 = sdk.NewCoin(add2.Denom, reqDy)
 				}
 			} else {
 				dL = dL1
 				// compute required dx to match dL: dx* = dL * (sb - sp) / (sp*sb)
 				reqDx := dL.Mul(sb.Sub(sp)).Quo(sp.Mul(sb)).TruncateInt()
-				if add1.GT(reqDx) {
-					refund1 = add1.Sub(reqDx)
-					add1 = reqDx
+				if add1.Amount.GT(reqDx) {
+					refund1 = add1.Amount.Sub(reqDx)
+					add1 = sdk.NewCoin(add1.Denom, reqDx)
 				}
 			}
 		}
@@ -133,15 +144,15 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		}
 		minted = dL.MulInt(totalShares).Quo(Lcur).TruncateInt()
 	} else {
-		s1 := math.LegacyNewDecFromInt(add1).MulInt(totalShares).Quo(math.LegacyNewDecFromInt(exR1)).TruncateInt()
-		s2 := math.LegacyNewDecFromInt(add2).MulInt(totalShares).Quo(math.LegacyNewDecFromInt(exR2)).TruncateInt()
+		s1 := add1.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR1.Amount.ToLegacyDec()).TruncateInt()
+		s2 := add2.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR2.Amount.ToLegacyDec()).TruncateInt()
 		minted = s1
 		if s2.LT(s1) {
 			minted = s2
 		}
 		// Compute exact required amounts for minted shares using ceil to avoid underfunding
-		req1 := math.LegacyNewDecFromInt(minted).MulInt(exR1).QuoInt(totalShares).Ceil().TruncateInt()
-		req2 := math.LegacyNewDecFromInt(minted).MulInt(exR2).QuoInt(totalShares).Ceil().TruncateInt()
+		req1 := math.LegacyNewDecFromInt(minted).MulInt(exR1.Amount).QuoInt(totalShares).Ceil().TruncateInt()
+		req2 := math.LegacyNewDecFromInt(minted).MulInt(exR2.Amount).QuoInt(totalShares).Ceil().TruncateInt()
 		if req1.IsNegative() || req2.IsNegative() {
 			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid required amounts")
 		}
@@ -150,21 +161,23 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		}
 		refund1 = orig1.Sub(req1)
 		refund2 = orig2.Sub(req2)
-		add1 = req1
-		add2 = req2
+		add1 = sdk.NewCoin(add1.Denom, req1)
+		add2 = sdk.NewCoin(add2.Denom, req2)
 	}
 
 	// Escrow the full user-provided amounts, then refund the unused difference.
-	logger.Info("AddLiquidity escrow/refund before moves", "escrow1", sdk.NewCoin(pool.Coins[0].Denom, orig1), "escrow2", sdk.NewCoin(pool.Coins[1].Denom, orig2), "refund1", sdk.NewCoin(pool.Coins[0].Denom, refund1), "refund2", sdk.NewCoin(pool.Coins[1].Denom, refund2))
-	if err := k.sendToModule(ctx, signer, sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, orig1), sdk.NewCoin(pool.Coins[1].Denom, orig2))); err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "failed to escrow adds %s,%s", sdk.NewCoin(pool.Coins[0].Denom, orig1).String(), sdk.NewCoin(pool.Coins[1].Denom, orig2).String())
+	escrow1 := sdk.NewCoin(exR1.Denom, orig1)
+	escrow2 := sdk.NewCoin(exR2.Denom, orig2)
+	logger.Info("AddLiquidity escrow/refund before moves", "escrow1", escrow1, "escrow2", escrow2, "refund1", sdk.NewCoin(exR1.Denom, refund1), "refund2", sdk.NewCoin(exR2.Denom, refund2))
+	if err := k.sendToModule(ctx, signer, sdk.NewCoins(escrow1, escrow2)); err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "failed to escrow adds %s,%s", escrow1.String(), escrow2.String())
 	}
 	refunds := sdk.NewCoins()
 	if refund1.IsPositive() {
-		refunds = refunds.Add(sdk.NewCoin(pool.Coins[0].Denom, refund1))
+		refunds = refunds.Add(sdk.NewCoin(exR1.Denom, refund1))
 	}
 	if refund2.IsPositive() {
-		refunds = refunds.Add(sdk.NewCoin(pool.Coins[1].Denom, refund2))
+		refunds = refunds.Add(sdk.NewCoin(exR2.Denom, refund2))
 	}
 	if !refunds.Empty() {
 		if err := k.sendFromModule(ctx, signer, refunds); err != nil {
@@ -177,13 +190,13 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 	}
 	logger.Info("AddLiquidity minted shares computed", "minted", minted)
 
-	pool.Coins = sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, exR1.Add(add1)), sdk.NewCoin(pool.Coins[1].Denom, exR2.Add(add2)))
-	logger.Info("AddLiquidity new reserves", "r1", sdk.NewCoin(pool.Coins[0].Denom, pool.Coins[0].Amount), "r2", sdk.NewCoin(pool.Coins[1].Denom, pool.Coins[1].Amount))
+	pool.Coins = sdk.NewCoins(exR1.Add(add1), exR2.Add(add2))
+	logger.Info("AddLiquidity new reserves", "r1", pool.Coins[0], "r2", pool.Coins[1])
 
 	// Enforce price band after add
 	if len(pool.MinPrice) == 2 {
-		rBase := pool.Coins.AmountOf(pool.Coins[0].Denom)
-		rQuote := pool.Coins.AmountOf(pool.Coins[1].Denom)
+		rBase := pool.Coins[0].Amount
+		rQuote := pool.Coins[1].Amount
 		minBase := pool.MinPrice.AmountOf(pool.Coins[0].Denom)
 		minQuote := pool.MinPrice.AmountOf(pool.Coins[1].Denom)
 		maxBase := pool.MaxPrice.AmountOf(pool.Coins[0].Denom)
@@ -220,11 +233,11 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		return nil, cosmossdkerrors.Wrapf(err,
 			"AMM invariant after AddLiquidity: pool_id=%d add1=%s add2=%s minted=%s newR=(%s,%s)",
 			pool.PoolId,
-			sdk.NewCoin(pool.Coins[0].Denom, add1).String(),
-			sdk.NewCoin(pool.Coins[1].Denom, add2).String(),
+			add1.String(),
+			add2.String(),
 			minted.String(),
-			sdk.NewCoin(pool.Coins[0].Denom, pool.Coins[0].Amount).String(),
-			sdk.NewCoin(pool.Coins[1].Denom, pool.Coins[1].Amount).String(),
+			pool.Coins[0].String(),
+			pool.Coins[1].String(),
 		)
 	}
 	if err := k.AssertInvariants(ctx); err != nil {
@@ -259,9 +272,9 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 	// Full exit special-case: allow zeroing reserves only if burning all shares
 	if sharesAmt.Equal(totalShares) {
 		// Payout full reserves and delete the pool
-		out1 := pool.Coins.AmountOf(pool.Coins[0].Denom)
-		out2 := pool.Coins.AmountOf(pool.Coins[1].Denom)
-		logger.Info("RemoveLiquidity full exit", "pool_id", pool.PoolId, "out1", sdk.NewCoin(pool.Coins[0].Denom, out1), "out2", sdk.NewCoin(pool.Coins[1].Denom, out2), "burn_shares", sharesAmt.String())
+		out1 := pool.Coins[0]
+		out2 := pool.Coins[1]
+		logger.Info("RemoveLiquidity full exit", "pool_id", pool.PoolId, "out1", out1, "out2", out2, "burn_shares", sharesAmt.String())
 		if err := k.sendToModule(ctx, signer, sdk.NewCoins(sdk.NewCoin(pool.SharesDenom, sharesAmt))); err != nil {
 			return nil, cosmossdkerrors.Wrapf(err, "failed to escrow shares %s", sharesAmt.String())
 		}
@@ -274,10 +287,10 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 		}
 		outs := sdk.NewCoins()
 		if out1.IsPositive() {
-			outs = outs.Add(sdk.NewCoin(pool.Coins[0].Denom, out1))
+			outs = outs.Add(out1)
 		}
 		if out2.IsPositive() {
-			outs = outs.Add(sdk.NewCoin(pool.Coins[1].Denom, out2))
+			outs = outs.Add(out2)
 		}
 		if !outs.Empty() {
 			if err := k.sendFromModule(ctx, signer, outs); err != nil {
@@ -289,7 +302,7 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 		logger.Info("RemoveLiquidity emitted EventPoolLiquidityRemoved", "pool_id", pool.PoolId, "shares", sharesAmt.String())
 		return &whaleswapv1.MsgRemoveLiquidityResponse{Amount: outs}, nil
 	}
-	var out1, out2 math.Int
+	var out1, out2 sdk.Coin
 	var Lbefore math.LegacyDec
 	var dLExpected math.LegacyDec
 	if len(pool.MinPrice) == 2 {
@@ -311,16 +324,16 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 		dL := dLExpected
 		if sp.LTE(sa) {
 			// out1 = floor(ΔL * (sb - sa) / (sa*sb)); out2 = 0
-			out1 = dL.Mul(sb.Sub(sa)).Quo(sa.Mul(sb)).TruncateInt()
-			out2 = math.NewInt(0)
+			out1 = sdk.NewCoin(pool.Coins[0].Denom, dL.Mul(sb.Sub(sa)).Quo(sa.Mul(sb)).TruncateInt())
+			out2 = sdk.NewCoin(pool.Coins[1].Denom, math.NewInt(0))
 		} else if sp.GTE(sb) {
 			// out1 = 0; out2 = floor(ΔL * (sb - sa))
-			out1 = math.NewInt(0)
-			out2 = dL.Mul(sb.Sub(sa)).TruncateInt()
+			out1 = sdk.NewCoin(pool.Coins[0].Denom, math.NewInt(0))
+			out2 = sdk.NewCoin(pool.Coins[1].Denom, dL.Mul(sb.Sub(sa)).TruncateInt())
 		} else {
 			// within band
-			out1 = dL.Mul(sb.Sub(sp)).Quo(sp.Mul(sb)).TruncateInt()
-			out2 = dL.Mul(sp.Sub(sa)).TruncateInt()
+			out1 = sdk.NewCoin(pool.Coins[0].Denom, dL.Mul(sb.Sub(sp)).Quo(sp.Mul(sb)).TruncateInt())
+			out2 = sdk.NewCoin(pool.Coins[1].Denom, dL.Mul(sp.Sub(sa)).TruncateInt())
 		}
 	} else {
 		// Pro-rata removal using DecCoins for robust denom-safe math
@@ -328,13 +341,13 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 		ratio := math.LegacyNewDecFromInt(sharesAmt).QuoInt(totalShares)
 		payoutsDec := reservesDec.MulDecTruncate(ratio)
 		payouts, _ := payoutsDec.TruncateDecimal()
-		out1 = payouts.AmountOf(pool.Coins[0].Denom)
-		out2 = payouts.AmountOf(pool.Coins[1].Denom)
+		out1 = sdk.NewCoin(pool.Coins[0].Denom, payouts.AmountOf(pool.Coins[0].Denom))
+		out2 = sdk.NewCoin(pool.Coins[1].Denom, payouts.AmountOf(pool.Coins[1].Denom))
 	}
 	if !out1.IsPositive() && !out2.IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "shares too small to exit")
 	}
-	logger.Info("RemoveLiquidity partial exit amounts", "out1", sdk.NewCoin(pool.Coins[0].Denom, out1), "out2", sdk.NewCoin(pool.Coins[1].Denom, out2))
+	logger.Info("RemoveLiquidity partial exit amounts", "out1", out1, "out2", out2)
 	if err := k.sendToModule(ctx, signer, sdk.NewCoins(sdk.NewCoin(pool.SharesDenom, sharesAmt))); err != nil {
 		return nil, err
 	}
@@ -344,10 +357,10 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 	// Compute new reserves safely using Coins.SafeSub
 	payoutsCoins := sdk.NewCoins()
 	if out1.IsPositive() {
-		payoutsCoins = payoutsCoins.Add(sdk.NewCoin(pool.Coins[0].Denom, out1))
+		payoutsCoins = payoutsCoins.Add(out1)
 	}
 	if out2.IsPositive() {
-		payoutsCoins = payoutsCoins.Add(sdk.NewCoin(pool.Coins[1].Denom, out2))
+		payoutsCoins = payoutsCoins.Add(out2)
 	}
 	newReserves, hasNeg := pool.Coins.SafeSub(payoutsCoins...)
 	if hasNeg {
@@ -376,7 +389,7 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 		}
 	}
 	// Prevent reserve depletion on partial exits
-	if pool.Coins[0].Amount.IsZero() || pool.Coins[1].Amount.IsZero() {
+	if pool.Coins[0].IsZero() || pool.Coins[1].IsZero() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "would deplete reserve; use full exit to withdraw all liquidity")
 	}
 
@@ -402,10 +415,10 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 	logger.Info("RemoveLiquidity pool updated", "pool_id", pool.PoolId)
 	outs := sdk.NewCoins()
 	if out1.IsPositive() {
-		outs = outs.Add(sdk.NewCoin(pool.Coins[0].Denom, out1))
+		outs = outs.Add(out1)
 	}
 	if out2.IsPositive() {
-		outs = outs.Add(sdk.NewCoin(pool.Coins[1].Denom, out2))
+		outs = outs.Add(out2)
 	}
 	if err := k.sendFromModule(ctx, signer, outs); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to send outputs %s to %s", outs.String(), msg.Signer)
@@ -420,10 +433,10 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 			"AMM invariant after RemoveLiquidity: pool_id=%d burn_shares=%s out=(%s,%s) newR=(%s,%s)",
 			pool.PoolId,
 			sharesAmt.String(),
-			sdk.NewCoin(pool.Coins[0].Denom, out1).String(),
-			sdk.NewCoin(pool.Coins[1].Denom, out2).String(),
-			sdk.NewCoin(pool.Coins[0].Denom, pool.Coins[0].Amount).String(),
-			sdk.NewCoin(pool.Coins[1].Denom, pool.Coins[1].Amount).String(),
+			out1.String(),
+			out2.String(),
+			pool.Coins[0].String(),
+			pool.Coins[1].String(),
 		)
 	}
 	if err := k.AssertInvariants(ctx); err != nil {

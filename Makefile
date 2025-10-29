@@ -187,7 +187,11 @@ init-localnet:
 
 start-localnet: 
 	@echo "--> Starting dyson local net"
-	./scripts/chainnet.py start --block-speed 500ms --logs --no-blocks-timeout 10 --config-file $${DYSON_BASE_DIR:-$$HOME/.dysonchains}/chains.json
+	@LOG_MODULE_FLAG=""; \
+	if [ -n "$(LOG_MODULE)" ]; then \
+		LOG_MODULE_FLAG="--log-module $(LOG_MODULE)"; \
+	fi; \
+	./scripts/chainnet.py start --block-speed 500ms --logs --no-blocks-timeout 10 $$LOG_MODULE_FLAG --config-file $${DYSON_BASE_DIR:-$$HOME/.dysonchains}/chains.json
 
 ###############################################################################
 ###                               Dashboard                                 ###

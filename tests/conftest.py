@@ -363,19 +363,27 @@ def chainnet(worker_id, test_base_dir, test_config_path):
     )
 
     # 3. Start network (this starts both dysond nodes and hermes)
+    start_cmd = [
+        "python3",
+        CHAINNET_SCRIPT,
+        "start",
+        "--config-file",
+        str(config_path),
+        "--block-speed",
+        "300ms",
+        "--no-blocks-timeout",
+        "15",
+        #"--logs",
+    ]
+    
+    # Support optional log module filtering via environment variable
+    log_module = os.getenv("LOG_MODULE")
+    if log_module:
+        start_cmd.extend(["--log-module", log_module])
+        print(f"Filtering logs to module: {log_module}")
+    
     dysond_proc = subprocess.Popen(
-        [
-            "python3",
-            CHAINNET_SCRIPT,
-            "start",
-            "--config-file",
-            str(config_path),
-            "--block-speed",
-            "500ms",
-            "--no-blocks-timeout",
-            "10",
-            #"--logs",
-        ],
+        start_cmd,
         preexec_fn=os.setsid,
     )
 

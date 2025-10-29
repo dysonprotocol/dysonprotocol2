@@ -162,10 +162,17 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		return nil, cosmossdkerrors.Wrapf(err, "failed to get creator address: %s", msg.Creator)
 	}
 
-	logger.Info("CreatePool sending funds to module", "creator_addr", from, "coins", msg.Coins)
+	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
+	beforeBal1 := k.bank.GetBalance(ctx, moduleAddr, denom1).Amount
+	beforeBal2 := k.bank.GetBalance(ctx, moduleAddr, denom2).Amount
+	logger.Info("CreatePool sending funds to module", "creator_addr", from, "coins", msg.Coins,
+		"module_before_denom1", beforeBal1.String(), "module_before_denom2", beforeBal2.String())
 	if err := k.sendToModule(ctx, from, msg.Coins); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to send funds to module: %s: %+v", from.String(), msg)
 	}
+	afterBal1 := k.bank.GetBalance(ctx, moduleAddr, denom1).Amount
+	afterBal2 := k.bank.GetBalance(ctx, moduleAddr, denom2).Amount
+	logger.Info("CreatePool module balances after fund transfer", "module_after_denom1", afterBal1.String(), "module_after_denom2", afterBal2.String())
 
 	logger.Info("CreatePool allocating pool ID")
 	id, err := k.poolSeq.Next(ctx)
@@ -247,7 +254,10 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		&whaleswapv1.EventPoolUpdate{PoolId: id},
 	)
 
-	logger.Info("CreatePool checking AMM invariants")
+	// Snapshot module balances just before invariants
+	snapBal1 := k.bank.GetBalance(ctx, moduleAddr, denom1).Amount
+	snapBal2 := k.bank.GetBalance(ctx, moduleAddr, denom2).Amount
+	logger.Info("CreatePool checking AMM invariants", "module_bal_denom1", snapBal1.String(), "module_bal_denom2", snapBal2.String())
 	if err := k.AssertAMMInvariants(ctx); err != nil {
 		logger.Error("CreatePool AMM invariant check failed", "error", err)
 		return nil, cosmossdkerrors.Wrapf(err, "AMM invariant failed after CreatePool: pool_id=%d coins=%s shares_denom=%s", id, msg.Coins.String(), sharesDenom)

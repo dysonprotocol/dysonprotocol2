@@ -1053,8 +1053,13 @@ def setup(config_file, force):
     is_flag=True,
     help="Output all node and hermes logs to stdout instead of log files",
 )
+@click.option(
+    "--log-module",
+    default=None,
+    help='Filter logs to only show a specific module (e.g. "whaleswap" or "script"). Sets that module to debug level and others to error.',
+)
 @click.argument("extra_args", nargs=-1)
-def start(config_file, block_speed, extra_args, no_blocks_timeout, logs):
+def start(config_file, block_speed, extra_args, no_blocks_timeout, logs, log_module):
     """Start all dysond nodes and Hermes relayer."""
     import threading, time, requests
 
@@ -1134,6 +1139,13 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs):
                 consensus["timeout_commit"] = str(block_speed)
                 config_toml_path.write_text(tomlkit.dumps(doc))
 
+    # Build log level flag if log_module is specified
+    log_level_args = []
+    if log_module:
+        # Set the specified module to debug and everything else to error
+        log_level_args = ["--log_level", f"{log_module}:debug,*:error"]
+        click.echo(f"Filtering logs to module: {log_module}")
+
     for chain in cfg["chains"]:
         for node in chain["nodes"]:
             if logs:
@@ -1141,7 +1153,7 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs):
                 click.echo(
                     f"Starting {chain['chain_id']}/{node['moniker']} (logs will appear below)"
                 )
-                cmd = [bin_path, "start", "--home", node["home"], *extra_args]
+                cmd = [bin_path, "start", "--home", node["home"], *log_level_args, *extra_args]
                 p = subprocess.Popen(cmd, preexec_fn=os.setsid)
                 click.echo(
                     f"[chainnet] started node {chain['chain_id']}/{node['moniker']} pid={p.pid} home={node['home']}"
@@ -1151,7 +1163,7 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs):
                 log_path = os.path.join(node["home"], "node.log")
                 log_file = open(log_path, "w")
                 log_files.append(log_file)
-                cmd = [bin_path, "start", "--home", node["home"], *extra_args]
+                cmd = [bin_path, "start", "--home", node["home"], *log_level_args, *extra_args]
                 p = subprocess.Popen(
                     cmd,
                     preexec_fn=os.setsid,

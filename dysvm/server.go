@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"os/exec"
 	"regexp"
 	"sync"
@@ -306,7 +305,7 @@ func mustAtoi(s string) int {
 func streamLogs(tag string, r io.Reader) {
 	br := bufio.NewScanner(r)
 	for br.Scan() {
-		fmt.Fprintf(os.Stderr, "[dyslang %s] %s\n", tag, br.Text())
+		//fmt.Fprintf(os.Stderr, "[dyslang %s] %s\n", tag, br.Text())
 	}
 }
 
@@ -323,6 +322,6 @@ func streamLogsAndDiscover(tag string, r io.Reader, portCh chan<- string) {
 				sent = true
 			}
 		}
-		fmt.Fprintf(os.Stderr, "[dyslang %s] %s\n", tag, line)
+		//fmt.Fprintf(os.Stderr, "[dyslang %s] %s\n", tag, line)
 	}
 }

@@ -1,11 +1,9 @@
 package keeper
 
 import (
-	"context"
 	"fmt"
 
 	"cosmossdk.io/math"
-	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 )
 
 const secondsPerYear = 365.25 * 24 * 60 * 60
@@ -26,23 +24,4 @@ func (k Keeper) CalculateInterest(borrowed math.Int, annualRate math.LegacyDec, 
 func (k Keeper) ComputeEffectiveRepayment(principal math.Int, interest math.LegacyDec) math.Int {
 	interestInt := interest.TruncateInt()
 	return principal.Add(interestInt)
-}
-
-// GetInterestRateForDenom retrieves the annual interest rate for a specific denom from pool config.
-func (k Keeper) GetInterestRateForDenom(ctx context.Context, pool *whaleswapv1.Pool, denom string) (math.LegacyDec, error) {
-	if len(pool.Coins) != 2 {
-		return math.LegacyDec{}, fmt.Errorf("invalid pool state: expected 2 coins")
-	}
-	// New schema: pool.InterestRate must be exactly 2 in canonical order matching pool.Coins denoms.
-	if len(pool.InterestRate) != 2 {
-		return math.LegacyDec{}, fmt.Errorf("pool interest_rate must have exactly 2 entries")
-	}
-	switch denom {
-	case pool.Coins[0].Denom:
-		return pool.InterestRate.AmountOf(pool.Coins[0].Denom), nil
-	case pool.Coins[1].Denom:
-		return pool.InterestRate.AmountOf(pool.Coins[1].Denom), nil
-	default:
-		return math.LegacyDec{}, fmt.Errorf("denom %s not in pool", denom)
-	}
 }

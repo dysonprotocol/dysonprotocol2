@@ -215,6 +215,11 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 			panic(err)
 		}
 	}
+
+	// Leverage positions: start sequence at 1
+	if err := k.leveragePositionSeq.Set(ctx, 1); err != nil {
+		panic(err)
+	}
 	// Validate module balances cover all required components per denom (AMM reserves + offer escrow + pfand + auctions)
 	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
 	denomSet := map[string]struct{}{}

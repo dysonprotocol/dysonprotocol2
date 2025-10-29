@@ -12,10 +12,26 @@ import (
 
 // InitializeLiquidation marks a position for liquidation.
 func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgInitializeLiquidation) (*whaleswapv1.MsgInitializeLiquidationResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(sdkCtx)
+	logger.Info("InitializeLiquidation: begin",
+		"position_id", msg.PositionId,
+		"initializer", msg.Initializer,
+		"user", msg.User,
+		"pool_id", msg.PoolId,
+	)
 	pos, err := k.LeveragePositions.Get(ctx, msg.PositionId)
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "position %d not found", msg.PositionId)
 	}
+	logger.Info("InitializeLiquidation: loaded position",
+		"pos_user", pos.User,
+		"borrowed", pos.Borrowed.String(),
+		"collateral", pos.Collateral.String(),
+		"interest_rate", pos.InterestRate.String(),
+		"borrow_time", pos.BorrowTime,
+		"liquidation_status", pos.LiquidationStatus.String(),
+	)
 
 	pool, err := k.PoolsMap.Get(ctx, pos.PoolId)
 	if err != nil {
@@ -27,13 +43,19 @@ func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgI
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "position interest_rate must have exactly 2 entries")
 	}
 	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	elapsed := sdkCtx.BlockTime().Sub(*pos.BorrowTime).Seconds()
 	interest, _ := k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))
 
 	collateralValue := math.LegacyNewDecFromInt(pos.Collateral.Amount)
 	debtValue := math.LegacyNewDecFromInt(pos.Borrowed.Amount).Add(interest)
 	cr, _ := k.ComputeCollateralRatio(collateralValue, debtValue)
+	logger.Info("InitializeLiquidation: computed",
+		"elapsed_sec", int64(elapsed),
+		"interest", interest.String(),
+		"collateral_value", collateralValue.String(),
+		"debt_with_interest", debtValue.String(),
+		"cr", cr.String(),
+	)
 
 	// Require pool liquidation_threshold to be set; use per-borrow denom
 	if len(pool.LiquidationThreshold) != 2 {
@@ -43,6 +65,19 @@ func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgI
 	if !liquidationThreshold.GT(math.LegacyNewDec(1)) {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool liquidation_threshold")
 	}
+	logger.Info("InitializeLiquidation: thresholds",
+		"liquidation_threshold", liquidationThreshold.String(),
+	)
+
+	if !k.IsPositionLiquidatable(cr, liquidationThreshold) {
+		return nil, cosmossdkerrors.Wrapf(
+			whaleswapv1.ErrPositionNotLiquidatable,
+			"collateral ratio %s >= liquidation threshold %s",
+			cr.String(),
+			liquidationThreshold.String(),
+		)
+	}
+	logger.Info("InitializeLiquidation: position is liquidatable")
 
 	if err := k.InitializeLiquidationInternal(ctx, &pos); err != nil {
 		return nil, err
@@ -50,6 +85,10 @@ func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgI
 	if err := k.LeveragePositions.Set(ctx, msg.PositionId, pos); err != nil {
 		return nil, err
 	}
+	logger.Info("InitializeLiquidation: updated position state",
+		"liquidation_status", pos.LiquidationStatus.String(),
+		"liquidation_initialized_height", pos.LiquidationInitializedBlockHeight,
+	)
 
 	// Emit event
 	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventLeverageLiquidationInitialized{
@@ -62,9 +101,17 @@ func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgI
 	}); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to emit event")
 	}
+	logger.Info("InitializeLiquidation: event emitted",
+		"position_id", msg.PositionId,
+		"cr", cr.String(),
+		"threshold", liquidationThreshold.String(),
+		"block", uint64(sdkCtx.BlockHeight()),
+	)
 
-	return &whaleswapv1.MsgInitializeLiquidationResponse{
+	resp := &whaleswapv1.MsgInitializeLiquidationResponse{
 		CollateralRatio:      cr,
 		LiquidationThreshold: liquidationThreshold,
-	}, nil
+	}
+	logger.Info("InitializeLiquidation: complete", "response", resp)
+	return resp, nil
 }
