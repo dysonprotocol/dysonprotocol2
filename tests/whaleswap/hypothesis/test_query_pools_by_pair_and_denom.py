@@ -38,6 +38,9 @@ def test_query_pools_by_pair_and_denom(
     actual_num = min(num_pools, len(pool_reserves))
     assume(actual_num >= 1)
 
+    # Sort denoms lexicographically for config arrays
+    base, quote = sorted([foo_name, bar_name])
+
     messages = []
     for i in range(actual_num):
         messages.append(
@@ -48,10 +51,30 @@ def test_query_pools_by_pair_and_denom(
                     {"denom": foo_name, "amount": str(pool_reserves[i])},
                     {"denom": bar_name, "amount": str(pool_reserves[i])},
                 ],
-                "fee_pct": "0.003",
-                "min_collateral_ratio": "1.5",
-                "max_leverage_ratio": "3.0",
-                "max_borrow_percent": "0.8",
+                "fee_rate": [
+                    {"denom": base, "amount": "0.003"},
+                    {"denom": quote, "amount": "0.003"}
+                ],
+                "interest_rate": [
+                    {"denom": base, "amount": "0.05"},
+                    {"denom": quote, "amount": "0.05"}
+                ],
+                "min_collateral_ratio": [
+                    {"denom": base, "amount": "1.5"},
+                    {"denom": quote, "amount": "1.5"}
+                ],
+                "max_leverage_ratio": [
+                    {"denom": base, "amount": "20.0"},
+                    {"denom": quote, "amount": "20.0"}
+                ],
+                "liquidation_threshold": [
+                    {"denom": base, "amount": "1.2"},
+                    {"denom": quote, "amount": "1.2"}
+                ],
+                "max_borrow_percent": [
+                    {"denom": base, "amount": "0.8"},
+                    {"denom": quote, "amount": "0.8"}
+                ],
             }
         )
 

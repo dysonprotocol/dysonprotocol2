@@ -50,6 +50,9 @@ def test_make_trade_single_swap_random_amount(
     bar_name = registered_names["bar_name"]
     denoms = [foo_name, bar_name, "udys"]
 
+    # Sort denoms lexicographically for config arrays
+    base, quote = sorted([foo_name, bar_name])
+
     # Build messages with template variables for sequential execution
     messages = []
 
@@ -62,10 +65,30 @@ def test_make_trade_single_swap_random_amount(
                 {"denom": foo_name, "amount": "100000"},
                 {"denom": bar_name, "amount": "100000"},
             ],
-            "fee_pct": "0.003",
-        "min_collateral_ratio": "1.5",
-        "max_leverage_ratio": "3.0",
-        "max_borrow_percent": "0.8",
+            "fee_rate": [
+                {"denom": base, "amount": "0.003"},
+                {"denom": quote, "amount": "0.003"}
+            ],
+            "interest_rate": [
+                {"denom": base, "amount": "0.05"},
+                {"denom": quote, "amount": "0.05"}
+            ],
+            "min_collateral_ratio": [
+                {"denom": base, "amount": "1.5"},
+                {"denom": quote, "amount": "1.5"}
+            ],
+            "max_leverage_ratio": [
+                {"denom": base, "amount": "20.0"},
+                {"denom": quote, "amount": "20.0"}
+            ],
+            "liquidation_threshold": [
+                {"denom": base, "amount": "1.2"},
+                {"denom": quote, "amount": "1.2"}
+            ],
+            "max_borrow_percent": [
+                {"denom": base, "amount": "0.8"},
+                {"denom": quote, "amount": "0.8"}
+            ],
         }
     )
     messages.append(
@@ -145,6 +168,9 @@ def test_make_trade_take_offer_random_units(
     bar_name = registered_names["bar_name"]
     denoms = [foo_name, bar_name, "udys"]
 
+    # Sort denoms lexicographically for config arrays
+    base, quote = sorted([foo_name, bar_name])
+
     # Build messages with template variables for sequential execution
     messages = []
 
@@ -157,10 +183,30 @@ def test_make_trade_take_offer_random_units(
                 {"denom": foo_name, "amount": "100000"},
                 {"denom": bar_name, "amount": "100000"},
             ],
-            "fee_pct": "0.003",
-        "min_collateral_ratio": "1.5",
-        "max_leverage_ratio": "3.0",
-        "max_borrow_percent": "0.8",
+            "fee_rate": [
+                {"denom": base, "amount": "0.003"},
+                {"denom": quote, "amount": "0.003"}
+            ],
+            "interest_rate": [
+                {"denom": base, "amount": "0.05"},
+                {"denom": quote, "amount": "0.05"}
+            ],
+            "min_collateral_ratio": [
+                {"denom": base, "amount": "1.5"},
+                {"denom": quote, "amount": "1.5"}
+            ],
+            "max_leverage_ratio": [
+                {"denom": base, "amount": "20.0"},
+                {"denom": quote, "amount": "20.0"}
+            ],
+            "liquidation_threshold": [
+                {"denom": base, "amount": "1.2"},
+                {"denom": quote, "amount": "1.2"}
+            ],
+            "max_borrow_percent": [
+                {"denom": base, "amount": "0.8"},
+                {"denom": quote, "amount": "0.8"}
+            ],
         }
     )
     messages.append(
@@ -286,6 +332,9 @@ def test_liquidity_add_remove_cycles(
     bar_name = registered_names["bar_name"]
     denoms = [foo_name, bar_name, "udys"]
 
+    # Sort denoms lexicographically for config arrays
+    base, quote = sorted([foo_name, bar_name])
+
     messages = []
     # Inline setup: create pool and a baseline offer
     messages.append(
@@ -296,10 +345,30 @@ def test_liquidity_add_remove_cycles(
                 {"denom": foo_name, "amount": "100000"},
                 {"denom": bar_name, "amount": "100000"},
             ],
-            "fee_pct": "0.003",
-        "min_collateral_ratio": "1.5",
-        "max_leverage_ratio": "3.0",
-        "max_borrow_percent": "0.8",
+            "fee_rate": [
+                {"denom": base, "amount": "0.003"},
+                {"denom": quote, "amount": "0.003"}
+            ],
+            "interest_rate": [
+                {"denom": base, "amount": "0.05"},
+                {"denom": quote, "amount": "0.05"}
+            ],
+            "min_collateral_ratio": [
+                {"denom": base, "amount": "1.5"},
+                {"denom": quote, "amount": "1.5"}
+            ],
+            "max_leverage_ratio": [
+                {"denom": base, "amount": "20.0"},
+                {"denom": quote, "amount": "20.0"}
+            ],
+            "liquidation_threshold": [
+                {"denom": base, "amount": "1.2"},
+                {"denom": quote, "amount": "1.2"}
+            ],
+            "max_borrow_percent": [
+                {"denom": base, "amount": "0.8"},
+                {"denom": quote, "amount": "0.8"}
+            ],
         }
     )
     messages.append(
@@ -376,6 +445,9 @@ def test_liquidity_full_exit_deletes_pool(
     bar_name = registered_names["bar_name"]
     denoms = [foo_name, bar_name, "udys"]
 
+    # Sort denoms lexicographically for config arrays
+    base, quote = sorted([foo_name, bar_name])
+
     messages = []
 
     # CreatePool
@@ -387,10 +459,30 @@ def test_liquidity_full_exit_deletes_pool(
                 {"denom": foo_name, "amount": "10000"},
                 {"denom": bar_name, "amount": "10000"},
             ],
-            "fee_pct": "0.003",
-        "min_collateral_ratio": "1.5",
-        "max_leverage_ratio": "3.0",
-        "max_borrow_percent": "0.8",
+            "fee_rate": [
+                {"denom": base, "amount": "0.003"},
+                {"denom": quote, "amount": "0.003"}
+            ],
+            "interest_rate": [
+                {"denom": base, "amount": "0.05"},
+                {"denom": quote, "amount": "0.05"}
+            ],
+            "min_collateral_ratio": [
+                {"denom": base, "amount": "1.5"},
+                {"denom": quote, "amount": "1.5"}
+            ],
+            "max_leverage_ratio": [
+                {"denom": base, "amount": "20.0"},
+                {"denom": quote, "amount": "20.0"}
+            ],
+            "liquidation_threshold": [
+                {"denom": base, "amount": "1.2"},
+                {"denom": quote, "amount": "1.2"}
+            ],
+            "max_borrow_percent": [
+                {"denom": base, "amount": "0.8"},
+                {"denom": quote, "amount": "0.8"}
+            ],
         }
     )
 
@@ -772,6 +864,9 @@ def test_query_trades_after_operations(
     bar_name = registered_names["bar_name"]
     denoms = [foo_name, bar_name, "udys"]
 
+    # Sort denoms lexicographically for config arrays
+    base, quote = sorted([foo_name, bar_name])
+
     messages = []
     # Inline setup: create pool and a baseline offer
     messages.append(
@@ -782,10 +877,30 @@ def test_query_trades_after_operations(
                 {"denom": foo_name, "amount": "10000"},
                 {"denom": bar_name, "amount": "10000"},
             ],
-            "fee_pct": "0.003",
-        "min_collateral_ratio": "1.5",
-        "max_leverage_ratio": "3.0",
-        "max_borrow_percent": "0.8",
+            "fee_rate": [
+                {"denom": base, "amount": "0.003"},
+                {"denom": quote, "amount": "0.003"}
+            ],
+            "interest_rate": [
+                {"denom": base, "amount": "0.05"},
+                {"denom": quote, "amount": "0.05"}
+            ],
+            "min_collateral_ratio": [
+                {"denom": base, "amount": "1.5"},
+                {"denom": quote, "amount": "1.5"}
+            ],
+            "max_leverage_ratio": [
+                {"denom": base, "amount": "20.0"},
+                {"denom": quote, "amount": "20.0"}
+            ],
+            "liquidation_threshold": [
+                {"denom": base, "amount": "1.2"},
+                {"denom": quote, "amount": "1.2"}
+            ],
+            "max_borrow_percent": [
+                {"denom": base, "amount": "0.8"},
+                {"denom": quote, "amount": "0.8"}
+            ],
         }
     )
 
