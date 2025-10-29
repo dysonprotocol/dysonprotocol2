@@ -442,6 +442,248 @@ def chainnet(worker_id, test_base_dir, test_config_path):
                 except (ProcessLookupError, OSError, subprocess.TimeoutExpired):
                     pass
 
+    # Export/Import validation - chain is now stopped
+    print("\n" + "=" * 80)
+    print("Running export/import validation (chain is stopped)...")
+    print("=" * 80)
+
+    # Load config to get chain info
+    with open(config_path, "r") as f:
+        cfg = json.load(f)
+
+    chain = cfg["chains"][0]
+    node_home = chain["nodes"][0]["home"]
+
+    # Export the chain state with --for-zero-height to prepare for reimport
+    export1_path = base_dir / "export1.json"
+    print(f"Exporting chain state (for zero height) to {export1_path}...")
+    result = subprocess.run(
+        [
+            dysond_bin,
+            "export",
+            "--for-zero-height",
+            "--home",
+            str(node_home),
+            "--output-document",
+            str(export1_path),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    if result.returncode != 0:
+        print(f"Export 1 failed: stderr={result.stderr}, stdout={result.stdout}")
+        print(f"Export 1 output: {result.stdout}")
+        raise Exception(f"Export 1 failed: {result.stderr}")
+
+    # Load the exported genesis
+    with open(export1_path) as f:
+        genesis1 = json.load(f)
+
+    print(f"✓ Successfully exported genesis (chain_id: {genesis1.get('chain_id')})")
+
+    # Create a new temporary directory for reimport
+    reimport_home = base_dir / "reimport_node"
+    reimport_home.mkdir(exist_ok=True)
+
+    # Initialize a new chain with the exported genesis
+    print(f"Initializing reimport node at {reimport_home}...")
+    init_result = subprocess.run(
+        [
+            dysond_bin,
+            "init",
+            "test-reimport",
+            "--home",
+            str(reimport_home),
+            "--chain-id",
+            genesis1.get("chain_id", "dyson"),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,    
+    )
+
+    if init_result.returncode != 0:
+        print(f"Init reimport node failed: {init_result.stderr}")
+        print(f"Init reimport node output: {init_result.stdout}")
+        raise Exception(f"Init reimport node failed: {init_result.stderr}")
+
+    # Replace genesis.json with our export
+    reimport_genesis_path = reimport_home / "config" / "genesis.json"
+    with open(reimport_genesis_path, "w") as f:
+        json.dump(genesis1, f, indent=2)
+
+    print(f"✓ Imported genesis into new node")
+
+    # Copy validator keys from original node to reimport node
+    # This ensures the reimported node uses the same validator identity
+    print(f"Copying validator keys from original node...")
+    original_config = Path(node_home) / "config"
+    reimport_config = reimport_home / "config"
+
+    # Copy validator private key
+    shutil.copy2(
+        original_config / "priv_validator_key.json",
+        reimport_config / "priv_validator_key.json"
+    )
+
+    # Copy node P2P key
+    shutil.copy2(
+        original_config / "node_key.json",
+        reimport_config / "node_key.json"
+    )
+
+    print(f"✓ Copied validator keys to reimport node")
+
+    # Reset validator state to allow signing from genesis height
+    # This prevents "height regression" errors when starting the reimported chain
+    print(f"Resetting validator state...")
+    reset_result = subprocess.run(
+        [
+            dysond_bin,
+            "comet",
+            "unsafe-reset-all",
+            "--home",
+            str(reimport_home),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+
+    if reset_result.returncode != 0:
+        print(f"Warning: Reset failed (may be ok): {reset_result.stderr}")
+    else:
+        print(f"✓ Reset validator state")
+
+    # Re-copy the genesis after reset (unsafe-reset-all may clear it)
+    with open(reimport_genesis_path, "w") as f:
+        json.dump(genesis1, f, indent=2)
+
+    print(f"✓ Restored genesis after reset")
+
+    # Start the reimported node with --halt-height to initialize database and auto-stop
+    print(f"Starting reimported node to initialize database (will auto-halt at height)...")
+    try:
+        reimport_result = subprocess.run(
+            [
+                dysond_bin,
+                "start",
+                "--home",
+                str(reimport_home),
+                "--halt-height",
+                "3",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as e:
+        if e.stdout:
+            assert "error halt per configuration height" in e.stdout.decode('utf-8'), f"Reimport node did not halt at height 3: {e.stdout}"
+        else:
+            if e.stderr:
+                print(f"Reimport node error: {e.stderr.decode('utf-8')}")
+            else:
+                print(f"Reimport node error: None")
+            raise Exception(f"Reimport node output: None")
+            
+        print(f"✓ Reimported node initialized and auto-halted")
+
+    # Export again from the reimported state with --for-zero-height
+    export2_path = base_dir / "export2.json"
+    print(f"Exporting from reimported state (for zero height) to {export2_path}...")
+    try:
+        result2 = subprocess.run(
+            [
+                dysond_bin,
+                "export",
+                "--for-zero-height",
+                "--home",
+                str(reimport_home),
+                "--output-document",
+                str(export2_path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as e:
+        print(f"Timeout expired: {e}")
+        print(f"Export 2 output: {e.stdout}")
+        print(f"Export 2 error: {e.stderr}")
+        raise Exception(f"Export 2 did not complete")
+
+    if result2.returncode != 0:
+        print(f"Export 2 failed: stderr={result2.stderr}, stdout={result2.stdout}")
+        print(f"Export 2 output: {result2.stdout}")
+        raise Exception(f"Export 2 failed: {result2.stderr}")
+
+    # Load the second export
+    with open(export2_path) as f:
+        genesis2 = json.load(f)
+
+    print(f"✓ Successfully re-exported genesis")
+
+    # Compare only the Dyson-specific modules (./x/*)
+    # Standard Cosmos SDK modules (bank, mint, slashing, etc.) may have normal variations
+    dyson_modules = [
+        "script",
+        "storage", 
+        "nameservice",
+        "crontask",
+        "whaleswap",
+        "nft",
+    ]
+
+    app_state_1 = genesis1.get("app_state", {})
+    app_state_2 = genesis2.get("app_state", {})
+
+    mismatches = []
+    for module in dyson_modules:
+        if module not in app_state_1 and module not in app_state_2:
+            continue  # Module not present in either, ok
+        
+        if module not in app_state_1:
+            mismatches.append(f"Module {module} missing from export1")
+            continue
+        
+        if module not in app_state_2:
+            mismatches.append(f"Module {module} missing from export2")
+            continue
+        
+        if app_state_1[module] != app_state_2[module]:
+            mismatches.append(f"Module {module} differs between exports")
+            # Save detailed diff for debugging
+            module_diff_path = base_dir / f"diff_{module}.json"
+            with open(module_diff_path, "w") as f:
+                json.dump({
+                    "export1": app_state_1[module],
+                    "export2": app_state_2[module]
+                }, f, indent=2)
+            print(f"  Module {module} diff saved to: {module_diff_path}")
+
+    assert len(mismatches) == 0, (
+        f"Export/Import validation FAILED for Dyson modules:\n"
+        + "\n".join(f"  - {m}" for m in mismatches) + "\n"
+        f"Export 1 (from original chain): {export1_path}\n"
+        f"Export 2 (from reimported chain): {export2_path}\n"
+        f"Use 'diff {export1_path} {export2_path}' to see all differences."
+    )
+
+    print("=" * 80)
+    print("✓ EXPORT/IMPORT VALIDATION PASSED!")
+    print(f"  Export 1: {export1_path}")
+    print(f"  Export 2: {export2_path}")
+    print(f"  Dyson modules ({', '.join(dyson_modules)}) are identical")
+    print(f"  Export/import is idempotent for custom modules")
+    print("=" * 80)
+
 
 @pytest.fixture(autouse=True, scope="session")
 def node_ready(chainnet):
