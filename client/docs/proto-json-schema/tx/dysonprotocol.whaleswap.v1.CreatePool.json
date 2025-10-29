@@ -31,21 +31,53 @@
                         "additionalProperties": false,
                         "type": "array"
                     },
-                    "fee_pct": {
-                        "type": "string",
-                        "description": "cosmos.Dec string in [0,1)"
+                    "fee_rate": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries; keeper normalizes to exactly two entries in canonical pool order."
                     },
                     "min_collateral_ratio": {
-                        "type": "string",
-                        "description": "cosmos.Dec string (e.g., \"1.5\")"
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Minimum collateral ratio per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string (> 1)."
                     },
                     "max_leverage_ratio": {
-                        "type": "string",
-                        "description": "cosmos.Dec string (e.g., \"20.0\")"
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Maximum leverage ratio per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string (> 1)."
+                    },
+                    "interest_rate": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Annual interest rates per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string representing APR (per-year accrual)."
                     },
                     "max_borrow_percent": {
-                        "type": "string",
-                        "description": "cosmos.Dec string in [0,1], applies to both coins"
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Maximum borrow capacity per reserve denom as DecCoins (exactly two, canonical order). Each amount is a LegacyDec in [0,1)."
+                    },
+                    "liquidation_threshold": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Collateral ratio liquidation threshold per reserve denom (exactly two, canonical order; each amount is a LegacyDec string > 1)"
                     }
                 },
                 "additionalProperties": false,
@@ -66,6 +98,20 @@
                 "type": "object",
                 "title": "Coin",
                 "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "cosmos.base.v1beta1.DecCoin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Dec Coin",
+                "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
             }
         }
     },

@@ -24,11 +24,15 @@
         "definitions": {
             "dysonprotocol.whaleswap.v1.MsgClosePositionResponse": {
                 "properties": {
-                    "profit": {
+                    "interest_paid": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false
                     },
-                    "accrued_interest": {
+                    "principal_paid": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "profit": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false
                     }

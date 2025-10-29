@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	smath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -140,9 +141,9 @@ func CmdCreatePool() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			feePct, err := cmd.Flags().GetString("fee-pct")
+			feeRateFlags, err := cmd.Flags().GetStringArray("fee-rate")
 			if err != nil {
-				return fmt.Errorf("failed to read --fee-pct: %w", err)
+				return fmt.Errorf("failed to read --fee-rate: %w", err)
 			}
 			minFlags, err := cmd.Flags().GetStringArray("min-price")
 			if err != nil {
@@ -166,39 +167,222 @@ func CmdCreatePool() *cobra.Command {
 				}
 			}
 
-			minCollateralRatio, err := cmd.Flags().GetString("min-collateral-ratio")
+			// Denoms in canonical pool order (coinList is sanitized/sorted)
+			denom1, denom2 := coinList[0].Denom, coinList[1].Denom
+
+			// Per-denom risk ratios
+			mcrFlags, err := cmd.Flags().GetStringArray("min-collateral-ratio")
 			if err != nil {
 				return fmt.Errorf("failed to read --min-collateral-ratio: %w", err)
 			}
-			maxLeverageRatio, err := cmd.Flags().GetString("max-leverage-ratio")
+			if len(mcrFlags) == 0 {
+				return fmt.Errorf("--min-collateral-ratio is required (1 or 2 values)")
+			}
+			var minCollateralRatio sdk.DecCoins
+			switch len(mcrFlags) {
+			case 1:
+				d := mustDec(strings.TrimSpace(mcrFlags[0]))
+				minCollateralRatio = sdk.NewDecCoins(
+					sdk.NewDecCoinFromDec(denom1, d),
+					sdk.NewDecCoinFromDec(denom2, d),
+				)
+			case 2:
+				if parsed, ok := tryParseDecCoins(mcrFlags); ok {
+					minCollateralRatio = parsed
+				} else {
+					d1 := mustDec(strings.TrimSpace(mcrFlags[0]))
+					d2 := mustDec(strings.TrimSpace(mcrFlags[1]))
+					minCollateralRatio = sdk.NewDecCoins(
+						sdk.NewDecCoinFromDec(denom1, d1),
+						sdk.NewDecCoinFromDec(denom2, d2),
+					)
+				}
+			default:
+				return fmt.Errorf("--min-collateral-ratio accepts 1 or 2 values")
+			}
+
+			mlrFlags, err := cmd.Flags().GetStringArray("max-leverage-ratio")
 			if err != nil {
 				return fmt.Errorf("failed to read --max-leverage-ratio: %w", err)
 			}
-			maxBorrowPercent, err := cmd.Flags().GetString("max-borrow-percent")
+			if len(mlrFlags) == 0 {
+				return fmt.Errorf("--max-leverage-ratio is required (1 or 2 values)")
+			}
+			var maxLeverageRatio sdk.DecCoins
+			switch len(mlrFlags) {
+			case 1:
+				d := mustDec(strings.TrimSpace(mlrFlags[0]))
+				maxLeverageRatio = sdk.NewDecCoins(
+					sdk.NewDecCoinFromDec(denom1, d),
+					sdk.NewDecCoinFromDec(denom2, d),
+				)
+			case 2:
+				if parsed, ok := tryParseDecCoins(mlrFlags); ok {
+					maxLeverageRatio = parsed
+				} else {
+					d1 := mustDec(strings.TrimSpace(mlrFlags[0]))
+					d2 := mustDec(strings.TrimSpace(mlrFlags[1]))
+					maxLeverageRatio = sdk.NewDecCoins(
+						sdk.NewDecCoinFromDec(denom1, d1),
+						sdk.NewDecCoinFromDec(denom2, d2),
+					)
+				}
+			default:
+				return fmt.Errorf("--max-leverage-ratio accepts 1 or 2 values")
+			}
+			irFlags, err := cmd.Flags().GetStringArray("interest-rate")
 			if err != nil {
-				return fmt.Errorf("failed to read --max-borrow-percent: %w", err)
+				return fmt.Errorf("failed to read --interest-rate flags: %w", err)
+			}
+			var interestRate sdk.DecCoins
+			switch len(irFlags) {
+			case 0:
+				// Send empty; server normalizes to two entries
+				interestRate = sdk.NewDecCoins()
+			case 1:
+				dc, perr := sdk.ParseDecCoin(strings.TrimSpace(irFlags[0]))
+				if perr != nil {
+					return fmt.Errorf("invalid --interest-rate '%s': %w", irFlags[0], perr)
+				}
+				interestRate = sdk.NewDecCoins(dc)
+			case 2:
+				parsed := make([]sdk.DecCoin, 0, 2)
+				for _, v := range irFlags {
+					dc, perr := sdk.ParseDecCoin(strings.TrimSpace(v))
+					if perr != nil {
+						return fmt.Errorf("invalid --interest-rate '%s': %w", v, perr)
+					}
+					parsed = append(parsed, dc)
+				}
+				interestRate = sdk.NewDecCoins(parsed...)
+			default:
+				return fmt.Errorf("--interest-rate must be provided 0, 1, or 2 times (APR per denom as DecCoin)")
+			}
+
+			mbpFlags, err := cmd.Flags().GetStringArray("max-borrow-percent")
+			if err != nil {
+				return fmt.Errorf("failed to read --max-borrow-percent flags: %w", err)
+			}
+			var maxBorrowPercent sdk.DecCoins
+			switch len(mbpFlags) {
+			case 0:
+				// Default both to 0.80
+				d := mustDec("0.80")
+				maxBorrowPercent = sdk.NewDecCoins(
+					sdk.NewDecCoinFromDec(coinList[0].Denom, d),
+					sdk.NewDecCoinFromDec(coinList[1].Denom, d),
+				)
+			case 1:
+				// Single decimal applies to both denoms
+				d := mustDec(strings.TrimSpace(mbpFlags[0]))
+				maxBorrowPercent = sdk.NewDecCoins(
+					sdk.NewDecCoinFromDec(coinList[0].Denom, d),
+					sdk.NewDecCoinFromDec(coinList[1].Denom, d),
+				)
+			case 2:
+				// Try parsing as DecCoin first; fallback to decimals mapped to denoms
+				parsed, ok := tryParseDecCoins(mbpFlags)
+				if ok {
+					maxBorrowPercent = parsed
+				} else {
+					d1 := mustDec(strings.TrimSpace(mbpFlags[0]))
+					d2 := mustDec(strings.TrimSpace(mbpFlags[1]))
+					maxBorrowPercent = sdk.NewDecCoins(
+						sdk.NewDecCoinFromDec(coinList[0].Denom, d1),
+						sdk.NewDecCoinFromDec(coinList[1].Denom, d2),
+					)
+				}
+			default:
+				return fmt.Errorf("--max-borrow-percent accepts 0, 1, or 2 values")
+			}
+
+			// liquidation-threshold (1 or 2 values; default 1.2 if omitted)
+			liqFlags, err := cmd.Flags().GetStringArray("liquidation-threshold")
+			if err != nil {
+				return fmt.Errorf("failed to read --liquidation-threshold: %w", err)
+			}
+			var liquidationThreshold sdk.DecCoins
+			switch len(liqFlags) {
+			case 0:
+				d := mustDec("1.2")
+				liquidationThreshold = sdk.NewDecCoins(
+					sdk.NewDecCoinFromDec(denom1, d),
+					sdk.NewDecCoinFromDec(denom2, d),
+				)
+			case 1:
+				d := mustDec(strings.TrimSpace(liqFlags[0]))
+				liquidationThreshold = sdk.NewDecCoins(
+					sdk.NewDecCoinFromDec(denom1, d),
+					sdk.NewDecCoinFromDec(denom2, d),
+				)
+			case 2:
+				if parsed, ok := tryParseDecCoins(liqFlags); ok {
+					liquidationThreshold = parsed
+				} else {
+					d1 := mustDec(strings.TrimSpace(liqFlags[0]))
+					d2 := mustDec(strings.TrimSpace(liqFlags[1]))
+					liquidationThreshold = sdk.NewDecCoins(
+						sdk.NewDecCoinFromDec(denom1, d1),
+						sdk.NewDecCoinFromDec(denom2, d2),
+					)
+				}
+			default:
+				return fmt.Errorf("--liquidation-threshold accepts 0, 1, or 2 values")
+			}
+
+			// fee-rate: 0, 1, or 2 flags as DecCoins; 0 => defaults to 0 for both denoms
+			var feeRate sdk.DecCoins
+			switch len(feeRateFlags) {
+			case 0:
+				// default to zero rates
+				feeRate = sdk.NewDecCoins(
+					sdk.NewDecCoinFromDec(coinList[0].Denom, mustDec("0")),
+					sdk.NewDecCoinFromDec(coinList[1].Denom, mustDec("0")),
+				)
+			case 1:
+				dc, perr := sdk.ParseDecCoin(strings.TrimSpace(feeRateFlags[0]))
+				if perr != nil {
+					return fmt.Errorf("invalid --fee-rate '%s': %w", feeRateFlags[0], perr)
+				}
+				feeRate = sdk.NewDecCoins(dc)
+			case 2:
+				parsed := make([]sdk.DecCoin, 0, 2)
+				for _, v := range feeRateFlags {
+					dc, perr := sdk.ParseDecCoin(strings.TrimSpace(v))
+					if perr != nil {
+						return fmt.Errorf("invalid --fee-rate '%s': %w", v, perr)
+					}
+					parsed = append(parsed, dc)
+				}
+				feeRate = sdk.NewDecCoins(parsed...)
+			default:
+				return fmt.Errorf("--fee-rate must be provided 0, 1, or 2 times (per-denom fee as DecCoin)")
 			}
 
 			msg := &whaleswaptypes.MsgCreatePool{
-				Creator:            clientCtx.GetFromAddress().String(),
-				Coins:              coinList,
-				MinPrice:           minPrice,
-				MaxPrice:           maxPrice,
-				FeePct:             feePct,
-				MinCollateralRatio: minCollateralRatio,
-				MaxLeverageRatio:   maxLeverageRatio,
-				MaxBorrowPercent:   maxBorrowPercent,
+				Creator:              clientCtx.GetFromAddress().String(),
+				Coins:                coinList,
+				MinPrice:             minPrice,
+				MaxPrice:             maxPrice,
+				FeeRate:              feeRate,
+				MinCollateralRatio:   minCollateralRatio,
+				MaxLeverageRatio:     maxLeverageRatio,
+				InterestRate:         interestRate,
+				MaxBorrowPercent:     maxBorrowPercent,
+				LiquidationThreshold: liquidationThreshold,
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
 	}
 	cmd.Flags().StringArray("coins", nil, "Repeatable; provide exactly two flags, one per coin (e.g., 1000udys)")
-	cmd.Flags().String("fee-pct", "", "Optional swap fee percent (decimal in [0,1))")
+	cmd.Flags().StringArray("fee-rate", nil, "Repeatable (0, 1, or 2); per-denom swap fee as DecCoin in [0,1) (e.g., 0.003udys)")
 	cmd.Flags().StringArray("min-price", nil, "Repeatable; provide two flags to encode band min as coin_b/coin_a")
 	cmd.Flags().StringArray("max-price", nil, "Repeatable; provide two flags to encode band max as coin_b/coin_a")
-	cmd.Flags().String("min-collateral-ratio", "", "Minimum collateral ratio for leverage (required, e.g., 1.5)")
-	cmd.Flags().String("max-leverage-ratio", "", "Maximum leverage ratio (required, e.g., 3.0)")
-	cmd.Flags().String("max-borrow-percent", "", "Maximum borrow percent of reserves (required, e.g., 0.8)")
+	cmd.Flags().StringArray("min-collateral-ratio", nil, "Repeatable (1 or 2); min collateral ratio per denom as Dec or DecCoin (e.g., 1.5 or 1.5udys)")
+	cmd.Flags().StringArray("max-leverage-ratio", nil, "Repeatable (1 or 2); max leverage ratio per denom as Dec or DecCoin")
+	cmd.Flags().StringArray("interest-rate", nil, "Repeatable (0, 1, or 2); APR per denom as DecCoin (e.g., 0.10udys). Optional; defaults to 0 for missing denoms")
+	cmd.Flags().StringArray("liquidation-threshold", nil, "Repeatable (0, 1, or 2); liquidation threshold per denom as Dec or DecCoin (default 1.2)")
+	cmd.Flags().StringArray("max-borrow-percent", nil, "Repeatable; 0, 1, or 2 values. If decimals without denoms are given, they map to the two pool denoms (e.g., 0.80)")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
@@ -217,9 +401,9 @@ func CmdUpdatePoolConfig() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			feePct, err := cmd.Flags().GetString("fee-pct")
+			feeRateFlags, err := cmd.Flags().GetStringArray("fee-rate")
 			if err != nil {
-				return fmt.Errorf("failed to read --fee-pct: %w", err)
+				return fmt.Errorf("failed to read --fee-rate: %w", err)
 			}
 			minFlags, err := cmd.Flags().GetStringArray("min-price")
 			if err != nil {
@@ -243,23 +427,182 @@ func CmdUpdatePoolConfig() *cobra.Command {
 				}
 			}
 
-			ir1, err := cmd.Flags().GetString("interest-rate-coin1")
-			if err != nil {
-				return fmt.Errorf("failed to read --interest-rate-coin1: %w", err)
+			// Load current pool for defaults/denoms
+			q := whaleswaptypes.NewQueryClient(clientCtx)
+			poolResp, qerr := q.Pool(cmd.Context(), &whaleswaptypes.QueryPoolRequest{PoolId: poolID})
+			if qerr != nil {
+				return fmt.Errorf("failed to query pool %d: %w", poolID, qerr)
 			}
-			ir2, err := cmd.Flags().GetString("interest-rate-coin2")
+			pool := poolResp.Pool
+
+			// Interest rate: 0, 1, or 2 flags (same as create-pool). 0 => keep current; 1/2 => parse.
+			irFlags, err := cmd.Flags().GetStringArray("interest-rate")
 			if err != nil {
-				return fmt.Errorf("failed to read --interest-rate-coin2: %w", err)
+				return fmt.Errorf("failed to read --interest-rate flags: %w", err)
+			}
+			var interestRate sdk.DecCoins
+			switch len(irFlags) {
+			case 0:
+				interestRate = sdk.NewDecCoins(pool.InterestRate...)
+			case 1:
+				dc, perr := sdk.ParseDecCoin(strings.TrimSpace(irFlags[0]))
+				if perr != nil {
+					return fmt.Errorf("invalid --interest-rate '%s': %w", irFlags[0], perr)
+				}
+				interestRate = sdk.NewDecCoins(dc)
+			case 2:
+				parsed := make([]sdk.DecCoin, 0, 2)
+				for _, v := range irFlags {
+					dc, perr := sdk.ParseDecCoin(strings.TrimSpace(v))
+					if perr != nil {
+						return fmt.Errorf("invalid --interest-rate '%s': %w", v, perr)
+					}
+					parsed = append(parsed, dc)
+				}
+				interestRate = sdk.NewDecCoins(parsed...)
+			default:
+				return fmt.Errorf("--interest-rate must be provided 0, 1, or 2 times (APR per denom as DecCoin)")
+			}
+
+			// Max borrow percent: optional; fallback to current pool if not provided
+			var maxBorrowPercent sdk.DecCoins
+			mbpFlags, err := cmd.Flags().GetStringArray("max-borrow-percent")
+			if err != nil {
+				return fmt.Errorf("failed to read --max-borrow-percent flags: %w", err)
+			}
+			if len(mbpFlags) == 2 {
+				parsed2 := make([]sdk.DecCoin, 0, 2)
+				for _, v := range mbpFlags {
+					dc, perr := sdk.ParseDecCoin(strings.TrimSpace(v))
+					if perr != nil {
+						return fmt.Errorf("invalid --max-borrow-percent '%s': %w", v, perr)
+					}
+					parsed2 = append(parsed2, dc)
+				}
+				maxBorrowPercent = sdk.NewDecCoins(parsed2...)
+			} else {
+				maxBorrowPercent = sdk.NewDecCoins(pool.MaxBorrowPercent...)
+			}
+
+			// Denoms in canonical order from current pool
+			denom1, denom2 := pool.Coins[0].Denom, pool.Coins[1].Denom
+
+			// liquidation-threshold: allow override or fallback to current pool value (0,1,2)
+			liqFlags, _ := cmd.Flags().GetStringArray("liquidation-threshold")
+			var liquidationThreshold sdk.DecCoins
+			switch len(liqFlags) {
+			case 0:
+				liquidationThreshold = sdk.NewDecCoins(pool.LiquidationThreshold...)
+			case 1:
+				d := mustDec(strings.TrimSpace(liqFlags[0]))
+				liquidationThreshold = sdk.NewDecCoins(
+					sdk.NewDecCoinFromDec(denom1, d),
+					sdk.NewDecCoinFromDec(denom2, d),
+				)
+			case 2:
+				if parsed, ok := tryParseDecCoins(liqFlags); ok {
+					liquidationThreshold = parsed
+				} else {
+					d1 := mustDec(strings.TrimSpace(liqFlags[0]))
+					d2 := mustDec(strings.TrimSpace(liqFlags[1]))
+					liquidationThreshold = sdk.NewDecCoins(
+						sdk.NewDecCoinFromDec(denom1, d1),
+						sdk.NewDecCoinFromDec(denom2, d2),
+					)
+				}
+			default:
+				return fmt.Errorf("--liquidation-threshold accepts 0, 1, or 2 values")
+			}
+
+			// min/max ratios: allow override or fallback to current pool values
+			mcrFlags, _ := cmd.Flags().GetStringArray("min-collateral-ratio")
+			var minCollateralRatio sdk.DecCoins
+			switch len(mcrFlags) {
+			case 0:
+				minCollateralRatio = sdk.NewDecCoins(pool.MinCollateralRatio...)
+			case 1:
+				d := mustDec(strings.TrimSpace(mcrFlags[0]))
+				minCollateralRatio = sdk.NewDecCoins(
+					sdk.NewDecCoinFromDec(denom1, d),
+					sdk.NewDecCoinFromDec(denom2, d),
+				)
+			case 2:
+				if parsed, ok := tryParseDecCoins(mcrFlags); ok {
+					minCollateralRatio = parsed
+				} else {
+					d1 := mustDec(strings.TrimSpace(mcrFlags[0]))
+					d2 := mustDec(strings.TrimSpace(mcrFlags[1]))
+					minCollateralRatio = sdk.NewDecCoins(
+						sdk.NewDecCoinFromDec(denom1, d1),
+						sdk.NewDecCoinFromDec(denom2, d2),
+					)
+				}
+			default:
+				return fmt.Errorf("--min-collateral-ratio accepts 0, 1, or 2 values")
+			}
+
+			mlrFlags, _ := cmd.Flags().GetStringArray("max-leverage-ratio")
+			var maxLeverageRatio sdk.DecCoins
+			switch len(mlrFlags) {
+			case 0:
+				maxLeverageRatio = sdk.NewDecCoins(pool.MaxLeverageRatio...)
+			case 1:
+				d := mustDec(strings.TrimSpace(mlrFlags[0]))
+				maxLeverageRatio = sdk.NewDecCoins(
+					sdk.NewDecCoinFromDec(denom1, d),
+					sdk.NewDecCoinFromDec(denom2, d),
+				)
+			case 2:
+				if parsed, ok := tryParseDecCoins(mlrFlags); ok {
+					maxLeverageRatio = parsed
+				} else {
+					d1 := mustDec(strings.TrimSpace(mlrFlags[0]))
+					d2 := mustDec(strings.TrimSpace(mlrFlags[1]))
+					maxLeverageRatio = sdk.NewDecCoins(
+						sdk.NewDecCoinFromDec(denom1, d1),
+						sdk.NewDecCoinFromDec(denom2, d2),
+					)
+				}
+			default:
+				return fmt.Errorf("--max-leverage-ratio accepts 0, 1, or 2 values")
+			}
+
+			// fee-rate: 0 => keep current. 1/2 => parse and set
+			var feeRate sdk.DecCoins
+			switch len(feeRateFlags) {
+			case 0:
+				feeRate = sdk.NewDecCoins(pool.FeeRate...)
+			case 1:
+				dc, perr := sdk.ParseDecCoin(strings.TrimSpace(feeRateFlags[0]))
+				if perr != nil {
+					return fmt.Errorf("invalid --fee-rate '%s': %w", feeRateFlags[0], perr)
+				}
+				feeRate = sdk.NewDecCoins(dc)
+			case 2:
+				parsed := make([]sdk.DecCoin, 0, 2)
+				for _, v := range feeRateFlags {
+					dc, perr := sdk.ParseDecCoin(strings.TrimSpace(v))
+					if perr != nil {
+						return fmt.Errorf("invalid --fee-rate '%s': %w", v, perr)
+					}
+					parsed = append(parsed, dc)
+				}
+				feeRate = sdk.NewDecCoins(parsed...)
+			default:
+				return fmt.Errorf("--fee-rate must be provided 0, 1, or 2 times (per-denom fee as DecCoin)")
 			}
 
 			msg := &whaleswaptypes.MsgUpdatePoolConfig{
-				Signer:            clientCtx.GetFromAddress().String(),
-				PoolId:            poolID,
-				FeePct:            feePct,
-				MinPrice:          minPrice,
-				MaxPrice:          maxPrice,
-				InterestRateCoin1: ir1,
-				InterestRateCoin2: ir2,
+				Signer:               clientCtx.GetFromAddress().String(),
+				PoolId:               poolID,
+				FeeRate:              feeRate,
+				MinPrice:             ifCoinsEmptyUse(minPrice, pool.MinPrice),
+				MaxPrice:             ifCoinsEmptyUse(maxPrice, pool.MaxPrice),
+				InterestRate:         interestRate,
+				MaxBorrowPercent:     maxBorrowPercent,
+				LiquidationThreshold: liquidationThreshold,
+				MinCollateralRatio:   minCollateralRatio,
+				MaxLeverageRatio:     maxLeverageRatio,
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -268,11 +611,91 @@ func CmdUpdatePoolConfig() *cobra.Command {
 	if err := cmd.MarkFlagRequired("pool-id"); err != nil {
 		panic(fmt.Errorf("failed to mark --pool-id required: %w", err))
 	}
-	cmd.Flags().String("fee-pct", "", "Optional swap fee percent (decimal in [0,1))")
+	cmd.Flags().StringArray("fee-rate", nil, "Repeatable (0, 1, or 2); per-denom swap fee as DecCoin in [0,1) (e.g., 0.003udys)")
 	cmd.Flags().StringArray("min-price", nil, "Repeatable; provide two flags to encode band min as coin_b/coin_a")
 	cmd.Flags().StringArray("max-price", nil, "Repeatable; provide two flags to encode band max as coin_b/coin_a")
-	cmd.Flags().String("interest-rate-coin1", "", "Optional APR for coin1 (decimal, e.g., 0.10 for 10%)")
-	cmd.Flags().String("interest-rate-coin2", "", "Optional APR for coin2 (decimal, e.g., 0.10 for 10%)")
+	cmd.Flags().StringArray("interest-rate", nil, "Repeatable (0, 1, or 2); APR per denom as DecCoin (e.g., 0.10udys). Optional; defaults to current pool for missing denoms")
+	cmd.Flags().StringArray("max-borrow-percent", nil, "Repeatable (twice); cap per denom as DecCoin in [0,1) (e.g., 0.80udys). Optional; defaults to current pool")
+	cmd.Flags().String("liquidation-threshold", "", "Liquidation threshold (cosmos.Dec). Optional; defaults to current pool")
+	cmd.Flags().String("min-collateral-ratio", "", "Minimum collateral ratio for leverage. Optional; defaults to current pool")
+	cmd.Flags().String("max-leverage-ratio", "", "Maximum leverage ratio. Optional; defaults to current pool")
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+// helpers to fallback to existing values when empty
+func ifEmptyUse(s, fallback string) string {
+	if strings.TrimSpace(s) == "" {
+		return fallback
+	}
+	return s
+}
+func ifCoinsEmptyUse(c []sdk.Coin, fallback []sdk.Coin) []sdk.Coin {
+	if len(c) == 0 {
+		return fallback
+	}
+	return c
+}
+
+// helper dec parsing
+func mustDec(s string) smath.LegacyDec {
+	d, err := smath.LegacyNewDecFromStr(s)
+	if err != nil {
+		panic(fmt.Errorf("invalid decimal '%s': %w", s, err))
+	}
+	return d
+}
+
+func tryParseDecCoins(vals []string) (sdk.DecCoins, bool) {
+	out := make([]sdk.DecCoin, 0, len(vals))
+	for _, v := range vals {
+		dc, err := sdk.ParseDecCoin(strings.TrimSpace(v))
+		if err != nil {
+			return sdk.DecCoins{}, false
+		}
+		out = append(out, dc)
+	}
+	return sdk.NewDecCoins(out...), true
+}
+
+// CmdCoverPosition covers accrued interest and optionally reduces principal; overpay auto-closes.
+func CmdCoverPosition() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "cover-position",
+		Short: "Repay interest and optionally principal on a leverage position (overpay closes)",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			posID, err := cmd.Flags().GetUint64("position-id")
+			if err != nil {
+				return err
+			}
+			payStr, err := cmd.Flags().GetString("payment")
+			if err != nil {
+				return err
+			}
+			payment, perr := sdk.ParseCoinNormalized(strings.TrimSpace(payStr))
+			if perr != nil {
+				return fmt.Errorf("invalid --payment coin '%s': %w", payStr, perr)
+			}
+			msg := &whaleswaptypes.MsgCoverPosition{
+				User:       clientCtx.GetFromAddress().String(),
+				PositionId: posID,
+				Payment:    payment,
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+	cmd.Flags().Uint64("position-id", 0, "Leverage position ID")
+	if err := cmd.MarkFlagRequired("position-id"); err != nil {
+		panic(fmt.Errorf("failed to mark --position-id required: %w", err))
+	}
+	cmd.Flags().String("payment", "", "Payment coin (borrowed denom), e.g., 100udys")
+	if err := cmd.MarkFlagRequired("payment"); err != nil {
+		panic(fmt.Errorf("failed to mark --payment required: %w", err))
+	}
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

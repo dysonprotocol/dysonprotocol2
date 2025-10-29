@@ -63,6 +63,9 @@ service Msg {
   rpc OpenPosition(MsgOpenPosition) returns (MsgOpenPositionResponse);
   rpc ClosePosition(MsgClosePosition) returns (MsgClosePositionResponse);
   rpc AddCollateral(MsgAddCollateral) returns (MsgAddCollateralResponse);
+  // Repay accrued interest first, then principal; supports overpay → auto-close
+  // with refund
+  rpc CoverPosition(MsgCoverPosition) returns (MsgCoverPositionResponse);
   rpc InitializeLiquidation(MsgInitializeLiquidation)
       returns (MsgInitializeLiquidationResponse);
   rpc FinalizeLiquidation(MsgFinalizeLiquidation)
@@ -114,25 +117,64 @@ message MsgCreatePool {
     (amino.dont_omitempty) = true,
     (amino.encoding) = "legacy_coins"
   ];
-  string fee_pct = 5;              // cosmos.Dec string in [0,1)
-  string min_collateral_ratio = 6; // cosmos.Dec string (e.g., "1.5")
-  string max_leverage_ratio = 7;   // cosmos.Dec string (e.g., "20.0")
-  string max_borrow_percent =
-      8; // cosmos.Dec string in [0,1], applies to both coins
+  // Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
+  // keeper normalizes to exactly two entries in canonical pool order.
+  repeated cosmos.base.v1beta1.DecCoin fee_rate = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (amino.dont_omitempty) = true
+  ];
+  // Minimum collateral ratio per reserve denom (exactly two, canonical order).
+  // Each amount is a LegacyDec string (> 1).
+  repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
+  // Maximum leverage ratio per reserve denom (exactly two, canonical order).
+  // Each amount is a LegacyDec string (> 1).
+  repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
+  // Annual interest rates per reserve denom (exactly two, canonical order).
+  // Each amount is a LegacyDec string representing APR (per-year accrual).
+  repeated cosmos.base.v1beta1.DecCoin interest_rate = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (amino.dont_omitempty) = true
+  ];
+  // Maximum borrow capacity per reserve denom as DecCoins (exactly two,
+  // canonical order). Each amount is a LegacyDec in [0,1).
+  repeated cosmos.base.v1beta1.DecCoin max_borrow_percent = 9 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (amino.dont_omitempty) = true
+  ];
+  // Collateral ratio liquidation threshold per reserve denom (exactly two,
+  // canonical order; each amount is a LegacyDec string > 1)
+  repeated cosmos.base.v1beta1.DecCoin liquidation_threshold = 10 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
 }
 message MsgCreatePoolResponse { uint64 pool_id = 1; }
 
 // Update pool config (owner-only: majority of shares > 50%).
 //
 // Notes:
-// - Empty string/empty arrays indicate no change for that field.
-// - Price bands follow the same two-coin ratio rules as in MsgCreatePool.
+// - All fields are required. Price bands must be both empty (no band) or both
+//   contain exactly two coins in canonical order matching pool reserves.
 message MsgUpdatePoolConfig {
   option (cosmos.msg.v1.signer) = "signer";
   string signer = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   uint64 pool_id = 2;
-  // Optional fields; empty string means no change
-  string fee_pct = 3; // cosmos.Dec string
+  // Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
+  // keeper normalizes to exactly two entries in canonical pool order.
+  repeated cosmos.base.v1beta1.DecCoin fee_rate = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (amino.dont_omitempty) = true
+  ];
   repeated cosmos.base.v1beta1.Coin min_price = 4 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
@@ -145,14 +187,38 @@ message MsgUpdatePoolConfig {
     (amino.dont_omitempty) = true,
     (amino.encoding) = "legacy_coins"
   ];
-  // Leverage configuration (optional; empty means no change)
-  string min_collateral_ratio = 6; // cosmos.Dec string
-  string max_leverage_ratio = 7;   // cosmos.Dec string
-  string max_borrow_percent = 8;   // cosmos.Dec string
-  // Annual interest rates per reserve coin (optional; empty means no change)
-  // Example: "0.10" for 10% APR
-  string interest_rate_coin1 = 9;  // cosmos.Dec string
-  string interest_rate_coin2 = 10; // cosmos.Dec string
+  // Leverage configuration (per-denom)
+  // Minimum collateral ratio per reserve denom (exactly two, canonical order; >
+  // 1)
+  repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
+  // Maximum leverage ratio per reserve denom (exactly two, canonical order; >
+  // 1)
+  repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
+  // Annual interest rates per reserve denom (exactly two, canonical order).
+  repeated cosmos.base.v1beta1.DecCoin interest_rate = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (amino.dont_omitempty) = true
+  ];
+  // Maximum borrow capacity per reserve denom (exactly two, canonical order).
+  // Amounts in [0,1).
+  repeated cosmos.base.v1beta1.DecCoin max_borrow_percent = 9 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (amino.dont_omitempty) = true
+  ];
+  // Collateral ratio liquidation threshold per reserve denom (exactly two,
+  // canonical order; each amount is a LegacyDec string > 1)
+  repeated cosmos.base.v1beta1.DecCoin liquidation_threshold = 10 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
 }
 message MsgUpdatePoolConfigResponse {}
 
@@ -417,9 +483,9 @@ message MsgClosePosition {
 }
 
 message MsgClosePositionResponse {
-  cosmos.base.v1beta1.Coin profit = 1 [ (gogoproto.nullable) = false ];
-  cosmos.base.v1beta1.Coin accrued_interest = 2
-      [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin interest_paid = 1 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin principal_paid = 2 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin profit = 3 [ (gogoproto.nullable) = false ];
 }
 
 message MsgAddCollateral {
@@ -437,6 +503,28 @@ message MsgAddCollateralResponse {
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
+}
+
+message MsgCoverPosition {
+  option (cosmos.msg.v1.signer) = "user";
+  string user = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  uint64 position_id = 2;
+  cosmos.base.v1beta1.Coin payment = 3 [ (gogoproto.nullable) = false ];
+}
+
+message MsgCoverPositionResponse {
+  cosmos.base.v1beta1.Coin interest_paid = 1 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin principal_paid = 2 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin new_borrowed = 3 [ (gogoproto.nullable) = false ];
+  string new_collateral_ratio = 4 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  bool closed = 5;
+  cosmos.base.v1beta1.Coin refunded = 6 [ (gogoproto.nullable) = false ];
+  // swap PnL from unwinding held → borrowed during auto-close
+  cosmos.base.v1beta1.Coin profit = 7 [ (gogoproto.nullable) = false ];
 }
 
 message MsgInitializeLiquidation {

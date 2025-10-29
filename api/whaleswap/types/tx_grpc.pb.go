@@ -33,6 +33,7 @@ const (
 	Msg_OpenPosition_FullMethodName          = "/dysonprotocol.whaleswap.v1.Msg/OpenPosition"
 	Msg_ClosePosition_FullMethodName         = "/dysonprotocol.whaleswap.v1.Msg/ClosePosition"
 	Msg_AddCollateral_FullMethodName         = "/dysonprotocol.whaleswap.v1.Msg/AddCollateral"
+	Msg_CoverPosition_FullMethodName         = "/dysonprotocol.whaleswap.v1.Msg/CoverPosition"
 	Msg_InitializeLiquidation_FullMethodName = "/dysonprotocol.whaleswap.v1.Msg/InitializeLiquidation"
 	Msg_FinalizeLiquidation_FullMethodName   = "/dysonprotocol.whaleswap.v1.Msg/FinalizeLiquidation"
 	Msg_UpdateParams_FullMethodName          = "/dysonprotocol.whaleswap.v1.Msg/UpdateParams"
@@ -86,6 +87,9 @@ type MsgClient interface {
 	OpenPosition(ctx context.Context, in *MsgOpenPosition, opts ...grpc.CallOption) (*MsgOpenPositionResponse, error)
 	ClosePosition(ctx context.Context, in *MsgClosePosition, opts ...grpc.CallOption) (*MsgClosePositionResponse, error)
 	AddCollateral(ctx context.Context, in *MsgAddCollateral, opts ...grpc.CallOption) (*MsgAddCollateralResponse, error)
+	// Repay accrued interest first, then principal; supports overpay → auto-close
+	// with refund
+	CoverPosition(ctx context.Context, in *MsgCoverPosition, opts ...grpc.CallOption) (*MsgCoverPositionResponse, error)
 	InitializeLiquidation(ctx context.Context, in *MsgInitializeLiquidation, opts ...grpc.CallOption) (*MsgInitializeLiquidationResponse, error)
 	FinalizeLiquidation(ctx context.Context, in *MsgFinalizeLiquidation, opts ...grpc.CallOption) (*MsgFinalizeLiquidationResponse, error)
 	// Params
@@ -240,6 +244,16 @@ func (c *msgClient) AddCollateral(ctx context.Context, in *MsgAddCollateral, opt
 	return out, nil
 }
 
+func (c *msgClient) CoverPosition(ctx context.Context, in *MsgCoverPosition, opts ...grpc.CallOption) (*MsgCoverPositionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgCoverPositionResponse)
+	err := c.cc.Invoke(ctx, Msg_CoverPosition_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgClient) InitializeLiquidation(ctx context.Context, in *MsgInitializeLiquidation, opts ...grpc.CallOption) (*MsgInitializeLiquidationResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MsgInitializeLiquidationResponse)
@@ -318,6 +332,9 @@ type MsgServer interface {
 	OpenPosition(context.Context, *MsgOpenPosition) (*MsgOpenPositionResponse, error)
 	ClosePosition(context.Context, *MsgClosePosition) (*MsgClosePositionResponse, error)
 	AddCollateral(context.Context, *MsgAddCollateral) (*MsgAddCollateralResponse, error)
+	// Repay accrued interest first, then principal; supports overpay → auto-close
+	// with refund
+	CoverPosition(context.Context, *MsgCoverPosition) (*MsgCoverPositionResponse, error)
 	InitializeLiquidation(context.Context, *MsgInitializeLiquidation) (*MsgInitializeLiquidationResponse, error)
 	FinalizeLiquidation(context.Context, *MsgFinalizeLiquidation) (*MsgFinalizeLiquidationResponse, error)
 	// Params
@@ -373,6 +390,9 @@ func (UnimplementedMsgServer) ClosePosition(context.Context, *MsgClosePosition) 
 }
 func (UnimplementedMsgServer) AddCollateral(context.Context, *MsgAddCollateral) (*MsgAddCollateralResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddCollateral not implemented")
+}
+func (UnimplementedMsgServer) CoverPosition(context.Context, *MsgCoverPosition) (*MsgCoverPositionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CoverPosition not implemented")
 }
 func (UnimplementedMsgServer) InitializeLiquidation(context.Context, *MsgInitializeLiquidation) (*MsgInitializeLiquidationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InitializeLiquidation not implemented")
@@ -656,6 +676,24 @@ func _Msg_AddCollateral_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_CoverPosition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgCoverPosition)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).CoverPosition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_CoverPosition_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).CoverPosition(ctx, req.(*MsgCoverPosition))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Msg_InitializeLiquidation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgInitializeLiquidation)
 	if err := dec(in); err != nil {
@@ -772,6 +810,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddCollateral",
 			Handler:    _Msg_AddCollateral_Handler,
+		},
+		{
+			MethodName: "CoverPosition",
+			Handler:    _Msg_CoverPosition_Handler,
 		},
 		{
 			MethodName: "InitializeLiquidation",

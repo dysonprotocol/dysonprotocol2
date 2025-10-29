@@ -54,6 +54,12 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
 	actual := k.bank.SpendableCoins(ctx, moduleAddr)
 
+	// Logging snapshot for diagnostics
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(sdkCtx)
+	logger.Info("Invariant snapshot: module balances", "module", moduleAddr.String(), "balances", actual.String())
+	logger.Info("Invariant snapshot: components", "amm", ammRequired.String(), "escrow", escrowRequired.String(), "auction", auctionRequired.String(), "pfand", pfandRequired.String())
+
 	// Hard constraints: module must not hold pool share denoms
 	for _, c := range actual {
 		d := c.Denom
@@ -105,6 +111,7 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 		exp := amm.Add(esc).Add(auc).Add(pfd).Add(coll)
 		act := actual.AmountOf(denom)
 		if !act.Equal(exp) {
+			logger.Info("Invariant mismatch detail", "denom", denom, "have", act.String(), "expected", exp.String(), "amm", amm.String(), "escrow", esc.String(), "auction", auc.String(), "pfand", pfd.String(), "collateral", coll.String())
 			return cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
 				"module balance mismatch for %s: have=%s expected=%s (amm=%s escrow=%s auction=%s pfand=%s collateral=%s)",
 				denom, act.String(), exp.String(), amm.String(), esc.String(), auc.String(), pfd.String(), coll.String())
@@ -405,6 +412,51 @@ func (k Keeper) AssertAMMInvariants(ctx context.Context) error {
 			}
 		}
 
+		// Ensure canonical pool denoms are available for per-denom checks
+		if len(p.Coins) != 2 {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "invalid pool coins: pool_id=%d", p.PoolId)
+		}
+		baseDenom, quoteDenom := p.Coins[0].Denom, p.Coins[1].Denom
+
+		// Required leverage config sanity
+		if len(p.LiquidationThreshold) != 2 {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "pool liquidation_threshold must be length 2: pool_id=%d", p.PoolId)
+		}
+		liq1 := p.LiquidationThreshold.AmountOf(baseDenom)
+		liq2 := p.LiquidationThreshold.AmountOf(quoteDenom)
+		if !liq1.GT(math.LegacyNewDec(1)) || !liq2.GT(math.LegacyNewDec(1)) {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "invalid liquidation_threshold: pool_id=%d val=%s", p.PoolId, p.LiquidationThreshold.String())
+		}
+		if len(p.InterestRate) != 2 {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "pool interest_rate must be length 2: pool_id=%d", p.PoolId)
+		}
+		if len(p.MaxBorrowPercent) != 2 {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "pool max_borrow_percent must be length 2: pool_id=%d", p.PoolId)
+		}
+		// FeeRate must have exactly two entries matching pool denoms and amounts in [0,1)
+		if len(p.FeeRate) != 2 {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "pool fee_rate must be length 2: pool_id=%d", p.PoolId)
+		}
+		fr1 := p.FeeRate.AmountOf(baseDenom)
+		fr2 := p.FeeRate.AmountOf(quoteDenom)
+		if fr1.IsNegative() || !fr1.LT(math.LegacyNewDec(1)) || fr2.IsNegative() || !fr2.LT(math.LegacyNewDec(1)) {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "invalid pool fee_rate amounts: pool_id=%d fee_rate=%s", p.PoolId, p.FeeRate.String())
+		}
+		// Ratios > 1 (per denom)
+		if len(p.MinCollateralRatio) != 2 || len(p.MaxLeverageRatio) != 2 {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "missing leverage ratios: pool_id=%d", p.PoolId)
+		}
+		mcr1 := p.MinCollateralRatio.AmountOf(baseDenom)
+		mcr2 := p.MinCollateralRatio.AmountOf(quoteDenom)
+		mlr1 := p.MaxLeverageRatio.AmountOf(baseDenom)
+		mlr2 := p.MaxLeverageRatio.AmountOf(quoteDenom)
+		if !mcr1.GT(math.LegacyNewDec(1)) || !mcr2.GT(math.LegacyNewDec(1)) {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "invalid min_collateral_ratio: pool_id=%d val=%s", p.PoolId, p.MinCollateralRatio.String())
+		}
+		if !mlr1.GT(math.LegacyNewDec(1)) || !mlr2.GT(math.LegacyNewDec(1)) {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "invalid max_leverage_ratio: pool_id=%d val=%s", p.PoolId, p.MaxLeverageRatio.String())
+		}
+
 		// Shares denom uniqueness
 		if _, dup := shareDenoms[p.SharesDenom]; dup {
 			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "duplicate shares denom: %s (pool_id=%d)", p.SharesDenom, p.PoolId)
@@ -421,9 +473,18 @@ func (k Keeper) AssertAMMInvariants(ctx context.Context) error {
 
 	// Coverage by module balances
 	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(sdkCtx)
+	// Build a readable coins snapshot for required reserves
+	requiredCoins := sdk.NewCoins()
+	for d, n := range required {
+		requiredCoins = requiredCoins.Add(sdk.NewCoin(d, n))
+	}
+	logger.Info("AMM invariant required reserves", "required", requiredCoins.String())
 	for denom, need := range required {
 		have := k.bank.GetBalance(ctx, moduleAddr, denom).Amount
 		if have.LT(need) {
+			logger.Info("AMM invariant deficit", "denom", denom, "have", have.String(), "need", need.String())
 			return cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "module balance below AMM reserves for %s: have=%s need=%s", denom, have.String(), need.String())
 		}
 	}

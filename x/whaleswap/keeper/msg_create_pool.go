@@ -16,7 +16,7 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)
 
-	logger.Info("CreatePool starting", "creator", msg.Creator, "coins", msg.Coins, "fee_pct", msg.FeePct)
+	logger.Info("CreatePool starting", "creator", msg.Creator, "coins", msg.Coins, "fee_rate", msg.FeeRate)
 
 	if len(msg.Coins) != 2 {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "coins must contain exactly 2 entries, got %d", len(msg.Coins))
@@ -47,48 +47,72 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 
 	// Pools accept only solid denoms; wrappers removed
 
-	if msg.FeePct != "" {
-		fee, err := math.LegacyNewDecFromStr(msg.FeePct)
-		if err != nil {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid fee_pct: %v", err)
-		}
-		if fee.IsNegative() || fee.GTE(math.LegacyNewDec(1)) {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "fee_pct must satisfy 0 <= fee < 1: %s", fee.String())
-		}
+	// FeeRate: allow 0, 1, or 2 entries. Normalize using DecCoins helpers and store exactly two entries.
+	one := math.LegacyNewDec(1)
+	inFee := sdk.NewDecCoins(msg.FeeRate...)
+	fr1 := inFee.AmountOf(denom1)
+	fr2 := inFee.AmountOf(denom2)
+	if fr1.IsNegative() || !fr1.LT(one) || fr2.IsNegative() || !fr2.LT(one) {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "fee_rate amounts must satisfy 0 <= x < 1 for both denoms")
+	}
+	// Use slice literal to preserve two entries even when zero
+	msg.FeeRate = sdk.DecCoins{
+		sdk.NewDecCoinFromDec(denom1, fr1),
+		sdk.NewDecCoinFromDec(denom2, fr2),
 	}
 
-	// Validate leverage configuration fields (required)
-	if msg.MinCollateralRatio == "" {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "min_collateral_ratio is required")
+	// Validate leverage configuration fields (required; per-denom DecCoins)
+	inMinCR := sdk.NewDecCoins(msg.MinCollateralRatio...)
+	if len(inMinCR) != 2 || inMinCR[0].Denom != denom1 || inMinCR[1].Denom != denom2 {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_collateral_ratio must have exactly two entries matching pool denoms [%s,%s] in canonical order", denom1, denom2)
 	}
-	minCR, err := math.LegacyNewDecFromStr(msg.MinCollateralRatio)
-	if err != nil {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid min_collateral_ratio: %v", err)
+	if inMinCR[0].Amount.LTE(one) || inMinCR[1].Amount.LTE(one) { // require strictly > 1
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "min_collateral_ratio amounts must be > 1 for both denoms")
 	}
-	if minCR.LTE(math.LegacyNewDec(1)) {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_collateral_ratio must be > 1: %s", minCR.String())
+	msg.MinCollateralRatio = inMinCR
+
+	inMaxLev := sdk.NewDecCoins(msg.MaxLeverageRatio...)
+	if len(inMaxLev) != 2 || inMaxLev[0].Denom != denom1 || inMaxLev[1].Denom != denom2 {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_leverage_ratio must have exactly two entries matching pool denoms [%s,%s] in canonical order", denom1, denom2)
+	}
+	if inMaxLev[0].Amount.LTE(one) || inMaxLev[1].Amount.LTE(one) { // require strictly > 1
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "max_leverage_ratio amounts must be > 1 for both denoms")
+	}
+	msg.MaxLeverageRatio = inMaxLev
+
+	// Liquidation threshold: required and must be > 1 (per-denom DecCoins)
+	inLiq := sdk.NewDecCoins(msg.LiquidationThreshold...)
+	if len(inLiq) != 2 || inLiq[0].Denom != denom1 || inLiq[1].Denom != denom2 {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "liquidation_threshold must have exactly two entries matching pool denoms [%s,%s] in canonical order", denom1, denom2)
+	}
+	if inLiq[0].Amount.LTE(one) || inLiq[1].Amount.LTE(one) {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "liquidation_threshold amounts must be > 1 for both denoms")
+	}
+	msg.LiquidationThreshold = inLiq
+
+	// InterestRate: allow 0, 1, or 2 entries. Normalize using DecCoins helpers and store exactly two entries.
+	inIR := sdk.NewDecCoins(msg.InterestRate...)
+	ir1 := inIR.AmountOf(denom1)
+	ir2 := inIR.AmountOf(denom2)
+	if ir1.IsNegative() || ir2.IsNegative() {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "interest_rate amounts must be >= 0")
+	}
+	msg.InterestRate = sdk.DecCoins{
+		sdk.NewDecCoinFromDec(denom1, ir1),
+		sdk.NewDecCoinFromDec(denom2, ir2),
 	}
 
-	if msg.MaxLeverageRatio == "" {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "max_leverage_ratio is required")
+	// MaxBorrowPercent: required; exactly two DecCoins matching pool denoms; amounts in [0,1)
+	if len(msg.MaxBorrowPercent) != 2 {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_borrow_percent must have exactly 2 entries")
 	}
-	maxLev, err := math.LegacyNewDecFromStr(msg.MaxLeverageRatio)
-	if err != nil {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid max_leverage_ratio: %v", err)
+	msg.MaxBorrowPercent = sdk.NewDecCoins(msg.MaxBorrowPercent...)
+	if msg.MaxBorrowPercent[0].Denom != denom1 || msg.MaxBorrowPercent[1].Denom != denom2 {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_borrow_percent denoms must match pool coins in canonical order: want [%s,%s]", denom1, denom2)
 	}
-	if maxLev.LTE(math.LegacyNewDec(1)) {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_leverage_ratio must be > 1: %s", maxLev.String())
-	}
-
-	if msg.MaxBorrowPercent == "" {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "max_borrow_percent is required")
-	}
-	maxBorrow, err := math.LegacyNewDecFromStr(msg.MaxBorrowPercent)
-	if err != nil {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid max_borrow_percent: %v", err)
-	}
-	if maxBorrow.IsNegative() || maxBorrow.GT(math.LegacyNewDec(1)) {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_borrow_percent must be in [0,1]: %s", maxBorrow.String())
+	if msg.MaxBorrowPercent[0].Amount.IsNegative() || msg.MaxBorrowPercent[0].Amount.GTE(one) ||
+		msg.MaxBorrowPercent[1].Amount.IsNegative() || msg.MaxBorrowPercent[1].Amount.GTE(one) {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "max_borrow_percent amounts must satisfy 0 <= x < 1")
 	}
 
 	hasBounds := len(msg.MinPrice) > 0 || len(msg.MaxPrice) > 0
@@ -105,35 +129,22 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 	}
 
 	if hasBounds {
-		if len(msg.MinPrice) != 2 || len(msg.MaxPrice) != 2 {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_price and max_price must each have exactly two coins")
-		}
-		// Ensure price bounds are sorted and match pool denoms (denom-based validation)
+		// Sanitize and extract amounts by denom
 		minPrice := sdk.NewCoins(msg.MinPrice...)
 		maxPrice := sdk.NewCoins(msg.MaxPrice...)
-		if minPrice[0].Denom != denom1 || minPrice[1].Denom != denom2 || maxPrice[0].Denom != denom1 || maxPrice[1].Denom != denom2 {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_price and max_price must have the same denoms as coins in canonical order")
-		}
-		// Update msg fields to use sorted versions
-		msg.MinPrice = minPrice
-		msg.MaxPrice = maxPrice
 		// integer cross-multiplication comparisons (avoid Decs):
 		// price = R_quote / R_base; min = minQuote/minBase; max = maxQuote/maxBase
-		minBase := msg.MinPrice[0].Amount
-		minQuote := msg.MinPrice[1].Amount
-		maxBase := msg.MaxPrice[0].Amount
-		maxQuote := msg.MaxPrice[1].Amount
+		minBase := minPrice.AmountOf(denom1)
+		minQuote := minPrice.AmountOf(denom2)
+		maxBase := maxPrice.AmountOf(denom1)
+		maxQuote := maxPrice.AmountOf(denom2)
 		// disallow equality; if user swapped, normalize by swapping
 		if maxQuote.Mul(minBase).Equal(minQuote.Mul(maxBase)) {
 			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_price must be greater than min_price")
 		}
 		// Normalize order so that min <= max
 		if minQuote.Mul(maxBase).GT(maxQuote.Mul(minBase)) {
-			msg.MinPrice, msg.MaxPrice = msg.MaxPrice, msg.MinPrice
-			minBase = msg.MinPrice[0].Amount
-			minQuote = msg.MinPrice[1].Amount
-			maxBase = msg.MaxPrice[0].Amount
-			maxQuote = msg.MaxPrice[1].Amount
+			minBase, minQuote, maxBase, maxQuote = maxBase, maxQuote, minBase, minQuote
 		}
 		// Initial price must be strictly within (min, max)
 		rBase := msg.Coins[0].Amount
@@ -141,6 +152,9 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		if rQuote.Mul(minBase).LTE(rBase.Mul(minQuote)) || rQuote.Mul(maxBase).GTE(rBase.Mul(maxQuote)) {
 			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "initial price must be within min and max bounds: coins=%s min=%s max=%s", msg.Coins.String(), msg.MinPrice.String(), msg.MaxPrice.String())
 		}
+		// Store canonical two-coin vectors in pool order
+		msg.MinPrice = sdk.NewCoins(sdk.NewCoin(denom1, minBase), sdk.NewCoin(denom2, minQuote))
+		msg.MaxPrice = sdk.NewCoins(sdk.NewCoin(denom1, maxBase), sdk.NewCoin(denom2, maxQuote))
 	}
 
 	from, err := k.addr(ctx, msg.Creator)
@@ -163,19 +177,21 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 
 	t := sdkCtx.BlockTime()
 	pool := whaleswapv1.Pool{
-		PoolId:             id,
-		Coins:              msg.Coins,
-		SharesDenom:        sharesDenom,
-		FeePct:             msg.FeePct,
-		MinPrice:           msg.MinPrice,
-		MaxPrice:           msg.MaxPrice,
-		BlockHeight:        uint64(sdkCtx.BlockHeight()),
-		Created:            &t,
-		Updated:            &t,
-		NumTrades:          0,
-		MinCollateralRatio: msg.MinCollateralRatio,
-		MaxLeverageRatio:   msg.MaxLeverageRatio,
-		MaxBorrowPercent:   msg.MaxBorrowPercent,
+		PoolId:               id,
+		Coins:                msg.Coins,
+		SharesDenom:          sharesDenom,
+		FeeRate:              msg.FeeRate,
+		MinPrice:             msg.MinPrice,
+		MaxPrice:             msg.MaxPrice,
+		BlockHeight:          uint64(sdkCtx.BlockHeight()),
+		Created:              &t,
+		Updated:              &t,
+		NumTrades:            0,
+		MinCollateralRatio:   msg.MinCollateralRatio,
+		MaxLeverageRatio:     msg.MaxLeverageRatio,
+		LiquidationThreshold: msg.LiquidationThreshold,
+		InterestRate:         msg.InterestRate,
+		MaxBorrowPercent:     msg.MaxBorrowPercent,
 	}
 
 	logger.Info("CreatePool calculating initial shares", "has_bounds", hasBounds)

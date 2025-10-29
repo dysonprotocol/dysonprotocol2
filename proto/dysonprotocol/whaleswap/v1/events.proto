@@ -125,3 +125,15 @@ message EventLeverageLiquidationFinalized {
       [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin pool_loss = 8 [ (gogoproto.nullable) = false ];
 }
+
+message EventLeveragePositionCovered {
+  uint64 position_id = 1;
+  string user = 2;
+  uint64 pool_id = 3;
+  cosmos.base.v1beta1.Coin interest_paid = 4 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin principal_paid = 5 [ (gogoproto.nullable) = false ];
+  string new_collateral_ratio = 6; // cosmos.Dec string
+  bool closed = 7;
+  cosmos.base.v1beta1.Coin refunded = 8 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin profit = 9 [ (gogoproto.nullable) = false ];
+}

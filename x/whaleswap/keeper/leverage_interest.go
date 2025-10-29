@@ -33,25 +33,16 @@ func (k Keeper) GetInterestRateForDenom(ctx context.Context, pool *whaleswapv1.P
 	if len(pool.Coins) != 2 {
 		return math.LegacyDec{}, fmt.Errorf("invalid pool state: expected 2 coins")
 	}
-	rate := math.LegacyNewDec(0)
-	var err error
+	// New schema: pool.InterestRate must be exactly 2 in canonical order matching pool.Coins denoms.
+	if len(pool.InterestRate) != 2 {
+		return math.LegacyDec{}, fmt.Errorf("pool interest_rate must have exactly 2 entries")
+	}
 	switch denom {
 	case pool.Coins[0].Denom:
-		if pool.InterestRateCoin1 != "" {
-			rate, err = math.LegacyNewDecFromStr(pool.InterestRateCoin1)
-			if err != nil {
-				return math.LegacyDec{}, fmt.Errorf("invalid interest_rate_coin1: %w", err)
-			}
-		}
+		return pool.InterestRate.AmountOf(pool.Coins[0].Denom), nil
 	case pool.Coins[1].Denom:
-		if pool.InterestRateCoin2 != "" {
-			rate, err = math.LegacyNewDecFromStr(pool.InterestRateCoin2)
-			if err != nil {
-				return math.LegacyDec{}, fmt.Errorf("invalid interest_rate_coin2: %w", err)
-			}
-		}
+		return pool.InterestRate.AmountOf(pool.Coins[1].Denom), nil
 	default:
 		return math.LegacyDec{}, fmt.Errorf("denom %s not in pool", denom)
 	}
-	return rate, nil
 }

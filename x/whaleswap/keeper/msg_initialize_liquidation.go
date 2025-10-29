@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/math"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // InitializeLiquidation marks a position for liquidation.
@@ -21,8 +22,11 @@ func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgI
 		return nil, cosmossdkerrors.Wrapf(err, "pool %d not found", pos.PoolId)
 	}
 
-	// Calculate CR
-	rate, _ := k.GetInterestRateForDenom(ctx, &pool, pos.Borrowed.Denom)
+	// Calculate CR using per-position snapshot rate; must be set (len 2)
+	if len(pos.InterestRate) != 2 {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "position interest_rate must have exactly 2 entries")
+	}
+	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	elapsed := sdkCtx.BlockTime().Sub(*pos.BorrowTime).Seconds()
 	interest, _ := k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))
@@ -31,13 +35,13 @@ func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgI
 	debtValue := math.LegacyNewDecFromInt(pos.Borrowed.Amount).Add(interest)
 	cr, _ := k.ComputeCollateralRatio(collateralValue, debtValue)
 
-	// Use pool-specific liquidation threshold
-	liquidationThreshold := math.LegacyMustNewDecFromStr("1.2")
-	if pool.LiquidationThreshold != "" {
-		parsed, err := math.LegacyNewDecFromStr(pool.LiquidationThreshold)
-		if err == nil {
-			liquidationThreshold = parsed
-		}
+	// Require pool liquidation_threshold to be set; use per-borrow denom
+	if len(pool.LiquidationThreshold) != 2 {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool liquidation_threshold must be set")
+	}
+	liquidationThreshold := pool.LiquidationThreshold.AmountOf(pos.Borrowed.Denom)
+	if !liquidationThreshold.GT(math.LegacyNewDec(1)) {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool liquidation_threshold")
 	}
 
 	if err := k.InitializeLiquidationInternal(ctx, &pos); err != nil {

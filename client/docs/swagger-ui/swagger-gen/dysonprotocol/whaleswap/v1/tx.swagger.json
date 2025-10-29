@@ -139,6 +139,39 @@
         ]
       }
     },
+    "dysonprotocol.whaleswap.v1.MsgCoverPosition": {
+      "post": {
+        "summary": "Repay accrued interest first, then principal; supports overpay \u2192 auto-close\nwith refund",
+        "operationId": "dysonprotocol.whaleswap.v1.MsgCoverPosition",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgCoverPositionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgCoverPosition"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
     "dysonprotocol.whaleswap.v1.MsgCreatePool": {
       "post": {
         "summary": "AMM",
@@ -575,6 +608,18 @@
       },
       "description": "Coin defines a token with a denomination and an amount.\n\nNOTE: The amount field is an Int which implements the custom method\nsignatures required by gogoproto."
     },
+    "cosmos.base.v1beta1.DecCoin": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "DecCoin defines a token with a denomination and a decimal amount.\n\nNOTE: The amount field is an Dec which implements the custom method\nsignatures required by gogoproto."
+    },
     "dysonprotocol.whaleswap.v1.AuctionRedeem": {
       "type": "object",
       "properties": {
@@ -674,11 +719,56 @@
     "dysonprotocol.whaleswap.v1.MsgClosePositionResponse": {
       "type": "object",
       "properties": {
-        "profit": {
+        "interest_paid": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
         },
-        "accrued_interest": {
+        "principal_paid": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "profit": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.MsgCoverPosition": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "string"
+        },
+        "position_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "payment": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        }
+      }
+    },
+    "dysonprotocol.whaleswap.v1.MsgCoverPositionResponse": {
+      "type": "object",
+      "properties": {
+        "interest_paid": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "principal_paid": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "new_borrowed": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "new_collateral_ratio": {
+          "type": "string"
+        },
+        "closed": {
+          "type": "boolean"
+        },
+        "refunded": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "profit": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "title": "swap PnL from unwinding held \u2192 borrowed during auto-close"
         }
       }
     },
@@ -708,17 +798,47 @@
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           }
         },
-        "fee_pct": {
-          "type": "string"
+        "fee_rate": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;\nkeeper normalizes to exactly two entries in canonical pool order."
         },
         "min_collateral_ratio": {
-          "type": "string"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Minimum collateral ratio per reserve denom (exactly two, canonical order).\nEach amount is a LegacyDec string (> 1)."
         },
         "max_leverage_ratio": {
-          "type": "string"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Maximum leverage ratio per reserve denom (exactly two, canonical order).\nEach amount is a LegacyDec string (> 1)."
+        },
+        "interest_rate": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Annual interest rates per reserve denom (exactly two, canonical order).\nEach amount is a LegacyDec string representing APR (per-year accrual)."
         },
         "max_borrow_percent": {
-          "type": "string"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Maximum borrow capacity per reserve denom as DecCoins (exactly two,\ncanonical order). Each amount is a LegacyDec in [0,1)."
+        },
+        "liquidation_threshold": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "title": "Collateral ratio liquidation threshold per reserve denom (exactly two,\ncanonical order; each amount is a LegacyDec string > 1)"
         }
       },
       "description": "Create a pool.\n\nBehavior:\n- If min_price/max_price are both unset (or effectively encode [0, +\u221e)), the\n  pool behaves as constant product (v2).\n- If a finite band is provided, concentrated-liquidity math applies within\n  [min_price, max_price] where price is coin_b / coin_a (see conventions)."
@@ -1084,9 +1204,12 @@
           "type": "string",
           "format": "uint64"
         },
-        "fee_pct": {
-          "type": "string",
-          "title": "Optional fields; empty string means no change"
+        "fee_rate": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;\nkeeper normalizes to exactly two entries in canonical pool order."
         },
         "min_price": {
           "type": "array",
@@ -1101,24 +1224,42 @@
           }
         },
         "min_collateral_ratio": {
-          "type": "string",
-          "title": "Leverage configuration (optional; empty means no change)"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "title": "Leverage configuration (per-denom)\nMinimum collateral ratio per reserve denom (exactly two, canonical order; >\n1)"
         },
         "max_leverage_ratio": {
-          "type": "string"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "title": "Maximum leverage ratio per reserve denom (exactly two, canonical order; >\n1)"
+        },
+        "interest_rate": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Annual interest rates per reserve denom (exactly two, canonical order)."
         },
         "max_borrow_percent": {
-          "type": "string"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Maximum borrow capacity per reserve denom (exactly two, canonical order).\nAmounts in [0,1)."
         },
-        "interest_rate_coin1": {
-          "type": "string",
-          "title": "Annual interest rates per reserve coin (optional; empty means no change)\nExample: \"0.10\" for 10% APR"
-        },
-        "interest_rate_coin2": {
-          "type": "string"
+        "liquidation_threshold": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "title": "Collateral ratio liquidation threshold per reserve denom (exactly two,\ncanonical order; each amount is a LegacyDec string > 1)"
         }
       },
-      "description": "Update pool config (owner-only: majority of shares > 50%).\n\nNotes:\n- Empty string/empty arrays indicate no change for that field.\n- Price bands follow the same two-coin ratio rules as in MsgCreatePool."
+      "description": "Update pool config (owner-only: majority of shares > 50%).\n\nNotes:\n- All fields are required. Price bands must be both empty (no band) or both\n  contain exactly two coins in canonical order matching pool reserves."
     },
     "dysonprotocol.whaleswap.v1.MsgUpdatePoolConfigResponse": {
       "type": "object"

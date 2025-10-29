@@ -5,7 +5,7 @@
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64 } from "@bufbuild/protobuf";
-import { Coin } from "../../../cosmos/base/v1beta1/coin_pb.js";
+import { Coin, DecCoin } from "../../../cosmos/base/v1beta1/coin_pb.js";
 import { Params } from "./params_pb.js";
 
 /**
@@ -73,32 +73,52 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
   maxPrice: Coin[] = [];
 
   /**
-   * cosmos.Dec string in [0,1)
+   * Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
+   * keeper normalizes to exactly two entries in canonical pool order.
    *
-   * @generated from field: string fee_pct = 5;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin fee_rate = 5;
    */
-  feePct = "";
+  feeRate: DecCoin[] = [];
 
   /**
-   * cosmos.Dec string (e.g., "1.5")
+   * Minimum collateral ratio per reserve denom (exactly two, canonical order).
+   * Each amount is a LegacyDec string (> 1).
    *
-   * @generated from field: string min_collateral_ratio = 6;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 6;
    */
-  minCollateralRatio = "";
+  minCollateralRatio: DecCoin[] = [];
 
   /**
-   * cosmos.Dec string (e.g., "20.0")
+   * Maximum leverage ratio per reserve denom (exactly two, canonical order).
+   * Each amount is a LegacyDec string (> 1).
    *
-   * @generated from field: string max_leverage_ratio = 7;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7;
    */
-  maxLeverageRatio = "";
+  maxLeverageRatio: DecCoin[] = [];
 
   /**
-   * cosmos.Dec string in [0,1], applies to both coins
+   * Annual interest rates per reserve denom (exactly two, canonical order).
+   * Each amount is a LegacyDec string representing APR (per-year accrual).
    *
-   * @generated from field: string max_borrow_percent = 8;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin interest_rate = 8;
    */
-  maxBorrowPercent = "";
+  interestRate: DecCoin[] = [];
+
+  /**
+   * Maximum borrow capacity per reserve denom as DecCoins (exactly two,
+   * canonical order). Each amount is a LegacyDec in [0,1).
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_borrow_percent = 9;
+   */
+  maxBorrowPercent: DecCoin[] = [];
+
+  /**
+   * Collateral ratio liquidation threshold per reserve denom (exactly two,
+   * canonical order; each amount is a LegacyDec string > 1)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin liquidation_threshold = 10;
+   */
+  liquidationThreshold: DecCoin[] = [];
 
   constructor(data?: PartialMessage<MsgCreatePool>) {
     super();
@@ -112,10 +132,12 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
     { no: 2, name: "coins", kind: "message", T: Coin, repeated: true },
     { no: 3, name: "min_price", kind: "message", T: Coin, repeated: true },
     { no: 4, name: "max_price", kind: "message", T: Coin, repeated: true },
-    { no: 5, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 6, name: "min_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 7, name: "max_leverage_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 8, name: "max_borrow_percent", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "fee_rate", kind: "message", T: DecCoin, repeated: true },
+    { no: 6, name: "min_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
+    { no: 7, name: "max_leverage_ratio", kind: "message", T: DecCoin, repeated: true },
+    { no: 8, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
+    { no: 9, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },
+    { no: 10, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgCreatePool {
@@ -176,8 +198,8 @@ export class MsgCreatePoolResponse extends Message<MsgCreatePoolResponse> {
  * Update pool config (owner-only: majority of shares > 50%).
  *
  * Notes:
- * - Empty string/empty arrays indicate no change for that field.
- * - Price bands follow the same two-coin ratio rules as in MsgCreatePool.
+ * - All fields are required. Price bands must be both empty (no band) or both
+ *   contain exactly two coins in canonical order matching pool reserves.
  *
  * @generated from message dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig
  */
@@ -193,13 +215,12 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
   poolId = protoInt64.zero;
 
   /**
-   * Optional fields; empty string means no change
+   * Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
+   * keeper normalizes to exactly two entries in canonical pool order.
    *
-   * cosmos.Dec string
-   *
-   * @generated from field: string fee_pct = 3;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin fee_rate = 3;
    */
-  feePct = "";
+  feeRate: DecCoin[] = [];
 
   /**
    * @generated from field: repeated cosmos.base.v1beta1.Coin min_price = 4;
@@ -212,44 +233,44 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
   maxPrice: Coin[] = [];
 
   /**
-   * Leverage configuration (optional; empty means no change)
+   * Leverage configuration (per-denom)
+   * Minimum collateral ratio per reserve denom (exactly two, canonical order; >
+   * 1)
    *
-   * cosmos.Dec string
-   *
-   * @generated from field: string min_collateral_ratio = 6;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 6;
    */
-  minCollateralRatio = "";
+  minCollateralRatio: DecCoin[] = [];
 
   /**
-   * cosmos.Dec string
+   * Maximum leverage ratio per reserve denom (exactly two, canonical order; >
+   * 1)
    *
-   * @generated from field: string max_leverage_ratio = 7;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7;
    */
-  maxLeverageRatio = "";
+  maxLeverageRatio: DecCoin[] = [];
 
   /**
-   * cosmos.Dec string
+   * Annual interest rates per reserve denom (exactly two, canonical order).
    *
-   * @generated from field: string max_borrow_percent = 8;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin interest_rate = 8;
    */
-  maxBorrowPercent = "";
+  interestRate: DecCoin[] = [];
 
   /**
-   * Annual interest rates per reserve coin (optional; empty means no change)
-   * Example: "0.10" for 10% APR
+   * Maximum borrow capacity per reserve denom (exactly two, canonical order).
+   * Amounts in [0,1).
    *
-   * cosmos.Dec string
-   *
-   * @generated from field: string interest_rate_coin1 = 9;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_borrow_percent = 9;
    */
-  interestRateCoin1 = "";
+  maxBorrowPercent: DecCoin[] = [];
 
   /**
-   * cosmos.Dec string
+   * Collateral ratio liquidation threshold per reserve denom (exactly two,
+   * canonical order; each amount is a LegacyDec string > 1)
    *
-   * @generated from field: string interest_rate_coin2 = 10;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin liquidation_threshold = 10;
    */
-  interestRateCoin2 = "";
+  liquidationThreshold: DecCoin[] = [];
 
   constructor(data?: PartialMessage<MsgUpdatePoolConfig>) {
     super();
@@ -261,14 +282,14 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "signer", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 3, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "fee_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 4, name: "min_price", kind: "message", T: Coin, repeated: true },
     { no: 5, name: "max_price", kind: "message", T: Coin, repeated: true },
-    { no: 6, name: "min_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 7, name: "max_leverage_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 8, name: "max_borrow_percent", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 9, name: "interest_rate_coin1", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 10, name: "interest_rate_coin2", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "min_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
+    { no: 7, name: "max_leverage_ratio", kind: "message", T: DecCoin, repeated: true },
+    { no: 8, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
+    { no: 9, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },
+    { no: 10, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgUpdatePoolConfig {
@@ -1616,14 +1637,19 @@ export class MsgClosePosition extends Message<MsgClosePosition> {
  */
 export class MsgClosePositionResponse extends Message<MsgClosePositionResponse> {
   /**
-   * @generated from field: cosmos.base.v1beta1.Coin profit = 1;
+   * @generated from field: cosmos.base.v1beta1.Coin interest_paid = 1;
    */
-  profit?: Coin;
+  interestPaid?: Coin;
 
   /**
-   * @generated from field: cosmos.base.v1beta1.Coin accrued_interest = 2;
+   * @generated from field: cosmos.base.v1beta1.Coin principal_paid = 2;
    */
-  accruedInterest?: Coin;
+  principalPaid?: Coin;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin profit = 3;
+   */
+  profit?: Coin;
 
   constructor(data?: PartialMessage<MsgClosePositionResponse>) {
     super();
@@ -1633,8 +1659,9 @@ export class MsgClosePositionResponse extends Message<MsgClosePositionResponse> 
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "dysonprotocol.whaleswap.v1.MsgClosePositionResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "profit", kind: "message", T: Coin },
-    { no: 2, name: "accrued_interest", kind: "message", T: Coin },
+    { no: 1, name: "interest_paid", kind: "message", T: Coin },
+    { no: 2, name: "principal_paid", kind: "message", T: Coin },
+    { no: 3, name: "profit", kind: "message", T: Coin },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgClosePositionResponse {
@@ -1749,6 +1776,130 @@ export class MsgAddCollateralResponse extends Message<MsgAddCollateralResponse> 
 
   static equals(a: MsgAddCollateralResponse | PlainMessage<MsgAddCollateralResponse> | undefined, b: MsgAddCollateralResponse | PlainMessage<MsgAddCollateralResponse> | undefined): boolean {
     return proto3.util.equals(MsgAddCollateralResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.MsgCoverPosition
+ */
+export class MsgCoverPosition extends Message<MsgCoverPosition> {
+  /**
+   * @generated from field: string user = 1;
+   */
+  user = "";
+
+  /**
+   * @generated from field: uint64 position_id = 2;
+   */
+  positionId = protoInt64.zero;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin payment = 3;
+   */
+  payment?: Coin;
+
+  constructor(data?: PartialMessage<MsgCoverPosition>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgCoverPosition";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 3, name: "payment", kind: "message", T: Coin },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgCoverPosition {
+    return new MsgCoverPosition().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgCoverPosition {
+    return new MsgCoverPosition().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgCoverPosition {
+    return new MsgCoverPosition().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgCoverPosition | PlainMessage<MsgCoverPosition> | undefined, b: MsgCoverPosition | PlainMessage<MsgCoverPosition> | undefined): boolean {
+    return proto3.util.equals(MsgCoverPosition, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.MsgCoverPositionResponse
+ */
+export class MsgCoverPositionResponse extends Message<MsgCoverPositionResponse> {
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin interest_paid = 1;
+   */
+  interestPaid?: Coin;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin principal_paid = 2;
+   */
+  principalPaid?: Coin;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin new_borrowed = 3;
+   */
+  newBorrowed?: Coin;
+
+  /**
+   * @generated from field: string new_collateral_ratio = 4;
+   */
+  newCollateralRatio = "";
+
+  /**
+   * @generated from field: bool closed = 5;
+   */
+  closed = false;
+
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin refunded = 6;
+   */
+  refunded?: Coin;
+
+  /**
+   * swap PnL from unwinding held → borrowed during auto-close
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin profit = 7;
+   */
+  profit?: Coin;
+
+  constructor(data?: PartialMessage<MsgCoverPositionResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgCoverPositionResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "interest_paid", kind: "message", T: Coin },
+    { no: 2, name: "principal_paid", kind: "message", T: Coin },
+    { no: 3, name: "new_borrowed", kind: "message", T: Coin },
+    { no: 4, name: "new_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "closed", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 6, name: "refunded", kind: "message", T: Coin },
+    { no: 7, name: "profit", kind: "message", T: Coin },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgCoverPositionResponse {
+    return new MsgCoverPositionResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgCoverPositionResponse {
+    return new MsgCoverPositionResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgCoverPositionResponse {
+    return new MsgCoverPositionResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgCoverPositionResponse | PlainMessage<MsgCoverPositionResponse> | undefined, b: MsgCoverPositionResponse | PlainMessage<MsgCoverPositionResponse> | undefined): boolean {
+    return proto3.util.equals(MsgCoverPositionResponse, a, b);
   }
 }
 

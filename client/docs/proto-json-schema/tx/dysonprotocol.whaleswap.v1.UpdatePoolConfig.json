@@ -11,9 +11,13 @@
                     "pool_id": {
                         "type": "string"
                     },
-                    "fee_pct": {
-                        "type": "string",
-                        "description": "Optional fields; empty string means no change  cosmos.Dec string"
+                    "fee_rate": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries; keeper normalizes to exactly two entries in canonical pool order."
                     },
                     "min_price": {
                         "items": {
@@ -30,30 +34,50 @@
                         "type": "array"
                     },
                     "min_collateral_ratio": {
-                        "type": "string",
-                        "description": "Leverage configuration (optional; empty means no change)  cosmos.Dec string"
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Leverage configuration (per-denom) Minimum collateral ratio per reserve denom (exactly two, canonical order; > 1)"
                     },
                     "max_leverage_ratio": {
-                        "type": "string",
-                        "description": "cosmos.Dec string"
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Maximum leverage ratio per reserve denom (exactly two, canonical order; > 1)"
+                    },
+                    "interest_rate": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Annual interest rates per reserve denom (exactly two, canonical order)."
                     },
                     "max_borrow_percent": {
-                        "type": "string",
-                        "description": "cosmos.Dec string"
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Maximum borrow capacity per reserve denom (exactly two, canonical order). Amounts in [0,1)."
                     },
-                    "interest_rate_coin1": {
-                        "type": "string",
-                        "description": "Annual interest rates per reserve coin (optional; empty means no change) Example: \"0.10\" for 10% APR  cosmos.Dec string"
-                    },
-                    "interest_rate_coin2": {
-                        "type": "string",
-                        "description": "cosmos.Dec string"
+                    "liquidation_threshold": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Collateral ratio liquidation threshold per reserve denom (exactly two, canonical order; each amount is a LegacyDec string > 1)"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Update Pool Config",
-                "description": "Update pool config (owner-only: majority of shares > 50%). Notes: - Empty string/empty arrays indicate no change for that field. - Price bands follow the same two-coin ratio rules as in MsgCreatePool."
+                "description": "Update pool config (owner-only: majority of shares > 50%). Notes: - All fields are required. Price bands must be both empty (no band) or both   contain exactly two coins in canonical order matching pool reserves."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {
@@ -68,6 +92,20 @@
                 "type": "object",
                 "title": "Coin",
                 "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "cosmos.base.v1beta1.DecCoin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Dec Coin",
+                "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
             }
         }
     },

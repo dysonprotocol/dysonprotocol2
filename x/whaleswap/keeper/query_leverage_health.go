@@ -29,10 +29,10 @@ func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequ
 		return nil, cosmossdkerrors.Wrapf(err, "pool %d not found", pos.PoolId)
 	}
 
-	rate, err := k.GetInterestRateForDenom(ctx, &pool, pos.Borrowed.Denom)
-	if err != nil {
-		return nil, err
+	if len(pos.InterestRate) != 2 {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "position interest_rate must have exactly 2 entries")
 	}
+	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
 
 	// Calculate elapsed time
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -58,13 +58,13 @@ func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequ
 		return nil, err
 	}
 
-	// Use pool-specific liquidation threshold
-	liquidationThreshold := math.LegacyMustNewDecFromStr("1.2")
-	if pool.LiquidationThreshold != "" {
-		parsed, err := math.LegacyNewDecFromStr(pool.LiquidationThreshold)
-		if err == nil {
-			liquidationThreshold = parsed
-		}
+	// Require pool liquidation_threshold to be set; per-denom
+	if len(pool.LiquidationThreshold) != 2 {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool liquidation_threshold must be set")
+	}
+	liquidationThreshold := pool.LiquidationThreshold.AmountOf(pos.Borrowed.Denom)
+	if !liquidationThreshold.GT(math.LegacyNewDec(1)) {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool liquidation_threshold")
 	}
 
 	canClose := k.CanCloseBefore(ctx, &pos)

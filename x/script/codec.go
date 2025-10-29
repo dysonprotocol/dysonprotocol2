@@ -300,6 +300,7 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		&whaleswapv1.QueryPositionRequest{}, &whaleswapv1.QueryPositionResponse{},
 		&whaleswapv1.QueryPositionsByUserRequest{}, &whaleswapv1.QueryPositionsByUserResponse{},
 		&whaleswapv1.QueryPositionsByPoolRequest{}, &whaleswapv1.QueryPositionsByPoolResponse{},
+		&whaleswapv1.QueryMetricsRequest{}, &whaleswapv1.QueryMetricsResponse{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registrar, &scripttypes.Msg_serviceDesc)

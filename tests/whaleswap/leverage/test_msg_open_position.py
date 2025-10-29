@@ -47,6 +47,7 @@ def _sudo(msg_dict):
 
 def demo_long_position(alice_addr, foo_name, bar_name):
     # Create pool with two specific denoms (ordering is lexicographic/semanticless)
+    base, quote = sorted([foo_name, bar_name])
     sudo_pool_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
         "creator": alice_addr,
@@ -54,10 +55,26 @@ def demo_long_position(alice_addr, foo_name, bar_name):
             {"denom": foo_name, "amount": "10000"},
             {"denom": bar_name, "amount": "10000"}
         ],
-        "fee_pct": "0.003",
-        "min_collateral_ratio": "1.5",
-        "max_leverage_ratio": "20.0",
-        "max_borrow_percent": "0.8"
+        "fee_rate": [
+            {"denom": base, "amount": "0.003"},
+            {"denom": quote, "amount": "0.003"}
+        ],
+        "min_collateral_ratio": [
+            {"denom": base, "amount": "1.5"},
+            {"denom": quote, "amount": "1.5"}
+        ],
+        "max_leverage_ratio": [
+            {"denom": base, "amount": "20.0"},
+            {"denom": quote, "amount": "20.0"}
+        ],
+        "liquidation_threshold": [
+            {"denom": base, "amount": "1.2"},
+            {"denom": quote, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base, "amount": "0.8"},
+            {"denom": quote, "amount": "0.8"}
+        ]
     })
     
     pool_result = sudo_pool_result["results"][0]
@@ -112,6 +129,7 @@ def demo_long_position(alice_addr, foo_name, bar_name):
         extra_code,
     )
     result = deep_parse(query_result)
+    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}; full={json.dumps(query_result, indent=2)}"
 
     print(f"Full query_result: {json.dumps(query_result, indent=2)}")
     print(f"Deep parsed result: {json.dumps(result, indent=2)}")
@@ -159,10 +177,10 @@ def demo_long_position(alice_addr, foo_name, bar_name):
         held_denom_response == bar_name
     ), f"LONG: held denom should be {bar_name}, got {held_denom_response}"
 
-    # Verify held amounts include 0.3% fee and rounding in AMM swap
+    # Verify held amount with output-side fee and pre-debited reserves
     assert (
-        held_amount_response == 498
-    ), f"LONG: held amount should be 498 with 0.3% fee, got {held_amount_response}"
+        held_amount_response == 499
+    ), f"LONG: held amount should be 499 with 0.3% output fee, got {held_amount_response}"
 
 
 def test_open_short_position_basic(
@@ -188,6 +206,7 @@ def _sudo(msg_dict):
 
 def demo_short_position(alice_addr, foo_name, bar_name):
     # Create pool with two specific denoms (ordering is lexicographic/semanticless)
+    base, quote = sorted([foo_name, bar_name])
     sudo_pool_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
         "creator": alice_addr,
@@ -195,10 +214,26 @@ def demo_short_position(alice_addr, foo_name, bar_name):
             {"denom": foo_name, "amount": "10000"},
             {"denom": bar_name, "amount": "10000"}
         ],
-        "fee_pct": "0.003",
-        "min_collateral_ratio": "1.5",
-        "max_leverage_ratio": "20.0",
-        "max_borrow_percent": "0.8"
+        "fee_rate": [
+            {"denom": base, "amount": "0.003"},
+            {"denom": quote, "amount": "0.003"}
+        ],
+        "min_collateral_ratio": [
+            {"denom": base, "amount": "1.5"},
+            {"denom": quote, "amount": "1.5"}
+        ],
+        "max_leverage_ratio": [
+            {"denom": base, "amount": "20.0"},
+            {"denom": quote, "amount": "20.0"}
+        ],
+        "liquidation_threshold": [
+            {"denom": base, "amount": "1.2"},
+            {"denom": quote, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base, "amount": "0.8"},
+            {"denom": quote, "amount": "0.8"}
+        ]
     })
     
     pool_result = sudo_pool_result["results"][0]
@@ -253,6 +288,7 @@ def demo_short_position(alice_addr, foo_name, bar_name):
         extra_code,
     )
     result = deep_parse(query_result)
+    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}; full={json.dumps(query_result, indent=2)}"
 
     print(f"Full query_result: {json.dumps(query_result, indent=2)}")
     print(f"Deep parsed result: {json.dumps(result, indent=2)}")
@@ -300,10 +336,10 @@ def demo_short_position(alice_addr, foo_name, bar_name):
         held_denom_response == foo_name
     ), f"SHORT: held denom should be {foo_name}, got {held_denom_response}"
 
-    # Verify held amounts include 0.3% fee and rounding in AMM swap
+    # Verify held amount with output-side fee and pre-debited reserves
     assert (
-        held_amount_response == 498
-    ), f"SHORT: held amount should be 498 with 0.3% fee, got {held_amount_response}"
+        held_amount_response == 499
+    ), f"SHORT: held amount should be 499 with 0.3% output fee, got {held_amount_response}"
 
 
 def test_open_position_pool_not_found(
@@ -389,6 +425,7 @@ def _sudo(msg_dict):
     })
 
 def demo_insufficient_cr(alice_addr, foo_name, bar_name):
+    base, quote = sorted([foo_name, bar_name])
     sudo_pool_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
         "creator": alice_addr,
@@ -396,10 +433,26 @@ def demo_insufficient_cr(alice_addr, foo_name, bar_name):
             {"denom": foo_name, "amount": "10000"},
             {"denom": bar_name, "amount": "10000"}
         ],
-        "fee_pct": "0.003",
-        "min_collateral_ratio": "1.5",
-        "max_leverage_ratio": "20.0",
-        "max_borrow_percent": "0.8"
+        "fee_rate": [
+            {"denom": base, "amount": "0.003"},
+            {"denom": quote, "amount": "0.003"}
+        ],
+        "min_collateral_ratio": [
+            {"denom": base, "amount": "1.5"},
+            {"denom": quote, "amount": "1.5"}
+        ],
+        "max_leverage_ratio": [
+            {"denom": base, "amount": "20.0"},
+            {"denom": quote, "amount": "20.0"}
+        ],
+        "liquidation_threshold": [
+            {"denom": base, "amount": "1.2"},
+            {"denom": quote, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base, "amount": "0.8"},
+            {"denom": quote, "amount": "0.8"}
+        ]
     })
     pool_id = sudo_pool_result["results"][0]["pool_id"]
     
@@ -463,6 +516,7 @@ def _sudo(msg_dict):
     })
 
 def demo_excessive_leverage(alice_addr, foo_name, bar_name):
+    base, quote = sorted([foo_name, bar_name])
     sudo_pool_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
         "creator": alice_addr,
@@ -470,10 +524,26 @@ def demo_excessive_leverage(alice_addr, foo_name, bar_name):
             {"denom": foo_name, "amount": "10000"},
             {"denom": bar_name, "amount": "10000"}
         ],
-        "fee_pct": "0.003",
-        "min_collateral_ratio": "1.5",
-        "max_leverage_ratio": "1.4",
-        "max_borrow_percent": "0.8"
+        "fee_rate": [
+            {"denom": base, "amount": "0.003"},
+            {"denom": quote, "amount": "0.003"}
+        ],
+        "min_collateral_ratio": [
+            {"denom": base, "amount": "1.5"},
+            {"denom": quote, "amount": "1.5"}
+        ],
+        "max_leverage_ratio": [
+            {"denom": base, "amount": "1.4"},
+            {"denom": quote, "amount": "1.4"}
+        ],
+        "liquidation_threshold": [
+            {"denom": base, "amount": "1.2"},
+            {"denom": quote, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base, "amount": "0.8"},
+            {"denom": quote, "amount": "0.8"}
+        ]
     })
     pool_id = sudo_pool_result["results"][0]["pool_id"]
     
@@ -538,6 +608,7 @@ def _sudo(msg_dict):
     })
 
 def demo_borrow_cap_exceeded(alice_addr, foo_name, bar_name):
+    base, quote = sorted([foo_name, bar_name])
     sudo_pool_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
         "creator": alice_addr,
@@ -545,10 +616,26 @@ def demo_borrow_cap_exceeded(alice_addr, foo_name, bar_name):
             {"denom": foo_name, "amount": "10000"},
             {"denom": bar_name, "amount": "10000"}
         ],
-        "fee_pct": "0.003",
-        "min_collateral_ratio": "1.5",
-        "max_leverage_ratio": "20.0",
-        "max_borrow_percent": "0.5"
+        "fee_rate": [
+            {"denom": base, "amount": "0.003"},
+            {"denom": quote, "amount": "0.003"}
+        ],
+        "min_collateral_ratio": [
+            {"denom": base, "amount": "1.5"},
+            {"denom": quote, "amount": "1.5"}
+        ],
+        "max_leverage_ratio": [
+            {"denom": base, "amount": "20.0"},
+            {"denom": quote, "amount": "20.0"}
+        ],
+        "liquidation_threshold": [
+            {"denom": base, "amount": "1.2"},
+            {"denom": quote, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base, "amount": "0.5"},
+            {"denom": quote, "amount": "0.5"}
+        ]
     })
     pool_id = sudo_pool_result["results"][0]["pool_id"]
     
@@ -613,6 +700,7 @@ def _sudo(msg_dict):
     })
 
 def demo_invalid_collateral_denom(alice_addr, foo_name, bar_name):
+    base, quote = sorted([foo_name, bar_name])
     sudo_pool_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
         "creator": alice_addr,
@@ -620,10 +708,26 @@ def demo_invalid_collateral_denom(alice_addr, foo_name, bar_name):
             {"denom": foo_name, "amount": "10000"},
             {"denom": bar_name, "amount": "10000"}
         ],
-        "fee_pct": "0.003",
-        "min_collateral_ratio": "1.5",
-        "max_leverage_ratio": "20.0",
-        "max_borrow_percent": "0.8"
+        "fee_rate": [
+            {"denom": base, "amount": "0.003"},
+            {"denom": quote, "amount": "0.003"}
+        ],
+        "min_collateral_ratio": [
+            {"denom": base, "amount": "1.5"},
+            {"denom": quote, "amount": "1.5"}
+        ],
+        "max_leverage_ratio": [
+            {"denom": base, "amount": "20.0"},
+            {"denom": quote, "amount": "20.0"}
+        ],
+        "liquidation_threshold": [
+            {"denom": base, "amount": "1.2"},
+            {"denom": quote, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base, "amount": "0.8"},
+            {"denom": quote, "amount": "0.8"}
+        ]
     })
     pool_id = sudo_pool_result["results"][0]["pool_id"]
     
@@ -688,6 +792,7 @@ def _sudo(msg_dict):
     })
 
 def demo_invalid_borrow_denom(alice_addr, foo_name, bar_name):
+    base, quote = sorted([foo_name, bar_name])
     sudo_pool_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
         "creator": alice_addr,
@@ -695,10 +800,26 @@ def demo_invalid_borrow_denom(alice_addr, foo_name, bar_name):
             {"denom": foo_name, "amount": "10000"},
             {"denom": bar_name, "amount": "10000"}
         ],
-        "fee_pct": "0.003",
-        "min_collateral_ratio": "1.5",
-        "max_leverage_ratio": "20.0",
-        "max_borrow_percent": "0.8"
+        "fee_rate": [
+            {"denom": base, "amount": "0.003"},
+            {"denom": quote, "amount": "0.003"}
+        ],
+        "min_collateral_ratio": [
+            {"denom": base, "amount": "1.5"},
+            {"denom": quote, "amount": "1.5"}
+        ],
+        "max_leverage_ratio": [
+            {"denom": base, "amount": "20.0"},
+            {"denom": quote, "amount": "20.0"}
+        ],
+        "liquidation_threshold": [
+            {"denom": base, "amount": "1.2"},
+            {"denom": quote, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base, "amount": "0.8"},
+            {"denom": quote, "amount": "0.8"}
+        ]
     })
     pool_id = sudo_pool_result["results"][0]["pool_id"]
     
@@ -763,6 +884,7 @@ def _sudo(msg_dict):
     })
 
 def demo_zero_collateral(alice_addr, foo_name, bar_name):
+    base, quote = sorted([foo_name, bar_name])
     sudo_pool_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
         "creator": alice_addr,
@@ -770,10 +892,26 @@ def demo_zero_collateral(alice_addr, foo_name, bar_name):
             {"denom": foo_name, "amount": "10000"},
             {"denom": bar_name, "amount": "10000"}
         ],
-        "fee_pct": "0.003",
-        "min_collateral_ratio": "1.5",
-        "max_leverage_ratio": "20.0",
-        "max_borrow_percent": "0.8"
+        "fee_rate": [
+            {"denom": base, "amount": "0.003"},
+            {"denom": quote, "amount": "0.003"}
+        ],
+        "min_collateral_ratio": [
+            {"denom": base, "amount": "1.5"},
+            {"denom": quote, "amount": "1.5"}
+        ],
+        "max_leverage_ratio": [
+            {"denom": base, "amount": "20.0"},
+            {"denom": quote, "amount": "20.0"}
+        ],
+        "liquidation_threshold": [
+            {"denom": base, "amount": "1.2"},
+            {"denom": quote, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base, "amount": "0.8"},
+            {"denom": quote, "amount": "0.8"}
+        ]
     })
     pool_id = sudo_pool_result["results"][0]["pool_id"]
     
@@ -836,6 +974,7 @@ def _sudo(msg_dict):
     })
 
 def demo_zero_borrow(alice_addr, foo_name, bar_name):
+    base, quote = sorted([foo_name, bar_name])
     sudo_pool_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
         "creator": alice_addr,
@@ -843,10 +982,26 @@ def demo_zero_borrow(alice_addr, foo_name, bar_name):
             {"denom": foo_name, "amount": "10000"},
             {"denom": bar_name, "amount": "10000"}
         ],
-        "fee_pct": "0.003",
-        "min_collateral_ratio": "1.5",
-        "max_leverage_ratio": "20.0",
-        "max_borrow_percent": "0.8"
+        "fee_rate": [
+            {"denom": base, "amount": "0.003"},
+            {"denom": quote, "amount": "0.003"}
+        ],
+        "min_collateral_ratio": [
+            {"denom": base, "amount": "1.5"},
+            {"denom": quote, "amount": "1.5"}
+        ],
+        "max_leverage_ratio": [
+            {"denom": base, "amount": "20.0"},
+            {"denom": quote, "amount": "20.0"}
+        ],
+        "liquidation_threshold": [
+            {"denom": base, "amount": "1.2"},
+            {"denom": quote, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base, "amount": "0.8"},
+            {"denom": quote, "amount": "0.8"}
+        ]
     })
     pool_id = sudo_pool_result["results"][0]["pool_id"]
     

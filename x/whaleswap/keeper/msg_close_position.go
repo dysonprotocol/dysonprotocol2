@@ -39,11 +39,11 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		return nil, cosmossdkerrors.Wrapf(err, "pool %d not found", pos.PoolId)
 	}
 
-	// Calculate interest
-	rate, err := k.GetInterestRateForDenom(ctx, &pool, pos.Borrowed.Denom)
-	if err != nil {
-		return nil, err
+	// Calculate interest using per-position snapshot rate; must be set (len 2)
+	if len(pos.InterestRate) != 2 {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "position interest_rate must have exactly 2 entries")
 	}
+	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	elapsed := sdkCtx.BlockTime().Sub(*pos.BorrowTime).Seconds()
 	interest, err := k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))
@@ -282,7 +282,8 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	}
 
 	return &whaleswapv1.MsgClosePositionResponse{
-		Profit:          profit,
-		AccruedInterest: interestCoin,
+		InterestPaid:  interestCoin,
+		PrincipalPaid: pos.Borrowed,
+		Profit:        profit,
 	}, nil
 }

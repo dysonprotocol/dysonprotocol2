@@ -53,14 +53,13 @@ func ValidateGenesisState(s types.GenesisState) error {
 		if p.SharesDenom == "" {
 			return fmt.Errorf("pool %d shares_denom must be set", p.PoolId)
 		}
-		if p.FeePct != "" {
-			dec, err := cosmossdk_math.LegacyNewDecFromStr(p.FeePct)
-			if err != nil {
-				return fmt.Errorf("pool %d invalid fee_pct: %v", p.PoolId, err)
-			}
-			if dec.IsNegative() || !dec.LT(cosmossdk_math.LegacyNewDec(1)) {
-				return fmt.Errorf("pool %d fee_pct must be in [0,1)", p.PoolId)
-			}
+		if len(p.FeeRate) != 2 {
+			return fmt.Errorf("pool %d fee_rate must have exactly two entries", p.PoolId)
+		}
+		fr1 := p.FeeRate.AmountOf(a.Denom)
+		fr2 := p.FeeRate.AmountOf(b.Denom)
+		if fr1.IsNegative() || !fr1.LT(cosmossdk_math.LegacyNewDec(1)) || fr2.IsNegative() || !fr2.LT(cosmossdk_math.LegacyNewDec(1)) {
+			return fmt.Errorf("pool %d fee_rate amounts must be in [0,1)", p.PoolId)
 		}
 		// Validate price band coins if provided
 		if len(p.MinPrice) != 0 && len(p.MinPrice) != 2 {

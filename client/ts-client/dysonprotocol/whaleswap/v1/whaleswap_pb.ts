@@ -5,7 +5,7 @@
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64, Timestamp } from "@bufbuild/protobuf";
-import { Coin } from "../../../cosmos/base/v1beta1/coin_pb.js";
+import { Coin, DecCoin } from "../../../cosmos/base/v1beta1/coin_pb.js";
 import { SettlementMode, TradeOperation } from "./tx_pb.js";
 
 /**
@@ -13,7 +13,7 @@ import { SettlementMode, TradeOperation } from "./tx_pb.js";
  *
  * Notes:
  * - coin_a.denom < coin_b.denom lexicographically (canonical order)
- * - fee_pct is a decimal string in [0,1)
+ * - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
  * - min_price/max_price are optional decimal strings defining a price band over
  *   P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
  *   behaves as constant-product (v2). If set, concentrated-liquidity math
@@ -44,11 +44,16 @@ export class Pool extends Message<Pool> {
   sharesDenom = "";
 
   /**
-   * fee_pct is the pool swap fee percentage (cosmos.Dec string in [0,1)).
+   * fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two
+   * entries in canonical pool order matching coins[0].denom and coins[1].denom.
+   * Fee is applied to the OUTPUT denom of each swap leg: for exact-in, the
+   * computed gross output is reduced by fee; for exact-out, the required gross
+   * output is inflated so net (after fee) meets the target. Fees accrue to
+   * fees_earned in the output denom.
    *
-   * @generated from field: string fee_pct = 5;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin fee_rate = 5;
    */
-  feePct = "";
+  feeRate: DecCoin[] = [];
 
   /**
    * min_price/max_price optionally set a price band for concentrated liquidity.
@@ -94,18 +99,12 @@ export class Pool extends Message<Pool> {
 
   /**
    * ═════ LEVERAGE FIELDS ═════
-   * Annual interest rate for borrows in coin1 denom
+   * Annual interest rates per reserve denom (exactly two, canonical order).
+   * Each amount is a LegacyDec string representing APR (per-year accrual).
    *
-   * @generated from field: string interest_rate_coin1 = 15;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin interest_rate = 15;
    */
-  interestRateCoin1 = "";
-
-  /**
-   * Annual interest rate for borrows in coin2 denom
-   *
-   * @generated from field: string interest_rate_coin2 = 16;
-   */
-  interestRateCoin2 = "";
+  interestRate: DecCoin[] = [];
 
   /**
    * Total accrued interest (yield for LPs)
@@ -122,34 +121,39 @@ export class Pool extends Message<Pool> {
   totalBorrowed: Coin[] = [];
 
   /**
-   * ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-   * Minimum collateral ratio required at position open
+   * ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
+   * Minimum collateral ratio required at position open per reserve denom
+   * (exactly two, canonical order). Each amount is a LegacyDec string (> 1).
    *
-   * @generated from field: string min_collateral_ratio = 21;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 21;
    */
-  minCollateralRatio = "";
+  minCollateralRatio: DecCoin[] = [];
 
   /**
-   * Maximum leverage ratio allowed (collateral + borrowed) / collateral
+   * Maximum leverage ratio allowed (collateral + borrowed) / collateral per
+   * reserve denom (exactly two, canonical order). Each amount is a LegacyDec
+   * string (> 1).
    *
-   * @generated from field: string max_leverage_ratio = 22;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 22;
    */
-  maxLeverageRatio = "";
+  maxLeverageRatio: DecCoin[] = [];
 
   /**
-   * Collateral ratio threshold below which position is liquidatable
+   * Collateral ratio threshold below which position is liquidatable per reserve
+   * denom (exactly two, canonical order). Each amount is a LegacyDec string
+   * (> 1).
    *
-   * @generated from field: string liquidation_threshold = 23;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin liquidation_threshold = 23;
    */
-  liquidationThreshold = "";
+  liquidationThreshold: DecCoin[] = [];
 
   /**
-   * Maximum borrow capacity as percentage of reserve (applies symmetrically to
-   * both coins)
+   * Maximum borrow capacity per reserve denom as DecCoins (exactly two,
+   * canonical order). Each amount is a LegacyDec in [0,1).
    *
-   * @generated from field: string max_borrow_percent = 24;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_borrow_percent = 24;
    */
-  maxBorrowPercent = "";
+  maxBorrowPercent: DecCoin[] = [];
 
   constructor(data?: PartialMessage<Pool>) {
     super();
@@ -162,7 +166,7 @@ export class Pool extends Message<Pool> {
     { no: 1, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 2, name: "coins", kind: "message", T: Coin, repeated: true },
     { no: 4, name: "shares_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 5, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "fee_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 6, name: "min_price", kind: "message", T: Coin, repeated: true },
     { no: 7, name: "max_price", kind: "message", T: Coin, repeated: true },
     { no: 10, name: "block_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
@@ -170,14 +174,13 @@ export class Pool extends Message<Pool> {
     { no: 12, name: "updated", kind: "message", T: Timestamp },
     { no: 13, name: "num_trades", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 14, name: "fees_earned", kind: "message", T: Coin, repeated: true },
-    { no: 15, name: "interest_rate_coin1", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 16, name: "interest_rate_coin2", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 15, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 19, name: "interest_earned", kind: "message", T: Coin, repeated: true },
     { no: 20, name: "total_borrowed", kind: "message", T: Coin, repeated: true },
-    { no: 21, name: "min_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 22, name: "max_leverage_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 23, name: "liquidation_threshold", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 24, name: "max_borrow_percent", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 21, name: "min_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
+    { no: 22, name: "max_leverage_ratio", kind: "message", T: DecCoin, repeated: true },
+    { no: 23, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },
+    { no: 24, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Pool {

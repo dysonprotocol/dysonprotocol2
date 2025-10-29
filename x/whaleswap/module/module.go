@@ -70,6 +70,7 @@ func (am AppModule) GetTxCmd() *cobra.Command {
 	root.AddCommand(whaleswapcli.CmdTakeOffer())
 	root.AddCommand(whaleswapcli.CmdCreatePool())
 	root.AddCommand(whaleswapcli.CmdUpdatePoolConfig())
+	root.AddCommand(whaleswapcli.CmdCoverPosition())
 	return root
 }
 func (am AppModule) GetQueryCmd() *cobra.Command { return &cobra.Command{Use: whaleswap.ModuleName} }

@@ -36,4 +36,15 @@ message LeveragePosition {
 
   cosmos.base.v1beta1.Coin accrued_interest = 12
       [ (gogoproto.nullable) = false ];
+
+  // ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
+  // Annual interest rates per reserve denom (exactly two, canonical order).
+  // Each amount is a LegacyDec string representing APR (per-year accrual).
+  repeated cosmos.base.v1beta1.DecCoin interest_rate = 22 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
+  // Minimum collateral ratio used for health/liquidation checks (cosmos.Dec
+  // string).
+  string min_collateral_ratio = 23 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
 }

@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { MsgAddCollateral, MsgAddCollateralResponse, MsgAddLiquidity, MsgAddLiquidityResponse, MsgCancelOffer, MsgCancelOfferResponse, MsgClosePosition, MsgClosePositionResponse, MsgCreatePool, MsgCreatePoolResponse, MsgFinalizeLiquidation, MsgFinalizeLiquidationResponse, MsgInitializeLiquidation, MsgInitializeLiquidationResponse, MsgMakeOffer, MsgMakeOfferResponse, MsgMakeTrade, MsgMakeTradeResponse, MsgOpenAuction, MsgOpenAuctionResponse, MsgOpenPosition, MsgOpenPositionResponse, MsgPoolSwap, MsgPoolSwapResponse, MsgRedeemAuction, MsgRedeemAuctionResponse, MsgRemoveLiquidity, MsgRemoveLiquidityResponse, MsgTakeOffer, MsgTakeOfferResponse, MsgUpdateParams, MsgUpdateParamsResponse, MsgUpdatePoolConfig, MsgUpdatePoolConfigResponse } from "./tx_pb.js";
+import { MsgAddCollateral, MsgAddCollateralResponse, MsgAddLiquidity, MsgAddLiquidityResponse, MsgCancelOffer, MsgCancelOfferResponse, MsgClosePosition, MsgClosePositionResponse, MsgCoverPosition, MsgCoverPositionResponse, MsgCreatePool, MsgCreatePoolResponse, MsgFinalizeLiquidation, MsgFinalizeLiquidationResponse, MsgInitializeLiquidation, MsgInitializeLiquidationResponse, MsgMakeOffer, MsgMakeOfferResponse, MsgMakeTrade, MsgMakeTradeResponse, MsgOpenAuction, MsgOpenAuctionResponse, MsgOpenPosition, MsgOpenPositionResponse, MsgPoolSwap, MsgPoolSwapResponse, MsgRedeemAuction, MsgRedeemAuctionResponse, MsgRemoveLiquidity, MsgRemoveLiquidityResponse, MsgTakeOffer, MsgTakeOfferResponse, MsgUpdateParams, MsgUpdateParamsResponse, MsgUpdatePoolConfig, MsgUpdatePoolConfigResponse } from "./tx_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -172,6 +172,18 @@ export const Msg = {
       name: "AddCollateral",
       I: MsgAddCollateral,
       O: MsgAddCollateralResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Repay accrued interest first, then principal; supports overpay → auto-close
+     * with refund
+     *
+     * @generated from rpc dysonprotocol.whaleswap.v1.Msg.CoverPosition
+     */
+    coverPosition: {
+      name: "CoverPosition",
+      I: MsgCoverPosition,
+      O: MsgCoverPositionResponse,
       kind: MethodKind.Unary,
     },
     /**

@@ -6302,11 +6302,41 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    fee_pct:
-                      type: string
+                    fee_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
                       description: >-
-                        fee_pct is the pool swap fee percentage (cosmos.Dec
-                        string in [0,1)).
+                        fee_rate is the per-denom pool swap fee rate (amount in
+                        [0,1)), exactly two
+
+                        entries in canonical pool order matching coins[0].denom
+                        and coins[1].denom.
+
+                        Fee is applied to the OUTPUT denom of each swap leg: for
+                        exact-in, the
+
+                        computed gross output is reduced by fee; for exact-out,
+                        the required gross
+
+                        output is inflated so net (after fee) meets the target.
+                        Fees accrue to
+
+                        fees_earned in the output denom.
                     min_price:
                       type: array
                       items:
@@ -6388,14 +6418,32 @@ paths:
                       title: >-
                         cumulative swap fees retained by the pool (accrue to
                         LPs)
-                    interest_rate_coin1:
-                      type: string
-                      title: |-
+                    interest_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
                         ═════ LEVERAGE FIELDS ═════
-                        Annual interest rate for borrows in coin1 denom
-                    interest_rate_coin2:
-                      type: string
-                      title: Annual interest rate for borrows in coin2 denom
+
+                        Annual interest rates per reserve denom (exactly two,
+                        canonical order).
+
+                        Each amount is a LegacyDec string representing APR
+                        (per-year accrual).
                     interest_earned:
                       type: array
                       items:
@@ -6435,27 +6483,107 @@ paths:
                           signatures required by gogoproto.
                       title: Total borrowed (aggregate for cap enforcement)
                     min_collateral_ratio:
-                      type: string
-                      title: |-
-                        ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-                        Minimum collateral ratio required at position open
-                    max_leverage_ratio:
-                      type: string
-                      title: >-
-                        Maximum leverage ratio allowed (collateral + borrowed) /
-                        collateral
-                    liquidation_threshold:
-                      type: string
-                      title: >-
-                        Collateral ratio threshold below which position is
-                        liquidatable
-                    max_borrow_percent:
-                      type: string
-                      title: >-
-                        Maximum borrow capacity as percentage of reserve
-                        (applies symmetrically to
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
 
-                        both coins)
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom)
+                        ═════
+
+                        Minimum collateral ratio required at position open per
+                        reserve denom
+
+                        (exactly two, canonical order). Each amount is a
+                        LegacyDec string (> 1).
+                    max_leverage_ratio:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Maximum leverage ratio allowed (collateral + borrowed) /
+                        collateral per
+
+                        reserve denom (exactly two, canonical order). Each
+                        amount is a LegacyDec
+
+                        string (> 1).
+                    liquidation_threshold:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Collateral ratio threshold below which position is
+                        liquidatable per reserve
+
+                        denom (exactly two, canonical order). Each amount is a
+                        LegacyDec string
+
+                        (> 1).
+                    max_borrow_percent:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Maximum borrow capacity per reserve denom as DecCoins
+                        (exactly two,
+
+                        canonical order). Each amount is a LegacyDec in [0,1).
                   description: >-
                     Pool describes AMM pool state.
 
@@ -6465,7 +6593,7 @@ paths:
                     - coin_a.denom < coin_b.denom lexicographically (canonical
                     order)
 
-                    - fee_pct is a decimal string in [0,1)
+                    - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
                     - min_price/max_price are optional decimal strings defining
                     a price band over
@@ -6599,11 +6727,41 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    fee_pct:
-                      type: string
+                    fee_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
                       description: >-
-                        fee_pct is the pool swap fee percentage (cosmos.Dec
-                        string in [0,1)).
+                        fee_rate is the per-denom pool swap fee rate (amount in
+                        [0,1)), exactly two
+
+                        entries in canonical pool order matching coins[0].denom
+                        and coins[1].denom.
+
+                        Fee is applied to the OUTPUT denom of each swap leg: for
+                        exact-in, the
+
+                        computed gross output is reduced by fee; for exact-out,
+                        the required gross
+
+                        output is inflated so net (after fee) meets the target.
+                        Fees accrue to
+
+                        fees_earned in the output denom.
                     min_price:
                       type: array
                       items:
@@ -6685,14 +6843,32 @@ paths:
                       title: >-
                         cumulative swap fees retained by the pool (accrue to
                         LPs)
-                    interest_rate_coin1:
-                      type: string
-                      title: |-
+                    interest_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
                         ═════ LEVERAGE FIELDS ═════
-                        Annual interest rate for borrows in coin1 denom
-                    interest_rate_coin2:
-                      type: string
-                      title: Annual interest rate for borrows in coin2 denom
+
+                        Annual interest rates per reserve denom (exactly two,
+                        canonical order).
+
+                        Each amount is a LegacyDec string representing APR
+                        (per-year accrual).
                     interest_earned:
                       type: array
                       items:
@@ -6732,27 +6908,107 @@ paths:
                           signatures required by gogoproto.
                       title: Total borrowed (aggregate for cap enforcement)
                     min_collateral_ratio:
-                      type: string
-                      title: |-
-                        ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-                        Minimum collateral ratio required at position open
-                    max_leverage_ratio:
-                      type: string
-                      title: >-
-                        Maximum leverage ratio allowed (collateral + borrowed) /
-                        collateral
-                    liquidation_threshold:
-                      type: string
-                      title: >-
-                        Collateral ratio threshold below which position is
-                        liquidatable
-                    max_borrow_percent:
-                      type: string
-                      title: >-
-                        Maximum borrow capacity as percentage of reserve
-                        (applies symmetrically to
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
 
-                        both coins)
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom)
+                        ═════
+
+                        Minimum collateral ratio required at position open per
+                        reserve denom
+
+                        (exactly two, canonical order). Each amount is a
+                        LegacyDec string (> 1).
+                    max_leverage_ratio:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Maximum leverage ratio allowed (collateral + borrowed) /
+                        collateral per
+
+                        reserve denom (exactly two, canonical order). Each
+                        amount is a LegacyDec
+
+                        string (> 1).
+                    liquidation_threshold:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Collateral ratio threshold below which position is
+                        liquidatable per reserve
+
+                        denom (exactly two, canonical order). Each amount is a
+                        LegacyDec string
+
+                        (> 1).
+                    max_borrow_percent:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Maximum borrow capacity per reserve denom as DecCoins
+                        (exactly two,
+
+                        canonical order). Each amount is a LegacyDec in [0,1).
                   description: >-
                     Pool describes AMM pool state.
 
@@ -6762,7 +7018,7 @@ paths:
                     - coin_a.denom < coin_b.denom lexicographically (canonical
                     order)
 
-                    - fee_pct is a decimal string in [0,1)
+                    - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
                     - min_price/max_price are optional decimal strings defining
                     a price band over
@@ -6900,11 +7156,41 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    fee_pct:
-                      type: string
+                    fee_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
                       description: >-
-                        fee_pct is the pool swap fee percentage (cosmos.Dec
-                        string in [0,1)).
+                        fee_rate is the per-denom pool swap fee rate (amount in
+                        [0,1)), exactly two
+
+                        entries in canonical pool order matching coins[0].denom
+                        and coins[1].denom.
+
+                        Fee is applied to the OUTPUT denom of each swap leg: for
+                        exact-in, the
+
+                        computed gross output is reduced by fee; for exact-out,
+                        the required gross
+
+                        output is inflated so net (after fee) meets the target.
+                        Fees accrue to
+
+                        fees_earned in the output denom.
                     min_price:
                       type: array
                       items:
@@ -6986,14 +7272,32 @@ paths:
                       title: >-
                         cumulative swap fees retained by the pool (accrue to
                         LPs)
-                    interest_rate_coin1:
-                      type: string
-                      title: |-
+                    interest_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
                         ═════ LEVERAGE FIELDS ═════
-                        Annual interest rate for borrows in coin1 denom
-                    interest_rate_coin2:
-                      type: string
-                      title: Annual interest rate for borrows in coin2 denom
+
+                        Annual interest rates per reserve denom (exactly two,
+                        canonical order).
+
+                        Each amount is a LegacyDec string representing APR
+                        (per-year accrual).
                     interest_earned:
                       type: array
                       items:
@@ -7033,27 +7337,107 @@ paths:
                           signatures required by gogoproto.
                       title: Total borrowed (aggregate for cap enforcement)
                     min_collateral_ratio:
-                      type: string
-                      title: |-
-                        ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-                        Minimum collateral ratio required at position open
-                    max_leverage_ratio:
-                      type: string
-                      title: >-
-                        Maximum leverage ratio allowed (collateral + borrowed) /
-                        collateral
-                    liquidation_threshold:
-                      type: string
-                      title: >-
-                        Collateral ratio threshold below which position is
-                        liquidatable
-                    max_borrow_percent:
-                      type: string
-                      title: >-
-                        Maximum borrow capacity as percentage of reserve
-                        (applies symmetrically to
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
 
-                        both coins)
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom)
+                        ═════
+
+                        Minimum collateral ratio required at position open per
+                        reserve denom
+
+                        (exactly two, canonical order). Each amount is a
+                        LegacyDec string (> 1).
+                    max_leverage_ratio:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Maximum leverage ratio allowed (collateral + borrowed) /
+                        collateral per
+
+                        reserve denom (exactly two, canonical order). Each
+                        amount is a LegacyDec
+
+                        string (> 1).
+                    liquidation_threshold:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Collateral ratio threshold below which position is
+                        liquidatable per reserve
+
+                        denom (exactly two, canonical order). Each amount is a
+                        LegacyDec string
+
+                        (> 1).
+                    max_borrow_percent:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Maximum borrow capacity per reserve denom as DecCoins
+                        (exactly two,
+
+                        canonical order). Each amount is a LegacyDec in [0,1).
                   description: >-
                     Pool describes AMM pool state.
 
@@ -7063,7 +7447,7 @@ paths:
                     - coin_a.denom < coin_b.denom lexicographically (canonical
                     order)
 
-                    - fee_pct is a decimal string in [0,1)
+                    - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
                     - min_price/max_price are optional decimal strings defining
                     a price band over
@@ -7212,11 +7596,41 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    fee_pct:
-                      type: string
+                    fee_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
                       description: >-
-                        fee_pct is the pool swap fee percentage (cosmos.Dec
-                        string in [0,1)).
+                        fee_rate is the per-denom pool swap fee rate (amount in
+                        [0,1)), exactly two
+
+                        entries in canonical pool order matching coins[0].denom
+                        and coins[1].denom.
+
+                        Fee is applied to the OUTPUT denom of each swap leg: for
+                        exact-in, the
+
+                        computed gross output is reduced by fee; for exact-out,
+                        the required gross
+
+                        output is inflated so net (after fee) meets the target.
+                        Fees accrue to
+
+                        fees_earned in the output denom.
                     min_price:
                       type: array
                       items:
@@ -7298,14 +7712,32 @@ paths:
                       title: >-
                         cumulative swap fees retained by the pool (accrue to
                         LPs)
-                    interest_rate_coin1:
-                      type: string
-                      title: |-
+                    interest_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
                         ═════ LEVERAGE FIELDS ═════
-                        Annual interest rate for borrows in coin1 denom
-                    interest_rate_coin2:
-                      type: string
-                      title: Annual interest rate for borrows in coin2 denom
+
+                        Annual interest rates per reserve denom (exactly two,
+                        canonical order).
+
+                        Each amount is a LegacyDec string representing APR
+                        (per-year accrual).
                     interest_earned:
                       type: array
                       items:
@@ -7345,27 +7777,107 @@ paths:
                           signatures required by gogoproto.
                       title: Total borrowed (aggregate for cap enforcement)
                     min_collateral_ratio:
-                      type: string
-                      title: |-
-                        ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-                        Minimum collateral ratio required at position open
-                    max_leverage_ratio:
-                      type: string
-                      title: >-
-                        Maximum leverage ratio allowed (collateral + borrowed) /
-                        collateral
-                    liquidation_threshold:
-                      type: string
-                      title: >-
-                        Collateral ratio threshold below which position is
-                        liquidatable
-                    max_borrow_percent:
-                      type: string
-                      title: >-
-                        Maximum borrow capacity as percentage of reserve
-                        (applies symmetrically to
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
 
-                        both coins)
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom)
+                        ═════
+
+                        Minimum collateral ratio required at position open per
+                        reserve denom
+
+                        (exactly two, canonical order). Each amount is a
+                        LegacyDec string (> 1).
+                    max_leverage_ratio:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Maximum leverage ratio allowed (collateral + borrowed) /
+                        collateral per
+
+                        reserve denom (exactly two, canonical order). Each
+                        amount is a LegacyDec
+
+                        string (> 1).
+                    liquidation_threshold:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Collateral ratio threshold below which position is
+                        liquidatable per reserve
+
+                        denom (exactly two, canonical order). Each amount is a
+                        LegacyDec string
+
+                        (> 1).
+                    max_borrow_percent:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Maximum borrow capacity per reserve denom as DecCoins
+                        (exactly two,
+
+                        canonical order). Each amount is a LegacyDec in [0,1).
                   description: >-
                     Pool describes AMM pool state.
 
@@ -7375,7 +7887,7 @@ paths:
                     - coin_a.denom < coin_b.denom lexicographically (canonical
                     order)
 
-                    - fee_pct is a decimal string in [0,1)
+                    - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
                     - min_price/max_price are optional decimal strings defining
                     a price band over
@@ -7521,11 +8033,41 @@ paths:
                       coins[0].amount.
                   shares_denom:
                     type: string
-                  fee_pct:
-                    type: string
+                  fee_rate:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
                     description: >-
-                      fee_pct is the pool swap fee percentage (cosmos.Dec string
-                      in [0,1)).
+                      fee_rate is the per-denom pool swap fee rate (amount in
+                      [0,1)), exactly two
+
+                      entries in canonical pool order matching coins[0].denom
+                      and coins[1].denom.
+
+                      Fee is applied to the OUTPUT denom of each swap leg: for
+                      exact-in, the
+
+                      computed gross output is reduced by fee; for exact-out,
+                      the required gross
+
+                      output is inflated so net (after fee) meets the target.
+                      Fees accrue to
+
+                      fees_earned in the output denom.
                   min_price:
                     type: array
                     items:
@@ -7602,14 +8144,32 @@ paths:
 
                         signatures required by gogoproto.
                     title: cumulative swap fees retained by the pool (accrue to LPs)
-                  interest_rate_coin1:
-                    type: string
-                    title: |-
+                  interest_rate:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
                       ═════ LEVERAGE FIELDS ═════
-                      Annual interest rate for borrows in coin1 denom
-                  interest_rate_coin2:
-                    type: string
-                    title: Annual interest rate for borrows in coin2 denom
+
+                      Annual interest rates per reserve denom (exactly two,
+                      canonical order).
+
+                      Each amount is a LegacyDec string representing APR
+                      (per-year accrual).
                   interest_earned:
                     type: array
                     items:
@@ -7647,27 +8207,106 @@ paths:
                         signatures required by gogoproto.
                     title: Total borrowed (aggregate for cap enforcement)
                   min_collateral_ratio:
-                    type: string
-                    title: |-
-                      ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-                      Minimum collateral ratio required at position open
-                  max_leverage_ratio:
-                    type: string
-                    title: >-
-                      Maximum leverage ratio allowed (collateral + borrowed) /
-                      collateral
-                  liquidation_threshold:
-                    type: string
-                    title: >-
-                      Collateral ratio threshold below which position is
-                      liquidatable
-                  max_borrow_percent:
-                    type: string
-                    title: >-
-                      Maximum borrow capacity as percentage of reserve (applies
-                      symmetrically to
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
 
-                      both coins)
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
+
+                      Minimum collateral ratio required at position open per
+                      reserve denom
+
+                      (exactly two, canonical order). Each amount is a LegacyDec
+                      string (> 1).
+                  max_leverage_ratio:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Maximum leverage ratio allowed (collateral + borrowed) /
+                      collateral per
+
+                      reserve denom (exactly two, canonical order). Each amount
+                      is a LegacyDec
+
+                      string (> 1).
+                  liquidation_threshold:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Collateral ratio threshold below which position is
+                      liquidatable per reserve
+
+                      denom (exactly two, canonical order). Each amount is a
+                      LegacyDec string
+
+                      (> 1).
+                  max_borrow_percent:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Maximum borrow capacity per reserve denom as DecCoins
+                      (exactly two,
+
+                      canonical order). Each amount is a LegacyDec in [0,1).
                 description: >-
                   Pool describes AMM pool state.
 
@@ -7677,7 +8316,7 @@ paths:
                   - coin_a.denom < coin_b.denom lexicographically (canonical
                   order)
 
-                  - fee_pct is a decimal string in [0,1)
+                  - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
                   - min_price/max_price are optional decimal strings defining a
                   price band over
@@ -7768,11 +8407,41 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    fee_pct:
-                      type: string
+                    fee_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
                       description: >-
-                        fee_pct is the pool swap fee percentage (cosmos.Dec
-                        string in [0,1)).
+                        fee_rate is the per-denom pool swap fee rate (amount in
+                        [0,1)), exactly two
+
+                        entries in canonical pool order matching coins[0].denom
+                        and coins[1].denom.
+
+                        Fee is applied to the OUTPUT denom of each swap leg: for
+                        exact-in, the
+
+                        computed gross output is reduced by fee; for exact-out,
+                        the required gross
+
+                        output is inflated so net (after fee) meets the target.
+                        Fees accrue to
+
+                        fees_earned in the output denom.
                     min_price:
                       type: array
                       items:
@@ -7854,14 +8523,32 @@ paths:
                       title: >-
                         cumulative swap fees retained by the pool (accrue to
                         LPs)
-                    interest_rate_coin1:
-                      type: string
-                      title: |-
+                    interest_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
                         ═════ LEVERAGE FIELDS ═════
-                        Annual interest rate for borrows in coin1 denom
-                    interest_rate_coin2:
-                      type: string
-                      title: Annual interest rate for borrows in coin2 denom
+
+                        Annual interest rates per reserve denom (exactly two,
+                        canonical order).
+
+                        Each amount is a LegacyDec string representing APR
+                        (per-year accrual).
                     interest_earned:
                       type: array
                       items:
@@ -7901,27 +8588,107 @@ paths:
                           signatures required by gogoproto.
                       title: Total borrowed (aggregate for cap enforcement)
                     min_collateral_ratio:
-                      type: string
-                      title: |-
-                        ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-                        Minimum collateral ratio required at position open
-                    max_leverage_ratio:
-                      type: string
-                      title: >-
-                        Maximum leverage ratio allowed (collateral + borrowed) /
-                        collateral
-                    liquidation_threshold:
-                      type: string
-                      title: >-
-                        Collateral ratio threshold below which position is
-                        liquidatable
-                    max_borrow_percent:
-                      type: string
-                      title: >-
-                        Maximum borrow capacity as percentage of reserve
-                        (applies symmetrically to
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
 
-                        both coins)
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom)
+                        ═════
+
+                        Minimum collateral ratio required at position open per
+                        reserve denom
+
+                        (exactly two, canonical order). Each amount is a
+                        LegacyDec string (> 1).
+                    max_leverage_ratio:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Maximum leverage ratio allowed (collateral + borrowed) /
+                        collateral per
+
+                        reserve denom (exactly two, canonical order). Each
+                        amount is a LegacyDec
+
+                        string (> 1).
+                    liquidation_threshold:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Collateral ratio threshold below which position is
+                        liquidatable per reserve
+
+                        denom (exactly two, canonical order). Each amount is a
+                        LegacyDec string
+
+                        (> 1).
+                    max_borrow_percent:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Maximum borrow capacity per reserve denom as DecCoins
+                        (exactly two,
+
+                        canonical order). Each amount is a LegacyDec in [0,1).
                   description: >-
                     Pool describes AMM pool state.
 
@@ -7931,7 +8698,7 @@ paths:
                     - coin_a.denom < coin_b.denom lexicographically (canonical
                     order)
 
-                    - fee_pct is a decimal string in [0,1)
+                    - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
                     - min_price/max_price are optional decimal strings defining
                     a price band over
@@ -8064,11 +8831,41 @@ paths:
                       coins[0].amount.
                   shares_denom:
                     type: string
-                  fee_pct:
-                    type: string
+                  fee_rate:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
                     description: >-
-                      fee_pct is the pool swap fee percentage (cosmos.Dec string
-                      in [0,1)).
+                      fee_rate is the per-denom pool swap fee rate (amount in
+                      [0,1)), exactly two
+
+                      entries in canonical pool order matching coins[0].denom
+                      and coins[1].denom.
+
+                      Fee is applied to the OUTPUT denom of each swap leg: for
+                      exact-in, the
+
+                      computed gross output is reduced by fee; for exact-out,
+                      the required gross
+
+                      output is inflated so net (after fee) meets the target.
+                      Fees accrue to
+
+                      fees_earned in the output denom.
                   min_price:
                     type: array
                     items:
@@ -8145,14 +8942,32 @@ paths:
 
                         signatures required by gogoproto.
                     title: cumulative swap fees retained by the pool (accrue to LPs)
-                  interest_rate_coin1:
-                    type: string
-                    title: |-
+                  interest_rate:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
                       ═════ LEVERAGE FIELDS ═════
-                      Annual interest rate for borrows in coin1 denom
-                  interest_rate_coin2:
-                    type: string
-                    title: Annual interest rate for borrows in coin2 denom
+
+                      Annual interest rates per reserve denom (exactly two,
+                      canonical order).
+
+                      Each amount is a LegacyDec string representing APR
+                      (per-year accrual).
                   interest_earned:
                     type: array
                     items:
@@ -8190,27 +9005,106 @@ paths:
                         signatures required by gogoproto.
                     title: Total borrowed (aggregate for cap enforcement)
                   min_collateral_ratio:
-                    type: string
-                    title: |-
-                      ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-                      Minimum collateral ratio required at position open
-                  max_leverage_ratio:
-                    type: string
-                    title: >-
-                      Maximum leverage ratio allowed (collateral + borrowed) /
-                      collateral
-                  liquidation_threshold:
-                    type: string
-                    title: >-
-                      Collateral ratio threshold below which position is
-                      liquidatable
-                  max_borrow_percent:
-                    type: string
-                    title: >-
-                      Maximum borrow capacity as percentage of reserve (applies
-                      symmetrically to
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
 
-                      both coins)
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
+
+                      Minimum collateral ratio required at position open per
+                      reserve denom
+
+                      (exactly two, canonical order). Each amount is a LegacyDec
+                      string (> 1).
+                  max_leverage_ratio:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Maximum leverage ratio allowed (collateral + borrowed) /
+                      collateral per
+
+                      reserve denom (exactly two, canonical order). Each amount
+                      is a LegacyDec
+
+                      string (> 1).
+                  liquidation_threshold:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Collateral ratio threshold below which position is
+                      liquidatable per reserve
+
+                      denom (exactly two, canonical order). Each amount is a
+                      LegacyDec string
+
+                      (> 1).
+                  max_borrow_percent:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Maximum borrow capacity per reserve denom as DecCoins
+                      (exactly two,
+
+                      canonical order). Each amount is a LegacyDec in [0,1).
                 description: >-
                   Pool describes AMM pool state.
 
@@ -8220,7 +9114,7 @@ paths:
                   - coin_a.denom < coin_b.denom lexicographically (canonical
                   order)
 
-                  - fee_pct is a decimal string in [0,1)
+                  - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
                   - min_price/max_price are optional decimal strings defining a
                   price band over
@@ -8361,6 +9255,40 @@ paths:
                         custom method
 
                         signatures required by gogoproto.
+                    interest_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        ═════ PER-POSITION SNAPSHOTS (sticky to this position)
+                        ═════
+
+                        Annual interest rates per reserve denom (exactly two,
+                        canonical order).
+
+                        Each amount is a LegacyDec string representing APR
+                        (per-year accrual).
+                    min_collateral_ratio:
+                      type: string
+                      description: >-
+                        Minimum collateral ratio used for health/liquidation
+                        checks (cosmos.Dec
+
+                        string).
                   description: >-
                     LeveragePosition represents an active leverage position for
                     a trader.
@@ -8546,6 +9474,40 @@ paths:
                         custom method
 
                         signatures required by gogoproto.
+                    interest_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        ═════ PER-POSITION SNAPSHOTS (sticky to this position)
+                        ═════
+
+                        Annual interest rates per reserve denom (exactly two,
+                        canonical order).
+
+                        Each amount is a LegacyDec string representing APR
+                        (per-year accrual).
+                    min_collateral_ratio:
+                      type: string
+                      description: >-
+                        Minimum collateral ratio used for health/liquidation
+                        checks (cosmos.Dec
+
+                        string).
                   description: >-
                     LeveragePosition represents an active leverage position for
                     a trader.
@@ -8744,6 +9706,40 @@ paths:
                       custom method
 
                       signatures required by gogoproto.
+                  interest_rate:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      ═════ PER-POSITION SNAPSHOTS (sticky to this position)
+                      ═════
+
+                      Annual interest rates per reserve denom (exactly two,
+                      canonical order).
+
+                      Each amount is a LegacyDec string representing APR
+                      (per-year accrual).
+                  min_collateral_ratio:
+                    type: string
+                    description: >-
+                      Minimum collateral ratio used for health/liquidation
+                      checks (cosmos.Dec
+
+                      string).
                 description: >-
                   LeveragePosition represents an active leverage position for a
                   trader.
@@ -31995,7 +32991,7 @@ paths:
           schema:
             type: object
             properties:
-              profit:
+              interest_paid:
                 type: object
                 properties:
                   denom:
@@ -32010,7 +33006,22 @@ paths:
                   method
 
                   signatures required by gogoproto.
-              accrued_interest:
+              principal_paid:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              profit:
                 type: object
                 properties:
                   denom:
@@ -32059,6 +33070,151 @@ paths:
               position_id:
                 type: string
                 format: uint64
+      tags:
+        - Msg
+  dysonprotocol.whaleswap.v1.MsgCoverPosition:
+    post:
+      summary: >-
+        Repay accrued interest first, then principal; supports overpay →
+        auto-close
+
+        with refund
+      operationId: dysonprotocol.whaleswap.v1.MsgCoverPosition
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              interest_paid:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              principal_paid:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              new_borrowed:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              new_collateral_ratio:
+                type: string
+              closed:
+                type: boolean
+              refunded:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              profit:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+                title: swap PnL from unwinding held → borrowed during auto-close
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              user:
+                type: string
+              position_id:
+                type: string
+                format: uint64
+              payment:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgCreatePool:
@@ -32169,14 +33325,146 @@ paths:
                     method
 
                     signatures required by gogoproto.
-              fee_pct:
-                type: string
+              fee_rate:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                description: >-
+                  Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2
+                  entries;
+
+                  keeper normalizes to exactly two entries in canonical pool
+                  order.
               min_collateral_ratio:
-                type: string
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                description: >-
+                  Minimum collateral ratio per reserve denom (exactly two,
+                  canonical order).
+
+                  Each amount is a LegacyDec string (> 1).
               max_leverage_ratio:
-                type: string
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                description: >-
+                  Maximum leverage ratio per reserve denom (exactly two,
+                  canonical order).
+
+                  Each amount is a LegacyDec string (> 1).
+              interest_rate:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                description: >-
+                  Annual interest rates per reserve denom (exactly two,
+                  canonical order).
+
+                  Each amount is a LegacyDec string representing APR (per-year
+                  accrual).
               max_borrow_percent:
-                type: string
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                description: >-
+                  Maximum borrow capacity per reserve denom as DecCoins (exactly
+                  two,
+
+                  canonical order). Each amount is a LegacyDec in [0,1).
+              liquidation_threshold:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                title: >-
+                  Collateral ratio liquidation threshold per reserve denom
+                  (exactly two,
+
+                  canonical order; each amount is a LegacyDec string > 1)
             description: >-
               Create a pool.
 
@@ -33372,9 +34660,30 @@ paths:
               pool_id:
                 type: string
                 format: uint64
-              fee_pct:
-                type: string
-                title: Optional fields; empty string means no change
+              fee_rate:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                description: >-
+                  Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2
+                  entries;
+
+                  keeper normalizes to exactly two entries in canonical pool
+                  order.
               min_price:
                 type: array
                 items:
@@ -33410,31 +34719,129 @@ paths:
 
                     signatures required by gogoproto.
               min_collateral_ratio:
-                type: string
-                title: Leverage configuration (optional; empty means no change)
-              max_leverage_ratio:
-                type: string
-              max_borrow_percent:
-                type: string
-              interest_rate_coin1:
-                type: string
-                title: >-
-                  Annual interest rates per reserve coin (optional; empty means
-                  no change)
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
 
-                  Example: "0.10" for 10% APR
-              interest_rate_coin2:
-                type: string
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                title: >-
+                  Leverage configuration (per-denom)
+
+                  Minimum collateral ratio per reserve denom (exactly two,
+                  canonical order; >
+
+                  1)
+              max_leverage_ratio:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                title: >-
+                  Maximum leverage ratio per reserve denom (exactly two,
+                  canonical order; >
+
+                  1)
+              interest_rate:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                description: >-
+                  Annual interest rates per reserve denom (exactly two,
+                  canonical order).
+              max_borrow_percent:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                description: >-
+                  Maximum borrow capacity per reserve denom (exactly two,
+                  canonical order).
+
+                  Amounts in [0,1).
+              liquidation_threshold:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                title: >-
+                  Collateral ratio liquidation threshold per reserve denom
+                  (exactly two,
+
+                  canonical order; each amount is a LegacyDec string > 1)
             description: >-
               Update pool config (owner-only: majority of shares > 50%).
 
 
               Notes:
 
-              - Empty string/empty arrays indicate no change for that field.
-
-              - Price bands follow the same two-coin ratio rules as in
-              MsgCreatePool.
+              - All fields are required. Price bands must be both empty (no
+              band) or both
+                contain exactly two coins in canonical order matching pool reserves.
       tags:
         - Msg
   dysonprotocol.script.v1.MsgCreateNewScript:
@@ -44779,6 +46186,34 @@ definitions:
 
           NOTE: The amount field is an Int which implements the custom method
           signatures required by gogoproto.
+      interest_rate:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
+          ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
+
+          Annual interest rates per reserve denom (exactly two, canonical
+          order).
+
+          Each amount is a LegacyDec string representing APR (per-year accrual).
+      min_collateral_ratio:
+        type: string
+        description: >-
+          Minimum collateral ratio used for health/liquidation checks
+          (cosmos.Dec
+
+          string).
     description: LeveragePosition represents an active leverage position for a trader.
   dysonprotocol.whaleswap.v1.LiquidationStatus:
     type: string
@@ -44955,9 +46390,35 @@ definitions:
           coins[0].amount.
       shares_denom:
         type: string
-      fee_pct:
-        type: string
-        description: fee_pct is the pool swap fee percentage (cosmos.Dec string in [0,1)).
+      fee_rate:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
+          fee_rate is the per-denom pool swap fee rate (amount in [0,1)),
+          exactly two
+
+          entries in canonical pool order matching coins[0].denom and
+          coins[1].denom.
+
+          Fee is applied to the OUTPUT denom of each swap leg: for exact-in, the
+
+          computed gross output is reduced by fee; for exact-out, the required
+          gross
+
+          output is inflated so net (after fee) meets the target. Fees accrue to
+
+          fees_earned in the output denom.
       min_price:
         type: array
         items:
@@ -45023,14 +46484,27 @@ definitions:
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
         title: cumulative swap fees retained by the pool (accrue to LPs)
-      interest_rate_coin1:
-        type: string
-        title: |-
+      interest_rate:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
           ═════ LEVERAGE FIELDS ═════
-          Annual interest rate for borrows in coin1 denom
-      interest_rate_coin2:
-        type: string
-        title: Annual interest rate for borrows in coin2 denom
+
+          Annual interest rates per reserve denom (exactly two, canonical
+          order).
+
+          Each amount is a LegacyDec string representing APR (per-year accrual).
       interest_earned:
         type: array
         items:
@@ -45062,23 +46536,87 @@ definitions:
             signatures required by gogoproto.
         title: Total borrowed (aggregate for cap enforcement)
       min_collateral_ratio:
-        type: string
-        title: |-
-          ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-          Minimum collateral ratio required at position open
-      max_leverage_ratio:
-        type: string
-        title: Maximum leverage ratio allowed (collateral + borrowed) / collateral
-      liquidation_threshold:
-        type: string
-        title: Collateral ratio threshold below which position is liquidatable
-      max_borrow_percent:
-        type: string
-        title: >-
-          Maximum borrow capacity as percentage of reserve (applies
-          symmetrically to
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
 
-          both coins)
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
+          ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
+
+          Minimum collateral ratio required at position open per reserve denom
+
+          (exactly two, canonical order). Each amount is a LegacyDec string (>
+          1).
+      max_leverage_ratio:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
+          Maximum leverage ratio allowed (collateral + borrowed) / collateral
+          per
+
+          reserve denom (exactly two, canonical order). Each amount is a
+          LegacyDec
+
+          string (> 1).
+      liquidation_threshold:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
+          Collateral ratio threshold below which position is liquidatable per
+          reserve
+
+          denom (exactly two, canonical order). Each amount is a LegacyDec
+          string
+
+          (> 1).
+      max_borrow_percent:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: |-
+          Maximum borrow capacity per reserve denom as DecCoins (exactly two,
+          canonical order). Each amount is a LegacyDec in [0,1).
     description: >-
       Pool describes AMM pool state.
 
@@ -45087,7 +46625,7 @@ definitions:
 
       - coin_a.denom < coin_b.denom lexicographically (canonical order)
 
-      - fee_pct is a decimal string in [0,1)
+      - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
       - min_price/max_price are optional decimal strings defining a price band
       over
@@ -46353,11 +47891,41 @@ definitions:
               coins[0].amount.
           shares_denom:
             type: string
-          fee_pct:
-            type: string
+          fee_rate:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
             description: >-
-              fee_pct is the pool swap fee percentage (cosmos.Dec string in
-              [0,1)).
+              fee_rate is the per-denom pool swap fee rate (amount in [0,1)),
+              exactly two
+
+              entries in canonical pool order matching coins[0].denom and
+              coins[1].denom.
+
+              Fee is applied to the OUTPUT denom of each swap leg: for exact-in,
+              the
+
+              computed gross output is reduced by fee; for exact-out, the
+              required gross
+
+              output is inflated so net (after fee) meets the target. Fees
+              accrue to
+
+              fees_earned in the output denom.
           min_price:
             type: array
             items:
@@ -46433,14 +48001,32 @@ definitions:
 
                 signatures required by gogoproto.
             title: cumulative swap fees retained by the pool (accrue to LPs)
-          interest_rate_coin1:
-            type: string
-            title: |-
+          interest_rate:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
               ═════ LEVERAGE FIELDS ═════
-              Annual interest rate for borrows in coin1 denom
-          interest_rate_coin2:
-            type: string
-            title: Annual interest rate for borrows in coin2 denom
+
+              Annual interest rates per reserve denom (exactly two, canonical
+              order).
+
+              Each amount is a LegacyDec string representing APR (per-year
+              accrual).
           interest_earned:
             type: array
             items:
@@ -46478,25 +48064,106 @@ definitions:
                 signatures required by gogoproto.
             title: Total borrowed (aggregate for cap enforcement)
           min_collateral_ratio:
-            type: string
-            title: |-
-              ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-              Minimum collateral ratio required at position open
-          max_leverage_ratio:
-            type: string
-            title: >-
-              Maximum leverage ratio allowed (collateral + borrowed) /
-              collateral
-          liquidation_threshold:
-            type: string
-            title: Collateral ratio threshold below which position is liquidatable
-          max_borrow_percent:
-            type: string
-            title: >-
-              Maximum borrow capacity as percentage of reserve (applies
-              symmetrically to
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
 
-              both coins)
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
+              ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
+
+              Minimum collateral ratio required at position open per reserve
+              denom
+
+              (exactly two, canonical order). Each amount is a LegacyDec string
+              (> 1).
+          max_leverage_ratio:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
+              Maximum leverage ratio allowed (collateral + borrowed) /
+              collateral per
+
+              reserve denom (exactly two, canonical order). Each amount is a
+              LegacyDec
+
+              string (> 1).
+          liquidation_threshold:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
+              Collateral ratio threshold below which position is liquidatable
+              per reserve
+
+              denom (exactly two, canonical order). Each amount is a LegacyDec
+              string
+
+              (> 1).
+          max_borrow_percent:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
+              Maximum borrow capacity per reserve denom as DecCoins (exactly
+              two,
+
+              canonical order). Each amount is a LegacyDec in [0,1).
         description: >-
           Pool describes AMM pool state.
 
@@ -46505,7 +48172,7 @@ definitions:
 
           - coin_a.denom < coin_b.denom lexicographically (canonical order)
 
-          - fee_pct is a decimal string in [0,1)
+          - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
           - min_price/max_price are optional decimal strings defining a price
           band over
@@ -46549,11 +48216,41 @@ definitions:
               coins[0].amount.
           shares_denom:
             type: string
-          fee_pct:
-            type: string
+          fee_rate:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
             description: >-
-              fee_pct is the pool swap fee percentage (cosmos.Dec string in
-              [0,1)).
+              fee_rate is the per-denom pool swap fee rate (amount in [0,1)),
+              exactly two
+
+              entries in canonical pool order matching coins[0].denom and
+              coins[1].denom.
+
+              Fee is applied to the OUTPUT denom of each swap leg: for exact-in,
+              the
+
+              computed gross output is reduced by fee; for exact-out, the
+              required gross
+
+              output is inflated so net (after fee) meets the target. Fees
+              accrue to
+
+              fees_earned in the output denom.
           min_price:
             type: array
             items:
@@ -46629,14 +48326,32 @@ definitions:
 
                 signatures required by gogoproto.
             title: cumulative swap fees retained by the pool (accrue to LPs)
-          interest_rate_coin1:
-            type: string
-            title: |-
+          interest_rate:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
               ═════ LEVERAGE FIELDS ═════
-              Annual interest rate for borrows in coin1 denom
-          interest_rate_coin2:
-            type: string
-            title: Annual interest rate for borrows in coin2 denom
+
+              Annual interest rates per reserve denom (exactly two, canonical
+              order).
+
+              Each amount is a LegacyDec string representing APR (per-year
+              accrual).
           interest_earned:
             type: array
             items:
@@ -46674,25 +48389,106 @@ definitions:
                 signatures required by gogoproto.
             title: Total borrowed (aggregate for cap enforcement)
           min_collateral_ratio:
-            type: string
-            title: |-
-              ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-              Minimum collateral ratio required at position open
-          max_leverage_ratio:
-            type: string
-            title: >-
-              Maximum leverage ratio allowed (collateral + borrowed) /
-              collateral
-          liquidation_threshold:
-            type: string
-            title: Collateral ratio threshold below which position is liquidatable
-          max_borrow_percent:
-            type: string
-            title: >-
-              Maximum borrow capacity as percentage of reserve (applies
-              symmetrically to
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
 
-              both coins)
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
+              ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
+
+              Minimum collateral ratio required at position open per reserve
+              denom
+
+              (exactly two, canonical order). Each amount is a LegacyDec string
+              (> 1).
+          max_leverage_ratio:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
+              Maximum leverage ratio allowed (collateral + borrowed) /
+              collateral per
+
+              reserve denom (exactly two, canonical order). Each amount is a
+              LegacyDec
+
+              string (> 1).
+          liquidation_threshold:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
+              Collateral ratio threshold below which position is liquidatable
+              per reserve
+
+              denom (exactly two, canonical order). Each amount is a LegacyDec
+              string
+
+              (> 1).
+          max_borrow_percent:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
+              Maximum borrow capacity per reserve denom as DecCoins (exactly
+              two,
+
+              canonical order). Each amount is a LegacyDec in [0,1).
         description: >-
           Pool describes AMM pool state.
 
@@ -46701,7 +48497,7 @@ definitions:
 
           - coin_a.denom < coin_b.denom lexicographically (canonical order)
 
-          - fee_pct is a decimal string in [0,1)
+          - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
           - min_price/max_price are optional decimal strings defining a price
           band over
@@ -46748,11 +48544,41 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            fee_pct:
-              type: string
+            fee_rate:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
               description: >-
-                fee_pct is the pool swap fee percentage (cosmos.Dec string in
-                [0,1)).
+                fee_rate is the per-denom pool swap fee rate (amount in [0,1)),
+                exactly two
+
+                entries in canonical pool order matching coins[0].denom and
+                coins[1].denom.
+
+                Fee is applied to the OUTPUT denom of each swap leg: for
+                exact-in, the
+
+                computed gross output is reduced by fee; for exact-out, the
+                required gross
+
+                output is inflated so net (after fee) meets the target. Fees
+                accrue to
+
+                fees_earned in the output denom.
             min_price:
               type: array
               items:
@@ -46828,14 +48654,32 @@ definitions:
 
                   signatures required by gogoproto.
               title: cumulative swap fees retained by the pool (accrue to LPs)
-            interest_rate_coin1:
-              type: string
-              title: |-
+            interest_rate:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
                 ═════ LEVERAGE FIELDS ═════
-                Annual interest rate for borrows in coin1 denom
-            interest_rate_coin2:
-              type: string
-              title: Annual interest rate for borrows in coin2 denom
+
+                Annual interest rates per reserve denom (exactly two, canonical
+                order).
+
+                Each amount is a LegacyDec string representing APR (per-year
+                accrual).
             interest_earned:
               type: array
               items:
@@ -46873,25 +48717,106 @@ definitions:
                   signatures required by gogoproto.
               title: Total borrowed (aggregate for cap enforcement)
             min_collateral_ratio:
-              type: string
-              title: |-
-                ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-                Minimum collateral ratio required at position open
-            max_leverage_ratio:
-              type: string
-              title: >-
-                Maximum leverage ratio allowed (collateral + borrowed) /
-                collateral
-            liquidation_threshold:
-              type: string
-              title: Collateral ratio threshold below which position is liquidatable
-            max_borrow_percent:
-              type: string
-              title: >-
-                Maximum borrow capacity as percentage of reserve (applies
-                symmetrically to
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
 
-                both coins)
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
+
+                Minimum collateral ratio required at position open per reserve
+                denom
+
+                (exactly two, canonical order). Each amount is a LegacyDec
+                string (> 1).
+            max_leverage_ratio:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Maximum leverage ratio allowed (collateral + borrowed) /
+                collateral per
+
+                reserve denom (exactly two, canonical order). Each amount is a
+                LegacyDec
+
+                string (> 1).
+            liquidation_threshold:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Collateral ratio threshold below which position is liquidatable
+                per reserve
+
+                denom (exactly two, canonical order). Each amount is a LegacyDec
+                string
+
+                (> 1).
+            max_borrow_percent:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Maximum borrow capacity per reserve denom as DecCoins (exactly
+                two,
+
+                canonical order). Each amount is a LegacyDec in [0,1).
           description: >-
             Pool describes AMM pool state.
 
@@ -46900,7 +48825,7 @@ definitions:
 
             - coin_a.denom < coin_b.denom lexicographically (canonical order)
 
-            - fee_pct is a decimal string in [0,1)
+            - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
             - min_price/max_price are optional decimal strings defining a price
             band over
@@ -46974,11 +48899,41 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            fee_pct:
-              type: string
+            fee_rate:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
               description: >-
-                fee_pct is the pool swap fee percentage (cosmos.Dec string in
-                [0,1)).
+                fee_rate is the per-denom pool swap fee rate (amount in [0,1)),
+                exactly two
+
+                entries in canonical pool order matching coins[0].denom and
+                coins[1].denom.
+
+                Fee is applied to the OUTPUT denom of each swap leg: for
+                exact-in, the
+
+                computed gross output is reduced by fee; for exact-out, the
+                required gross
+
+                output is inflated so net (after fee) meets the target. Fees
+                accrue to
+
+                fees_earned in the output denom.
             min_price:
               type: array
               items:
@@ -47054,14 +49009,32 @@ definitions:
 
                   signatures required by gogoproto.
               title: cumulative swap fees retained by the pool (accrue to LPs)
-            interest_rate_coin1:
-              type: string
-              title: |-
+            interest_rate:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
                 ═════ LEVERAGE FIELDS ═════
-                Annual interest rate for borrows in coin1 denom
-            interest_rate_coin2:
-              type: string
-              title: Annual interest rate for borrows in coin2 denom
+
+                Annual interest rates per reserve denom (exactly two, canonical
+                order).
+
+                Each amount is a LegacyDec string representing APR (per-year
+                accrual).
             interest_earned:
               type: array
               items:
@@ -47099,25 +49072,106 @@ definitions:
                   signatures required by gogoproto.
               title: Total borrowed (aggregate for cap enforcement)
             min_collateral_ratio:
-              type: string
-              title: |-
-                ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-                Minimum collateral ratio required at position open
-            max_leverage_ratio:
-              type: string
-              title: >-
-                Maximum leverage ratio allowed (collateral + borrowed) /
-                collateral
-            liquidation_threshold:
-              type: string
-              title: Collateral ratio threshold below which position is liquidatable
-            max_borrow_percent:
-              type: string
-              title: >-
-                Maximum borrow capacity as percentage of reserve (applies
-                symmetrically to
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
 
-                both coins)
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
+
+                Minimum collateral ratio required at position open per reserve
+                denom
+
+                (exactly two, canonical order). Each amount is a LegacyDec
+                string (> 1).
+            max_leverage_ratio:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Maximum leverage ratio allowed (collateral + borrowed) /
+                collateral per
+
+                reserve denom (exactly two, canonical order). Each amount is a
+                LegacyDec
+
+                string (> 1).
+            liquidation_threshold:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Collateral ratio threshold below which position is liquidatable
+                per reserve
+
+                denom (exactly two, canonical order). Each amount is a LegacyDec
+                string
+
+                (> 1).
+            max_borrow_percent:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Maximum borrow capacity per reserve denom as DecCoins (exactly
+                two,
+
+                canonical order). Each amount is a LegacyDec in [0,1).
           description: >-
             Pool describes AMM pool state.
 
@@ -47126,7 +49180,7 @@ definitions:
 
             - coin_a.denom < coin_b.denom lexicographically (canonical order)
 
-            - fee_pct is a decimal string in [0,1)
+            - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
             - min_price/max_price are optional decimal strings defining a price
             band over
@@ -47200,11 +49254,41 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            fee_pct:
-              type: string
+            fee_rate:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
               description: >-
-                fee_pct is the pool swap fee percentage (cosmos.Dec string in
-                [0,1)).
+                fee_rate is the per-denom pool swap fee rate (amount in [0,1)),
+                exactly two
+
+                entries in canonical pool order matching coins[0].denom and
+                coins[1].denom.
+
+                Fee is applied to the OUTPUT denom of each swap leg: for
+                exact-in, the
+
+                computed gross output is reduced by fee; for exact-out, the
+                required gross
+
+                output is inflated so net (after fee) meets the target. Fees
+                accrue to
+
+                fees_earned in the output denom.
             min_price:
               type: array
               items:
@@ -47280,14 +49364,32 @@ definitions:
 
                   signatures required by gogoproto.
               title: cumulative swap fees retained by the pool (accrue to LPs)
-            interest_rate_coin1:
-              type: string
-              title: |-
+            interest_rate:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
                 ═════ LEVERAGE FIELDS ═════
-                Annual interest rate for borrows in coin1 denom
-            interest_rate_coin2:
-              type: string
-              title: Annual interest rate for borrows in coin2 denom
+
+                Annual interest rates per reserve denom (exactly two, canonical
+                order).
+
+                Each amount is a LegacyDec string representing APR (per-year
+                accrual).
             interest_earned:
               type: array
               items:
@@ -47325,25 +49427,106 @@ definitions:
                   signatures required by gogoproto.
               title: Total borrowed (aggregate for cap enforcement)
             min_collateral_ratio:
-              type: string
-              title: |-
-                ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-                Minimum collateral ratio required at position open
-            max_leverage_ratio:
-              type: string
-              title: >-
-                Maximum leverage ratio allowed (collateral + borrowed) /
-                collateral
-            liquidation_threshold:
-              type: string
-              title: Collateral ratio threshold below which position is liquidatable
-            max_borrow_percent:
-              type: string
-              title: >-
-                Maximum borrow capacity as percentage of reserve (applies
-                symmetrically to
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
 
-                both coins)
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
+
+                Minimum collateral ratio required at position open per reserve
+                denom
+
+                (exactly two, canonical order). Each amount is a LegacyDec
+                string (> 1).
+            max_leverage_ratio:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Maximum leverage ratio allowed (collateral + borrowed) /
+                collateral per
+
+                reserve denom (exactly two, canonical order). Each amount is a
+                LegacyDec
+
+                string (> 1).
+            liquidation_threshold:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Collateral ratio threshold below which position is liquidatable
+                per reserve
+
+                denom (exactly two, canonical order). Each amount is a LegacyDec
+                string
+
+                (> 1).
+            max_borrow_percent:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Maximum borrow capacity per reserve denom as DecCoins (exactly
+                two,
+
+                canonical order). Each amount is a LegacyDec in [0,1).
           description: >-
             Pool describes AMM pool state.
 
@@ -47352,7 +49535,7 @@ definitions:
 
             - coin_a.denom < coin_b.denom lexicographically (canonical order)
 
-            - fee_pct is a decimal string in [0,1)
+            - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
             - min_price/max_price are optional decimal strings defining a price
             band over
@@ -47426,11 +49609,41 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            fee_pct:
-              type: string
+            fee_rate:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
               description: >-
-                fee_pct is the pool swap fee percentage (cosmos.Dec string in
-                [0,1)).
+                fee_rate is the per-denom pool swap fee rate (amount in [0,1)),
+                exactly two
+
+                entries in canonical pool order matching coins[0].denom and
+                coins[1].denom.
+
+                Fee is applied to the OUTPUT denom of each swap leg: for
+                exact-in, the
+
+                computed gross output is reduced by fee; for exact-out, the
+                required gross
+
+                output is inflated so net (after fee) meets the target. Fees
+                accrue to
+
+                fees_earned in the output denom.
             min_price:
               type: array
               items:
@@ -47506,14 +49719,32 @@ definitions:
 
                   signatures required by gogoproto.
               title: cumulative swap fees retained by the pool (accrue to LPs)
-            interest_rate_coin1:
-              type: string
-              title: |-
+            interest_rate:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
                 ═════ LEVERAGE FIELDS ═════
-                Annual interest rate for borrows in coin1 denom
-            interest_rate_coin2:
-              type: string
-              title: Annual interest rate for borrows in coin2 denom
+
+                Annual interest rates per reserve denom (exactly two, canonical
+                order).
+
+                Each amount is a LegacyDec string representing APR (per-year
+                accrual).
             interest_earned:
               type: array
               items:
@@ -47551,25 +49782,106 @@ definitions:
                   signatures required by gogoproto.
               title: Total borrowed (aggregate for cap enforcement)
             min_collateral_ratio:
-              type: string
-              title: |-
-                ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-                Minimum collateral ratio required at position open
-            max_leverage_ratio:
-              type: string
-              title: >-
-                Maximum leverage ratio allowed (collateral + borrowed) /
-                collateral
-            liquidation_threshold:
-              type: string
-              title: Collateral ratio threshold below which position is liquidatable
-            max_borrow_percent:
-              type: string
-              title: >-
-                Maximum borrow capacity as percentage of reserve (applies
-                symmetrically to
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
 
-                both coins)
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
+
+                Minimum collateral ratio required at position open per reserve
+                denom
+
+                (exactly two, canonical order). Each amount is a LegacyDec
+                string (> 1).
+            max_leverage_ratio:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Maximum leverage ratio allowed (collateral + borrowed) /
+                collateral per
+
+                reserve denom (exactly two, canonical order). Each amount is a
+                LegacyDec
+
+                string (> 1).
+            liquidation_threshold:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Collateral ratio threshold below which position is liquidatable
+                per reserve
+
+                denom (exactly two, canonical order). Each amount is a LegacyDec
+                string
+
+                (> 1).
+            max_borrow_percent:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Maximum borrow capacity per reserve denom as DecCoins (exactly
+                two,
+
+                canonical order). Each amount is a LegacyDec in [0,1).
           description: >-
             Pool describes AMM pool state.
 
@@ -47578,7 +49890,7 @@ definitions:
 
             - coin_a.denom < coin_b.denom lexicographically (canonical order)
 
-            - fee_pct is a decimal string in [0,1)
+            - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
             - min_price/max_price are optional decimal strings defining a price
             band over
@@ -47652,11 +49964,41 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            fee_pct:
-              type: string
+            fee_rate:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
               description: >-
-                fee_pct is the pool swap fee percentage (cosmos.Dec string in
-                [0,1)).
+                fee_rate is the per-denom pool swap fee rate (amount in [0,1)),
+                exactly two
+
+                entries in canonical pool order matching coins[0].denom and
+                coins[1].denom.
+
+                Fee is applied to the OUTPUT denom of each swap leg: for
+                exact-in, the
+
+                computed gross output is reduced by fee; for exact-out, the
+                required gross
+
+                output is inflated so net (after fee) meets the target. Fees
+                accrue to
+
+                fees_earned in the output denom.
             min_price:
               type: array
               items:
@@ -47732,14 +50074,32 @@ definitions:
 
                   signatures required by gogoproto.
               title: cumulative swap fees retained by the pool (accrue to LPs)
-            interest_rate_coin1:
-              type: string
-              title: |-
+            interest_rate:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
                 ═════ LEVERAGE FIELDS ═════
-                Annual interest rate for borrows in coin1 denom
-            interest_rate_coin2:
-              type: string
-              title: Annual interest rate for borrows in coin2 denom
+
+                Annual interest rates per reserve denom (exactly two, canonical
+                order).
+
+                Each amount is a LegacyDec string representing APR (per-year
+                accrual).
             interest_earned:
               type: array
               items:
@@ -47777,25 +50137,106 @@ definitions:
                   signatures required by gogoproto.
               title: Total borrowed (aggregate for cap enforcement)
             min_collateral_ratio:
-              type: string
-              title: |-
-                ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-                Minimum collateral ratio required at position open
-            max_leverage_ratio:
-              type: string
-              title: >-
-                Maximum leverage ratio allowed (collateral + borrowed) /
-                collateral
-            liquidation_threshold:
-              type: string
-              title: Collateral ratio threshold below which position is liquidatable
-            max_borrow_percent:
-              type: string
-              title: >-
-                Maximum borrow capacity as percentage of reserve (applies
-                symmetrically to
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
 
-                both coins)
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
+
+                Minimum collateral ratio required at position open per reserve
+                denom
+
+                (exactly two, canonical order). Each amount is a LegacyDec
+                string (> 1).
+            max_leverage_ratio:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Maximum leverage ratio allowed (collateral + borrowed) /
+                collateral per
+
+                reserve denom (exactly two, canonical order). Each amount is a
+                LegacyDec
+
+                string (> 1).
+            liquidation_threshold:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Collateral ratio threshold below which position is liquidatable
+                per reserve
+
+                denom (exactly two, canonical order). Each amount is a LegacyDec
+                string
+
+                (> 1).
+            max_borrow_percent:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Maximum borrow capacity per reserve denom as DecCoins (exactly
+                two,
+
+                canonical order). Each amount is a LegacyDec in [0,1).
           description: >-
             Pool describes AMM pool state.
 
@@ -47804,7 +50245,7 @@ definitions:
 
             - coin_a.denom < coin_b.denom lexicographically (canonical order)
 
-            - fee_pct is a decimal string in [0,1)
+            - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
             - min_price/max_price are optional decimal strings defining a price
             band over
@@ -47932,6 +50373,39 @@ definitions:
               method
 
               signatures required by gogoproto.
+          interest_rate:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
+              ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
+
+              Annual interest rates per reserve denom (exactly two, canonical
+              order).
+
+              Each amount is a LegacyDec string representing APR (per-year
+              accrual).
+          min_collateral_ratio:
+            type: string
+            description: >-
+              Minimum collateral ratio used for health/liquidation checks
+              (cosmos.Dec
+
+              string).
         description: LeveragePosition represents an active leverage position for a trader.
       health_status:
         title: Health Information
@@ -48083,6 +50557,39 @@ definitions:
                 method
 
                 signatures required by gogoproto.
+            interest_rate:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
+
+                Annual interest rates per reserve denom (exactly two, canonical
+                order).
+
+                Each amount is a LegacyDec string representing APR (per-year
+                accrual).
+            min_collateral_ratio:
+              type: string
+              description: >-
+                Minimum collateral ratio used for health/liquidation checks
+                (cosmos.Dec
+
+                string).
           description: >-
             LeveragePosition represents an active leverage position for a
             trader.
@@ -48204,6 +50711,39 @@ definitions:
                 method
 
                 signatures required by gogoproto.
+            interest_rate:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
+
+                Annual interest rates per reserve denom (exactly two, canonical
+                order).
+
+                Each amount is a LegacyDec string representing APR (per-year
+                accrual).
+            min_collateral_ratio:
+              type: string
+              description: >-
+                Minimum collateral ratio used for health/liquidation checks
+                (cosmos.Dec
+
+                string).
           description: >-
             LeveragePosition represents an active leverage position for a
             trader.
@@ -70959,6 +73499,30 @@ definitions:
   dysonprotocol.whaleswap.v1.MsgClosePositionResponse:
     type: object
     properties:
+      interest_paid:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      principal_paid:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
       profit:
         type: object
         properties:
@@ -70971,7 +73535,15 @@ definitions:
 
           NOTE: The amount field is an Int which implements the custom method
           signatures required by gogoproto.
-      accrued_interest:
+  dysonprotocol.whaleswap.v1.MsgCoverPosition:
+    type: object
+    properties:
+      user:
+        type: string
+      position_id:
+        type: string
+        format: uint64
+      payment:
         type: object
         properties:
           denom:
@@ -70983,6 +73555,74 @@ definitions:
 
           NOTE: The amount field is an Int which implements the custom method
           signatures required by gogoproto.
+  dysonprotocol.whaleswap.v1.MsgCoverPositionResponse:
+    type: object
+    properties:
+      interest_paid:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      principal_paid:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      new_borrowed:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      new_collateral_ratio:
+        type: string
+      closed:
+        type: boolean
+      refunded:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      profit:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        title: swap PnL from unwinding held → borrowed during auto-close
   dysonprotocol.whaleswap.v1.MsgCreatePool:
     type: object
     properties:
@@ -71039,14 +73679,114 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
-      fee_pct:
-        type: string
+      fee_rate:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: |-
+          Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
+          keeper normalizes to exactly two entries in canonical pool order.
       min_collateral_ratio:
-        type: string
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
+          Minimum collateral ratio per reserve denom (exactly two, canonical
+          order).
+
+          Each amount is a LegacyDec string (> 1).
       max_leverage_ratio:
-        type: string
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
+          Maximum leverage ratio per reserve denom (exactly two, canonical
+          order).
+
+          Each amount is a LegacyDec string (> 1).
+      interest_rate:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
+          Annual interest rates per reserve denom (exactly two, canonical
+          order).
+
+          Each amount is a LegacyDec string representing APR (per-year accrual).
       max_borrow_percent:
-        type: string
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: |-
+          Maximum borrow capacity per reserve denom as DecCoins (exactly two,
+          canonical order). Each amount is a LegacyDec in [0,1).
+      liquidation_threshold:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        title: |-
+          Collateral ratio liquidation threshold per reserve denom (exactly two,
+          canonical order; each amount is a LegacyDec string > 1)
     description: >-
       Create a pool.
 
@@ -71748,9 +74488,23 @@ definitions:
       pool_id:
         type: string
         format: uint64
-      fee_pct:
-        type: string
-        title: Optional fields; empty string means no change
+      fee_rate:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: |-
+          Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
+          keeper normalizes to exactly two entries in canonical pool order.
       min_price:
         type: array
         items:
@@ -71780,27 +74534,107 @@ definitions:
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
       min_collateral_ratio:
-        type: string
-        title: Leverage configuration (optional; empty means no change)
-      max_leverage_ratio:
-        type: string
-      max_borrow_percent:
-        type: string
-      interest_rate_coin1:
-        type: string
-        title: >-
-          Annual interest rates per reserve coin (optional; empty means no
-          change)
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
 
-          Example: "0.10" for 10% APR
-      interest_rate_coin2:
-        type: string
-    description: |-
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        title: >-
+          Leverage configuration (per-denom)
+
+          Minimum collateral ratio per reserve denom (exactly two, canonical
+          order; >
+
+          1)
+      max_leverage_ratio:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        title: >-
+          Maximum leverage ratio per reserve denom (exactly two, canonical
+          order; >
+
+          1)
+      interest_rate:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
+          Annual interest rates per reserve denom (exactly two, canonical
+          order).
+      max_borrow_percent:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
+          Maximum borrow capacity per reserve denom (exactly two, canonical
+          order).
+
+          Amounts in [0,1).
+      liquidation_threshold:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        title: |-
+          Collateral ratio liquidation threshold per reserve denom (exactly two,
+          canonical order; each amount is a LegacyDec string > 1)
+    description: >-
       Update pool config (owner-only: majority of shares > 50%).
 
+
       Notes:
-      - Empty string/empty arrays indicate no change for that field.
-      - Price bands follow the same two-coin ratio rules as in MsgCreatePool.
+
+      - All fields are required. Price bands must be both empty (no band) or
+      both
+        contain exactly two coins in canonical order matching pool reserves.
   dysonprotocol.whaleswap.v1.MsgUpdatePoolConfigResponse:
     type: object
   dysonprotocol.script.v1.MsgCreateNewScript:

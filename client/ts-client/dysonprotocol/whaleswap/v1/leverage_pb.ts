@@ -5,7 +5,7 @@
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64, Timestamp } from "@bufbuild/protobuf";
-import { Coin } from "../../../cosmos/base/v1beta1/coin_pb.js";
+import { Coin, DecCoin } from "../../../cosmos/base/v1beta1/coin_pb.js";
 
 /**
  * @generated from enum dysonprotocol.whaleswap.v1.LiquidationStatus
@@ -94,6 +94,23 @@ export class LeveragePosition extends Message<LeveragePosition> {
    */
   accruedInterest?: Coin;
 
+  /**
+   * ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
+   * Annual interest rates per reserve denom (exactly two, canonical order).
+   * Each amount is a LegacyDec string representing APR (per-year accrual).
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin interest_rate = 22;
+   */
+  interestRate: DecCoin[] = [];
+
+  /**
+   * Minimum collateral ratio used for health/liquidation checks (cosmos.Dec
+   * string).
+   *
+   * @generated from field: string min_collateral_ratio = 23;
+   */
+  minCollateralRatio = "";
+
   constructor(data?: PartialMessage<LeveragePosition>) {
     super();
     proto3.util.initPartial(data, this);
@@ -113,6 +130,8 @@ export class LeveragePosition extends Message<LeveragePosition> {
     { no: 10, name: "liquidation_initialized_block_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 11, name: "liquidation_status", kind: "enum", T: proto3.getEnumType(LiquidationStatus) },
     { no: 12, name: "accrued_interest", kind: "message", T: Coin },
+    { no: 22, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
+    { no: 23, name: "min_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LeveragePosition {

@@ -16,6 +16,57 @@ import (
 	sync "sync"
 )
 
+var _ protoreflect.List = (*_LeveragePosition_22_list)(nil)
+
+type _LeveragePosition_22_list struct {
+	list *[]*v1beta1.DecCoin
+}
+
+func (x *_LeveragePosition_22_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_LeveragePosition_22_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_LeveragePosition_22_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.DecCoin)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_LeveragePosition_22_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.DecCoin)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_LeveragePosition_22_list) AppendMutable() protoreflect.Value {
+	v := new(v1beta1.DecCoin)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_LeveragePosition_22_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_LeveragePosition_22_list) NewElement() protoreflect.Value {
+	v := new(v1beta1.DecCoin)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_LeveragePosition_22_list) IsValid() bool {
+	return x.list != nil
+}
+
 var (
 	md_LeveragePosition                                      protoreflect.MessageDescriptor
 	fd_LeveragePosition_position_id                          protoreflect.FieldDescriptor
@@ -29,6 +80,8 @@ var (
 	fd_LeveragePosition_liquidation_initialized_block_height protoreflect.FieldDescriptor
 	fd_LeveragePosition_liquidation_status                   protoreflect.FieldDescriptor
 	fd_LeveragePosition_accrued_interest                     protoreflect.FieldDescriptor
+	fd_LeveragePosition_interest_rate                        protoreflect.FieldDescriptor
+	fd_LeveragePosition_min_collateral_ratio                 protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -45,6 +98,8 @@ func init() {
 	fd_LeveragePosition_liquidation_initialized_block_height = md_LeveragePosition.Fields().ByName("liquidation_initialized_block_height")
 	fd_LeveragePosition_liquidation_status = md_LeveragePosition.Fields().ByName("liquidation_status")
 	fd_LeveragePosition_accrued_interest = md_LeveragePosition.Fields().ByName("accrued_interest")
+	fd_LeveragePosition_interest_rate = md_LeveragePosition.Fields().ByName("interest_rate")
+	fd_LeveragePosition_min_collateral_ratio = md_LeveragePosition.Fields().ByName("min_collateral_ratio")
 }
 
 var _ protoreflect.Message = (*fastReflection_LeveragePosition)(nil)
@@ -178,6 +233,18 @@ func (x *fastReflection_LeveragePosition) Range(f func(protoreflect.FieldDescrip
 			return
 		}
 	}
+	if len(x.InterestRate) != 0 {
+		value := protoreflect.ValueOfList(&_LeveragePosition_22_list{list: &x.InterestRate})
+		if !f(fd_LeveragePosition_interest_rate, value) {
+			return
+		}
+	}
+	if x.MinCollateralRatio != "" {
+		value := protoreflect.ValueOfString(x.MinCollateralRatio)
+		if !f(fd_LeveragePosition_min_collateral_ratio, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -215,6 +282,10 @@ func (x *fastReflection_LeveragePosition) Has(fd protoreflect.FieldDescriptor) b
 		return x.LiquidationStatus != 0
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.accrued_interest":
 		return x.AccruedInterest != nil
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.interest_rate":
+		return len(x.InterestRate) != 0
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.min_collateral_ratio":
+		return x.MinCollateralRatio != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.LeveragePosition"))
@@ -253,6 +324,10 @@ func (x *fastReflection_LeveragePosition) Clear(fd protoreflect.FieldDescriptor)
 		x.LiquidationStatus = 0
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.accrued_interest":
 		x.AccruedInterest = nil
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.interest_rate":
+		x.InterestRate = nil
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.min_collateral_ratio":
+		x.MinCollateralRatio = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.LeveragePosition"))
@@ -302,6 +377,15 @@ func (x *fastReflection_LeveragePosition) Get(descriptor protoreflect.FieldDescr
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.accrued_interest":
 		value := x.AccruedInterest
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.interest_rate":
+		if len(x.InterestRate) == 0 {
+			return protoreflect.ValueOfList(&_LeveragePosition_22_list{})
+		}
+		listValue := &_LeveragePosition_22_list{list: &x.InterestRate}
+		return protoreflect.ValueOfList(listValue)
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.min_collateral_ratio":
+		value := x.MinCollateralRatio
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.LeveragePosition"))
@@ -344,6 +428,12 @@ func (x *fastReflection_LeveragePosition) Set(fd protoreflect.FieldDescriptor, v
 		x.LiquidationStatus = (LiquidationStatus)(value.Enum())
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.accrued_interest":
 		x.AccruedInterest = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.interest_rate":
+		lv := value.List()
+		clv := lv.(*_LeveragePosition_22_list)
+		x.InterestRate = *clv.list
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.min_collateral_ratio":
+		x.MinCollateralRatio = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.LeveragePosition"))
@@ -389,6 +479,12 @@ func (x *fastReflection_LeveragePosition) Mutable(fd protoreflect.FieldDescripto
 			x.AccruedInterest = new(v1beta1.Coin)
 		}
 		return protoreflect.ValueOfMessage(x.AccruedInterest.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.interest_rate":
+		if x.InterestRate == nil {
+			x.InterestRate = []*v1beta1.DecCoin{}
+		}
+		value := &_LeveragePosition_22_list{list: &x.InterestRate}
+		return protoreflect.ValueOfList(value)
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.position_id":
 		panic(fmt.Errorf("field position_id of message dysonprotocol.whaleswap.v1.LeveragePosition is not mutable"))
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.pool_id":
@@ -401,6 +497,8 @@ func (x *fastReflection_LeveragePosition) Mutable(fd protoreflect.FieldDescripto
 		panic(fmt.Errorf("field liquidation_initialized_block_height of message dysonprotocol.whaleswap.v1.LeveragePosition is not mutable"))
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.liquidation_status":
 		panic(fmt.Errorf("field liquidation_status of message dysonprotocol.whaleswap.v1.LeveragePosition is not mutable"))
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.min_collateral_ratio":
+		panic(fmt.Errorf("field min_collateral_ratio of message dysonprotocol.whaleswap.v1.LeveragePosition is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.LeveragePosition"))
@@ -441,6 +539,11 @@ func (x *fastReflection_LeveragePosition) NewField(fd protoreflect.FieldDescript
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.accrued_interest":
 		m := new(v1beta1.Coin)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.interest_rate":
+		list := []*v1beta1.DecCoin{}
+		return protoreflect.ValueOfList(&_LeveragePosition_22_list{list: &list})
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.min_collateral_ratio":
+		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.LeveragePosition"))
@@ -549,6 +652,16 @@ func (x *fastReflection_LeveragePosition) ProtoMethods() *protoiface.Methods {
 			l = options.Size(x.AccruedInterest)
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
+		if len(x.InterestRate) > 0 {
+			for _, e := range x.InterestRate {
+				l = options.Size(e)
+				n += 2 + l + runtime.Sov(uint64(l))
+			}
+		}
+		l = len(x.MinCollateralRatio)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -577,6 +690,33 @@ func (x *fastReflection_LeveragePosition) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.MinCollateralRatio) > 0 {
+			i -= len(x.MinCollateralRatio)
+			copy(dAtA[i:], x.MinCollateralRatio)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MinCollateralRatio)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xba
+		}
+		if len(x.InterestRate) > 0 {
+			for iNdEx := len(x.InterestRate) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.InterestRate[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x1
+				i--
+				dAtA[i] = 0xb2
+			}
 		}
 		if x.AccruedInterest != nil {
 			encoded, err := options.Marshal(x.AccruedInterest)
@@ -1036,6 +1176,72 @@ func (x *fastReflection_LeveragePosition) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
 				iNdEx = postIndex
+			case 22:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field InterestRate", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.InterestRate = append(x.InterestRate, &v1beta1.DecCoin{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.InterestRate[len(x.InterestRate)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 23:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MinCollateralRatio", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.MinCollateralRatio = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -1150,6 +1356,13 @@ type LeveragePosition struct {
 	LiquidationInitializedBlockHeight uint64                 `protobuf:"varint,10,opt,name=liquidation_initialized_block_height,json=liquidationInitializedBlockHeight,proto3" json:"liquidation_initialized_block_height,omitempty"`
 	LiquidationStatus                 LiquidationStatus      `protobuf:"varint,11,opt,name=liquidation_status,json=liquidationStatus,proto3,enum=dysonprotocol.whaleswap.v1.LiquidationStatus" json:"liquidation_status,omitempty"`
 	AccruedInterest                   *v1beta1.Coin          `protobuf:"bytes,12,opt,name=accrued_interest,json=accruedInterest,proto3" json:"accrued_interest,omitempty"`
+	// ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
+	// Annual interest rates per reserve denom (exactly two, canonical order).
+	// Each amount is a LegacyDec string representing APR (per-year accrual).
+	InterestRate []*v1beta1.DecCoin `protobuf:"bytes,22,rep,name=interest_rate,json=interestRate,proto3" json:"interest_rate,omitempty"`
+	// Minimum collateral ratio used for health/liquidation checks (cosmos.Dec
+	// string).
+	MinCollateralRatio string `protobuf:"bytes,23,opt,name=min_collateral_ratio,json=minCollateralRatio,proto3" json:"min_collateral_ratio,omitempty"`
 }
 
 func (x *LeveragePosition) Reset() {
@@ -1249,6 +1462,20 @@ func (x *LeveragePosition) GetAccruedInterest() *v1beta1.Coin {
 	return nil
 }
 
+func (x *LeveragePosition) GetInterestRate() []*v1beta1.DecCoin {
+	if x != nil {
+		return x.InterestRate
+	}
+	return nil
+}
+
+func (x *LeveragePosition) GetMinCollateralRatio() string {
+	if x != nil {
+		return x.MinCollateralRatio
+	}
+	return ""
+}
+
 var File_dysonprotocol_whaleswap_v1_leverage_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_whaleswap_v1_leverage_proto_rawDesc = []byte{
@@ -1263,7 +1490,7 @@ var file_dysonprotocol_whaleswap_v1_leverage_proto_rawDesc = []byte{
 	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d,
 	0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
 	0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74,
-	0x61, 0x6d, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x9d, 0x05, 0x0a, 0x10, 0x4c, 0x65,
+	0x61, 0x6d, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xd7, 0x06, 0x0a, 0x10, 0x4c, 0x65,
 	0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1f,
 	0x0a, 0x0b, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12,
@@ -1305,18 +1532,29 @@ var file_dysonprotocol_whaleswap_v1_leverage_proto_rawDesc = []byte{
 	0x74, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
 	0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f,
 	0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0f, 0x61, 0x63, 0x63, 0x72, 0x75, 0x65,
-	0x64, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x2a, 0x78, 0x0a, 0x11, 0x4c, 0x69, 0x71,
-	0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x22,
-	0x0a, 0x1e, 0x4c, 0x49, 0x51, 0x55, 0x49, 0x44, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54,
-	0x41, 0x54, 0x55, 0x53, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44,
-	0x10, 0x00, 0x12, 0x1b, 0x0a, 0x17, 0x4c, 0x49, 0x51, 0x55, 0x49, 0x44, 0x41, 0x54, 0x49, 0x4f,
-	0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x4e, 0x4f, 0x4e, 0x45, 0x10, 0x01, 0x12,
-	0x22, 0x0a, 0x1e, 0x4c, 0x49, 0x51, 0x55, 0x49, 0x44, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53,
-	0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x49, 0x4e, 0x49, 0x54, 0x49, 0x41, 0x4c, 0x49, 0x5a, 0x45,
-	0x44, 0x10, 0x02, 0x42, 0x25, 0x5a, 0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c, 0x65,
-	0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x64, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x12, 0x76, 0x0a, 0x0d, 0x69, 0x6e, 0x74,
+	0x65, 0x72, 0x65, 0x73, 0x74, 0x5f, 0x72, 0x61, 0x74, 0x65, 0x18, 0x16, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x1c, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76,
+	0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x44, 0x65, 0x63, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x33,
+	0xc8, 0xde, 0x1f, 0x00, 0xaa, 0xdf, 0x1f, 0x2b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x44, 0x65, 0x63, 0x43, 0x6f,
+	0x69, 0x6e, 0x73, 0x52, 0x0c, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x52, 0x61, 0x74,
+	0x65, 0x12, 0x40, 0x0a, 0x14, 0x6d, 0x69, 0x6e, 0x5f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65,
+	0x72, 0x61, 0x6c, 0x5f, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x18, 0x17, 0x20, 0x01, 0x28, 0x09, 0x42,
+	0x0e, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x44, 0x65, 0x63, 0x52,
+	0x12, 0x6d, 0x69, 0x6e, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x52, 0x61,
+	0x74, 0x69, 0x6f, 0x2a, 0x78, 0x0a, 0x11, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x22, 0x0a, 0x1e, 0x4c, 0x49, 0x51, 0x55,
+	0x49, 0x44, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x55,
+	0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x1b, 0x0a, 0x17,
+	0x4c, 0x49, 0x51, 0x55, 0x49, 0x44, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54,
+	0x55, 0x53, 0x5f, 0x4e, 0x4f, 0x4e, 0x45, 0x10, 0x01, 0x12, 0x22, 0x0a, 0x1e, 0x4c, 0x49, 0x51,
+	0x55, 0x49, 0x44, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f,
+	0x49, 0x4e, 0x49, 0x54, 0x49, 0x41, 0x4c, 0x49, 0x5a, 0x45, 0x44, 0x10, 0x02, 0x42, 0x25, 0x5a,
+	0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74,
+	0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1338,6 +1576,7 @@ var file_dysonprotocol_whaleswap_v1_leverage_proto_goTypes = []interface{}{
 	(*LeveragePosition)(nil),      // 1: dysonprotocol.whaleswap.v1.LeveragePosition
 	(*v1beta1.Coin)(nil),          // 2: cosmos.base.v1beta1.Coin
 	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
+	(*v1beta1.DecCoin)(nil),       // 4: cosmos.base.v1beta1.DecCoin
 }
 var file_dysonprotocol_whaleswap_v1_leverage_proto_depIdxs = []int32{
 	2, // 0: dysonprotocol.whaleswap.v1.LeveragePosition.borrowed:type_name -> cosmos.base.v1beta1.Coin
@@ -1346,11 +1585,12 @@ var file_dysonprotocol_whaleswap_v1_leverage_proto_depIdxs = []int32{
 	3, // 3: dysonprotocol.whaleswap.v1.LeveragePosition.borrow_time:type_name -> google.protobuf.Timestamp
 	0, // 4: dysonprotocol.whaleswap.v1.LeveragePosition.liquidation_status:type_name -> dysonprotocol.whaleswap.v1.LiquidationStatus
 	2, // 5: dysonprotocol.whaleswap.v1.LeveragePosition.accrued_interest:type_name -> cosmos.base.v1beta1.Coin
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	4, // 6: dysonprotocol.whaleswap.v1.LeveragePosition.interest_rate:type_name -> cosmos.base.v1beta1.DecCoin
+	7, // [7:7] is the sub-list for method output_type
+	7, // [7:7] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_dysonprotocol_whaleswap_v1_leverage_proto_init() }

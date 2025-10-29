@@ -44,6 +44,20 @@
                 "title": "Coin",
                 "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
             },
+            "cosmos.base.v1beta1.DecCoin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Dec Coin",
+                "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
+            },
             "dysonprotocol.whaleswap.v1.Pool": {
                 "properties": {
                     "pool_id": {
@@ -60,9 +74,13 @@
                     "shares_denom": {
                         "type": "string"
                     },
-                    "fee_pct": {
-                        "type": "string",
-                        "description": "fee_pct is the pool swap fee percentage (cosmos.Dec string in [0,1))."
+                    "fee_rate": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two entries in canonical pool order matching coins[0].denom and coins[1].denom. Fee is applied to the OUTPUT denom of each swap leg: for exact-in, the computed gross output is reduced by fee; for exact-out, the required gross output is inflated so net (after fee) meets the target. Fees accrue to fees_earned in the output denom."
                     },
                     "min_price": {
                         "items": {
@@ -101,13 +119,13 @@
                         "type": "array",
                         "description": "cumulative swap fees retained by the pool (accrue to LPs)"
                     },
-                    "interest_rate_coin1": {
-                        "type": "string",
-                        "description": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE FIELDS \u2550\u2550\u2550\u2550\u2550 Annual interest rate for borrows in coin1 denom"
-                    },
-                    "interest_rate_coin2": {
-                        "type": "string",
-                        "description": "Annual interest rate for borrows in coin2 denom"
+                    "interest_rate": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE FIELDS \u2550\u2550\u2550\u2550\u2550 Annual interest rates per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string representing APR (per-year accrual)."
                     },
                     "interest_earned": {
                         "items": {
@@ -126,26 +144,42 @@
                         "description": "Total borrowed (aggregate for cap enforcement)"
                     },
                     "min_collateral_ratio": {
-                        "type": "string",
-                        "description": "\u2550\u2550\u2550\u2550\u2550 PER-POOL LEVERAGE RISK PARAMETERS \u2550\u2550\u2550\u2550\u2550 Minimum collateral ratio required at position open"
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 PER-POOL LEVERAGE RISK PARAMETERS (per-denom) \u2550\u2550\u2550\u2550\u2550 Minimum collateral ratio required at position open per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string (> 1)."
                     },
                     "max_leverage_ratio": {
-                        "type": "string",
-                        "description": "Maximum leverage ratio allowed (collateral + borrowed) / collateral"
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Maximum leverage ratio allowed (collateral + borrowed) / collateral per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string (> 1)."
                     },
                     "liquidation_threshold": {
-                        "type": "string",
-                        "description": "Collateral ratio threshold below which position is liquidatable"
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Collateral ratio threshold below which position is liquidatable per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string (> 1)."
                     },
                     "max_borrow_percent": {
-                        "type": "string",
-                        "description": "Maximum borrow capacity as percentage of reserve (applies symmetrically to both coins)"
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Maximum borrow capacity per reserve denom as DecCoins (exactly two, canonical order). Each amount is a LegacyDec in [0,1)."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Pool",
-                "description": "Pool describes AMM pool state. Notes: - coin_a.denom < coin_b.denom lexicographically (canonical order) - fee_pct is a decimal string in [0,1) - min_price/max_price are optional decimal strings defining a price band over   P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +\u221e)) the pool   behaves as constant-product (v2). If set, concentrated-liquidity math   applies. - coin_a.amount/coin_b.amount are sdk.Int strings. - The instantaneous price used by price-based queries is derived from   reserves as P = coin_b / coin_a, consistent with the notes above."
+                "description": "Pool describes AMM pool state. Notes: - coin_a.denom < coin_b.denom lexicographically (canonical order) - fee_rate is a per-denom decimal rate in [0,1) as DecCoins - min_price/max_price are optional decimal strings defining a price band over   P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +\u221e)) the pool   behaves as constant-product (v2). If set, concentrated-liquidity math   applies. - coin_a.amount/coin_b.amount are sdk.Int strings. - The instantaneous price used by price-based queries is derived from   reserves as P = coin_b / coin_a, consistent with the notes above."
             }
         }
     }

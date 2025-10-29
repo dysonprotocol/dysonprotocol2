@@ -24,19 +24,11 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 	if gerr != nil {
 		return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, gerr
 	}
-	logger.Info("tradeApplySwapLeg got pool", "pool_coins", pool.Coins, "fee_pct", pool.FeePct)
+	logger.Info("tradeApplySwapLeg got pool", "pool_coins", pool.Coins, "fee_rate", pool.FeeRate)
 	if len(pool.Coins) != 2 {
 		return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves")
 	}
 
-	fee := math.LegacyNewDec(0)
-	if pool.FeePct != "" {
-		f, ferr := math.LegacyNewDecFromStr(pool.FeePct)
-		if ferr != nil {
-			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool fee_pct: "+ferr.Error())
-		}
-		fee = f
-	}
 	one := math.LegacyNewDec(1)
 
 	hasIn := leg.SwapIn.Denom != "" && leg.SwapIn.Amount.IsPositive()
@@ -76,6 +68,9 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 		targetOutAmt = leg.SwapOut.Amount
 	}
 
+	// Select per-denom fee based on the output denom (fee applied to outputs)
+	fee := pool.FeeRate.AmountOf(pool.Coins[outputIdx].Denom)
+
 	if len(pool.MinPrice) == 2 {
 		// concentrated liquidity math
 		sa, sb, err := k.bandSqrt(pool)
@@ -94,11 +89,8 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool liquidity")
 		}
 		if hasIn {
-			effIn := math.LegacyNewDecFromInt(actualInCoin.Amount).Mul(one.Sub(fee))
-			feeInt := actualInCoin.Amount.Sub(effIn.TruncateInt())
-			if feeInt.IsPositive() {
-				pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(actualInCoin.Denom, feeInt))
-			}
+			// Input has no fee; fee is applied to output
+			effIn := math.LegacyNewDecFromInt(actualInCoin.Amount)
 			if inputIdx == 0 {
 				invSpPrime := math.LegacyOneDec().Quo(sp).Add(effIn.Quo(L))
 				if invSpPrime.LTE(math.LegacyZeroDec()) {
@@ -119,55 +111,76 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 				}
 				outAmt = L.Mul(math.LegacyOneDec().Quo(sp).Sub(math.LegacyOneDec().Quo(spPrime))).TruncateInt()
 			}
+			// Apply output-side fee using DecCoins scaling for robust rounding
+			grossOut := sdk.NewCoin(pool.Coins[outputIdx].Denom, outAmt)
+			netDec := sdk.NewDecCoinsFromCoins(grossOut).MulDecTruncate(one.Sub(fee))
+			netCoins, _ := netDec.TruncateDecimal()
+			netAmt := netCoins.AmountOf(grossOut.Denom)
+			feeInt := outAmt.Sub(netAmt)
+			if feeInt.IsPositive() {
+				pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(grossOut.Denom, feeInt))
+			}
+			outAmt = netAmt
 		} else {
 			// exact-out
 			if !targetOutAmt.IsPositive() {
 				return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap_out must be > 0")
 			}
 			if outputIdx == 1 { // token0-in
-				outDec := math.LegacyNewDecFromInt(targetOutAmt)
+				// Inflate required gross output so that net (after fee) >= targetOutAmt
+				grossOut := math.LegacyNewDecFromInt(targetOutAmt).Quo(one.Sub(fee)).Ceil().TruncateInt()
+				outDec := math.LegacyNewDecFromInt(grossOut)
 				spPrime := sp.Sub(outDec.Quo(L))
 				if spPrime.LT(sa) {
 					return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "exact-out exceeds band capacity")
 				}
 				effInDec := L.Mul(math.LegacyOneDec().Quo(spPrime).Sub(math.LegacyOneDec().Quo(sp)))
-				gross := effInDec.Quo(one.Sub(fee)).Ceil().TruncateInt()
+				gross := effInDec.Ceil().TruncateInt()
 				if !gross.IsPositive() {
 					return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "computed input not positive")
 				}
-				effInActual := math.LegacyNewDecFromInt(gross).Mul(one.Sub(fee))
+				effInActual := math.LegacyNewDecFromInt(gross)
 				invSpPrime := math.LegacyOneDec().Quo(sp).Add(effInActual.Quo(L))
 				spPrimeAct, err := k.sqrtPrice(math.LegacyOneDec().Quo(invSpPrime))
 				if err != nil {
 					return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, err
 				}
 				outAct := L.Mul(sp.Sub(spPrimeAct)).TruncateInt()
-				if outAct.LT(targetOutAmt) {
+				for {
+					feeInt := math.LegacyNewDecFromInt(outAct).Mul(fee).TruncateInt()
+					net := outAct.Sub(feeInt)
+					if !net.LT(targetOutAmt) {
+						break
+					}
 					gross = gross.AddRaw(1)
-					effInActual = math.LegacyNewDecFromInt(gross).Mul(one.Sub(fee))
+					effInActual = math.LegacyNewDecFromInt(gross)
 					invSpPrime = math.LegacyOneDec().Quo(sp).Add(effInActual.Quo(L))
 					spPrimeAct, err = k.sqrtPrice(math.LegacyOneDec().Quo(invSpPrime))
 					if err != nil {
 						return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(err, "failed to compute next sqrt price (recheck)")
 					}
 					outAct = L.Mul(sp.Sub(spPrimeAct)).TruncateInt()
-					if outAct.LT(targetOutAmt) {
-						return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "insufficient liquidity for exact-out: outAct=%s targetOutAmt=%s", outAct.String(), targetOutAmt.String())
-					}
 				}
-				feeInt := gross.Sub(effInActual.TruncateInt())
-				if feeInt.IsPositive() {
-					pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(pool.Coins[0].Denom, feeInt))
+				// compute net output using DecCoins scaling
+				grossCoin := sdk.NewCoin(pool.Coins[1].Denom, outAct)
+				netDec := sdk.NewDecCoinsFromCoins(grossCoin).MulDecTruncate(one.Sub(fee))
+				netCoins, _ := netDec.TruncateDecimal()
+				netOut := netCoins.AmountOf(grossCoin.Denom)
+				feeIntOut := outAct.Sub(netOut)
+				if feeIntOut.IsPositive() {
+					pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(grossCoin.Denom, feeIntOut))
 				}
 				pool.Coins = sdk.NewCoins(
 					sdk.NewCoin(pool.Coins[0].Denom, pool.Coins[0].Amount.Add(gross)),
-					sdk.NewCoin(pool.Coins[1].Denom, pool.Coins[1].Amount.Sub(targetOutAmt)),
+					// subtract net output only
+					sdk.NewCoin(pool.Coins[1].Denom, pool.Coins[1].Amount.Sub(netOut)),
 				)
-				outAmt = targetOutAmt
+				outAmt = netOut
 				outDenom = pool.Coins[1].Denom
 				actualInCoin = sdk.NewCoin(pool.Coins[0].Denom, gross)
 			} else { // token1-in
-				outDec := math.LegacyNewDecFromInt(targetOutAmt)
+				grossOut := math.LegacyNewDecFromInt(targetOutAmt).Quo(one.Sub(fee)).Ceil().TruncateInt()
+				outDec := math.LegacyNewDecFromInt(grossOut)
 				denom := math.LegacyOneDec().Quo(sp).Sub(outDec.Quo(L))
 				if !denom.IsPositive() {
 					return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "exact-out exceeds pool capacity")
@@ -177,52 +190,59 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 					return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "exact-out exceeds band capacity")
 				}
 				effInDec := L.Mul(spPrime.Sub(sp))
-				gross := effInDec.Quo(one.Sub(fee)).Ceil().TruncateInt()
+				gross := effInDec.Ceil().TruncateInt()
 				if !gross.IsPositive() {
 					return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "computed input not positive")
 				}
-				effInActual := math.LegacyNewDecFromInt(gross).Mul(one.Sub(fee))
+				effInActual := math.LegacyNewDecFromInt(gross)
 				spPrimeAct := sp.Add(effInActual.Quo(L))
 				outAct := L.Mul(math.LegacyOneDec().Quo(sp).Sub(math.LegacyOneDec().Quo(spPrimeAct))).TruncateInt()
-				if outAct.LT(targetOutAmt) {
+				for {
+					feeInt := math.LegacyNewDecFromInt(outAct).Mul(fee).TruncateInt()
+					net := outAct.Sub(feeInt)
+					if !net.LT(targetOutAmt) {
+						break
+					}
 					gross = gross.AddRaw(1)
-					effInActual = math.LegacyNewDecFromInt(gross).Mul(one.Sub(fee))
+					effInActual = math.LegacyNewDecFromInt(gross)
 					spPrimeAct = sp.Add(effInActual.Quo(L))
 					outAct = L.Mul(math.LegacyOneDec().Quo(sp).Sub(math.LegacyOneDec().Quo(spPrimeAct))).TruncateInt()
-					if outAct.LT(targetOutAmt) {
-						return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "insufficient liquidity for exact-out")
-					}
 				}
-				feeInt := gross.Sub(effInActual.TruncateInt())
-				if feeInt.IsPositive() {
-					pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(pool.Coins[1].Denom, feeInt))
+				// compute net output using DecCoins scaling
+				grossCoin := sdk.NewCoin(pool.Coins[0].Denom, outAct)
+				netDec := sdk.NewDecCoinsFromCoins(grossCoin).MulDecTruncate(one.Sub(fee))
+				netCoins, _ := netDec.TruncateDecimal()
+				netOut := netCoins.AmountOf(grossCoin.Denom)
+				feeIntOut := outAct.Sub(netOut)
+				if feeIntOut.IsPositive() {
+					pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(grossCoin.Denom, feeIntOut))
 				}
 				pool.Coins = sdk.NewCoins(
-					sdk.NewCoin(pool.Coins[0].Denom, pool.Coins[0].Amount.Sub(targetOutAmt)),
+					sdk.NewCoin(pool.Coins[0].Denom, pool.Coins[0].Amount.Sub(netOut)),
 					sdk.NewCoin(pool.Coins[1].Denom, pool.Coins[1].Amount.Add(gross)),
 				)
-				outAmt = targetOutAmt
+				outAmt = netOut
 				outDenom = pool.Coins[0].Denom
 				actualInCoin = sdk.NewCoin(pool.Coins[1].Denom, gross)
 			}
 		}
-		// exact-in reserves update and out denom
+		// exact-in reserves update and out denom (use SafeSub for robustness)
 		if hasIn {
 			if inputIdx == 0 {
-				new0 := pool.Coins[0].Amount.Add(actualInCoin.Amount)
-				new1 := pool.Coins[1].Amount.Sub(outAmt)
-				if !new1.IsPositive() {
+				minus, hasNeg := pool.Coins.SafeSub(sdk.NewCoin(pool.Coins[1].Denom, outAmt))
+				if hasNeg {
 					return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "swap would deplete quote reserve to zero in pool %d: quote_reserve=%s, swap_output=%s", leg.PoolId, pool.Coins[1].String(), outAmt.String())
 				}
-				pool.Coins = sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, new0), sdk.NewCoin(pool.Coins[1].Denom, new1))
+				updated := minus.Add(sdk.NewCoin(pool.Coins[0].Denom, actualInCoin.Amount))
+				pool.Coins = sdk.NewCoins(updated...)
 				outDenom = pool.Coins[1].Denom
 			} else {
-				new0 := pool.Coins[0].Amount.Sub(outAmt)
-				if !new0.IsPositive() {
+				minus, hasNeg := pool.Coins.SafeSub(sdk.NewCoin(pool.Coins[0].Denom, outAmt))
+				if hasNeg {
 					return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "swap would deplete base reserve to zero in pool %d: base_reserve=%s, swap_output=%s", leg.PoolId, pool.Coins[0].String(), outAmt.String())
 				}
-				new1 := pool.Coins[1].Amount.Add(actualInCoin.Amount)
-				pool.Coins = sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, new0), sdk.NewCoin(pool.Coins[1].Denom, new1))
+				updated := minus.Add(sdk.NewCoin(pool.Coins[1].Denom, actualInCoin.Amount))
+				pool.Coins = sdk.NewCoins(updated...)
 				outDenom = pool.Coins[0].Denom
 			}
 		}
@@ -245,15 +265,17 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 		rIn := math.LegacyNewDecFromInt(pool.Coins[inputIdx].Amount)
 		rOut := math.LegacyNewDecFromInt(pool.Coins[outputIdx].Amount)
 		if hasIn {
-			effIn := math.LegacyNewDecFromInt(actualInCoin.Amount).Mul(one.Sub(fee))
-			feeInt := actualInCoin.Amount.Sub(effIn.TruncateInt())
-			if feeInt.IsPositive() {
-				pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(actualInCoin.Denom, feeInt))
-			}
+			effIn := math.LegacyNewDecFromInt(actualInCoin.Amount)
 			kDec := rIn.Mul(rOut)
 			q := kDec.Quo(rIn.Add(effIn)).Ceil()
 			outDec := rOut.Sub(q)
 			outAmt = outDec.TruncateInt()
+			// Output-side fee
+			feeInt := math.LegacyNewDecFromInt(outAmt).Mul(fee).TruncateInt()
+			if feeInt.IsPositive() {
+				pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(pool.Coins[outputIdx].Denom, feeInt))
+			}
+			outAmt = outAmt.Sub(feeInt)
 			if !outAmt.IsPositive() {
 				return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "swap output too small in pool %d: input=%s%s, computed_output=%s, reserves=[%s,%s], fee=%s", leg.PoolId, actualInCoin.Amount.String(), actualInCoin.Denom, outAmt.String(), pool.Coins[inputIdx].String(), pool.Coins[outputIdx].String(), fee.String())
 			}
@@ -270,36 +292,40 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 				outDenom = pool.Coins[0].Denom
 			}
 		} else {
-			out := math.LegacyNewDecFromInt(targetOutAmt)
+			// Inflate to gross output
+			grossOut := math.LegacyNewDecFromInt(targetOutAmt).Quo(one.Sub(fee)).Ceil().TruncateInt()
+			out := math.LegacyNewDecFromInt(grossOut)
 			if out.GTE(rOut) {
 				return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "exact-out equals/exceeds reserve in pool %d: requested_output=%s, output_reserve=%s", leg.PoolId, targetOutAmt.String(), pool.Coins[outputIdx].String())
 			}
 			effInReq := rIn.Mul(rOut.Quo(rOut.Sub(out)).Sub(one))
-			gross := effInReq.Quo(one.Sub(fee)).Ceil().TruncateInt()
+			gross := effInReq.Ceil().TruncateInt()
 			if !gross.IsPositive() {
 				return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "computed input not positive in pool %d: requested_output=%s, reserves=[%s,%s], fee=%s", leg.PoolId, targetOutAmt.String(), pool.Coins[inputIdx].String(), pool.Coins[outputIdx].String(), fee.String())
 			}
-			effInActual := math.LegacyNewDecFromInt(gross).Mul(one.Sub(fee))
+			effInActual := math.LegacyNewDecFromInt(gross)
 			kDec := rIn.Mul(rOut)
 			q := kDec.Quo(rIn.Add(effInActual)).Ceil()
 			outDec := rOut.Sub(q)
 			outAct := outDec.TruncateInt()
-			if outAct.LT(targetOutAmt) {
+			for {
+				feeInt := math.LegacyNewDecFromInt(outAct).Mul(fee).TruncateInt()
+				net := outAct.Sub(feeInt)
+				if !net.LT(targetOutAmt) {
+					break
+				}
 				gross = gross.AddRaw(1)
-				effInActual = math.LegacyNewDecFromInt(gross).Mul(one.Sub(fee))
+				effInActual = math.LegacyNewDecFromInt(gross)
 				q = kDec.Quo(rIn.Add(effInActual)).Ceil()
 				outDec = rOut.Sub(q)
 				outAct = outDec.TruncateInt()
-				if outAct.LT(targetOutAmt) {
-					return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "insufficient liquidity for exact-out in pool %d: requested=%s, achievable=%s, reserves=[%s,%s]", leg.PoolId, targetOutAmt.String(), outAct.String(), pool.Coins[inputIdx].String(), pool.Coins[outputIdx].String())
-				}
 			}
-			feeInt := gross.Sub(effInActual.TruncateInt())
-			if feeInt.IsPositive() {
-				pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(pool.Coins[inputIdx].Denom, feeInt))
+			feeIntOut := math.LegacyNewDecFromInt(outAct).Mul(fee).TruncateInt()
+			if feeIntOut.IsPositive() {
+				pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(pool.Coins[outputIdx].Denom, feeIntOut))
 			}
 			newIn := pool.Coins[inputIdx].Amount.Add(gross)
-			newOut := pool.Coins[outputIdx].Amount.Sub(targetOutAmt)
+			newOut := pool.Coins[outputIdx].Amount.Sub(outAct.Sub(feeIntOut))
 			if !newOut.IsPositive() {
 				return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "swap would deplete output reserve to zero in pool %d: output_reserve=%s, requested_output=%s", leg.PoolId, pool.Coins[outputIdx].String(), targetOutAmt.String())
 			}
@@ -310,7 +336,7 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 				pool.Coins = sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, newOut), sdk.NewCoin(pool.Coins[1].Denom, newIn))
 				outDenom = pool.Coins[0].Denom
 			}
-			outAmt = targetOutAmt
+			outAmt = outAct.Sub(feeIntOut)
 			actualInCoin = sdk.NewCoin(pool.Coins[inputIdx].Denom, gross)
 		}
 	}

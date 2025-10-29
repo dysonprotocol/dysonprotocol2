@@ -30,8 +30,11 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 		return nil, cosmossdkerrors.Wrapf(err, "pool %d not found", pos.PoolId)
 	}
 
-	// Calculate final repayment
-	rate, _ := k.GetInterestRateForDenom(ctx, &pool, pos.Borrowed.Denom)
+	// Calculate final repayment using per-position snapshot rate; must be set (len 2)
+	if len(pos.InterestRate) != 2 {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "position interest_rate must have exactly 2 entries")
+	}
+	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	elapsed := sdkCtx.BlockTime().Sub(*pos.BorrowTime).Seconds()
 	interest, _ := k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))

@@ -333,6 +333,7 @@
       {"type":"file","name":"dysonprotocol.whaleswap.v1.AddLiquidity.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.CancelOffer.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.ClosePosition.json"},
+      {"type":"file","name":"dysonprotocol.whaleswap.v1.CoverPosition.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.CreatePool.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.FinalizeLiquidation.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.InitializeLiquidation.json"},
@@ -385,5 +386,5 @@
     ]}
   ]}
 ,
-  {"type":"report","directories":3,"files":379}
+  {"type":"report","directories":3,"files":380}
 ]

@@ -116,36 +116,8 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		}
 		_ = L // L only used for share ratio below
 	} else {
-		targetA2 := add1.Mul(exR2).Add(exR1.Sub(math.NewInt(1))).Quo(exR1)
-		if add2.GT(targetA2) {
-			refund2 = add2.Sub(targetA2)
-			add2 = targetA2
-		} else if add2.LT(targetA2) {
-			targetA1 := add2.Mul(exR1).Add(exR2.Sub(math.NewInt(1))).Quo(exR2)
-			if add1.GT(targetA1) {
-				refund1 = add1.Sub(targetA1)
-				add1 = targetA1
-			}
-		}
-	}
-
-	// Escrow the full user-provided amounts, then refund the unused difference.
-	logger.Info("AddLiquidity escrow/refund before moves", "escrow1", sdk.NewCoin(pool.Coins[0].Denom, orig1), "escrow2", sdk.NewCoin(pool.Coins[1].Denom, orig2), "refund1", sdk.NewCoin(pool.Coins[0].Denom, refund1), "refund2", sdk.NewCoin(pool.Coins[1].Denom, refund2))
-	if err := k.sendToModule(ctx, signer, sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, orig1), sdk.NewCoin(pool.Coins[1].Denom, orig2))); err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "failed to escrow adds %s,%s", sdk.NewCoin(pool.Coins[0].Denom, orig1).String(), sdk.NewCoin(pool.Coins[1].Denom, orig2).String())
-	}
-	refunds := sdk.NewCoins()
-	if refund1.IsPositive() {
-		refunds = refunds.Add(sdk.NewCoin(pool.Coins[0].Denom, refund1))
-	}
-	if refund2.IsPositive() {
-		refunds = refunds.Add(sdk.NewCoin(pool.Coins[1].Denom, refund2))
-	}
-	if !refunds.Empty() {
-		if err := k.sendFromModule(ctx, signer, refunds); err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to refund %s", refunds.String())
-		}
-		logger.Info("AddLiquidity refunds sent", "refunds", refunds)
+		// Non-concentrated: compute refunds after minted via Dec math
+		// (escrow/refund happens later after we derive exact used amounts)
 	}
 
 	totalShares := k.bank.GetSupply(ctx, pool.SharesDenom).Amount
@@ -167,6 +139,38 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		if s2.LT(s1) {
 			minted = s2
 		}
+		// Compute exact required amounts for minted shares using ceil to avoid underfunding
+		req1 := math.LegacyNewDecFromInt(minted).MulInt(exR1).QuoInt(totalShares).Ceil().TruncateInt()
+		req2 := math.LegacyNewDecFromInt(minted).MulInt(exR2).QuoInt(totalShares).Ceil().TruncateInt()
+		if req1.IsNegative() || req2.IsNegative() {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid required amounts")
+		}
+		if req1.GT(orig1) || req2.GT(orig2) {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "insufficient provided amounts for minted shares")
+		}
+		refund1 = orig1.Sub(req1)
+		refund2 = orig2.Sub(req2)
+		add1 = req1
+		add2 = req2
+	}
+
+	// Escrow the full user-provided amounts, then refund the unused difference.
+	logger.Info("AddLiquidity escrow/refund before moves", "escrow1", sdk.NewCoin(pool.Coins[0].Denom, orig1), "escrow2", sdk.NewCoin(pool.Coins[1].Denom, orig2), "refund1", sdk.NewCoin(pool.Coins[0].Denom, refund1), "refund2", sdk.NewCoin(pool.Coins[1].Denom, refund2))
+	if err := k.sendToModule(ctx, signer, sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, orig1), sdk.NewCoin(pool.Coins[1].Denom, orig2))); err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "failed to escrow adds %s,%s", sdk.NewCoin(pool.Coins[0].Denom, orig1).String(), sdk.NewCoin(pool.Coins[1].Denom, orig2).String())
+	}
+	refunds := sdk.NewCoins()
+	if refund1.IsPositive() {
+		refunds = refunds.Add(sdk.NewCoin(pool.Coins[0].Denom, refund1))
+	}
+	if refund2.IsPositive() {
+		refunds = refunds.Add(sdk.NewCoin(pool.Coins[1].Denom, refund2))
+	}
+	if !refunds.Empty() {
+		if err := k.sendFromModule(ctx, signer, refunds); err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to refund %s", refunds.String())
+		}
+		logger.Info("AddLiquidity refunds sent", "refunds", refunds)
 	}
 	if !minted.IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "shares must be > 0")
@@ -319,10 +323,13 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 			out2 = dL.Mul(sp.Sub(sa)).TruncateInt()
 		}
 	} else {
-		r1 := math.LegacyNewDecFromInt(pool.Coins[0].Amount)
-		r2 := math.LegacyNewDecFromInt(pool.Coins[1].Amount)
-		out1 = r1.MulInt(sharesAmt).QuoInt(totalShares).TruncateInt()
-		out2 = r2.MulInt(sharesAmt).QuoInt(totalShares).TruncateInt()
+		// Pro-rata removal using DecCoins for robust denom-safe math
+		reservesDec := sdk.NewDecCoinsFromCoins(pool.Coins...)
+		ratio := math.LegacyNewDecFromInt(sharesAmt).QuoInt(totalShares)
+		payoutsDec := reservesDec.MulDecTruncate(ratio)
+		payouts, _ := payoutsDec.TruncateDecimal()
+		out1 = payouts.AmountOf(pool.Coins[0].Denom)
+		out2 = payouts.AmountOf(pool.Coins[1].Denom)
 	}
 	if !out1.IsPositive() && !out2.IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "shares too small to exit")
@@ -334,16 +341,21 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 	if err := k.burnModule(ctx, sdk.NewCoins(sdk.NewCoin(pool.SharesDenom, sharesAmt))); err != nil {
 		return nil, err
 	}
-	dR1 := math.LegacyNewDecFromInt(pool.Coins[0].Amount)
-	dR2 := math.LegacyNewDecFromInt(pool.Coins[1].Amount)
-	newA := dR1.Sub(math.LegacyNewDecFromInt(out1)).TruncateInt()
-	newB := dR2.Sub(math.LegacyNewDecFromInt(out2)).TruncateInt()
-	if !newA.IsPositive() || !newB.IsPositive() {
+	// Compute new reserves safely using Coins.SafeSub
+	payoutsCoins := sdk.NewCoins()
+	if out1.IsPositive() {
+		payoutsCoins = payoutsCoins.Add(sdk.NewCoin(pool.Coins[0].Denom, out1))
+	}
+	if out2.IsPositive() {
+		payoutsCoins = payoutsCoins.Add(sdk.NewCoin(pool.Coins[1].Denom, out2))
+	}
+	newReserves, hasNeg := pool.Coins.SafeSub(payoutsCoins...)
+	if hasNeg {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "would deplete reserve")
 	}
 	// Apply updates
-	pool.Coins = sdk.NewCoins(sdk.NewCoin(pool.Coins[0].Denom, newA), sdk.NewCoin(pool.Coins[1].Denom, newB))
-	logger.Info("RemoveLiquidity new reserves", "r1", sdk.NewCoin(pool.Coins[0].Denom, newA), "r2", sdk.NewCoin(pool.Coins[1].Denom, newB))
+	pool.Coins = newReserves
+	logger.Info("RemoveLiquidity new reserves", "r1", pool.Coins[0], "r2", pool.Coins[1])
 	// L consistency (concentrated mode): ensure L decreases by ~ΔL within tolerance
 	if len(pool.MinPrice) == 2 {
 		Lafter, _, _, err := k.liquidityForReserves(pool)

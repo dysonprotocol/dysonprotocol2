@@ -13,7 +13,7 @@ option go_package = "dysonprotocol.com/x/whaleswap/types";
 //
 // Notes:
 // - coin_a.denom < coin_b.denom lexicographically (canonical order)
-// - fee_pct is a decimal string in [0,1)
+// - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 // - min_price/max_price are optional decimal strings defining a price band over
 //   P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
 //   behaves as constant-product (v2). If set, concentrated-liquidity math
@@ -30,8 +30,16 @@ message Pool {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
   string shares_denom = 4;
-  // fee_pct is the pool swap fee percentage (cosmos.Dec string in [0,1)).
-  string fee_pct = 5 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+  // fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two
+  // entries in canonical pool order matching coins[0].denom and coins[1].denom.
+  // Fee is applied to the OUTPUT denom of each swap leg: for exact-in, the
+  // computed gross output is reduced by fee; for exact-out, the required gross
+  // output is inflated so net (after fee) meets the target. Fees accrue to
+  // fees_earned in the output denom.
+  repeated cosmos.base.v1beta1.DecCoin fee_rate = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
   // min_price/max_price optionally set a price band for concentrated liquidity.
   // Each is expressed as exactly two coins representing the ratio
   // coins[1]/coins[0]. For example, [{amount: 1, denom: coins[0].denom},
@@ -55,11 +63,12 @@ message Pool {
   ];
 
   // ═════ LEVERAGE FIELDS ═════
-  // Annual interest rate for borrows in coin1 denom
-  string interest_rate_coin1 = 15 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
-
-  // Annual interest rate for borrows in coin2 denom
-  string interest_rate_coin2 = 16 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+  // Annual interest rates per reserve denom (exactly two, canonical order).
+  // Each amount is a LegacyDec string representing APR (per-year accrual).
+  repeated cosmos.base.v1beta1.DecCoin interest_rate = 15 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
 
   // Total accrued interest (yield for LPs)
   repeated cosmos.base.v1beta1.Coin interest_earned = 19 [
@@ -73,19 +82,36 @@ message Pool {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
 
-  // ═════ PER-POOL LEVERAGE RISK PARAMETERS ═════
-  // Minimum collateral ratio required at position open
-  string min_collateral_ratio = 21 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+  // ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
+  // Minimum collateral ratio required at position open per reserve denom
+  // (exactly two, canonical order). Each amount is a LegacyDec string (> 1).
+  repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 21 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
 
-  // Maximum leverage ratio allowed (collateral + borrowed) / collateral
-  string max_leverage_ratio = 22 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+  // Maximum leverage ratio allowed (collateral + borrowed) / collateral per
+  // reserve denom (exactly two, canonical order). Each amount is a LegacyDec
+  // string (> 1).
+  repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 22 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
 
-  // Collateral ratio threshold below which position is liquidatable
-  string liquidation_threshold = 23 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+  // Collateral ratio threshold below which position is liquidatable per reserve
+  // denom (exactly two, canonical order). Each amount is a LegacyDec string
+  // (> 1).
+  repeated cosmos.base.v1beta1.DecCoin liquidation_threshold = 23 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
 
-  // Maximum borrow capacity as percentage of reserve (applies symmetrically to
-  // both coins)
-  string max_borrow_percent = 24 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+  // Maximum borrow capacity per reserve denom as DecCoins (exactly two,
+  // canonical order). Each amount is a LegacyDec in [0,1).
+  repeated cosmos.base.v1beta1.DecCoin max_borrow_percent = 24 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
 }
 
 // OfferData mirrors orderbook offer state.

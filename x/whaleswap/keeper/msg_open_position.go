@@ -51,10 +51,7 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	}
 	sdkCtx.Logger().Info("OpenPosition: borrow validated and held derived", "borrowDenom", borrowDenom, "heldDenom", heldDenom)
 
-	// Validate borrow cap
-	if err := k.validateBorrowCap(ctx, &pool, borrowDenom, msg.Borrow.Amount); err != nil {
-		return nil, err
-	}
+	// Borrow cap based on pool utilization is no longer enforced by max_borrow_percent; capacity checks moved to bands/liquidity
 
 	// Compute entry price: held_per_borrow = held_reserve / borrow_reserve
 	// Find pool amounts for the specific denoms being borrowed and held using AmountOf
@@ -79,13 +76,13 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	debtValue := math.LegacyNewDecFromInt(msg.Borrow.Amount)
 	cr := collateralValueInBorrow.Quo(debtValue)
 
-	// Use pool-specific min CR threshold
-	if pool.MinCollateralRatio == "" {
+	// Use pool-specific min CR threshold (per-borrow denom)
+	if len(pool.MinCollateralRatio) != 2 {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool min_collateral_ratio must be set")
 	}
-	minCR, err := math.LegacyNewDecFromStr(pool.MinCollateralRatio)
-	if err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "invalid min_collateral_ratio: %s", pool.MinCollateralRatio)
+	minCR := pool.MinCollateralRatio.AmountOf(borrowDenom)
+	if !minCR.GT(math.LegacyNewDec(1)) {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool min_collateral_ratio must be > 1 for borrow denom")
 	}
 	if cr.LT(minCR) {
 		return nil, cosmossdkerrors.Wrapf(whaleswapv1.ErrInsufficientCollateral, "CR %s < min_cr %s", cr.String(), minCR.String())
@@ -93,12 +90,12 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 
 	// Validate max leverage: (collateral_in_borrow + borrowed) / collateral_in_borrow
 	leverage := collateralValueInBorrow.Add(debtValue).Quo(collateralValueInBorrow)
-	if pool.MaxLeverageRatio == "" {
+	if len(pool.MaxLeverageRatio) != 2 {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool max_leverage_ratio must be set")
 	}
-	maxLeverage, err := math.LegacyNewDecFromStr(pool.MaxLeverageRatio)
-	if err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "invalid max_leverage_ratio: %s", pool.MaxLeverageRatio)
+	maxLeverage := pool.MaxLeverageRatio.AmountOf(borrowDenom)
+	if !maxLeverage.GT(math.LegacyNewDec(1)) {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool max_leverage_ratio must be > 1 for borrow denom")
 	}
 	if leverage.GT(maxLeverage) {
 		return nil, cosmossdkerrors.Wrapf(whaleswapv1.ErrInvalidCollateralRatio, "leverage %s exceeds max %s", leverage.String(), maxLeverage.String())
@@ -118,6 +115,29 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	// Defer collateral escrow until after PoolSwap so invariants inside PoolSwap do not require provisional position state
 
 	// Borrow from pool (update pool.total_borrowed)
+	// Enforce per-denom borrow cap configured by pool.MaxBorrowPercent (exactly two DecCoins)
+	if len(pool.MaxBorrowPercent) != 2 {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool max_borrow_percent must be set with exactly two entries")
+	}
+	// Compute effective available = reserve - outstanding, then cap additional borrow by cap% of effective available
+	outstanding := sdk.NewCoins(pool.TotalBorrowed...).AmountOf(borrowDenom)
+	reserveAmt := pool.Coins.AmountOf(borrowDenom)
+	if reserveAmt.IsZero() {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "borrow denom %s not in pool", borrowDenom)
+	}
+	effectiveAvailable := reserveAmt.Sub(outstanding)
+	if effectiveAvailable.IsNegative() {
+		effectiveAvailable = math.ZeroInt()
+	}
+	capPct := pool.MaxBorrowPercent.AmountOf(borrowDenom)
+	one := math.LegacyNewDec(1)
+	if !capPct.IsPositive() || capPct.GTE(one) {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool max_borrow_percent must be in (0,1) for borrow denom")
+	}
+	maxBorrowAmt := math.LegacyNewDecFromInt(effectiveAvailable).Mul(capPct).TruncateInt()
+	if msg.Borrow.Amount.GT(maxBorrowAmt) {
+		return nil, cosmossdkerrors.Wrapf(whaleswapv1.ErrBorrowCapExceeded, "borrow would exceed cap for %s: available_cap=%s", borrowDenom, maxBorrowAmt.String())
+	}
 	borrowed := sdk.NewCoin(borrowDenom, msg.Borrow.Amount)
 	// Reduce pool reserves by the loan amount so that bank balances and pool reserves remain aligned.
 	// This makes the subsequent exact-in swap restore the input reserve, preserving AMM invariants.
@@ -177,6 +197,26 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	}
 
 	// Persist final position after swap and collateral escrow
+	// Snapshot interest_rate, min_collateral_ratio at open per updated design
+	// Prepare per-position snapshots
+	// Always persist exactly two entries for interest_rate in canonical pool order to avoid nil/empty cases later.
+	var snapIR sdk.DecCoins
+	baseDenom := pool.Coins[0].Denom
+	quoteDenom := pool.Coins[1].Denom
+	if len(pool.InterestRate) == 2 {
+		ir := sdk.NewDecCoins(pool.InterestRate...).Sort()
+		ir1 := ir.AmountOf(baseDenom)
+		ir2 := ir.AmountOf(quoteDenom)
+		snapIR = sdk.DecCoins{
+			sdk.NewDecCoinFromDec(baseDenom, ir1),
+			sdk.NewDecCoinFromDec(quoteDenom, ir2),
+		}
+	} else {
+		snapIR = sdk.DecCoins{
+			sdk.NewDecCoinFromDec(baseDenom, math.LegacyNewDec(0)),
+			sdk.NewDecCoinFromDec(quoteDenom, math.LegacyNewDec(0)),
+		}
+	}
 	pos := whaleswapv1.LeveragePosition{
 		PositionId:         posID,
 		PoolId:             msg.PoolId,
@@ -188,6 +228,8 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		CreatedBlockHeight: uint64(sdkCtx.BlockHeight()),
 		LiquidationStatus:  whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE,
 		AccruedInterest:    sdk.NewCoin(borrowDenom, math.ZeroInt()),
+		InterestRate:       snapIR,
+		MinCollateralRatio: minCR.String(),
 	}
 	sdkCtx.Logger().Info("OpenPosition: position created", "posID", posID, "borrowDenom", pos.Borrowed.Denom, "heldDenom", pos.Held.Denom)
 	if err := k.LeveragePositions.Set(ctx, posID, pos); err != nil {
@@ -233,42 +275,7 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	}, nil
 }
 
-func (k Keeper) validateBorrowCap(ctx context.Context, pool *whaleswapv1.Pool, denom string, borrowAmt math.Int) error {
-	if len(pool.Coins) != 2 {
-		return cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool state")
-	}
-
-	// Use AmountOf() instead of array indexing to avoid positional assumptions
-	reserveAmt := pool.Coins.AmountOf(denom)
-	if reserveAmt.IsZero() {
-		return cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "denom %s not in pool", denom)
-	}
-
-	maxBorrowPctStr := pool.MaxBorrowPercent
-
-	if maxBorrowPctStr == "" {
-		return cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "borrowing disabled for this denom")
-	}
-
-	maxBorrowPct, err := math.LegacyNewDecFromStr(maxBorrowPctStr)
-	if err != nil {
-		return cosmossdkerrors.Wrapf(err, "invalid max_borrow_percent for %s", denom)
-	}
-
-	// Effective available = reserve - outstanding borrows
-	outstanding := sdk.NewCoins(pool.TotalBorrowed...).AmountOf(denom)
-	effectiveAvailable := reserveAmt.Sub(outstanding)
-	if effectiveAvailable.IsNegative() {
-		effectiveAvailable = math.ZeroInt()
-	}
-	maxBorrowAmt := math.LegacyNewDecFromInt(effectiveAvailable).Mul(maxBorrowPct).TruncateInt()
-	if outstanding.Add(borrowAmt).Sub(outstanding).GT(maxBorrowAmt) {
-		// i.e., borrowAmt > maxBorrowAmt
-		return cosmossdkerrors.Wrapf(whaleswapv1.ErrBorrowCapExceeded, "borrow would exceed cap: %s", maxBorrowAmt)
-	}
-
-	return nil
-}
+// Borrow capacity is enforced via current pool price bands and liquidity; explicit percent caps removed.
 
 func (k Keeper) isDenomInPool(pool *whaleswapv1.Pool, denom string) bool {
 	return denom == pool.Coins[0].Denom || denom == pool.Coins[1].Denom

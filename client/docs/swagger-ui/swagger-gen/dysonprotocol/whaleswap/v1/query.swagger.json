@@ -1715,6 +1715,18 @@
       },
       "description": "Coin defines a token with a denomination and an amount.\n\nNOTE: The amount field is an Int which implements the custom method\nsignatures required by gogoproto."
     },
+    "cosmos.base.v1beta1.DecCoin": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "DecCoin defines a token with a denomination and a decimal amount.\n\nNOTE: The amount field is an Dec which implements the custom method\nsignatures required by gogoproto."
+    },
     "dysonprotocol.whaleswap.v1.AuctionRecord": {
       "type": "object",
       "properties": {
@@ -1790,6 +1802,17 @@
         },
         "accrued_interest": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "interest_rate": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "\u2550\u2550\u2550\u2550\u2550 PER-POSITION SNAPSHOTS (sticky to this position) \u2550\u2550\u2550\u2550\u2550\nAnnual interest rates per reserve denom (exactly two, canonical order).\nEach amount is a LegacyDec string representing APR (per-year accrual)."
+        },
+        "min_collateral_ratio": {
+          "type": "string",
+          "description": "Minimum collateral ratio used for health/liquidation checks (cosmos.Dec\nstring)."
         }
       },
       "description": "LeveragePosition represents an active leverage position for a trader."
@@ -1912,9 +1935,12 @@
         "shares_denom": {
           "type": "string"
         },
-        "fee_pct": {
-          "type": "string",
-          "description": "fee_pct is the pool swap fee percentage (cosmos.Dec string in [0,1))."
+        "fee_rate": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two\nentries in canonical pool order matching coins[0].denom and coins[1].denom.\nFee is applied to the OUTPUT denom of each swap leg: for exact-in, the\ncomputed gross output is reduced by fee; for exact-out, the required gross\noutput is inflated so net (after fee) meets the target. Fees accrue to\nfees_earned in the output denom."
         },
         "min_price": {
           "type": "array",
@@ -1952,13 +1978,12 @@
           },
           "title": "cumulative swap fees retained by the pool (accrue to LPs)"
         },
-        "interest_rate_coin1": {
-          "type": "string",
-          "title": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE FIELDS \u2550\u2550\u2550\u2550\u2550\nAnnual interest rate for borrows in coin1 denom"
-        },
-        "interest_rate_coin2": {
-          "type": "string",
-          "title": "Annual interest rate for borrows in coin2 denom"
+        "interest_rate": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE FIELDS \u2550\u2550\u2550\u2550\u2550\nAnnual interest rates per reserve denom (exactly two, canonical order).\nEach amount is a LegacyDec string representing APR (per-year accrual)."
         },
         "interest_earned": {
           "type": "array",
@@ -1975,23 +2000,35 @@
           "title": "Total borrowed (aggregate for cap enforcement)"
         },
         "min_collateral_ratio": {
-          "type": "string",
-          "title": "\u2550\u2550\u2550\u2550\u2550 PER-POOL LEVERAGE RISK PARAMETERS \u2550\u2550\u2550\u2550\u2550\nMinimum collateral ratio required at position open"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "\u2550\u2550\u2550\u2550\u2550 PER-POOL LEVERAGE RISK PARAMETERS (per-denom) \u2550\u2550\u2550\u2550\u2550\nMinimum collateral ratio required at position open per reserve denom\n(exactly two, canonical order). Each amount is a LegacyDec string (> 1)."
         },
         "max_leverage_ratio": {
-          "type": "string",
-          "title": "Maximum leverage ratio allowed (collateral + borrowed) / collateral"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Maximum leverage ratio allowed (collateral + borrowed) / collateral per\nreserve denom (exactly two, canonical order). Each amount is a LegacyDec\nstring (> 1)."
         },
         "liquidation_threshold": {
-          "type": "string",
-          "title": "Collateral ratio threshold below which position is liquidatable"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Collateral ratio threshold below which position is liquidatable per reserve\ndenom (exactly two, canonical order). Each amount is a LegacyDec string\n(> 1)."
         },
         "max_borrow_percent": {
-          "type": "string",
-          "title": "Maximum borrow capacity as percentage of reserve (applies symmetrically to\nboth coins)"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Maximum borrow capacity per reserve denom as DecCoins (exactly two,\ncanonical order). Each amount is a LegacyDec in [0,1)."
         }
       },
-      "description": "Pool describes AMM pool state.\n\nNotes:\n- coin_a.denom < coin_b.denom lexicographically (canonical order)\n- fee_pct is a decimal string in [0,1)\n- min_price/max_price are optional decimal strings defining a price band over\n  P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +\u221e)) the pool\n  behaves as constant-product (v2). If set, concentrated-liquidity math\n  applies.\n- coin_a.amount/coin_b.amount are sdk.Int strings.\n- The instantaneous price used by price-based queries is derived from\n  reserves as P = coin_b / coin_a, consistent with the notes above."
+      "description": "Pool describes AMM pool state.\n\nNotes:\n- coin_a.denom < coin_b.denom lexicographically (canonical order)\n- fee_rate is a per-denom decimal rate in [0,1) as DecCoins\n- min_price/max_price are optional decimal strings defining a price band over\n  P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +\u221e)) the pool\n  behaves as constant-product (v2). If set, concentrated-liquidity math\n  applies.\n- coin_a.amount/coin_b.amount are sdk.Int strings.\n- The instantaneous price used by price-based queries is derived from\n  reserves as P = coin_b / coin_a, consistent with the notes above."
     },
     "dysonprotocol.whaleswap.v1.PositionHealthStatus": {
       "type": "string",
