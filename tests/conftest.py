@@ -21,6 +21,7 @@ import ast
 import warnings
 from typing import List, Tuple, Iterable
 from textwrap import dedent
+from deepdiff import DeepDiff
 
 NUM_CHAINS = 2
 NUM_NODES = 1
@@ -454,8 +455,14 @@ def chainnet(worker_id, test_base_dir, test_config_path):
     chain = cfg["chains"][0]
     node_home = chain["nodes"][0]["home"]
 
+    # Create persistent directory for exports in project root (like coverage/)
+    # This makes export files available for inspection after test completion
+    project_root = Path(__file__).parent.parent
+    exports_dir = project_root / "test-exports"
+    exports_dir.mkdir(exist_ok=True)
+    
     # Export the chain state with --for-zero-height to prepare for reimport
-    export1_path = base_dir / "export1.json"
+    export1_path = exports_dir / "export1.json"
     print(f"Exporting chain state (for zero height) to {export1_path}...")
     result = subprocess.run(
         [
@@ -633,7 +640,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
     # Export again from the reimported state WITHOUT --for-zero-height
     # We're validating that Dyson modules were imported correctly
     # (SDK modules may have initialization issues with repeated --for-zero-height exports)
-    export2_path = base_dir / "export2.json"
+    export2_path = exports_dir / "export2.json"
     print(f"Exporting from reimported state to {export2_path}...")
     try:
         result2 = subprocess.run(
@@ -694,16 +701,29 @@ def chainnet(worker_id, test_base_dir, test_config_path):
             mismatches.append(f"Module {module} missing from export2")
             continue
         
-        if app_state_1[module] != app_state_2[module]:
+        # Use DeepDiff for detailed comparison
+        diff = DeepDiff(app_state_1[module], app_state_2[module], verbose_level=2)
+        
+        if diff:
             mismatches.append(f"Module {module} differs between exports")
             # Save detailed diff for debugging
-            module_diff_path = base_dir / f"diff_{module}.json"
+            module_diff_path = exports_dir / f"diff_{module}.json"
             with open(module_diff_path, "w") as f:
-                json.dump({
-                    "export1": app_state_1[module],
-                    "export2": app_state_2[module]
-                }, f, indent=2)
+                json.dump(diff.to_dict(), f, indent=2)
             print(f"  Module {module} diff saved to: {module_diff_path}")
+            
+            # Print a summary of the differences
+            print(f"  Module {module} differences:")
+            if 'dictionary_item_removed' in diff:
+                print(f"    - Items removed: {len(diff['dictionary_item_removed'])}")
+            if 'dictionary_item_added' in diff:
+                print(f"    - Items added: {len(diff['dictionary_item_added'])}")
+            if 'values_changed' in diff:
+                print(f"    - Values changed: {len(diff['values_changed'])}")
+            if 'iterable_item_removed' in diff:
+                print(f"    - Iterable items removed: {len(diff['iterable_item_removed'])}")
+            if 'iterable_item_added' in diff:
+                print(f"    - Iterable items added: {len(diff['iterable_item_added'])}")
 
     assert len(mismatches) == 0, (
         f"Export/Import validation FAILED for Dyson modules:\n"

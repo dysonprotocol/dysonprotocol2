@@ -18,3 +18,4 @@ nbconvert
 ipython
 ipykernel
 hypothesis
+deepdiff

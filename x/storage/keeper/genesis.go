@@ -33,12 +33,8 @@ func (k Keeper) InitGenesis(ctx context.Context, genState *storagev1.GenesisStat
 		}
 		seen[combinedKey] = struct{}{}
 
-		// Set the storage entry
-		if err := k.StorageMap.Set(ctx, combinedKey, storagev1.Storage{
-			Owner: entry.Owner,
-			Index: entry.Index,
-			Data:  entry.Data,
-		}); err != nil {
+		// Set the storage entry (preserve all fields including metadata)
+		if err := k.StorageMap.Set(ctx, combinedKey, entry); err != nil {
 			panic(fmt.Errorf("failed to set storage entry %s: %w", combinedKey, err))
 		}
 	}

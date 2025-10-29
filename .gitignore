@@ -82,6 +82,7 @@ x/genutil/data
 *.fail
 coverage.*
 coverage_last.*
+test-exports/
 
 # Vagrant
 .vagrant/
