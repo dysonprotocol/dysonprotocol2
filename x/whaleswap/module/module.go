@@ -109,7 +109,7 @@ func (am AppModule) ValidateGenesis(source appmodule.GenesisSource) error {
 		return whaleswap.ValidateGenesisState(*whaleswap.DefaultGenesis())
 	}
 	var tmp whaleswaptypes.GenesisState
-	if err := json.Unmarshal(trimmed, &tmp); err != nil {
+	if err := am.cdc.UnmarshalJSON(trimmed, &tmp); err != nil {
 		return fmt.Errorf("failed to decode %s genesis: %w", whaleswap.ModuleName, err)
 	}
 	return whaleswap.ValidateGenesisState(tmp)
@@ -133,7 +133,7 @@ func (am AppModule) InitGenesis(ctx context.Context, source appmodule.GenesisSou
 			gs = whaleswap.DefaultGenesis()
 		} else {
 			var tmp whaleswaptypes.GenesisState
-			if err := json.Unmarshal(trimmed, &tmp); err != nil {
+			if err := am.cdc.UnmarshalJSON(trimmed, &tmp); err != nil {
 				return fmt.Errorf("failed to decode %s genesis: %w", whaleswap.ModuleName, err)
 			}
 			gs = &tmp
@@ -148,7 +148,12 @@ func (am AppModule) DefaultGenesis(target appmodule.GenesisTarget) error {
 		return fmt.Errorf("failed to get writer for %s genesis: %w", whaleswap.ModuleName, err)
 	}
 	defer func(w io.WriteCloser) { _ = w.Close() }(writer)
-	return json.NewEncoder(writer).Encode(whaleswap.DefaultGenesis())
+	bz, err := am.cdc.MarshalJSON(whaleswap.DefaultGenesis())
+	if err != nil {
+		return fmt.Errorf("failed to marshal %s genesis: %w", whaleswap.ModuleName, err)
+	}
+	_, err = writer.Write(bz)
+	return err
 }
 func (am AppModule) ExportGenesis(ctx context.Context, target appmodule.GenesisTarget) error {
 	gs := am.keeper.ExportGenesis(sdk.UnwrapSDKContext(ctx))
@@ -157,7 +162,12 @@ func (am AppModule) ExportGenesis(ctx context.Context, target appmodule.GenesisT
 		return fmt.Errorf("failed to get writer for %s export: %w", whaleswap.ModuleName, err)
 	}
 	defer func(w io.WriteCloser) { _ = w.Close() }(writer)
-	return json.NewEncoder(writer).Encode(gs)
+	bz, err := am.cdc.MarshalJSON(gs)
+	if err != nil {
+		return fmt.Errorf("failed to marshal %s genesis: %w", whaleswap.ModuleName, err)
+	}
+	_, err = writer.Write(bz)
+	return err
 }
 func (AppModule) RegisterInterfaces(registrar cdctypes.InterfaceRegistry) {
 	whaleswap.RegisterInterfaces(registrar)

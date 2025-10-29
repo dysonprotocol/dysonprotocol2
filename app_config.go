@@ -188,6 +188,7 @@ var (
 					slashingtypes.ModuleName,
 					govtypes.ModuleName,
 					minttypes.ModuleName,
+					consensustypes.ModuleName,
 					genutiltypes.ModuleName,
 					evidencetypes.ModuleName,
 					authz.ModuleName,
@@ -230,6 +231,7 @@ var (
 					nameservicev1.ModuleName,
 					scriptv1.ModuleName,
 					storagev1.ModuleName,
+					whaleswapv1.ModuleName,
 					crontaskv1.ModuleName,
 				},
 				// Uncomment if you want to set a custom migration order here.
