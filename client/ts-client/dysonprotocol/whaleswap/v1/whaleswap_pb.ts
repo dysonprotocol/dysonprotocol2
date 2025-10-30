@@ -44,16 +44,15 @@ export class Pool extends Message<Pool> {
   sharesDenom = "";
 
   /**
-   * fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two
-   * entries in canonical pool order matching coins[0].denom and coins[1].denom.
-   * Fee is applied to the OUTPUT denom of each swap leg: for exact-in, the
-   * computed gross output is reduced by fee; for exact-out, the required gross
-   * output is inflated so net (after fee) meets the target. Fees accrue to
-   * fees_earned in the output denom.
+   * Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
+   * string in [0,1)). Use fee_rate field 25 instead. Migration logic should
+   * read this and convert to fee_rate format (two DecCoins, one per reserve
+   * denom in canonical order).
    *
-   * @generated from field: repeated cosmos.base.v1beta1.DecCoin fee_rate = 5;
+   * @generated from field: string fee_pct = 5 [deprecated = true];
+   * @deprecated
    */
-  feeRate: DecCoin[] = [];
+  feePct = "";
 
   /**
    * min_price/max_price optionally set a price band for concentrated liquidity.
@@ -155,6 +154,19 @@ export class Pool extends Message<Pool> {
    */
   maxBorrowPercent: DecCoin[] = [];
 
+  /**
+   * fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two
+   * entries in canonical pool order matching coins[0].denom and coins[1].denom.
+   * Fee is applied to the OUTPUT denom of each swap leg: for exact-in, the
+   * computed gross output is reduced by fee; for exact-out, the required gross
+   * output is inflated so net (after fee) meets the target. Fees accrue to
+   * fees_earned in the output denom.
+   * Replaces deprecated fee_pct field 5.
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin fee_rate = 25;
+   */
+  feeRate: DecCoin[] = [];
+
   constructor(data?: PartialMessage<Pool>) {
     super();
     proto3.util.initPartial(data, this);
@@ -166,7 +178,7 @@ export class Pool extends Message<Pool> {
     { no: 1, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 2, name: "coins", kind: "message", T: Coin, repeated: true },
     { no: 4, name: "shares_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 5, name: "fee_rate", kind: "message", T: DecCoin, repeated: true },
+    { no: 5, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "min_price", kind: "message", T: Coin, repeated: true },
     { no: 7, name: "max_price", kind: "message", T: Coin, repeated: true },
     { no: 10, name: "block_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
@@ -181,6 +193,7 @@ export class Pool extends Message<Pool> {
     { no: 22, name: "max_leverage_ratio", kind: "message", T: DecCoin, repeated: true },
     { no: 23, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },
     { no: 24, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },
+    { no: 25, name: "fee_rate", kind: "message", T: DecCoin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Pool {
@@ -346,42 +359,129 @@ export class Trade extends Message<Trade> {
   tradeId = protoInt64.zero;
 
   /**
-   * @generated from field: string trader = 2;
+   * ═════ DEPRECATED FIELDS (fields 2-10) - for migration compatibility ═════
+   * These fields are kept for backwards compatibility. Migration logic should
+   * read these and populate the new fields (20+) below.
+   * Deprecated: use operations field 23 and trader field 20 instead
+   *
+   * @generated from field: uint64 offer_id = 2 [deprecated = true];
+   * @deprecated
+   */
+  offerId = protoInt64.zero;
+
+  /**
+   * Deprecated: use trader field 20 instead
+   *
+   * @generated from field: string taker = 3 [deprecated = true];
+   * @deprecated
+   */
+  taker = "";
+
+  /**
+   * Deprecated: use height field 21 instead
+   *
+   * @generated from field: uint64 height_deprecated = 4 [deprecated = true];
+   * @deprecated
+   */
+  heightDeprecated = protoInt64.zero;
+
+  /**
+   * Deprecated: use timestamp field 22 instead
+   *
+   * @generated from field: google.protobuf.Timestamp timestamp_deprecated = 5 [deprecated = true];
+   * @deprecated
+   */
+  timestampDeprecated?: Timestamp;
+
+  /**
+   * Deprecated: use total_sent field 24 instead
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin sent = 6 [deprecated = true];
+   * @deprecated
+   */
+  sent?: Coin;
+
+  /**
+   * Deprecated: use total_received field 25 instead
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin received = 7 [deprecated = true];
+   * @deprecated
+   */
+  received?: Coin;
+
+  /**
+   * Deprecated: use operations field 23 to infer pool swaps
+   *
+   * @generated from field: uint64 pool_id = 8 [deprecated = true];
+   * @deprecated
+   */
+  poolId = protoInt64.zero;
+
+  /**
+   * Deprecated: use operations field 23 to infer auction redemptions
+   *
+   * @generated from field: uint64 auction_id = 9 [deprecated = true];
+   * @deprecated
+   */
+  auctionId = protoInt64.zero;
+
+  /**
+   * Deprecated: use note field 26 instead
+   *
+   * @generated from field: string note_deprecated = 10 [deprecated = true];
+   * @deprecated
+   */
+  noteDeprecated = "";
+
+  /**
+   * ═════ NEW FIELDS (fields 20+) ═════
+   * Trader address (was taker in old schema, field 3)
+   *
+   * @generated from field: string trader = 20;
    */
   trader = "";
 
   /**
-   * @generated from field: uint64 height = 3;
+   * Block height when trade was executed (was field 4 in old schema)
+   *
+   * @generated from field: uint64 height = 21;
    */
   height = protoInt64.zero;
 
   /**
-   * @generated from field: google.protobuf.Timestamp timestamp = 4;
+   * Timestamp when trade was executed (was field 5 in old schema)
+   *
+   * @generated from field: google.protobuf.Timestamp timestamp = 22;
    */
   timestamp?: Timestamp;
 
   /**
    * Operations executed in this trade (from tx.proto TradeOperation).
    * Each operation records what was sent/received for that specific step.
+   * Replaces offer_id/pool_id/auction_id fields (2, 8, 9) from old schema.
    *
-   * @generated from field: repeated dysonprotocol.whaleswap.v1.TradeOperation operations = 5;
+   * @generated from field: repeated dysonprotocol.whaleswap.v1.TradeOperation operations = 23;
    */
   operations: TradeOperation[] = [];
 
   /**
-   * Aggregated totals across all operations
+   * Aggregated totals across all operations (was single sent field 6)
    *
-   * @generated from field: repeated cosmos.base.v1beta1.Coin total_sent = 6;
+   * @generated from field: repeated cosmos.base.v1beta1.Coin total_sent = 24;
    */
   totalSent: Coin[] = [];
 
   /**
-   * @generated from field: repeated cosmos.base.v1beta1.Coin total_received = 7;
+   * Aggregated totals across all operations (was single received field 7)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin total_received = 25;
    */
   totalReceived: Coin[] = [];
 
   /**
-   * @generated from field: string note = 8;
+   * Optional note (was field 10 in old schema)
+   *
+   * @generated from field: string note = 26;
    */
   note = "";
 
@@ -394,13 +494,22 @@ export class Trade extends Message<Trade> {
   static readonly typeName = "dysonprotocol.whaleswap.v1.Trade";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "trade_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 2, name: "trader", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 4, name: "timestamp", kind: "message", T: Timestamp },
-    { no: 5, name: "operations", kind: "message", T: TradeOperation, repeated: true },
-    { no: 6, name: "total_sent", kind: "message", T: Coin, repeated: true },
-    { no: 7, name: "total_received", kind: "message", T: Coin, repeated: true },
-    { no: 8, name: "note", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "offer_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 3, name: "taker", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "height_deprecated", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 5, name: "timestamp_deprecated", kind: "message", T: Timestamp },
+    { no: 6, name: "sent", kind: "message", T: Coin },
+    { no: 7, name: "received", kind: "message", T: Coin },
+    { no: 8, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 9, name: "auction_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 10, name: "note_deprecated", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 20, name: "trader", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 21, name: "height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 22, name: "timestamp", kind: "message", T: Timestamp },
+    { no: 23, name: "operations", kind: "message", T: TradeOperation, repeated: true },
+    { no: 24, name: "total_sent", kind: "message", T: Coin, repeated: true },
+    { no: 25, name: "total_received", kind: "message", T: Coin, repeated: true },
+    { no: 26, name: "note", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Trade {

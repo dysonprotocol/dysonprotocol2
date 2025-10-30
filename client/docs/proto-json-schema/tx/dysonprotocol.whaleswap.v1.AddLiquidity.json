@@ -11,12 +11,23 @@
                     "pool_id": {
                         "type": "string"
                     },
+                    "amount1": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Deprecated: use amounts field 5 instead. Migration logic should read both amount1 and amount2 and combine into amounts array."
+                    },
+                    "amount2": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Deprecated: use amounts field 5 instead."
+                    },
                     "amounts": {
                         "items": {
                             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "Amounts to add (two coins in any order; will be canonicalized). Replaces deprecated amount1/amount2 fields 3-4."
                     }
                 },
                 "additionalProperties": false,

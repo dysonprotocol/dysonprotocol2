@@ -30,16 +30,12 @@ message Pool {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
   string shares_denom = 4;
-  // fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two
-  // entries in canonical pool order matching coins[0].denom and coins[1].denom.
-  // Fee is applied to the OUTPUT denom of each swap leg: for exact-in, the
-  // computed gross output is reduced by fee; for exact-out, the required gross
-  // output is inflated so net (after fee) meets the target. Fees accrue to
-  // fees_earned in the output denom.
-  repeated cosmos.base.v1beta1.DecCoin fee_rate = 5 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
-  ];
+  // Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
+  // string in [0,1)). Use fee_rate field 25 instead. Migration logic should
+  // read this and convert to fee_rate format (two DecCoins, one per reserve
+  // denom in canonical order).
+  string fee_pct = 5
+      [ deprecated = true, (cosmos_proto.scalar) = "cosmos.Dec" ];
   // min_price/max_price optionally set a price band for concentrated liquidity.
   // Each is expressed as exactly two coins representing the ratio
   // coins[1]/coins[0]. For example, [{amount: 1, denom: coins[0].denom},
@@ -112,6 +108,18 @@ message Pool {
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
   ];
+
+  // fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two
+  // entries in canonical pool order matching coins[0].denom and coins[1].denom.
+  // Fee is applied to the OUTPUT denom of each swap leg: for exact-in, the
+  // computed gross output is reduced by fee; for exact-out, the required gross
+  // output is inflated so net (after fee) meets the target. Fees accrue to
+  // fees_earned in the output denom.
+  // Replaces deprecated fee_pct field 5.
+  repeated cosmos.base.v1beta1.DecCoin fee_rate = 25 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
 }
 
 // OfferData mirrors orderbook offer state.
@@ -143,29 +151,59 @@ message OfferData {
 // MsgRedeemAuction).
 message Trade {
   uint64 trade_id = 1;
-  string trader = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  uint64 height = 3;
-  google.protobuf.Timestamp timestamp = 4 [ (gogoproto.stdtime) = true ];
 
+  // ═════ DEPRECATED FIELDS (fields 2-10) - for migration compatibility ═════
+  // These fields are kept for backwards compatibility. Migration logic should
+  // read these and populate the new fields (20+) below.
+  // Deprecated: use operations field 23 and trader field 20 instead
+  uint64 offer_id = 2 [ deprecated = true ];
+  // Deprecated: use trader field 20 instead
+  string taker = 3
+      [ deprecated = true, (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Deprecated: use height field 21 instead
+  uint64 height_deprecated = 4 [ deprecated = true ];
+  // Deprecated: use timestamp field 22 instead
+  google.protobuf.Timestamp timestamp_deprecated = 5
+      [ deprecated = true, (gogoproto.stdtime) = true ];
+  // Deprecated: use total_sent field 24 instead
+  cosmos.base.v1beta1.Coin sent = 6
+      [ deprecated = true, (gogoproto.nullable) = false ];
+  // Deprecated: use total_received field 25 instead
+  cosmos.base.v1beta1.Coin received = 7
+      [ deprecated = true, (gogoproto.nullable) = false ];
+  // Deprecated: use operations field 23 to infer pool swaps
+  uint64 pool_id = 8 [ deprecated = true ];
+  // Deprecated: use operations field 23 to infer auction redemptions
+  uint64 auction_id = 9 [ deprecated = true ];
+  // Deprecated: use note field 26 instead
+  string note_deprecated = 10 [ deprecated = true ];
+
+  // Reserved field numbers 11-19 for future use
+  reserved 11, 12, 13, 14, 15, 16, 17, 18, 19;
+
+  // ═════ NEW FIELDS (fields 20+) ═════
+  // Trader address (was taker in old schema, field 3)
+  string trader = 20 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Block height when trade was executed (was field 4 in old schema)
+  uint64 height = 21;
+  // Timestamp when trade was executed (was field 5 in old schema)
+  google.protobuf.Timestamp timestamp = 22 [ (gogoproto.stdtime) = true ];
   // Operations executed in this trade (from tx.proto TradeOperation).
   // Each operation records what was sent/received for that specific step.
-  repeated TradeOperation operations = 5 [ (gogoproto.nullable) = false ];
-
-  // Aggregated totals across all operations
-  repeated cosmos.base.v1beta1.Coin total_sent = 6 [
+  // Replaces offer_id/pool_id/auction_id fields (2, 8, 9) from old schema.
+  repeated TradeOperation operations = 23 [ (gogoproto.nullable) = false ];
+  // Aggregated totals across all operations (was single sent field 6)
+  repeated cosmos.base.v1beta1.Coin total_sent = 24 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
-  repeated cosmos.base.v1beta1.Coin total_received = 7 [
+  // Aggregated totals across all operations (was single received field 7)
+  repeated cosmos.base.v1beta1.Coin total_received = 25 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
-
-  string note = 8;
-
-  // Reserved field numbers from old schema (removed: offer_id, pool_id,
-  // auction_id, sent, received)
-  reserved 9, 10, 11, 12, 13, 14, 15;
+  // Optional note (was field 10 in old schema)
+  string note = 26;
 }
 
 // AuctionRecord stores metadata for a whaleswap-created auction escrow.

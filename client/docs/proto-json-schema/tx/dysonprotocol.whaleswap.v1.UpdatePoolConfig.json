@@ -11,13 +11,9 @@
                     "pool_id": {
                         "type": "string"
                     },
-                    "fee_rate": {
-                        "items": {
-                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
-                        },
-                        "additionalProperties": false,
-                        "type": "array",
-                        "description": "Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries; keeper normalizes to exactly two entries in canonical pool order."
+                    "fee_pct": {
+                        "type": "string",
+                        "description": "Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec string in [0,1)). Use fee_rate field 11 instead. Migration logic should read this and convert to fee_rate format (two DecCoins, one per reserve denom in canonical order)."
                     },
                     "min_price": {
                         "items": {
@@ -72,6 +68,14 @@
                         "additionalProperties": false,
                         "type": "array",
                         "description": "Collateral ratio liquidation threshold per reserve denom (exactly two, canonical order; each amount is a LegacyDec string > 1)"
+                    },
+                    "fee_rate": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries; keeper normalizes to exactly two entries in canonical pool order. Replaces deprecated fee_pct field 3."
                     }
                 },
                 "additionalProperties": false,

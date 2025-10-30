@@ -670,11 +670,20 @@
           "type": "string",
           "format": "uint64"
         },
+        "amount1": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Deprecated: use amounts field 5 instead. Migration logic should read both\namount1 and amount2 and combine into amounts array."
+        },
+        "amount2": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Deprecated: use amounts field 5 instead."
+        },
         "amounts": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          }
+          },
+          "description": "Amounts to add (two coins in any order; will be canonicalized).\nReplaces deprecated amount1/amount2 fields 3-4."
         }
       },
       "description": "Add liquidity (owner-only). Behavior depends on v2/v3 mode.\nAmounts will be automatically sorted by denom to match pool's canonical\norder."
@@ -798,12 +807,9 @@
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           }
         },
-        "fee_rate": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
-          },
-          "description": "Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;\nkeeper normalizes to exactly two entries in canonical pool order."
+        "fee_pct": {
+          "type": "string",
+          "description": "Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec\nstring in [0,1)). Use fee_rate field 11 instead. Migration logic should\nread this and convert to fee_rate format (two DecCoins, one per reserve\ndenom in canonical order)."
         },
         "min_collateral_ratio": {
           "type": "array",
@@ -839,6 +845,13 @@
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
           "title": "Collateral ratio liquidation threshold per reserve denom (exactly two,\ncanonical order; each amount is a LegacyDec string > 1)"
+        },
+        "fee_rate": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;\nkeeper normalizes to exactly two entries in canonical pool order.\nReplaces deprecated fee_pct field 5."
         }
       },
       "description": "Create a pool.\n\nBehavior:\n- If min_price/max_price are both unset (or effectively encode [0, +\u221e)), the\n  pool behaves as constant product (v2).\n- If a finite band is provided, concentrated-liquidity math applies within\n  [min_price, max_price] where price is coin_b / coin_a (see conventions)."
@@ -1204,12 +1217,9 @@
           "type": "string",
           "format": "uint64"
         },
-        "fee_rate": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
-          },
-          "description": "Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;\nkeeper normalizes to exactly two entries in canonical pool order."
+        "fee_pct": {
+          "type": "string",
+          "description": "Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec\nstring in [0,1)). Use fee_rate field 11 instead. Migration logic should\nread this and convert to fee_rate format (two DecCoins, one per reserve\ndenom in canonical order)."
         },
         "min_price": {
           "type": "array",
@@ -1257,6 +1267,13 @@
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
           "title": "Collateral ratio liquidation threshold per reserve denom (exactly two,\ncanonical order; each amount is a LegacyDec string > 1)"
+        },
+        "fee_rate": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;\nkeeper normalizes to exactly two entries in canonical pool order.\nReplaces deprecated fee_pct field 3."
         }
       },
       "description": "Update pool config (owner-only: majority of shares > 50%).\n\nNotes:\n- All fields are required. Price bands must be both empty (no band) or both\n  contain exactly two coins in canonical order matching pool reserves."

@@ -73,12 +73,15 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
   maxPrice: Coin[] = [];
 
   /**
-   * Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
-   * keeper normalizes to exactly two entries in canonical pool order.
+   * Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
+   * string in [0,1)). Use fee_rate field 11 instead. Migration logic should
+   * read this and convert to fee_rate format (two DecCoins, one per reserve
+   * denom in canonical order).
    *
-   * @generated from field: repeated cosmos.base.v1beta1.DecCoin fee_rate = 5;
+   * @generated from field: string fee_pct = 5 [deprecated = true];
+   * @deprecated
    */
-  feeRate: DecCoin[] = [];
+  feePct = "";
 
   /**
    * Minimum collateral ratio per reserve denom (exactly two, canonical order).
@@ -120,6 +123,15 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
    */
   liquidationThreshold: DecCoin[] = [];
 
+  /**
+   * Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
+   * keeper normalizes to exactly two entries in canonical pool order.
+   * Replaces deprecated fee_pct field 5.
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin fee_rate = 11;
+   */
+  feeRate: DecCoin[] = [];
+
   constructor(data?: PartialMessage<MsgCreatePool>) {
     super();
     proto3.util.initPartial(data, this);
@@ -132,12 +144,13 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
     { no: 2, name: "coins", kind: "message", T: Coin, repeated: true },
     { no: 3, name: "min_price", kind: "message", T: Coin, repeated: true },
     { no: 4, name: "max_price", kind: "message", T: Coin, repeated: true },
-    { no: 5, name: "fee_rate", kind: "message", T: DecCoin, repeated: true },
+    { no: 5, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "min_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
     { no: 7, name: "max_leverage_ratio", kind: "message", T: DecCoin, repeated: true },
     { no: 8, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 9, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },
     { no: 10, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },
+    { no: 11, name: "fee_rate", kind: "message", T: DecCoin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgCreatePool {
@@ -215,12 +228,15 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
   poolId = protoInt64.zero;
 
   /**
-   * Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
-   * keeper normalizes to exactly two entries in canonical pool order.
+   * Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
+   * string in [0,1)). Use fee_rate field 11 instead. Migration logic should
+   * read this and convert to fee_rate format (two DecCoins, one per reserve
+   * denom in canonical order).
    *
-   * @generated from field: repeated cosmos.base.v1beta1.DecCoin fee_rate = 3;
+   * @generated from field: string fee_pct = 3 [deprecated = true];
+   * @deprecated
    */
-  feeRate: DecCoin[] = [];
+  feePct = "";
 
   /**
    * @generated from field: repeated cosmos.base.v1beta1.Coin min_price = 4;
@@ -272,6 +288,15 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
    */
   liquidationThreshold: DecCoin[] = [];
 
+  /**
+   * Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
+   * keeper normalizes to exactly two entries in canonical pool order.
+   * Replaces deprecated fee_pct field 3.
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin fee_rate = 11;
+   */
+  feeRate: DecCoin[] = [];
+
   constructor(data?: PartialMessage<MsgUpdatePoolConfig>) {
     super();
     proto3.util.initPartial(data, this);
@@ -282,7 +307,7 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "signer", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 3, name: "fee_rate", kind: "message", T: DecCoin, repeated: true },
+    { no: 3, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "min_price", kind: "message", T: Coin, repeated: true },
     { no: 5, name: "max_price", kind: "message", T: Coin, repeated: true },
     { no: 6, name: "min_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
@@ -290,6 +315,7 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
     { no: 8, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 9, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },
     { no: 10, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },
+    { no: 11, name: "fee_rate", kind: "message", T: DecCoin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgUpdatePoolConfig {
@@ -359,7 +385,27 @@ export class MsgAddLiquidity extends Message<MsgAddLiquidity> {
   poolId = protoInt64.zero;
 
   /**
-   * @generated from field: repeated cosmos.base.v1beta1.Coin amounts = 3;
+   * Deprecated: use amounts field 5 instead. Migration logic should read both
+   * amount1 and amount2 and combine into amounts array.
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin amount1 = 3 [deprecated = true];
+   * @deprecated
+   */
+  amount1?: Coin;
+
+  /**
+   * Deprecated: use amounts field 5 instead.
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin amount2 = 4 [deprecated = true];
+   * @deprecated
+   */
+  amount2?: Coin;
+
+  /**
+   * Amounts to add (two coins in any order; will be canonicalized).
+   * Replaces deprecated amount1/amount2 fields 3-4.
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin amounts = 5;
    */
   amounts: Coin[] = [];
 
@@ -373,7 +419,9 @@ export class MsgAddLiquidity extends Message<MsgAddLiquidity> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "signer", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 3, name: "amounts", kind: "message", T: Coin, repeated: true },
+    { no: 3, name: "amount1", kind: "message", T: Coin },
+    { no: 4, name: "amount2", kind: "message", T: Coin },
+    { no: 5, name: "amounts", kind: "message", T: Coin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgAddLiquidity {

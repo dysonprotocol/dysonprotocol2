@@ -1935,12 +1935,9 @@
         "shares_denom": {
           "type": "string"
         },
-        "fee_rate": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
-          },
-          "description": "fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two\nentries in canonical pool order matching coins[0].denom and coins[1].denom.\nFee is applied to the OUTPUT denom of each swap leg: for exact-in, the\ncomputed gross output is reduced by fee; for exact-out, the required gross\noutput is inflated so net (after fee) meets the target. Fees accrue to\nfees_earned in the output denom."
+        "fee_pct": {
+          "type": "string",
+          "description": "Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec\nstring in [0,1)). Use fee_rate field 25 instead. Migration logic should\nread this and convert to fee_rate format (two DecCoins, one per reserve\ndenom in canonical order)."
         },
         "min_price": {
           "type": "array",
@@ -2026,6 +2023,13 @@
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
           "description": "Maximum borrow capacity per reserve denom as DecCoins (exactly two,\ncanonical order). Each amount is a LegacyDec in [0,1)."
+        },
+        "fee_rate": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two\nentries in canonical pool order matching coins[0].denom and coins[1].denom.\nFee is applied to the OUTPUT denom of each swap leg: for exact-in, the\ncomputed gross output is reduced by fee; for exact-out, the required gross\noutput is inflated so net (after fee) meets the target. Fees accrue to\nfees_earned in the output denom.\nReplaces deprecated fee_pct field 5."
         }
       },
       "description": "Pool describes AMM pool state.\n\nNotes:\n- coin_a.denom < coin_b.denom lexicographically (canonical order)\n- fee_rate is a per-denom decimal rate in [0,1) as DecCoins\n- min_price/max_price are optional decimal strings defining a price band over\n  P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +\u221e)) the pool\n  behaves as constant-product (v2). If set, concentrated-liquidity math\n  applies.\n- coin_a.amount/coin_b.amount are sdk.Int strings.\n- The instantaneous price used by price-based queries is derived from\n  reserves as P = coin_b / coin_a, consistent with the notes above."
@@ -2481,39 +2485,85 @@
           "type": "string",
           "format": "uint64"
         },
+        "offer_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "\u2550\u2550\u2550\u2550\u2550 DEPRECATED FIELDS (fields 2-10) - for migration compatibility \u2550\u2550\u2550\u2550\u2550\nThese fields are kept for backwards compatibility. Migration logic should\nread these and populate the new fields (20+) below.\nDeprecated: use operations field 23 and trader field 20 instead"
+        },
+        "taker": {
+          "type": "string",
+          "title": "Deprecated: use trader field 20 instead"
+        },
+        "height_deprecated": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Deprecated: use height field 21 instead"
+        },
+        "timestamp_deprecated": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Deprecated: use timestamp field 22 instead"
+        },
+        "sent": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "title": "Deprecated: use total_sent field 24 instead"
+        },
+        "received": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "title": "Deprecated: use total_received field 25 instead"
+        },
+        "pool_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Deprecated: use operations field 23 to infer pool swaps"
+        },
+        "auction_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Deprecated: use operations field 23 to infer auction redemptions"
+        },
+        "note_deprecated": {
+          "type": "string",
+          "title": "Deprecated: use note field 26 instead"
+        },
         "trader": {
-          "type": "string"
+          "type": "string",
+          "title": "\u2550\u2550\u2550\u2550\u2550 NEW FIELDS (fields 20+) \u2550\u2550\u2550\u2550\u2550\nTrader address (was taker in old schema, field 3)"
         },
         "height": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "title": "Block height when trade was executed (was field 4 in old schema)"
         },
         "timestamp": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "title": "Timestamp when trade was executed (was field 5 in old schema)"
         },
         "operations": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TradeOperation"
           },
-          "description": "Operations executed in this trade (from tx.proto TradeOperation).\nEach operation records what was sent/received for that specific step."
+          "description": "Operations executed in this trade (from tx.proto TradeOperation).\nEach operation records what was sent/received for that specific step.\nReplaces offer_id/pool_id/auction_id fields (2, 8, 9) from old schema."
         },
         "total_sent": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "title": "Aggregated totals across all operations"
+          "title": "Aggregated totals across all operations (was single sent field 6)"
         },
         "total_received": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          }
+          },
+          "title": "Aggregated totals across all operations (was single received field 7)"
         },
         "note": {
-          "type": "string"
+          "type": "string",
+          "title": "Optional note (was field 10 in old schema)"
         }
       },
       "description": "Trade captures a batch of operations executed atomically in a single message.\nOperations are stored in execution order, preserving the exact sequence from\nthe original message (MsgMakeTrade, MsgPoolSwap, MsgTakeOffer,\nMsgRedeemAuction)."
