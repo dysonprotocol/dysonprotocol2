@@ -21,6 +21,7 @@ func DefaultGenesis() *types.GenesisState { return NewGenesisState() }
 
 // ValidateGenesisState performs comprehensive genesis validation.
 func ValidateGenesisState(s types.GenesisState) error {
+	s.Params = types.MigrateParams(s.Params)
 	if err := s.Params.Validate(); err != nil {
 		return err
 	}

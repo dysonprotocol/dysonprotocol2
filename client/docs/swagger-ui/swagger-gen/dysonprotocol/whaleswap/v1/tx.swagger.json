@@ -670,20 +670,12 @@
           "type": "string",
           "format": "uint64"
         },
-        "amount1": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "description": "Deprecated: use amounts field 5 instead. Migration logic should read both\namount1 and amount2 and combine into amounts array."
-        },
-        "amount2": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "description": "Deprecated: use amounts field 5 instead."
-        },
         "amounts": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "description": "Amounts to add (two coins in any order; will be canonicalized).\nReplaces deprecated amount1/amount2 fields 3-4."
+          "description": "Amounts to add (two coins in any order; will be canonicalized)."
         }
       },
       "description": "Add liquidity (owner-only). Behavior depends on v2/v3 mode.\nAmounts will be automatically sorted by denom to match pool's canonical\norder."

@@ -10,22 +10,28 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
-// (removed legacy upgrade names)
-
-// RmHistoricalQueriesUpgradeName defines the on-chain upgrade name for
-// removing historical query support in the script module. This is an
-// export/import style upgrade with no store upgrades.
-const RmHistoricalQueriesUpgradeName = "rm-historical-queries"
+// WhaleswapV2UpgradeName defines the on-chain upgrade name for
+// migrating whaleswap module from v1 proto fields to v2 (fee_pct → fee_rate,
+// Trade deprecated fields → new fields). This includes state migration.
+const WhaleswapV2UpgradeName = "whaleswap-v2"
 
 func (app *DysApp) RegisterUpgradeHandlers() {
 	app.Logger().Info("RegisterUpgradeHandlers: installing upgrade handlers")
-	// (removed legacy handlers)
 
-	// Register handler for rm-historical-queries (export/import upgrade)
+	// Register handler for whaleswap-v2 (state migration upgrade)
 	app.UpgradeKeeper.SetUpgradeHandler(
-		RmHistoricalQueriesUpgradeName,
+		WhaleswapV2UpgradeName,
 		func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-			app.Logger().Info("Executing upgrade handler", "name", plan.Name, "height", plan.Height)
+			app.Logger().Info("Executing whaleswap v1→v2 migration", "name", plan.Name, "height", plan.Height)
+
+			// Run whaleswap state migration
+			if err := app.WhaleswapKeeper.MigrateWhaleswapV1ToV2(ctx); err != nil {
+				app.Logger().Error("Whaleswap migration failed", "name", plan.Name, "height", plan.Height, "err", err)
+				return fromVM, err
+			}
+			app.Logger().Info("Whaleswap migration completed", "name", plan.Name, "height", plan.Height)
+
+			// Run module migrations
 			newVM, err := app.ModuleManager.RunMigrations(ctx, app.Configurator(), fromVM)
 			if err != nil {
 				app.Logger().Error("Upgrade handler failed", "name", plan.Name, "height", plan.Height, "err", err)
@@ -66,15 +72,15 @@ func (app *DysApp) RegisterUpgradeHandlers() {
 
 	if !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		switch upgradeInfo.Name {
-		case RmHistoricalQueriesUpgradeName:
-			// Export/Import style upgrade; no store upgrades
-			app.Logger().Info("Export/Import upgrade; no store upgrades configured", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
+		case WhaleswapV2UpgradeName:
+			// State migration upgrade; no store migrations needed (migration happens in handler)
+			app.Logger().Info("Whaleswap v2 upgrade; state migration in handler", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
 		default:
-			app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{RmHistoricalQueriesUpgradeName}, "height", upgradeInfo.Height)
+			app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{WhaleswapV2UpgradeName}, "height", upgradeInfo.Height)
 		}
-	} else if upgradeInfo.Name == RmHistoricalQueriesUpgradeName {
+	} else if upgradeInfo.Name == WhaleswapV2UpgradeName {
 		app.Logger().Info("Skip height is set; not configuring store loader", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
 	} else {
-		app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{RmHistoricalQueriesUpgradeName}, "height", upgradeInfo.Height)
+		app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{WhaleswapV2UpgradeName}, "height", upgradeInfo.Height)
 	}
 }

@@ -33535,36 +33535,6 @@ paths:
               pool_id:
                 type: string
                 format: uint64
-              amount1:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              amount2:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
               amounts:
                 type: array
                 items:
@@ -33585,8 +33555,6 @@ paths:
                 description: >-
                   Amounts to add (two coins in any order; will be
                   canonicalized).
-
-                  Replaces deprecated amount1/amount2 fields 3-4.
             description: >-
               Add liquidity (owner-only). Behavior depends on v2/v3 mode.
 
@@ -74815,30 +74783,6 @@ definitions:
       pool_id:
         type: string
         format: uint64
-      amount1:
-        type: object
-        properties:
-          denom:
-            type: string
-          amount:
-            type: string
-        description: |-
-          Coin defines a token with a denomination and an amount.
-
-          NOTE: The amount field is an Int which implements the custom method
-          signatures required by gogoproto.
-      amount2:
-        type: object
-        properties:
-          denom:
-            type: string
-          amount:
-            type: string
-        description: |-
-          Coin defines a token with a denomination and an amount.
-
-          NOTE: The amount field is an Int which implements the custom method
-          signatures required by gogoproto.
       amounts:
         type: array
         items:
@@ -74853,9 +74797,7 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
-        description: |-
-          Amounts to add (two coins in any order; will be canonicalized).
-          Replaces deprecated amount1/amount2 fields 3-4.
+        description: Amounts to add (two coins in any order; will be canonicalized).
     description: |-
       Add liquidity (owner-only). Behavior depends on v2/v3 mode.
       Amounts will be automatically sorted by denom to match pool's canonical

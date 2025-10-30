@@ -385,25 +385,7 @@ export class MsgAddLiquidity extends Message<MsgAddLiquidity> {
   poolId = protoInt64.zero;
 
   /**
-   * Deprecated: use amounts field 5 instead. Migration logic should read both
-   * amount1 and amount2 and combine into amounts array.
-   *
-   * @generated from field: cosmos.base.v1beta1.Coin amount1 = 3 [deprecated = true];
-   * @deprecated
-   */
-  amount1?: Coin;
-
-  /**
-   * Deprecated: use amounts field 5 instead.
-   *
-   * @generated from field: cosmos.base.v1beta1.Coin amount2 = 4 [deprecated = true];
-   * @deprecated
-   */
-  amount2?: Coin;
-
-  /**
    * Amounts to add (two coins in any order; will be canonicalized).
-   * Replaces deprecated amount1/amount2 fields 3-4.
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin amounts = 5;
    */
@@ -419,8 +401,6 @@ export class MsgAddLiquidity extends Message<MsgAddLiquidity> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "signer", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 3, name: "amount1", kind: "message", T: Coin },
-    { no: 4, name: "amount2", kind: "message", T: Coin },
     { no: 5, name: "amounts", kind: "message", T: Coin, repeated: true },
   ]);
 

@@ -53,10 +53,15 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ sdkclient.TxEncodin
 	if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("{}")) || bytes.Equal(trimmed, []byte("null")) {
 		return whaleswap.ValidateGenesisState(*whaleswap.DefaultGenesis())
 	}
-	var data whaleswaptypes.GenesisState
-	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
-		return fmt.Errorf("failed to unmarshal %s genesis state: %w", whaleswap.ModuleName, err)
+	normalized, err := whaleswaptypes.NormalizeLegacyGenesisJSON(trimmed)
+	if err != nil {
+		return fmt.Errorf("failed to normalize %s genesis: %w", whaleswap.ModuleName, err)
 	}
+	var data whaleswaptypes.GenesisState
+	if err := cdc.UnmarshalJSON(normalized, &data); err != nil {
+		return fmt.Errorf("failed to unmarshal %s genesis state: %+v", whaleswap.ModuleName, err)
+	}
+	data.Params = whaleswaptypes.MigrateParams(data.Params)
 	return whaleswap.ValidateGenesisState(data)
 }
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx sdkclient.Context, mux *gwruntime.ServeMux) {
@@ -92,7 +97,7 @@ func (am AppModule) Name() string { return whaleswap.ModuleName }
 func (am AppModule) ValidateGenesis(source appmodule.GenesisSource) error {
 	reader, err := source(whaleswap.ModuleName)
 	if err != nil {
-		return fmt.Errorf("failed to get genesis source for %s: %w", whaleswap.ModuleName, err)
+		return fmt.Errorf("failed to get genesis source for %s: %+v", whaleswap.ModuleName, err)
 	}
 	if reader == nil {
 		// validate defaults
@@ -108,10 +113,15 @@ func (am AppModule) ValidateGenesis(source appmodule.GenesisSource) error {
 	if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("{}")) || bytes.Equal(trimmed, []byte("null")) {
 		return whaleswap.ValidateGenesisState(*whaleswap.DefaultGenesis())
 	}
-	var tmp whaleswaptypes.GenesisState
-	if err := am.cdc.UnmarshalJSON(trimmed, &tmp); err != nil {
-		return fmt.Errorf("failed to decode %s genesis: %w", whaleswap.ModuleName, err)
+	normalized, err := whaleswaptypes.NormalizeLegacyGenesisJSON(trimmed)
+	if err != nil {
+		return fmt.Errorf("failed to normalize %s genesis: %w", whaleswap.ModuleName, err)
 	}
+	var tmp whaleswaptypes.GenesisState
+	if err := am.cdc.UnmarshalJSON(normalized, &tmp); err != nil {
+		return fmt.Errorf("err validating, genesis: failed to decode %s genesis: %w", whaleswap.ModuleName, err)
+	}
+	tmp.Params = whaleswaptypes.MigrateParams(tmp.Params)
 	return whaleswap.ValidateGenesisState(tmp)
 }
 func (am AppModule) InitGenesis(ctx context.Context, source appmodule.GenesisSource) error {
@@ -132,13 +142,21 @@ func (am AppModule) InitGenesis(ctx context.Context, source appmodule.GenesisSou
 		if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("{}")) || bytes.Equal(trimmed, []byte("null")) {
 			gs = whaleswap.DefaultGenesis()
 		} else {
+			normalized, err := whaleswaptypes.NormalizeLegacyGenesisJSON(trimmed)
+			if err != nil {
+				return fmt.Errorf("err initing genesis: failed to normalize %s genesis: %w", whaleswap.ModuleName, err)
+			}
 			var tmp whaleswaptypes.GenesisState
-			if err := am.cdc.UnmarshalJSON(trimmed, &tmp); err != nil {
-				return fmt.Errorf("failed to decode %s genesis: %w", whaleswap.ModuleName, err)
+			if err := am.cdc.UnmarshalJSON(normalized, &tmp); err != nil {
+				//log trimmed
+				fmt.Println("trimmed", string(trimmed))
+
+				return fmt.Errorf("err initing genesis: failed to decode %s genesis: %w", whaleswap.ModuleName, err)
 			}
 			gs = &tmp
 		}
 	}
+	gs.Params = whaleswaptypes.MigrateParams(gs.Params)
 	am.keeper.InitGenesis(sdk.UnwrapSDKContext(ctx), gs)
 	return nil
 }
