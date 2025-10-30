@@ -680,10 +680,15 @@ func CmdCoverPosition() *cobra.Command {
 			if perr != nil {
 				return fmt.Errorf("invalid --payment coin '%s': %w", payStr, perr)
 			}
+			note, err := cmd.Flags().GetString("position-note")
+			if err != nil {
+				return err
+			}
 			msg := &whaleswaptypes.MsgCoverPosition{
 				User:       clientCtx.GetFromAddress().String(),
 				PositionId: posID,
 				Payment:    payment,
+				Note:       note,
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -696,6 +701,7 @@ func CmdCoverPosition() *cobra.Command {
 	if err := cmd.MarkFlagRequired("payment"); err != nil {
 		panic(fmt.Errorf("failed to mark --payment required: %w", err))
 	}
+	cmd.Flags().String("position-note", "", "Optional note echoed to internal swaps")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

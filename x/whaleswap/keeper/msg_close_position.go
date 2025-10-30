@@ -66,7 +66,7 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		Operations: []whaleswapv1.TradeOperation{
 			{Op: &whaleswapv1.TradeOperation_Swap{Swap: &whaleswapv1.SwapLeg{PoolId: pos.PoolId, SwapIn: pos.Held}}},
 		},
-		Note: "leverage-close",
+		Note: msg.Note,
 	}
 	mtResp, mtErr := k.MakeTrade(ctx, mt)
 	if mtErr != nil {
@@ -143,7 +143,7 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 						},
 					}},
 				},
-				Note: "leverage-close-collateral-swap",
+				Note: msg.Note,
 			}
 			collSwapResp, collSwapErr := k.MakeTrade(ctx, collateralSwapMt)
 			if collSwapErr != nil {

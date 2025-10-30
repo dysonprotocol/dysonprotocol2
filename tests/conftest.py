@@ -620,7 +620,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
             ],
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=20,
             check=False,
         )
         if reimport_result.returncode != 0:

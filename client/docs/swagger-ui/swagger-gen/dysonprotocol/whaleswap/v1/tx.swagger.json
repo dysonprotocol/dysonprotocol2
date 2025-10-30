@@ -714,6 +714,9 @@
         "position_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "note": {
+          "type": "string"
         }
       }
     },
@@ -743,6 +746,9 @@
         },
         "payment": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "note": {
+          "type": "string"
         }
       }
     },
@@ -1051,6 +1057,10 @@
         "borrow": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
           "description": "borrow: liability coin. Must be positive and one of the pool denoms.\nInterest accrues on this amount until close/liquidation."
+        },
+        "note": {
+          "type": "string",
+          "description": "The held denom is implicitly the other pool denom (not the borrow denom)."
         }
       }
     },

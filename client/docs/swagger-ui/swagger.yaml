@@ -33706,6 +33706,8 @@ paths:
               position_id:
                 type: string
                 format: uint64
+              note:
+                type: string
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgCoverPosition:
@@ -33851,6 +33853,8 @@ paths:
                   method
 
                   signatures required by gogoproto.
+              note:
+                type: string
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgCreatePool:
@@ -34812,6 +34816,11 @@ paths:
                   method
 
                   signatures required by gogoproto.
+              note:
+                type: string
+                description: >-
+                  The held denom is implicitly the other pool denom (not the
+                  borrow denom).
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgPoolSwap:
@@ -74835,6 +74844,8 @@ definitions:
       position_id:
         type: string
         format: uint64
+      note:
+        type: string
   dysonprotocol.whaleswap.v1.MsgClosePositionResponse:
     type: object
     properties:
@@ -74894,6 +74905,8 @@ definitions:
 
           NOTE: The amount field is an Int which implements the custom method
           signatures required by gogoproto.
+      note:
+        type: string
   dysonprotocol.whaleswap.v1.MsgCoverPositionResponse:
     type: object
     properties:
@@ -75557,6 +75570,11 @@ definitions:
 
           NOTE: The amount field is an Int which implements the custom method
           signatures required by gogoproto.
+      note:
+        type: string
+        description: >-
+          The held denom is implicitly the other pool denom (not the borrow
+          denom).
   dysonprotocol.whaleswap.v1.MsgOpenPositionResponse:
     type: object
     properties:

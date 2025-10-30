@@ -22,6 +22,10 @@
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false,
                         "description": "borrow: liability coin. Must be positive and one of the pool denoms. Interest accrues on this amount until close/liquidation."
+                    },
+                    "note": {
+                        "type": "string",
+                        "description": "The held denom is implicitly the other pool denom (not the borrow denom)."
                     }
                 },
                 "additionalProperties": false,

@@ -178,7 +178,7 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 				},
 			},
 		},
-		Note: "leverage-open",
+		Note: msg.Note,
 	}
 	mtResp, mtErr := k.MakeTrade(ctx, mt)
 	if mtErr != nil {

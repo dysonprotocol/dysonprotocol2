@@ -1543,6 +1543,13 @@ export class MsgOpenPosition extends Message<MsgOpenPosition> {
    */
   borrow?: Coin;
 
+  /**
+   * The held denom is implicitly the other pool denom (not the borrow denom).
+   *
+   * @generated from field: string note = 5;
+   */
+  note = "";
+
   constructor(data?: PartialMessage<MsgOpenPosition>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1555,6 +1562,7 @@ export class MsgOpenPosition extends Message<MsgOpenPosition> {
     { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 3, name: "collateral", kind: "message", T: Coin },
     { no: 4, name: "borrow", kind: "message", T: Coin },
+    { no: 5, name: "note", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgOpenPosition {
@@ -1631,6 +1639,11 @@ export class MsgClosePosition extends Message<MsgClosePosition> {
    */
   positionId = protoInt64.zero;
 
+  /**
+   * @generated from field: string note = 3;
+   */
+  note = "";
+
   constructor(data?: PartialMessage<MsgClosePosition>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1641,6 +1654,7 @@ export class MsgClosePosition extends Message<MsgClosePosition> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 3, name: "note", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgClosePosition {
@@ -1826,6 +1840,11 @@ export class MsgCoverPosition extends Message<MsgCoverPosition> {
    */
   payment?: Coin;
 
+  /**
+   * @generated from field: string note = 4;
+   */
+  note = "";
+
   constructor(data?: PartialMessage<MsgCoverPosition>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1837,6 +1856,7 @@ export class MsgCoverPosition extends Message<MsgCoverPosition> {
     { no: 1, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 3, name: "payment", kind: "message", T: Coin },
+    { no: 4, name: "note", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgCoverPosition {

@@ -243,6 +243,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						"pool_id":    {Name: "pool-id", Usage: "Target pool ID"},
 						"collateral": {Name: "collateral", Usage: "Collateral coin (e.g., 400udys)"},
 						"borrow":     {Name: "borrow", Usage: "Borrow coin (e.g., 250ufoo)"},
+						"note":       {Name: "position-note", Usage: "Optional note echoed to internal swaps"},
 					},
 				},
 				{
@@ -255,6 +256,21 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						// Map signer field to standard --from flag
 						"user":        {Name: "from", Usage: "Position owner (signer)"},
 						"position_id": {Name: "position-id", Usage: "Position ID"},
+						"note":        {Name: "position-note", Usage: "Optional note echoed to internal swaps"},
+					},
+				},
+				{
+					RpcMethod: "CoverPosition",
+					Use:       "cover-position --position-id <id> --payment <coin>",
+					Short:     "Cover a leveraged position (repay debt, reduce principal)",
+					Long:      "Cover an existing leveraged position by paying interest and optionally reducing principal. If overpay occurs, auto-close the position and return profit/collateral. The signer (--from) is used as the user.",
+					Example:   "dysond tx whaleswap cover-position --position-id 7 --payment 300udys",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						// Map signer field to standard --from flag
+						"user":        {Name: "from", Usage: "Position owner (signer)"},
+						"position_id": {Name: "position-id", Usage: "Position ID"},
+						"payment":     {Name: "payment", Usage: "Payment coin (must match borrow denom)"},
+						"note":        {Name: "position-note", Usage: "Optional note echoed to internal swaps"},
 					},
 				},
 				{

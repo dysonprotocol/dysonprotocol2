@@ -11,6 +11,207 @@ from pathlib import Path
 from deep_parse import deep_parse
 
 
+def test_cover_position_note_propagates(chainnet, leverage_accounts, leverage_names_and_coins):
+    dysond = chainnet[0]
+    trader_name = leverage_accounts["bob"]["name"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+
+    pool_result = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"5000{foo_name}",
+        "--coins",
+        f"5000{bar_name}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "10.0",
+        "--max-borrow-percent",
+        "0.8",
+        "--from",
+        trader_name,
+    )
+    assert pool_result.get("code", 1) == 0, f"create-pool failed: {json.dumps(pool_result, indent=2)}"
+
+    pool_events = [
+        e
+        for e in pool_result.get("events", [])
+        if e.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    assert pool_events, f"missing EventPoolCreated: {json.dumps(pool_result, indent=2)}"
+    pool_attrs = {a.get("key"): a.get("value") for a in pool_events[0].get("attributes", [])}
+    pool_id = pool_attrs.get("pool_id")
+    assert pool_id, f"pool_id missing: {json.dumps(pool_events[0], indent=2)}"
+    pool_id = pool_id.strip('"')
+
+    open_result = dysond(
+        "tx",
+        "whaleswap",
+        "open-position",
+        "--pool-id",
+        pool_id,
+        "--collateral",
+        f"400{bar_name}",
+        "--borrow",
+        f"250{foo_name}",
+        "--from",
+        trader_name,
+    )
+    assert open_result.get("code", 1) == 0, f"open-position failed: {json.dumps(open_result, indent=2)}"
+
+    pos_attrs = [
+        attr.get("value")
+        for event in open_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "position_id"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+    ]
+    assert pos_attrs, f"position_id missing: {json.dumps(open_result, indent=2)}"
+    position_id = pos_attrs[0].strip('"')
+
+    note_text = "cover-position note propagation"
+    # Cover with exact principal + interest to trigger auto-close
+    cover_result = dysond(
+        "tx",
+        "whaleswap",
+        "cover-position",
+        "--position-id",
+        position_id,
+        "--payment",
+        f"260{foo_name}",  # slightly more than borrowed 250 to cover interest and trigger auto-close
+        "--position-note",
+        note_text,
+        "--from",
+        trader_name,
+    )
+    assert cover_result.get("code", 1) == 0, f"cover-position failed: {json.dumps(cover_result, indent=2)}"
+
+    trade_events = [
+        e
+        for e in cover_result.get("events", [])
+        if e.get("type") == "dysonprotocol.whaleswap.v1.EventTradeRecorded"
+    ]
+    assert trade_events, f"missing EventTradeRecorded: {json.dumps(cover_result, indent=2)}"
+
+    trade_ids = set()
+    for event in trade_events:
+        attrs = {a.get("key"): a.get("value") for a in event.get("attributes", [])}
+        note_attr = attrs.get("note")
+        assert note_attr is not None, f"note missing: {json.dumps(event, indent=2)}"
+        assert json.loads(note_attr) == note_text, f"note mismatch: {note_attr}"
+        trade_id_raw = attrs.get("trade_id")
+        assert trade_id_raw, f"trade_id missing: {json.dumps(event, indent=2)}"
+        trade_ids.add(int(json.loads(trade_id_raw)))
+
+    for trade_id in trade_ids:
+        trade_resp = dysond("query", "whaleswap", "trade", "--trade-id", str(trade_id))
+        trade = trade_resp.get("trade", {})
+        assert trade.get("note") == note_text, f"trade note mismatch: {json.dumps(trade, indent=2)}"
+
+
+def test_close_position_note_propagates(chainnet, leverage_accounts, leverage_names_and_coins):
+    dysond = chainnet[0]
+    trader_name = leverage_accounts["bob"]["name"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+
+    pool_result = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"5000{foo_name}",
+        "--coins",
+        f"5000{bar_name}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "10.0",
+        "--max-borrow-percent",
+        "0.8",
+        "--from",
+        trader_name,
+    )
+    assert pool_result.get("code", 1) == 0, f"create-pool failed: {json.dumps(pool_result, indent=2)}"
+
+    pool_events = [
+        e
+        for e in pool_result.get("events", [])
+        if e.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    assert pool_events, f"missing EventPoolCreated: {json.dumps(pool_result, indent=2)}"
+    pool_attrs = {a.get("key"): a.get("value") for a in pool_events[0].get("attributes", [])}
+    pool_id = pool_attrs.get("pool_id")
+    assert pool_id, f"pool_id missing: {json.dumps(pool_events[0], indent=2)}"
+    pool_id = pool_id.strip('"')
+
+    open_result = dysond(
+        "tx",
+        "whaleswap",
+        "open-position",
+        "--pool-id",
+        pool_id,
+        "--collateral",
+        f"400{bar_name}",
+        "--borrow",
+        f"250{foo_name}",
+        "--from",
+        trader_name,
+    )
+    assert open_result.get("code", 1) == 0, f"open-position failed: {json.dumps(open_result, indent=2)}"
+
+    pos_attrs = [
+        attr.get("value")
+        for event in open_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "position_id"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+    ]
+    assert pos_attrs, f"position_id missing: {json.dumps(open_result, indent=2)}"
+    position_id = pos_attrs[0].strip('"')
+
+    note_text = "close-position note propagation"
+    close_result = dysond(
+        "tx",
+        "whaleswap",
+        "close-position",
+        "--position-id",
+        position_id,
+        "--position-note",
+        note_text,
+        "--from",
+        trader_name,
+    )
+    assert close_result.get("code", 1) == 0, f"close-position failed: {json.dumps(close_result, indent=2)}"
+
+    trade_events = [
+        e
+        for e in close_result.get("events", [])
+        if e.get("type") == "dysonprotocol.whaleswap.v1.EventTradeRecorded"
+    ]
+    assert trade_events, f"missing EventTradeRecorded: {json.dumps(close_result, indent=2)}"
+
+    trade_ids = set()
+    for event in trade_events:
+        attrs = {a.get("key"): a.get("value") for a in event.get("attributes", [])}
+        note_attr = attrs.get("note")
+        assert note_attr is not None, f"note missing: {json.dumps(event, indent=2)}"
+        assert json.loads(note_attr) == note_text, f"note mismatch: {note_attr}"
+        trade_id_raw = attrs.get("trade_id")
+        assert trade_id_raw, f"trade_id missing: {json.dumps(event, indent=2)}"
+        trade_ids.add(int(json.loads(trade_id_raw)))
+
+    for trade_id in trade_ids:
+        trade_resp = dysond("query", "whaleswap", "trade", "--trade-id", str(trade_id))
+        trade = trade_resp.get("trade", {})
+        assert trade.get("note") == note_text, f"trade note mismatch: {json.dumps(trade, indent=2)}"
+
+
 def test_close_position_happy_path_long(
     chainnet, leverage_accounts, leverage_names_and_coins
 ):
