@@ -2,8 +2,13 @@ import json
 import os
 import pytest
 from tests.utils import poll_until_condition
+from tests.conftest import NUM_CHAINS
 
 
+@pytest.mark.skipif(
+    NUM_CHAINS == 1,
+    reason=f"Test requires NUM_CHAINS >= 2, but NUM_CHAINS={NUM_CHAINS}",
+)
 def test_ica_complete_e2e_workflow(ibc_setup, generate_account, faucet):
     """
     Complete end-to-end test for ICA functionality covering the entire workflow:

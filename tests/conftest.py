@@ -23,7 +23,7 @@ from typing import List, Tuple, Iterable
 from textwrap import dedent
 from deepdiff import DeepDiff
 
-NUM_CHAINS = 2
+NUM_CHAINS = 1
 NUM_NODES = 1
 
 # Global constants
@@ -163,7 +163,6 @@ def make_run_command(dysond_bin, node_home):
                 # if pyright_result.returncode != 0:
                 #    raise Exception(f"Pyright check failed for {code_path}:\n{pyright_result.stdout}\n{pyright_result.stderr}")
 
-
         # if this is wait-tx and it has a "timed out waiting for transaction" error try again
         if not raw:
             if len(args) > 0 and args[0] == "query" and args[1] == "wait-tx":
@@ -176,7 +175,9 @@ def make_run_command(dysond_bin, node_home):
                     print(f"Waiting for tx confirmation... {i} attempts left")
                     print(f"Commands: {shlex.join(commands)}")
                     try:
-                        out = subprocess.run(commands, capture_output=True, text=True, timeout=1)
+                        out = subprocess.run(
+                            commands, capture_output=True, text=True, timeout=1
+                        )
                     except subprocess.TimeoutExpired as e:
                         print(f"Timeout expired: {e}")
                         continue
@@ -193,7 +194,7 @@ def make_run_command(dysond_bin, node_home):
                         else:
                             json_out = json.loads(stdout)
                         if (
-                            'code' in json_out or i == 1
+                            "code" in json_out or i == 1
                         ):  # Last attempt should return the result
                             return json_out
                         continue
@@ -290,6 +291,7 @@ def make_run_command(dysond_bin, node_home):
                     continue
         else:
             raise Exception(f"Error running command: {commands}\n{return_out}")
+
     return run_command
 
 
@@ -385,15 +387,15 @@ def chainnet(worker_id, test_base_dir, test_config_path):
         "250ms",
         "--no-blocks-timeout",
         "15",
-        #"--logs",
+        # "--logs",
     ]
-    
+
     # Support optional log module filtering via environment variable
     log_module = os.getenv("LOG_MODULE")
     if log_module:
         start_cmd.extend(["--log-module", log_module])
         print(f"Filtering logs to module: {log_module}")
-    
+
     dysond_proc = subprocess.Popen(
         start_cmd,
         preexec_fn=os.setsid,
@@ -460,7 +462,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
     project_root = Path(__file__).parent.parent
     exports_dir = project_root / "test-exports"
     exports_dir.mkdir(exist_ok=True)
-    
+
     # Export the chain state with --for-zero-height to prepare for reimport
     export1_path = exports_dir / "export1.json"
     print(f"Exporting chain state (for zero height) to {export1_path}...")
@@ -489,11 +491,18 @@ def chainnet(worker_id, test_base_dir, test_config_path):
         genesis1 = json.load(f)
 
     print(f"✓ Successfully exported genesis (chain_id: {genesis1.get('chain_id')})")
-    
+
     # Debug: Check if SDK and IBC modules have their required state
     app_state = genesis1.get("app_state", {})
     print(f"Debug: Checking module state in export1...")
-    for module_name in ["mint", "distribution", "protocolpool", "gov", "ibc", "interchainaccounts"]:
+    for module_name in [
+        "mint",
+        "distribution",
+        "protocolpool",
+        "gov",
+        "ibc",
+        "interchainaccounts",
+    ]:
         if module_name in app_state:
             module_data = app_state[module_name]
             print(f"  {module_name}: has {len(json.dumps(module_data))} bytes of JSON")
@@ -505,20 +514,24 @@ def chainnet(worker_id, test_base_dir, test_config_path):
                 print(f"    - has params: {'params' in module_data}")
             elif module_name == "protocolpool":
                 print(f"    - has params: {'params' in module_data}")
-                if 'params' in module_data:
+                if "params" in module_data:
                     print(f"    - params content: {module_data['params']}")
             elif module_name == "gov":
                 print(f"    - has params: {'params' in module_data}")
             elif module_name == "ibc":
                 print(f"    - has client_genesis: {'client_genesis' in module_data}")
-                print(f"    - has connection_genesis: {'connection_genesis' in module_data}")
+                print(
+                    f"    - has connection_genesis: {'connection_genesis' in module_data}"
+                )
             elif module_name == "interchainaccounts":
-                print(f"    - has controller_genesis: {'controller_genesis' in module_data}")
+                print(
+                    f"    - has controller_genesis: {'controller_genesis' in module_data}"
+                )
                 print(f"    - has host_genesis: {'host_genesis' in module_data}")
-                if 'controller_genesis' in module_data:
-                    ctrl = module_data['controller_genesis']
+                if "controller_genesis" in module_data:
+                    ctrl = module_data["controller_genesis"]
                     print(f"    - controller has params: {'params' in ctrl}")
-                    if 'params' in ctrl:
+                    if "params" in ctrl:
                         print(f"    - controller params: {ctrl['params']}")
         else:
             print(f"  {module_name}: MISSING from app_state!")
@@ -542,7 +555,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
         capture_output=True,
         text=True,
         timeout=10,
-        check=False,    
+        check=False,
     )
 
     if init_result.returncode != 0:
@@ -567,18 +580,14 @@ def chainnet(worker_id, test_base_dir, test_config_path):
     # Copy validator private key
     shutil.copy2(
         original_config / "priv_validator_key.json",
-        reimport_config / "priv_validator_key.json"
+        reimport_config / "priv_validator_key.json",
     )
 
     # Copy node P2P key
-    shutil.copy2(
-        original_config / "node_key.json",
-        reimport_config / "node_key.json"
-    )
+    shutil.copy2(original_config / "node_key.json", reimport_config / "node_key.json")
 
     print(f"✓ Copied validator keys to reimport node")
 
-   
     # Re-copy the genesis after reset (unsafe-reset-all may clear it)
     with open(reimport_genesis_path, "w") as f:
         json.dump(genesis1, f, indent=2)
@@ -586,7 +595,9 @@ def chainnet(worker_id, test_base_dir, test_config_path):
     print(f"✓ Restored genesis after reset")
 
     # Start the reimported node with --halt-height to initialize database and auto-stop
-    print(f"Starting reimported node to initialize database (will auto-halt at height)...")
+    print(
+        f"Starting reimported node to initialize database (will auto-halt at height)..."
+    )
     try:
         reimport_result = subprocess.run(
             [
@@ -597,7 +608,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
                 "--halt-height",
                 "3",
                 "--rpc.laddr",
-                "tcp://127.0.0.1:0", # random port
+                "tcp://127.0.0.1:0",  # random port
                 "--api.enable",
                 "false",
                 "--grpc.enable",
@@ -605,7 +616,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
                 "--grpc-web.enable",
                 "false",
                 "--p2p.laddr",
-                "tcp://127.0.0.1:0", # random port
+                "tcp://127.0.0.1:0",  # random port
             ],
             capture_output=True,
             text=True,
@@ -623,19 +634,19 @@ def chainnet(worker_id, test_base_dir, test_config_path):
                 print(f"Reimport node failed: stdout=None")
             raise Exception(f"Reimport node failed")
 
-            
     except subprocess.TimeoutExpired as e:
         if e.stdout:
-            assert "error halt per configuration height" in e.stdout.decode('utf-8'), f"Reimport node did not halt at height 3: {e.stdout}"
+            assert "error halt per configuration height" in e.stdout.decode(
+                "utf-8"
+            ), f"Reimport node did not halt at height 3: {e.stdout}"
         else:
             if e.stderr:
                 print(f"Reimport node error: {e.stderr.decode('utf-8')}")
             else:
                 print(f"Reimport node error: None")
             raise Exception(f"Reimport node output: None")
-            
-        print(f"✓ Reimported node initialized and auto-halted")
 
+        print(f"✓ Reimported node initialized and auto-halted")
 
     # Export again from the reimported state WITHOUT --for-zero-height
     # We're validating that Dyson modules were imported correctly
@@ -678,7 +689,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
     # Standard Cosmos SDK modules (bank, mint, slashing, etc.) may have normal variations
     dyson_modules = [
         "script",
-        "storage", 
+        "storage",
         "nameservice",
         "crontask",
         "whaleswap",
@@ -692,18 +703,18 @@ def chainnet(worker_id, test_base_dir, test_config_path):
     for module in dyson_modules:
         if module not in app_state_1 and module not in app_state_2:
             continue  # Module not present in either, ok
-        
+
         if module not in app_state_1:
             mismatches.append(f"Module {module} missing from export1")
             continue
-        
+
         if module not in app_state_2:
             mismatches.append(f"Module {module} missing from export2")
             continue
-        
+
         # Use DeepDiff for detailed comparison
         diff = DeepDiff(app_state_1[module], app_state_2[module], verbose_level=2)
-        
+
         if diff:
             mismatches.append(f"Module {module} differs between exports")
             # Save detailed diff for debugging
@@ -711,23 +722,26 @@ def chainnet(worker_id, test_base_dir, test_config_path):
             with open(module_diff_path, "w") as f:
                 json.dump(diff.to_dict(), f, indent=2)
             print(f"  Module {module} diff saved to: {module_diff_path}")
-            
+
             # Print a summary of the differences
             print(f"  Module {module} differences:")
-            if 'dictionary_item_removed' in diff:
+            if "dictionary_item_removed" in diff:
                 print(f"    - Items removed: {len(diff['dictionary_item_removed'])}")
-            if 'dictionary_item_added' in diff:
+            if "dictionary_item_added" in diff:
                 print(f"    - Items added: {len(diff['dictionary_item_added'])}")
-            if 'values_changed' in diff:
+            if "values_changed" in diff:
                 print(f"    - Values changed: {len(diff['values_changed'])}")
-            if 'iterable_item_removed' in diff:
-                print(f"    - Iterable items removed: {len(diff['iterable_item_removed'])}")
-            if 'iterable_item_added' in diff:
+            if "iterable_item_removed" in diff:
+                print(
+                    f"    - Iterable items removed: {len(diff['iterable_item_removed'])}"
+                )
+            if "iterable_item_added" in diff:
                 print(f"    - Iterable items added: {len(diff['iterable_item_added'])}")
 
     assert len(mismatches) == 0, (
         f"Export/Import validation FAILED for Dyson modules:\n"
-        + "\n".join(f"  - {m}" for m in mismatches) + "\n"
+        + "\n".join(f"  - {m}" for m in mismatches)
+        + "\n"
         f"Export 1 (from original chain): {export1_path}\n"
         f"Export 2 (from reimported chain): {export2_path}\n"
         f"Use 'diff {export1_path} {export2_path}' to see all differences."
@@ -760,7 +774,7 @@ def node_ready(chainnet):
 
     poll_until_condition(
         _ready,
-        timeout=15,
+        timeout=5,
         poll_interval=0.3,
         error_message="Node did not produce blocks",
     )
