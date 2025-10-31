@@ -6315,6 +6315,48 @@ paths:
                         one per reserve
 
                         denom in canonical order).
+                    min_price:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Deprecated legacy price band fields retained for
+                        decoding old genesis
+
+                        exports. Migration logic ignores their values and clears
+                        them.
+                    max_price:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
                     block_height:
                       type: string
                       format: uint64
@@ -6739,6 +6781,48 @@ paths:
                         one per reserve
 
                         denom in canonical order).
+                    min_price:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Deprecated legacy price band fields retained for
+                        decoding old genesis
+
+                        exports. Migration logic ignores their values and clears
+                        them.
+                    max_price:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
                     block_height:
                       type: string
                       format: uint64
@@ -7167,6 +7251,48 @@ paths:
                         one per reserve
 
                         denom in canonical order).
+                    min_price:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Deprecated legacy price band fields retained for
+                        decoding old genesis
+
+                        exports. Migration logic ignores their values and clears
+                        them.
+                    max_price:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
                     block_height:
                       type: string
                       format: uint64
@@ -7606,6 +7732,48 @@ paths:
                         one per reserve
 
                         denom in canonical order).
+                    min_price:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Deprecated legacy price band fields retained for
+                        decoding old genesis
+
+                        exports. Migration logic ignores their values and clears
+                        them.
+                    max_price:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
                     block_height:
                       type: string
                       format: uint64
@@ -8042,6 +8210,46 @@ paths:
                       one per reserve
 
                       denom in canonical order).
+                  min_price:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Deprecated legacy price band fields retained for decoding
+                      old genesis
+
+                      exports. Migration logic ignores their values and clears
+                      them.
+                  max_price:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
                   block_height:
                     type: string
                     format: uint64
@@ -8417,6 +8625,48 @@ paths:
                         one per reserve
 
                         denom in canonical order).
+                    min_price:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Deprecated legacy price band fields retained for
+                        decoding old genesis
+
+                        exports. Migration logic ignores their values and clears
+                        them.
+                    max_price:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
                     block_height:
                       type: string
                       format: uint64
@@ -8840,6 +9090,46 @@ paths:
                       one per reserve
 
                       denom in canonical order).
+                  min_price:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Deprecated legacy price band fields retained for decoding
+                      old genesis
+
+                      exports. Migration logic ignores their values and clears
+                      them.
+                  max_price:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
                   block_height:
                     type: string
                     format: uint64
@@ -47469,6 +47759,37 @@ definitions:
           reserve
 
           denom in canonical order).
+      min_price:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+        description: |-
+          Deprecated legacy price band fields retained for decoding old genesis
+          exports. Migration logic ignores their values and clears them.
+      max_price:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
       block_height:
         type: string
         format: uint64
@@ -48969,6 +49290,45 @@ definitions:
               reserve
 
               denom in canonical order).
+          min_price:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
+              Deprecated legacy price band fields retained for decoding old
+              genesis
+
+              exports. Migration logic ignores their values and clears them.
+          max_price:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
           block_height:
             type: string
             format: uint64
@@ -49291,6 +49651,45 @@ definitions:
               reserve
 
               denom in canonical order).
+          min_price:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
+              Deprecated legacy price band fields retained for decoding old
+              genesis
+
+              exports. Migration logic ignores their values and clears them.
+          max_price:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
           block_height:
             type: string
             format: uint64
@@ -49616,6 +50015,45 @@ definitions:
                 reserve
 
                 denom in canonical order).
+            min_price:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Deprecated legacy price band fields retained for decoding old
+                genesis
+
+                exports. Migration logic ignores their values and clears them.
+            max_price:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
             block_height:
               type: string
               format: uint64
@@ -49973,6 +50411,45 @@ definitions:
                 reserve
 
                 denom in canonical order).
+            min_price:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Deprecated legacy price band fields retained for decoding old
+                genesis
+
+                exports. Migration logic ignores their values and clears them.
+            max_price:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
             block_height:
               type: string
               format: uint64
@@ -50330,6 +50807,45 @@ definitions:
                 reserve
 
                 denom in canonical order).
+            min_price:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Deprecated legacy price band fields retained for decoding old
+                genesis
+
+                exports. Migration logic ignores their values and clears them.
+            max_price:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
             block_height:
               type: string
               format: uint64
@@ -50687,6 +51203,45 @@ definitions:
                 reserve
 
                 denom in canonical order).
+            min_price:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Deprecated legacy price band fields retained for decoding old
+                genesis
+
+                exports. Migration logic ignores their values and clears them.
+            max_price:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
             block_height:
               type: string
               format: uint64
@@ -51044,6 +51599,45 @@ definitions:
                 reserve
 
                 denom in canonical order).
+            min_price:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Deprecated legacy price band fields retained for decoding old
+                genesis
+
+                exports. Migration logic ignores their values and clears them.
+            max_price:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
             block_height:
               type: string
               format: uint64

@@ -1939,6 +1939,19 @@
           "type": "string",
           "description": "Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec\nstring in [0,1)). Use fee_rate field 25 instead. Migration logic should\nread this and convert to fee_rate format (two DecCoins, one per reserve\ndenom in canonical order)."
         },
+        "min_price": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "description": "Deprecated legacy price band fields retained for decoding old genesis\nexports. Migration logic ignores their values and clears them."
+        },
+        "max_price": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        },
         "block_height": {
           "type": "string",
           "format": "uint64"

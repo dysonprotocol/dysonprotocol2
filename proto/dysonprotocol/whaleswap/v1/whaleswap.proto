@@ -32,8 +32,18 @@ message Pool {
   // denom in canonical order).
   string fee_pct = 5
       [ deprecated = true, (cosmos_proto.scalar) = "cosmos.Dec" ];
-  reserved 6, 7;
-  reserved "min_price", "max_price";
+  // Deprecated legacy price band fields retained for decoding old genesis
+  // exports. Migration logic ignores their values and clears them.
+  repeated cosmos.base.v1beta1.Coin min_price = 6 [
+    deprecated = true,
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  repeated cosmos.base.v1beta1.Coin max_price = 7 [
+    deprecated = true,
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
   uint64 block_height = 10;
   google.protobuf.Timestamp created = 11 [ (gogoproto.stdtime) = true ];
   google.protobuf.Timestamp updated = 12 [ (gogoproto.stdtime) = true ];

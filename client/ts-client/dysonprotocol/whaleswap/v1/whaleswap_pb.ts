@@ -51,6 +51,21 @@ export class Pool extends Message<Pool> {
   feePct = "";
 
   /**
+   * Deprecated legacy price band fields retained for decoding old genesis
+   * exports. Migration logic ignores their values and clears them.
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin min_price = 6 [deprecated = true];
+   * @deprecated
+   */
+  minPrice: Coin[] = [];
+
+  /**
+   * @generated from field: repeated cosmos.base.v1beta1.Coin max_price = 7 [deprecated = true];
+   * @deprecated
+   */
+  maxPrice: Coin[] = [];
+
+  /**
    * @generated from field: uint64 block_height = 10;
    */
   blockHeight = protoInt64.zero;
@@ -173,6 +188,8 @@ export class Pool extends Message<Pool> {
     { no: 2, name: "coins", kind: "message", T: Coin, repeated: true },
     { no: 4, name: "shares_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "min_price", kind: "message", T: Coin, repeated: true },
+    { no: 7, name: "max_price", kind: "message", T: Coin, repeated: true },
     { no: 10, name: "block_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 11, name: "created", kind: "message", T: Timestamp },
     { no: 12, name: "updated", kind: "message", T: Timestamp },

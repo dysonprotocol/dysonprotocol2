@@ -68,6 +68,13 @@ func MigratePool(pool *Pool) {
 	}
 	denomA := pool.Coins[0].Denom
 	denomB := pool.Coins[1].Denom
+	// Clear deprecated min/max price bands if present.
+	if len(pool.MinPrice) > 0 {
+		pool.MinPrice = sdk.NewCoins()
+	}
+	if len(pool.MaxPrice) > 0 {
+		pool.MaxPrice = sdk.NewCoins()
+	}
 
 	pool.MinCollateralRatio = ensurePerDenomDecCoins(
 		pool.MinCollateralRatio,

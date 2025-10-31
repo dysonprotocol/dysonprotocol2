@@ -149,8 +149,8 @@ service Msg {
   rpc ClosePosition(MsgClosePosition) returns (MsgClosePositionResponse);
 
   /**
-   * AddCollateral deposits additional collateral, clears liquidation markers,
-   * and returns the new collateral and ratio.
+   * AddCollateral deposits additional collateral to a leveraged position and
+   * clears liquidation markers.
    */
   rpc AddCollateral(MsgAddCollateral) returns (MsgAddCollateralResponse);
 

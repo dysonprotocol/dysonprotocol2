@@ -10,7 +10,36 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// AddCollateral deposits additional collateral to a position, clearing liquidation markers.
+/**
+ * AddCollateral deposits additional collateral to a leveraged position and clears
+ * liquidation markers.
+ *
+ * Behavior:
+ * - Validates position ownership and pool/denom consistency.
+ * - Transfers additional collateral from the user to the module.
+ * - Adds the collateral to the position's existing collateral amount.
+ * - Clears any pending liquidation markers on the position.
+ * - Persists the updated position and computes the new collateral ratio.
+ *
+ * Validation:
+ * - Position must exist and be owned by `user`.
+ * - Pool ID must match the position's pool.
+ * - Collateral denom must match the position's existing collateral denom.
+ * - Collateral amount must be positive.
+ *
+ * Emits:
+ * - EventLeverageCollateralAdded with position_id, user, pool_id,
+ *   collateral_added, new_collateral, new_collateral_ratio.
+ *
+ * Returns:
+ * - NewCollateral: updated collateral coin after addition.
+ * - NewCollateralRatio: ratio of new collateral amount to borrowed amount
+ *   (LegacyDec string).
+ *
+ * Errors are returned on validation failures (missing position, unauthorized
+ * access, denom mismatches, invalid amounts) or event emission failures; no
+ * panics.
+ */
 func (k Keeper) AddCollateral(ctx context.Context, msg *whaleswapv1.MsgAddCollateral) (*whaleswapv1.MsgAddCollateralResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	pos, err := k.LeveragePositions.Get(ctx, msg.PositionId)
