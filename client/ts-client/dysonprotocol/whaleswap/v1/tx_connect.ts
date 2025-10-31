@@ -168,9 +168,8 @@ export const Msg = {
     },
     /**
      * *
-     * CancelOffer allows the maker to cancel at any time. For LIQUID offers, a
-     * third party may cancel if maker base-have balance < one unit_have; refunds
-     * escrow (ESCROW) to maker and sends PFAND to closer.
+     * CancelOffer (maker or authorized third party) cancels an open offer and
+     * refunds escrowed assets to the maker while releasing PFAND to the closer.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.CancelOffer
      */
@@ -238,8 +237,8 @@ export const Msg = {
     },
     /**
      * *
-     * AddCollateral deposits additional collateral, clears liquidation markers,
-     * and returns the new collateral and ratio.
+     * AddCollateral deposits additional collateral to a leveraged position and
+     * clears liquidation markers.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.AddCollateral
      */
@@ -279,9 +278,8 @@ export const Msg = {
     },
     /**
      * *
-     * FinalizeLiquidation: Liquidator repays debt and receives all collateral;
-     * the pool accrues interest and repayment; any pool loss is reported;
-     * position is deleted.
+     * FinalizeLiquidation (permissionless) completes leveraged position
+     * liquidation.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.FinalizeLiquidation
      */

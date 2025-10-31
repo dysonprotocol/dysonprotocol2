@@ -6,21 +6,26 @@
             "dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation": {
                 "properties": {
                     "liquidator": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Account finalizing liquidation; permissionless (any account)."
                     },
                     "user": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Position owner address; should match the position's user."
                     },
                     "pool_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Pool id; should match the position's pool."
                     },
                     "position_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Target position id to finalize liquidation for."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Finalize Liquidation"
+                "title": "Msg Finalize Liquidation",
+                "description": "* Finalize liquidation of a leveraged position. Behavior: - Permissionless trigger: any `liquidator` may call this for any position with initialized liquidation. - Accrues interest on borrowed amount using the snapshotted per-denom APR and   elapsed seconds since borrow_time. - Computes final repayment as principal + accrued interest. - Liquidator sends repayment to module and receives all collateral. - Updates pool accounting (repayment to reserves, subtract borrowed, accrue   interest earned); pool does not incur losses in liquidation. - Deletes the position and clears all state. Semantics: - Block delay: requires at least 1 block to have passed since initialization. - Settlement: full collateral goes to liquidator regardless of repayment amount; pool absorbs any shortfall as loss. - Pool loss: when repayment > collateral, the difference is recorded as pool   loss (may be 0). Validation: - Position must exist with LIQUIDATION_STATUS_INITIALIZED. - Block delay must have passed (current_height > initialized_height). - Position must have a two-entry interest_rate snapshot. - Pool must exist. Emits: - EventLeverageLiquidationFinalized with position_id, user, liquidator, pool_id, collateral_received, repayment_amount, accrued_interest. Returns: - collateral_received, repayment_amount, accrued_interest."
             }
         }
     },
@@ -32,19 +37,18 @@
                 "properties": {
                     "collateral_received": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Collateral coin received by the liquidator."
                     },
                     "repayment_amount": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Total repayment amount sent by the liquidator (principal + interest)."
                     },
                     "accrued_interest": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
-                    },
-                    "pool_loss": {
-                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Accrued interest portion of the repayment."
                     }
                 },
                 "additionalProperties": false,

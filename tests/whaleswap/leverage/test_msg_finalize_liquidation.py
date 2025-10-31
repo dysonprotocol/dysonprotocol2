@@ -77,7 +77,9 @@ def _deploy_liquidation_script(dysond, script_owner_name):
         "--from",
         script_owner_name,
     )
-    assert update_tx.get("code", 1) == 0, f"Script update failed: {json.dumps(update_tx, indent=2)}"
+    assert (
+        update_tx.get("code", 1) == 0
+    ), f"Script update failed: {json.dumps(update_tx, indent=2)}"
 
 
 def _create_pool_and_open_position(dysond, alice_name, foo, bar):
@@ -100,7 +102,9 @@ def _create_pool_and_open_position(dysond, alice_name, foo, bar):
         "--from",
         alice_name,
     )
-    assert pool_tx.get("code", 1) == 0, f"Pool creation failed: {json.dumps(pool_tx, indent=2)}"
+    assert (
+        pool_tx.get("code", 1) == 0
+    ), f"Pool creation failed: {json.dumps(pool_tx, indent=2)}"
 
     pool_id = [
         attr.get("value").strip('"')
@@ -123,7 +127,9 @@ def _create_pool_and_open_position(dysond, alice_name, foo, bar):
         "--from",
         alice_name,
     )
-    assert open_tx.get("code", 1) == 0, f"Open position failed: {json.dumps(open_tx, indent=2)}"
+    assert (
+        open_tx.get("code", 1) == 0
+    ), f"Open position failed: {json.dumps(open_tx, indent=2)}"
 
     position_id = [
         attr.get("value").strip('"')
@@ -136,7 +142,9 @@ def _create_pool_and_open_position(dysond, alice_name, foo, bar):
     return pool_id, position_id
 
 
-def test_finalize_liquidation_success(chainnet, leverage_accounts, leverage_names_and_coins):
+def test_finalize_liquidation_success(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
     dysond = chainnet[0]
     alice_name = leverage_accounts["alice"]["name"]
     alice_addr = leverage_accounts["alice"]["addr"]
@@ -168,29 +176,39 @@ def test_finalize_liquidation_success(chainnet, leverage_accounts, leverage_name
         "--from",
         bob_name,
     )
-    assert init_exec.get("code", 1) == 0, f"Initialize liquidation failed: {json.dumps(init_exec, indent=2)}"
+    assert (
+        init_exec.get("code", 1) == 0
+    ), f"Initialize liquidation failed: {json.dumps(init_exec, indent=2)}"
 
     init_tx = dysond("query", "wait-tx", init_exec["txhash"])
     init_result = extract_script_result(init_tx)
-    assert init_result["status"] == "initialized", f"Unexpected script status: {json.dumps(init_result, indent=2)}"
+    assert (
+        init_result["status"] == "initialized"
+    ), f"Unexpected script status: {json.dumps(init_result, indent=2)}"
 
     init_attrs = [
         (attr.get("key"), attr.get("value"))
         for event in init_tx.get("events", [])
-        if event.get("type") == "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized"
+        if event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized"
         for attr in event.get("attributes", [])
     ]
     init_map = {key: value.strip('"') for key, value in init_attrs}
 
-    assert init_map["collateral_ratio"] == "1.100000000000000000", f"Unexpected collateral ratio: {json.dumps(init_map, indent=2)}"
-    assert init_map["liquidation_threshold"] == "1.200000000000000000", f"Unexpected liquidation threshold: {json.dumps(init_map, indent=2)}"
+    assert (
+        init_map["collateral_ratio"] == "1.100000000000000000"
+    ), f"Unexpected collateral ratio: {json.dumps(init_map, indent=2)}"
+    assert (
+        init_map["liquidation_threshold"] == "1.200000000000000000"
+    ), f"Unexpected liquidation threshold: {json.dumps(init_map, indent=2)}"
 
     status_before = dysond("status")
     init_height = int(status_before["sync_info"]["latest_block_height"])
     target_height = init_height + 1
 
     poll_until_condition(
-        lambda: int(dysond("status")["sync_info"]["latest_block_height"]) >= target_height,
+        lambda: int(dysond("status")["sync_info"]["latest_block_height"])
+        >= target_height,
         timeout=5,
         poll_interval=0.1,
         error_message=f"Failed to advance block height to {target_height}",
@@ -216,16 +234,21 @@ def test_finalize_liquidation_success(chainnet, leverage_accounts, leverage_name
         "--from",
         bob_name,
     )
-    assert finalize_exec.get("code", 1) == 0, f"Finalize liquidation failed: {json.dumps(finalize_exec, indent=2)}"
+    assert (
+        finalize_exec.get("code", 1) == 0
+    ), f"Finalize liquidation failed: {json.dumps(finalize_exec, indent=2)}"
 
     finalize_tx = dysond("query", "wait-tx", finalize_exec["txhash"])
     finalize_result = extract_script_result(finalize_tx)
-    assert finalize_result["status"] == "finalized", f"Unexpected finalize status: {json.dumps(finalize_result, indent=2)}"
+    assert (
+        finalize_result["status"] == "finalized"
+    ), f"Unexpected finalize status: {json.dumps(finalize_result, indent=2)}"
 
     finalize_attrs = [
         (attr.get("key"), attr.get("value"))
         for event in finalize_tx.get("events", [])
-        if event.get("type") == "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized"
+        if event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized"
         for attr in event.get("attributes", [])
     ]
     finalize_map = {key: value.strip('"') for key, value in finalize_attrs}
@@ -233,17 +256,27 @@ def test_finalize_liquidation_success(chainnet, leverage_accounts, leverage_name
     collateral = json.loads(finalize_map["collateral_received"])
     repayment = json.loads(finalize_map["repayment_amount"])
     accrued_interest = json.loads(finalize_map["accrued_interest"])
-    pool_loss = json.loads(finalize_map["pool_loss"])
 
-    assert collateral["denom"] == bar, f"Collateral denom mismatch: {json.dumps(collateral, indent=2)}"
-    assert collateral["amount"] == "110", f"Collateral amount mismatch: {json.dumps(collateral, indent=2)}"
-    assert repayment["denom"] == foo, f"Repayment denom mismatch: {json.dumps(repayment, indent=2)}"
-    assert repayment["amount"] == "100", f"Repayment amount mismatch: {json.dumps(repayment, indent=2)}"
-    assert accrued_interest["amount"] == "0", f"Interest should be zero: {json.dumps(accrued_interest, indent=2)}"
-    assert pool_loss["amount"] == "0", f"Pool loss should be zero: {json.dumps(pool_loss, indent=2)}"
+    assert (
+        collateral["denom"] == bar
+    ), f"Collateral denom mismatch: {json.dumps(collateral, indent=2)}"
+    assert (
+        collateral["amount"] == "110"
+    ), f"Collateral amount mismatch: {json.dumps(collateral, indent=2)}"
+    assert (
+        repayment["denom"] == foo
+    ), f"Repayment denom mismatch: {json.dumps(repayment, indent=2)}"
+    assert (
+        repayment["amount"] == "100"
+    ), f"Repayment amount mismatch: {json.dumps(repayment, indent=2)}"
+    assert (
+        accrued_interest["amount"] == "0"
+    ), f"Interest should be zero: {json.dumps(accrued_interest, indent=2)}"
 
 
-def test_finalize_liquidation_requires_initialization(chainnet, leverage_accounts, leverage_names_and_coins):
+def test_finalize_liquidation_requires_initialization(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
     dysond = chainnet[0]
     alice_name = leverage_accounts["alice"]["name"]
     alice_addr = leverage_accounts["alice"]["addr"]
@@ -275,13 +308,19 @@ def test_finalize_liquidation_requires_initialization(chainnet, leverage_account
         "--from",
         bob_name,
     )
-    assert finalize_exec.get("code", 0) != 0, f"Finalize without initialization unexpectedly succeeded: {json.dumps(finalize_exec, indent=2)}"
+    assert (
+        finalize_exec.get("code", 0) != 0
+    ), f"Finalize without initialization unexpectedly succeeded: {json.dumps(finalize_exec, indent=2)}"
 
     tx_info = dysond("query", "wait-tx", finalize_exec["txhash"])
-    assert "liquidation not initialized" in tx_info.get("raw_log", ""), f"Expected missing initialization error: {json.dumps(tx_info, indent=2)}"
+    assert "liquidation not initialized" in tx_info.get(
+        "raw_log", ""
+    ), f"Expected missing initialization error: {json.dumps(tx_info, indent=2)}"
 
 
-def test_finalize_liquidation_block_delay_enforced(chainnet, leverage_accounts, leverage_names_and_coins):
+def test_finalize_liquidation_block_delay_enforced(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
     dysond = chainnet[0]
     alice_name = leverage_accounts["alice"]["name"]
     alice_addr = leverage_accounts["alice"]["addr"]
@@ -313,8 +352,11 @@ def test_finalize_liquidation_block_delay_enforced(chainnet, leverage_accounts, 
         "--from",
         bob_name,
     )
-    assert combined_exec.get("code", 0) != 0, f"Finalize in same block unexpectedly succeeded: {json.dumps(combined_exec, indent=2)}"
+    assert (
+        combined_exec.get("code", 0) != 0
+    ), f"Finalize in same block unexpectedly succeeded: {json.dumps(combined_exec, indent=2)}"
 
     combined_info = dysond("query", "wait-tx", combined_exec["txhash"])
-    assert "liquidation block delay not passed" in combined_info.get("raw_log", ""), f"Expected block delay error: {json.dumps(combined_info, indent=2)}"
-
+    assert "liquidation block delay not passed" in combined_info.get(
+        "raw_log", ""
+    ), f"Expected block delay error: {json.dumps(combined_info, indent=2)}"

@@ -123,7 +123,6 @@ message EventLeverageLiquidationFinalized {
       [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin accrued_interest = 7
       [ (gogoproto.nullable) = false ];
-  cosmos.base.v1beta1.Coin pool_loss = 8 [ (gogoproto.nullable) = false ];
 }
 
 message EventLeveragePositionCovered {

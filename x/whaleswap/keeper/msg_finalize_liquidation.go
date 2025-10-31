@@ -4,14 +4,50 @@ import (
 	"context"
 
 	cosmossdkerrors "cosmossdk.io/errors"
-	"cosmossdk.io/math"
 	whaleswap "dysonprotocol.com/x/whaleswap"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// FinalizeLiquidation completes position liquidation.
+/**
+ * FinalizeLiquidation (permissionless) completes leveraged position liquidation.
+ *
+ * Behavior:
+ * - Permissionless liquidation: any `liquidator` may call this for any initialized
+ *   liquidation.
+ * - Accrues interest on borrowed amount using the snapshotted per-denom APR and
+ *   elapsed seconds since borrow_time.
+ * - Computes final repayment as principal + accrued interest.
+ * - Liquidator sends repayment to module and receives all collateral.
+ * - Updates pool accounting (repayment to reserves, subtract borrowed, accrue
+ *   interest earned); pool does not incur losses in liquidation.
+ * - Deletes the position and clears all state.
+ *
+ * Semantics:
+ * - Block delay: requires at least 1 block to have passed since initialization.
+ * - Settlement: full collateral goes to liquidator regardless of repayment amount;
+ *   pool absorbs any shortfall as loss.
+ * - Pool loss: when repayment > collateral, the difference is recorded as pool
+ *   loss (may be 0).
+ *
+ * Validation:
+ * - Position must exist with LIQUIDATION_STATUS_INITIALIZED.
+ * - Block delay must have passed (current_height > initialized_height).
+ * - Position must have a two-entry interest_rate snapshot.
+ * - Pool must exist.
+ *
+ * Emits:
+ * - EventLeverageLiquidationFinalized (position_id, user, liquidator, pool_id,
+ *   collateral_received, repayment_amount, accrued_interest).
+ *
+ * Returns:
+ * - *whaleswapv1.MsgFinalizeLiquidationResponse with CollateralReceived,
+ *   RepaymentAmount, and AccruedInterest.
+ *
+ * Errors are returned on validation failures or event emission failures;
+ * no panics.
+ */
 func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFinalizeLiquidation) (*whaleswapv1.MsgFinalizeLiquidationResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)
@@ -83,12 +119,6 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 		"module_after", afterRepayBal.String(),
 	)
 
-	// Pool loss if collateral < repayment
-	poolLossInt := repayment.Sub(pos.Collateral.Amount)
-	if poolLossInt.IsNegative() {
-		poolLossInt = math.ZeroInt()
-	}
-	poolLossCoin := sdk.NewCoin(pos.Borrowed.Denom, poolLossInt)
 	interestCoin := sdk.NewCoin(pos.Borrowed.Denom, interest.TruncateInt())
 
 	// Send all collateral to liquidator
@@ -140,7 +170,6 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 		CollateralReceived: pos.Collateral,
 		RepaymentAmount:    repaymentCoin,
 		AccruedInterest:    interestCoin,
-		PoolLoss:           poolLossCoin,
 	}); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to emit event")
 	}
@@ -148,14 +177,12 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 		"position_id", msg.PositionId,
 		"repayment", repaymentCoin.String(),
 		"interest", interestCoin.String(),
-		"pool_loss", poolLossCoin.String(),
 	)
 
 	resp := &whaleswapv1.MsgFinalizeLiquidationResponse{
 		CollateralReceived: pos.Collateral,
 		RepaymentAmount:    repaymentCoin,
 		AccruedInterest:    interestCoin,
-		PoolLoss:           poolLossCoin,
 	}
 	logger.Info("FinalizeLiquidation: complete", "response", resp)
 	return resp, nil

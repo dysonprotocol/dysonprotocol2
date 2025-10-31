@@ -6,22 +6,27 @@
             "dysonprotocol.whaleswap.v1.MsgAddCollateral": {
                 "properties": {
                     "user": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Account adding collateral; must be the position owner."
                     },
                     "pool_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Target pool id; must match the position's pool."
                     },
                     "position_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Target position id to add collateral to."
                     },
                     "collateral": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Additional collateral coin to deposit; denom must match position's existing collateral; amount must be positive."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Add Collateral"
+                "title": "Msg Add Collateral",
+                "description": "* AddCollateral deposits additional collateral to a leveraged position. Behavior: - Validates position ownership and pool/denom consistency. - Transfers additional collateral from the user to the module. - Adds the collateral to the position's existing collateral amount. - Clears any pending liquidation markers on the position. - Persists the updated position and computes the new collateral ratio. Validation: - Position must exist and be owned by `user`. - Pool ID must match the position's pool. - Collateral denom must match the position's existing collateral denom. - Collateral amount must be positive. Emits: - EventLeverageCollateralAdded with position_id, user, pool_id,   collateral_added, new_collateral, new_collateral_ratio. Returns: - new_collateral and new_collateral_ratio in the response."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {
@@ -47,10 +52,12 @@
                 "properties": {
                     "new_collateral": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Updated collateral coin after addition."
                     },
                     "new_collateral_ratio": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "New collateral ratio after addition (LegacyDec string)."
                     }
                 },
                 "additionalProperties": false,

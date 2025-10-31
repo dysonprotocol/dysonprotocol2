@@ -898,11 +898,6 @@ export class EventLeverageLiquidationFinalized extends Message<EventLeverageLiqu
    */
   accruedInterest?: Coin;
 
-  /**
-   * @generated from field: cosmos.base.v1beta1.Coin pool_loss = 8;
-   */
-  poolLoss?: Coin;
-
   constructor(data?: PartialMessage<EventLeverageLiquidationFinalized>) {
     super();
     proto3.util.initPartial(data, this);
@@ -918,7 +913,6 @@ export class EventLeverageLiquidationFinalized extends Message<EventLeverageLiqu
     { no: 5, name: "collateral_received", kind: "message", T: Coin },
     { no: 6, name: "repayment_amount", kind: "message", T: Coin },
     { no: 7, name: "accrued_interest", kind: "message", T: Coin },
-    { no: 8, name: "pool_loss", kind: "message", T: Coin },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): EventLeverageLiquidationFinalized {

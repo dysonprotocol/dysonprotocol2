@@ -114,9 +114,8 @@ service Msg {
   rpc TakeOffer(MsgTakeOffer) returns (MsgTakeOfferResponse);
 
   /**
-   * CancelOffer allows the maker to cancel at any time. For LIQUID offers, a
-   * third party may cancel if maker base-have balance < one unit_have; refunds
-   * escrow (ESCROW) to maker and sends PFAND to closer.
+   * CancelOffer (maker or authorized third party) cancels an open offer and
+   * refunds escrowed assets to the maker while releasing PFAND to the closer.
    */
   rpc CancelOffer(MsgCancelOffer) returns (MsgCancelOfferResponse);
 
@@ -170,9 +169,8 @@ service Msg {
       returns (MsgInitializeLiquidationResponse);
 
   /**
-   * FinalizeLiquidation: Liquidator repays debt and receives all collateral;
-   * the pool accrues interest and repayment; any pool loss is reported;
-   * position is deleted.
+   * FinalizeLiquidation (permissionless) completes leveraged position
+   * liquidation.
    */
   rpc FinalizeLiquidation(MsgFinalizeLiquidation)
       returns (MsgFinalizeLiquidationResponse);
@@ -665,14 +663,40 @@ message MsgTakeOfferResponse {
   ];
 }
 
-// Cancel an offer (maker or eligible third-party for liquid-mode offers).
-//
-// - Maker may always cancel open offers.
-// - For liquid-mode offers, a third party is eligible if the maker's balance of
-//   the have denom drops below one unit_have, enabling recovery via PFAND.
+/**
+ * CancelOffer cancels an open offer, refunding escrowed assets to the maker and
+ * releasing PFAND to the authorized closer (maker or eligible third party).
+ *
+ * Behavior:
+ * - Eligibility: maker may always cancel; for liquid-mode offers, third party
+ *   may cancel if maker's balance of the have-denom drops below one unit_have
+ *   (enables recovery when maker becomes insolvent).
+ * - State updates: sets offer status to cancelled, persists the offer, and
+ *   reindexes it for queries.
+ * - Refunds: for escrow-settlement offers, sends remaining have coins from
+ *   module to maker; sends any locked PFAND from module to closer.
+ * - Reindexing: updates reverse indexes (owner, status) via helper.
+ *
+ * Validation:
+ * - Offer must exist and be in open status.
+ * - Closer address must be valid.
+ * - Closer must be eligible (maker or authorized third party).
+ * - For third-party cancellation, unit_have_int must be valid and maker balance
+ *   must be insufficient.
+ *
+ * Emits:
+ * - EventOfferCancelled with offer_id.
+ * - EventPfandReleased with amount, offer_id, trade_id=0 if PFAND was locked.
+ *
+ * Returns:
+ * - MsgCancelOfferResponse (empty).
+ */
 message MsgCancelOffer {
   option (cosmos.msg.v1.signer) = "closer";
+  // Account requesting cancellation; must be eligible (maker or authorized
+  // third party).
   string closer = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // ID of the offer to cancel; offer must exist and be in open status.
   uint64 offer_id = 2;
 }
 message MsgCancelOfferResponse {}
@@ -796,16 +820,46 @@ message MsgClosePositionResponse {
   cosmos.base.v1beta1.Coin profit = 3 [ (gogoproto.nullable) = false ];
 }
 
+/**
+ * AddCollateral deposits additional collateral to a leveraged position.
+ *
+ * Behavior:
+ * - Validates position ownership and pool/denom consistency.
+ * - Transfers additional collateral from the user to the module.
+ * - Adds the collateral to the position's existing collateral amount.
+ * - Clears any pending liquidation markers on the position.
+ * - Persists the updated position and computes the new collateral ratio.
+ *
+ * Validation:
+ * - Position must exist and be owned by `user`.
+ * - Pool ID must match the position's pool.
+ * - Collateral denom must match the position's existing collateral denom.
+ * - Collateral amount must be positive.
+ *
+ * Emits:
+ * - EventLeverageCollateralAdded with position_id, user, pool_id,
+ *   collateral_added, new_collateral, new_collateral_ratio.
+ *
+ * Returns:
+ * - new_collateral and new_collateral_ratio in the response.
+ */
 message MsgAddCollateral {
   option (cosmos.msg.v1.signer) = "user";
+  // Account adding collateral; must be the position owner.
   string user = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Target pool id; must match the position's pool.
   uint64 pool_id = 2;
+  // Target position id to add collateral to.
   uint64 position_id = 3;
+  // Additional collateral coin to deposit; denom must match position's
+  // existing collateral; amount must be positive.
   cosmos.base.v1beta1.Coin collateral = 4 [ (gogoproto.nullable) = false ];
 }
 
 message MsgAddCollateralResponse {
+  // Updated collateral coin after addition.
   cosmos.base.v1beta1.Coin new_collateral = 1 [ (gogoproto.nullable) = false ];
+  // New collateral ratio after addition (LegacyDec string).
   string new_collateral_ratio = 2 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
@@ -937,20 +991,60 @@ message MsgInitializeLiquidationResponse {
   ];
 }
 
+/**
+ * Finalize liquidation of a leveraged position.
+ *
+ * Behavior:
+ * - Permissionless trigger: any `liquidator` may call this for any position
+ * with initialized liquidation.
+ * - Accrues interest on borrowed amount using the snapshotted per-denom APR and
+ *   elapsed seconds since borrow_time.
+ * - Computes final repayment as principal + accrued interest.
+ * - Liquidator sends repayment to module and receives all collateral.
+ * - Updates pool accounting (repayment to reserves, subtract borrowed, accrue
+ *   interest earned); pool does not incur losses in liquidation.
+ * - Deletes the position and clears all state.
+ *
+ * Semantics:
+ * - Block delay: requires at least 1 block to have passed since initialization.
+ * - Settlement: full collateral goes to liquidator regardless of repayment
+ * amount; pool absorbs any shortfall as loss.
+ * - Pool loss: when repayment > collateral, the difference is recorded as pool
+ *   loss (may be 0).
+ *
+ * Validation:
+ * - Position must exist with LIQUIDATION_STATUS_INITIALIZED.
+ * - Block delay must have passed (current_height > initialized_height).
+ * - Position must have a two-entry interest_rate snapshot.
+ * - Pool must exist.
+ *
+ * Emits:
+ * - EventLeverageLiquidationFinalized with position_id, user, liquidator,
+ * pool_id, collateral_received, repayment_amount, accrued_interest.
+ *
+ * Returns:
+ * - collateral_received, repayment_amount, accrued_interest.
+ */
 message MsgFinalizeLiquidation {
   option (cosmos.msg.v1.signer) = "liquidator";
+  // Account finalizing liquidation; permissionless (any account).
   string liquidator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Position owner address; should match the position's user.
   string user = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Pool id; should match the position's pool.
   uint64 pool_id = 3;
+  // Target position id to finalize liquidation for.
   uint64 position_id = 4;
 }
 
 message MsgFinalizeLiquidationResponse {
+  // Collateral coin received by the liquidator.
   cosmos.base.v1beta1.Coin collateral_received = 1
       [ (gogoproto.nullable) = false ];
+  // Total repayment amount sent by the liquidator (principal + interest).
   cosmos.base.v1beta1.Coin repayment_amount = 2
       [ (gogoproto.nullable) = false ];
+  // Accrued interest portion of the repayment.
   cosmos.base.v1beta1.Coin accrued_interest = 3
       [ (gogoproto.nullable) = false ];
-  cosmos.base.v1beta1.Coin pool_loss = 4 [ (gogoproto.nullable) = false ];
 }

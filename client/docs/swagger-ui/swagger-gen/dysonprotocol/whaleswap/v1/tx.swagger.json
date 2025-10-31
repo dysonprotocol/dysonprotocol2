@@ -13,7 +13,7 @@
   "paths": {
     "dysonprotocol.whaleswap.v1.MsgAddCollateral": {
       "post": {
-        "summary": "*\nAddCollateral deposits additional collateral, clears liquidation markers,\nand returns the new collateral and ratio.",
+        "summary": "*\nAddCollateral deposits additional collateral to a leveraged position and\nclears liquidation markers.",
         "operationId": "dysonprotocol.whaleswap.v1.MsgAddCollateral",
         "responses": {
           "200": {
@@ -79,7 +79,7 @@
     },
     "dysonprotocol.whaleswap.v1.MsgCancelOffer": {
       "post": {
-        "summary": "*\nCancelOffer allows the maker to cancel at any time. For LIQUID offers, a\nthird party may cancel if maker base-have balance < one unit_have; refunds\nescrow (ESCROW) to maker and sends PFAND to closer.",
+        "summary": "*\nCancelOffer (maker or authorized third party) cancels an open offer and\nrefunds escrowed assets to the maker while releasing PFAND to the closer.",
         "operationId": "dysonprotocol.whaleswap.v1.MsgCancelOffer",
         "responses": {
           "200": {
@@ -211,7 +211,7 @@
     },
     "dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation": {
       "post": {
-        "summary": "*\nFinalizeLiquidation: Liquidator repays debt and receives all collateral;\nthe pool accrues interest and repayment; any pool loss is reported;\nposition is deleted.",
+        "summary": "*\nFinalizeLiquidation (permissionless) completes leveraged position\nliquidation.",
         "operationId": "dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation",
         "responses": {
           "200": {
@@ -646,29 +646,36 @@
       "type": "object",
       "properties": {
         "user": {
-          "type": "string"
+          "type": "string",
+          "description": "Account adding collateral; must be the position owner."
         },
         "pool_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Target pool id; must match the position's pool."
         },
         "position_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Target position id to add collateral to."
         },
         "collateral": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Additional collateral coin to deposit; denom must match position's\nexisting collateral; amount must be positive."
         }
-      }
+      },
+      "description": "*\nAddCollateral deposits additional collateral to a leveraged position.\n\nBehavior:\n- Validates position ownership and pool/denom consistency.\n- Transfers additional collateral from the user to the module.\n- Adds the collateral to the position's existing collateral amount.\n- Clears any pending liquidation markers on the position.\n- Persists the updated position and computes the new collateral ratio.\n\nValidation:\n- Position must exist and be owned by `user`.\n- Pool ID must match the position's pool.\n- Collateral denom must match the position's existing collateral denom.\n- Collateral amount must be positive.\n\nEmits:\n- EventLeverageCollateralAdded with position_id, user, pool_id,\n  collateral_added, new_collateral, new_collateral_ratio.\n\nReturns:\n- new_collateral and new_collateral_ratio in the response."
     },
     "dysonprotocol.whaleswap.v1.MsgAddCollateralResponse": {
       "type": "object",
       "properties": {
         "new_collateral": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Updated collateral coin after addition."
         },
         "new_collateral_ratio": {
-          "type": "string"
+          "type": "string",
+          "description": "New collateral ratio after addition (LegacyDec string)."
         }
       }
     },
@@ -707,14 +714,16 @@
       "type": "object",
       "properties": {
         "closer": {
-          "type": "string"
+          "type": "string",
+          "description": "Account requesting cancellation; must be eligible (maker or authorized\nthird party)."
         },
         "offer_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "ID of the offer to cancel; offer must exist and be in open status."
         }
       },
-      "description": "Cancel an offer (maker or eligible third-party for liquid-mode offers).\n\n- Maker may always cancel open offers.\n- For liquid-mode offers, a third party is eligible if the maker's balance of\n  the have denom drops below one unit_have, enabling recovery via PFAND."
+      "description": "*\nCancelOffer cancels an open offer, refunding escrowed assets to the maker and\nreleasing PFAND to the authorized closer (maker or eligible third party).\n\nBehavior:\n- Eligibility: maker may always cancel; for liquid-mode offers, third party\n  may cancel if maker's balance of the have-denom drops below one unit_have\n  (enables recovery when maker becomes insolvent).\n- State updates: sets offer status to cancelled, persists the offer, and\n  reindexes it for queries.\n- Refunds: for escrow-settlement offers, sends remaining have coins from\n  module to maker; sends any locked PFAND from module to closer.\n- Reindexing: updates reverse indexes (owner, status) via helper.\n\nValidation:\n- Offer must exist and be in open status.\n- Closer address must be valid.\n- Closer must be eligible (maker or authorized third party).\n- For third-party cancellation, unit_have_int must be valid and maker balance\n  must be insufficient.\n\nEmits:\n- EventOfferCancelled with offer_id.\n- EventPfandReleased with amount, offer_id, trade_id=0 if PFAND was locked.\n\nReturns:\n- MsgCancelOfferResponse (empty)."
     },
     "dysonprotocol.whaleswap.v1.MsgCancelOfferResponse": {
       "type": "object"
@@ -894,35 +903,40 @@
       "type": "object",
       "properties": {
         "liquidator": {
-          "type": "string"
+          "type": "string",
+          "description": "Account finalizing liquidation; permissionless (any account)."
         },
         "user": {
-          "type": "string"
+          "type": "string",
+          "description": "Position owner address; should match the position's user."
         },
         "pool_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Pool id; should match the position's pool."
         },
         "position_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Target position id to finalize liquidation for."
         }
-      }
+      },
+      "description": "*\nFinalize liquidation of a leveraged position.\n\nBehavior:\n- Permissionless trigger: any `liquidator` may call this for any position\nwith initialized liquidation.\n- Accrues interest on borrowed amount using the snapshotted per-denom APR and\n  elapsed seconds since borrow_time.\n- Computes final repayment as principal + accrued interest.\n- Liquidator sends repayment to module and receives all collateral.\n- Updates pool accounting (repayment to reserves, subtract borrowed, accrue\n  interest earned); pool does not incur losses in liquidation.\n- Deletes the position and clears all state.\n\nSemantics:\n- Block delay: requires at least 1 block to have passed since initialization.\n- Settlement: full collateral goes to liquidator regardless of repayment\namount; pool absorbs any shortfall as loss.\n- Pool loss: when repayment > collateral, the difference is recorded as pool\n  loss (may be 0).\n\nValidation:\n- Position must exist with LIQUIDATION_STATUS_INITIALIZED.\n- Block delay must have passed (current_height > initialized_height).\n- Position must have a two-entry interest_rate snapshot.\n- Pool must exist.\n\nEmits:\n- EventLeverageLiquidationFinalized with position_id, user, liquidator,\npool_id, collateral_received, repayment_amount, accrued_interest.\n\nReturns:\n- collateral_received, repayment_amount, accrued_interest."
     },
     "dysonprotocol.whaleswap.v1.MsgFinalizeLiquidationResponse": {
       "type": "object",
       "properties": {
         "collateral_received": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Collateral coin received by the liquidator."
         },
         "repayment_amount": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Total repayment amount sent by the liquidator (principal + interest)."
         },
         "accrued_interest": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-        },
-        "pool_loss": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Accrued interest portion of the repayment."
         }
       }
     },

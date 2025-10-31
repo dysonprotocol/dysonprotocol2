@@ -1317,21 +1317,48 @@ export class MsgTakeOfferResponse extends Message<MsgTakeOfferResponse> {
 }
 
 /**
- * Cancel an offer (maker or eligible third-party for liquid-mode offers).
+ * *
+ * CancelOffer cancels an open offer, refunding escrowed assets to the maker and
+ * releasing PFAND to the authorized closer (maker or eligible third party).
  *
- * - Maker may always cancel open offers.
- * - For liquid-mode offers, a third party is eligible if the maker's balance of
- *   the have denom drops below one unit_have, enabling recovery via PFAND.
+ * Behavior:
+ * - Eligibility: maker may always cancel; for liquid-mode offers, third party
+ *   may cancel if maker's balance of the have-denom drops below one unit_have
+ *   (enables recovery when maker becomes insolvent).
+ * - State updates: sets offer status to cancelled, persists the offer, and
+ *   reindexes it for queries.
+ * - Refunds: for escrow-settlement offers, sends remaining have coins from
+ *   module to maker; sends any locked PFAND from module to closer.
+ * - Reindexing: updates reverse indexes (owner, status) via helper.
+ *
+ * Validation:
+ * - Offer must exist and be in open status.
+ * - Closer address must be valid.
+ * - Closer must be eligible (maker or authorized third party).
+ * - For third-party cancellation, unit_have_int must be valid and maker balance
+ *   must be insufficient.
+ *
+ * Emits:
+ * - EventOfferCancelled with offer_id.
+ * - EventPfandReleased with amount, offer_id, trade_id=0 if PFAND was locked.
+ *
+ * Returns:
+ * - MsgCancelOfferResponse (empty).
  *
  * @generated from message dysonprotocol.whaleswap.v1.MsgCancelOffer
  */
 export class MsgCancelOffer extends Message<MsgCancelOffer> {
   /**
+   * Account requesting cancellation; must be eligible (maker or authorized
+   * third party).
+   *
    * @generated from field: string closer = 1;
    */
   closer = "";
 
   /**
+   * ID of the offer to cancel; offer must exist and be in open status.
+   *
    * @generated from field: uint64 offer_id = 2;
    */
   offerId = protoInt64.zero;
@@ -1913,25 +1940,57 @@ export class MsgClosePositionResponse extends Message<MsgClosePositionResponse> 
 }
 
 /**
+ * *
+ * AddCollateral deposits additional collateral to a leveraged position.
+ *
+ * Behavior:
+ * - Validates position ownership and pool/denom consistency.
+ * - Transfers additional collateral from the user to the module.
+ * - Adds the collateral to the position's existing collateral amount.
+ * - Clears any pending liquidation markers on the position.
+ * - Persists the updated position and computes the new collateral ratio.
+ *
+ * Validation:
+ * - Position must exist and be owned by `user`.
+ * - Pool ID must match the position's pool.
+ * - Collateral denom must match the position's existing collateral denom.
+ * - Collateral amount must be positive.
+ *
+ * Emits:
+ * - EventLeverageCollateralAdded with position_id, user, pool_id,
+ *   collateral_added, new_collateral, new_collateral_ratio.
+ *
+ * Returns:
+ * - new_collateral and new_collateral_ratio in the response.
+ *
  * @generated from message dysonprotocol.whaleswap.v1.MsgAddCollateral
  */
 export class MsgAddCollateral extends Message<MsgAddCollateral> {
   /**
+   * Account adding collateral; must be the position owner.
+   *
    * @generated from field: string user = 1;
    */
   user = "";
 
   /**
+   * Target pool id; must match the position's pool.
+   *
    * @generated from field: uint64 pool_id = 2;
    */
   poolId = protoInt64.zero;
 
   /**
+   * Target position id to add collateral to.
+   *
    * @generated from field: uint64 position_id = 3;
    */
   positionId = protoInt64.zero;
 
   /**
+   * Additional collateral coin to deposit; denom must match position's
+   * existing collateral; amount must be positive.
+   *
    * @generated from field: cosmos.base.v1beta1.Coin collateral = 4;
    */
   collateral?: Coin;
@@ -1972,11 +2031,15 @@ export class MsgAddCollateral extends Message<MsgAddCollateral> {
  */
 export class MsgAddCollateralResponse extends Message<MsgAddCollateralResponse> {
   /**
+   * Updated collateral coin after addition.
+   *
    * @generated from field: cosmos.base.v1beta1.Coin new_collateral = 1;
    */
   newCollateral?: Coin;
 
   /**
+   * New collateral ratio after addition (LegacyDec string).
+   *
    * @generated from field: string new_collateral_ratio = 2;
    */
   newCollateralRatio = "";
@@ -2333,25 +2396,67 @@ export class MsgInitializeLiquidationResponse extends Message<MsgInitializeLiqui
 }
 
 /**
+ * *
+ * Finalize liquidation of a leveraged position.
+ *
+ * Behavior:
+ * - Permissionless trigger: any `liquidator` may call this for any position
+ * with initialized liquidation.
+ * - Accrues interest on borrowed amount using the snapshotted per-denom APR and
+ *   elapsed seconds since borrow_time.
+ * - Computes final repayment as principal + accrued interest.
+ * - Liquidator sends repayment to module and receives all collateral.
+ * - Updates pool accounting (repayment to reserves, subtract borrowed, accrue
+ *   interest earned); pool does not incur losses in liquidation.
+ * - Deletes the position and clears all state.
+ *
+ * Semantics:
+ * - Block delay: requires at least 1 block to have passed since initialization.
+ * - Settlement: full collateral goes to liquidator regardless of repayment
+ * amount; pool absorbs any shortfall as loss.
+ * - Pool loss: when repayment > collateral, the difference is recorded as pool
+ *   loss (may be 0).
+ *
+ * Validation:
+ * - Position must exist with LIQUIDATION_STATUS_INITIALIZED.
+ * - Block delay must have passed (current_height > initialized_height).
+ * - Position must have a two-entry interest_rate snapshot.
+ * - Pool must exist.
+ *
+ * Emits:
+ * - EventLeverageLiquidationFinalized with position_id, user, liquidator,
+ * pool_id, collateral_received, repayment_amount, accrued_interest.
+ *
+ * Returns:
+ * - collateral_received, repayment_amount, accrued_interest.
+ *
  * @generated from message dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation
  */
 export class MsgFinalizeLiquidation extends Message<MsgFinalizeLiquidation> {
   /**
+   * Account finalizing liquidation; permissionless (any account).
+   *
    * @generated from field: string liquidator = 1;
    */
   liquidator = "";
 
   /**
+   * Position owner address; should match the position's user.
+   *
    * @generated from field: string user = 2;
    */
   user = "";
 
   /**
+   * Pool id; should match the position's pool.
+   *
    * @generated from field: uint64 pool_id = 3;
    */
   poolId = protoInt64.zero;
 
   /**
+   * Target position id to finalize liquidation for.
+   *
    * @generated from field: uint64 position_id = 4;
    */
   positionId = protoInt64.zero;
@@ -2392,24 +2497,25 @@ export class MsgFinalizeLiquidation extends Message<MsgFinalizeLiquidation> {
  */
 export class MsgFinalizeLiquidationResponse extends Message<MsgFinalizeLiquidationResponse> {
   /**
+   * Collateral coin received by the liquidator.
+   *
    * @generated from field: cosmos.base.v1beta1.Coin collateral_received = 1;
    */
   collateralReceived?: Coin;
 
   /**
+   * Total repayment amount sent by the liquidator (principal + interest).
+   *
    * @generated from field: cosmos.base.v1beta1.Coin repayment_amount = 2;
    */
   repaymentAmount?: Coin;
 
   /**
+   * Accrued interest portion of the repayment.
+   *
    * @generated from field: cosmos.base.v1beta1.Coin accrued_interest = 3;
    */
   accruedInterest?: Coin;
-
-  /**
-   * @generated from field: cosmos.base.v1beta1.Coin pool_loss = 4;
-   */
-  poolLoss?: Coin;
 
   constructor(data?: PartialMessage<MsgFinalizeLiquidationResponse>) {
     super();
@@ -2422,7 +2528,6 @@ export class MsgFinalizeLiquidationResponse extends Message<MsgFinalizeLiquidati
     { no: 1, name: "collateral_received", kind: "message", T: Coin },
     { no: 2, name: "repayment_amount", kind: "message", T: Coin },
     { no: 3, name: "accrued_interest", kind: "message", T: Coin },
-    { no: 4, name: "pool_loss", kind: "message", T: Coin },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgFinalizeLiquidationResponse {

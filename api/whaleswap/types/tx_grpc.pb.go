@@ -125,9 +125,8 @@ type MsgClient interface {
 	// PFAND to the taker on full close, and records a single trade.
 	TakeOffer(ctx context.Context, in *MsgTakeOffer, opts ...grpc.CallOption) (*MsgTakeOfferResponse, error)
 	// *
-	// CancelOffer allows the maker to cancel at any time. For LIQUID offers, a
-	// third party may cancel if maker base-have balance < one unit_have; refunds
-	// escrow (ESCROW) to maker and sends PFAND to closer.
+	// CancelOffer (maker or authorized third party) cancels an open offer and
+	// refunds escrowed assets to the maker while releasing PFAND to the closer.
 	CancelOffer(ctx context.Context, in *MsgCancelOffer, opts ...grpc.CallOption) (*MsgCancelOfferResponse, error)
 	// *
 	// OpenAuction escrows the sell coin and mints an NFT under a class keyed by
@@ -150,8 +149,8 @@ type MsgClient interface {
 	// the position (respects block delay).
 	ClosePosition(ctx context.Context, in *MsgClosePosition, opts ...grpc.CallOption) (*MsgClosePositionResponse, error)
 	// *
-	// AddCollateral deposits additional collateral, clears liquidation markers,
-	// and returns the new collateral and ratio.
+	// AddCollateral deposits additional collateral to a leveraged position and
+	// clears liquidation markers.
 	AddCollateral(ctx context.Context, in *MsgAddCollateral, opts ...grpc.CallOption) (*MsgAddCollateralResponse, error)
 	// *
 	// CoverPosition repays accrued interest; optionally reduces principal or
@@ -164,9 +163,8 @@ type MsgClient interface {
 	// countdown.
 	InitializeLiquidation(ctx context.Context, in *MsgInitializeLiquidation, opts ...grpc.CallOption) (*MsgInitializeLiquidationResponse, error)
 	// *
-	// FinalizeLiquidation: Liquidator repays debt and receives all collateral;
-	// the pool accrues interest and repayment; any pool loss is reported;
-	// position is deleted.
+	// FinalizeLiquidation (permissionless) completes leveraged position
+	// liquidation.
 	FinalizeLiquidation(ctx context.Context, in *MsgFinalizeLiquidation, opts ...grpc.CallOption) (*MsgFinalizeLiquidationResponse, error)
 	// *
 	// UpdateParams updates module parameters. Authority-only.
@@ -447,9 +445,8 @@ type MsgServer interface {
 	// PFAND to the taker on full close, and records a single trade.
 	TakeOffer(context.Context, *MsgTakeOffer) (*MsgTakeOfferResponse, error)
 	// *
-	// CancelOffer allows the maker to cancel at any time. For LIQUID offers, a
-	// third party may cancel if maker base-have balance < one unit_have; refunds
-	// escrow (ESCROW) to maker and sends PFAND to closer.
+	// CancelOffer (maker or authorized third party) cancels an open offer and
+	// refunds escrowed assets to the maker while releasing PFAND to the closer.
 	CancelOffer(context.Context, *MsgCancelOffer) (*MsgCancelOfferResponse, error)
 	// *
 	// OpenAuction escrows the sell coin and mints an NFT under a class keyed by
@@ -472,8 +469,8 @@ type MsgServer interface {
 	// the position (respects block delay).
 	ClosePosition(context.Context, *MsgClosePosition) (*MsgClosePositionResponse, error)
 	// *
-	// AddCollateral deposits additional collateral, clears liquidation markers,
-	// and returns the new collateral and ratio.
+	// AddCollateral deposits additional collateral to a leveraged position and
+	// clears liquidation markers.
 	AddCollateral(context.Context, *MsgAddCollateral) (*MsgAddCollateralResponse, error)
 	// *
 	// CoverPosition repays accrued interest; optionally reduces principal or
@@ -486,9 +483,8 @@ type MsgServer interface {
 	// countdown.
 	InitializeLiquidation(context.Context, *MsgInitializeLiquidation) (*MsgInitializeLiquidationResponse, error)
 	// *
-	// FinalizeLiquidation: Liquidator repays debt and receives all collateral;
-	// the pool accrues interest and repayment; any pool loss is reported;
-	// position is deleted.
+	// FinalizeLiquidation (permissionless) completes leveraged position
+	// liquidation.
 	FinalizeLiquidation(context.Context, *MsgFinalizeLiquidation) (*MsgFinalizeLiquidationResponse, error)
 	// *
 	// UpdateParams updates module parameters. Authority-only.
