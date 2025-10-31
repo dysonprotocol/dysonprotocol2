@@ -1939,19 +1939,6 @@
           "type": "string",
           "description": "Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec\nstring in [0,1)). Use fee_rate field 25 instead. Migration logic should\nread this and convert to fee_rate format (two DecCoins, one per reserve\ndenom in canonical order)."
         },
-        "min_price": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          },
-          "description": "min_price/max_price optionally set a price band for concentrated liquidity.\nEach is expressed as exactly two coins representing the ratio\ncoins[1]/coins[0]. For example, [{amount: 1, denom: coins[0].denom},\n{amount: 2, denom: coins[1].denom}] means Pmin = 2/1. Empty means unset."
-        },
-        "max_price": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          }
-        },
         "block_height": {
           "type": "string",
           "format": "uint64"
@@ -2024,6 +2011,13 @@
           },
           "description": "Maximum borrow capacity per reserve denom as DecCoins (exactly two,\ncanonical order). Each amount is a LegacyDec in [0,1)."
         },
+        "bound_percent": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Directional price-impact bounds keyed by the sold denom.\nEach amount must satisfy 0 < x <= 1; x == 1 disables the bound (unbounded).\nMissing entries default to 1 for both pool denoms. Stored in canonical pool\norder (coins[0], coins[1]). During swaps, selling denom D enforces that the\npost-trade price of D quoted in the opposite denom may drop by at most\nx fraction (B = 1/(1-x) multiplier). Values outside (0,1] are rejected at\nvalidation time."
+        },
         "fee_rate": {
           "type": "array",
           "items": {
@@ -2032,7 +2026,7 @@
           "description": "fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two\nentries in canonical pool order matching coins[0].denom and coins[1].denom.\nFee is applied to the OUTPUT denom of each swap leg: for exact-in, the\ncomputed gross output is reduced by fee; for exact-out, the required gross\noutput is inflated so net (after fee) meets the target. Fees accrue to\nfees_earned in the output denom.\nReplaces deprecated fee_pct field 5."
         }
       },
-      "description": "Pool describes AMM pool state.\n\nNotes:\n- coin_a.denom < coin_b.denom lexicographically (canonical order)\n- fee_rate is a per-denom decimal rate in [0,1) as DecCoins\n- min_price/max_price are optional decimal strings defining a price band over\n  P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +\u221e)) the pool\n  behaves as constant-product (v2). If set, concentrated-liquidity math\n  applies.\n- coin_a.amount/coin_b.amount are sdk.Int strings.\n- The instantaneous price used by price-based queries is derived from\n  reserves as P = coin_b / coin_a, consistent with the notes above."
+      "description": "Pool describes AMM pool state.\n\nNotes:\n- coin_a.denom < coin_b.denom lexicographically (canonical order)\n- fee_rate is a per-denom decimal rate in [0,1) as DecCoins\n- coin_a.amount/coin_b.amount are sdk.Int strings.\n- The instantaneous price used by price-based queries is derived from\n  reserves as P = coin_b / coin_a, consistent with the notes above."
     },
     "dysonprotocol.whaleswap.v1.PositionHealthStatus": {
       "type": "string",

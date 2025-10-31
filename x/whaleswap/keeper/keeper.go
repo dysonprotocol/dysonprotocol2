@@ -284,18 +284,6 @@ func (k Keeper) addr(_ context.Context, bech32 string) (sdk.AccAddress, error) {
 
 // normalizeBand removed: we use direct sdk.Coins operations in callers.
 
-func (k Keeper) bandRatio(band sdk.Coins, denom1, denom2 string) (cosmossdk_math.LegacyDec, error) {
-	a := band.AmountOf(denom1)
-	b := band.AmountOf(denom2)
-	if !a.IsPositive() || !b.IsPositive() {
-		return cosmossdk_math.LegacyDec{}, fmt.Errorf("band amounts must be > 0 and include both denoms")
-	}
-	// Use DecCoin conversions to avoid direct Legacy NewDec usage from ints
-	num := sdk.NewDecCoinFromCoin(sdk.NewCoin(denom2, b)).Amount
-	den := sdk.NewDecCoinFromCoin(sdk.NewCoin(denom1, a)).Amount
-	return num.Quo(den), nil
-}
-
 // currentPrice returns price as (quoteDenom/baseDenom).
 func (k Keeper) currentPrice(pool whaleswapv1.Pool, baseDenom, quoteDenom string) (cosmossdk_math.LegacyDec, error) {
 	if len(pool.Coins) != 2 {
@@ -309,74 +297,6 @@ func (k Keeper) currentPrice(pool whaleswapv1.Pool, baseDenom, quoteDenom string
 	num := sdk.NewDecCoinFromCoin(sdk.NewCoin(quoteDenom, quoteAmt)).Amount
 	den := sdk.NewDecCoinFromCoin(sdk.NewCoin(baseDenom, baseAmt)).Amount
 	return num.Quo(den), nil
-}
-
-// ---- Concentrated liquidity helpers ----
-
-// sqrtPrice returns sqrt(dec) using LegacyDec.ApproxSqrt
-func (k Keeper) sqrtPrice(d cosmossdk_math.LegacyDec) (cosmossdk_math.LegacyDec, error) {
-	return d.ApproxSqrt()
-}
-
-// bandSqrt returns sa, sb (sqrt(min_price), sqrt(max_price))
-func (k Keeper) bandSqrt(pool whaleswapv1.Pool) (cosmossdk_math.LegacyDec, cosmossdk_math.LegacyDec, error) {
-	if len(pool.MinPrice) != 2 || len(pool.MaxPrice) != 2 {
-		return cosmossdk_math.LegacyDec{}, cosmossdk_math.LegacyDec{}, fmt.Errorf("band not set")
-	}
-	minNum := sdk.NewDecCoinFromCoin(sdk.NewCoin(pool.MinPrice[1].Denom, pool.MinPrice.AmountOf(pool.MinPrice[1].Denom))).Amount
-	minDen := sdk.NewDecCoinFromCoin(sdk.NewCoin(pool.MinPrice[0].Denom, pool.MinPrice.AmountOf(pool.MinPrice[0].Denom))).Amount
-	maxNum := sdk.NewDecCoinFromCoin(sdk.NewCoin(pool.MaxPrice[1].Denom, pool.MaxPrice.AmountOf(pool.MaxPrice[1].Denom))).Amount
-	maxDen := sdk.NewDecCoinFromCoin(sdk.NewCoin(pool.MaxPrice[0].Denom, pool.MaxPrice.AmountOf(pool.MaxPrice[0].Denom))).Amount
-	minRatio := minNum.Quo(minDen)
-	maxRatio := maxNum.Quo(maxDen)
-	sa, err := k.sqrtPrice(minRatio)
-	if err != nil {
-		return cosmossdk_math.LegacyDec{}, cosmossdk_math.LegacyDec{}, err
-	}
-	sb, err := k.sqrtPrice(maxRatio)
-	if err != nil {
-		return cosmossdk_math.LegacyDec{}, cosmossdk_math.LegacyDec{}, err
-	}
-	return sa, sb, nil
-}
-
-// poolSqrtPrice returns current sqrt price sp
-func (k Keeper) poolSqrtPrice(pool whaleswapv1.Pool, baseDenom, quoteDenom string) (cosmossdk_math.LegacyDec, error) {
-	p, err := k.currentPrice(pool, baseDenom, quoteDenom)
-	if err != nil {
-		return cosmossdk_math.LegacyDec{}, err
-	}
-	return k.sqrtPrice(p)
-}
-
-// liquidityForReserves computes L from current reserves when sp in band
-func (k Keeper) liquidityForReserves(pool whaleswapv1.Pool) (cosmossdk_math.LegacyDec, cosmossdk_math.LegacyDec, cosmossdk_math.LegacyDec, error) {
-	sa, sb, err := k.bandSqrt(pool)
-	if err != nil {
-		return cosmossdk_math.LegacyDec{}, cosmossdk_math.LegacyDec{}, cosmossdk_math.LegacyDec{}, err
-	}
-	sp, err := k.poolSqrtPrice(pool, pool.Coins[0].Denom, pool.Coins[1].Denom)
-	if err != nil {
-		return cosmossdk_math.LegacyDec{}, cosmossdk_math.LegacyDec{}, cosmossdk_math.LegacyDec{}, err
-	}
-	if sp.LT(sa) || sp.GT(sb) {
-		return cosmossdk_math.LegacyDec{}, cosmossdk_math.LegacyDec{}, cosmossdk_math.LegacyDec{}, fmt.Errorf("price outside band")
-	}
-	r1 := sdk.NewDecCoinFromCoin(sdk.NewCoin(pool.Coins[0].Denom, pool.Coins.AmountOf(pool.Coins[0].Denom))).Amount
-	r2 := sdk.NewDecCoinFromCoin(sdk.NewCoin(pool.Coins[1].Denom, pool.Coins.AmountOf(pool.Coins[1].Denom))).Amount
-	// L candidates
-	// L0 = R1 * sp * sb / (sb - sp)
-	if sb.Equal(sp) {
-		return cosmossdk_math.LegacyDec{}, cosmossdk_math.LegacyDec{}, cosmossdk_math.LegacyDec{}, fmt.Errorf("invalid band: sb equals current sqrt price")
-	}
-	L0 := r1.Mul(sp).Mul(sb).Quo(sb.Sub(sp))
-	// L1 = R2 / (sp - sa)
-	if sp.Equal(sa) {
-		return cosmossdk_math.LegacyDec{}, cosmossdk_math.LegacyDec{}, cosmossdk_math.LegacyDec{}, fmt.Errorf("invalid band: sa equals current sqrt price")
-	}
-	L1 := r2.Quo(sp.Sub(sa))
-	L := cosmossdk_math.LegacyMinDec(L0, L1)
-	return L, sa, sb, nil
 }
 
 func (k Keeper) ensureMajorityOwner(ctx context.Context, pool whaleswapv1.Pool, signer sdk.AccAddress) error {

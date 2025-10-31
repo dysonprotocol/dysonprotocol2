@@ -6315,54 +6315,6 @@ paths:
                         one per reserve
 
                         denom in canonical order).
-                    min_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        min_price/max_price optionally set a price band for
-                        concentrated liquidity.
-
-                        Each is expressed as exactly two coins representing the
-                        ratio
-
-                        coins[1]/coins[0]. For example, [{amount: 1, denom:
-                        coins[0].denom},
-
-                        {amount: 2, denom: coins[1].denom}] means Pmin = 2/1.
-                        Empty means unset.
-                    max_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
                     block_height:
                       type: string
                       format: uint64
@@ -6562,6 +6514,43 @@ paths:
                         (exactly two,
 
                         canonical order). Each amount is a LegacyDec in [0,1).
+                    bound_percent:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Directional price-impact bounds keyed by the sold denom.
+
+                        Each amount must satisfy 0 < x <= 1; x == 1 disables the
+                        bound (unbounded).
+
+                        Missing entries default to 1 for both pool denoms.
+                        Stored in canonical pool
+
+                        order (coins[0], coins[1]). During swaps, selling denom
+                        D enforces that the
+
+                        post-trade price of D quoted in the opposite denom may
+                        drop by at most
+
+                        x fraction (B = 1/(1-x) multiplier). Values outside
+                        (0,1] are rejected at
+
+                        validation time.
                     fee_rate:
                       type: array
                       items:
@@ -6610,11 +6599,6 @@ paths:
 
                     - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
-                    - min_price/max_price are optional decimal strings defining
-                    a price band over
-                      P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-                      behaves as constant-product (v2). If set, concentrated-liquidity math
-                      applies.
                     - coin_a.amount/coin_b.amount are sdk.Int strings.
 
                     - The instantaneous price used by price-based queries is
@@ -6755,54 +6739,6 @@ paths:
                         one per reserve
 
                         denom in canonical order).
-                    min_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        min_price/max_price optionally set a price band for
-                        concentrated liquidity.
-
-                        Each is expressed as exactly two coins representing the
-                        ratio
-
-                        coins[1]/coins[0]. For example, [{amount: 1, denom:
-                        coins[0].denom},
-
-                        {amount: 2, denom: coins[1].denom}] means Pmin = 2/1.
-                        Empty means unset.
-                    max_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
                     block_height:
                       type: string
                       format: uint64
@@ -7002,6 +6938,43 @@ paths:
                         (exactly two,
 
                         canonical order). Each amount is a LegacyDec in [0,1).
+                    bound_percent:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Directional price-impact bounds keyed by the sold denom.
+
+                        Each amount must satisfy 0 < x <= 1; x == 1 disables the
+                        bound (unbounded).
+
+                        Missing entries default to 1 for both pool denoms.
+                        Stored in canonical pool
+
+                        order (coins[0], coins[1]). During swaps, selling denom
+                        D enforces that the
+
+                        post-trade price of D quoted in the opposite denom may
+                        drop by at most
+
+                        x fraction (B = 1/(1-x) multiplier). Values outside
+                        (0,1] are rejected at
+
+                        validation time.
                     fee_rate:
                       type: array
                       items:
@@ -7050,11 +7023,6 @@ paths:
 
                     - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
-                    - min_price/max_price are optional decimal strings defining
-                    a price band over
-                      P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-                      behaves as constant-product (v2). If set, concentrated-liquidity math
-                      applies.
                     - coin_a.amount/coin_b.amount are sdk.Int strings.
 
                     - The instantaneous price used by price-based queries is
@@ -7199,54 +7167,6 @@ paths:
                         one per reserve
 
                         denom in canonical order).
-                    min_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        min_price/max_price optionally set a price band for
-                        concentrated liquidity.
-
-                        Each is expressed as exactly two coins representing the
-                        ratio
-
-                        coins[1]/coins[0]. For example, [{amount: 1, denom:
-                        coins[0].denom},
-
-                        {amount: 2, denom: coins[1].denom}] means Pmin = 2/1.
-                        Empty means unset.
-                    max_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
                     block_height:
                       type: string
                       format: uint64
@@ -7446,6 +7366,43 @@ paths:
                         (exactly two,
 
                         canonical order). Each amount is a LegacyDec in [0,1).
+                    bound_percent:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Directional price-impact bounds keyed by the sold denom.
+
+                        Each amount must satisfy 0 < x <= 1; x == 1 disables the
+                        bound (unbounded).
+
+                        Missing entries default to 1 for both pool denoms.
+                        Stored in canonical pool
+
+                        order (coins[0], coins[1]). During swaps, selling denom
+                        D enforces that the
+
+                        post-trade price of D quoted in the opposite denom may
+                        drop by at most
+
+                        x fraction (B = 1/(1-x) multiplier). Values outside
+                        (0,1] are rejected at
+
+                        validation time.
                     fee_rate:
                       type: array
                       items:
@@ -7494,11 +7451,6 @@ paths:
 
                     - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
-                    - min_price/max_price are optional decimal strings defining
-                    a price band over
-                      P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-                      behaves as constant-product (v2). If set, concentrated-liquidity math
-                      applies.
                     - coin_a.amount/coin_b.amount are sdk.Int strings.
 
                     - The instantaneous price used by price-based queries is
@@ -7654,54 +7606,6 @@ paths:
                         one per reserve
 
                         denom in canonical order).
-                    min_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        min_price/max_price optionally set a price band for
-                        concentrated liquidity.
-
-                        Each is expressed as exactly two coins representing the
-                        ratio
-
-                        coins[1]/coins[0]. For example, [{amount: 1, denom:
-                        coins[0].denom},
-
-                        {amount: 2, denom: coins[1].denom}] means Pmin = 2/1.
-                        Empty means unset.
-                    max_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
                     block_height:
                       type: string
                       format: uint64
@@ -7901,6 +7805,43 @@ paths:
                         (exactly two,
 
                         canonical order). Each amount is a LegacyDec in [0,1).
+                    bound_percent:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Directional price-impact bounds keyed by the sold denom.
+
+                        Each amount must satisfy 0 < x <= 1; x == 1 disables the
+                        bound (unbounded).
+
+                        Missing entries default to 1 for both pool denoms.
+                        Stored in canonical pool
+
+                        order (coins[0], coins[1]). During swaps, selling denom
+                        D enforces that the
+
+                        post-trade price of D quoted in the opposite denom may
+                        drop by at most
+
+                        x fraction (B = 1/(1-x) multiplier). Values outside
+                        (0,1] are rejected at
+
+                        validation time.
                     fee_rate:
                       type: array
                       items:
@@ -7949,11 +7890,6 @@ paths:
 
                     - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
-                    - min_price/max_price are optional decimal strings defining
-                    a price band over
-                      P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-                      behaves as constant-product (v2). If set, concentrated-liquidity math
-                      applies.
                     - coin_a.amount/coin_b.amount are sdk.Int strings.
 
                     - The instantaneous price used by price-based queries is
@@ -8106,52 +8042,6 @@ paths:
                       one per reserve
 
                       denom in canonical order).
-                  min_price:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      min_price/max_price optionally set a price band for
-                      concentrated liquidity.
-
-                      Each is expressed as exactly two coins representing the
-                      ratio
-
-                      coins[1]/coins[0]. For example, [{amount: 1, denom:
-                      coins[0].denom},
-
-                      {amount: 2, denom: coins[1].denom}] means Pmin = 2/1.
-                      Empty means unset.
-                  max_price:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
                   block_height:
                     type: string
                     format: uint64
@@ -8345,6 +8235,43 @@ paths:
                       (exactly two,
 
                       canonical order). Each amount is a LegacyDec in [0,1).
+                  bound_percent:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Directional price-impact bounds keyed by the sold denom.
+
+                      Each amount must satisfy 0 < x <= 1; x == 1 disables the
+                      bound (unbounded).
+
+                      Missing entries default to 1 for both pool denoms. Stored
+                      in canonical pool
+
+                      order (coins[0], coins[1]). During swaps, selling denom D
+                      enforces that the
+
+                      post-trade price of D quoted in the opposite denom may
+                      drop by at most
+
+                      x fraction (B = 1/(1-x) multiplier). Values outside (0,1]
+                      are rejected at
+
+                      validation time.
                   fee_rate:
                     type: array
                     items:
@@ -8393,11 +8320,6 @@ paths:
 
                   - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
-                  - min_price/max_price are optional decimal strings defining a
-                  price band over
-                    P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-                    behaves as constant-product (v2). If set, concentrated-liquidity math
-                    applies.
                   - coin_a.amount/coin_b.amount are sdk.Int strings.
 
                   - The instantaneous price used by price-based queries is
@@ -8495,54 +8417,6 @@ paths:
                         one per reserve
 
                         denom in canonical order).
-                    min_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        min_price/max_price optionally set a price band for
-                        concentrated liquidity.
-
-                        Each is expressed as exactly two coins representing the
-                        ratio
-
-                        coins[1]/coins[0]. For example, [{amount: 1, denom:
-                        coins[0].denom},
-
-                        {amount: 2, denom: coins[1].denom}] means Pmin = 2/1.
-                        Empty means unset.
-                    max_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
                     block_height:
                       type: string
                       format: uint64
@@ -8742,6 +8616,43 @@ paths:
                         (exactly two,
 
                         canonical order). Each amount is a LegacyDec in [0,1).
+                    bound_percent:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Directional price-impact bounds keyed by the sold denom.
+
+                        Each amount must satisfy 0 < x <= 1; x == 1 disables the
+                        bound (unbounded).
+
+                        Missing entries default to 1 for both pool denoms.
+                        Stored in canonical pool
+
+                        order (coins[0], coins[1]). During swaps, selling denom
+                        D enforces that the
+
+                        post-trade price of D quoted in the opposite denom may
+                        drop by at most
+
+                        x fraction (B = 1/(1-x) multiplier). Values outside
+                        (0,1] are rejected at
+
+                        validation time.
                     fee_rate:
                       type: array
                       items:
@@ -8790,11 +8701,6 @@ paths:
 
                     - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
-                    - min_price/max_price are optional decimal strings defining
-                    a price band over
-                      P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-                      behaves as constant-product (v2). If set, concentrated-liquidity math
-                      applies.
                     - coin_a.amount/coin_b.amount are sdk.Int strings.
 
                     - The instantaneous price used by price-based queries is
@@ -8934,52 +8840,6 @@ paths:
                       one per reserve
 
                       denom in canonical order).
-                  min_price:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      min_price/max_price optionally set a price band for
-                      concentrated liquidity.
-
-                      Each is expressed as exactly two coins representing the
-                      ratio
-
-                      coins[1]/coins[0]. For example, [{amount: 1, denom:
-                      coins[0].denom},
-
-                      {amount: 2, denom: coins[1].denom}] means Pmin = 2/1.
-                      Empty means unset.
-                  max_price:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
                   block_height:
                     type: string
                     format: uint64
@@ -9173,6 +9033,43 @@ paths:
                       (exactly two,
 
                       canonical order). Each amount is a LegacyDec in [0,1).
+                  bound_percent:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Directional price-impact bounds keyed by the sold denom.
+
+                      Each amount must satisfy 0 < x <= 1; x == 1 disables the
+                      bound (unbounded).
+
+                      Missing entries default to 1 for both pool denoms. Stored
+                      in canonical pool
+
+                      order (coins[0], coins[1]). During swaps, selling denom D
+                      enforces that the
+
+                      post-trade price of D quoted in the opposite denom may
+                      drop by at most
+
+                      x fraction (B = 1/(1-x) multiplier). Values outside (0,1]
+                      are rejected at
+
+                      validation time.
                   fee_rate:
                     type: array
                     items:
@@ -9221,11 +9118,6 @@ paths:
 
                   - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
-                  - min_price/max_price are optional decimal strings defining a
-                  price band over
-                    P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-                    behaves as constant-product (v2). If set, concentrated-liquidity math
-                    applies.
                   - coin_a.amount/coin_b.amount are sdk.Int strings.
 
                   - The instantaneous price used by price-based queries is
@@ -33551,24 +33443,51 @@ paths:
 
                     signatures required by gogoproto.
                 description: >-
-                  Amounts to add: exactly two coins matching pool denoms; > 0.
+                  Amounts to add: exactly two positive coins matching the pool
+                  denoms.
 
                   Canonicalized to pool denom order. Full amounts are escrowed;
                   surplus is
 
-                  refunded (band mode refunds to match ΔL; v2 refunds to match
+                  refunded (band mode: to match ΔL; non-concentrated: to match
                   minted
 
                   shares).
             description: >-
-              Add liquidity (owner-only: signer must hold > 50% of shares).
+              *
 
-              - Escrows provided amounts and refunds any unused portion.
+              Add liquidity (owner-only).
 
-              - Enforces price band in concentrated mode; amounts canonicalized
-              to pool
 
-              order.
+              Behavior:
+
+              - Escrows the full provided amounts, then refunds any unused
+              surplus.
+
+              - Concentrated pools: compute ΔL from the inputs at the current
+              price within
+                [min_price, max_price]; refund the side that exceeds the limiting ΔL; mint
+                shares as floor(ΔL * total_shares / L_current).
+              - Non-concentrated pools: minted shares are derived from the
+              limiting side
+                min(add1/R1, add2/R2) * total_shares; refund the difference.
+              - Updates reserves, enforces the price band (if set), persists the
+              pool,
+                emits events, and asserts AMM invariants.
+
+              Validation:
+
+              - Pool must exist and signer must hold a majority of shares.
+
+              - `amounts` must contain exactly two positive coins whose denoms
+              match the
+                pool reserves (canonical order).
+
+              Emits:
+
+              - EventPoolUpdate (after persisting pool state)
+
+              - EventPoolLiquidityAdded (on successful add)
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgCancelOffer:
@@ -33728,26 +33647,39 @@ paths:
             properties:
               user:
                 type: string
+                description: Account closing the position; must be the position owner.
               position_id:
                 type: string
                 format: uint64
+                description: Target position id to close.
               note:
                 type: string
+                description: >-
+                  Optional note carried into internal trade logs (opaque to the
+                  module).
+            description: >-
+              *
+
+              ClosePosition closes a synthetic leveraged position.
+
+
+              Behavior:
+
+              - Swaps held to the borrowed denom via the borrow vault, computes
+              accrued
+                interest at the snapshotted rate, restores pool reserves by full
+                repayment, returns remaining collateral and any profit to the user,
+                updates pool accounting, and deletes the position.
+
+              Emits: EventLeveragePositionClosed on success.
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgCoverPosition:
     post:
-      summary: >-
+      summary: |-
         *
-
-        CoverPosition: If payment < total repayment, pays all interest and
-        reduces
-
-        principal (resets borrow_time). If payment >= total, unwinds held,
-        repays
-
-        in full, returns collateral, refunds unused payment and sends any
-        profit.
+        CoverPosition repays accrued interest; optionally reduces principal or
+        auto-closes on full repayment.
       operationId: dysonprotocol.whaleswap.v1.MsgCoverPosition
       responses:
         '200':
@@ -33802,8 +33734,10 @@ paths:
                   signatures required by gogoproto.
               new_collateral_ratio:
                 type: string
+                description: New collateral ratio at current price; "0" when closed.
               closed:
                 type: boolean
+                description: True if the position was fully repaid and deleted.
               refunded:
                 type: object
                 properties:
@@ -33834,7 +33768,6 @@ paths:
                   method
 
                   signatures required by gogoproto.
-                title: swap PnL from unwinding held → borrowed during auto-close
         default:
           description: An unexpected error response.
           schema:
@@ -33869,6 +33802,7 @@ paths:
               position_id:
                 type: string
                 format: uint64
+                description: Target position id to cover.
               payment:
                 type: object
                 properties:
@@ -33886,16 +33820,75 @@ paths:
                   signatures required by gogoproto.
               note:
                 type: string
+                description: Optional note to use in trade logs.
+            description: >-
+              *
+
+              Cover a leveraged position.
+
+
+              Behavior:
+
+              - If payment >= principal + accrued interest:
+                - Enforces the close block delay,
+                - Unwinds held → borrowed via a pool swap from the borrow vault,
+                - Repays principal + interest to pool reserves and accounting,
+                - Returns full collateral, refunds any unused portion of the user's
+              payment, and sends any unwind PnL as profit,
+                - Deletes the position (auto-close).
+              - If payment < total repayment:
+                - Pays all accrued interest and applies the remainder to reduce principal,
+                - Resets borrow_time and clears liquidation markers,
+                - Updates pool accounting and returns the new collateral ratio at the
+                  current price; the position remains open.
+
+              Validation:
+
+              - Position must exist and be owned by `user`.
+
+              - `payment` must be positive and its denom must equal the borrowed
+              denom.
+
+              - Position must have a two-entry interest_rate snapshot; payment
+              must fully
+                cover accrued interest.
+              - Auto-close path respects the close block delay and requires the
+              unwind swap
+                to produce borrowed output.
+
+              Emits:
+
+              - EventLeveragePositionCovered (always; closed = true when fully
+              repaid).
+
+              - EventLeveragePositionClosed (auto-close only).
+
+
+              Returns:
+
+              - Auto-close: interest_paid, principal_paid = full borrowed,
+              new_borrowed =
+
+              0, new_collateral_ratio = 0, closed = true, refunded = unused
+              payment, profit
+
+              = unwind PnL.
+
+              - Partial cover: interest_paid, principal_paid, new_borrowed
+              (remaining),
+                new_collateral_ratio at current price, closed = false, refunded = 0, profit
+              = 0.
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgCreatePool:
     post:
-      summary: |-
+      summary: >-
         *
-        CreatePool creates a two-asset pool with an optional price band and
-        per-denom fee/interest/leverage parameters. It moves initial reserves to
-        the module, mints initial shares to the creator, and asserts AMM
-        invariants.
+
+        CreatePool creates a two-asset pool; moves initial reserves, mints
+        initial
+
+        shares, and asserts invariants.
       operationId: dysonprotocol.whaleswap.v1.MsgCreatePool
       responses:
         '200':
@@ -33906,6 +33899,7 @@ paths:
               pool_id:
                 type: string
                 format: uint64
+                description: Newly created pool id.
         default:
           description: An unexpected error response.
           schema:
@@ -33937,6 +33931,7 @@ paths:
             properties:
               creator:
                 type: string
+                description: Account creating the pool; receives the initial minted shares.
               coins:
                 type: array
                 items:
@@ -33960,55 +33955,6 @@ paths:
 
                   Order is canonicalized internally to pool denom order
                   (lexicographic).
-              min_price:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    denom:
-                      type: string
-                    amount:
-                      type: string
-                  description: >-
-                    Coin defines a token with a denomination and an amount.
-
-
-                    NOTE: The amount field is an Int which implements the custom
-                    method
-
-                    signatures required by gogoproto.
-                description: >-
-                  Optional lower price bound as coin2/coin1 ratio.
-
-                  If set, both this and max_price must contain exactly two coins
-                  whose
-
-                  denoms match the pool reserves; keeper normalizes order.
-              max_price:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    denom:
-                      type: string
-                    amount:
-                      type: string
-                  description: >-
-                    Coin defines a token with a denomination and an amount.
-
-
-                    NOTE: The amount field is an Int which implements the custom
-                    method
-
-                    signatures required by gogoproto.
-                description: >-
-                  Optional upper price bound as coin2/coin1 ratio; subject to
-                  the same
-
-                  rules as min_price. Keeper ensures min_price < max_price and
-                  the initial
-
-                  price is strictly within (min, max).
               fee_pct:
                 type: string
                 description: >-
@@ -34166,18 +34112,83 @@ paths:
                   order.
 
                   Replaces deprecated fee_pct field 5.
+              bound_percent:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                description: >-
+                  Optional: per-denom directional price-impact bounds keyed by
+                  the sold
+
+                  denom. When omitted, defaults to 1 for both pool denoms
+                  (unbounded). When
+
+                  provided, must contain exactly two entries in canonical pool
+                  order with
+
+                  amounts satisfying 0 < x <= 1; x == 1 disables the bound for
+                  that denom.
             description: >-
-              Create a pool.
+              *
+
+              Create a two-asset pool with per-denom fee/interest/leverage
+              parameters and
+
+              optional directional bound_percent limits.
 
 
               Behavior:
 
-              - If min_price/max_price are both unset (or effectively encode [0,
-              +∞)), the
-                pool behaves as constant product (v2).
-              - If a finite band is provided, concentrated-liquidity math
-              applies within
-                [min_price, max_price] where price is coin_b / coin_a (see conventions).
+              - Input normalization: canonicalizes `coins` (exactly two positive
+              coins) to
+                the pool's denom order.
+              - Fees and rates: normalizes `fee_rate` and `interest_rate` to
+              exactly two
+                DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
+                interest_rate >= 0 per denom.
+              - Leverage configuration (required): `min_collateral_ratio` and
+                `max_leverage_ratio` must have exactly two entries (> 1) matching pool
+                denoms; `liquidation_threshold` must have exactly two entries (> 1);
+                `max_borrow_percent` must have exactly two entries with amounts in [0,1).
+              - Bound percent (optional): when omitted defaults to 1 (unbounded)
+              for both
+                denoms. When provided, must contain exactly two DecCoins matching pool
+                denoms with amounts in (0,1]; 1 disables the bound for that denom.
+              - Funds and shares: sends initial reserves from `creator` →
+              module; allocates
+                a new pool_id; persists the pool; computes initial shares as
+              floor(sqrt(x*y)); ensures at least one share; mints pool shares
+              and sends
+
+              them to the creator.
+
+              - Invariants: asserts AMM and module invariants before returning.
+
+
+              Emits:
+
+              - EventPoolCreated(pool_id)
+
+              - EventPoolUpdate(pool_id)
+
+
+              Returns:
+
+              - `pool_id` of the newly created pool (see response).
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation:
@@ -34300,12 +34311,15 @@ paths:
       summary: >-
         *
 
-        InitializeLiquidation marks a position liquidatable when CR (with
-        accrued
+        InitializeLiquidation (permissionless) marks a position liquidatable
+        when
 
-        interest at the snapshotted rate) falls below the pool’s
+        its collateral ratio (with accrued interest at the snapshotted rate)
+        falls
 
-        liquidation_threshold and starts the block-delay countdown.
+        below the pool's liquidation_threshold and starts the block-delay
+
+        countdown.
       operationId: dysonprotocol.whaleswap.v1.MsgInitializeLiquidation
       responses:
         '200':
@@ -34315,8 +34329,10 @@ paths:
             properties:
               collateral_ratio:
                 type: string
+                description: Collateral ratio at evaluation time (LegacyDec string).
               liquidation_threshold:
                 type: string
+                description: Liquidation threshold used for comparison (LegacyDec string).
         default:
           description: An unexpected error response.
           schema:
@@ -34348,14 +34364,62 @@ paths:
             properties:
               initializer:
                 type: string
+                description: >-
+                  Account initializing liquidation; permissionless (any
+                  account).
               user:
                 type: string
+                description: Position owner address; should match the position's user.
               pool_id:
                 type: string
                 format: uint64
+                description: Pool id; should match the position's pool.
               position_id:
                 type: string
                 format: uint64
+                description: Target position id to initialize.
+            description: >-
+              *
+
+              Initialize liquidation of a leveraged position.
+
+
+              Behavior:
+
+              - Permissionless trigger: any `initializer` may call this.
+
+              - Accrues interest at the snapshotted APR since borrow_time and
+              computes
+                the collateral ratio CR = collateral / (principal + interest).
+              - Compares CR against the pool's per-denom liquidation_threshold
+              for the
+                borrowed denom (> 1 required).
+              - On CR < threshold, records liquidation markers (status and
+              current block
+                height) and persists the updated position.
+
+              Validation:
+
+              - Position must exist; pool must exist.
+
+              - Position must have a two-entry interest_rate snapshot.
+
+              - Pool must have a two-entry liquidation_threshold; borrowed denom
+              entry must
+                be > 1.
+              - Position must be liquidatable at evaluation time (CR <
+              threshold).
+
+
+              Emits:
+
+              - EventLeverageLiquidationInitialized with position_id, user,
+              pool_id,
+                collateral_ratio, liquidation_threshold, block_height.
+
+              Returns:
+
+              - collateral_ratio and liquidation_threshold in the response.
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgMakeOffer:
@@ -34770,8 +34834,12 @@ paths:
             properties:
               seller:
                 type: string
+                description: Account opening the auction (receives the minted NFT).
               bid_denom:
                 type: string
+                description: >-
+                  Quote denom for bids; must be a valid denom and differ from
+                  sell.denom.
               sell:
                 type: object
                 properties:
@@ -34788,12 +34856,23 @@ paths:
 
                   signatures required by gogoproto.
             description: >-
-              Open an auction by escrowing exactly one coin amount.
+              *
+
+              OpenAuction escrows the sell coin from the seller and mints an NFT
+              under a
+
+              class keyed by `bid_denom`. Class policy (always_listed, valuation
+
+              fee/period, bid timeout, minimum bid percent increase, allowed
+              denoms) is
+
+              set from module params. The NFT is sent to the seller and the
+              auction record
+
+              with reverse indexes is persisted.
 
 
-              - The escrowed `sell` coin is transferred from seller to module
-              and marked by
-                an NFT for redemption logic. `bid_denom` defines the quote asset.
+              Emits: EventAuctionCreated on success.
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgOpenPosition:
@@ -34920,11 +34999,16 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgPoolSwap:
     post:
-      summary: |-
+      summary: >-
         *
-        PoolSwap executes one or more pool swap legs with a single end-of-tx
-        settlement, applying output-side fees per leg and enforcing aggregate
-        max_input caps and min_output guarantees.
+
+        PoolSwap executes one or more exact-in or exact-out pool swap legs with
+        a
+
+        single end-of-tx settlement. Applies output-side fees per leg and
+        enforces
+
+        aggregate max_input caps and min_output guarantees.
       operationId: dysonprotocol.whaleswap.v1.MsgPoolSwap
       responses:
         '200':
@@ -34949,6 +35033,9 @@ paths:
                     method
 
                     signatures required by gogoproto.
+                description: >-
+                  Total coins credited to the trader after aggregation across
+                  all legs.
         default:
           description: An unexpected error response.
           schema:
@@ -34980,6 +35067,9 @@ paths:
             properties:
               trader:
                 type: string
+                description: >-
+                  Account initiating the swap; debited/credited on net
+                  settlement.
               max_input:
                 type: array
                 items:
@@ -35066,6 +35156,56 @@ paths:
 
                     signatures required by gogoproto.
                 description: Final minimum outputs required per denom after aggregation.
+            description: >-
+              *
+
+              Execute one or more pool swap legs with a single settlement.
+
+
+              Behavior:
+
+              - Per-leg execution: for each leg, validates the pool/denoms and
+              computes
+                the out amount using concentrated-liquidity band math (when configured) or
+                constant-product math, applies output-side fee based on the output denom,
+                and updates pool reserves.
+              - Aggregate constraints: after all legs, enforces per-denom debit
+              caps
+                (max_input) and minimum outputs (min_output), then performs a single bank
+                move between trader and module for the net debits/credits.
+              - Invariants and recording: asserts AMM and module invariants and
+              records a
+                single Trade containing all operations.
+
+              Validation:
+
+              - legs must be non-empty; each leg must specify exactly one of
+              swap_in or
+                swap_out with a positive amount.
+              - Pool must exist and have exactly two reserves; input/output
+              denoms must be
+                present in the pool.
+              - Concentrated-liquidity: resulting price must remain within
+              [min_price,
+                max_price]; exact-out must not exceed band capacity.
+              - Constant-product: swaps must not deplete any reserve; exact-out
+              must not
+                exceed capacity.
+              - Aggregate: required debits must not exceed max_input caps; final
+              credits
+                must satisfy min_output per denom.
+
+              Emits:
+
+              - EventPoolSwap per executed leg (with pool_id, trade_id,
+              operation_index)
+                via recordTradeWithOperations.
+              - EventTradeRecorded once after all legs are recorded.
+
+
+              Returns:
+
+              - amount_out: total coins credited to the trader across all legs.
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgRedeemAuction:
@@ -35081,6 +35221,9 @@ paths:
           description: A successful response.
           schema:
             type: object
+            description: |-
+              *
+              Empty response. See EventAuctionRedeemed for emitted details.
         default:
           description: An unexpected error response.
           schema:
@@ -35112,10 +35255,43 @@ paths:
             properties:
               caller:
                 type: string
+                description: Account redeeming; must be the current NFT owner.
               auction_id:
                 type: string
                 format: uint64
-            description: Redeem auction escrow by NFT owner when no current bidder exists.
+                description: Auction to redeem.
+            description: >-
+              *
+
+              RedeemAuction lets the current NFT owner redeem the auction escrow
+
+              when no bid is active.
+
+
+              Behavior:
+
+              - Sends the escrowed sell coins from the module to the caller.
+
+              - Burns the NFT and deletes the auction record and reverse
+              indexes.
+
+              - If owner != original seller and a positive valuation exists in
+              `bid_denom`,
+                a Trade is recorded and its id is included in EventAuctionRedeemed.
+
+              Validation:
+
+              - Auction must exist.
+
+              - `caller` must equal the current NFT owner.
+
+              - No current bidder may exist.
+
+              - Module escrow must contain at least the sell amount.
+
+
+              Emits: EventAuctionRedeemed (trade_id = 0 when seller redeems
+              without trade).
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgRemoveLiquidity:
@@ -35458,15 +35634,10 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig:
     post:
-      summary: >-
+      summary: |-
         *
-
-        UpdatePoolConfig updates price band, fee rate, min collateral ratio, max
-
-        leverage ratio, interest rate, and max borrow percent. Signer must hold
-        a
-
-        majority of shares. Validates bands and invariants.
+        UpdatePoolConfig updates pool fees, leverage/threshold params, interest,
+        optional max_borrow_percent, and bound_percent; majority-owner only.
       operationId: dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig
       responses:
         '200':
@@ -35504,9 +35675,11 @@ paths:
             properties:
               signer:
                 type: string
+                description: Signer address; must be the majority owner of pool shares.
               pool_id:
                 type: string
                 format: uint64
+                description: Target pool id to update.
               fee_pct:
                 type: string
                 description: >-
@@ -35520,50 +35693,6 @@ paths:
                   per reserve
 
                   denom in canonical order).
-              min_price:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    denom:
-                      type: string
-                    amount:
-                      type: string
-                  description: >-
-                    Coin defines a token with a denomination and an amount.
-
-
-                    NOTE: The amount field is an Int which implements the custom
-                    method
-
-                    signatures required by gogoproto.
-                description: >-
-                  Lower price bound as coin2/coin1 ratio. See notes above;
-                  keeper
-
-                  canonicalizes order to pool denoms.
-              max_price:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    denom:
-                      type: string
-                    amount:
-                      type: string
-                  description: >-
-                    Coin defines a token with a denomination and an amount.
-
-
-                    NOTE: The amount field is an Int which implements the custom
-                    method
-
-                    signatures required by gogoproto.
-                description: >-
-                  Upper price bound as coin2/coin1 ratio. Must follow the same
-                  rules as
-
-                  min_price.
               min_collateral_ratio:
                 type: array
                 items:
@@ -35710,22 +35839,76 @@ paths:
                   order.
 
                   Replaces deprecated fee_pct field 3.
+              bound_percent:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                description: >-
+                  Optional: directional price-impact bounds keyed by the sold
+                  denom. When
+
+                  provided, must contain exactly two entries in canonical pool
+                  order. Amounts
+
+                  must satisfy 0 < x <= 1; x == 1 disables the bound for that
+                  denom. Omit the
+
+                  field to leave bounds unchanged.
             description: >-
-              Update pool config (owner-only: signer must hold > 50% of shares).
+              *
+
+              Update a pool's dynamic configuration (owner-only).
 
 
-              Notes:
+              Behavior:
 
-              - Bands: set both min_price and max_price empty to clear;
-              otherwise both must
-                be set with exactly two coins matching pool reserves. Keeper canonicalizes,
-                enforces max > min, and requires current price strictly within (min, max).
-              - Required: min_collateral_ratio, max_leverage_ratio,
-              interest_rate,
-                liquidation_threshold.
-              - Optional: fee_rate (0 <= x < 1 per denom), max_borrow_percent (0
-              <= x < 1
-                per denom).
+              - Loads pool; validates signer and majority-ownership.
+
+              - Fee rates: optional; normalizes to two DecCoins (pool order); 0
+              <= x < 1.
+
+              - Leverage config: required `min_collateral_ratio` and
+              `max_leverage_ratio`
+                with exactly two entries matching pool denoms; each > 1.
+              - Liquidation threshold: required with exactly two entries; each >
+              1.
+
+              - Interest rate: allows 0/1/2 entries; normalizes to two; each >=
+              0.
+
+              - Max borrow percent: optional; if provided exactly two entries; 0
+              <= x < 1.
+
+              - Bound percent: optional; when provided must contain exactly two
+              DecCoins
+                matching pool denoms with amounts in (0,1]; 1 disables the bound. Omit to
+                leave existing bounds unchanged.
+              - Persists pool with `updated` timestamp; emits EventPoolUpdate;
+              asserts AMM
+                and module invariants.
+
+              Emits:
+
+              - EventPoolUpdate(pool_id).
+
+
+              Returns:
+
+              - Empty response.
       tags:
         - Msg
   dysonprotocol.script.v1.MsgCreateNewScript:
@@ -47286,44 +47469,6 @@ definitions:
           reserve
 
           denom in canonical order).
-      min_price:
-        type: array
-        items:
-          type: object
-          properties:
-            denom:
-              type: string
-            amount:
-              type: string
-          description: |-
-            Coin defines a token with a denomination and an amount.
-
-            NOTE: The amount field is an Int which implements the custom method
-            signatures required by gogoproto.
-        description: >-
-          min_price/max_price optionally set a price band for concentrated
-          liquidity.
-
-          Each is expressed as exactly two coins representing the ratio
-
-          coins[1]/coins[0]. For example, [{amount: 1, denom: coins[0].denom},
-
-          {amount: 2, denom: coins[1].denom}] means Pmin = 2/1. Empty means
-          unset.
-      max_price:
-        type: array
-        items:
-          type: object
-          properties:
-            denom:
-              type: string
-            amount:
-              type: string
-          description: |-
-            Coin defines a token with a denomination and an amount.
-
-            NOTE: The amount field is an Int which implements the custom method
-            signatures required by gogoproto.
       block_height:
         type: string
         format: uint64
@@ -47484,6 +47629,38 @@ definitions:
         description: |-
           Maximum borrow capacity per reserve denom as DecCoins (exactly two,
           canonical order). Each amount is a LegacyDec in [0,1).
+      bound_percent:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
+          Directional price-impact bounds keyed by the sold denom.
+
+          Each amount must satisfy 0 < x <= 1; x == 1 disables the bound
+          (unbounded).
+
+          Missing entries default to 1 for both pool denoms. Stored in canonical
+          pool
+
+          order (coins[0], coins[1]). During swaps, selling denom D enforces
+          that the
+
+          post-trade price of D quoted in the opposite denom may drop by at most
+
+          x fraction (B = 1/(1-x) multiplier). Values outside (0,1] are rejected
+          at
+
+          validation time.
       fee_rate:
         type: array
         items:
@@ -47515,23 +47692,13 @@ definitions:
           fees_earned in the output denom.
 
           Replaces deprecated fee_pct field 5.
-    description: >-
+    description: |-
       Pool describes AMM pool state.
 
-
       Notes:
-
       - coin_a.denom < coin_b.denom lexicographically (canonical order)
-
       - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
-
-      - min_price/max_price are optional decimal strings defining a price band
-      over
-        P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-        behaves as constant-product (v2). If set, concentrated-liquidity math
-        applies.
       - coin_a.amount/coin_b.amount are sdk.Int strings.
-
       - The instantaneous price used by price-based queries is derived from
         reserves as P = coin_b / coin_a, consistent with the notes above.
   dysonprotocol.whaleswap.v1.PositionHealthStatus:
@@ -48802,51 +48969,6 @@ definitions:
               reserve
 
               denom in canonical order).
-          min_price:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-            description: >-
-              min_price/max_price optionally set a price band for concentrated
-              liquidity.
-
-              Each is expressed as exactly two coins representing the ratio
-
-              coins[1]/coins[0]. For example, [{amount: 1, denom:
-              coins[0].denom},
-
-              {amount: 2, denom: coins[1].denom}] means Pmin = 2/1. Empty means
-              unset.
-          max_price:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
           block_height:
             type: string
             format: uint64
@@ -49040,6 +49162,43 @@ definitions:
               two,
 
               canonical order). Each amount is a LegacyDec in [0,1).
+          bound_percent:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
+              Directional price-impact bounds keyed by the sold denom.
+
+              Each amount must satisfy 0 < x <= 1; x == 1 disables the bound
+              (unbounded).
+
+              Missing entries default to 1 for both pool denoms. Stored in
+              canonical pool
+
+              order (coins[0], coins[1]). During swaps, selling denom D enforces
+              that the
+
+              post-trade price of D quoted in the opposite denom may drop by at
+              most
+
+              x fraction (B = 1/(1-x) multiplier). Values outside (0,1] are
+              rejected at
+
+              validation time.
           fee_rate:
             type: array
             items:
@@ -49077,23 +49236,13 @@ definitions:
               fees_earned in the output denom.
 
               Replaces deprecated fee_pct field 5.
-        description: >-
+        description: |-
           Pool describes AMM pool state.
 
-
           Notes:
-
           - coin_a.denom < coin_b.denom lexicographically (canonical order)
-
           - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
-
-          - min_price/max_price are optional decimal strings defining a price
-          band over
-            P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-            behaves as constant-product (v2). If set, concentrated-liquidity math
-            applies.
           - coin_a.amount/coin_b.amount are sdk.Int strings.
-
           - The instantaneous price used by price-based queries is derived from
             reserves as P = coin_b / coin_a, consistent with the notes above.
   dysonprotocol.whaleswap.v1.QueryPoolResponse:
@@ -49142,51 +49291,6 @@ definitions:
               reserve
 
               denom in canonical order).
-          min_price:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-            description: >-
-              min_price/max_price optionally set a price band for concentrated
-              liquidity.
-
-              Each is expressed as exactly two coins representing the ratio
-
-              coins[1]/coins[0]. For example, [{amount: 1, denom:
-              coins[0].denom},
-
-              {amount: 2, denom: coins[1].denom}] means Pmin = 2/1. Empty means
-              unset.
-          max_price:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
           block_height:
             type: string
             format: uint64
@@ -49380,6 +49484,43 @@ definitions:
               two,
 
               canonical order). Each amount is a LegacyDec in [0,1).
+          bound_percent:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: >-
+              Directional price-impact bounds keyed by the sold denom.
+
+              Each amount must satisfy 0 < x <= 1; x == 1 disables the bound
+              (unbounded).
+
+              Missing entries default to 1 for both pool denoms. Stored in
+              canonical pool
+
+              order (coins[0], coins[1]). During swaps, selling denom D enforces
+              that the
+
+              post-trade price of D quoted in the opposite denom may drop by at
+              most
+
+              x fraction (B = 1/(1-x) multiplier). Values outside (0,1] are
+              rejected at
+
+              validation time.
           fee_rate:
             type: array
             items:
@@ -49417,23 +49558,13 @@ definitions:
               fees_earned in the output denom.
 
               Replaces deprecated fee_pct field 5.
-        description: >-
+        description: |-
           Pool describes AMM pool state.
 
-
           Notes:
-
           - coin_a.denom < coin_b.denom lexicographically (canonical order)
-
           - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
-
-          - min_price/max_price are optional decimal strings defining a price
-          band over
-            P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-            behaves as constant-product (v2). If set, concentrated-liquidity math
-            applies.
           - coin_a.amount/coin_b.amount are sdk.Int strings.
-
           - The instantaneous price used by price-based queries is derived from
             reserves as P = coin_b / coin_a, consistent with the notes above.
   dysonprotocol.whaleswap.v1.QueryPoolsByDenomResponse:
@@ -49485,51 +49616,6 @@ definitions:
                 reserve
 
                 denom in canonical order).
-            min_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                min_price/max_price optionally set a price band for concentrated
-                liquidity.
-
-                Each is expressed as exactly two coins representing the ratio
-
-                coins[1]/coins[0]. For example, [{amount: 1, denom:
-                coins[0].denom},
-
-                {amount: 2, denom: coins[1].denom}] means Pmin = 2/1. Empty
-                means unset.
-            max_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
             block_height:
               type: string
               format: uint64
@@ -49723,6 +49809,43 @@ definitions:
                 two,
 
                 canonical order). Each amount is a LegacyDec in [0,1).
+            bound_percent:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Directional price-impact bounds keyed by the sold denom.
+
+                Each amount must satisfy 0 < x <= 1; x == 1 disables the bound
+                (unbounded).
+
+                Missing entries default to 1 for both pool denoms. Stored in
+                canonical pool
+
+                order (coins[0], coins[1]). During swaps, selling denom D
+                enforces that the
+
+                post-trade price of D quoted in the opposite denom may drop by
+                at most
+
+                x fraction (B = 1/(1-x) multiplier). Values outside (0,1] are
+                rejected at
+
+                validation time.
             fee_rate:
               type: array
               items:
@@ -49770,11 +49893,6 @@ definitions:
 
             - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
-            - min_price/max_price are optional decimal strings defining a price
-            band over
-              P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-              behaves as constant-product (v2). If set, concentrated-liquidity math
-              applies.
             - coin_a.amount/coin_b.amount are sdk.Int strings.
 
             - The instantaneous price used by price-based queries is derived
@@ -49855,51 +49973,6 @@ definitions:
                 reserve
 
                 denom in canonical order).
-            min_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                min_price/max_price optionally set a price band for concentrated
-                liquidity.
-
-                Each is expressed as exactly two coins representing the ratio
-
-                coins[1]/coins[0]. For example, [{amount: 1, denom:
-                coins[0].denom},
-
-                {amount: 2, denom: coins[1].denom}] means Pmin = 2/1. Empty
-                means unset.
-            max_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
             block_height:
               type: string
               format: uint64
@@ -50093,6 +50166,43 @@ definitions:
                 two,
 
                 canonical order). Each amount is a LegacyDec in [0,1).
+            bound_percent:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Directional price-impact bounds keyed by the sold denom.
+
+                Each amount must satisfy 0 < x <= 1; x == 1 disables the bound
+                (unbounded).
+
+                Missing entries default to 1 for both pool denoms. Stored in
+                canonical pool
+
+                order (coins[0], coins[1]). During swaps, selling denom D
+                enforces that the
+
+                post-trade price of D quoted in the opposite denom may drop by
+                at most
+
+                x fraction (B = 1/(1-x) multiplier). Values outside (0,1] are
+                rejected at
+
+                validation time.
             fee_rate:
               type: array
               items:
@@ -50140,11 +50250,6 @@ definitions:
 
             - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
-            - min_price/max_price are optional decimal strings defining a price
-            band over
-              P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-              behaves as constant-product (v2). If set, concentrated-liquidity math
-              applies.
             - coin_a.amount/coin_b.amount are sdk.Int strings.
 
             - The instantaneous price used by price-based queries is derived
@@ -50225,51 +50330,6 @@ definitions:
                 reserve
 
                 denom in canonical order).
-            min_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                min_price/max_price optionally set a price band for concentrated
-                liquidity.
-
-                Each is expressed as exactly two coins representing the ratio
-
-                coins[1]/coins[0]. For example, [{amount: 1, denom:
-                coins[0].denom},
-
-                {amount: 2, denom: coins[1].denom}] means Pmin = 2/1. Empty
-                means unset.
-            max_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
             block_height:
               type: string
               format: uint64
@@ -50463,6 +50523,43 @@ definitions:
                 two,
 
                 canonical order). Each amount is a LegacyDec in [0,1).
+            bound_percent:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Directional price-impact bounds keyed by the sold denom.
+
+                Each amount must satisfy 0 < x <= 1; x == 1 disables the bound
+                (unbounded).
+
+                Missing entries default to 1 for both pool denoms. Stored in
+                canonical pool
+
+                order (coins[0], coins[1]). During swaps, selling denom D
+                enforces that the
+
+                post-trade price of D quoted in the opposite denom may drop by
+                at most
+
+                x fraction (B = 1/(1-x) multiplier). Values outside (0,1] are
+                rejected at
+
+                validation time.
             fee_rate:
               type: array
               items:
@@ -50510,11 +50607,6 @@ definitions:
 
             - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
-            - min_price/max_price are optional decimal strings defining a price
-            band over
-              P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-              behaves as constant-product (v2). If set, concentrated-liquidity math
-              applies.
             - coin_a.amount/coin_b.amount are sdk.Int strings.
 
             - The instantaneous price used by price-based queries is derived
@@ -50595,51 +50687,6 @@ definitions:
                 reserve
 
                 denom in canonical order).
-            min_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                min_price/max_price optionally set a price band for concentrated
-                liquidity.
-
-                Each is expressed as exactly two coins representing the ratio
-
-                coins[1]/coins[0]. For example, [{amount: 1, denom:
-                coins[0].denom},
-
-                {amount: 2, denom: coins[1].denom}] means Pmin = 2/1. Empty
-                means unset.
-            max_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
             block_height:
               type: string
               format: uint64
@@ -50833,6 +50880,43 @@ definitions:
                 two,
 
                 canonical order). Each amount is a LegacyDec in [0,1).
+            bound_percent:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Directional price-impact bounds keyed by the sold denom.
+
+                Each amount must satisfy 0 < x <= 1; x == 1 disables the bound
+                (unbounded).
+
+                Missing entries default to 1 for both pool denoms. Stored in
+                canonical pool
+
+                order (coins[0], coins[1]). During swaps, selling denom D
+                enforces that the
+
+                post-trade price of D quoted in the opposite denom may drop by
+                at most
+
+                x fraction (B = 1/(1-x) multiplier). Values outside (0,1] are
+                rejected at
+
+                validation time.
             fee_rate:
               type: array
               items:
@@ -50880,11 +50964,6 @@ definitions:
 
             - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
-            - min_price/max_price are optional decimal strings defining a price
-            band over
-              P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-              behaves as constant-product (v2). If set, concentrated-liquidity math
-              applies.
             - coin_a.amount/coin_b.amount are sdk.Int strings.
 
             - The instantaneous price used by price-based queries is derived
@@ -50965,51 +51044,6 @@ definitions:
                 reserve
 
                 denom in canonical order).
-            min_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                min_price/max_price optionally set a price band for concentrated
-                liquidity.
-
-                Each is expressed as exactly two coins representing the ratio
-
-                coins[1]/coins[0]. For example, [{amount: 1, denom:
-                coins[0].denom},
-
-                {amount: 2, denom: coins[1].denom}] means Pmin = 2/1. Empty
-                means unset.
-            max_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
             block_height:
               type: string
               format: uint64
@@ -51203,6 +51237,43 @@ definitions:
                 two,
 
                 canonical order). Each amount is a LegacyDec in [0,1).
+            bound_percent:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                Directional price-impact bounds keyed by the sold denom.
+
+                Each amount must satisfy 0 < x <= 1; x == 1 disables the bound
+                (unbounded).
+
+                Missing entries default to 1 for both pool denoms. Stored in
+                canonical pool
+
+                order (coins[0], coins[1]). During swaps, selling denom D
+                enforces that the
+
+                post-trade price of D quoted in the opposite denom may drop by
+                at most
+
+                x fraction (B = 1/(1-x) multiplier). Values outside (0,1] are
+                rejected at
+
+                validation time.
             fee_rate:
               type: array
               items:
@@ -51250,11 +51321,6 @@ definitions:
 
             - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
 
-            - min_price/max_price are optional decimal strings defining a price
-            band over
-              P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-              behaves as constant-product (v2). If set, concentrated-liquidity math
-              applies.
             - coin_a.amount/coin_b.amount are sdk.Int strings.
 
             - The instantaneous price used by price-based queries is derived
@@ -74991,19 +75057,45 @@ definitions:
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
         description: >-
-          Amounts to add: exactly two coins matching pool denoms; > 0.
+          Amounts to add: exactly two positive coins matching the pool denoms.
 
           Canonicalized to pool denom order. Full amounts are escrowed; surplus
           is
 
-          refunded (band mode refunds to match ΔL; v2 refunds to match minted
+          refunded (band mode: to match ΔL; non-concentrated: to match minted
 
           shares).
-    description: |-
-      Add liquidity (owner-only: signer must hold > 50% of shares).
-      - Escrows provided amounts and refunds any unused portion.
-      - Enforces price band in concentrated mode; amounts canonicalized to pool
-      order.
+    description: >-
+      *
+
+      Add liquidity (owner-only).
+
+
+      Behavior:
+
+      - Escrows the full provided amounts, then refunds any unused surplus.
+
+      - Concentrated pools: compute ΔL from the inputs at the current price
+      within
+        [min_price, max_price]; refund the side that exceeds the limiting ΔL; mint
+        shares as floor(ΔL * total_shares / L_current).
+      - Non-concentrated pools: minted shares are derived from the limiting side
+        min(add1/R1, add2/R2) * total_shares; refund the difference.
+      - Updates reserves, enforces the price band (if set), persists the pool,
+        emits events, and asserts AMM invariants.
+
+      Validation:
+
+      - Pool must exist and signer must hold a majority of shares.
+
+      - `amounts` must contain exactly two positive coins whose denoms match the
+        pool reserves (canonical order).
+
+      Emits:
+
+      - EventPoolUpdate (after persisting pool state)
+
+      - EventPoolLiquidityAdded (on successful add)
   dysonprotocol.whaleswap.v1.MsgAddLiquidityResponse:
     type: object
     properties:
@@ -75034,11 +75126,25 @@ definitions:
     properties:
       user:
         type: string
+        description: Account closing the position; must be the position owner.
       position_id:
         type: string
         format: uint64
+        description: Target position id to close.
       note:
         type: string
+        description: Optional note carried into internal trade logs (opaque to the module).
+    description: |-
+      *
+      ClosePosition closes a synthetic leveraged position.
+
+      Behavior:
+      - Swaps held to the borrowed denom via the borrow vault, computes accrued
+        interest at the snapshotted rate, restores pool reserves by full
+        repayment, returns remaining collateral and any profit to the user,
+        updates pool accounting, and deletes the position.
+
+      Emits: EventLeveragePositionClosed on success.
   dysonprotocol.whaleswap.v1.MsgClosePositionResponse:
     type: object
     properties:
@@ -75086,6 +75192,7 @@ definitions:
       position_id:
         type: string
         format: uint64
+        description: Target position id to cover.
       payment:
         type: object
         properties:
@@ -75100,6 +75207,61 @@ definitions:
           signatures required by gogoproto.
       note:
         type: string
+        description: Optional note to use in trade logs.
+    description: >-
+      *
+
+      Cover a leveraged position.
+
+
+      Behavior:
+
+      - If payment >= principal + accrued interest:
+        - Enforces the close block delay,
+        - Unwinds held → borrowed via a pool swap from the borrow vault,
+        - Repays principal + interest to pool reserves and accounting,
+        - Returns full collateral, refunds any unused portion of the user's
+      payment, and sends any unwind PnL as profit,
+        - Deletes the position (auto-close).
+      - If payment < total repayment:
+        - Pays all accrued interest and applies the remainder to reduce principal,
+        - Resets borrow_time and clears liquidation markers,
+        - Updates pool accounting and returns the new collateral ratio at the
+          current price; the position remains open.
+
+      Validation:
+
+      - Position must exist and be owned by `user`.
+
+      - `payment` must be positive and its denom must equal the borrowed denom.
+
+      - Position must have a two-entry interest_rate snapshot; payment must
+      fully
+        cover accrued interest.
+      - Auto-close path respects the close block delay and requires the unwind
+      swap
+        to produce borrowed output.
+
+      Emits:
+
+      - EventLeveragePositionCovered (always; closed = true when fully repaid).
+
+      - EventLeveragePositionClosed (auto-close only).
+
+
+      Returns:
+
+      - Auto-close: interest_paid, principal_paid = full borrowed, new_borrowed
+      =
+
+      0, new_collateral_ratio = 0, closed = true, refunded = unused payment,
+      profit
+
+      = unwind PnL.
+
+      - Partial cover: interest_paid, principal_paid, new_borrowed (remaining),
+        new_collateral_ratio at current price, closed = false, refunded = 0, profit
+      = 0.
   dysonprotocol.whaleswap.v1.MsgCoverPositionResponse:
     type: object
     properties:
@@ -75141,8 +75303,10 @@ definitions:
           signatures required by gogoproto.
       new_collateral_ratio:
         type: string
+        description: New collateral ratio at current price; "0" when closed.
       closed:
         type: boolean
+        description: True if the position was fully repaid and deleted.
       refunded:
         type: object
         properties:
@@ -75167,12 +75331,12 @@ definitions:
 
           NOTE: The amount field is an Int which implements the custom method
           signatures required by gogoproto.
-        title: swap PnL from unwinding held → borrowed during auto-close
   dysonprotocol.whaleswap.v1.MsgCreatePool:
     type: object
     properties:
       creator:
         type: string
+        description: Account creating the pool; receives the initial minted shares.
       coins:
         type: array
         items:
@@ -75190,45 +75354,6 @@ definitions:
         description: |-
           Initial reserves. Required: exactly two coins with positive amounts.
           Order is canonicalized internally to pool denom order (lexicographic).
-      min_price:
-        type: array
-        items:
-          type: object
-          properties:
-            denom:
-              type: string
-            amount:
-              type: string
-          description: |-
-            Coin defines a token with a denomination and an amount.
-
-            NOTE: The amount field is an Int which implements the custom method
-            signatures required by gogoproto.
-        description: |-
-          Optional lower price bound as coin2/coin1 ratio.
-          If set, both this and max_price must contain exactly two coins whose
-          denoms match the pool reserves; keeper normalizes order.
-      max_price:
-        type: array
-        items:
-          type: object
-          properties:
-            denom:
-              type: string
-            amount:
-              type: string
-          description: |-
-            Coin defines a token with a denomination and an amount.
-
-            NOTE: The amount field is an Int which implements the custom method
-            signatures required by gogoproto.
-        description: >-
-          Optional upper price bound as coin2/coin1 ratio; subject to the same
-
-          rules as min_price. Keeper ensures min_price < max_price and the
-          initial
-
-          price is strictly within (min, max).
       fee_pct:
         type: string
         description: >-
@@ -75347,23 +75472,83 @@ definitions:
           Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
           keeper normalizes to exactly two entries in canonical pool order.
           Replaces deprecated fee_pct field 5.
+      bound_percent:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
+          Optional: per-denom directional price-impact bounds keyed by the sold
+
+          denom. When omitted, defaults to 1 for both pool denoms (unbounded).
+          When
+
+          provided, must contain exactly two entries in canonical pool order
+          with
+
+          amounts satisfying 0 < x <= 1; x == 1 disables the bound for that
+          denom.
     description: >-
-      Create a pool.
+      *
+
+      Create a two-asset pool with per-denom fee/interest/leverage parameters
+      and
+
+      optional directional bound_percent limits.
 
 
       Behavior:
 
-      - If min_price/max_price are both unset (or effectively encode [0, +∞)),
-      the
-        pool behaves as constant product (v2).
-      - If a finite band is provided, concentrated-liquidity math applies within
-        [min_price, max_price] where price is coin_b / coin_a (see conventions).
+      - Input normalization: canonicalizes `coins` (exactly two positive coins)
+      to
+        the pool's denom order.
+      - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two
+        DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
+        interest_rate >= 0 per denom.
+      - Leverage configuration (required): `min_collateral_ratio` and
+        `max_leverage_ratio` must have exactly two entries (> 1) matching pool
+        denoms; `liquidation_threshold` must have exactly two entries (> 1);
+        `max_borrow_percent` must have exactly two entries with amounts in [0,1).
+      - Bound percent (optional): when omitted defaults to 1 (unbounded) for
+      both
+        denoms. When provided, must contain exactly two DecCoins matching pool
+        denoms with amounts in (0,1]; 1 disables the bound for that denom.
+      - Funds and shares: sends initial reserves from `creator` → module;
+      allocates
+        a new pool_id; persists the pool; computes initial shares as
+      floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends
+
+      them to the creator.
+
+      - Invariants: asserts AMM and module invariants before returning.
+
+
+      Emits:
+
+      - EventPoolCreated(pool_id)
+
+      - EventPoolUpdate(pool_id)
+
+
+      Returns:
+
+      - `pool_id` of the newly created pool (see response).
   dysonprotocol.whaleswap.v1.MsgCreatePoolResponse:
     type: object
     properties:
       pool_id:
         type: string
         format: uint64
+        description: Newly created pool id.
   dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation:
     type: object
     properties:
@@ -75433,21 +75618,64 @@ definitions:
     properties:
       initializer:
         type: string
+        description: Account initializing liquidation; permissionless (any account).
       user:
         type: string
+        description: Position owner address; should match the position's user.
       pool_id:
         type: string
         format: uint64
+        description: Pool id; should match the position's pool.
       position_id:
         type: string
         format: uint64
+        description: Target position id to initialize.
+    description: >-
+      *
+
+      Initialize liquidation of a leveraged position.
+
+
+      Behavior:
+
+      - Permissionless trigger: any `initializer` may call this.
+
+      - Accrues interest at the snapshotted APR since borrow_time and computes
+        the collateral ratio CR = collateral / (principal + interest).
+      - Compares CR against the pool's per-denom liquidation_threshold for the
+        borrowed denom (> 1 required).
+      - On CR < threshold, records liquidation markers (status and current block
+        height) and persists the updated position.
+
+      Validation:
+
+      - Position must exist; pool must exist.
+
+      - Position must have a two-entry interest_rate snapshot.
+
+      - Pool must have a two-entry liquidation_threshold; borrowed denom entry
+      must
+        be > 1.
+      - Position must be liquidatable at evaluation time (CR < threshold).
+
+
+      Emits:
+
+      - EventLeverageLiquidationInitialized with position_id, user, pool_id,
+        collateral_ratio, liquidation_threshold, block_height.
+
+      Returns:
+
+      - collateral_ratio and liquidation_threshold in the response.
   dysonprotocol.whaleswap.v1.MsgInitializeLiquidationResponse:
     type: object
     properties:
       collateral_ratio:
         type: string
+        description: Collateral ratio at evaluation time (LegacyDec string).
       liquidation_threshold:
         type: string
+        description: Liquidation threshold used for comparison (LegacyDec string).
   dysonprotocol.whaleswap.v1.MsgMakeOffer:
     type: object
     properties:
@@ -75691,8 +75919,12 @@ definitions:
     properties:
       seller:
         type: string
+        description: Account opening the auction (receives the minted NFT).
       bid_denom:
         type: string
+        description: >-
+          Quote denom for bids; must be a valid denom and differ from
+          sell.denom.
       sell:
         type: object
         properties:
@@ -75706,12 +75938,21 @@ definitions:
           NOTE: The amount field is an Int which implements the custom method
           signatures required by gogoproto.
     description: >-
-      Open an auction by escrowing exactly one coin amount.
+      *
+
+      OpenAuction escrows the sell coin from the seller and mints an NFT under a
+
+      class keyed by `bid_denom`. Class policy (always_listed, valuation
+
+      fee/period, bid timeout, minimum bid percent increase, allowed denoms) is
+
+      set from module params. The NFT is sent to the seller and the auction
+      record
+
+      with reverse indexes is persisted.
 
 
-      - The escrowed `sell` coin is transferred from seller to module and marked
-      by
-        an NFT for redemption logic. `bid_denom` defines the quote asset.
+      Emits: EventAuctionCreated on success.
   dysonprotocol.whaleswap.v1.MsgOpenAuctionResponse:
     type: object
     properties:
@@ -75792,6 +76033,7 @@ definitions:
     properties:
       trader:
         type: string
+        description: Account initiating the swap; debited/credited on net settlement.
       max_input:
         type: array
         items:
@@ -75871,6 +76113,49 @@ definitions:
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
         description: Final minimum outputs required per denom after aggregation.
+    description: >-
+      *
+
+      Execute one or more pool swap legs with a single settlement.
+
+
+      Behavior:
+
+      - Per-leg execution: for each leg, validates the pool/denoms and computes
+        the out amount using concentrated-liquidity band math (when configured) or
+        constant-product math, applies output-side fee based on the output denom,
+        and updates pool reserves.
+      - Aggregate constraints: after all legs, enforces per-denom debit caps
+        (max_input) and minimum outputs (min_output), then performs a single bank
+        move between trader and module for the net debits/credits.
+      - Invariants and recording: asserts AMM and module invariants and records
+      a
+        single Trade containing all operations.
+
+      Validation:
+
+      - legs must be non-empty; each leg must specify exactly one of swap_in or
+        swap_out with a positive amount.
+      - Pool must exist and have exactly two reserves; input/output denoms must
+      be
+        present in the pool.
+      - Concentrated-liquidity: resulting price must remain within [min_price,
+        max_price]; exact-out must not exceed band capacity.
+      - Constant-product: swaps must not deplete any reserve; exact-out must not
+        exceed capacity.
+      - Aggregate: required debits must not exceed max_input caps; final credits
+        must satisfy min_output per denom.
+
+      Emits:
+
+      - EventPoolSwap per executed leg (with pool_id, trade_id, operation_index)
+        via recordTradeWithOperations.
+      - EventTradeRecorded once after all legs are recorded.
+
+
+      Returns:
+
+      - amount_out: total coins credited to the trader across all legs.
   dysonprotocol.whaleswap.v1.MsgPoolSwapResponse:
     type: object
     properties:
@@ -75888,17 +76173,53 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
+        description: Total coins credited to the trader after aggregation across all legs.
   dysonprotocol.whaleswap.v1.MsgRedeemAuction:
     type: object
     properties:
       caller:
         type: string
+        description: Account redeeming; must be the current NFT owner.
       auction_id:
         type: string
         format: uint64
-    description: Redeem auction escrow by NFT owner when no current bidder exists.
+        description: Auction to redeem.
+    description: >-
+      *
+
+      RedeemAuction lets the current NFT owner redeem the auction escrow
+
+      when no bid is active.
+
+
+      Behavior:
+
+      - Sends the escrowed sell coins from the module to the caller.
+
+      - Burns the NFT and deletes the auction record and reverse indexes.
+
+      - If owner != original seller and a positive valuation exists in
+      `bid_denom`,
+        a Trade is recorded and its id is included in EventAuctionRedeemed.
+
+      Validation:
+
+      - Auction must exist.
+
+      - `caller` must equal the current NFT owner.
+
+      - No current bidder may exist.
+
+      - Module escrow must contain at least the sell amount.
+
+
+      Emits: EventAuctionRedeemed (trade_id = 0 when seller redeems without
+      trade).
   dysonprotocol.whaleswap.v1.MsgRedeemAuctionResponse:
     type: object
+    description: |-
+      *
+      Empty response. See EventAuctionRedeemed for emitted details.
   dysonprotocol.whaleswap.v1.MsgRemoveLiquidity:
     type: object
     properties:
@@ -76086,9 +76407,11 @@ definitions:
     properties:
       signer:
         type: string
+        description: Signer address; must be the majority owner of pool shares.
       pool_id:
         type: string
         format: uint64
+        description: Target pool id to update.
       fee_pct:
         type: string
         description: >-
@@ -76101,40 +76424,6 @@ definitions:
           reserve
 
           denom in canonical order).
-      min_price:
-        type: array
-        items:
-          type: object
-          properties:
-            denom:
-              type: string
-            amount:
-              type: string
-          description: |-
-            Coin defines a token with a denomination and an amount.
-
-            NOTE: The amount field is an Int which implements the custom method
-            signatures required by gogoproto.
-        description: |-
-          Lower price bound as coin2/coin1 ratio. See notes above; keeper
-          canonicalizes order to pool denoms.
-      max_price:
-        type: array
-        items:
-          type: object
-          properties:
-            denom:
-              type: string
-            amount:
-              type: string
-          description: |-
-            Coin defines a token with a denomination and an amount.
-
-            NOTE: The amount field is an Int which implements the custom method
-            signatures required by gogoproto.
-        description: |-
-          Upper price bound as coin2/coin1 ratio. Must follow the same rules as
-          min_price.
       min_collateral_ratio:
         type: array
         items:
@@ -76243,21 +76532,69 @@ definitions:
           Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
           keeper normalizes to exactly two entries in canonical pool order.
           Replaces deprecated fee_pct field 3.
+      bound_percent:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
+          Optional: directional price-impact bounds keyed by the sold denom.
+          When
+
+          provided, must contain exactly two entries in canonical pool order.
+          Amounts
+
+          must satisfy 0 < x <= 1; x == 1 disables the bound for that denom.
+          Omit the
+
+          field to leave bounds unchanged.
     description: >-
-      Update pool config (owner-only: signer must hold > 50% of shares).
+      *
+
+      Update a pool's dynamic configuration (owner-only).
 
 
-      Notes:
+      Behavior:
 
-      - Bands: set both min_price and max_price empty to clear; otherwise both
-      must
-        be set with exactly two coins matching pool reserves. Keeper canonicalizes,
-        enforces max > min, and requires current price strictly within (min, max).
-      - Required: min_collateral_ratio, max_leverage_ratio, interest_rate,
-        liquidation_threshold.
-      - Optional: fee_rate (0 <= x < 1 per denom), max_borrow_percent (0 <= x <
-      1
-        per denom).
+      - Loads pool; validates signer and majority-ownership.
+
+      - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x <
+      1.
+
+      - Leverage config: required `min_collateral_ratio` and
+      `max_leverage_ratio`
+        with exactly two entries matching pool denoms; each > 1.
+      - Liquidation threshold: required with exactly two entries; each > 1.
+
+      - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.
+
+      - Max borrow percent: optional; if provided exactly two entries; 0 <= x <
+      1.
+
+      - Bound percent: optional; when provided must contain exactly two DecCoins
+        matching pool denoms with amounts in (0,1]; 1 disables the bound. Omit to
+        leave existing bounds unchanged.
+      - Persists pool with `updated` timestamp; emits EventPoolUpdate; asserts
+      AMM
+        and module invariants.
+
+      Emits:
+
+      - EventPoolUpdate(pool_id).
+
+
+      Returns:
+
+      - Empty response.
   dysonprotocol.whaleswap.v1.MsgUpdatePoolConfigResponse:
     type: object
   dysonprotocol.script.v1.MsgCreateNewScript:

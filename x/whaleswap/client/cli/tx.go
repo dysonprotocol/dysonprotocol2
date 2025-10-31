@@ -120,7 +120,7 @@ func parseCoinList(name string, vals []string) ([]sdk.Coin, error) {
 	return coins, nil
 }
 
-// CmdCreatePool provides custom parsing for repeated --coins/--min-price/--max-price flags.
+// CmdCreatePool provides custom parsing for repeated --coins flags.
 func CmdCreatePool() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create-pool",
@@ -144,27 +144,6 @@ func CmdCreatePool() *cobra.Command {
 			feeRateFlags, err := cmd.Flags().GetStringArray("fee-rate")
 			if err != nil {
 				return fmt.Errorf("failed to read --fee-rate: %w", err)
-			}
-			minFlags, err := cmd.Flags().GetStringArray("min-price")
-			if err != nil {
-				return fmt.Errorf("failed to read --min-price flags: %w", err)
-			}
-			maxFlags, err := cmd.Flags().GetStringArray("max-price")
-			if err != nil {
-				return fmt.Errorf("failed to read --max-price flags: %w", err)
-			}
-
-			var minPrice, maxPrice []sdk.Coin
-			if len(minFlags) > 0 || len(maxFlags) > 0 {
-				if len(minFlags) != 2 || len(maxFlags) != 2 {
-					return fmt.Errorf("when setting bands, provide exactly two --min-price and two --max-price flags (one coin per flag)")
-				}
-				if minPrice, err = parseCoinList("min-price", minFlags); err != nil {
-					return err
-				}
-				if maxPrice, err = parseCoinList("max-price", maxFlags); err != nil {
-					return err
-				}
 			}
 
 			// Denoms in canonical pool order (coinList is sanitized/sorted)
@@ -359,39 +338,78 @@ func CmdCreatePool() *cobra.Command {
 				return fmt.Errorf("--fee-rate must be provided 0, 1, or 2 times (per-denom fee as DecCoin)")
 			}
 
+			boundFlags, err := cmd.Flags().GetStringArray("bound-percent")
+			if err != nil {
+				return fmt.Errorf("failed to read --bound-percent: %w", err)
+			}
+			var boundPercent sdk.DecCoins
+			switch len(boundFlags) {
+			case 0:
+				// leave empty to skip update
+			case 2:
+				if parsed, ok := tryParseDecCoins(boundFlags); ok {
+					if len(parsed) != 2 || parsed[0].Denom != denom1 || parsed[1].Denom != denom2 {
+						return fmt.Errorf("--bound-percent DecCoins must match pool denoms in canonical order (%s,%s)", denom1, denom2)
+					}
+					zero := smath.LegacyZeroDec()
+					oneDec := smath.LegacyNewDec(1)
+					for _, dc := range parsed {
+						if !dc.Amount.GT(zero) || dc.Amount.GT(oneDec) {
+							return fmt.Errorf("--bound-percent amounts must satisfy 0 < x <= 1; invalid entry for %s", dc.Denom)
+						}
+					}
+					boundPercent = parsed
+				} else {
+					b1 := mustDec(strings.TrimSpace(boundFlags[0]))
+					b2 := mustDec(strings.TrimSpace(boundFlags[1]))
+					zero := smath.LegacyZeroDec()
+					oneDec := smath.LegacyNewDec(1)
+					if !b1.GT(zero) || b1.GT(oneDec) {
+						return fmt.Errorf("--bound-percent value for %s must satisfy 0 < x <= 1", denom1)
+					}
+					if !b2.GT(zero) || b2.GT(oneDec) {
+						return fmt.Errorf("--bound-percent value for %s must satisfy 0 < x <= 1", denom2)
+					}
+					boundPercent = sdk.NewDecCoins(
+						sdk.NewDecCoinFromDec(denom1, b1),
+						sdk.NewDecCoinFromDec(denom2, b2),
+					)
+				}
+			default:
+				return fmt.Errorf("--bound-percent accepts exactly two values (one per denom) or omit entirely for defaults")
+			}
+
 			msg := &whaleswaptypes.MsgCreatePool{
 				Creator:              clientCtx.GetFromAddress().String(),
 				Coins:                coinList,
-				MinPrice:             minPrice,
-				MaxPrice:             maxPrice,
 				FeeRate:              feeRate,
 				MinCollateralRatio:   minCollateralRatio,
 				MaxLeverageRatio:     maxLeverageRatio,
 				InterestRate:         interestRate,
 				MaxBorrowPercent:     maxBorrowPercent,
 				LiquidationThreshold: liquidationThreshold,
+				BoundPercent:         boundPercent,
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
 	}
 	cmd.Flags().StringArray("coins", nil, "Repeatable; provide exactly two flags, one per coin (e.g., 1000udys)")
 	cmd.Flags().StringArray("fee-rate", nil, "Repeatable (0, 1, or 2); per-denom swap fee as DecCoin in [0,1) (e.g., 0.003udys)")
-	cmd.Flags().StringArray("min-price", nil, "Repeatable; provide two flags to encode band min as coin_b/coin_a")
-	cmd.Flags().StringArray("max-price", nil, "Repeatable; provide two flags to encode band max as coin_b/coin_a")
 	cmd.Flags().StringArray("min-collateral-ratio", nil, "Repeatable (1 or 2); min collateral ratio per denom as Dec or DecCoin (e.g., 1.5 or 1.5udys)")
 	cmd.Flags().StringArray("max-leverage-ratio", nil, "Repeatable (1 or 2); max leverage ratio per denom as Dec or DecCoin")
 	cmd.Flags().StringArray("interest-rate", nil, "Repeatable (0, 1, or 2); APR per denom as DecCoin (e.g., 0.10udys). Optional; defaults to 0 for missing denoms")
 	cmd.Flags().StringArray("liquidation-threshold", nil, "Repeatable (0, 1, or 2); liquidation threshold per denom as Dec or DecCoin (default 1.2)")
 	cmd.Flags().StringArray("max-borrow-percent", nil, "Repeatable; 0, 1, or 2 values. If decimals without denoms are given, they map to the two pool denoms (e.g., 0.80)")
+	cmd.Flags().StringArray("bound-percent", nil, "Repeatable (optional); provide two decimals or DecCoins specifying max fractional price drop per sold denom (0 < x <= 1). Omit for unbounded")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
 
-// CmdUpdatePoolConfig provides custom parsing for repeated band flags.
+// CmdUpdatePoolConfig updates dynamic pool parameters.
 func CmdUpdatePoolConfig() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update-pool-config",
-		Short: "Update pool fee or price band",
+		Short: "Update pool dynamic configuration",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -404,27 +422,6 @@ func CmdUpdatePoolConfig() *cobra.Command {
 			feeRateFlags, err := cmd.Flags().GetStringArray("fee-rate")
 			if err != nil {
 				return fmt.Errorf("failed to read --fee-rate: %w", err)
-			}
-			minFlags, err := cmd.Flags().GetStringArray("min-price")
-			if err != nil {
-				return fmt.Errorf("failed to read --min-price flags: %w", err)
-			}
-			maxFlags, err := cmd.Flags().GetStringArray("max-price")
-			if err != nil {
-				return fmt.Errorf("failed to read --max-price flags: %w", err)
-			}
-
-			var minPrice, maxPrice []sdk.Coin
-			if len(minFlags) > 0 || len(maxFlags) > 0 {
-				if len(minFlags) != 2 || len(maxFlags) != 2 {
-					return fmt.Errorf("when setting bands, provide exactly two --min-price and two --max-price flags (one coin per flag)")
-				}
-				if minPrice, err = parseCoinList("min-price", minFlags); err != nil {
-					return err
-				}
-				if maxPrice, err = parseCoinList("max-price", maxFlags); err != nil {
-					return err
-				}
 			}
 
 			// Load current pool for defaults/denoms
@@ -592,17 +589,57 @@ func CmdUpdatePoolConfig() *cobra.Command {
 				return fmt.Errorf("--fee-rate must be provided 0, 1, or 2 times (per-denom fee as DecCoin)")
 			}
 
+			boundFlags, err := cmd.Flags().GetStringArray("bound-percent")
+			if err != nil {
+				return fmt.Errorf("failed to read --bound-percent: %w", err)
+			}
+			var boundPercent sdk.DecCoins
+			switch len(boundFlags) {
+			case 0:
+				// leave empty to skip update
+			case 2:
+				if parsed, ok := tryParseDecCoins(boundFlags); ok {
+					if len(parsed) != 2 || parsed[0].Denom != pool.Coins[0].Denom || parsed[1].Denom != pool.Coins[1].Denom {
+						return fmt.Errorf("--bound-percent DecCoins must match pool denoms in canonical order (%s,%s)", pool.Coins[0].Denom, pool.Coins[1].Denom)
+					}
+					zero := smath.LegacyZeroDec()
+					oneDec := smath.LegacyNewDec(1)
+					for _, dc := range parsed {
+						if !dc.Amount.GT(zero) || dc.Amount.GT(oneDec) {
+							return fmt.Errorf("--bound-percent amounts must satisfy 0 < x <= 1; invalid entry for %s", dc.Denom)
+						}
+					}
+					boundPercent = parsed
+				} else {
+					b1 := mustDec(strings.TrimSpace(boundFlags[0]))
+					b2 := mustDec(strings.TrimSpace(boundFlags[1]))
+					zero := smath.LegacyZeroDec()
+					oneDec := smath.LegacyNewDec(1)
+					if !b1.GT(zero) || b1.GT(oneDec) {
+						return fmt.Errorf("--bound-percent value for %s must satisfy 0 < x <= 1", pool.Coins[0].Denom)
+					}
+					if !b2.GT(zero) || b2.GT(oneDec) {
+						return fmt.Errorf("--bound-percent value for %s must satisfy 0 < x <= 1", pool.Coins[1].Denom)
+					}
+					boundPercent = sdk.NewDecCoins(
+						sdk.NewDecCoinFromDec(pool.Coins[0].Denom, b1),
+						sdk.NewDecCoinFromDec(pool.Coins[1].Denom, b2),
+					)
+				}
+			default:
+				return fmt.Errorf("--bound-percent accepts exactly two values (one per denom) when provided")
+			}
+
 			msg := &whaleswaptypes.MsgUpdatePoolConfig{
 				Signer:               clientCtx.GetFromAddress().String(),
 				PoolId:               poolID,
 				FeeRate:              feeRate,
-				MinPrice:             ifCoinsEmptyUse(minPrice, pool.MinPrice),
-				MaxPrice:             ifCoinsEmptyUse(maxPrice, pool.MaxPrice),
 				InterestRate:         interestRate,
 				MaxBorrowPercent:     maxBorrowPercent,
 				LiquidationThreshold: liquidationThreshold,
 				MinCollateralRatio:   minCollateralRatio,
 				MaxLeverageRatio:     maxLeverageRatio,
+				BoundPercent:         boundPercent,
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -612,13 +649,12 @@ func CmdUpdatePoolConfig() *cobra.Command {
 		panic(fmt.Errorf("failed to mark --pool-id required: %w", err))
 	}
 	cmd.Flags().StringArray("fee-rate", nil, "Repeatable (0, 1, or 2); per-denom swap fee as DecCoin in [0,1) (e.g., 0.003udys)")
-	cmd.Flags().StringArray("min-price", nil, "Repeatable; provide two flags to encode band min as coin_b/coin_a")
-	cmd.Flags().StringArray("max-price", nil, "Repeatable; provide two flags to encode band max as coin_b/coin_a")
-	cmd.Flags().StringArray("interest-rate", nil, "Repeatable (0, 1, or 2); APR per denom as DecCoin (e.g., 0.10udys). Optional; defaults to current pool for missing denoms")
-	cmd.Flags().StringArray("max-borrow-percent", nil, "Repeatable (twice); cap per denom as DecCoin in [0,1) (e.g., 0.80udys). Optional; defaults to current pool")
+	cmd.Flags().StringArray("interest-rate", nil, "Repeatable (0, 1, or 2); APR per denom as DecCoin (e.g., 0.10udys). Optional; defaults to current values when omitted")
+	cmd.Flags().StringArray("max-borrow-percent", nil, "Repeatable (0, 1, or 2); max borrow percent per denom. Optional; defaults to current values when omitted")
 	cmd.Flags().String("liquidation-threshold", "", "Liquidation threshold (cosmos.Dec). Optional; defaults to current pool")
 	cmd.Flags().String("min-collateral-ratio", "", "Minimum collateral ratio for leverage. Optional; defaults to current pool")
 	cmd.Flags().String("max-leverage-ratio", "", "Maximum leverage ratio. Optional; defaults to current pool")
+	cmd.Flags().StringArray("bound-percent", nil, "Repeatable (optional); provide two decimals or DecCoins specifying max fractional price drop per sold denom (0 < x <= 1). Omit to keep current bounds")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
@@ -629,12 +665,6 @@ func ifEmptyUse(s, fallback string) string {
 		return fallback
 	}
 	return s
-}
-func ifCoinsEmptyUse(c []sdk.Coin, fallback []sdk.Coin) []sdk.Coin {
-	if len(c) == 0 {
-		return fallback
-	}
-	return c
 }
 
 // helper dec parsing

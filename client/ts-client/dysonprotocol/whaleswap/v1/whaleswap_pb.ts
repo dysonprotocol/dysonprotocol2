@@ -14,10 +14,6 @@ import { SettlementMode, TradeOperation } from "./tx_pb.js";
  * Notes:
  * - coin_a.denom < coin_b.denom lexicographically (canonical order)
  * - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
- * - min_price/max_price are optional decimal strings defining a price band over
- *   P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
- *   behaves as constant-product (v2). If set, concentrated-liquidity math
- *   applies.
  * - coin_a.amount/coin_b.amount are sdk.Int strings.
  * - The instantaneous price used by price-based queries is derived from
  *   reserves as P = coin_b / coin_a, consistent with the notes above.
@@ -53,21 +49,6 @@ export class Pool extends Message<Pool> {
    * @deprecated
    */
   feePct = "";
-
-  /**
-   * min_price/max_price optionally set a price band for concentrated liquidity.
-   * Each is expressed as exactly two coins representing the ratio
-   * coins[1]/coins[0]. For example, [{amount: 1, denom: coins[0].denom},
-   * {amount: 2, denom: coins[1].denom}] means Pmin = 2/1. Empty means unset.
-   *
-   * @generated from field: repeated cosmos.base.v1beta1.Coin min_price = 6;
-   */
-  minPrice: Coin[] = [];
-
-  /**
-   * @generated from field: repeated cosmos.base.v1beta1.Coin max_price = 7;
-   */
-  maxPrice: Coin[] = [];
 
   /**
    * @generated from field: uint64 block_height = 10;
@@ -155,6 +136,19 @@ export class Pool extends Message<Pool> {
   maxBorrowPercent: DecCoin[] = [];
 
   /**
+   * Directional price-impact bounds keyed by the sold denom.
+   * Each amount must satisfy 0 < x <= 1; x == 1 disables the bound (unbounded).
+   * Missing entries default to 1 for both pool denoms. Stored in canonical pool
+   * order (coins[0], coins[1]). During swaps, selling denom D enforces that the
+   * post-trade price of D quoted in the opposite denom may drop by at most
+   * x fraction (B = 1/(1-x) multiplier). Values outside (0,1] are rejected at
+   * validation time.
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin bound_percent = 26;
+   */
+  boundPercent: DecCoin[] = [];
+
+  /**
    * fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two
    * entries in canonical pool order matching coins[0].denom and coins[1].denom.
    * Fee is applied to the OUTPUT denom of each swap leg: for exact-in, the
@@ -179,8 +173,6 @@ export class Pool extends Message<Pool> {
     { no: 2, name: "coins", kind: "message", T: Coin, repeated: true },
     { no: 4, name: "shares_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 6, name: "min_price", kind: "message", T: Coin, repeated: true },
-    { no: 7, name: "max_price", kind: "message", T: Coin, repeated: true },
     { no: 10, name: "block_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 11, name: "created", kind: "message", T: Timestamp },
     { no: 12, name: "updated", kind: "message", T: Timestamp },
@@ -193,6 +185,7 @@ export class Pool extends Message<Pool> {
     { no: 22, name: "max_leverage_ratio", kind: "message", T: DecCoin, repeated: true },
     { no: 23, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },
     { no: 24, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },
+    { no: 26, name: "bound_percent", kind: "message", T: DecCoin, repeated: true },
     { no: 25, name: "fee_rate", kind: "message", T: DecCoin, repeated: true },
   ]);
 

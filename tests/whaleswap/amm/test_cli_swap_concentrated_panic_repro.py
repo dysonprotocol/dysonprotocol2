@@ -33,7 +33,7 @@ def test_concentrated_swap_does_not_panic(
     assert mint.get("code", 1) == 0, f"mint-coins failed: {json.dumps(mint, indent=2)}"
 
     # Create pool: coins sorted lexicographically become [custom, udys]. Initial price P=udys/custom=1000/500=2.
-    # Set band 1 < P < 3 with denoms matching [base=custom, quote=udys].
+    # Configure defaults (unbounded directional limits) and verify swap safety.
     create = dysond(
         "tx",
         "whaleswap",
@@ -42,14 +42,6 @@ def test_concentrated_swap_does_not_panic(
         "1000udys",
         "--coins",
         f"500{custom}",
-        "--min-price",
-        f"1{custom}",  # base
-        "--min-price",
-        f"1udys",  # quote => 1/1 = 1.0
-        "--max-price",
-        f"1{custom}",  # base
-        "--max-price",
-        f"3udys",  # quote => 3/1 = 3.0
         "--min-collateral-ratio",
         "1.5",
         "--max-leverage-ratio",

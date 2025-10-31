@@ -6,21 +6,23 @@
             "dysonprotocol.whaleswap.v1.MsgOpenAuction": {
                 "properties": {
                     "seller": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Account opening the auction (receives the minted NFT)."
                     },
                     "bid_denom": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Quote denom for bids; must be a valid denom and differ from sell.denom."
                     },
                     "sell": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false,
-                        "description": "Explicit sell coin to escrow from seller \u2192 module."
+                        "description": "Sell coin to escrow from seller \u2192 module; amount must be > 0."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Open Auction",
-                "description": "Open an auction by escrowing exactly one coin amount. - The escrowed `sell` coin is transferred from seller to module and marked by   an NFT for redemption logic. `bid_denom` defines the quote asset."
+                "description": "* OpenAuction escrows the sell coin from the seller and mints an NFT under a class keyed by `bid_denom`. Class policy (always_listed, valuation fee/period, bid timeout, minimum bid percent increase, allowed denoms) is set from module params. The NFT is sent to the seller and the auction record with reverse indexes is persisted. Emits: EventAuctionCreated on success."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {

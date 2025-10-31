@@ -145,7 +145,7 @@
     },
     "dysonprotocol.whaleswap.v1.MsgCoverPosition": {
       "post": {
-        "summary": "*\nCoverPosition: If payment < total repayment, pays all interest and reduces\nprincipal (resets borrow_time). If payment >= total, unwinds held, repays\nin full, returns collateral, refunds unused payment and sends any profit.",
+        "summary": "*\nCoverPosition repays accrued interest; optionally reduces principal or\nauto-closes on full repayment.",
         "operationId": "dysonprotocol.whaleswap.v1.MsgCoverPosition",
         "responses": {
           "200": {
@@ -178,7 +178,7 @@
     },
     "dysonprotocol.whaleswap.v1.MsgCreatePool": {
       "post": {
-        "summary": "*\nCreatePool creates a two-asset pool with an optional price band and\nper-denom fee/interest/leverage parameters. It moves initial reserves to\nthe module, mints initial shares to the creator, and asserts AMM\ninvariants.",
+        "summary": "*\nCreatePool creates a two-asset pool; moves initial reserves, mints initial\nshares, and asserts invariants.",
         "operationId": "dysonprotocol.whaleswap.v1.MsgCreatePool",
         "responses": {
           "200": {
@@ -244,7 +244,7 @@
     },
     "dysonprotocol.whaleswap.v1.MsgInitializeLiquidation": {
       "post": {
-        "summary": "*\nInitializeLiquidation marks a position liquidatable when CR (with accrued\ninterest at the snapshotted rate) falls below the pool\u2019s\nliquidation_threshold and starts the block-delay countdown.",
+        "summary": "*\nInitializeLiquidation (permissionless) marks a position liquidatable when\nits collateral ratio (with accrued interest at the snapshotted rate) falls\nbelow the pool's liquidation_threshold and starts the block-delay\ncountdown.",
         "operationId": "dysonprotocol.whaleswap.v1.MsgInitializeLiquidation",
         "responses": {
           "200": {
@@ -409,7 +409,7 @@
     },
     "dysonprotocol.whaleswap.v1.MsgPoolSwap": {
       "post": {
-        "summary": "*\nPoolSwap executes one or more pool swap legs with a single end-of-tx\nsettlement, applying output-side fees per leg and enforcing aggregate\nmax_input caps and min_output guarantees.",
+        "summary": "*\nPoolSwap executes one or more exact-in or exact-out pool swap legs with a\nsingle end-of-tx settlement. Applies output-side fees per leg and enforces\naggregate max_input caps and min_output guarantees.",
         "operationId": "dysonprotocol.whaleswap.v1.MsgPoolSwap",
         "responses": {
           "200": {
@@ -575,7 +575,7 @@
     },
     "dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig": {
       "post": {
-        "summary": "*\nUpdatePoolConfig updates price band, fee rate, min collateral ratio, max\nleverage ratio, interest rate, and max borrow percent. Signer must hold a\nmajority of shares. Validates bands and invariants.",
+        "summary": "*\nUpdatePoolConfig updates pool fees, leverage/threshold params, interest,\noptional max_borrow_percent, and bound_percent; majority-owner only.",
         "operationId": "dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig",
         "responses": {
           "200": {
@@ -689,10 +689,10 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "description": "Amounts to add: exactly two coins matching pool denoms; > 0.\nCanonicalized to pool denom order. Full amounts are escrowed; surplus is\nrefunded (band mode refunds to match \u0394L; v2 refunds to match minted\nshares)."
+          "description": "Amounts to add: exactly two positive coins matching the pool denoms.\nCanonicalized to pool denom order. Full amounts are escrowed; surplus is\nrefunded (band mode: to match \u0394L; non-concentrated: to match minted\nshares)."
         }
       },
-      "description": "Add liquidity (owner-only: signer must hold > 50% of shares).\n- Escrows provided amounts and refunds any unused portion.\n- Enforces price band in concentrated mode; amounts canonicalized to pool\norder."
+      "description": "*\nAdd liquidity (owner-only).\n\nBehavior:\n- Escrows the full provided amounts, then refunds any unused surplus.\n- Concentrated pools: compute \u0394L from the inputs at the current price within\n  [min_price, max_price]; refund the side that exceeds the limiting \u0394L; mint\n  shares as floor(\u0394L * total_shares / L_current).\n- Non-concentrated pools: minted shares are derived from the limiting side\n  min(add1/R1, add2/R2) * total_shares; refund the difference.\n- Updates reserves, enforces the price band (if set), persists the pool,\n  emits events, and asserts AMM invariants.\n\nValidation:\n- Pool must exist and signer must hold a majority of shares.\n- `amounts` must contain exactly two positive coins whose denoms match the\n  pool reserves (canonical order).\n\nEmits:\n- EventPoolUpdate (after persisting pool state)\n- EventPoolLiquidityAdded (on successful add)"
     },
     "dysonprotocol.whaleswap.v1.MsgAddLiquidityResponse": {
       "type": "object",
@@ -723,28 +723,35 @@
       "type": "object",
       "properties": {
         "user": {
-          "type": "string"
+          "type": "string",
+          "description": "Account closing the position; must be the position owner."
         },
         "position_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Target position id to close."
         },
         "note": {
-          "type": "string"
+          "type": "string",
+          "description": "Optional note carried into internal trade logs (opaque to the module)."
         }
-      }
+      },
+      "description": "*\nClosePosition closes a synthetic leveraged position.\n\nBehavior:\n- Swaps held to the borrowed denom via the borrow vault, computes accrued\n  interest at the snapshotted rate, restores pool reserves by full\n  repayment, returns remaining collateral and any profit to the user,\n  updates pool accounting, and deletes the position.\n\nEmits: EventLeveragePositionClosed on success."
     },
     "dysonprotocol.whaleswap.v1.MsgClosePositionResponse": {
       "type": "object",
       "properties": {
         "interest_paid": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Accrued interest paid (borrowed denom)."
         },
         "principal_paid": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Principal repaid (borrowed denom)."
         },
         "profit": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Profit returned to the user (borrowed denom)."
         }
       }
     },
@@ -756,40 +763,50 @@
         },
         "position_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Target position id to cover."
         },
         "payment": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Payment coin to cover the position. Must be positive and its denom must\nequal the borrowed denom."
         },
         "note": {
-          "type": "string"
+          "type": "string",
+          "description": "Optional note to use in trade logs."
         }
-      }
+      },
+      "description": "*\nCover a leveraged position.\n\nBehavior:\n- If payment >= principal + accrued interest:\n  - Enforces the close block delay,\n  - Unwinds held \u2192 borrowed via a pool swap from the borrow vault,\n  - Repays principal + interest to pool reserves and accounting,\n  - Returns full collateral, refunds any unused portion of the user's\npayment, and sends any unwind PnL as profit,\n  - Deletes the position (auto-close).\n- If payment < total repayment:\n  - Pays all accrued interest and applies the remainder to reduce principal,\n  - Resets borrow_time and clears liquidation markers,\n  - Updates pool accounting and returns the new collateral ratio at the\n    current price; the position remains open.\n\nValidation:\n- Position must exist and be owned by `user`.\n- `payment` must be positive and its denom must equal the borrowed denom.\n- Position must have a two-entry interest_rate snapshot; payment must fully\n  cover accrued interest.\n- Auto-close path respects the close block delay and requires the unwind swap\n  to produce borrowed output.\n\nEmits:\n- EventLeveragePositionCovered (always; closed = true when fully repaid).\n- EventLeveragePositionClosed (auto-close only).\n\nReturns:\n- Auto-close: interest_paid, principal_paid = full borrowed, new_borrowed =\n0, new_collateral_ratio = 0, closed = true, refunded = unused payment, profit\n= unwind PnL.\n- Partial cover: interest_paid, principal_paid, new_borrowed (remaining),\n  new_collateral_ratio at current price, closed = false, refunded = 0, profit\n= 0."
     },
     "dysonprotocol.whaleswap.v1.MsgCoverPositionResponse": {
       "type": "object",
       "properties": {
         "interest_paid": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Accrued interest paid (borrowed denom)."
         },
         "principal_paid": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Principal amount paid (borrowed denom)."
         },
         "new_borrowed": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "New borrowed principal after payment (0 if closed)."
         },
         "new_collateral_ratio": {
-          "type": "string"
+          "type": "string",
+          "description": "New collateral ratio at current price; \"0\" when closed."
         },
         "closed": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "True if the position was fully repaid and deleted."
         },
         "refunded": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Unused portion of the user's payment returned (auto-close path)."
         },
         "profit": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "title": "swap PnL from unwinding held \u2192 borrowed during auto-close"
+          "description": "Swap PnL from unwinding held \u2192 borrowed during auto-close."
         }
       }
     },
@@ -797,7 +814,8 @@
       "type": "object",
       "properties": {
         "creator": {
-          "type": "string"
+          "type": "string",
+          "description": "Account creating the pool; receives the initial minted shares."
         },
         "coins": {
           "type": "array",
@@ -805,20 +823,6 @@
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
           "description": "Initial reserves. Required: exactly two coins with positive amounts.\nOrder is canonicalized internally to pool denom order (lexicographic)."
-        },
-        "min_price": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          },
-          "description": "Optional lower price bound as coin2/coin1 ratio.\nIf set, both this and max_price must contain exactly two coins whose\ndenoms match the pool reserves; keeper normalizes order."
-        },
-        "max_price": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          },
-          "description": "Optional upper price bound as coin2/coin1 ratio; subject to the same\nrules as min_price. Keeper ensures min_price < max_price and the initial\nprice is strictly within (min, max)."
         },
         "fee_pct": {
           "type": "string",
@@ -865,16 +869,24 @@
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
           "description": "Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;\nkeeper normalizes to exactly two entries in canonical pool order.\nReplaces deprecated fee_pct field 5."
+        },
+        "bound_percent": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Optional: per-denom directional price-impact bounds keyed by the sold\ndenom. When omitted, defaults to 1 for both pool denoms (unbounded). When\nprovided, must contain exactly two entries in canonical pool order with\namounts satisfying 0 < x <= 1; x == 1 disables the bound for that denom."
         }
       },
-      "description": "Create a pool.\n\nBehavior:\n- If min_price/max_price are both unset (or effectively encode [0, +\u221e)), the\n  pool behaves as constant product (v2).\n- If a finite band is provided, concentrated-liquidity math applies within\n  [min_price, max_price] where price is coin_b / coin_a (see conventions)."
+      "description": "*\nCreate a two-asset pool with per-denom fee/interest/leverage parameters and\noptional directional bound_percent limits.\n\nBehavior:\n- Input normalization: canonicalizes `coins` (exactly two positive coins) to\n  the pool's denom order.\n- Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two\n  DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and\n  interest_rate >= 0 per denom.\n- Leverage configuration (required): `min_collateral_ratio` and\n  `max_leverage_ratio` must have exactly two entries (> 1) matching pool\n  denoms; `liquidation_threshold` must have exactly two entries (> 1);\n  `max_borrow_percent` must have exactly two entries with amounts in [0,1).\n- Bound percent (optional): when omitted defaults to 1 (unbounded) for both\n  denoms. When provided, must contain exactly two DecCoins matching pool\n  denoms with amounts in (0,1]; 1 disables the bound for that denom.\n- Funds and shares: sends initial reserves from `creator` \u2192 module; allocates\n  a new pool_id; persists the pool; computes initial shares as\nfloor(sqrt(x*y)); ensures at least one share; mints pool shares and sends\nthem to the creator.\n- Invariants: asserts AMM and module invariants before returning.\n\nEmits:\n- EventPoolCreated(pool_id)\n- EventPoolUpdate(pool_id)\n\nReturns:\n- `pool_id` of the newly created pool (see response)."
     },
     "dysonprotocol.whaleswap.v1.MsgCreatePoolResponse": {
       "type": "object",
       "properties": {
         "pool_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Newly created pool id."
         }
       }
     },
@@ -918,29 +930,36 @@
       "type": "object",
       "properties": {
         "initializer": {
-          "type": "string"
+          "type": "string",
+          "description": "Account initializing liquidation; permissionless (any account)."
         },
         "user": {
-          "type": "string"
+          "type": "string",
+          "description": "Position owner address; should match the position's user."
         },
         "pool_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Pool id; should match the position's pool."
         },
         "position_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Target position id to initialize."
         }
-      }
+      },
+      "description": "*\nInitialize liquidation of a leveraged position.\n\nBehavior:\n- Permissionless trigger: any `initializer` may call this.\n- Accrues interest at the snapshotted APR since borrow_time and computes\n  the collateral ratio CR = collateral / (principal + interest).\n- Compares CR against the pool's per-denom liquidation_threshold for the\n  borrowed denom (> 1 required).\n- On CR < threshold, records liquidation markers (status and current block\n  height) and persists the updated position.\n\nValidation:\n- Position must exist; pool must exist.\n- Position must have a two-entry interest_rate snapshot.\n- Pool must have a two-entry liquidation_threshold; borrowed denom entry must\n  be > 1.\n- Position must be liquidatable at evaluation time (CR < threshold).\n\nEmits:\n- EventLeverageLiquidationInitialized with position_id, user, pool_id,\n  collateral_ratio, liquidation_threshold, block_height.\n\nReturns:\n- collateral_ratio and liquidation_threshold in the response."
     },
     "dysonprotocol.whaleswap.v1.MsgInitializeLiquidationResponse": {
       "type": "object",
       "properties": {
         "collateral_ratio": {
-          "type": "string"
+          "type": "string",
+          "description": "Collateral ratio at evaluation time (LegacyDec string)."
         },
         "liquidation_threshold": {
-          "type": "string"
+          "type": "string",
+          "description": "Liquidation threshold used for comparison (LegacyDec string)."
         }
       }
     },
@@ -1032,17 +1051,19 @@
       "type": "object",
       "properties": {
         "seller": {
-          "type": "string"
+          "type": "string",
+          "description": "Account opening the auction (receives the minted NFT)."
         },
         "bid_denom": {
-          "type": "string"
+          "type": "string",
+          "description": "Quote denom for bids; must be a valid denom and differ from sell.denom."
         },
         "sell": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "description": "Explicit sell coin to escrow from seller \u2192 module."
+          "description": "Sell coin to escrow from seller \u2192 module; amount must be > 0."
         }
       },
-      "description": "Open an auction by escrowing exactly one coin amount.\n\n- The escrowed `sell` coin is transferred from seller to module and marked by\n  an NFT for redemption logic. `bid_denom` defines the quote asset."
+      "description": "*\nOpenAuction escrows the sell coin from the seller and mints an NFT under a\nclass keyed by `bid_denom`. Class policy (always_listed, valuation\nfee/period, bid timeout, minimum bid percent increase, allowed denoms) is\nset from module params. The NFT is sent to the seller and the auction record\nwith reverse indexes is persisted.\n\nEmits: EventAuctionCreated on success."
     },
     "dysonprotocol.whaleswap.v1.MsgOpenAuctionResponse": {
       "type": "object",
@@ -1095,7 +1116,8 @@
       "type": "object",
       "properties": {
         "trader": {
-          "type": "string"
+          "type": "string",
+          "description": "Account initiating the swap; debited/credited on net settlement."
         },
         "max_input": {
           "type": "array",
@@ -1118,7 +1140,8 @@
           },
           "description": "Final minimum outputs required per denom after aggregation."
         }
-      }
+      },
+      "description": "*\nExecute one or more pool swap legs with a single settlement.\n\nBehavior:\n- Per-leg execution: for each leg, validates the pool/denoms and computes\n  the out amount using concentrated-liquidity band math (when configured) or\n  constant-product math, applies output-side fee based on the output denom,\n  and updates pool reserves.\n- Aggregate constraints: after all legs, enforces per-denom debit caps\n  (max_input) and minimum outputs (min_output), then performs a single bank\n  move between trader and module for the net debits/credits.\n- Invariants and recording: asserts AMM and module invariants and records a\n  single Trade containing all operations.\n\nValidation:\n- legs must be non-empty; each leg must specify exactly one of swap_in or\n  swap_out with a positive amount.\n- Pool must exist and have exactly two reserves; input/output denoms must be\n  present in the pool.\n- Concentrated-liquidity: resulting price must remain within [min_price,\n  max_price]; exact-out must not exceed band capacity.\n- Constant-product: swaps must not deplete any reserve; exact-out must not\n  exceed capacity.\n- Aggregate: required debits must not exceed max_input caps; final credits\n  must satisfy min_output per denom.\n\nEmits:\n- EventPoolSwap per executed leg (with pool_id, trade_id, operation_index)\n  via recordTradeWithOperations.\n- EventTradeRecorded once after all legs are recorded.\n\nReturns:\n- amount_out: total coins credited to the trader across all legs."
     },
     "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse": {
       "type": "object",
@@ -1127,7 +1150,8 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          }
+          },
+          "description": "Total coins credited to the trader after aggregation across all legs."
         }
       }
     },
@@ -1135,17 +1159,20 @@
       "type": "object",
       "properties": {
         "caller": {
-          "type": "string"
+          "type": "string",
+          "description": "Account redeeming; must be the current NFT owner."
         },
         "auction_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Auction to redeem."
         }
       },
-      "description": "Redeem auction escrow by NFT owner when no current bidder exists."
+      "description": "*\nRedeemAuction lets the current NFT owner redeem the auction escrow\nwhen no bid is active.\n\nBehavior:\n- Sends the escrowed sell coins from the module to the caller.\n- Burns the NFT and deletes the auction record and reverse indexes.\n- If owner != original seller and a positive valuation exists in `bid_denom`,\n  a Trade is recorded and its id is included in EventAuctionRedeemed.\n\nValidation:\n- Auction must exist.\n- `caller` must equal the current NFT owner.\n- No current bidder may exist.\n- Module escrow must contain at least the sell amount.\n\nEmits: EventAuctionRedeemed (trade_id = 0 when seller redeems without trade)."
     },
     "dysonprotocol.whaleswap.v1.MsgRedeemAuctionResponse": {
-      "type": "object"
+      "type": "object",
+      "description": "*\nEmpty response. See EventAuctionRedeemed for emitted details."
     },
     "dysonprotocol.whaleswap.v1.MsgRemoveLiquidity": {
       "type": "object",
@@ -1230,29 +1257,17 @@
       "type": "object",
       "properties": {
         "signer": {
-          "type": "string"
+          "type": "string",
+          "description": "Signer address; must be the majority owner of pool shares."
         },
         "pool_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Target pool id to update."
         },
         "fee_pct": {
           "type": "string",
           "description": "Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec\nstring in [0,1)). Use fee_rate field 11 instead. Migration logic should\nread this and convert to fee_rate format (two DecCoins, one per reserve\ndenom in canonical order)."
-        },
-        "min_price": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          },
-          "description": "Lower price bound as coin2/coin1 ratio. See notes above; keeper\ncanonicalizes order to pool denoms."
-        },
-        "max_price": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          },
-          "description": "Upper price bound as coin2/coin1 ratio. Must follow the same rules as\nmin_price."
         },
         "min_collateral_ratio": {
           "type": "array",
@@ -1295,9 +1310,16 @@
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
           "description": "Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;\nkeeper normalizes to exactly two entries in canonical pool order.\nReplaces deprecated fee_pct field 3."
+        },
+        "bound_percent": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "Optional: directional price-impact bounds keyed by the sold denom. When\nprovided, must contain exactly two entries in canonical pool order. Amounts\nmust satisfy 0 < x <= 1; x == 1 disables the bound for that denom. Omit the\nfield to leave bounds unchanged."
         }
       },
-      "description": "Update pool config (owner-only: signer must hold > 50% of shares).\n\nNotes:\n- Bands: set both min_price and max_price empty to clear; otherwise both must\n  be set with exactly two coins matching pool reserves. Keeper canonicalizes,\n  enforces max > min, and requires current price strictly within (min, max).\n- Required: min_collateral_ratio, max_leverage_ratio, interest_rate,\n  liquidation_threshold.\n- Optional: fee_rate (0 <= x < 1 per denom), max_borrow_percent (0 <= x < 1\n  per denom)."
+      "description": "*\nUpdate a pool's dynamic configuration (owner-only).\n\nBehavior:\n- Loads pool; validates signer and majority-ownership.\n- Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1.\n- Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`\n  with exactly two entries matching pool denoms; each > 1.\n- Liquidation threshold: required with exactly two entries; each > 1.\n- Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.\n- Max borrow percent: optional; if provided exactly two entries; 0 <= x < 1.\n- Bound percent: optional; when provided must contain exactly two DecCoins\n  matching pool denoms with amounts in (0,1]; 1 disables the bound. Omit to\n  leave existing bounds unchanged.\n- Persists pool with `updated` timestamp; emits EventPoolUpdate; asserts AMM\n  and module invariants.\n\nEmits:\n- EventPoolUpdate(pool_id).\n\nReturns:\n- Empty response."
     },
     "dysonprotocol.whaleswap.v1.MsgUpdatePoolConfigResponse": {
       "type": "object"

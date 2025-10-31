@@ -55,7 +55,7 @@ def test_update_pool_config_owner_only(
     )
 
     # Canonicalize denoms to match keeper's Sort() behavior
-    base, quote = sorted(["udys", name])
+    denom_a, denom_b = sorted(["udys", name])
 
     [stranger_name, stranger_addr] = generate_account("amm_stranger")
     faucet(stranger_addr, amount=500_000)
@@ -66,9 +66,9 @@ def test_update_pool_config_owner_only(
         "--pool-id",
         str(pool_id),
         "--fee-rate",
-        f"0.001{base}",
+        f"0.001{denom_a}",
         "--fee-rate",
-        f"0.001{quote}",
+        f"0.001{denom_b}",
         "--from",
         stranger_name,
     )
@@ -83,17 +83,13 @@ def test_update_pool_config_owner_only(
         "--pool-id",
         str(pool_id),
         "--fee-rate",
-        f"0.002{base}",
+        f"0.002{denom_a}",
         "--fee-rate",
-        f"0.002{quote}",
-        "--min-price",
-        f"3{base}",
-        "--min-price",
-        f"1{quote}",
-        "--max-price",
-        f"1{base}",
-        "--max-price",
-        f"3{quote}",
+        f"0.002{denom_b}",
+        "--bound-percent",
+        "0.600000000000000000",
+        "--bound-percent",
+        "0.800000000000000000",
         "--from",
         creator_name,
     )

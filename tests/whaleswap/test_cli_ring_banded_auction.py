@@ -45,7 +45,7 @@ def test_ring_trade_banded_auction(
     taker = env["acc1"]["name"]
     taker_addr = env["acc1"]["addr"]
 
-    # Create v3 pool (banded) for A/B with narrow band containing initial price
+    # Create v3 pool (directionally bounded) for A/B with asymmetric bounds
     tx_v3 = dysond(
         "tx",
         "whaleswap",
@@ -54,14 +54,10 @@ def test_ring_trade_banded_auction(
         f"100{a}",
         "--coins",
         f"100{b}",
-        "--min-price",
-        f"2{a}",
-        "--min-price",
-        f"1{b}",
-        "--max-price",
-        f"1{a}",
-        "--max-price",
-        f"2{b}",
+        "--bound-percent",
+        f"0.250000000000000000{a}",
+        "--bound-percent",
+        f"0.750000000000000000{b}",
         "--min-collateral-ratio",
         "1.5",
         "--max-leverage-ratio",
@@ -93,6 +89,11 @@ def test_ring_trade_banded_auction(
     assert (
         c3.get(b) == "100"
     ), f"v3 pool B reserve mismatch. Full: {json.dumps(q_v3, indent=2)}"
+    expected_bounds = [
+        f"0.250000000000000000{a}",
+        f"0.750000000000000000{b}",
+    ]
+    assert sorted(p3.get("bound_percent", [])) == sorted(expected_bounds)
 
     # Create v2 pool for A/C to close ring later
     tx_v2 = dysond(
@@ -345,7 +346,7 @@ def test_ring_trade_banded_auction(
     m3 = {c["denom"]: c["amount"] for c in p3a.get("coins", [])}
     m2 = {c["denom"]: c["amount"] for c in p2a.get("coins", [])}
     assert (
-        m3.get(a) == "103"
+        m3.get(a) == "102"
     ), f"post-trade v3 pool A reserve mismatch: {json.dumps(q_v3_after, indent=2)}"
     assert (
         m3.get(b) == "99"

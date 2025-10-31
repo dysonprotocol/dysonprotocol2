@@ -14,10 +14,6 @@ option go_package = "dysonprotocol.com/x/whaleswap/types";
 // Notes:
 // - coin_a.denom < coin_b.denom lexicographically (canonical order)
 // - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
-// - min_price/max_price are optional decimal strings defining a price band over
-//   P = coin_b.amount/coin_a.amount. If unset (or effectively [0, +∞)) the pool
-//   behaves as constant-product (v2). If set, concentrated-liquidity math
-//   applies.
 // - coin_a.amount/coin_b.amount are sdk.Int strings.
 // - The instantaneous price used by price-based queries is derived from
 //   reserves as P = coin_b / coin_a, consistent with the notes above.
@@ -36,18 +32,8 @@ message Pool {
   // denom in canonical order).
   string fee_pct = 5
       [ deprecated = true, (cosmos_proto.scalar) = "cosmos.Dec" ];
-  // min_price/max_price optionally set a price band for concentrated liquidity.
-  // Each is expressed as exactly two coins representing the ratio
-  // coins[1]/coins[0]. For example, [{amount: 1, denom: coins[0].denom},
-  // {amount: 2, denom: coins[1].denom}] means Pmin = 2/1. Empty means unset.
-  repeated cosmos.base.v1beta1.Coin min_price = 6 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
-  ];
-  repeated cosmos.base.v1beta1.Coin max_price = 7 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
-  ];
+  reserved 6, 7;
+  reserved "min_price", "max_price";
   uint64 block_height = 10;
   google.protobuf.Timestamp created = 11 [ (gogoproto.stdtime) = true ];
   google.protobuf.Timestamp updated = 12 [ (gogoproto.stdtime) = true ];
@@ -105,6 +91,18 @@ message Pool {
   // Maximum borrow capacity per reserve denom as DecCoins (exactly two,
   // canonical order). Each amount is a LegacyDec in [0,1).
   repeated cosmos.base.v1beta1.DecCoin max_borrow_percent = 24 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
+
+  // Directional price-impact bounds keyed by the sold denom.
+  // Each amount must satisfy 0 < x <= 1; x == 1 disables the bound (unbounded).
+  // Missing entries default to 1 for both pool denoms. Stored in canonical pool
+  // order (coins[0], coins[1]). During swaps, selling denom D enforces that the
+  // post-trade price of D quoted in the opposite denom may drop by at most
+  // x fraction (B = 1/(1-x) multiplier). Values outside (0,1] are rejected at
+  // validation time.
+  repeated cosmos.base.v1beta1.DecCoin bound_percent = 26 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
   ];

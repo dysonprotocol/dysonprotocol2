@@ -9,9 +9,10 @@ def test_make_trade_v3_boundary_fail(chainnet, ws_setup_env):
     a = env["denoms"][0]
     b = env["denoms"][1]
     taker_name = env["acc3"]["name"]
+    zero = "0.000000000000000000"
 
-    # Initial price is 1.0 (100b/100a). Set band edges equal to 1.0 to enforce boundary fail.
-    with pytest.raises(Exception, match="max_price must be greater than min_price"):
+    # Invalid bound (0% drop allowed) should be rejected by validation.
+    with pytest.raises(Exception, match="--bound-percent value for"):
         dysond(
             "tx",
             "whaleswap",
@@ -20,14 +21,10 @@ def test_make_trade_v3_boundary_fail(chainnet, ws_setup_env):
             f"100{a}",
             "--coins",
             f"100{b}",
-            "--min-price",
-            f"1{a}",
-            "--min-price",
-            f"1{b}",
-            "--max-price",
-            f"1{a}",
-            "--max-price",
-            f"1{b}",
+            "--bound-percent",
+            zero,
+            "--bound-percent",
+            zero,
             "--min-collateral-ratio",
             "1.5",
             "--max-leverage-ratio",

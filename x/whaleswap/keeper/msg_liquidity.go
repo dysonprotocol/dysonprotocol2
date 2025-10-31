@@ -21,17 +21,11 @@ import (
 //     reserves (order is canonicalized to the pool's denom order).
 //   - Escrow/Refund: the full provided amounts are escrowed first; any unused
 //     surplus is refunded after the precise amounts used are derived.
-//   - Minting:
-//   - Concentrated-liquidity pools (bounded by MinPrice/MaxPrice): compute
-//     the liquidity delta ΔL at the current sqrt price within the active band
-//     from the provided amounts, refund the surplus to match ΔL, then mint
-//     shares as floor(ΔL * totalShares / L_current).
-//   - Non-concentrated pools: compute minted shares from the limiting side
-//     min(add1/existingR1, add2/existingR2) * totalShares; refund the
-//     difference required to exactly fund the minted shares.
-//   - State updates: pool reserves are updated, the price band (if any) is
-//     enforced post-state, the pool is persisted, shares are minted via the
-//     nameservice module and transferred to the signer, an
+//   - Minting: compute shares from the limiting side min(add1/existingR1,
+//     add2/existingR2) * totalShares; refund the difference required to exactly
+//     fund the minted shares.
+//   - State updates: pool reserves are updated, the pool is persisted, shares
+//     are minted via the nameservice module and transferred to the signer, an
 //     EventPoolLiquidityAdded is emitted, and AMM/intra-module invariants are
 //     asserted.
 //
@@ -53,7 +47,7 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "pool not found: %d", msg.PoolId)
 	}
-	logger.Info("	 loaded pool", "pool_id", pool.PoolId, "reserves", pool.Coins, "shares_denom", pool.SharesDenom, "bounded", len(pool.MinPrice) == 2)
+	logger.Info("\t loaded pool", "pool_id", pool.PoolId, "reserves", pool.Coins, "shares_denom", pool.SharesDenom)
 	signer, err := k.addr(ctx, msg.Signer)
 	if err != nil {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidAddress, err.Error())
@@ -94,108 +88,35 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 	orig2 := add2.Amount
 	refund1 := math.NewInt(0)
 	refund2 := math.NewInt(0)
-	var dL math.LegacyDec
-
-	if len(pool.MinPrice) == 2 { // concentrated mode
-		// compute L contribution based on band math
-		L, sa, sb, err := k.liquidityForReserves(pool)
-		if err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to compute current sqrt price")
-		}
-		sp, err := k.poolSqrtPrice(pool, exR1.Denom, exR2.Denom)
-		if err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to compute liquidity for reserves")
-		}
-		logger.Info("AddLiquidity concentrated math", "sqrt_price", sp.String(), "sa", sa.String(), "sb", sb.String(), "L", L.String())
-		// contributions
-		// if sp <= sa: only token1 contributes → ΔL = dx * (sa*sb)/(sb-sa)
-		// if sp >= sb: only token2 contributes → ΔL = dy / (sb - sa)
-		// if sa < sp < sb: ΔL0 from dx and ΔL1 from dy; take min
-		one := math.LegacyNewDec(1)
-		_ = one // silence linter if unused in this snippet
-		dx := add1.Amount.ToLegacyDec()
-		dy := add2.Amount.ToLegacyDec()
-		// dL will be set by the branch below and later used to mint shares
-
-		// NOTE: Lines 87-96 (boundary conditions sp <= sa and sp >= sb) are unreachable
-		// in practice because:
-		// 1. Pool creation validates initial price must be strictly within (sa, sb)
-		// 2. MsgPoolSwap validates resulting price must remain within [min_price, max_price]
-		// These branches are defensive code for edge cases (manual state manipulation,
-		// future features, or mathematical completeness). They cannot be triggered via
-		// normal AddLiquidity calls following standard pool creation and swaps.
-		if sp.LTE(sa) {
-			// UNREACHABLE via normal operations: price cannot go below min_price
-			dL = dx.Mul(sa).Mul(sb).Quo(sb.Sub(sa))
-			// token2 ignored; full refund
-			refund2 = add2.Amount
-			add2 = sdk.NewCoin(add2.Denom, math.NewInt(0))
-		} else if sp.GTE(sb) {
-			// UNREACHABLE via normal operations: price cannot go above max_price
-			dL = dy.Quo(sb.Sub(sa))
-			refund1 = add1.Amount
-			add1 = sdk.NewCoin(add1.Denom, math.NewInt(0))
-		} else {
-			// NORMAL CASE: price within band (sa < sp < sb)
-			dL0 := dx.Mul(sp).Mul(sb).Quo(sb.Sub(sp))
-			dL1 := dy.Quo(sp.Sub(sa))
-			if dL0.LTE(dL1) {
-				dL = dL0
-				// compute required dy to match dL: dy* = dL * (sp - sa)
-				reqDy := dL.Mul(sp.Sub(sa)).TruncateInt()
-				if add2.Amount.GT(reqDy) {
-					refund2 = add2.Amount.Sub(reqDy)
-					add2 = sdk.NewCoin(add2.Denom, reqDy)
-				}
-			} else {
-				dL = dL1
-				// compute required dx to match dL: dx* = dL * (sb - sp) / (sp*sb)
-				reqDx := dL.Mul(sb.Sub(sp)).Quo(sp.Mul(sb)).TruncateInt()
-				if add1.Amount.GT(reqDx) {
-					refund1 = add1.Amount.Sub(reqDx)
-					add1 = sdk.NewCoin(add1.Denom, reqDx)
-				}
-			}
-		}
-		_ = L // L only used for share ratio below
-	} else {
-		// Non-concentrated: compute refunds after minted via Dec math
-		// (escrow/refund happens later after we derive exact used amounts)
-	}
 
 	totalShares := k.bank.GetSupply(ctx, pool.SharesDenom).Amount
-	var minted math.Int
-	if len(pool.MinPrice) == 2 {
-		// Δshares = floor(ΔL * totalShares / Lcur)
-		Lcur, _, _, err := k.liquidityForReserves(pool)
-		if err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to compute current sqrt price")
-		}
-		if !Lcur.IsPositive() {
-			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool liquidity")
-		}
-		minted = dL.MulInt(totalShares).Quo(Lcur).TruncateInt()
-	} else {
-		s1 := add1.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR1.Amount.ToLegacyDec()).TruncateInt()
-		s2 := add2.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR2.Amount.ToLegacyDec()).TruncateInt()
-		minted = s1
-		if s2.LT(s1) {
-			minted = s2
-		}
-		// Compute exact required amounts for minted shares using ceil to avoid underfunding
-		req1 := math.LegacyNewDecFromInt(minted).MulInt(exR1.Amount).QuoInt(totalShares).Ceil().TruncateInt()
-		req2 := math.LegacyNewDecFromInt(minted).MulInt(exR2.Amount).QuoInt(totalShares).Ceil().TruncateInt()
-		if req1.IsNegative() || req2.IsNegative() {
-			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid required amounts")
-		}
-		if req1.GT(orig1) || req2.GT(orig2) {
-			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "insufficient provided amounts for minted shares")
-		}
-		refund1 = orig1.Sub(req1)
-		refund2 = orig2.Sub(req2)
-		add1 = sdk.NewCoin(add1.Denom, req1)
-		add2 = sdk.NewCoin(add2.Denom, req2)
+	if !totalShares.IsPositive() {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid total shares supply")
 	}
+
+	s1 := add1.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR1.Amount.ToLegacyDec()).TruncateInt()
+	s2 := add2.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR2.Amount.ToLegacyDec()).TruncateInt()
+	minted := s1
+	if s2.LT(s1) {
+		minted = s2
+	}
+	if !minted.IsPositive() {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "shares must be > 0")
+	}
+
+	req1 := math.LegacyNewDecFromInt(minted).MulInt(exR1.Amount).QuoInt(totalShares).Ceil().TruncateInt()
+	req2 := math.LegacyNewDecFromInt(minted).MulInt(exR2.Amount).QuoInt(totalShares).Ceil().TruncateInt()
+	if req1.IsNegative() || req2.IsNegative() {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid required amounts")
+	}
+	if req1.GT(orig1) || req2.GT(orig2) {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "insufficient provided amounts for minted shares")
+	}
+
+	refund1 = orig1.Sub(req1)
+	refund2 = orig2.Sub(req2)
+	add1 = sdk.NewCoin(add1.Denom, req1)
+	add2 = sdk.NewCoin(add2.Denom, req2)
 
 	// Escrow the full user-provided amounts, then refund the unused difference.
 	escrow1 := sdk.NewCoin(exR1.Denom, orig1)
@@ -217,29 +138,10 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		}
 		logger.Info("AddLiquidity refunds sent", "refunds", refunds)
 	}
-	if !minted.IsPositive() {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "shares must be > 0")
-	}
-	logger.Info("AddLiquidity minted shares computed", "minted", minted)
 
 	pool.Coins = sdk.NewCoins(exR1.Add(add1), exR2.Add(add2))
 	logger.Info("AddLiquidity new reserves", "r1", pool.Coins[0], "r2", pool.Coins[1])
 
-	// Enforce price band after add
-	if len(pool.MinPrice) == 2 {
-		rBase := pool.Coins[0].Amount
-		rQuote := pool.Coins[1].Amount
-		minBase := pool.MinPrice.AmountOf(pool.Coins[0].Denom)
-		minQuote := pool.MinPrice.AmountOf(pool.Coins[1].Denom)
-		maxBase := pool.MaxPrice.AmountOf(pool.Coins[0].Denom)
-		maxQuote := pool.MaxPrice.AmountOf(pool.Coins[1].Denom)
-		if rQuote.Mul(minBase).LT(rBase.Mul(minQuote)) {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "resulting price below band after add")
-		}
-		if rQuote.Mul(maxBase).GT(rBase.Mul(maxQuote)) {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "resulting price above band after add")
-		}
-	}
 	// Persist and emit poolupdate
 	if err := k.updatePool(ctx, &pool); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to update pool %d after add", pool.PoolId)
@@ -284,17 +186,12 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 //   - Full exit: if the caller burns all outstanding shares, the pool is
 //     deleted and the full reserves are paid out.
 //   - Partial exit: the caller burns a subset of shares and receives a payout
-//     proportional to that share. For concentrated-liquidity pools, the payout
-//     is computed using ΔL over the current price band; for non-concentrated
-//     pools, the payout is pro-rata using DecCoins.
+//     proportional to that share using pro-rata DecCoins math.
 //
 // Validation and safety guarantees:
 //   - The pool must exist and the signer must hold at least msg.Shares.
 //   - Partial exits cannot deplete any reserve; withdrawing the last liquidity
 //     requires a full exit.
-//   - For concentrated pools, the resulting state must remain within the price
-//     band, and the liquidity delta must be consistent with the burned shares
-//     within a small tolerance.
 //
 // On success, an EventPoolLiquidityRemoved event is emitted and the updated
 // pool state is persisted. Errors are returned; no panics.
@@ -306,7 +203,7 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "pool not found: %d", msg.PoolId)
 	}
-	logger.Info("RemoveLiquidity loaded pool", "pool_id", pool.PoolId, "reserves", pool.Coins, "shares_denom", pool.SharesDenom, "bounded", len(pool.MinPrice) == 2)
+	logger.Info("RemoveLiquidity loaded pool", "pool_id", pool.PoolId, "reserves", pool.Coins, "shares_denom", pool.SharesDenom)
 	sharesAmt, ok := math.NewIntFromString(msg.Shares)
 	if !ok || !sharesAmt.IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid shares")
@@ -353,48 +250,16 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 		logger.Info("RemoveLiquidity emitted EventPoolLiquidityRemoved", "pool_id", pool.PoolId, "shares", sharesAmt.String())
 		return &whaleswapv1.MsgRemoveLiquidityResponse{Amount: outs}, nil
 	}
-	var out1, out2 sdk.Coin
-	var Lbefore math.LegacyDec
-	var dLExpected math.LegacyDec
-	if len(pool.MinPrice) == 2 {
-		// Concentrated removal by ΔL
-		Lcur, sa, sb, err := k.liquidityForReserves(pool)
-		if err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to send outputs to signer")
-		}
-		if !Lcur.IsPositive() {
-			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool liquidity")
-		}
-		sp, err := k.poolSqrtPrice(pool, pool.Coins[0].Denom, pool.Coins[1].Denom)
-		if err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to recompute liquidity after remove")
-		}
-		// record before-state liquidity and expected delta
-		Lbefore = Lcur
-		dLExpected = Lcur.MulInt(sharesAmt).QuoInt(totalShares)
-		dL := dLExpected
-		if sp.LTE(sa) {
-			// out1 = floor(ΔL * (sb - sa) / (sa*sb)); out2 = 0
-			out1 = sdk.NewCoin(pool.Coins[0].Denom, dL.Mul(sb.Sub(sa)).Quo(sa.Mul(sb)).TruncateInt())
-			out2 = sdk.NewCoin(pool.Coins[1].Denom, math.NewInt(0))
-		} else if sp.GTE(sb) {
-			// out1 = 0; out2 = floor(ΔL * (sb - sa))
-			out1 = sdk.NewCoin(pool.Coins[0].Denom, math.NewInt(0))
-			out2 = sdk.NewCoin(pool.Coins[1].Denom, dL.Mul(sb.Sub(sa)).TruncateInt())
-		} else {
-			// within band
-			out1 = sdk.NewCoin(pool.Coins[0].Denom, dL.Mul(sb.Sub(sp)).Quo(sp.Mul(sb)).TruncateInt())
-			out2 = sdk.NewCoin(pool.Coins[1].Denom, dL.Mul(sp.Sub(sa)).TruncateInt())
-		}
-	} else {
-		// Pro-rata removal using DecCoins for robust denom-safe math
-		reservesDec := sdk.NewDecCoinsFromCoins(pool.Coins...)
-		ratio := math.LegacyNewDecFromInt(sharesAmt).QuoInt(totalShares)
-		payoutsDec := reservesDec.MulDecTruncate(ratio)
-		payouts, _ := payoutsDec.TruncateDecimal()
-		out1 = sdk.NewCoin(pool.Coins[0].Denom, payouts.AmountOf(pool.Coins[0].Denom))
-		out2 = sdk.NewCoin(pool.Coins[1].Denom, payouts.AmountOf(pool.Coins[1].Denom))
-	}
+	out1 := sdk.NewCoin(pool.Coins[0].Denom, math.NewInt(0))
+	out2 := sdk.NewCoin(pool.Coins[1].Denom, math.NewInt(0))
+
+	reservesDec := sdk.NewDecCoinsFromCoins(pool.Coins...)
+	ratio := math.LegacyNewDecFromInt(sharesAmt).QuoInt(totalShares)
+	payoutsDec := reservesDec.MulDecTruncate(ratio)
+	payouts, _ := payoutsDec.TruncateDecimal()
+	out1 = sdk.NewCoin(pool.Coins[0].Denom, payouts.AmountOf(pool.Coins[0].Denom))
+	out2 = sdk.NewCoin(pool.Coins[1].Denom, payouts.AmountOf(pool.Coins[1].Denom))
+
 	if !out1.IsPositive() && !out2.IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "shares too small to exit")
 	}
@@ -420,46 +285,11 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 	// Apply updates
 	pool.Coins = newReserves
 	logger.Info("RemoveLiquidity new reserves", "r1", pool.Coins[0], "r2", pool.Coins[1])
-	// L consistency (concentrated mode): ensure L decreases by ~ΔL within tolerance
-	if len(pool.MinPrice) == 2 {
-		Lafter, _, _, err := k.liquidityForReserves(pool)
-		if err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to recompute liquidity after remove")
-		}
-		if Lbefore.IsZero() {
-			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pre-remove liquidity state")
-		}
-		delta := Lbefore.Sub(Lafter)
-		if delta.IsNegative() {
-			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "liquidity increased on remove")
-		}
-		tol := math.LegacyNewDecWithPrec(1, 6)
-		allowed := dLExpected.Mul(math.LegacyOneDec().Add(tol))
-		if delta.GT(allowed) {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "liquidity delta too large: %s > %s", delta.String(), allowed.String())
-		}
-	}
 	// Prevent reserve depletion on partial exits
 	if pool.Coins[0].IsZero() || pool.Coins[1].IsZero() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "would deplete reserve; use full exit to withdraw all liquidity")
 	}
 
-	// Enforce price band after remove
-	if len(pool.MinPrice) == 2 {
-		rBase := pool.Coins[0].Amount
-		rQuote := pool.Coins[1].Amount
-		denomA, denomB := pool.Coins[0].Denom, pool.Coins[1].Denom
-		minBase := pool.MinPrice.AmountOf(denomA)
-		minQuote := pool.MinPrice.AmountOf(denomB)
-		maxBase := pool.MaxPrice.AmountOf(denomA)
-		maxQuote := pool.MaxPrice.AmountOf(denomB)
-		if rQuote.Mul(minBase).LT(rBase.Mul(minQuote)) {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "resulting price below band after remove")
-		}
-		if rQuote.Mul(maxBase).GT(rBase.Mul(maxQuote)) {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "resulting price above band after remove")
-		}
-	}
 	if err := k.updatePool(ctx, &pool); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to update pool %d after remove", pool.PoolId)
 	}

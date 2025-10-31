@@ -6,30 +6,16 @@
             "dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig": {
                 "properties": {
                     "signer": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Signer address; must be the majority owner of pool shares."
                     },
                     "pool_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Target pool id to update."
                     },
                     "fee_pct": {
                         "type": "string",
                         "description": "Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec string in [0,1)). Use fee_rate field 11 instead. Migration logic should read this and convert to fee_rate format (two DecCoins, one per reserve denom in canonical order)."
-                    },
-                    "min_price": {
-                        "items": {
-                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-                        },
-                        "additionalProperties": false,
-                        "type": "array",
-                        "description": "Lower price bound as coin2/coin1 ratio. See notes above; keeper canonicalizes order to pool denoms."
-                    },
-                    "max_price": {
-                        "items": {
-                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-                        },
-                        "additionalProperties": false,
-                        "type": "array",
-                        "description": "Upper price bound as coin2/coin1 ratio. Must follow the same rules as min_price."
                     },
                     "min_collateral_ratio": {
                         "items": {
@@ -78,26 +64,20 @@
                         "additionalProperties": false,
                         "type": "array",
                         "description": "Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries; keeper normalizes to exactly two entries in canonical pool order. Replaces deprecated fee_pct field 3."
+                    },
+                    "bound_percent": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Optional: directional price-impact bounds keyed by the sold denom. When provided, must contain exactly two entries in canonical pool order. Amounts must satisfy 0 < x <= 1; x == 1 disables the bound for that denom. Omit the field to leave bounds unchanged."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Update Pool Config",
-                "description": "Update pool config (owner-only: signer must hold > 50% of shares). Notes: - Bands: set both min_price and max_price empty to clear; otherwise both must   be set with exactly two coins matching pool reserves. Keeper canonicalizes,   enforces max > min, and requires current price strictly within (min, max). - Required: min_collateral_ratio, max_leverage_ratio, interest_rate,   liquidation_threshold. - Optional: fee_rate (0 <= x < 1 per denom), max_borrow_percent (0 <= x < 1   per denom)."
-            },
-            "cosmos.base.v1beta1.Coin": {
-                "properties": {
-                    "denom": {
-                        "type": "string"
-                    },
-                    "amount": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "type": "object",
-                "title": "Coin",
-                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+                "description": "* Update a pool's dynamic configuration (owner-only). Behavior: - Loads pool; validates signer and majority-ownership. - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1. - Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`   with exactly two entries matching pool denoms; each > 1. - Liquidation threshold: required with exactly two entries; each > 1. - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0. - Max borrow percent: optional; if provided exactly two entries; 0 <= x < 1. - Bound percent: optional; when provided must contain exactly two DecCoins   matching pool denoms with amounts in (0,1]; 1 disables the bound. Omit to   leave existing bounds unchanged. - Persists pool with `updated` timestamp; emits EventPoolUpdate; asserts AMM   and module invariants. Emits: - EventPoolUpdate(pool_id). Returns: - Empty response."
             },
             "cosmos.base.v1beta1.DecCoin": {
                 "properties": {

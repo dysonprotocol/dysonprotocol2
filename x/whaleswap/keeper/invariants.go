@@ -398,17 +398,21 @@ func (k Keeper) AssertAMMInvariants(ctx context.Context) error {
 		if !supply.IsPositive() {
 			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "shares supply must be > 0: pool_id=%d denom=%s", p.PoolId, p.SharesDenom)
 		}
-		// If band set, liquidity must be positive
-		if len(p.MinPrice) == 2 {
-			if len(p.Coins) != 2 {
-				return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "invalid pool coins: pool_id=%d", p.PoolId)
+		// Validate bound_percent when present
+		if len(p.BoundPercent) != 0 && len(p.BoundPercent) != 2 {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "invalid bound_percent length: pool_id=%d", p.PoolId)
+		}
+		if len(p.BoundPercent) == 2 {
+			bp0 := p.BoundPercent[0].Amount
+			bp1 := p.BoundPercent[1].Amount
+			if bp0.IsZero() {
+				bp0 = math.LegacyNewDec(1)
 			}
-			Lcur, _, _, err := k.liquidityForReserves(p)
-			if err != nil {
-				return true, cosmossdkerrors.Wrapf(err, "failed liquidity calc: pool_id=%d", p.PoolId)
+			if bp1.IsZero() {
+				bp1 = math.LegacyNewDec(1)
 			}
-			if !Lcur.IsPositive() {
-				return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "invalid pool liquidity: pool_id=%d", p.PoolId)
+			if !bp0.GT(math.LegacyZeroDec()) || bp0.GT(math.LegacyNewDec(1)) || !bp1.GT(math.LegacyZeroDec()) || bp1.GT(math.LegacyNewDec(1)) {
+				return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "invalid bound_percent value: pool_id=%d", p.PoolId)
 			}
 		}
 

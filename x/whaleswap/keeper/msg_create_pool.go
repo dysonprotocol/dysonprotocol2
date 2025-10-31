@@ -12,14 +12,14 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// CreatePool creates a two-asset pool with an optional price band and
-// per-denom fee/interest/leverage parameters. It moves initial reserves from the
+// CreatePool creates a two-asset pool with per-denom fee/interest/leverage
+// parameters and optional directional bound_percent limits. It moves initial reserves from the
 // creator to the module, mints initial shares to the creator, persists the pool,
 // emits pool lifecycle events, and asserts AMM/module invariants.
 //
 // Semantics:
 //   - Input normalization: canonicalizes msg.Coins (exactly two positive coins)
-//     and optional msg.MinPrice/msg.MaxPrice vectors to the pool's denom order.
+//     to the pool's denom order.
 //   - Fees and rates: normalizes fee_rate and interest_rate to exactly two
 //     DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
 //     interest_rate >= 0 per denom.
@@ -27,14 +27,9 @@ import (
 //     max_leverage_ratio have exactly two entries (> 1) matching pool denoms;
 //     validates liquidation_threshold has exactly two entries (> 1) and
 //     max_borrow_percent has exactly two entries with amounts in [0,1).
-//   - Price band (optional): either both min_price and max_price are set or both
-//     unset. When set, ensures min_price < max_price (coin_b/coin_a orientation)
-//     and the initial price derived from the reserves is strictly within
-//     (min_price, max_price). Stores canonical two-coin vectors.
 //   - Funds and shares: sends initial reserves from creator → module; allocates
 //     a new pool id; persists the pool; computes initial shares as
-//     floor(L) for bounded pools using liquidityForReserves, or floor(sqrt(x*y))
-//     for unbounded pools; ensures at least 1 share; mints pool shares under the
+//     floor(sqrt(x*y)); ensures at least 1 share; mints pool shares under the
 //     name service into the module and sends the minted shares to the creator.
 //   - Invariants: asserts AMM invariants (AssertAMMInvariants) and module
 //     invariants (AssertInvariants) before returning.
@@ -53,7 +48,7 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)
 
-	logger.Info("CreatePool starting", "creator", msg.Creator, "coins", msg.Coins, "fee_rate", msg.FeeRate)
+	logger.Info("CreatePool starting", "creator", msg.Creator, "coins", msg.Coins, "fee_rate", msg.FeeRate, "bound_percent", msg.BoundPercent)
 
 	if len(msg.Coins) != 2 {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "coins must contain exactly 2 entries, got %d", len(msg.Coins))
@@ -62,30 +57,51 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 	logger.Info("CreatePool sorting/validating inputs")
 	// Sanitize user-provided repeated coin vectors to ensure canonical order and no zero coins.
 	msg.Coins = sdk.NewCoins(msg.Coins...)
-	msg.MinPrice = sdk.NewCoins(msg.MinPrice...)
-	msg.MaxPrice = sdk.NewCoins(msg.MaxPrice...)
 	err := msg.Coins.Validate()
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid coins: %v", err)
-	}
-	// Bands are optional; validate only when provided
-	if len(msg.MinPrice) > 0 {
-		if err = msg.MinPrice.Validate(); err != nil {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid min_price: %v", err)
-		}
-	}
-	if len(msg.MaxPrice) > 0 {
-		if err = msg.MaxPrice.Validate(); err != nil {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid max_price: %v", err)
-		}
 	}
 	denom1, denom2 := msg.Coins[0].Denom, msg.Coins[1].Denom
 	logger.Info("CreatePool canonicalized denoms", "denom1", denom1, "denom2", denom2)
 
 	// Pools accept only solid denoms; wrappers removed
 
-	// FeeRate: allow 0, 1, or 2 entries. Normalize using DecCoins helpers and store exactly two entries.
+	// BoundPercent: optional; default to 1 (unbounded) per denom; when provided must
+	// contain at most two entries matching pool denoms with amounts in (0,1].
 	one := math.LegacyNewDec(1)
+	zero := math.LegacyZeroDec()
+	if len(msg.BoundPercent) > 2 {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "bound_percent supports at most two entries, got %d", len(msg.BoundPercent))
+	}
+	seenBounds := make(map[string]struct{}, len(msg.BoundPercent))
+	for _, bc := range msg.BoundPercent {
+		if bc.Denom != denom1 && bc.Denom != denom2 {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "bound_percent denom %s must match pool denoms [%s,%s]", bc.Denom, denom1, denom2)
+		}
+		if _, exists := seenBounds[bc.Denom]; exists {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate bound_percent entry for denom %s", bc.Denom)
+		}
+		seenBounds[bc.Denom] = struct{}{}
+		if !bc.Amount.GT(zero) || bc.Amount.GT(one) {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "bound_percent amounts must satisfy 0 < x <= 1 for provided denoms")
+		}
+	}
+	bounds := sdk.NewDecCoins(msg.BoundPercent...)
+	b1 := bounds.AmountOf(denom1)
+	b2 := bounds.AmountOf(denom2)
+	if b1.IsZero() {
+		b1 = one
+	}
+	if b2.IsZero() {
+		b2 = one
+	}
+	msg.BoundPercent = sdk.DecCoins{
+		sdk.NewDecCoinFromDec(denom1, b1),
+		sdk.NewDecCoinFromDec(denom2, b2),
+	}
+
+	// FeeRate: allow 0, 1, or 2 entries. Normalize using DecCoins helpers and store exactly two entries.
+	// one already defined above
 	inFee := sdk.NewDecCoins(msg.FeeRate...)
 	fr1 := inFee.AmountOf(denom1)
 	fr2 := inFee.AmountOf(denom2)
@@ -152,46 +168,12 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "max_borrow_percent amounts must satisfy 0 <= x < 1")
 	}
 
-	hasBounds := len(msg.MinPrice) > 0 || len(msg.MaxPrice) > 0
-	if hasBounds != (len(msg.MinPrice) > 0 && len(msg.MaxPrice) > 0) {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_price and max_price must both be set or both unset")
-	}
-
 	if len(msg.Coins) != 2 {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "coins must have exactly 2 coins")
 	}
 
 	if msg.Coins[0].Amount.IsZero() || msg.Coins[1].Amount.IsZero() {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "initial reserves must be positive: msg: %+v coins: %+v", msg, msg.Coins)
-	}
-
-	if hasBounds {
-		// Sanitize and extract amounts by denom
-		minPrice := sdk.NewCoins(msg.MinPrice...)
-		maxPrice := sdk.NewCoins(msg.MaxPrice...)
-		// integer cross-multiplication comparisons (avoid Decs):
-		// price = R_quote / R_base; min = minQuote/minBase; max = maxQuote/maxBase
-		minBase := minPrice.AmountOf(denom1)
-		minQuote := minPrice.AmountOf(denom2)
-		maxBase := maxPrice.AmountOf(denom1)
-		maxQuote := maxPrice.AmountOf(denom2)
-		// disallow equality; if user swapped, normalize by swapping
-		if maxQuote.Mul(minBase).Equal(minQuote.Mul(maxBase)) {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_price must be greater than min_price")
-		}
-		// Normalize order so that min <= max
-		if minQuote.Mul(maxBase).GT(maxQuote.Mul(minBase)) {
-			minBase, minQuote, maxBase, maxQuote = maxBase, maxQuote, minBase, minQuote
-		}
-		// Initial price must be strictly within (min, max)
-		rBase := msg.Coins[0].Amount
-		rQuote := msg.Coins[1].Amount
-		if rQuote.Mul(minBase).LTE(rBase.Mul(minQuote)) || rQuote.Mul(maxBase).GTE(rBase.Mul(maxQuote)) {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "initial price must be within min and max bounds: coins=%s min=%s max=%s", msg.Coins.String(), msg.MinPrice.String(), msg.MaxPrice.String())
-		}
-		// Store canonical two-coin vectors in pool order
-		msg.MinPrice = sdk.NewCoins(sdk.NewCoin(denom1, minBase), sdk.NewCoin(denom2, minQuote))
-		msg.MaxPrice = sdk.NewCoins(sdk.NewCoin(denom1, maxBase), sdk.NewCoin(denom2, maxQuote))
 	}
 
 	from, err := k.addr(ctx, msg.Creator)
@@ -225,8 +207,7 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		Coins:                msg.Coins,
 		SharesDenom:          sharesDenom,
 		FeeRate:              msg.FeeRate,
-		MinPrice:             msg.MinPrice,
-		MaxPrice:             msg.MaxPrice,
+		BoundPercent:         msg.BoundPercent,
 		BlockHeight:          uint64(sdkCtx.BlockHeight()),
 		Created:              &t,
 		Updated:              &t,
@@ -238,24 +219,14 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		MaxBorrowPercent:     msg.MaxBorrowPercent,
 	}
 
-	logger.Info("CreatePool calculating initial shares", "has_bounds", hasBounds)
-	var initialShares math.Int
-	if hasBounds {
-		L, _, _, err := k.liquidityForReserves(pool)
-		if err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to compute initial liquidity: %+v", msg)
-		}
-		initialShares = L.TruncateInt()
-		logger.Info("CreatePool calculated bounded liquidity", "initial_shares", initialShares)
-	} else {
-		prod := math.LegacyNewDecFromInt(msg.Coins[0].Amount).Mul(math.LegacyNewDecFromInt(msg.Coins[1].Amount))
-		sqrt, err := prod.ApproxSqrt()
-		if err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to compute sqrt of initial product: %+v", msg)
-		}
-		initialShares = sqrt.TruncateInt()
-		logger.Info("CreatePool calculated unbounded liquidity", "initial_shares", initialShares, "product", prod, "sqrt", sqrt)
+	logger.Info("CreatePool calculating initial shares (constant-product)")
+	prod := math.LegacyNewDecFromInt(msg.Coins[0].Amount).Mul(math.LegacyNewDecFromInt(msg.Coins[1].Amount))
+	sqrt, err := prod.ApproxSqrt()
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "failed to compute sqrt of initial product: %+v", msg)
 	}
+	initialShares := sqrt.TruncateInt()
+	logger.Info("CreatePool calculated liquidity", "initial_shares", initialShares, "product", prod, "sqrt", sqrt)
 	if !initialShares.IsPositive() {
 		initialShares = math.NewInt(1)
 		logger.Info("CreatePool adjusted initial shares to minimum", "initial_shares", initialShares)

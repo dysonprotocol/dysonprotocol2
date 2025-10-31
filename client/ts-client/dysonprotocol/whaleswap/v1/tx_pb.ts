@@ -34,18 +34,42 @@ proto3.util.setEnumType(SettlementMode, "dysonprotocol.whaleswap.v1.SettlementMo
 ]);
 
 /**
- * Create a pool.
+ * *
+ * Create a two-asset pool with per-denom fee/interest/leverage parameters and
+ * optional directional bound_percent limits.
  *
  * Behavior:
- * - If min_price/max_price are both unset (or effectively encode [0, +∞)), the
- *   pool behaves as constant product (v2).
- * - If a finite band is provided, concentrated-liquidity math applies within
- *   [min_price, max_price] where price is coin_b / coin_a (see conventions).
+ * - Input normalization: canonicalizes `coins` (exactly two positive coins) to
+ *   the pool's denom order.
+ * - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two
+ *   DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
+ *   interest_rate >= 0 per denom.
+ * - Leverage configuration (required): `min_collateral_ratio` and
+ *   `max_leverage_ratio` must have exactly two entries (> 1) matching pool
+ *   denoms; `liquidation_threshold` must have exactly two entries (> 1);
+ *   `max_borrow_percent` must have exactly two entries with amounts in [0,1).
+ * - Bound percent (optional): when omitted defaults to 1 (unbounded) for both
+ *   denoms. When provided, must contain exactly two DecCoins matching pool
+ *   denoms with amounts in (0,1]; 1 disables the bound for that denom.
+ * - Funds and shares: sends initial reserves from `creator` → module; allocates
+ *   a new pool_id; persists the pool; computes initial shares as
+ * floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends
+ * them to the creator.
+ * - Invariants: asserts AMM and module invariants before returning.
+ *
+ * Emits:
+ * - EventPoolCreated(pool_id)
+ * - EventPoolUpdate(pool_id)
+ *
+ * Returns:
+ * - `pool_id` of the newly created pool (see response).
  *
  * @generated from message dysonprotocol.whaleswap.v1.MsgCreatePool
  */
 export class MsgCreatePool extends Message<MsgCreatePool> {
   /**
+   * Account creating the pool; receives the initial minted shares.
+   *
    * @generated from field: string creator = 1;
    */
   creator = "";
@@ -57,24 +81,6 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
    * @generated from field: repeated cosmos.base.v1beta1.Coin coins = 2;
    */
   coins: Coin[] = [];
-
-  /**
-   * Optional lower price bound as coin2/coin1 ratio.
-   * If set, both this and max_price must contain exactly two coins whose
-   * denoms match the pool reserves; keeper normalizes order.
-   *
-   * @generated from field: repeated cosmos.base.v1beta1.Coin min_price = 3;
-   */
-  minPrice: Coin[] = [];
-
-  /**
-   * Optional upper price bound as coin2/coin1 ratio; subject to the same
-   * rules as min_price. Keeper ensures min_price < max_price and the initial
-   * price is strictly within (min, max).
-   *
-   * @generated from field: repeated cosmos.base.v1beta1.Coin max_price = 4;
-   */
-  maxPrice: Coin[] = [];
 
   /**
    * Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
@@ -137,6 +143,16 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
    */
   feeRate: DecCoin[] = [];
 
+  /**
+   * Optional: per-denom directional price-impact bounds keyed by the sold
+   * denom. When omitted, defaults to 1 for both pool denoms (unbounded). When
+   * provided, must contain exactly two entries in canonical pool order with
+   * amounts satisfying 0 < x <= 1; x == 1 disables the bound for that denom.
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin bound_percent = 12;
+   */
+  boundPercent: DecCoin[] = [];
+
   constructor(data?: PartialMessage<MsgCreatePool>) {
     super();
     proto3.util.initPartial(data, this);
@@ -147,8 +163,6 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "creator", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "coins", kind: "message", T: Coin, repeated: true },
-    { no: 3, name: "min_price", kind: "message", T: Coin, repeated: true },
-    { no: 4, name: "max_price", kind: "message", T: Coin, repeated: true },
     { no: 5, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "min_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
     { no: 7, name: "max_leverage_ratio", kind: "message", T: DecCoin, repeated: true },
@@ -156,6 +170,7 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
     { no: 9, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },
     { no: 10, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },
     { no: 11, name: "fee_rate", kind: "message", T: DecCoin, repeated: true },
+    { no: 12, name: "bound_percent", kind: "message", T: DecCoin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgCreatePool {
@@ -180,6 +195,8 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
  */
 export class MsgCreatePoolResponse extends Message<MsgCreatePoolResponse> {
   /**
+   * Newly created pool id.
+   *
    * @generated from field: uint64 pool_id = 1;
    */
   poolId = protoInt64.zero;
@@ -213,26 +230,42 @@ export class MsgCreatePoolResponse extends Message<MsgCreatePoolResponse> {
 }
 
 /**
- * Update pool config (owner-only: signer must hold > 50% of shares).
+ * *
+ * Update a pool's dynamic configuration (owner-only).
  *
- * Notes:
- * - Bands: set both min_price and max_price empty to clear; otherwise both must
- *   be set with exactly two coins matching pool reserves. Keeper canonicalizes,
- *   enforces max > min, and requires current price strictly within (min, max).
- * - Required: min_collateral_ratio, max_leverage_ratio, interest_rate,
- *   liquidation_threshold.
- * - Optional: fee_rate (0 <= x < 1 per denom), max_borrow_percent (0 <= x < 1
- *   per denom).
+ * Behavior:
+ * - Loads pool; validates signer and majority-ownership.
+ * - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1.
+ * - Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`
+ *   with exactly two entries matching pool denoms; each > 1.
+ * - Liquidation threshold: required with exactly two entries; each > 1.
+ * - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.
+ * - Max borrow percent: optional; if provided exactly two entries; 0 <= x < 1.
+ * - Bound percent: optional; when provided must contain exactly two DecCoins
+ *   matching pool denoms with amounts in (0,1]; 1 disables the bound. Omit to
+ *   leave existing bounds unchanged.
+ * - Persists pool with `updated` timestamp; emits EventPoolUpdate; asserts AMM
+ *   and module invariants.
+ *
+ * Emits:
+ * - EventPoolUpdate(pool_id).
+ *
+ * Returns:
+ * - Empty response.
  *
  * @generated from message dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig
  */
 export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
   /**
+   * Signer address; must be the majority owner of pool shares.
+   *
    * @generated from field: string signer = 1;
    */
   signer = "";
 
   /**
+   * Target pool id to update.
+   *
    * @generated from field: uint64 pool_id = 2;
    */
   poolId = protoInt64.zero;
@@ -247,22 +280,6 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
    * @deprecated
    */
   feePct = "";
-
-  /**
-   * Lower price bound as coin2/coin1 ratio. See notes above; keeper
-   * canonicalizes order to pool denoms.
-   *
-   * @generated from field: repeated cosmos.base.v1beta1.Coin min_price = 4;
-   */
-  minPrice: Coin[] = [];
-
-  /**
-   * Upper price bound as coin2/coin1 ratio. Must follow the same rules as
-   * min_price.
-   *
-   * @generated from field: repeated cosmos.base.v1beta1.Coin max_price = 5;
-   */
-  maxPrice: Coin[] = [];
 
   /**
    * Leverage configuration (per-denom)
@@ -315,6 +332,16 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
    */
   feeRate: DecCoin[] = [];
 
+  /**
+   * Optional: directional price-impact bounds keyed by the sold denom. When
+   * provided, must contain exactly two entries in canonical pool order. Amounts
+   * must satisfy 0 < x <= 1; x == 1 disables the bound for that denom. Omit the
+   * field to leave bounds unchanged.
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin bound_percent = 12;
+   */
+  boundPercent: DecCoin[] = [];
+
   constructor(data?: PartialMessage<MsgUpdatePoolConfig>) {
     super();
     proto3.util.initPartial(data, this);
@@ -326,14 +353,13 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
     { no: 1, name: "signer", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 3, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "min_price", kind: "message", T: Coin, repeated: true },
-    { no: 5, name: "max_price", kind: "message", T: Coin, repeated: true },
     { no: 6, name: "min_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
     { no: 7, name: "max_leverage_ratio", kind: "message", T: DecCoin, repeated: true },
     { no: 8, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 9, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },
     { no: 10, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },
     { no: 11, name: "fee_rate", kind: "message", T: DecCoin, repeated: true },
+    { no: 12, name: "bound_percent", kind: "message", T: DecCoin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgUpdatePoolConfig {
@@ -385,10 +411,27 @@ export class MsgUpdatePoolConfigResponse extends Message<MsgUpdatePoolConfigResp
 }
 
 /**
- * Add liquidity (owner-only: signer must hold > 50% of shares).
- * - Escrows provided amounts and refunds any unused portion.
- * - Enforces price band in concentrated mode; amounts canonicalized to pool
- * order.
+ * *
+ * Add liquidity (owner-only).
+ *
+ * Behavior:
+ * - Escrows the full provided amounts, then refunds any unused surplus.
+ * - Concentrated pools: compute ΔL from the inputs at the current price within
+ *   [min_price, max_price]; refund the side that exceeds the limiting ΔL; mint
+ *   shares as floor(ΔL * total_shares / L_current).
+ * - Non-concentrated pools: minted shares are derived from the limiting side
+ *   min(add1/R1, add2/R2) * total_shares; refund the difference.
+ * - Updates reserves, enforces the price band (if set), persists the pool,
+ *   emits events, and asserts AMM invariants.
+ *
+ * Validation:
+ * - Pool must exist and signer must hold a majority of shares.
+ * - `amounts` must contain exactly two positive coins whose denoms match the
+ *   pool reserves (canonical order).
+ *
+ * Emits:
+ * - EventPoolUpdate (after persisting pool state)
+ * - EventPoolLiquidityAdded (on successful add)
  *
  * @generated from message dysonprotocol.whaleswap.v1.MsgAddLiquidity
  */
@@ -408,9 +451,9 @@ export class MsgAddLiquidity extends Message<MsgAddLiquidity> {
   poolId = protoInt64.zero;
 
   /**
-   * Amounts to add: exactly two coins matching pool denoms; > 0.
+   * Amounts to add: exactly two positive coins matching the pool denoms.
    * Canonicalized to pool denom order. Full amounts are escrowed; surplus is
-   * refunded (band mode refunds to match ΔL; v2 refunds to match minted
+   * refunded (band mode: to match ΔL; non-concentrated: to match minted
    * shares).
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin amounts = 5;
@@ -603,10 +646,46 @@ export class MsgRemoveLiquidityResponse extends Message<MsgRemoveLiquidityRespon
 }
 
 /**
+ * *
+ * Execute one or more pool swap legs with a single settlement.
+ *
+ * Behavior:
+ * - Per-leg execution: for each leg, validates the pool/denoms and computes
+ *   the out amount using concentrated-liquidity band math (when configured) or
+ *   constant-product math, applies output-side fee based on the output denom,
+ *   and updates pool reserves.
+ * - Aggregate constraints: after all legs, enforces per-denom debit caps
+ *   (max_input) and minimum outputs (min_output), then performs a single bank
+ *   move between trader and module for the net debits/credits.
+ * - Invariants and recording: asserts AMM and module invariants and records a
+ *   single Trade containing all operations.
+ *
+ * Validation:
+ * - legs must be non-empty; each leg must specify exactly one of swap_in or
+ *   swap_out with a positive amount.
+ * - Pool must exist and have exactly two reserves; input/output denoms must be
+ *   present in the pool.
+ * - Concentrated-liquidity: resulting price must remain within [min_price,
+ *   max_price]; exact-out must not exceed band capacity.
+ * - Constant-product: swaps must not deplete any reserve; exact-out must not
+ *   exceed capacity.
+ * - Aggregate: required debits must not exceed max_input caps; final credits
+ *   must satisfy min_output per denom.
+ *
+ * Emits:
+ * - EventPoolSwap per executed leg (with pool_id, trade_id, operation_index)
+ *   via recordTradeWithOperations.
+ * - EventTradeRecorded once after all legs are recorded.
+ *
+ * Returns:
+ * - amount_out: total coins credited to the trader across all legs.
+ *
  * @generated from message dysonprotocol.whaleswap.v1.MsgPoolSwap
  */
 export class MsgPoolSwap extends Message<MsgPoolSwap> {
   /**
+   * Account initiating the swap; debited/credited on net settlement.
+   *
    * @generated from field: string trader = 1;
    */
   trader = "";
@@ -960,6 +1039,8 @@ export class MsgMakeTradeResponse extends Message<MsgMakeTradeResponse> {
  */
 export class MsgPoolSwapResponse extends Message<MsgPoolSwapResponse> {
   /**
+   * Total coins credited to the trader after aggregation across all legs.
+   *
    * @generated from field: repeated cosmos.base.v1beta1.Coin amount_out = 1;
    */
   amountOut: Coin[] = [];
@@ -1316,26 +1397,34 @@ export class MsgCancelOfferResponse extends Message<MsgCancelOfferResponse> {
 }
 
 /**
- * Open an auction by escrowing exactly one coin amount.
+ * *
+ * OpenAuction escrows the sell coin from the seller and mints an NFT under a
+ * class keyed by `bid_denom`. Class policy (always_listed, valuation
+ * fee/period, bid timeout, minimum bid percent increase, allowed denoms) is
+ * set from module params. The NFT is sent to the seller and the auction record
+ * with reverse indexes is persisted.
  *
- * - The escrowed `sell` coin is transferred from seller to module and marked by
- *   an NFT for redemption logic. `bid_denom` defines the quote asset.
+ * Emits: EventAuctionCreated on success.
  *
  * @generated from message dysonprotocol.whaleswap.v1.MsgOpenAuction
  */
 export class MsgOpenAuction extends Message<MsgOpenAuction> {
   /**
+   * Account opening the auction (receives the minted NFT).
+   *
    * @generated from field: string seller = 1;
    */
   seller = "";
 
   /**
+   * Quote denom for bids; must be a valid denom and differ from sell.denom.
+   *
    * @generated from field: string bid_denom = 2;
    */
   bidDenom = "";
 
   /**
-   * Explicit sell coin to escrow from seller → module.
+   * Sell coin to escrow from seller → module; amount must be > 0.
    *
    * @generated from field: cosmos.base.v1beta1.Coin sell = 3;
    */
@@ -1409,17 +1498,37 @@ export class MsgOpenAuctionResponse extends Message<MsgOpenAuctionResponse> {
 }
 
 /**
- * Redeem auction escrow by NFT owner when no current bidder exists.
+ * *
+ * RedeemAuction lets the current NFT owner redeem the auction escrow
+ * when no bid is active.
+ *
+ * Behavior:
+ * - Sends the escrowed sell coins from the module to the caller.
+ * - Burns the NFT and deletes the auction record and reverse indexes.
+ * - If owner != original seller and a positive valuation exists in `bid_denom`,
+ *   a Trade is recorded and its id is included in EventAuctionRedeemed.
+ *
+ * Validation:
+ * - Auction must exist.
+ * - `caller` must equal the current NFT owner.
+ * - No current bidder may exist.
+ * - Module escrow must contain at least the sell amount.
+ *
+ * Emits: EventAuctionRedeemed (trade_id = 0 when seller redeems without trade).
  *
  * @generated from message dysonprotocol.whaleswap.v1.MsgRedeemAuction
  */
 export class MsgRedeemAuction extends Message<MsgRedeemAuction> {
   /**
+   * Account redeeming; must be the current NFT owner.
+   *
    * @generated from field: string caller = 1;
    */
   caller = "";
 
   /**
+   * Auction to redeem.
+   *
    * @generated from field: uint64 auction_id = 2;
    */
   auctionId = protoInt64.zero;
@@ -1454,6 +1563,9 @@ export class MsgRedeemAuction extends Message<MsgRedeemAuction> {
 }
 
 /**
+ * *
+ * Empty response. See EventAuctionRedeemed for emitted details.
+ *
  * @generated from message dysonprotocol.whaleswap.v1.MsgRedeemAuctionResponse
  */
 export class MsgRedeemAuctionResponse extends Message<MsgRedeemAuctionResponse> {
@@ -1680,20 +1792,37 @@ export class MsgOpenPositionResponse extends Message<MsgOpenPositionResponse> {
 }
 
 /**
+ * *
+ * ClosePosition closes a synthetic leveraged position.
+ *
+ * Behavior:
+ * - Swaps held to the borrowed denom via the borrow vault, computes accrued
+ *   interest at the snapshotted rate, restores pool reserves by full
+ *   repayment, returns remaining collateral and any profit to the user,
+ *   updates pool accounting, and deletes the position.
+ *
+ * Emits: EventLeveragePositionClosed on success.
+ *
  * @generated from message dysonprotocol.whaleswap.v1.MsgClosePosition
  */
 export class MsgClosePosition extends Message<MsgClosePosition> {
   /**
+   * Account closing the position; must be the position owner.
+   *
    * @generated from field: string user = 1;
    */
   user = "";
 
   /**
+   * Target position id to close.
+   *
    * @generated from field: uint64 position_id = 2;
    */
   positionId = protoInt64.zero;
 
   /**
+   * Optional note carried into internal trade logs (opaque to the module).
+   *
    * @generated from field: string note = 3;
    */
   note = "";
@@ -1733,16 +1862,22 @@ export class MsgClosePosition extends Message<MsgClosePosition> {
  */
 export class MsgClosePositionResponse extends Message<MsgClosePositionResponse> {
   /**
+   * Accrued interest paid (borrowed denom).
+   *
    * @generated from field: cosmos.base.v1beta1.Coin interest_paid = 1;
    */
   interestPaid?: Coin;
 
   /**
+   * Principal repaid (borrowed denom).
+   *
    * @generated from field: cosmos.base.v1beta1.Coin principal_paid = 2;
    */
   principalPaid?: Coin;
 
   /**
+   * Profit returned to the user (borrowed denom).
+   *
    * @generated from field: cosmos.base.v1beta1.Coin profit = 3;
    */
   profit?: Coin;
@@ -1876,6 +2011,43 @@ export class MsgAddCollateralResponse extends Message<MsgAddCollateralResponse> 
 }
 
 /**
+ * *
+ * Cover a leveraged position.
+ *
+ * Behavior:
+ * - If payment >= principal + accrued interest:
+ *   - Enforces the close block delay,
+ *   - Unwinds held → borrowed via a pool swap from the borrow vault,
+ *   - Repays principal + interest to pool reserves and accounting,
+ *   - Returns full collateral, refunds any unused portion of the user's
+ * payment, and sends any unwind PnL as profit,
+ *   - Deletes the position (auto-close).
+ * - If payment < total repayment:
+ *   - Pays all accrued interest and applies the remainder to reduce principal,
+ *   - Resets borrow_time and clears liquidation markers,
+ *   - Updates pool accounting and returns the new collateral ratio at the
+ *     current price; the position remains open.
+ *
+ * Validation:
+ * - Position must exist and be owned by `user`.
+ * - `payment` must be positive and its denom must equal the borrowed denom.
+ * - Position must have a two-entry interest_rate snapshot; payment must fully
+ *   cover accrued interest.
+ * - Auto-close path respects the close block delay and requires the unwind swap
+ *   to produce borrowed output.
+ *
+ * Emits:
+ * - EventLeveragePositionCovered (always; closed = true when fully repaid).
+ * - EventLeveragePositionClosed (auto-close only).
+ *
+ * Returns:
+ * - Auto-close: interest_paid, principal_paid = full borrowed, new_borrowed =
+ * 0, new_collateral_ratio = 0, closed = true, refunded = unused payment, profit
+ * = unwind PnL.
+ * - Partial cover: interest_paid, principal_paid, new_borrowed (remaining),
+ *   new_collateral_ratio at current price, closed = false, refunded = 0, profit
+ * = 0.
+ *
  * @generated from message dysonprotocol.whaleswap.v1.MsgCoverPosition
  */
 export class MsgCoverPosition extends Message<MsgCoverPosition> {
@@ -1885,16 +2057,23 @@ export class MsgCoverPosition extends Message<MsgCoverPosition> {
   user = "";
 
   /**
+   * Target position id to cover.
+   *
    * @generated from field: uint64 position_id = 2;
    */
   positionId = protoInt64.zero;
 
   /**
+   * Payment coin to cover the position. Must be positive and its denom must
+   * equal the borrowed denom.
+   *
    * @generated from field: cosmos.base.v1beta1.Coin payment = 3;
    */
   payment?: Coin;
 
   /**
+   * Optional note to use in trade logs.
+   *
    * @generated from field: string note = 4;
    */
   note = "";
@@ -1935,37 +2114,49 @@ export class MsgCoverPosition extends Message<MsgCoverPosition> {
  */
 export class MsgCoverPositionResponse extends Message<MsgCoverPositionResponse> {
   /**
+   * Accrued interest paid (borrowed denom).
+   *
    * @generated from field: cosmos.base.v1beta1.Coin interest_paid = 1;
    */
   interestPaid?: Coin;
 
   /**
+   * Principal amount paid (borrowed denom).
+   *
    * @generated from field: cosmos.base.v1beta1.Coin principal_paid = 2;
    */
   principalPaid?: Coin;
 
   /**
+   * New borrowed principal after payment (0 if closed).
+   *
    * @generated from field: cosmos.base.v1beta1.Coin new_borrowed = 3;
    */
   newBorrowed?: Coin;
 
   /**
+   * New collateral ratio at current price; "0" when closed.
+   *
    * @generated from field: string new_collateral_ratio = 4;
    */
   newCollateralRatio = "";
 
   /**
+   * True if the position was fully repaid and deleted.
+   *
    * @generated from field: bool closed = 5;
    */
   closed = false;
 
   /**
+   * Unused portion of the user's payment returned (auto-close path).
+   *
    * @generated from field: cosmos.base.v1beta1.Coin refunded = 6;
    */
   refunded?: Coin;
 
   /**
-   * swap PnL from unwinding held → borrowed during auto-close
+   * Swap PnL from unwinding held → borrowed during auto-close.
    *
    * @generated from field: cosmos.base.v1beta1.Coin profit = 7;
    */
@@ -2006,25 +2197,59 @@ export class MsgCoverPositionResponse extends Message<MsgCoverPositionResponse> 
 }
 
 /**
+ * *
+ * Initialize liquidation of a leveraged position.
+ *
+ * Behavior:
+ * - Permissionless trigger: any `initializer` may call this.
+ * - Accrues interest at the snapshotted APR since borrow_time and computes
+ *   the collateral ratio CR = collateral / (principal + interest).
+ * - Compares CR against the pool's per-denom liquidation_threshold for the
+ *   borrowed denom (> 1 required).
+ * - On CR < threshold, records liquidation markers (status and current block
+ *   height) and persists the updated position.
+ *
+ * Validation:
+ * - Position must exist; pool must exist.
+ * - Position must have a two-entry interest_rate snapshot.
+ * - Pool must have a two-entry liquidation_threshold; borrowed denom entry must
+ *   be > 1.
+ * - Position must be liquidatable at evaluation time (CR < threshold).
+ *
+ * Emits:
+ * - EventLeverageLiquidationInitialized with position_id, user, pool_id,
+ *   collateral_ratio, liquidation_threshold, block_height.
+ *
+ * Returns:
+ * - collateral_ratio and liquidation_threshold in the response.
+ *
  * @generated from message dysonprotocol.whaleswap.v1.MsgInitializeLiquidation
  */
 export class MsgInitializeLiquidation extends Message<MsgInitializeLiquidation> {
   /**
+   * Account initializing liquidation; permissionless (any account).
+   *
    * @generated from field: string initializer = 1;
    */
   initializer = "";
 
   /**
+   * Position owner address; should match the position's user.
+   *
    * @generated from field: string user = 2;
    */
   user = "";
 
   /**
+   * Pool id; should match the position's pool.
+   *
    * @generated from field: uint64 pool_id = 3;
    */
   poolId = protoInt64.zero;
 
   /**
+   * Target position id to initialize.
+   *
    * @generated from field: uint64 position_id = 4;
    */
   positionId = protoInt64.zero;
@@ -2065,11 +2290,15 @@ export class MsgInitializeLiquidation extends Message<MsgInitializeLiquidation> 
  */
 export class MsgInitializeLiquidationResponse extends Message<MsgInitializeLiquidationResponse> {
   /**
+   * Collateral ratio at evaluation time (LegacyDec string).
+   *
    * @generated from field: string collateral_ratio = 1;
    */
   collateralRatio = "";
 
   /**
+   * Liquidation threshold used for comparison (LegacyDec string).
+   *
    * @generated from field: string liquidation_threshold = 2;
    */
   liquidationThreshold = "";

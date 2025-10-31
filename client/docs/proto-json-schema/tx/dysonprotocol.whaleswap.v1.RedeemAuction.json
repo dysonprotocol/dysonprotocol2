@@ -6,16 +6,18 @@
             "dysonprotocol.whaleswap.v1.MsgRedeemAuction": {
                 "properties": {
                     "caller": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Account redeeming; must be the current NFT owner."
                     },
                     "auction_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Auction to redeem."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Redeem Auction",
-                "description": "Redeem auction escrow by NFT owner when no current bidder exists."
+                "description": "* RedeemAuction lets the current NFT owner redeem the auction escrow when no bid is active. Behavior: - Sends the escrowed sell coins from the module to the caller. - Burns the NFT and deletes the auction record and reverse indexes. - If owner != original seller and a positive valuation exists in `bid_denom`,   a Trade is recorded and its id is included in EventAuctionRedeemed. Validation: - Auction must exist. - `caller` must equal the current NFT owner. - No current bidder may exist. - Module escrow must contain at least the sell amount. Emits: EventAuctionRedeemed (trade_id = 0 when seller redeems without trade)."
             }
         }
     },
@@ -26,7 +28,8 @@
             "dysonprotocol.whaleswap.v1.MsgRedeemAuctionResponse": {
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Redeem Auction Response"
+                "title": "Msg Redeem Auction Response",
+                "description": "* Empty response. See EventAuctionRedeemed for emitted details."
             }
         }
     }

@@ -6,7 +6,8 @@
             "dysonprotocol.whaleswap.v1.MsgCreatePool": {
                 "properties": {
                     "creator": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Account creating the pool; receives the initial minted shares."
                     },
                     "coins": {
                         "items": {
@@ -15,22 +16,6 @@
                         "additionalProperties": false,
                         "type": "array",
                         "description": "Initial reserves. Required: exactly two coins with positive amounts. Order is canonicalized internally to pool denom order (lexicographic)."
-                    },
-                    "min_price": {
-                        "items": {
-                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-                        },
-                        "additionalProperties": false,
-                        "type": "array",
-                        "description": "Optional lower price bound as coin2/coin1 ratio. If set, both this and max_price must contain exactly two coins whose denoms match the pool reserves; keeper normalizes order."
-                    },
-                    "max_price": {
-                        "items": {
-                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-                        },
-                        "additionalProperties": false,
-                        "type": "array",
-                        "description": "Optional upper price bound as coin2/coin1 ratio; subject to the same rules as min_price. Keeper ensures min_price < max_price and the initial price is strictly within (min, max)."
                     },
                     "fee_pct": {
                         "type": "string",
@@ -83,12 +68,20 @@
                         "additionalProperties": false,
                         "type": "array",
                         "description": "Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries; keeper normalizes to exactly two entries in canonical pool order. Replaces deprecated fee_pct field 5."
+                    },
+                    "bound_percent": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Optional: per-denom directional price-impact bounds keyed by the sold denom. When omitted, defaults to 1 for both pool denoms (unbounded). When provided, must contain exactly two entries in canonical pool order with amounts satisfying 0 < x <= 1; x == 1 disables the bound for that denom."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Create Pool",
-                "description": "Create a pool. Behavior: - If min_price/max_price are both unset (or effectively encode [0, +\u221e)), the   pool behaves as constant product (v2). - If a finite band is provided, concentrated-liquidity math applies within   [min_price, max_price] where price is coin_b / coin_a (see conventions)."
+                "description": "* Create a two-asset pool with per-denom fee/interest/leverage parameters and optional directional bound_percent limits. Behavior: - Input normalization: canonicalizes `coins` (exactly two positive coins) to   the pool's denom order. - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two   DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and   interest_rate >= 0 per denom. - Leverage configuration (required): `min_collateral_ratio` and   `max_leverage_ratio` must have exactly two entries (> 1) matching pool   denoms; `liquidation_threshold` must have exactly two entries (> 1);   `max_borrow_percent` must have exactly two entries with amounts in [0,1). - Bound percent (optional): when omitted defaults to 1 (unbounded) for both   denoms. When provided, must contain exactly two DecCoins matching pool   denoms with amounts in (0,1]; 1 disables the bound for that denom. - Funds and shares: sends initial reserves from `creator` \u2192 module; allocates   a new pool_id; persists the pool; computes initial shares as floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends them to the creator. - Invariants: asserts AMM and module invariants before returning. Emits: - EventPoolCreated(pool_id) - EventPoolUpdate(pool_id) Returns: - `pool_id` of the newly created pool (see response)."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {
@@ -127,7 +120,8 @@
             "dysonprotocol.whaleswap.v1.MsgCreatePoolResponse": {
                 "properties": {
                     "pool_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Newly created pool id."
                     }
                 },
                 "additionalProperties": false,

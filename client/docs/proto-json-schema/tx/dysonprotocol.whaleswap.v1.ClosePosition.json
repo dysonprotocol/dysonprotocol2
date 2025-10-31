@@ -6,18 +6,22 @@
             "dysonprotocol.whaleswap.v1.MsgClosePosition": {
                 "properties": {
                     "user": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Account closing the position; must be the position owner."
                     },
                     "position_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Target position id to close."
                     },
                     "note": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Optional note carried into internal trade logs (opaque to the module)."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Close Position"
+                "title": "Msg Close Position",
+                "description": "* ClosePosition closes a synthetic leveraged position. Behavior: - Swaps held to the borrowed denom via the borrow vault, computes accrued   interest at the snapshotted rate, restores pool reserves by full   repayment, returns remaining collateral and any profit to the user,   updates pool accounting, and deletes the position. Emits: EventLeveragePositionClosed on success."
             }
         }
     },
@@ -29,15 +33,18 @@
                 "properties": {
                     "interest_paid": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Accrued interest paid (borrowed denom)."
                     },
                     "principal_paid": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Principal repaid (borrowed denom)."
                     },
                     "profit": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Profit returned to the user (borrowed denom)."
                     }
                 },
                 "additionalProperties": false,

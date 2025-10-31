@@ -48,7 +48,7 @@ service Msg {
 
   /**
    * UpdatePoolConfig updates pool fees, leverage/threshold params, interest,
-   * optional max_borrow_percent, and price bands; majority-owner only.
+   * optional max_borrow_percent, and bound_percent; majority-owner only.
    */
   rpc UpdatePoolConfig(MsgUpdatePoolConfig)
       returns (MsgUpdatePoolConfigResponse);
@@ -161,9 +161,10 @@ service Msg {
   rpc CoverPosition(MsgCoverPosition) returns (MsgCoverPositionResponse);
 
   /**
-   * InitializeLiquidation (permissionless) marks a position liquidatable when its
-   * collateral ratio (with accrued interest at the snapshotted rate) falls below
-   * the pool's liquidation_threshold and starts the block-delay countdown.
+   * InitializeLiquidation (permissionless) marks a position liquidatable when
+   * its collateral ratio (with accrued interest at the snapshotted rate) falls
+   * below the pool's liquidation_threshold and starts the block-delay
+   * countdown.
    */
   rpc InitializeLiquidation(MsgInitializeLiquidation)
       returns (MsgInitializeLiquidationResponse);
@@ -192,12 +193,12 @@ enum SettlementMode {
 }
 
 /**
- * Create a two-asset pool with an optional price band and per-denom
- * fee/interest/leverage parameters.
+ * Create a two-asset pool with per-denom fee/interest/leverage parameters and
+ * optional directional bound_percent limits.
  *
  * Behavior:
- * - Input normalization: canonicalizes `coins` (exactly two positive coins) and
- *   optional `min_price`/`max_price` vectors to the pool's denom order.
+ * - Input normalization: canonicalizes `coins` (exactly two positive coins) to
+ *   the pool's denom order.
  * - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two
  *   DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
  *   interest_rate >= 0 per denom.
@@ -205,14 +206,13 @@ enum SettlementMode {
  *   `max_leverage_ratio` must have exactly two entries (> 1) matching pool
  *   denoms; `liquidation_threshold` must have exactly two entries (> 1);
  *   `max_borrow_percent` must have exactly two entries with amounts in [0,1).
- * - Price band (optional): either both `min_price` and `max_price` are set or
- *   both unset. When set, ensures `min_price` < `max_price` (coin_b/coin_a) and
- *   the initial price derived from reserves is strictly within (min, max).
- *   Stores canonical two-coin vectors.
+ * - Bound percent (optional): when omitted defaults to 1 (unbounded) for both
+ *   denoms. When provided, must contain exactly two DecCoins matching pool
+ *   denoms with amounts in (0,1]; 1 disables the bound for that denom.
  * - Funds and shares: sends initial reserves from `creator` → module; allocates
- *   a new pool_id; persists the pool; computes initial shares as floor(L) for
- *   bounded pools or floor(sqrt(x*y)) for unbounded pools; ensures at least one
- *   share; mints pool shares and sends them to the creator.
+ *   a new pool_id; persists the pool; computes initial shares as
+ * floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends
+ * them to the creator.
  * - Invariants: asserts AMM and module invariants before returning.
  *
  * Emits:
@@ -234,24 +234,8 @@ message MsgCreatePool {
     (amino.dont_omitempty) = true,
     (amino.encoding) = "legacy_coins"
   ];
-  // Optional lower price bound as coin2/coin1 ratio.
-  // If set, both this and max_price must contain exactly two coins whose
-  // denoms match the pool reserves; keeper normalizes order.
-  repeated cosmos.base.v1beta1.Coin min_price = 3 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
-    (amino.dont_omitempty) = true,
-    (amino.encoding) = "legacy_coins"
-  ];
-  // Optional upper price bound as coin2/coin1 ratio; subject to the same
-  // rules as min_price. Keeper ensures min_price < max_price and the initial
-  // price is strictly within (min, max).
-  repeated cosmos.base.v1beta1.Coin max_price = 4 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
-    (amino.dont_omitempty) = true,
-    (amino.encoding) = "legacy_coins"
-  ];
+  reserved 3, 4;
+  reserved "min_price", "max_price";
   // Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
   // string in [0,1)). Use fee_rate field 11 instead. Migration logic should
   // read this and convert to fee_rate format (two DecCoins, one per reserve
@@ -299,6 +283,15 @@ message MsgCreatePool {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
     (amino.dont_omitempty) = true
   ];
+  // Optional: per-denom directional price-impact bounds keyed by the sold
+  // denom. When omitted, defaults to 1 for both pool denoms (unbounded). When
+  // provided, must contain exactly two entries in canonical pool order with
+  // amounts satisfying 0 < x <= 1; x == 1 disables the bound for that denom.
+  repeated cosmos.base.v1beta1.DecCoin bound_percent = 12 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (amino.dont_omitempty) = true
+  ];
 }
 message MsgCreatePoolResponse {
   // Newly created pool id.
@@ -316,9 +309,9 @@ message MsgCreatePoolResponse {
  * - Liquidation threshold: required with exactly two entries; each > 1.
  * - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.
  * - Max borrow percent: optional; if provided exactly two entries; 0 <= x < 1.
- * - Price bands: both unset clears bands; otherwise both set as two coins
- *   matching pool denoms with positive amounts; require max > min and current
- *   price strictly within (min, max). Stores canonical two-coin vectors.
+ * - Bound percent: optional; when provided must contain exactly two DecCoins
+ *   matching pool denoms with amounts in (0,1]; 1 disables the bound. Omit to
+ *   leave existing bounds unchanged.
  * - Persists pool with `updated` timestamp; emits EventPoolUpdate; asserts AMM
  *   and module invariants.
  *
@@ -340,22 +333,8 @@ message MsgUpdatePoolConfig {
   // denom in canonical order).
   string fee_pct = 3
       [ deprecated = true, (cosmos_proto.scalar) = "cosmos.Dec" ];
-  // Lower price bound as coin2/coin1 ratio. See notes above; keeper
-  // canonicalizes order to pool denoms.
-  repeated cosmos.base.v1beta1.Coin min_price = 4 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
-    (amino.dont_omitempty) = true,
-    (amino.encoding) = "legacy_coins"
-  ];
-  // Upper price bound as coin2/coin1 ratio. Must follow the same rules as
-  // min_price.
-  repeated cosmos.base.v1beta1.Coin max_price = 5 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
-    (amino.dont_omitempty) = true,
-    (amino.encoding) = "legacy_coins"
-  ];
+  reserved 4, 5;
+  reserved "min_price", "max_price";
   // Leverage configuration (per-denom)
   // Required: minimum collateral ratio per reserve denom (exactly two,
   // canonical order; > 1)
@@ -394,6 +373,15 @@ message MsgUpdatePoolConfig {
   // keeper normalizes to exactly two entries in canonical pool order.
   // Replaces deprecated fee_pct field 3.
   repeated cosmos.base.v1beta1.DecCoin fee_rate = 11 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (amino.dont_omitempty) = true
+  ];
+  // Optional: directional price-impact bounds keyed by the sold denom. When
+  // provided, must contain exactly two entries in canonical pool order. Amounts
+  // must satisfy 0 < x <= 1; x == 1 disables the bound for that denom. Omit the
+  // field to leave bounds unchanged.
+  repeated cosmos.base.v1beta1.DecCoin bound_percent = 12 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
     (amino.dont_omitempty) = true
@@ -799,7 +787,6 @@ message MsgClosePosition {
   string note = 3;
 }
 
-
 message MsgClosePositionResponse {
   // Accrued interest paid (borrowed denom).
   cosmos.base.v1beta1.Coin interest_paid = 1 [ (gogoproto.nullable) = false ];
@@ -834,8 +821,8 @@ message MsgAddCollateralResponse {
  *   - Enforces the close block delay,
  *   - Unwinds held → borrowed via a pool swap from the borrow vault,
  *   - Repays principal + interest to pool reserves and accounting,
- *   - Returns full collateral, refunds any unused portion of the user's payment,
- *     and sends any unwind PnL as profit,
+ *   - Returns full collateral, refunds any unused portion of the user's
+ * payment, and sends any unwind PnL as profit,
  *   - Deletes the position (auto-close).
  * - If payment < total repayment:
  *   - Pays all accrued interest and applies the remainder to reduce principal,
@@ -854,12 +841,14 @@ message MsgAddCollateralResponse {
  * Emits:
  * - EventLeveragePositionCovered (always; closed = true when fully repaid).
  * - EventLeveragePositionClosed (auto-close only).
-  *
-  * Returns:
-  * - Auto-close: interest_paid, principal_paid = full borrowed, new_borrowed = 0,
-  *   new_collateral_ratio = 0, closed = true, refunded = unused payment, profit = unwind PnL.
-  * - Partial cover: interest_paid, principal_paid, new_borrowed (remaining),
-  *   new_collateral_ratio at current price, closed = false, refunded = 0, profit = 0.
+ *
+ * Returns:
+ * - Auto-close: interest_paid, principal_paid = full borrowed, new_borrowed =
+ * 0, new_collateral_ratio = 0, closed = true, refunded = unused payment, profit
+ * = unwind PnL.
+ * - Partial cover: interest_paid, principal_paid, new_borrowed (remaining),
+ *   new_collateral_ratio at current price, closed = false, refunded = 0, profit
+ * = 0.
  */
 message MsgCoverPosition {
   // Account covering the position; must be the position owner.

@@ -69,15 +69,12 @@ const (
 // Msg defines the whaleswap Msg service.
 type MsgClient interface {
 	// *
-	// CreatePool creates a two-asset pool with an optional price band and
-	// per-denom fee/interest/leverage parameters. It moves initial reserves to
-	// the module, mints initial shares to the creator, and asserts AMM
-	// invariants.
+	// CreatePool creates a two-asset pool; moves initial reserves, mints initial
+	// shares, and asserts invariants.
 	CreatePool(ctx context.Context, in *MsgCreatePool, opts ...grpc.CallOption) (*MsgCreatePoolResponse, error)
 	// *
-	// UpdatePoolConfig updates price band, fee rate, min collateral ratio, max
-	// leverage ratio, interest rate, and max borrow percent. Signer must hold a
-	// majority of shares. Validates bands and invariants.
+	// UpdatePoolConfig updates pool fees, leverage/threshold params, interest,
+	// optional max_borrow_percent, and bound_percent; majority-owner only.
 	UpdatePoolConfig(ctx context.Context, in *MsgUpdatePoolConfig, opts ...grpc.CallOption) (*MsgUpdatePoolConfigResponse, error)
 	// *
 	// AddLiquidity (owner-only) escrows provided amounts, refunds any unused
@@ -107,9 +104,9 @@ type MsgClient interface {
 	// Emits EventPoolLiquidityRemoved on success.
 	RemoveLiquidity(ctx context.Context, in *MsgRemoveLiquidity, opts ...grpc.CallOption) (*MsgRemoveLiquidityResponse, error)
 	// *
-	// PoolSwap executes one or more pool swap legs with a single end-of-tx
-	// settlement, applying output-side fees per leg and enforcing aggregate
-	// max_input caps and min_output guarantees.
+	// PoolSwap executes one or more exact-in or exact-out pool swap legs with a
+	// single end-of-tx settlement. Applies output-side fees per leg and enforces
+	// aggregate max_input caps and min_output guarantees.
 	PoolSwap(ctx context.Context, in *MsgPoolSwap, opts ...grpc.CallOption) (*MsgPoolSwapResponse, error)
 	// *
 	// MakeTrade executes swaps and orderbook takes in-order with a single
@@ -157,14 +154,14 @@ type MsgClient interface {
 	// and returns the new collateral and ratio.
 	AddCollateral(ctx context.Context, in *MsgAddCollateral, opts ...grpc.CallOption) (*MsgAddCollateralResponse, error)
 	// *
-	// CoverPosition: If payment < total repayment, pays all interest and reduces
-	// principal (resets borrow_time). If payment >= total, unwinds held, repays
-	// in full, returns collateral, refunds unused payment and sends any profit.
+	// CoverPosition repays accrued interest; optionally reduces principal or
+	// auto-closes on full repayment.
 	CoverPosition(ctx context.Context, in *MsgCoverPosition, opts ...grpc.CallOption) (*MsgCoverPositionResponse, error)
 	// *
-	// InitializeLiquidation marks a position liquidatable when CR (with accrued
-	// interest at the snapshotted rate) falls below the pool’s
-	// liquidation_threshold and starts the block-delay countdown.
+	// InitializeLiquidation (permissionless) marks a position liquidatable when
+	// its collateral ratio (with accrued interest at the snapshotted rate) falls
+	// below the pool's liquidation_threshold and starts the block-delay
+	// countdown.
 	InitializeLiquidation(ctx context.Context, in *MsgInitializeLiquidation, opts ...grpc.CallOption) (*MsgInitializeLiquidationResponse, error)
 	// *
 	// FinalizeLiquidation: Liquidator repays debt and receives all collateral;
@@ -394,15 +391,12 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 // Msg defines the whaleswap Msg service.
 type MsgServer interface {
 	// *
-	// CreatePool creates a two-asset pool with an optional price band and
-	// per-denom fee/interest/leverage parameters. It moves initial reserves to
-	// the module, mints initial shares to the creator, and asserts AMM
-	// invariants.
+	// CreatePool creates a two-asset pool; moves initial reserves, mints initial
+	// shares, and asserts invariants.
 	CreatePool(context.Context, *MsgCreatePool) (*MsgCreatePoolResponse, error)
 	// *
-	// UpdatePoolConfig updates price band, fee rate, min collateral ratio, max
-	// leverage ratio, interest rate, and max borrow percent. Signer must hold a
-	// majority of shares. Validates bands and invariants.
+	// UpdatePoolConfig updates pool fees, leverage/threshold params, interest,
+	// optional max_borrow_percent, and bound_percent; majority-owner only.
 	UpdatePoolConfig(context.Context, *MsgUpdatePoolConfig) (*MsgUpdatePoolConfigResponse, error)
 	// *
 	// AddLiquidity (owner-only) escrows provided amounts, refunds any unused
@@ -432,9 +426,9 @@ type MsgServer interface {
 	// Emits EventPoolLiquidityRemoved on success.
 	RemoveLiquidity(context.Context, *MsgRemoveLiquidity) (*MsgRemoveLiquidityResponse, error)
 	// *
-	// PoolSwap executes one or more pool swap legs with a single end-of-tx
-	// settlement, applying output-side fees per leg and enforcing aggregate
-	// max_input caps and min_output guarantees.
+	// PoolSwap executes one or more exact-in or exact-out pool swap legs with a
+	// single end-of-tx settlement. Applies output-side fees per leg and enforces
+	// aggregate max_input caps and min_output guarantees.
 	PoolSwap(context.Context, *MsgPoolSwap) (*MsgPoolSwapResponse, error)
 	// *
 	// MakeTrade executes swaps and orderbook takes in-order with a single
@@ -482,14 +476,14 @@ type MsgServer interface {
 	// and returns the new collateral and ratio.
 	AddCollateral(context.Context, *MsgAddCollateral) (*MsgAddCollateralResponse, error)
 	// *
-	// CoverPosition: If payment < total repayment, pays all interest and reduces
-	// principal (resets borrow_time). If payment >= total, unwinds held, repays
-	// in full, returns collateral, refunds unused payment and sends any profit.
+	// CoverPosition repays accrued interest; optionally reduces principal or
+	// auto-closes on full repayment.
 	CoverPosition(context.Context, *MsgCoverPosition) (*MsgCoverPositionResponse, error)
 	// *
-	// InitializeLiquidation marks a position liquidatable when CR (with accrued
-	// interest at the snapshotted rate) falls below the pool’s
-	// liquidation_threshold and starts the block-delay countdown.
+	// InitializeLiquidation (permissionless) marks a position liquidatable when
+	// its collateral ratio (with accrued interest at the snapshotted rate) falls
+	// below the pool's liquidation_threshold and starts the block-delay
+	// countdown.
 	InitializeLiquidation(context.Context, *MsgInitializeLiquidation) (*MsgInitializeLiquidationResponse, error)
 	// *
 	// FinalizeLiquidation: Liquidator repays debt and receives all collateral;

@@ -62,28 +62,25 @@ func ValidateGenesisState(s types.GenesisState) error {
 		if fr1.IsNegative() || !fr1.LT(cosmossdk_math.LegacyNewDec(1)) || fr2.IsNegative() || !fr2.LT(cosmossdk_math.LegacyNewDec(1)) {
 			return fmt.Errorf("pool %d fee_rate amounts must be in [0,1)", p.PoolId)
 		}
-		// Validate price band coins if provided
-		if len(p.MinPrice) != 0 && len(p.MinPrice) != 2 {
-			return fmt.Errorf("pool %d min_price must be empty or contain exactly 2 coins", p.PoolId)
+		// Validate bound_percent: optional, supports up to two entries matching pool denoms with amounts in (0,1]
+		if len(p.BoundPercent) > 2 {
+			return fmt.Errorf("pool %d bound_percent must contain at most 2 entries", p.PoolId)
 		}
-		if len(p.MaxPrice) != 0 && len(p.MaxPrice) != 2 {
-			return fmt.Errorf("pool %d max_price must be empty or contain exactly 2 coins", p.PoolId)
-		}
-		if len(p.MinPrice) == 2 {
-			if p.MinPrice[0].Denom != a.Denom || p.MinPrice[1].Denom != b.Denom {
-				return fmt.Errorf("pool %d min_price denoms must match coins[0]/coins[1]", p.PoolId)
+		for _, bc := range p.BoundPercent {
+			if bc.Denom != a.Denom && bc.Denom != b.Denom {
+				return fmt.Errorf("pool %d bound_percent denom %s must match pool denoms", p.PoolId, bc.Denom)
 			}
-			if !p.MinPrice[0].Amount.IsPositive() || !p.MinPrice[1].Amount.IsPositive() {
-				return fmt.Errorf("pool %d min_price amounts must be positive", p.PoolId)
+			if !bc.Amount.GT(cosmossdk_math.LegacyZeroDec()) || bc.Amount.GT(cosmossdk_math.LegacyNewDec(1)) {
+				return fmt.Errorf("pool %d bound_percent amount must satisfy 0 < x <= 1", p.PoolId)
 			}
 		}
-		if len(p.MaxPrice) == 2 {
-			if p.MaxPrice[0].Denom != a.Denom || p.MaxPrice[1].Denom != b.Denom {
-				return fmt.Errorf("pool %d max_price denoms must match coins[0]/coins[1]", p.PoolId)
-			}
-			if !p.MaxPrice[0].Amount.IsPositive() || !p.MaxPrice[1].Amount.IsPositive() {
-				return fmt.Errorf("pool %d max_price amounts must be positive", p.PoolId)
-			}
+		bp1 := p.BoundPercent.AmountOf(a.Denom)
+		bp2 := p.BoundPercent.AmountOf(b.Denom)
+		if bp1.IsZero() {
+			bp1 = cosmossdk_math.LegacyNewDec(1)
+		}
+		if bp2.IsZero() {
+			bp2 = cosmossdk_math.LegacyNewDec(1)
 		}
 	}
 

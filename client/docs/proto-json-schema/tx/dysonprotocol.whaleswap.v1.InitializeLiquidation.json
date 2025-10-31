@@ -6,21 +6,26 @@
             "dysonprotocol.whaleswap.v1.MsgInitializeLiquidation": {
                 "properties": {
                     "initializer": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Account initializing liquidation; permissionless (any account)."
                     },
                     "user": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Position owner address; should match the position's user."
                     },
                     "pool_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Pool id; should match the position's pool."
                     },
                     "position_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Target position id to initialize."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Initialize Liquidation"
+                "title": "Msg Initialize Liquidation",
+                "description": "* Initialize liquidation of a leveraged position. Behavior: - Permissionless trigger: any `initializer` may call this. - Accrues interest at the snapshotted APR since borrow_time and computes   the collateral ratio CR = collateral / (principal + interest). - Compares CR against the pool's per-denom liquidation_threshold for the   borrowed denom (> 1 required). - On CR < threshold, records liquidation markers (status and current block   height) and persists the updated position. Validation: - Position must exist; pool must exist. - Position must have a two-entry interest_rate snapshot. - Pool must have a two-entry liquidation_threshold; borrowed denom entry must   be > 1. - Position must be liquidatable at evaluation time (CR < threshold). Emits: - EventLeverageLiquidationInitialized with position_id, user, pool_id,   collateral_ratio, liquidation_threshold, block_height. Returns: - collateral_ratio and liquidation_threshold in the response."
             }
         }
     },
@@ -31,10 +36,12 @@
             "dysonprotocol.whaleswap.v1.MsgInitializeLiquidationResponse": {
                 "properties": {
                     "collateral_ratio": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Collateral ratio at evaluation time (LegacyDec string)."
                     },
                     "liquidation_threshold": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Liquidation threshold used for comparison (LegacyDec string)."
                     }
                 },
                 "additionalProperties": false,

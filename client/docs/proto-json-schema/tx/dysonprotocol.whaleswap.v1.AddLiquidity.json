@@ -19,13 +19,13 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Amounts to add: exactly two coins matching pool denoms; > 0. Canonicalized to pool denom order. Full amounts are escrowed; surplus is refunded (band mode refunds to match \u0394L; v2 refunds to match minted shares)."
+                        "description": "Amounts to add: exactly two positive coins matching the pool denoms. Canonicalized to pool denom order. Full amounts are escrowed; surplus is refunded (band mode: to match \u0394L; non-concentrated: to match minted shares)."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Add Liquidity",
-                "description": "Add liquidity (owner-only: signer must hold > 50% of shares). - Escrows provided amounts and refunds any unused portion. - Enforces price band in concentrated mode; amounts canonicalized to pool order."
+                "description": "* Add liquidity (owner-only). Behavior: - Escrows the full provided amounts, then refunds any unused surplus. - Concentrated pools: compute \u0394L from the inputs at the current price within   [min_price, max_price]; refund the side that exceeds the limiting \u0394L; mint   shares as floor(\u0394L * total_shares / L_current). - Non-concentrated pools: minted shares are derived from the limiting side   min(add1/R1, add2/R2) * total_shares; refund the difference. - Updates reserves, enforces the price band (if set), persists the pool,   emits events, and asserts AMM invariants. Validation: - Pool must exist and signer must hold a majority of shares. - `amounts` must contain exactly two positive coins whose denoms match the   pool reserves (canonical order). Emits: - EventPoolUpdate (after persisting pool state) - EventPoolLiquidityAdded (on successful add)"
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {

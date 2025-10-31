@@ -9,19 +9,23 @@
                         "type": "string"
                     },
                     "position_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Target position id to cover."
                     },
                     "payment": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Payment coin to cover the position. Must be positive and its denom must equal the borrowed denom."
                     },
                     "note": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Optional note to use in trade logs."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Cover Position"
+                "title": "Msg Cover Position",
+                "description": "* Cover a leveraged position. Behavior: - If payment >= principal + accrued interest:   - Enforces the close block delay,   - Unwinds held \u2192 borrowed via a pool swap from the borrow vault,   - Repays principal + interest to pool reserves and accounting,   - Returns full collateral, refunds any unused portion of the user's payment, and sends any unwind PnL as profit,   - Deletes the position (auto-close). - If payment < total repayment:   - Pays all accrued interest and applies the remainder to reduce principal,   - Resets borrow_time and clears liquidation markers,   - Updates pool accounting and returns the new collateral ratio at the     current price; the position remains open. Validation: - Position must exist and be owned by `user`. - `payment` must be positive and its denom must equal the borrowed denom. - Position must have a two-entry interest_rate snapshot; payment must fully   cover accrued interest. - Auto-close path respects the close block delay and requires the unwind swap   to produce borrowed output. Emits: - EventLeveragePositionCovered (always; closed = true when fully repaid). - EventLeveragePositionClosed (auto-close only). Returns: - Auto-close: interest_paid, principal_paid = full borrowed, new_borrowed = 0, new_collateral_ratio = 0, closed = true, refunded = unused payment, profit = unwind PnL. - Partial cover: interest_paid, principal_paid, new_borrowed (remaining),   new_collateral_ratio at current price, closed = false, refunded = 0, profit = 0."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {
@@ -47,30 +51,36 @@
                 "properties": {
                     "interest_paid": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Accrued interest paid (borrowed denom)."
                     },
                     "principal_paid": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Principal amount paid (borrowed denom)."
                     },
                     "new_borrowed": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "New borrowed principal after payment (0 if closed)."
                     },
                     "new_collateral_ratio": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "New collateral ratio at current price; \"0\" when closed."
                     },
                     "closed": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "True if the position was fully repaid and deleted."
                     },
                     "refunded": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Unused portion of the user's payment returned (auto-close path)."
                     },
                     "profit": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false,
-                        "description": "swap PnL from unwinding held \u2192 borrowed during auto-close"
+                        "description": "Swap PnL from unwinding held \u2192 borrowed during auto-close."
                     }
                 },
                 "additionalProperties": false,

@@ -1,4 +1,5 @@
 import json
+import pytest
 
 
 def test_create_pool_reject_zero_width_band(
@@ -26,31 +27,26 @@ def test_create_pool_reject_zero_width_band(
     )
     assert mint.get("code", 1) == 0, f"mint-coins failed: {json.dumps(mint, indent=2)}"
 
-    tx = dysond(
-        "tx",
-        "whaleswap",
-        "create-pool",
-        "--coins",
-        "1000udys",
-        "--coins",
-        f"500{name}",
-        "--min-price",
-        "1udys",
-        "--min-price",
-        f"2{name}",
-        "--max-price",
-        "1udys",
-        "--max-price",
-        f"2{name}",
-        "--min-collateral-ratio",
-        "1.5",
-        "--max-leverage-ratio",
-        "3.0",
-        "--max-borrow-percent",
-        "0.8",
-        "--from",
-        creator_name,
-    )
-    assert (
-        tx.get("code", 0) != 0
-    ), f"expected failure for zero-width band, got: {json.dumps(tx, indent=2)}"
+    zero = "0.000000000000000000"
+    with pytest.raises(Exception, match="0 < x <= 1"):
+        dysond(
+            "tx",
+            "whaleswap",
+            "create-pool",
+            "--coins",
+            "1000udys",
+            "--coins",
+            f"500{name}",
+            "--bound-percent",
+            zero,
+            "--bound-percent",
+            zero,
+            "--min-collateral-ratio",
+            "1.5",
+            "--max-leverage-ratio",
+            "3.0",
+            "--max-borrow-percent",
+            "0.8",
+            "--from",
+            creator_name,
+        )

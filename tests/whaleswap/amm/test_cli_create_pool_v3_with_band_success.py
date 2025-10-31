@@ -26,6 +26,11 @@ def test_create_pool_v3_with_band_success(
     )
     assert mint.get("code", 1) == 0, f"mint-coins failed: {json.dumps(mint, indent=2)}"
 
+    sorted_denoms = sorted(["udys", name])
+    bound_values = [
+        "0.400000000000000000",
+        "0.750000000000000000",
+    ]
     tx = dysond(
         "tx",
         "whaleswap",
@@ -34,14 +39,10 @@ def test_create_pool_v3_with_band_success(
         "500udys",
         "--coins",
         f"500{name}",
-        "--min-price",
-        "1udys",
-        "--min-price",
-        f"3{name}",
-        "--max-price",
-        "2udys",
-        "--max-price",
-        f"1{name}",
+        "--bound-percent",
+        f"{bound_values[0]}{sorted_denoms[0]}",
+        "--bound-percent",
+        f"{bound_values[1]}{sorted_denoms[1]}",
         "--min-collateral-ratio",
         "1.5",
         "--max-leverage-ratio",
@@ -52,3 +53,25 @@ def test_create_pool_v3_with_band_success(
         creator_name,
     )
     assert tx.get("code", 1) == 0, f"create-pool v3 failed: {json.dumps(tx, indent=2)}"
+
+    pool_id = int(tx["events"][-2]["attributes"][0]["value"].strip('"'))
+    pool_query = dysond(
+        "query",
+        "whaleswap",
+        "pool",
+        "--pool-id",
+        str(pool_id),
+    )
+    pool_data = pool_query["pool"]
+    assert (
+        int(pool_data["pool_id"]) == pool_id
+    ), f"Pool ID mismatch: {json.dumps(pool_query, indent=2)}"
+
+    bound_percent = pool_data.get("bound_percent", [])
+    expected_bounds = [
+        f"{bound_values[0]}{sorted_denoms[0]}",
+        f"{bound_values[1]}{sorted_denoms[1]}",
+    ]
+    assert sorted(bound_percent) == sorted(
+        expected_bounds
+    ), f"bound_percent mismatch. Expected {expected_bounds}, got {bound_percent}. Full pool: {json.dumps(pool_data, indent=2)}"
