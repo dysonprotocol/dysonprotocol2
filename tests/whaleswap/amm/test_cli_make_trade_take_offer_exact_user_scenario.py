@@ -1,5 +1,5 @@
 """
-Reproduce exact user scenario that triggers invariant bug.
+Regression of user-reported scenario that previously triggered an invariant bug.
 
 User scenario (from logs):
 - Mint 100000alice.dys
@@ -10,9 +10,7 @@ User scenario (from logs):
 - Open auction 2: sell 99999890udys, bid_denom=alice.dys
 - Take offer 1 via MakeTrade: take 1 unit (want 947udys)
 
-Result: invariant after MakeTrade: module balance mismatch for udys:
-        have=1199997733 expected=1199998680
-        Missing: 947 udys (exactly what offer 1 wants)
+Status: FIXED. MakeTrade should succeed and invariants pass.
 """
 
 import json

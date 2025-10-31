@@ -5,23 +5,11 @@ def test_cli_make_trade_missing_taker_input_accounting(
     chainnet, ws_setup_env, ws_create_offer
 ):
     """
-    Test reproducing the MakeTrade accounting bug where taker input isn't recorded.
+    Regression test for previous MakeTrade accounting bug around Take operations.
 
-    BUG: When MakeTrade processes a Take operation, it records:
-    - addOut(maker, makerWant) - send foo to maker ✓
-    - addOut(trader, takerRecv) - send bar to taker ✓
-    - MISSING: addIn(trader, makerWant) - taker provides foo ✗
-
-    This causes module to send coins without receiving them, creating a deficit.
-
-    Error from live system:
-    "invariant after MakeTrade: module balance mismatch for foo.dys:
-     have=33439951 expected=35999951 (escrow=10000000...)"
-
-    The missing amount (2,560,000) equals the offer's remaining_want.
-
-    Currently FAILS: MakeTrade succeeds but invariant detects missing taker input.
-    When fixed: addIn(trader, makerWant) added, invariants pass.
+    Status: FIXED. MakeTrade now nets taker credits and covers maker wants via
+    tradeNetAndCover. The module balance invariants pass and the transaction
+    should succeed.
     """
     dysond = chainnet[0]
     env = ws_setup_env

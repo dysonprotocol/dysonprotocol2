@@ -126,7 +126,8 @@ def test_cli_invariant_bug_part2_make_offer_fails_after_closed_offer(
     - New offer is created successfully
 
     With fix (MakeTrade calls AssertInvariants): Test PASSES
-    MakeOffer succeeds after closed offers, no orphaned escrow.
+    MakeOffer succeeds after closed offers; closed-offer escrow is excluded
+    from metrics and invariants hold.
     """
     dysond = chainnet[0]
     env = ws_setup_env
@@ -186,8 +187,8 @@ def test_cli_invariant_bug_part2_make_offer_fails_after_closed_offer(
     )
     assert close_tx["code"] == 0
 
-    # BUG: MakeOffer will FAIL with invariant violation
-    # Expected error: "module balance mismatch for bar.dys... (escrow=256...)"
+    # With the invariant fix, creating a new offer should succeed without
+    # module balance mismatch related to the previously closed offer.
     new_offer_tx = ws_create_offer(
         acc2_name, have=f"10{bar_denom}", want=f"10{foo_denom}"
     )
