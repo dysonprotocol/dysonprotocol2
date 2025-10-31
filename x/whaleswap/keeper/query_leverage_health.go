@@ -22,6 +22,7 @@ func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequ
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "position %d not found", req.PositionId)
 	}
+	status := pos.Status
 
 	// Compute interest
 	pool, err := k.PoolsMap.Get(ctx, pos.PoolId)
@@ -38,10 +39,17 @@ func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequ
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockTime := sdkCtx.BlockTime()
 	elapsed := blockTime.Sub(*pos.BorrowTime).Seconds()
+	isActive := status == whaleswapv1.PositionStatus_POSITION_STATUS_OPEN || status == whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATING
 
-	interest, err := k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))
-	if err != nil {
-		return nil, err
+	var interest math.LegacyDec
+	if isActive {
+		interest, err = k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		interest = math.LegacyNewDecFromInt(pos.AccruedInterest.Amount)
+		elapsed = 0
 	}
 
 	// Compute collateral ratio
@@ -67,9 +75,17 @@ func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequ
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool liquidation_threshold")
 	}
 
-	canClose := k.CanCloseBefore(ctx, &pos)
-	canInitialize := pos.LiquidationStatus == whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE && cr.LT(liquidationThreshold)
-	canFinalize := k.CanFinalizeLiquidationBefore(ctx, &pos) && pos.LiquidationStatus == whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_INITIALIZED
+	canClose := false
+	canInitialize := false
+	canFinalize := false
+	blocksUntilCloseable := uint64(0)
+	if status == whaleswapv1.PositionStatus_POSITION_STATUS_OPEN {
+		canClose = k.CanCloseBefore(ctx, &pos)
+		canInitialize = pos.LiquidationStatus == whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE && cr.LT(liquidationThreshold)
+		blocksUntilCloseable = k.BlocksUntilCloseable(ctx, &pos)
+	} else if status == whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATING {
+		canFinalize = k.CanFinalizeLiquidationBefore(ctx, &pos) && pos.LiquidationStatus == whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_INITIALIZED
+	}
 
 	// Compute total repayment
 	totalRepayment := k.ComputeEffectiveRepayment(pos.Borrowed.Amount, interest)
@@ -82,7 +98,7 @@ func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequ
 		CollateralValue:          collateralValue,
 		DebtWithInterest:         debtValue,
 		CanCloseByOwner:          canClose,
-		BlocksUntilCloseable:     k.BlocksUntilCloseable(ctx, &pos),
+		BlocksUntilCloseable:     blocksUntilCloseable,
 		CanInitializeLiquidation: canInitialize,
 		CanFinalizeLiquidation:   canFinalize,
 		Borrowed:                 pos.Borrowed,

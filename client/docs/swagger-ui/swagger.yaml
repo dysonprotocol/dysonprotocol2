@@ -9466,6 +9466,15 @@ paths:
                       format: uint64
                     user:
                       type: string
+                    status:
+                      type: string
+                      enum:
+                        - POSITION_STATUS_UNSPECIFIED
+                        - POSITION_STATUS_OPEN
+                        - POSITION_STATUS_CLOSED
+                        - POSITION_STATUS_LIQUIDATING
+                        - POSITION_STATUS_LIQUIDATED
+                      default: POSITION_STATUS_UNSPECIFIED
                     borrowed:
                       type: object
                       properties:
@@ -9658,6 +9667,18 @@ paths:
           in: query
           required: false
           type: boolean
+        - name: status
+          description: 'Optional: filter by lifecycle status; defaults to OPEN positions.'
+          in: query
+          required: false
+          type: string
+          enum:
+            - POSITION_STATUS_UNSPECIFIED
+            - POSITION_STATUS_OPEN
+            - POSITION_STATUS_CLOSED
+            - POSITION_STATUS_LIQUIDATING
+            - POSITION_STATUS_LIQUIDATED
+          default: POSITION_STATUS_UNSPECIFIED
       tags:
         - Query
   /dysonprotocol/whaleswap/v1/positions/user/{user}:
@@ -9685,6 +9706,15 @@ paths:
                       format: uint64
                     user:
                       type: string
+                    status:
+                      type: string
+                      enum:
+                        - POSITION_STATUS_UNSPECIFIED
+                        - POSITION_STATUS_OPEN
+                        - POSITION_STATUS_CLOSED
+                        - POSITION_STATUS_LIQUIDATING
+                        - POSITION_STATUS_LIQUIDATED
+                      default: POSITION_STATUS_UNSPECIFIED
                     borrowed:
                       type: object
                       properties:
@@ -9894,6 +9924,18 @@ paths:
           in: query
           required: false
           type: boolean
+        - name: status
+          description: 'Optional: filter by lifecycle status; defaults to OPEN positions.'
+          in: query
+          required: false
+          type: string
+          enum:
+            - POSITION_STATUS_UNSPECIFIED
+            - POSITION_STATUS_OPEN
+            - POSITION_STATUS_CLOSED
+            - POSITION_STATUS_LIQUIDATING
+            - POSITION_STATUS_LIQUIDATED
+          default: POSITION_STATUS_UNSPECIFIED
       tags:
         - Query
   /dysonprotocol/whaleswap/v1/positions/{position_id}:
@@ -9917,6 +9959,15 @@ paths:
                     format: uint64
                   user:
                     type: string
+                  status:
+                    type: string
+                    enum:
+                      - POSITION_STATUS_UNSPECIFIED
+                      - POSITION_STATUS_OPEN
+                      - POSITION_STATUS_CLOSED
+                      - POSITION_STATUS_LIQUIDATING
+                      - POSITION_STATUS_LIQUIDATED
+                    default: POSITION_STATUS_UNSPECIFIED
                   borrowed:
                     type: object
                     properties:
@@ -47608,6 +47659,15 @@ definitions:
         format: uint64
       user:
         type: string
+      status:
+        type: string
+        enum:
+          - POSITION_STATUS_UNSPECIFIED
+          - POSITION_STATUS_OPEN
+          - POSITION_STATUS_CLOSED
+          - POSITION_STATUS_LIQUIDATING
+          - POSITION_STATUS_LIQUIDATED
+        default: POSITION_STATUS_UNSPECIFIED
       borrowed:
         type: object
         properties:
@@ -48160,6 +48220,15 @@ definitions:
       - POSITION_HEALTH_STATUS_LIQUIDATABLE
     default: POSITION_HEALTH_STATUS_UNSPECIFIED
     title: HealthStatus enum for position health
+  dysonprotocol.whaleswap.v1.PositionStatus:
+    type: string
+    enum:
+      - POSITION_STATUS_UNSPECIFIED
+      - POSITION_STATUS_OPEN
+      - POSITION_STATUS_CLOSED
+      - POSITION_STATUS_LIQUIDATING
+      - POSITION_STATUS_LIQUIDATED
+    default: POSITION_STATUS_UNSPECIFIED
   dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse:
     type: object
     properties:
@@ -52089,6 +52158,15 @@ definitions:
             format: uint64
           user:
             type: string
+          status:
+            type: string
+            enum:
+              - POSITION_STATUS_UNSPECIFIED
+              - POSITION_STATUS_OPEN
+              - POSITION_STATUS_CLOSED
+              - POSITION_STATUS_LIQUIDATING
+              - POSITION_STATUS_LIQUIDATED
+            default: POSITION_STATUS_UNSPECIFIED
           borrowed:
             type: object
             properties:
@@ -52273,6 +52351,15 @@ definitions:
               format: uint64
             user:
               type: string
+            status:
+              type: string
+              enum:
+                - POSITION_STATUS_UNSPECIFIED
+                - POSITION_STATUS_OPEN
+                - POSITION_STATUS_CLOSED
+                - POSITION_STATUS_LIQUIDATING
+                - POSITION_STATUS_LIQUIDATED
+              default: POSITION_STATUS_UNSPECIFIED
             borrowed:
               type: object
               properties:
@@ -52427,6 +52514,15 @@ definitions:
               format: uint64
             user:
               type: string
+            status:
+              type: string
+              enum:
+                - POSITION_STATUS_UNSPECIFIED
+                - POSITION_STATUS_OPEN
+                - POSITION_STATUS_CLOSED
+                - POSITION_STATUS_LIQUIDATING
+                - POSITION_STATUS_LIQUIDATED
+              default: POSITION_STATUS_UNSPECIFIED
             borrowed:
               type: object
               properties:

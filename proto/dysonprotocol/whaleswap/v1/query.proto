@@ -514,6 +514,8 @@ message QueryPositionsByUserRequest {
   // denoms)
   uint64 pool_id = 4;
   cosmos.base.query.v1beta1.PageRequest pagination = 5;
+  // Optional: filter by lifecycle status; defaults to OPEN positions.
+  PositionStatus status = 6;
 }
 
 message QueryPositionsByUserResponse {
@@ -525,6 +527,8 @@ message QueryPositionsByUserResponse {
 message QueryPositionsByPoolRequest {
   uint64 pool_id = 1;
   cosmos.base.query.v1beta1.PageRequest pagination = 2;
+  // Optional: filter by lifecycle status; defaults to OPEN positions.
+  PositionStatus status = 3;
 }
 
 message QueryPositionsByPoolResponse {

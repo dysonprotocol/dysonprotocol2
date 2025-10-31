@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 
-	"cosmossdk.io/collections"
 	cosmossdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	whaleswap "dysonprotocol.com/x/whaleswap"
@@ -221,6 +220,7 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		PositionId:         posID,
 		PoolId:             msg.PoolId,
 		User:               msg.Trader,
+		Status:             whaleswapv1.PositionStatus_POSITION_STATUS_OPEN,
 		Borrowed:           borrowed,
 		Held:               sdk.NewCoin(heldDenom, heldAmt),
 		Collateral:         msg.Collateral,
@@ -232,15 +232,8 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		MinCollateralRatio: minCR.String(),
 	}
 	sdkCtx.Logger().Info("OpenPosition: position created", "posID", posID, "borrowDenom", pos.Borrowed.Denom, "heldDenom", pos.Held.Denom)
-	if err := k.LeveragePositions.Set(ctx, posID, pos); err != nil {
+	if err := k.savePosition(ctx, pos, whaleswapv1.PositionStatus_POSITION_STATUS_UNSPECIFIED); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to save position")
-	}
-
-	if err := k.PositionsByUserIndex.Set(ctx, collections.Join(msg.Trader, posID), posID); err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "failed to index position by user")
-	}
-	if err := k.PositionsByPoolIndex.Set(ctx, collections.Join(msg.PoolId, posID), posID); err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "failed to index position by pool")
 	}
 
 	// Emit event

@@ -331,18 +331,21 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 		if p.PositionId > maxPositionID {
 			maxPositionID = p.PositionId
 		}
+		if p.Status == whaleswapv1.PositionStatus_POSITION_STATUS_UNSPECIFIED {
+			if p.LiquidationStatus == whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_INITIALIZED {
+				p.Status = whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATING
+			} else {
+				p.Status = whaleswapv1.PositionStatus_POSITION_STATUS_OPEN
+			}
+		}
 		if err := k.LeveragePositions.Set(ctx, p.PositionId, *p); err != nil {
 			panic(err)
 		}
-		// Rebuild indexes
-		if err := k.PositionsByUserIndex.Set(ctx, collections.Join(p.User, p.PositionId), p.PositionId); err != nil {
+		if err := k.indexPosition(ctx, *p); err != nil {
 			panic(err)
 		}
-		if err := k.PositionsByPoolIndex.Set(ctx, collections.Join(p.PoolId, p.PositionId), p.PositionId); err != nil {
-			panic(err)
-		}
-		// Tally collateral requirements
-		if p.Collateral.Amount.IsPositive() {
+		// Tally collateral requirements ONLY for active positions
+		if (p.Status == whaleswapv1.PositionStatus_POSITION_STATUS_OPEN || p.Status == whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATING) && p.Collateral.Amount.IsPositive() {
 			den := p.Collateral.Denom
 			if cur, ok := leverageCollateral[den]; ok {
 				leverageCollateral[den] = cur.Add(p.Collateral.Amount)

@@ -8,7 +8,7 @@ import { Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 import { Params } from "./params_pb.js";
 import { AuctionRecord, OfferData, Pool, Trade, TradeMetrics } from "./whaleswap_pb.js";
 import { PageRequest, PageResponse } from "../../../cosmos/base/query/v1beta1/pagination_pb.js";
-import { LeveragePosition } from "./leverage_pb.js";
+import { LeveragePosition, PositionStatus } from "./leverage_pb.js";
 import { Coin } from "../../../cosmos/base/v1beta1/coin_pb.js";
 
 /**
@@ -2521,6 +2521,13 @@ export class QueryPositionsByUserRequest extends Message<QueryPositionsByUserReq
    */
   pagination?: PageRequest;
 
+  /**
+   * Optional: filter by lifecycle status; defaults to OPEN positions.
+   *
+   * @generated from field: dysonprotocol.whaleswap.v1.PositionStatus status = 6;
+   */
+  status = PositionStatus.UNSPECIFIED;
+
   constructor(data?: PartialMessage<QueryPositionsByUserRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -2534,6 +2541,7 @@ export class QueryPositionsByUserRequest extends Message<QueryPositionsByUserReq
     { no: 3, name: "collateral_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 5, name: "pagination", kind: "message", T: PageRequest },
+    { no: 6, name: "status", kind: "enum", T: proto3.getEnumType(PositionStatus) },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPositionsByUserRequest {
@@ -2612,6 +2620,13 @@ export class QueryPositionsByPoolRequest extends Message<QueryPositionsByPoolReq
    */
   pagination?: PageRequest;
 
+  /**
+   * Optional: filter by lifecycle status; defaults to OPEN positions.
+   *
+   * @generated from field: dysonprotocol.whaleswap.v1.PositionStatus status = 3;
+   */
+  status = PositionStatus.UNSPECIFIED;
+
   constructor(data?: PartialMessage<QueryPositionsByPoolRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -2622,6 +2637,7 @@ export class QueryPositionsByPoolRequest extends Message<QueryPositionsByPoolReq
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 2, name: "pagination", kind: "message", T: PageRequest },
+    { no: 3, name: "status", kind: "enum", T: proto3.getEnumType(PositionStatus) },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPositionsByPoolRequest {

@@ -76,6 +76,10 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 	if pos.User != msg.User {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrUnauthorized, "not position owner")
 	}
+	if pos.Status == whaleswapv1.PositionStatus_POSITION_STATUS_CLOSED || pos.Status == whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATED {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "position %d not active", msg.PositionId)
+	}
+	originalStatus := pos.Status
 	if !msg.Payment.IsValid() || !msg.Payment.Amount.IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid payment")
 	}
@@ -102,6 +106,7 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 		return nil, ierr
 	}
 	interestInt := interestDec.TruncateInt()
+	interestCoin := sdk.NewCoin(pos.Borrowed.Denom, interestInt)
 	totalRepayment := pos.Borrowed.Amount.Add(interestInt)
 	logger.Info("CoverPosition interest computed", "elapsed_sec", int64(elapsed), "rate", rate.String(), "interest", interestInt.String(), "total_repayment", totalRepayment.String())
 
@@ -118,6 +123,7 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 	// Overpay (or exact) → auto-close (respect block delay like ClosePosition)
 	if msg.Payment.Amount.GTE(totalRepayment) {
 		logger.Info("CoverPosition entering auto-close path")
+		principalCoin := pos.Borrowed
 		if !k.CanCloseBefore(ctx, &pos) {
 			blocks := k.BlocksUntilCloseable(ctx, &pos)
 			return nil, cosmossdkerrors.Wrapf(whaleswapv1.ErrBlockDelayNotPassed, "position locked for %d more blocks", blocks)
@@ -183,7 +189,7 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 		pool.Coins = pool.Coins.Add(repaymentCoin)
 		totalBorrowed := sdk.NewCoins(pool.TotalBorrowed...).Sub(pos.Borrowed)
 		pool.TotalBorrowed = totalBorrowed
-		pool.InterestEarned = sdk.NewCoins(pool.InterestEarned...).Add(sdk.NewCoin(pos.Borrowed.Denom, interestInt))
+		pool.InterestEarned = sdk.NewCoins(pool.InterestEarned...).Add(interestCoin)
 		if err := k.updatePool(ctx, &pool); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to update pool")
 		}
@@ -222,11 +228,14 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 			logger.Info("CoverPosition returned collateral", "collateral", pos.Collateral.String())
 		}
 
-		// Delete position
-		if err := k.LeveragePositions.Remove(ctx, msg.PositionId); err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to delete position")
+		pos.Status = whaleswapv1.PositionStatus_POSITION_STATUS_CLOSED
+		pos.LiquidationStatus = whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE
+		pos.LiquidationInitializedBlockHeight = 0
+		pos.AccruedInterest = interestCoin
+		if err := k.savePosition(ctx, pos, originalStatus); err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "failed to persist closed position")
 		}
-		logger.Info("CoverPosition deleted position", "position_id", msg.PositionId)
+		logger.Info("CoverPosition marked position closed", "position_id", msg.PositionId)
 
 		// Emit events: covered (closed=true) and closed
 		newCR := math.LegacyZeroDec()
@@ -234,8 +243,8 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 			PositionId:         msg.PositionId,
 			User:               msg.User,
 			PoolId:             pos.PoolId,
-			InterestPaid:       sdk.NewCoin(pos.Borrowed.Denom, interestInt),
-			PrincipalPaid:      pos.Borrowed,
+			InterestPaid:       interestCoin,
+			PrincipalPaid:      principalCoin,
 			NewCollateralRatio: newCR.String(),
 			Closed:             true,
 			Refunded:           refund,
@@ -249,7 +258,7 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 			User:            msg.User,
 			PoolId:          pos.PoolId,
 			Profit:          profit,
-			AccruedInterest: sdk.NewCoin(pos.Borrowed.Denom, interestInt),
+			AccruedInterest: interestCoin,
 		}); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to emit close event")
 		}
@@ -264,8 +273,8 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 		logger.Info("CoverPosition close invariants passed")
 
 		return &whaleswapv1.MsgCoverPositionResponse{
-			InterestPaid:       sdk.NewCoin(pos.Borrowed.Denom, interestInt),
-			PrincipalPaid:      pos.Borrowed,
+			InterestPaid:       interestCoin,
+			PrincipalPaid:      principalCoin,
 			NewBorrowed:        sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt()),
 			NewCollateralRatio: newCR,
 			Closed:             true,
@@ -286,7 +295,7 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 	// Update pool reserves/accounting: add interest+principal payments
 	addCoin := sdk.NewCoin(pos.Borrowed.Denom, msg.Payment.Amount)
 	pool.Coins = pool.Coins.Add(addCoin)
-	pool.InterestEarned = sdk.NewCoins(pool.InterestEarned...).Add(sdk.NewCoin(pos.Borrowed.Denom, interestInt))
+	pool.InterestEarned = sdk.NewCoins(pool.InterestEarned...).Add(interestCoin)
 	if principalPaid.IsPositive() {
 		pool.TotalBorrowed = sdk.NewCoins(pool.TotalBorrowed...).Sub(sdk.NewCoin(pos.Borrowed.Denom, principalPaid))
 	}
@@ -300,8 +309,9 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 	pos.Borrowed = sdk.NewCoin(pos.Borrowed.Denom, newPrincipal)
 	now := sdkCtx.BlockTime()
 	pos.BorrowTime = &now
+	prevStatus := pos.Status
 	k.ClearLiquidationPending(&pos)
-	if err := k.LeveragePositions.Set(ctx, msg.PositionId, pos); err != nil {
+	if err := k.savePosition(ctx, pos, prevStatus); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to update position")
 	}
 	logger.Info("CoverPosition updated position after partial cover", "new_borrowed", pos.Borrowed.String(), "borrow_time", now)
@@ -336,7 +346,7 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 		PositionId:         msg.PositionId,
 		User:               msg.User,
 		PoolId:             pos.PoolId,
-		InterestPaid:       sdk.NewCoin(pos.Borrowed.Denom, interestInt),
+		InterestPaid:       interestCoin,
 		PrincipalPaid:      sdk.NewCoin(pos.Borrowed.Denom, principalPaid),
 		NewCollateralRatio: newCR.String(),
 		Closed:             false,
@@ -356,7 +366,7 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 	logger.Info("CoverPosition partial-cover invariants passed")
 
 	return &whaleswapv1.MsgCoverPositionResponse{
-		InterestPaid:       sdk.NewCoin(pos.Borrowed.Denom, interestInt),
+		InterestPaid:       interestCoin,
 		PrincipalPaid:      sdk.NewCoin(pos.Borrowed.Denom, principalPaid),
 		NewBorrowed:        pos.Borrowed,
 		NewCollateralRatio: newCR,

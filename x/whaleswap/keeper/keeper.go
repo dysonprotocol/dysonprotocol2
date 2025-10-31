@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"cosmossdk.io/collections"
@@ -89,8 +90,8 @@ type Keeper struct {
 	// Leverage
 	leveragePositionSeq  collections.Sequence
 	LeveragePositions    collections.Map[uint64, whaleswapv1.LeveragePosition]
-	PositionsByUserIndex collections.Map[collections.Pair[string, uint64], uint64]
-	PositionsByPoolIndex collections.Map[collections.Pair[uint64, uint64], uint64]
+	PositionsByUserIndex collections.Map[collections.Triple[string, uint32, uint64], uint64]
+	PositionsByPoolIndex collections.Map[collections.Triple[uint64, uint32, uint64], uint64]
 }
 
 func NewKeeper(
@@ -237,14 +238,14 @@ func NewKeeper(
 		sb,
 		PositionsByUserPrefix,
 		"positions_by_user",
-		collections.PairKeyCodec(collections.StringKey, collections.Uint64Key),
+		collections.TripleKeyCodec(collections.StringKey, collections.Uint32Key, collections.Uint64Key),
 		collections.Uint64Value,
 	)
 	k.PositionsByPoolIndex = collections.NewMap(
 		sb,
 		PositionsByPoolPrefix,
 		"positions_by_pool",
-		collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key),
+		collections.TripleKeyCodec(collections.Uint64Key, collections.Uint32Key, collections.Uint64Key),
 		collections.Uint64Value,
 	)
 	schema, err := sb.Build()
@@ -359,6 +360,48 @@ func (k Keeper) moveBorrowVaultToVault(ctx context.Context, coins sdk.Coins) err
 
 func (k Keeper) moveModuleToModule(ctx context.Context, fromModule, toModule string, coins sdk.Coins) error {
 	return k.bank.SendCoinsFromModuleToModule(ctx, fromModule, toModule, coins)
+}
+
+func positionStatusKey(status whaleswapv1.PositionStatus) uint32 {
+	return uint32(status)
+}
+
+func (k Keeper) indexPosition(ctx context.Context, pos whaleswapv1.LeveragePosition) error {
+	statusKey := positionStatusKey(pos.Status)
+	if err := k.PositionsByUserIndex.Set(ctx, collections.Join3(pos.User, statusKey, pos.PositionId), pos.PositionId); err != nil {
+		return err
+	}
+	if err := k.PositionsByPoolIndex.Set(ctx, collections.Join3(pos.PoolId, statusKey, pos.PositionId), pos.PositionId); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (k Keeper) removePositionIndex(ctx context.Context, user string, poolID uint64, status whaleswapv1.PositionStatus, positionID uint64) error {
+	statusKey := positionStatusKey(status)
+	if err := k.PositionsByUserIndex.Remove(ctx, collections.Join3(user, statusKey, positionID)); err != nil && !errors.Is(err, collections.ErrNotFound) {
+		return err
+	}
+	if err := k.PositionsByPoolIndex.Remove(ctx, collections.Join3(poolID, statusKey, positionID)); err != nil && !errors.Is(err, collections.ErrNotFound) {
+		return err
+	}
+	return nil
+}
+
+func (k Keeper) reindexPositionStatus(ctx context.Context, pos whaleswapv1.LeveragePosition, prevStatus whaleswapv1.PositionStatus) error {
+	if prevStatus != whaleswapv1.PositionStatus_POSITION_STATUS_UNSPECIFIED && prevStatus != pos.Status {
+		if err := k.removePositionIndex(ctx, pos.User, pos.PoolId, prevStatus, pos.PositionId); err != nil {
+			return err
+		}
+	}
+	return k.indexPosition(ctx, pos)
+}
+
+func (k Keeper) savePosition(ctx context.Context, pos whaleswapv1.LeveragePosition, prevStatus whaleswapv1.PositionStatus) error {
+	if err := k.LeveragePositions.Set(ctx, pos.PositionId, pos); err != nil {
+		return err
+	}
+	return k.reindexPositionStatus(ctx, pos, prevStatus)
 }
 
 // ----- Orderbook helpers -----

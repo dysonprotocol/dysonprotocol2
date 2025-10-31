@@ -1170,6 +1170,21 @@
             "in": "query",
             "required": false,
             "type": "boolean"
+          },
+          {
+            "name": "status",
+            "description": "Optional: filter by lifecycle status; defaults to OPEN positions.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "POSITION_STATUS_UNSPECIFIED",
+              "POSITION_STATUS_OPEN",
+              "POSITION_STATUS_CLOSED",
+              "POSITION_STATUS_LIQUIDATING",
+              "POSITION_STATUS_LIQUIDATED"
+            ],
+            "default": "POSITION_STATUS_UNSPECIFIED"
           }
         ],
         "tags": [
@@ -1256,6 +1271,21 @@
             "in": "query",
             "required": false,
             "type": "boolean"
+          },
+          {
+            "name": "status",
+            "description": "Optional: filter by lifecycle status; defaults to OPEN positions.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "POSITION_STATUS_UNSPECIFIED",
+              "POSITION_STATUS_OPEN",
+              "POSITION_STATUS_CLOSED",
+              "POSITION_STATUS_LIQUIDATING",
+              "POSITION_STATUS_LIQUIDATED"
+            ],
+            "default": "POSITION_STATUS_UNSPECIFIED"
           }
         ],
         "tags": [
@@ -1776,6 +1806,9 @@
         "user": {
           "type": "string"
         },
+        "status": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.PositionStatus"
+        },
         "borrowed": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
         },
@@ -2051,6 +2084,17 @@
       ],
       "default": "POSITION_HEALTH_STATUS_UNSPECIFIED",
       "title": "HealthStatus enum for position health"
+    },
+    "dysonprotocol.whaleswap.v1.PositionStatus": {
+      "type": "string",
+      "enum": [
+        "POSITION_STATUS_UNSPECIFIED",
+        "POSITION_STATUS_OPEN",
+        "POSITION_STATUS_CLOSED",
+        "POSITION_STATUS_LIQUIDATING",
+        "POSITION_STATUS_LIQUIDATED"
+      ],
+      "default": "POSITION_STATUS_UNSPECIFIED"
     },
     "dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse": {
       "type": "object",

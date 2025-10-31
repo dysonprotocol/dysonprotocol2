@@ -34,6 +34,44 @@ proto3.util.setEnumType(LiquidationStatus, "dysonprotocol.whaleswap.v1.Liquidati
 ]);
 
 /**
+ * @generated from enum dysonprotocol.whaleswap.v1.PositionStatus
+ */
+export enum PositionStatus {
+  /**
+   * @generated from enum value: POSITION_STATUS_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: POSITION_STATUS_OPEN = 1;
+   */
+  OPEN = 1,
+
+  /**
+   * @generated from enum value: POSITION_STATUS_CLOSED = 2;
+   */
+  CLOSED = 2,
+
+  /**
+   * @generated from enum value: POSITION_STATUS_LIQUIDATING = 3;
+   */
+  LIQUIDATING = 3,
+
+  /**
+   * @generated from enum value: POSITION_STATUS_LIQUIDATED = 4;
+   */
+  LIQUIDATED = 4,
+}
+// Retrieve enum metadata with: proto3.getEnumType(PositionStatus)
+proto3.util.setEnumType(PositionStatus, "dysonprotocol.whaleswap.v1.PositionStatus", [
+  { no: 0, name: "POSITION_STATUS_UNSPECIFIED" },
+  { no: 1, name: "POSITION_STATUS_OPEN" },
+  { no: 2, name: "POSITION_STATUS_CLOSED" },
+  { no: 3, name: "POSITION_STATUS_LIQUIDATING" },
+  { no: 4, name: "POSITION_STATUS_LIQUIDATED" },
+]);
+
+/**
  * LeveragePosition represents an active leverage position for a trader.
  *
  * @generated from message dysonprotocol.whaleswap.v1.LeveragePosition
@@ -53,6 +91,11 @@ export class LeveragePosition extends Message<LeveragePosition> {
    * @generated from field: string user = 3;
    */
   user = "";
+
+  /**
+   * @generated from field: dysonprotocol.whaleswap.v1.PositionStatus status = 4;
+   */
+  status = PositionStatus.UNSPECIFIED;
 
   /**
    * @generated from field: cosmos.base.v1beta1.Coin borrowed = 5;
@@ -122,6 +165,7 @@ export class LeveragePosition extends Message<LeveragePosition> {
     { no: 1, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 3, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "status", kind: "enum", T: proto3.getEnumType(PositionStatus) },
     { no: 5, name: "borrowed", kind: "message", T: Coin },
     { no: 6, name: "held", kind: "message", T: Coin },
     { no: 7, name: "collateral", kind: "message", T: Coin },

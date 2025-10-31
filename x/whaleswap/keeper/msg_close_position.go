@@ -51,11 +51,15 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		blocks := k.BlocksUntilCloseable(ctx, &pos)
 		return nil, cosmossdkerrors.Wrapf(whaleswapv1.ErrBlockDelayNotPassed, "position locked for %d more blocks", blocks)
 	}
+	if pos.Status == whaleswapv1.PositionStatus_POSITION_STATUS_CLOSED || pos.Status == whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATED {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "position %d not active", msg.PositionId)
+	}
 
 	pool, err := k.PoolsMap.Get(ctx, pos.PoolId)
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "pool %d not found", pos.PoolId)
 	}
+	originalStatus := pos.Status
 
 	// Calculate interest using per-position snapshot rate; must be set (len 2)
 	if len(pos.InterestRate) != 2 {
@@ -68,6 +72,8 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	if err != nil {
 		return nil, err
 	}
+	interestInt := interest.TruncateInt()
+	interestCoin := sdk.NewCoin(pos.Borrowed.Denom, interestInt)
 
 	// Return collateral and profit to user; pool receives repayment
 	userAddr, err := k.addr(ctx, msg.User)
@@ -137,10 +143,11 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 			// Cross-denom collateral: must swap to borrowed denom
 			collateralToSwap := pos.Collateral
 
-			// Zero out position collateral and persist BEFORE moving funds
-			pos.Collateral.Amount = math.ZeroInt()
-			if err := k.LeveragePositions.Set(ctx, msg.PositionId, pos); err != nil {
-				return nil, cosmossdkerrors.Wrap(err, "failed to update position before collateral swap")
+			// Stage status: mark CLOSED and persist BEFORE moving funds so invariants
+			// stop counting position collateral while it's staged in the borrow vault
+			pos.Status = whaleswapv1.PositionStatus_POSITION_STATUS_CLOSED
+			if err := k.savePosition(ctx, pos, originalStatus); err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "failed to update position status before collateral swap")
 			}
 
 			// Move collateral from module → borrow vault for swap
@@ -266,21 +273,23 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	}
 
 	// Update pool accounting: decrease total_borrowed and add interest earned
+	principalCoin := pos.Borrowed
 	totalBorrowed := sdk.NewCoins(pool.TotalBorrowed...).Sub(pos.Borrowed)
 	pool.TotalBorrowed = totalBorrowed
-	interestEarned := sdk.NewCoins(pool.InterestEarned...).Add(sdk.NewCoin(pos.Borrowed.Denom, interest.TruncateInt()))
+	interestEarned := sdk.NewCoins(pool.InterestEarned...).Add(interestCoin)
 	pool.InterestEarned = interestEarned
 	if err := k.PoolsMap.Set(ctx, pos.PoolId, pool); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to update pool")
 	}
-
-	// Delete position
-	if err := k.LeveragePositions.Remove(ctx, msg.PositionId); err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "failed to delete position")
+	pos.Status = whaleswapv1.PositionStatus_POSITION_STATUS_CLOSED
+	pos.LiquidationStatus = whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE
+	pos.LiquidationInitializedBlockHeight = 0
+	pos.AccruedInterest = interestCoin
+	if err := k.savePosition(ctx, pos, originalStatus); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to persist closed position")
 	}
 
 	// Emit event
-	interestCoin := sdk.NewCoin(pos.Borrowed.Denom, interest.TruncateInt())
 	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventLeveragePositionClosed{
 		PositionId:      msg.PositionId,
 		User:            msg.User,
@@ -301,7 +310,7 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 
 	return &whaleswapv1.MsgClosePositionResponse{
 		InterestPaid:  interestCoin,
-		PrincipalPaid: pos.Borrowed,
+		PrincipalPaid: principalCoin,
 		Profit:        profit,
 	}, nil
 }

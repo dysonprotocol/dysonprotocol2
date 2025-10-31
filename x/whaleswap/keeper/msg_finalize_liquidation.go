@@ -61,6 +61,9 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "position %d not found", msg.PositionId)
 	}
+	if pos.Status == whaleswapv1.PositionStatus_POSITION_STATUS_CLOSED || pos.Status == whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATED {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "position %d not active", msg.PositionId)
+	}
 	logger.Info("FinalizeLiquidation: loaded position",
 		"pos_user", pos.User,
 		"borrowed", pos.Borrowed.String(),
@@ -120,6 +123,7 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 	)
 
 	interestCoin := sdk.NewCoin(pos.Borrowed.Denom, interest.TruncateInt())
+	collateralSent := pos.Collateral
 
 	// Send all collateral to liquidator
 	// Log module balance before sending collateral out
@@ -155,11 +159,15 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 		"pool_reserves", sdk.NewCoins(pool.Coins...).String(),
 	)
 
-	// Delete position
-	if err := k.LeveragePositions.Remove(ctx, msg.PositionId); err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "failed to delete position")
+	prevStatus := pos.Status
+	pos.Status = whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATED
+	pos.LiquidationStatus = whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE
+	pos.LiquidationInitializedBlockHeight = 0
+	pos.AccruedInterest = interestCoin
+	if err := k.savePosition(ctx, pos, prevStatus); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to persist position status")
 	}
-	logger.Info("FinalizeLiquidation: position removed", "position_id", msg.PositionId)
+	logger.Info("FinalizeLiquidation: position marked liquidated", "position_id", msg.PositionId)
 
 	// Emit event
 	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventLeverageLiquidationFinalized{
@@ -167,7 +175,7 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 		User:               pos.User,
 		Liquidator:         msg.Liquidator,
 		PoolId:             pos.PoolId,
-		CollateralReceived: pos.Collateral,
+		CollateralReceived: collateralSent,
 		RepaymentAmount:    repaymentCoin,
 		AccruedInterest:    interestCoin,
 	}); err != nil {
@@ -180,7 +188,7 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 	)
 
 	resp := &whaleswapv1.MsgFinalizeLiquidationResponse{
-		CollateralReceived: pos.Collateral,
+		CollateralReceived: collateralSent,
 		RepaymentAmount:    repaymentCoin,
 		AccruedInterest:    interestCoin,
 	}

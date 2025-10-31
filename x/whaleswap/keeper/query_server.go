@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/collections"
 	cosmossdkerrors "cosmossdk.io/errors"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -81,38 +82,44 @@ func (k Keeper) PositionsByUser(ctx context.Context, req *whaleswapv1.QueryPosit
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "user address required")
 	}
 
-	var positions []*whaleswapv1.LeveragePosition
+	status := req.Status
+	if status == whaleswapv1.PositionStatus_POSITION_STATUS_UNSPECIFIED {
+		status = whaleswapv1.PositionStatus_POSITION_STATUS_OPEN
+	}
+	statusKey := positionStatusKey(status)
 
-	// Walk through all positions and filter by user
-	_ = k.LeveragePositions.Walk(ctx, nil, func(_ uint64, pos whaleswapv1.LeveragePosition) (bool, error) {
-		if pos.User != req.User {
-			return false, nil
-		}
-
-		// Apply filters if specified
-		if req.PoolId != 0 && pos.PoolId != req.PoolId {
-			return false, nil
-		}
-		if req.BorrowedDenom != "" && pos.Borrowed.Denom != req.BorrowedDenom {
-			return false, nil
-		}
-		if req.CollateralDenom != "" && pos.Collateral.Denom != req.CollateralDenom {
-			return false, nil
-		}
-
-		positions = append(positions, &pos)
-		return false, nil
-	})
-
-	// Apply pagination
-	var pageResp *query.PageResponse
-	if req.Pagination != nil {
-		pageResp = &query.PageResponse{}
+	results, pageRes, err := query.CollectionPaginate(
+		ctx,
+		k.PositionsByUserIndex,
+		req.Pagination,
+		func(_ collections.Triple[string, uint32, uint64], positionID uint64) (*whaleswapv1.LeveragePosition, error) {
+			pos, err := k.LeveragePositions.Get(ctx, positionID)
+			if err != nil {
+				return nil, err
+			}
+			if req.PoolId != 0 && pos.PoolId != req.PoolId {
+				return nil, nil
+			}
+			if req.BorrowedDenom != "" && pos.Borrowed.Denom != req.BorrowedDenom {
+				return nil, nil
+			}
+			if req.CollateralDenom != "" && pos.Collateral.Denom != req.CollateralDenom {
+				return nil, nil
+			}
+			return &pos, nil
+		},
+		func(opt *query.CollectionsPaginateOptions[collections.Triple[string, uint32, uint64]]) {
+			prefix := collections.TripleSuperPrefix[string, uint32, uint64](req.User, statusKey)
+			opt.Prefix = &prefix
+		},
+	)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "positions by user pagination failed")
 	}
 
 	return &whaleswapv1.QueryPositionsByUserResponse{
-		Positions:  positions,
-		Pagination: pageResp,
+		Positions:  results,
+		Pagination: pageRes,
 	}, nil
 }
 
@@ -126,25 +133,34 @@ func (k Keeper) PositionsByPool(ctx context.Context, req *whaleswapv1.QueryPosit
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool_id required")
 	}
 
-	var positions []*whaleswapv1.LeveragePosition
+	status := req.Status
+	if status == whaleswapv1.PositionStatus_POSITION_STATUS_UNSPECIFIED {
+		status = whaleswapv1.PositionStatus_POSITION_STATUS_OPEN
+	}
+	statusKey := positionStatusKey(status)
 
-	// Walk through all positions and filter by pool
-	_ = k.LeveragePositions.Walk(ctx, nil, func(_ uint64, pos whaleswapv1.LeveragePosition) (bool, error) {
-		if pos.PoolId != req.PoolId {
-			return false, nil
-		}
-		positions = append(positions, &pos)
-		return false, nil
-	})
-
-	// Apply pagination
-	var pageResp *query.PageResponse
-	if req.Pagination != nil {
-		pageResp = &query.PageResponse{}
+	results, pageRes, err := query.CollectionPaginate(
+		ctx,
+		k.PositionsByPoolIndex,
+		req.Pagination,
+		func(_ collections.Triple[uint64, uint32, uint64], positionID uint64) (*whaleswapv1.LeveragePosition, error) {
+			pos, err := k.LeveragePositions.Get(ctx, positionID)
+			if err != nil {
+				return nil, err
+			}
+			return &pos, nil
+		},
+		func(opt *query.CollectionsPaginateOptions[collections.Triple[uint64, uint32, uint64]]) {
+			prefix := collections.TripleSuperPrefix[uint64, uint32, uint64](req.PoolId, statusKey)
+			opt.Prefix = &prefix
+		},
+	)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "positions by pool pagination failed")
 	}
 
 	return &whaleswapv1.QueryPositionsByPoolResponse{
-		Positions:  positions,
-		Pagination: pageResp,
+		Positions:  results,
+		Pagination: pageRes,
 	}, nil
 }

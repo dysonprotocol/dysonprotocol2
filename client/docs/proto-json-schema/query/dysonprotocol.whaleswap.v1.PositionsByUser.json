@@ -23,6 +23,29 @@
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
                         "additionalProperties": false
+                    },
+                    "status": {
+                        "enum": [
+                            "POSITION_STATUS_UNSPECIFIED",
+                            0,
+                            "POSITION_STATUS_OPEN",
+                            1,
+                            "POSITION_STATUS_CLOSED",
+                            2,
+                            "POSITION_STATUS_LIQUIDATING",
+                            3,
+                            "POSITION_STATUS_LIQUIDATED",
+                            4
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Position Status"
                     }
                 },
                 "additionalProperties": false,
@@ -140,6 +163,29 @@
                     },
                     "user": {
                         "type": "string"
+                    },
+                    "status": {
+                        "enum": [
+                            "POSITION_STATUS_UNSPECIFIED",
+                            0,
+                            "POSITION_STATUS_OPEN",
+                            1,
+                            "POSITION_STATUS_CLOSED",
+                            2,
+                            "POSITION_STATUS_LIQUIDATING",
+                            3,
+                            "POSITION_STATUS_LIQUIDATED",
+                            4
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Position Status"
                     },
                     "borrowed": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",

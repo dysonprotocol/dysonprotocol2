@@ -128,6 +128,9 @@ func (k Keeper) tallyLeveragePositions(ctx context.Context) (sdk.Coins, sdk.Coin
 	borrReq := map[string]math.Int{}
 
 	if err := k.LeveragePositions.Walk(ctx, nil, func(_ uint64, pos whaleswapv1.LeveragePosition) (bool, error) {
+		if pos.Status != whaleswapv1.PositionStatus_POSITION_STATUS_OPEN && pos.Status != whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATING {
+			return false, nil
+		}
 		if pos.Collateral.Amount.IsPositive() {
 			d := pos.Collateral.Denom
 			if cur, ok := collReq[d]; ok {

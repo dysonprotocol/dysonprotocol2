@@ -18,11 +18,21 @@ enum LiquidationStatus {
   LIQUIDATION_STATUS_INITIALIZED = 2;
 }
 
+enum PositionStatus {
+  POSITION_STATUS_UNSPECIFIED = 0;
+  POSITION_STATUS_OPEN = 1;
+  POSITION_STATUS_CLOSED = 2;
+  POSITION_STATUS_LIQUIDATING = 3;
+  POSITION_STATUS_LIQUIDATED = 4;
+}
+
 // LeveragePosition represents an active leverage position for a trader.
 message LeveragePosition {
   uint64 position_id = 1;
   uint64 pool_id = 2;
   string user = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+  PositionStatus status = 4;
 
   cosmos.base.v1beta1.Coin borrowed = 5 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin held = 6 [ (gogoproto.nullable) = false ];

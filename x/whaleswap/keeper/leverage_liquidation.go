@@ -51,6 +51,7 @@ func (k Keeper) InitializeLiquidationInternal(ctx context.Context, pos *whaleswa
 		return cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "liquidation already initialized")
 	}
 	pos.LiquidationStatus = whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_INITIALIZED
+	pos.Status = whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATING
 	pos.LiquidationInitializedBlockHeight = uint64(sdkCtx.BlockHeight())
 	return nil
 }
@@ -58,6 +59,7 @@ func (k Keeper) InitializeLiquidationInternal(ctx context.Context, pos *whaleswa
 // ClearLiquidationPending resets liquidation state (called by AddCollateral).
 func (k Keeper) ClearLiquidationPending(pos *whaleswapv1.LeveragePosition) {
 	pos.LiquidationStatus = whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE
+	pos.Status = whaleswapv1.PositionStatus_POSITION_STATUS_OPEN
 	pos.LiquidationInitializedBlockHeight = 0
 }
 

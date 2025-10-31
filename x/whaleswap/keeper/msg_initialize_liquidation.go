@@ -47,6 +47,9 @@ func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgI
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "position %d not found", msg.PositionId)
 	}
+	if pos.Status == whaleswapv1.PositionStatus_POSITION_STATUS_CLOSED || pos.Status == whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATED {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "position %d not active", msg.PositionId)
+	}
 	logger.Info("InitializeLiquidation: loaded position",
 		"pos_user", pos.User,
 		"borrowed", pos.Borrowed.String(),
@@ -102,10 +105,11 @@ func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgI
 	}
 	logger.Info("InitializeLiquidation: position is liquidatable")
 
+	prevStatus := pos.Status
 	if err := k.InitializeLiquidationInternal(ctx, &pos); err != nil {
 		return nil, err
 	}
-	if err := k.LeveragePositions.Set(ctx, msg.PositionId, pos); err != nil {
+	if err := k.savePosition(ctx, pos, prevStatus); err != nil {
 		return nil, err
 	}
 	logger.Info("InitializeLiquidation: updated position state",

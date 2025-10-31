@@ -46,6 +46,9 @@ func (k Keeper) AddCollateral(ctx context.Context, msg *whaleswapv1.MsgAddCollat
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "position %d not found", msg.PositionId)
 	}
+	if pos.Status == whaleswapv1.PositionStatus_POSITION_STATUS_CLOSED || pos.Status == whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATED {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "position %d not active", msg.PositionId)
+	}
 	if pos.User != msg.User {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrUnauthorized, "not position owner")
 	}
@@ -70,8 +73,9 @@ func (k Keeper) AddCollateral(ctx context.Context, msg *whaleswapv1.MsgAddCollat
 	newCollateral := sdk.NewCoin(pos.Collateral.Denom, newCollateralAmount)
 	pos.Collateral = newCollateral
 
+	prevStatus := pos.Status
 	k.ClearLiquidationPending(&pos)
-	if err := k.LeveragePositions.Set(ctx, msg.PositionId, pos); err != nil {
+	if err := k.savePosition(ctx, pos, prevStatus); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to update position %d", msg.PositionId)
 	}
 
