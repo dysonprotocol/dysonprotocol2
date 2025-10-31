@@ -126,7 +126,7 @@
                     "swap_in": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false,
-                        "description": "One of swap_in or swap_out must be set; both allowed for rate constraint"
+                        "description": "Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set. Use message-level min_output for rate constraints across legs."
                     },
                     "swap_out": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",

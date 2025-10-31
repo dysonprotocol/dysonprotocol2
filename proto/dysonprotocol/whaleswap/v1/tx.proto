@@ -40,38 +40,145 @@ option go_package = "dysonprotocol.com/x/whaleswap/types";
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
-  // AMM
+  /**
+   * CreatePool creates a two-asset pool; moves initial reserves, mints initial
+   * shares, and asserts invariants.
+   */
   rpc CreatePool(MsgCreatePool) returns (MsgCreatePoolResponse);
+
+  /**
+   * UpdatePoolConfig updates pool fees, leverage/threshold params, interest,
+   * optional max_borrow_percent, and price bands; majority-owner only.
+   */
   rpc UpdatePoolConfig(MsgUpdatePoolConfig)
       returns (MsgUpdatePoolConfigResponse);
+
+  /**
+   * AddLiquidity (owner-only) escrows provided amounts, refunds any unused
+   * amounts in band mode, mints shares, enforces the price band, and asserts
+   * AMM invariants.
+   */
   rpc AddLiquidity(MsgAddLiquidity) returns (MsgAddLiquidityResponse);
+
+  /**
+   * RemoveLiquidity burns the caller's shares and returns the underlying
+   * reserves.
+   *
+   * Modes:
+   * - Full exit: burning all outstanding shares deletes the pool and pays
+   *   out the full reserves.
+   * - Partial exit:
+   *   - Concentrated pools: outputs are computed from ΔL within the active
+   *     price band.
+   *   - Non-concentrated pools: outputs are pro-rata.
+   *
+   * Safety:
+   * - Concentrated: post-state price must remain within the band and the
+   *   liquidity delta must be consistent with the burned share ratio within
+   *   a small tolerance.
+   * - Partial exits cannot deplete any reserve; use full exit to withdraw the
+   *   last liquidity.
+   * - Outputs must be non-zero.
+   *
+   * Emits EventPoolLiquidityRemoved on success.
+   */
   rpc RemoveLiquidity(MsgRemoveLiquidity) returns (MsgRemoveLiquidityResponse);
+
+  /**
+   * PoolSwap executes one or more exact-in or exact-out pool swap legs with a
+   * single end-of-tx settlement. Applies output-side fees per leg and enforces
+   * aggregate max_input caps and min_output guarantees.
+   */
   rpc PoolSwap(MsgPoolSwap) returns (MsgPoolSwapResponse);
-  // Mixed operations: combine orderbook takes and pool swaps in one tx
+
+  /**
+   * MakeTrade executes swaps and orderbook takes in-order with a single
+   * settlement. Applies per-denom debit caps (max_input) and final min_output,
+   * releases PFAND on offer close, rejects duplicate ids per type; auction
+   * operations are currently rejected.
+   */
   rpc MakeTrade(MsgMakeTrade) returns (MsgMakeTradeResponse);
 
-  // Orderbook
+  /**
+   * MakeOffer creates an orderbook offer. ESCROW: base "have" is escrowed.
+   * LIQUID: lock PFAND; settlement draws from maker balance at take. Units are
+   * derived via GCD for partial fills.
+   */
   rpc MakeOffer(MsgMakeOffer) returns (MsgMakeOfferResponse);
+
+  /**
+   * TakeOffer executes one or more takes. Nets taker credits against maker
+   * wants, funds any deficit from taker base (module covers escrow), releases
+   * PFAND to the taker on full close, and records a single trade.
+   */
   rpc TakeOffer(MsgTakeOffer) returns (MsgTakeOfferResponse);
+
+  /**
+   * CancelOffer allows the maker to cancel at any time. For LIQUID offers, a
+   * third party may cancel if maker base-have balance < one unit_have; refunds
+   * escrow (ESCROW) to maker and sends PFAND to closer.
+   */
   rpc CancelOffer(MsgCancelOffer) returns (MsgCancelOfferResponse);
 
-  // Auctions
+  /**
+   * OpenAuction escrows the sell coin and mints an NFT under a class keyed by
+   * bid_denom; class policy (listing/valuation/bid timeouts/allowed denoms) is
+   * set from module params.
+   */
   rpc OpenAuction(MsgOpenAuction) returns (MsgOpenAuctionResponse);
+
+  /**
+   * RedeemAuction lets the current NFT owner redeem when no bid is active;
+   * burns the NFT and returns escrow. If owner != original seller and a
+   * valuation exists in bid_denom, a trade record is emitted.
+   */
   rpc RedeemAuction(MsgRedeemAuction) returns (MsgRedeemAuctionResponse);
 
-  // Leverage
+  /**
+   * OpenPosition opens a synthetic leveraged position. Borrows (subject to pool
+   * cap), swaps to the held denom, escrows collateral, snapshots interest rate
+   * and min CR, and records the position.
+   */
   rpc OpenPosition(MsgOpenPosition) returns (MsgOpenPositionResponse);
+
+  /**
+   * ClosePosition swaps held to borrowed, repays principal+interest, returns
+   * remaining collateral and any profit, updates pool accounting, and deletes
+   * the position (respects block delay).
+   */
   rpc ClosePosition(MsgClosePosition) returns (MsgClosePositionResponse);
+
+  /**
+   * AddCollateral deposits additional collateral, clears liquidation markers,
+   * and returns the new collateral and ratio.
+   */
   rpc AddCollateral(MsgAddCollateral) returns (MsgAddCollateralResponse);
-  // Repay accrued interest first, then principal; supports overpay → auto-close
-  // with refund
+
+  /**
+   * CoverPosition repays accrued interest; optionally reduces principal or
+   * auto-closes on full repayment.
+   */
   rpc CoverPosition(MsgCoverPosition) returns (MsgCoverPositionResponse);
+
+  /**
+   * InitializeLiquidation (permissionless) marks a position liquidatable when its
+   * collateral ratio (with accrued interest at the snapshotted rate) falls below
+   * the pool's liquidation_threshold and starts the block-delay countdown.
+   */
   rpc InitializeLiquidation(MsgInitializeLiquidation)
       returns (MsgInitializeLiquidationResponse);
+
+  /**
+   * FinalizeLiquidation: Liquidator repays debt and receives all collateral;
+   * the pool accrues interest and repayment; any pool loss is reported;
+   * position is deleted.
+   */
   rpc FinalizeLiquidation(MsgFinalizeLiquidation)
       returns (MsgFinalizeLiquidationResponse);
 
-  // Params
+  /**
+   * UpdateParams updates module parameters. Authority-only.
+   */
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 
@@ -84,33 +191,61 @@ enum SettlementMode {
   SETTLEMENT_LIQUID = 1;
 }
 
-// Create a pool.
-//
-// Behavior:
-// - If min_price/max_price are both unset (or effectively encode [0, +∞)), the
-//   pool behaves as constant product (v2).
-// - If a finite band is provided, concentrated-liquidity math applies within
-//   [min_price, max_price] where price is coin_b / coin_a (see conventions).
+/**
+ * Create a two-asset pool with an optional price band and per-denom
+ * fee/interest/leverage parameters.
+ *
+ * Behavior:
+ * - Input normalization: canonicalizes `coins` (exactly two positive coins) and
+ *   optional `min_price`/`max_price` vectors to the pool's denom order.
+ * - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two
+ *   DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
+ *   interest_rate >= 0 per denom.
+ * - Leverage configuration (required): `min_collateral_ratio` and
+ *   `max_leverage_ratio` must have exactly two entries (> 1) matching pool
+ *   denoms; `liquidation_threshold` must have exactly two entries (> 1);
+ *   `max_borrow_percent` must have exactly two entries with amounts in [0,1).
+ * - Price band (optional): either both `min_price` and `max_price` are set or
+ *   both unset. When set, ensures `min_price` < `max_price` (coin_b/coin_a) and
+ *   the initial price derived from reserves is strictly within (min, max).
+ *   Stores canonical two-coin vectors.
+ * - Funds and shares: sends initial reserves from `creator` → module; allocates
+ *   a new pool_id; persists the pool; computes initial shares as floor(L) for
+ *   bounded pools or floor(sqrt(x*y)) for unbounded pools; ensures at least one
+ *   share; mints pool shares and sends them to the creator.
+ * - Invariants: asserts AMM and module invariants before returning.
+ *
+ * Emits:
+ * - EventPoolCreated(pool_id)
+ * - EventPoolUpdate(pool_id)
+ *
+ * Returns:
+ * - `pool_id` of the newly created pool (see response).
+ */
 message MsgCreatePool {
   option (cosmos.msg.v1.signer) = "creator";
+  // Account creating the pool; receives the initial minted shares.
   string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  // Two initial reserves as coins; order will be canonicalized internally (by
-  // denom lexicographic order).
+  // Initial reserves. Required: exactly two coins with positive amounts.
+  // Order is canonicalized internally to pool denom order (lexicographic).
   repeated cosmos.base.v1beta1.Coin coins = 2 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (amino.dont_omitempty) = true,
     (amino.encoding) = "legacy_coins"
   ];
-  // Optional price band expressed as ratios coin2/coin1 using two coins.
-  // Each must either be empty (unset) or contain exactly two coins whose
-  // denoms match the two pool reserve denoms.
+  // Optional lower price bound as coin2/coin1 ratio.
+  // If set, both this and max_price must contain exactly two coins whose
+  // denoms match the pool reserves; keeper normalizes order.
   repeated cosmos.base.v1beta1.Coin min_price = 3 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (amino.dont_omitempty) = true,
     (amino.encoding) = "legacy_coins"
   ];
+  // Optional upper price bound as coin2/coin1 ratio; subject to the same
+  // rules as min_price. Keeper ensures min_price < max_price and the initial
+  // price is strictly within (min, max).
   repeated cosmos.base.v1beta1.Coin max_price = 4 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
@@ -123,34 +258,35 @@ message MsgCreatePool {
   // denom in canonical order).
   string fee_pct = 5
       [ deprecated = true, (cosmos_proto.scalar) = "cosmos.Dec" ];
-  // Minimum collateral ratio per reserve denom (exactly two, canonical order).
-  // Each amount is a LegacyDec string (> 1).
+  // Required: minimum collateral ratio per reserve denom (exactly two,
+  // canonical order). Each amount is a LegacyDec string (> 1).
   repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 6 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
   ];
-  // Maximum leverage ratio per reserve denom (exactly two, canonical order).
-  // Each amount is a LegacyDec string (> 1).
+  // Required: maximum leverage ratio per reserve denom (exactly two,
+  // canonical order). Each amount is a LegacyDec string (> 1).
   repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
   ];
-  // Annual interest rates per reserve denom (exactly two, canonical order).
-  // Each amount is a LegacyDec string representing APR (per-year accrual).
+  // Annual interest rates per reserve denom (APR >= 0).
+  // Input may include 0, 1, or 2 entries; keeper normalizes to exactly two
+  // entries in canonical pool order.
   repeated cosmos.base.v1beta1.DecCoin interest_rate = 8 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
     (amino.dont_omitempty) = true
   ];
-  // Maximum borrow capacity per reserve denom as DecCoins (exactly two,
-  // canonical order). Each amount is a LegacyDec in [0,1).
+  // Required: maximum borrow capacity per reserve denom as DecCoins (exactly
+  // two, canonical order). Each amount is a LegacyDec in [0,1).
   repeated cosmos.base.v1beta1.DecCoin max_borrow_percent = 9 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
     (amino.dont_omitempty) = true
   ];
-  // Collateral ratio liquidation threshold per reserve denom (exactly two,
-  // canonical order; each amount is a LegacyDec string > 1)
+  // Required: collateral ratio liquidation threshold per reserve denom
+  // (exactly two, canonical order; each amount is a LegacyDec string > 1)
   repeated cosmos.base.v1beta1.DecCoin liquidation_threshold = 10 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
@@ -164,16 +300,39 @@ message MsgCreatePool {
     (amino.dont_omitempty) = true
   ];
 }
-message MsgCreatePoolResponse { uint64 pool_id = 1; }
+message MsgCreatePoolResponse {
+  // Newly created pool id.
+  uint64 pool_id = 1;
+}
 
-// Update pool config (owner-only: majority of shares > 50%).
-//
-// Notes:
-// - All fields are required. Price bands must be both empty (no band) or both
-//   contain exactly two coins in canonical order matching pool reserves.
+/**
+ * Update a pool's dynamic configuration (owner-only).
+ *
+ * Behavior:
+ * - Loads pool; validates signer and majority-ownership.
+ * - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1.
+ * - Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`
+ *   with exactly two entries matching pool denoms; each > 1.
+ * - Liquidation threshold: required with exactly two entries; each > 1.
+ * - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.
+ * - Max borrow percent: optional; if provided exactly two entries; 0 <= x < 1.
+ * - Price bands: both unset clears bands; otherwise both set as two coins
+ *   matching pool denoms with positive amounts; require max > min and current
+ *   price strictly within (min, max). Stores canonical two-coin vectors.
+ * - Persists pool with `updated` timestamp; emits EventPoolUpdate; asserts AMM
+ *   and module invariants.
+ *
+ * Emits:
+ * - EventPoolUpdate(pool_id).
+ *
+ * Returns:
+ * - Empty response.
+ */
 message MsgUpdatePoolConfig {
   option (cosmos.msg.v1.signer) = "signer";
+  // Signer address; must be the majority owner of pool shares.
   string signer = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Target pool id to update.
   uint64 pool_id = 2;
   // Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
   // string in [0,1)). Use fee_rate field 11 instead. Migration logic should
@@ -181,12 +340,16 @@ message MsgUpdatePoolConfig {
   // denom in canonical order).
   string fee_pct = 3
       [ deprecated = true, (cosmos_proto.scalar) = "cosmos.Dec" ];
+  // Lower price bound as coin2/coin1 ratio. See notes above; keeper
+  // canonicalizes order to pool denoms.
   repeated cosmos.base.v1beta1.Coin min_price = 4 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (amino.dont_omitempty) = true,
     (amino.encoding) = "legacy_coins"
   ];
+  // Upper price bound as coin2/coin1 ratio. Must follow the same rules as
+  // min_price.
   repeated cosmos.base.v1beta1.Coin max_price = 5 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
@@ -194,33 +357,35 @@ message MsgUpdatePoolConfig {
     (amino.encoding) = "legacy_coins"
   ];
   // Leverage configuration (per-denom)
-  // Minimum collateral ratio per reserve denom (exactly two, canonical order; >
-  // 1)
+  // Required: minimum collateral ratio per reserve denom (exactly two,
+  // canonical order; > 1)
   repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 6 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
   ];
-  // Maximum leverage ratio per reserve denom (exactly two, canonical order; >
-  // 1)
+  // Required: maximum leverage ratio per reserve denom (exactly two,
+  // canonical order; > 1)
   repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
   ];
-  // Annual interest rates per reserve denom (exactly two, canonical order).
+  // Required: annual interest rates per reserve denom (APR >= 0).
+  // Input may include 0, 1, or 2 entries; keeper normalizes to exactly two in
+  // canonical pool order.
   repeated cosmos.base.v1beta1.DecCoin interest_rate = 8 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
     (amino.dont_omitempty) = true
   ];
-  // Maximum borrow capacity per reserve denom (exactly two, canonical order).
-  // Amounts in [0,1).
+  // Optional: maximum borrow capacity per reserve denom (exactly two,
+  // canonical order). Amounts in [0,1).
   repeated cosmos.base.v1beta1.DecCoin max_borrow_percent = 9 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
     (amino.dont_omitempty) = true
   ];
-  // Collateral ratio liquidation threshold per reserve denom (exactly two,
-  // canonical order; each amount is a LegacyDec string > 1)
+  // Required: collateral ratio liquidation threshold per reserve denom
+  // (exactly two, canonical order; each amount is a LegacyDec string > 1)
   repeated cosmos.base.v1beta1.DecCoin liquidation_threshold = 10 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
@@ -236,17 +401,41 @@ message MsgUpdatePoolConfig {
 }
 message MsgUpdatePoolConfigResponse {}
 
-// Add liquidity (owner-only). Behavior depends on v2/v3 mode.
-// Amounts will be automatically sorted by denom to match pool's canonical
-// order.
+/**
+ * Add liquidity (owner-only).
+ *
+ * Behavior:
+ * - Escrows the full provided amounts, then refunds any unused surplus.
+ * - Concentrated pools: compute ΔL from the inputs at the current price within
+ *   [min_price, max_price]; refund the side that exceeds the limiting ΔL; mint
+ *   shares as floor(ΔL * total_shares / L_current).
+ * - Non-concentrated pools: minted shares are derived from the limiting side
+ *   min(add1/R1, add2/R2) * total_shares; refund the difference.
+ * - Updates reserves, enforces the price band (if set), persists the pool,
+ *   emits events, and asserts AMM invariants.
+ *
+ * Validation:
+ * - Pool must exist and signer must hold a majority of shares.
+ * - `amounts` must contain exactly two positive coins whose denoms match the
+ *   pool reserves (canonical order).
+ *
+ * Emits:
+ * - EventPoolUpdate (after persisting pool state)
+ * - EventPoolLiquidityAdded (on successful add)
+ */
 message MsgAddLiquidity {
   option (cosmos.msg.v1.signer) = "signer";
+  // Account adding liquidity; must be majority owner of pool shares.
   string signer = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Target pool id.
   uint64 pool_id = 2;
   // Reserved: was amount1/amount2 (fields 3-4) in old schema
   reserved 3, 4;
   reserved "amount1", "amount2";
-  // Amounts to add (two coins in any order; will be canonicalized).
+  // Amounts to add: exactly two positive coins matching the pool denoms.
+  // Canonicalized to pool denom order. Full amounts are escrowed; surplus is
+  // refunded (band mode: to match ΔL; non-concentrated: to match minted
+  // shares).
   repeated cosmos.base.v1beta1.Coin amounts = 5 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
@@ -255,19 +444,42 @@ message MsgAddLiquidity {
   ];
 }
 message MsgAddLiquidityResponse {
-  // minted shares amount (sdk.Int string)
+  // Shares minted to signer (sdk.Int string).
   string shares = 1;
 }
 
-// Remove liquidity (anyone). Must respect price band and produce non-zero
-// outputs.
+/**
+ * Remove liquidity (anyone).
+ *
+ * Behavior:
+ * - Burns shares and returns the underlying reserves.
+ * - Full exit: burn all outstanding shares to delete the pool and receive the
+ *   full reserves.
+ * - Partial exit:
+ *   - Concentrated pools: ΔL-based outputs within the current price band.
+ *   - Non-concentrated pools: pro-rata outputs using DecCoins.
+ *
+ * Safety and validation:
+ * - Pool must exist; signer must hold at least `shares`.
+ * - Outputs must be non-zero.
+ * - Partial exits cannot deplete any reserve; use full exit to withdraw the
+ *   last liquidity.
+ * - Concentrated pools: post-state price must remain within band; ΔL must
+ *   match burned share ratio within a small tolerance.
+ *
+ * Emits: EventPoolLiquidityRemoved on success.
+ */
 message MsgRemoveLiquidity {
   option (cosmos.msg.v1.signer) = "signer";
+  // Account burning shares; must hold at least this amount.
   string signer = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Target pool id.
   uint64 pool_id = 2;
-  // shares to burn (sdk.Int string)
+  // Shares to burn (sdk.Int string). Must be > 0; equals total supply to fully
+  // exit (pool is deleted).
   string shares = 3;
 }
+
 message MsgRemoveLiquidityResponse {
   // coins returned
   repeated cosmos.base.v1beta1.Coin amount = 1 [
@@ -277,10 +489,48 @@ message MsgRemoveLiquidityResponse {
     (amino.encoding) = "legacy_coins"
   ];
 }
+
+/**
+ * Execute one or more pool swap legs with a single settlement.
+ *
+ * Behavior:
+ * - Per-leg execution: for each leg, validates the pool/denoms and computes
+ *   the out amount using concentrated-liquidity band math (when configured) or
+ *   constant-product math, applies output-side fee based on the output denom,
+ *   and updates pool reserves.
+ * - Aggregate constraints: after all legs, enforces per-denom debit caps
+ *   (max_input) and minimum outputs (min_output), then performs a single bank
+ *   move between trader and module for the net debits/credits.
+ * - Invariants and recording: asserts AMM and module invariants and records a
+ *   single Trade containing all operations.
+ *
+ * Validation:
+ * - legs must be non-empty; each leg must specify exactly one of swap_in or
+ *   swap_out with a positive amount.
+ * - Pool must exist and have exactly two reserves; input/output denoms must be
+ *   present in the pool.
+ * - Concentrated-liquidity: resulting price must remain within [min_price,
+ *   max_price]; exact-out must not exceed band capacity.
+ * - Constant-product: swaps must not deplete any reserve; exact-out must not
+ *   exceed capacity.
+ * - Aggregate: required debits must not exceed max_input caps; final credits
+ *   must satisfy min_output per denom.
+ *
+ * Emits:
+ * - EventPoolSwap per executed leg (with pool_id, trade_id, operation_index)
+ *   via recordTradeWithOperations.
+ * - EventTradeRecorded once after all legs are recorded.
+ *
+ * Returns:
+ * - amount_out: total coins credited to the trader across all legs.
+ */
 message MsgPoolSwap {
   option (cosmos.msg.v1.signer) = "trader";
+  // Account initiating the swap; debited/credited on net settlement.
   string trader = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   // End-of-tx debit caps per denom (vector cap). Missing denom implies 0.
+  // Applied after aggregating all legs; tx fails if any denom's required debit
+  // exceeds its cap.
   repeated cosmos.base.v1beta1.Coin max_input = 2 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
@@ -288,6 +538,7 @@ message MsgPoolSwap {
     (amino.encoding) = "legacy_coins"
   ];
   // Arbitrary set of swap legs; order does not need to be contiguous by denom.
+  // Output-side fee is applied per leg based on the output denom.
   repeated SwapLeg legs = 3 [ (gogoproto.nullable) = false ];
   // Final minimum outputs required per denom after aggregation.
   repeated cosmos.base.v1beta1.Coin min_output = 4 [
@@ -299,7 +550,8 @@ message MsgPoolSwap {
 }
 message SwapLeg {
   uint64 pool_id = 1;
-  // One of swap_in or swap_out must be set; both allowed for rate constraint
+  // Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set.
+  // Use message-level min_output for rate constraints across legs.
   cosmos.base.v1beta1.Coin swap_in = 2 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin swap_out = 3 [ (gogoproto.nullable) = false ];
 }
@@ -365,6 +617,7 @@ message MsgMakeTradeResponse {
   ];
 }
 message MsgPoolSwapResponse {
+  // Total coins credited to the trader after aggregation across all legs.
   repeated cosmos.base.v1beta1.Coin amount_out = 1 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
@@ -391,6 +644,7 @@ message MsgMakeOffer {
   cosmos.base.v1beta1.Coin want = 3 [ (gogoproto.nullable) = false ];
   // settlement_mode determines whether base have is escrowed (ESCROW) or
   // PFAND is locked and settlement occurs from maker balance at take (LIQUID).
+  // Maker must currently hold at least the full `have` amount.
   SettlementMode settlement_mode = 4;
 }
 message MsgMakeOfferResponse { uint64 offer_id = 1; }
@@ -435,25 +689,54 @@ message MsgCancelOffer {
 }
 message MsgCancelOfferResponse {}
 
-// Open an auction by escrowing exactly one coin amount.
-//
-// - The escrowed `sell` coin is transferred from seller to module and marked by
-//   an NFT for redemption logic. `bid_denom` defines the quote asset.
+/**
+ * OpenAuction escrows the sell coin from the seller and mints an NFT under a
+ * class keyed by `bid_denom`. Class policy (always_listed, valuation
+ * fee/period, bid timeout, minimum bid percent increase, allowed denoms) is
+ * set from module params. The NFT is sent to the seller and the auction record
+ * with reverse indexes is persisted.
+ *
+ * Emits: EventAuctionCreated on success.
+ */
 message MsgOpenAuction {
   option (cosmos.msg.v1.signer) = "seller";
+  // Account opening the auction (receives the minted NFT).
   string seller = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Quote denom for bids; must be a valid denom and differ from sell.denom.
   string bid_denom = 2;
-  // Explicit sell coin to escrow from seller → module.
+  // Sell coin to escrow from seller → module; amount must be > 0.
   cosmos.base.v1beta1.Coin sell = 3 [ (gogoproto.nullable) = false ];
 }
 message MsgOpenAuctionResponse { uint64 auction_id = 1; }
 
-// Redeem auction escrow by NFT owner when no current bidder exists.
+/**
+ * RedeemAuction lets the current NFT owner redeem the auction escrow
+ * when no bid is active.
+ *
+ * Behavior:
+ * - Sends the escrowed sell coins from the module to the caller.
+ * - Burns the NFT and deletes the auction record and reverse indexes.
+ * - If owner != original seller and a positive valuation exists in `bid_denom`,
+ *   a Trade is recorded and its id is included in EventAuctionRedeemed.
+ *
+ * Validation:
+ * - Auction must exist.
+ * - `caller` must equal the current NFT owner.
+ * - No current bidder may exist.
+ * - Module escrow must contain at least the sell amount.
+ *
+ * Emits: EventAuctionRedeemed (trade_id = 0 when seller redeems without trade).
+ */
 message MsgRedeemAuction {
   option (cosmos.msg.v1.signer) = "caller";
+  // Account redeeming; must be the current NFT owner.
   string caller = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Auction to redeem.
   uint64 auction_id = 2;
 }
+/**
+ * Empty response. See EventAuctionRedeemed for emitted details.
+ */
 message MsgRedeemAuctionResponse {}
 
 // UpdateParams is the Msg/UpdateParams request type.
@@ -495,16 +778,34 @@ message MsgOpenPositionResponse {
   cosmos.base.v1beta1.Coin held = 2 [ (gogoproto.nullable) = false ];
 }
 
+/**
+ * ClosePosition closes a synthetic leveraged position.
+ *
+ * Behavior:
+ * - Swaps held to the borrowed denom via the borrow vault, computes accrued
+ *   interest at the snapshotted rate, restores pool reserves by full
+ *   repayment, returns remaining collateral and any profit to the user,
+ *   updates pool accounting, and deletes the position.
+ *
+ * Emits: EventLeveragePositionClosed on success.
+ */
 message MsgClosePosition {
   option (cosmos.msg.v1.signer) = "user";
+  // Account closing the position; must be the position owner.
   string user = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Target position id to close.
   uint64 position_id = 2;
+  // Optional note carried into internal trade logs (opaque to the module).
   string note = 3;
 }
 
+
 message MsgClosePositionResponse {
+  // Accrued interest paid (borrowed denom).
   cosmos.base.v1beta1.Coin interest_paid = 1 [ (gogoproto.nullable) = false ];
+  // Principal repaid (borrowed denom).
   cosmos.base.v1beta1.Coin principal_paid = 2 [ (gogoproto.nullable) = false ];
+  // Profit returned to the user (borrowed denom).
   cosmos.base.v1beta1.Coin profit = 3 [ (gogoproto.nullable) = false ];
 }
 
@@ -525,43 +826,121 @@ message MsgAddCollateralResponse {
   ];
 }
 
+/**
+ * Cover a leveraged position.
+ *
+ * Behavior:
+ * - If payment >= principal + accrued interest:
+ *   - Enforces the close block delay,
+ *   - Unwinds held → borrowed via a pool swap from the borrow vault,
+ *   - Repays principal + interest to pool reserves and accounting,
+ *   - Returns full collateral, refunds any unused portion of the user's payment,
+ *     and sends any unwind PnL as profit,
+ *   - Deletes the position (auto-close).
+ * - If payment < total repayment:
+ *   - Pays all accrued interest and applies the remainder to reduce principal,
+ *   - Resets borrow_time and clears liquidation markers,
+ *   - Updates pool accounting and returns the new collateral ratio at the
+ *     current price; the position remains open.
+ *
+ * Validation:
+ * - Position must exist and be owned by `user`.
+ * - `payment` must be positive and its denom must equal the borrowed denom.
+ * - Position must have a two-entry interest_rate snapshot; payment must fully
+ *   cover accrued interest.
+ * - Auto-close path respects the close block delay and requires the unwind swap
+ *   to produce borrowed output.
+ *
+ * Emits:
+ * - EventLeveragePositionCovered (always; closed = true when fully repaid).
+ * - EventLeveragePositionClosed (auto-close only).
+  *
+  * Returns:
+  * - Auto-close: interest_paid, principal_paid = full borrowed, new_borrowed = 0,
+  *   new_collateral_ratio = 0, closed = true, refunded = unused payment, profit = unwind PnL.
+  * - Partial cover: interest_paid, principal_paid, new_borrowed (remaining),
+  *   new_collateral_ratio at current price, closed = false, refunded = 0, profit = 0.
+ */
 message MsgCoverPosition {
+  // Account covering the position; must be the position owner.
   option (cosmos.msg.v1.signer) = "user";
   string user = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Target position id to cover.
   uint64 position_id = 2;
+  // Payment coin to cover the position. Must be positive and its denom must
+  // equal the borrowed denom.
   cosmos.base.v1beta1.Coin payment = 3 [ (gogoproto.nullable) = false ];
+  // Optional note to use in trade logs.
   string note = 4;
 }
 
 message MsgCoverPositionResponse {
+  // Accrued interest paid (borrowed denom).
   cosmos.base.v1beta1.Coin interest_paid = 1 [ (gogoproto.nullable) = false ];
+  // Principal amount paid (borrowed denom).
   cosmos.base.v1beta1.Coin principal_paid = 2 [ (gogoproto.nullable) = false ];
+  // New borrowed principal after payment (0 if closed).
   cosmos.base.v1beta1.Coin new_borrowed = 3 [ (gogoproto.nullable) = false ];
+  // New collateral ratio at current price; "0" when closed.
   string new_collateral_ratio = 4 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
+  // True if the position was fully repaid and deleted.
   bool closed = 5;
+  // Unused portion of the user's payment returned (auto-close path).
   cosmos.base.v1beta1.Coin refunded = 6 [ (gogoproto.nullable) = false ];
-  // swap PnL from unwinding held → borrowed during auto-close
+  // Swap PnL from unwinding held → borrowed during auto-close.
   cosmos.base.v1beta1.Coin profit = 7 [ (gogoproto.nullable) = false ];
 }
 
+/**
+ * Initialize liquidation of a leveraged position.
+ *
+ * Behavior:
+ * - Permissionless trigger: any `initializer` may call this.
+ * - Accrues interest at the snapshotted APR since borrow_time and computes
+ *   the collateral ratio CR = collateral / (principal + interest).
+ * - Compares CR against the pool's per-denom liquidation_threshold for the
+ *   borrowed denom (> 1 required).
+ * - On CR < threshold, records liquidation markers (status and current block
+ *   height) and persists the updated position.
+ *
+ * Validation:
+ * - Position must exist; pool must exist.
+ * - Position must have a two-entry interest_rate snapshot.
+ * - Pool must have a two-entry liquidation_threshold; borrowed denom entry must
+ *   be > 1.
+ * - Position must be liquidatable at evaluation time (CR < threshold).
+ *
+ * Emits:
+ * - EventLeverageLiquidationInitialized with position_id, user, pool_id,
+ *   collateral_ratio, liquidation_threshold, block_height.
+ *
+ * Returns:
+ * - collateral_ratio and liquidation_threshold in the response.
+ */
 message MsgInitializeLiquidation {
   option (cosmos.msg.v1.signer) = "initializer";
+  // Account initializing liquidation; permissionless (any account).
   string initializer = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Position owner address; should match the position's user.
   string user = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Pool id; should match the position's pool.
   uint64 pool_id = 3;
+  // Target position id to initialize.
   uint64 position_id = 4;
 }
 
 message MsgInitializeLiquidationResponse {
+  // Collateral ratio at evaluation time (LegacyDec string).
   string collateral_ratio = 1 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
+  // Liquidation threshold used for comparison (LegacyDec string).
   string liquidation_threshold = 2 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",

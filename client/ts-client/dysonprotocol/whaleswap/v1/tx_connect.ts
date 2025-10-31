@@ -39,7 +39,11 @@ export const Msg = {
   typeName: "dysonprotocol.whaleswap.v1.Msg",
   methods: {
     /**
-     * AMM
+     * *
+     * CreatePool creates a two-asset pool with an optional price band and
+     * per-denom fee/interest/leverage parameters. It moves initial reserves to
+     * the module, mints initial shares to the creator, and asserts AMM
+     * invariants.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.CreatePool
      */
@@ -50,6 +54,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     * *
+     * UpdatePoolConfig updates price band, fee rate, min collateral ratio, max
+     * leverage ratio, interest rate, and max borrow percent. Signer must hold a
+     * majority of shares. Validates bands and invariants.
+     *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.UpdatePoolConfig
      */
     updatePoolConfig: {
@@ -59,6 +68,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     * *
+     * AddLiquidity (owner-only) escrows provided amounts, refunds any unused
+     * amounts in band mode, mints shares, enforces the price band, and asserts
+     * AMM invariants.
+     *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.AddLiquidity
      */
     addLiquidity: {
@@ -68,6 +82,28 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     * *
+     * RemoveLiquidity burns the caller's shares and returns the underlying
+     * reserves.
+     *
+     * Modes:
+     * - Full exit: burning all outstanding shares deletes the pool and pays
+     *   out the full reserves.
+     * - Partial exit:
+     *   - Concentrated pools: outputs are computed from ΔL within the active
+     *     price band.
+     *   - Non-concentrated pools: outputs are pro-rata.
+     *
+     * Safety:
+     * - Concentrated: post-state price must remain within the band and the
+     *   liquidity delta must be consistent with the burned share ratio within
+     *   a small tolerance.
+     * - Partial exits cannot deplete any reserve; use full exit to withdraw the
+     *   last liquidity.
+     * - Outputs must be non-zero.
+     *
+     * Emits EventPoolLiquidityRemoved on success.
+     *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.RemoveLiquidity
      */
     removeLiquidity: {
@@ -77,6 +113,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     * *
+     * PoolSwap executes one or more pool swap legs with a single end-of-tx
+     * settlement, applying output-side fees per leg and enforcing aggregate
+     * max_input caps and min_output guarantees.
+     *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.PoolSwap
      */
     poolSwap: {
@@ -86,7 +127,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
-     * Mixed operations: combine orderbook takes and pool swaps in one tx
+     * *
+     * MakeTrade executes swaps and orderbook takes in-order with a single
+     * settlement. Applies per-denom debit caps (max_input) and final min_output,
+     * releases PFAND on offer close, rejects duplicate ids per type; auction
+     * operations are currently rejected.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.MakeTrade
      */
@@ -97,7 +142,10 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
-     * Orderbook
+     * *
+     * MakeOffer creates an orderbook offer. ESCROW: base "have" is escrowed.
+     * LIQUID: lock PFAND; settlement draws from maker balance at take. Units are
+     * derived via GCD for partial fills.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.MakeOffer
      */
@@ -108,6 +156,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     * *
+     * TakeOffer executes one or more takes. Nets taker credits against maker
+     * wants, funds any deficit from taker base (module covers escrow), releases
+     * PFAND to the taker on full close, and records a single trade.
+     *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.TakeOffer
      */
     takeOffer: {
@@ -117,6 +170,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     * *
+     * CancelOffer allows the maker to cancel at any time. For LIQUID offers, a
+     * third party may cancel if maker base-have balance < one unit_have; refunds
+     * escrow (ESCROW) to maker and sends PFAND to closer.
+     *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.CancelOffer
      */
     cancelOffer: {
@@ -126,7 +184,10 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
-     * Auctions
+     * *
+     * OpenAuction escrows the sell coin and mints an NFT under a class keyed by
+     * bid_denom; class policy (listing/valuation/bid timeouts/allowed denoms) is
+     * set from module params.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.OpenAuction
      */
@@ -137,6 +198,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     * *
+     * RedeemAuction lets the current NFT owner redeem when no bid is active;
+     * burns the NFT and returns escrow. If owner != original seller and a
+     * valuation exists in bid_denom, a trade record is emitted.
+     *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.RedeemAuction
      */
     redeemAuction: {
@@ -146,7 +212,10 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
-     * Leverage
+     * *
+     * OpenPosition opens a synthetic leveraged position. Borrows (subject to pool
+     * cap), swaps to the held denom, escrows collateral, snapshots interest rate
+     * and min CR, and records the position.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.OpenPosition
      */
@@ -157,6 +226,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     * *
+     * ClosePosition swaps held to borrowed, repays principal+interest, returns
+     * remaining collateral and any profit, updates pool accounting, and deletes
+     * the position (respects block delay).
+     *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.ClosePosition
      */
     closePosition: {
@@ -166,6 +240,10 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     * *
+     * AddCollateral deposits additional collateral, clears liquidation markers,
+     * and returns the new collateral and ratio.
+     *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.AddCollateral
      */
     addCollateral: {
@@ -175,8 +253,10 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
-     * Repay accrued interest first, then principal; supports overpay → auto-close
-     * with refund
+     * *
+     * CoverPosition: If payment < total repayment, pays all interest and reduces
+     * principal (resets borrow_time). If payment >= total, unwinds held, repays
+     * in full, returns collateral, refunds unused payment and sends any profit.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.CoverPosition
      */
@@ -187,6 +267,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     * *
+     * InitializeLiquidation marks a position liquidatable when CR (with accrued
+     * interest at the snapshotted rate) falls below the pool’s
+     * liquidation_threshold and starts the block-delay countdown.
+     *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.InitializeLiquidation
      */
     initializeLiquidation: {
@@ -196,6 +281,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     * *
+     * FinalizeLiquidation: Liquidator repays debt and receives all collateral;
+     * the pool accrues interest and repayment; any pool loss is reported;
+     * position is deleted.
+     *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.FinalizeLiquidation
      */
     finalizeLiquidation: {
@@ -205,7 +295,8 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
-     * Params
+     * *
+     * UpdateParams updates module parameters. Authority-only.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.UpdateParams
      */

@@ -24326,13 +24326,16 @@ type MsgCreatePool struct {
 	unknownFields protoimpl.UnknownFields
 
 	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
-	// Two initial reserves as coins; order will be canonicalized internally (by
-	// denom lexicographic order).
+	// Initial reserves. Required: exactly two coins with positive amounts.
+	// Order is canonicalized internally to pool denom order (lexicographic).
 	Coins []*v1beta1.Coin `protobuf:"bytes,2,rep,name=coins,proto3" json:"coins,omitempty"`
-	// Optional price band expressed as ratios coin2/coin1 using two coins.
-	// Each must either be empty (unset) or contain exactly two coins whose
-	// denoms match the two pool reserve denoms.
+	// Optional lower price bound as coin2/coin1 ratio.
+	// If set, both this and max_price must contain exactly two coins whose
+	// denoms match the pool reserves; keeper normalizes order.
 	MinPrice []*v1beta1.Coin `protobuf:"bytes,3,rep,name=min_price,json=minPrice,proto3" json:"min_price,omitempty"`
+	// Optional upper price bound as coin2/coin1 ratio; subject to the same
+	// rules as min_price. Keeper ensures min_price < max_price and the initial
+	// price is strictly within (min, max).
 	MaxPrice []*v1beta1.Coin `protobuf:"bytes,4,rep,name=max_price,json=maxPrice,proto3" json:"max_price,omitempty"`
 	// Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
 	// string in [0,1)). Use fee_rate field 11 instead. Migration logic should
@@ -24341,20 +24344,21 @@ type MsgCreatePool struct {
 	//
 	// Deprecated: Do not use.
 	FeePct string `protobuf:"bytes,5,opt,name=fee_pct,json=feePct,proto3" json:"fee_pct,omitempty"`
-	// Minimum collateral ratio per reserve denom (exactly two, canonical order).
-	// Each amount is a LegacyDec string (> 1).
+	// Required: minimum collateral ratio per reserve denom (exactly two,
+	// canonical order). Each amount is a LegacyDec string (> 1).
 	MinCollateralRatio []*v1beta1.DecCoin `protobuf:"bytes,6,rep,name=min_collateral_ratio,json=minCollateralRatio,proto3" json:"min_collateral_ratio,omitempty"`
-	// Maximum leverage ratio per reserve denom (exactly two, canonical order).
-	// Each amount is a LegacyDec string (> 1).
+	// Required: maximum leverage ratio per reserve denom (exactly two,
+	// canonical order). Each amount is a LegacyDec string (> 1).
 	MaxLeverageRatio []*v1beta1.DecCoin `protobuf:"bytes,7,rep,name=max_leverage_ratio,json=maxLeverageRatio,proto3" json:"max_leverage_ratio,omitempty"`
-	// Annual interest rates per reserve denom (exactly two, canonical order).
-	// Each amount is a LegacyDec string representing APR (per-year accrual).
+	// Annual interest rates per reserve denom (APR >= 0).
+	// Input may include 0, 1, or 2 entries; keeper normalizes to exactly two
+	// entries in canonical pool order.
 	InterestRate []*v1beta1.DecCoin `protobuf:"bytes,8,rep,name=interest_rate,json=interestRate,proto3" json:"interest_rate,omitempty"`
-	// Maximum borrow capacity per reserve denom as DecCoins (exactly two,
-	// canonical order). Each amount is a LegacyDec in [0,1).
+	// Required: maximum borrow capacity per reserve denom as DecCoins (exactly
+	// two, canonical order). Each amount is a LegacyDec in [0,1).
 	MaxBorrowPercent []*v1beta1.DecCoin `protobuf:"bytes,9,rep,name=max_borrow_percent,json=maxBorrowPercent,proto3" json:"max_borrow_percent,omitempty"`
-	// Collateral ratio liquidation threshold per reserve denom (exactly two,
-	// canonical order; each amount is a LegacyDec string > 1)
+	// Required: collateral ratio liquidation threshold per reserve denom
+	// (exactly two, canonical order; each amount is a LegacyDec string > 1)
 	LiquidationThreshold []*v1beta1.DecCoin `protobuf:"bytes,10,rep,name=liquidation_threshold,json=liquidationThreshold,proto3" json:"liquidation_threshold,omitempty"`
 	// Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
 	// keeper normalizes to exactly two entries in canonical pool order.
@@ -24495,11 +24499,16 @@ func (x *MsgCreatePoolResponse) GetPoolId() uint64 {
 	return 0
 }
 
-// Update pool config (owner-only: majority of shares > 50%).
+// Update pool config (owner-only: signer must hold > 50% of shares).
 //
 // Notes:
-//   - All fields are required. Price bands must be both empty (no band) or both
-//     contain exactly two coins in canonical order matching pool reserves.
+//   - Bands: set both min_price and max_price empty to clear; otherwise both must
+//     be set with exactly two coins matching pool reserves. Keeper canonicalizes,
+//     enforces max > min, and requires current price strictly within (min, max).
+//   - Required: min_collateral_ratio, max_leverage_ratio, interest_rate,
+//     liquidation_threshold.
+//   - Optional: fee_rate (0 <= x < 1 per denom), max_borrow_percent (0 <= x < 1
+//     per denom).
 type MsgUpdatePoolConfig struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -24513,23 +24522,29 @@ type MsgUpdatePoolConfig struct {
 	// denom in canonical order).
 	//
 	// Deprecated: Do not use.
-	FeePct   string          `protobuf:"bytes,3,opt,name=fee_pct,json=feePct,proto3" json:"fee_pct,omitempty"`
+	FeePct string `protobuf:"bytes,3,opt,name=fee_pct,json=feePct,proto3" json:"fee_pct,omitempty"`
+	// Lower price bound as coin2/coin1 ratio. See notes above; keeper
+	// canonicalizes order to pool denoms.
 	MinPrice []*v1beta1.Coin `protobuf:"bytes,4,rep,name=min_price,json=minPrice,proto3" json:"min_price,omitempty"`
+	// Upper price bound as coin2/coin1 ratio. Must follow the same rules as
+	// min_price.
 	MaxPrice []*v1beta1.Coin `protobuf:"bytes,5,rep,name=max_price,json=maxPrice,proto3" json:"max_price,omitempty"`
 	// Leverage configuration (per-denom)
-	// Minimum collateral ratio per reserve denom (exactly two, canonical order; >
-	// 1)
+	// Required: minimum collateral ratio per reserve denom (exactly two,
+	// canonical order; > 1)
 	MinCollateralRatio []*v1beta1.DecCoin `protobuf:"bytes,6,rep,name=min_collateral_ratio,json=minCollateralRatio,proto3" json:"min_collateral_ratio,omitempty"`
-	// Maximum leverage ratio per reserve denom (exactly two, canonical order; >
-	// 1)
+	// Required: maximum leverage ratio per reserve denom (exactly two,
+	// canonical order; > 1)
 	MaxLeverageRatio []*v1beta1.DecCoin `protobuf:"bytes,7,rep,name=max_leverage_ratio,json=maxLeverageRatio,proto3" json:"max_leverage_ratio,omitempty"`
-	// Annual interest rates per reserve denom (exactly two, canonical order).
+	// Required: annual interest rates per reserve denom (APR >= 0).
+	// Input may include 0, 1, or 2 entries; keeper normalizes to exactly two in
+	// canonical pool order.
 	InterestRate []*v1beta1.DecCoin `protobuf:"bytes,8,rep,name=interest_rate,json=interestRate,proto3" json:"interest_rate,omitempty"`
-	// Maximum borrow capacity per reserve denom (exactly two, canonical order).
-	// Amounts in [0,1).
+	// Optional: maximum borrow capacity per reserve denom (exactly two,
+	// canonical order). Amounts in [0,1).
 	MaxBorrowPercent []*v1beta1.DecCoin `protobuf:"bytes,9,rep,name=max_borrow_percent,json=maxBorrowPercent,proto3" json:"max_borrow_percent,omitempty"`
-	// Collateral ratio liquidation threshold per reserve denom (exactly two,
-	// canonical order; each amount is a LegacyDec string > 1)
+	// Required: collateral ratio liquidation threshold per reserve denom
+	// (exactly two, canonical order; each amount is a LegacyDec string > 1)
 	LiquidationThreshold []*v1beta1.DecCoin `protobuf:"bytes,10,rep,name=liquidation_threshold,json=liquidationThreshold,proto3" json:"liquidation_threshold,omitempty"`
 	// Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
 	// keeper normalizes to exactly two entries in canonical pool order.
@@ -24661,17 +24676,23 @@ func (*MsgUpdatePoolConfigResponse) Descriptor() ([]byte, []int) {
 	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{3}
 }
 
-// Add liquidity (owner-only). Behavior depends on v2/v3 mode.
-// Amounts will be automatically sorted by denom to match pool's canonical
+// Add liquidity (owner-only: signer must hold > 50% of shares).
+// - Escrows provided amounts and refunds any unused portion.
+// - Enforces price band in concentrated mode; amounts canonicalized to pool
 // order.
 type MsgAddLiquidity struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Account adding liquidity; must be majority owner of pool shares.
 	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
+	// Target pool id.
 	PoolId uint64 `protobuf:"varint,2,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
-	// Amounts to add (two coins in any order; will be canonicalized).
+	// Amounts to add: exactly two coins matching pool denoms; > 0.
+	// Canonicalized to pool denom order. Full amounts are escrowed; surplus is
+	// refunded (band mode refunds to match ΔL; v2 refunds to match minted
+	// shares).
 	Amounts []*v1beta1.Coin `protobuf:"bytes,5,rep,name=amounts,proto3" json:"amounts,omitempty"`
 }
 
@@ -24721,7 +24742,7 @@ type MsgAddLiquidityResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// minted shares amount (sdk.Int string)
+	// Shares minted to signer (sdk.Int string).
 	Shares string `protobuf:"bytes,1,opt,name=shares,proto3" json:"shares,omitempty"`
 }
 
@@ -24752,16 +24773,37 @@ func (x *MsgAddLiquidityResponse) GetShares() string {
 	return ""
 }
 
-// Remove liquidity (anyone). Must respect price band and produce non-zero
-// outputs.
+// *
+// Remove liquidity (anyone).
+//
+// Behavior:
+//   - Burns shares and returns the underlying reserves.
+//   - Full exit: burn all outstanding shares to delete the pool and receive the
+//     full reserves.
+//   - Partial exit:
+//   - Concentrated pools: ΔL-based outputs within the current price band.
+//   - Non-concentrated pools: pro-rata outputs using DecCoins.
+//
+// Safety and validation:
+//   - Pool must exist; signer must hold at least `shares`.
+//   - Outputs must be non-zero.
+//   - Partial exits cannot deplete any reserve; use full exit to withdraw the
+//     last liquidity.
+//   - Concentrated pools: post-state price must remain within band; ΔL must
+//     match burned share ratio within a small tolerance.
+//
+// Emits: EventPoolLiquidityRemoved on success.
 type MsgRemoveLiquidity struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Account burning shares; must hold at least this amount.
 	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
+	// Target pool id.
 	PoolId uint64 `protobuf:"varint,2,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
-	// shares to burn (sdk.Int string)
+	// Shares to burn (sdk.Int string). Must be > 0; equals total supply to fully
+	// exit (pool is deleted).
 	Shares string `protobuf:"bytes,3,opt,name=shares,proto3" json:"shares,omitempty"`
 }
 
@@ -24849,8 +24891,11 @@ type MsgPoolSwap struct {
 
 	Trader string `protobuf:"bytes,1,opt,name=trader,proto3" json:"trader,omitempty"`
 	// End-of-tx debit caps per denom (vector cap). Missing denom implies 0.
+	// Applied after aggregating all legs; tx fails if any denom's required debit
+	// exceeds its cap.
 	MaxInput []*v1beta1.Coin `protobuf:"bytes,2,rep,name=max_input,json=maxInput,proto3" json:"max_input,omitempty"`
 	// Arbitrary set of swap legs; order does not need to be contiguous by denom.
+	// Output-side fee is applied per leg based on the output denom.
 	Legs []*SwapLeg `protobuf:"bytes,3,rep,name=legs,proto3" json:"legs,omitempty"`
 	// Final minimum outputs required per denom after aggregation.
 	MinOutput []*v1beta1.Coin `protobuf:"bytes,4,rep,name=min_output,json=minOutput,proto3" json:"min_output,omitempty"`
@@ -24910,7 +24955,8 @@ type SwapLeg struct {
 	unknownFields protoimpl.UnknownFields
 
 	PoolId uint64 `protobuf:"varint,1,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
-	// One of swap_in or swap_out must be set; both allowed for rate constraint
+	// Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set.
+	// Use message-level min_output for rate constraints across legs.
 	SwapIn  *v1beta1.Coin `protobuf:"bytes,2,opt,name=swap_in,json=swapIn,proto3" json:"swap_in,omitempty"`
 	SwapOut *v1beta1.Coin `protobuf:"bytes,3,opt,name=swap_out,json=swapOut,proto3" json:"swap_out,omitempty"`
 }
@@ -25276,6 +25322,7 @@ type MsgMakeOffer struct {
 	Want  *v1beta1.Coin `protobuf:"bytes,3,opt,name=want,proto3" json:"want,omitempty"`
 	// settlement_mode determines whether base have is escrowed (ESCROW) or
 	// PFAND is locked and settlement occurs from maker balance at take (LIQUID).
+	// Maker must currently hold at least the full `have` amount.
 	SettlementMode SettlementMode `protobuf:"varint,4,opt,name=settlement_mode,json=settlementMode,proto3,enum=dysonprotocol.whaleswap.v1.SettlementMode" json:"settlement_mode,omitempty"`
 }
 

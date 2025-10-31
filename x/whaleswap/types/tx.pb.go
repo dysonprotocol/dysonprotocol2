@@ -73,33 +73,37 @@ func (SettlementMode) EnumDescriptor() ([]byte, []int) {
 //     [min_price, max_price] where price is coin_b / coin_a (see conventions).
 type MsgCreatePool struct {
 	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
-	// Two initial reserves as coins; order will be canonicalized internally (by
-	// denom lexicographic order).
+	// Initial reserves. Required: exactly two coins with positive amounts.
+	// Order is canonicalized internally to pool denom order (lexicographic).
 	Coins github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,2,rep,name=coins,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"coins"`
-	// Optional price band expressed as ratios coin2/coin1 using two coins.
-	// Each must either be empty (unset) or contain exactly two coins whose
-	// denoms match the two pool reserve denoms.
+	// Optional lower price bound as coin2/coin1 ratio.
+	// If set, both this and max_price must contain exactly two coins whose
+	// denoms match the pool reserves; keeper normalizes order.
 	MinPrice github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,3,rep,name=min_price,json=minPrice,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"min_price"`
+	// Optional upper price bound as coin2/coin1 ratio; subject to the same
+	// rules as min_price. Keeper ensures min_price < max_price and the initial
+	// price is strictly within (min, max).
 	MaxPrice github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,4,rep,name=max_price,json=maxPrice,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"max_price"`
 	// Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
 	// string in [0,1)). Use fee_rate field 11 instead. Migration logic should
 	// read this and convert to fee_rate format (two DecCoins, one per reserve
 	// denom in canonical order).
 	FeePct string `protobuf:"bytes,5,opt,name=fee_pct,json=feePct,proto3" json:"fee_pct,omitempty"` // Deprecated: Do not use.
-	// Minimum collateral ratio per reserve denom (exactly two, canonical order).
-	// Each amount is a LegacyDec string (> 1).
+	// Required: minimum collateral ratio per reserve denom (exactly two,
+	// canonical order). Each amount is a LegacyDec string (> 1).
 	MinCollateralRatio github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,6,rep,name=min_collateral_ratio,json=minCollateralRatio,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"min_collateral_ratio"`
-	// Maximum leverage ratio per reserve denom (exactly two, canonical order).
-	// Each amount is a LegacyDec string (> 1).
+	// Required: maximum leverage ratio per reserve denom (exactly two,
+	// canonical order). Each amount is a LegacyDec string (> 1).
 	MaxLeverageRatio github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,7,rep,name=max_leverage_ratio,json=maxLeverageRatio,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"max_leverage_ratio"`
-	// Annual interest rates per reserve denom (exactly two, canonical order).
-	// Each amount is a LegacyDec string representing APR (per-year accrual).
+	// Annual interest rates per reserve denom (APR >= 0).
+	// Input may include 0, 1, or 2 entries; keeper normalizes to exactly two
+	// entries in canonical pool order.
 	InterestRate github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,8,rep,name=interest_rate,json=interestRate,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"interest_rate"`
-	// Maximum borrow capacity per reserve denom as DecCoins (exactly two,
-	// canonical order). Each amount is a LegacyDec in [0,1).
+	// Required: maximum borrow capacity per reserve denom as DecCoins (exactly
+	// two, canonical order). Each amount is a LegacyDec in [0,1).
 	MaxBorrowPercent github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,9,rep,name=max_borrow_percent,json=maxBorrowPercent,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"max_borrow_percent"`
-	// Collateral ratio liquidation threshold per reserve denom (exactly two,
-	// canonical order; each amount is a LegacyDec string > 1)
+	// Required: collateral ratio liquidation threshold per reserve denom
+	// (exactly two, canonical order; each amount is a LegacyDec string > 1)
 	LiquidationThreshold github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,10,rep,name=liquidation_threshold,json=liquidationThreshold,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"liquidation_threshold"`
 	// Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
 	// keeper normalizes to exactly two entries in canonical pool order.
@@ -262,11 +266,16 @@ func (m *MsgCreatePoolResponse) GetPoolId() uint64 {
 	return 0
 }
 
-// Update pool config (owner-only: majority of shares > 50%).
+// Update pool config (owner-only: signer must hold > 50% of shares).
 //
 // Notes:
-//   - All fields are required. Price bands must be both empty (no band) or both
-//     contain exactly two coins in canonical order matching pool reserves.
+//   - Bands: set both min_price and max_price empty to clear; otherwise both must
+//     be set with exactly two coins matching pool reserves. Keeper canonicalizes,
+//     enforces max > min, and requires current price strictly within (min, max).
+//   - Required: min_collateral_ratio, max_leverage_ratio, interest_rate,
+//     liquidation_threshold.
+//   - Optional: fee_rate (0 <= x < 1 per denom), max_borrow_percent (0 <= x < 1
+//     per denom).
 type MsgUpdatePoolConfig struct {
 	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
 	PoolId uint64 `protobuf:"varint,2,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
@@ -274,23 +283,29 @@ type MsgUpdatePoolConfig struct {
 	// string in [0,1)). Use fee_rate field 11 instead. Migration logic should
 	// read this and convert to fee_rate format (two DecCoins, one per reserve
 	// denom in canonical order).
-	FeePct   string                                   `protobuf:"bytes,3,opt,name=fee_pct,json=feePct,proto3" json:"fee_pct,omitempty"` // Deprecated: Do not use.
+	FeePct string `protobuf:"bytes,3,opt,name=fee_pct,json=feePct,proto3" json:"fee_pct,omitempty"` // Deprecated: Do not use.
+	// Lower price bound as coin2/coin1 ratio. See notes above; keeper
+	// canonicalizes order to pool denoms.
 	MinPrice github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,4,rep,name=min_price,json=minPrice,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"min_price"`
+	// Upper price bound as coin2/coin1 ratio. Must follow the same rules as
+	// min_price.
 	MaxPrice github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,5,rep,name=max_price,json=maxPrice,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"max_price"`
 	// Leverage configuration (per-denom)
-	// Minimum collateral ratio per reserve denom (exactly two, canonical order; >
-	// 1)
+	// Required: minimum collateral ratio per reserve denom (exactly two,
+	// canonical order; > 1)
 	MinCollateralRatio github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,6,rep,name=min_collateral_ratio,json=minCollateralRatio,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"min_collateral_ratio"`
-	// Maximum leverage ratio per reserve denom (exactly two, canonical order; >
-	// 1)
+	// Required: maximum leverage ratio per reserve denom (exactly two,
+	// canonical order; > 1)
 	MaxLeverageRatio github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,7,rep,name=max_leverage_ratio,json=maxLeverageRatio,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"max_leverage_ratio"`
-	// Annual interest rates per reserve denom (exactly two, canonical order).
+	// Required: annual interest rates per reserve denom (APR >= 0).
+	// Input may include 0, 1, or 2 entries; keeper normalizes to exactly two in
+	// canonical pool order.
 	InterestRate github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,8,rep,name=interest_rate,json=interestRate,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"interest_rate"`
-	// Maximum borrow capacity per reserve denom (exactly two, canonical order).
-	// Amounts in [0,1).
+	// Optional: maximum borrow capacity per reserve denom (exactly two,
+	// canonical order). Amounts in [0,1).
 	MaxBorrowPercent github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,9,rep,name=max_borrow_percent,json=maxBorrowPercent,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"max_borrow_percent"`
-	// Collateral ratio liquidation threshold per reserve denom (exactly two,
-	// canonical order; each amount is a LegacyDec string > 1)
+	// Required: collateral ratio liquidation threshold per reserve denom
+	// (exactly two, canonical order; each amount is a LegacyDec string > 1)
 	LiquidationThreshold github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,10,rep,name=liquidation_threshold,json=liquidationThreshold,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"liquidation_threshold"`
 	// Per-denom swap fee rates (amounts in [0,1)). Allow 0, 1, or 2 entries;
 	// keeper normalizes to exactly two entries in canonical pool order.
@@ -445,13 +460,19 @@ func (m *MsgUpdatePoolConfigResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgUpdatePoolConfigResponse proto.InternalMessageInfo
 
-// Add liquidity (owner-only). Behavior depends on v2/v3 mode.
-// Amounts will be automatically sorted by denom to match pool's canonical
+// Add liquidity (owner-only: signer must hold > 50% of shares).
+// - Escrows provided amounts and refunds any unused portion.
+// - Enforces price band in concentrated mode; amounts canonicalized to pool
 // order.
 type MsgAddLiquidity struct {
+	// Account adding liquidity; must be majority owner of pool shares.
 	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
+	// Target pool id.
 	PoolId uint64 `protobuf:"varint,2,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
-	// Amounts to add (two coins in any order; will be canonicalized).
+	// Amounts to add: exactly two coins matching pool denoms; > 0.
+	// Canonicalized to pool denom order. Full amounts are escrowed; surplus is
+	// refunded (band mode refunds to match ΔL; v2 refunds to match minted
+	// shares).
 	Amounts github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,5,rep,name=amounts,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"amounts"`
 }
 
@@ -510,7 +531,7 @@ func (m *MsgAddLiquidity) GetAmounts() github_com_cosmos_cosmos_sdk_types.Coins 
 }
 
 type MsgAddLiquidityResponse struct {
-	// minted shares amount (sdk.Int string)
+	// Shares minted to signer (sdk.Int string).
 	Shares string `protobuf:"bytes,1,opt,name=shares,proto3" json:"shares,omitempty"`
 }
 
@@ -554,12 +575,33 @@ func (m *MsgAddLiquidityResponse) GetShares() string {
 	return ""
 }
 
-// Remove liquidity (anyone). Must respect price band and produce non-zero
-// outputs.
+// *
+// Remove liquidity (anyone).
+//
+// Behavior:
+//   - Burns shares and returns the underlying reserves.
+//   - Full exit: burn all outstanding shares to delete the pool and receive the
+//     full reserves.
+//   - Partial exit:
+//   - Concentrated pools: ΔL-based outputs within the current price band.
+//   - Non-concentrated pools: pro-rata outputs using DecCoins.
+//
+// Safety and validation:
+//   - Pool must exist; signer must hold at least `shares`.
+//   - Outputs must be non-zero.
+//   - Partial exits cannot deplete any reserve; use full exit to withdraw the
+//     last liquidity.
+//   - Concentrated pools: post-state price must remain within band; ΔL must
+//     match burned share ratio within a small tolerance.
+//
+// Emits: EventPoolLiquidityRemoved on success.
 type MsgRemoveLiquidity struct {
+	// Account burning shares; must hold at least this amount.
 	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
+	// Target pool id.
 	PoolId uint64 `protobuf:"varint,2,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
-	// shares to burn (sdk.Int string)
+	// Shares to burn (sdk.Int string). Must be > 0; equals total supply to fully
+	// exit (pool is deleted).
 	Shares string `protobuf:"bytes,3,opt,name=shares,proto3" json:"shares,omitempty"`
 }
 
@@ -665,8 +707,11 @@ func (m *MsgRemoveLiquidityResponse) GetAmount() github_com_cosmos_cosmos_sdk_ty
 type MsgPoolSwap struct {
 	Trader string `protobuf:"bytes,1,opt,name=trader,proto3" json:"trader,omitempty"`
 	// End-of-tx debit caps per denom (vector cap). Missing denom implies 0.
+	// Applied after aggregating all legs; tx fails if any denom's required debit
+	// exceeds its cap.
 	MaxInput github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,2,rep,name=max_input,json=maxInput,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"max_input"`
 	// Arbitrary set of swap legs; order does not need to be contiguous by denom.
+	// Output-side fee is applied per leg based on the output denom.
 	Legs []SwapLeg `protobuf:"bytes,3,rep,name=legs,proto3" json:"legs"`
 	// Final minimum outputs required per denom after aggregation.
 	MinOutput github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,4,rep,name=min_output,json=minOutput,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"min_output"`
@@ -735,7 +780,8 @@ func (m *MsgPoolSwap) GetMinOutput() github_com_cosmos_cosmos_sdk_types.Coins {
 
 type SwapLeg struct {
 	PoolId uint64 `protobuf:"varint,1,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
-	// One of swap_in or swap_out must be set; both allowed for rate constraint
+	// Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set.
+	// Use message-level min_output for rate constraints across legs.
 	SwapIn  types.Coin `protobuf:"bytes,2,opt,name=swap_in,json=swapIn,proto3" json:"swap_in"`
 	SwapOut types.Coin `protobuf:"bytes,3,opt,name=swap_out,json=swapOut,proto3" json:"swap_out"`
 }
@@ -1162,6 +1208,7 @@ type MsgMakeOffer struct {
 	Want  types.Coin `protobuf:"bytes,3,opt,name=want,proto3" json:"want"`
 	// settlement_mode determines whether base have is escrowed (ESCROW) or
 	// PFAND is locked and settlement occurs from maker balance at take (LIQUID).
+	// Maker must currently hold at least the full `have` amount.
 	SettlementMode SettlementMode `protobuf:"varint,4,opt,name=settlement_mode,json=settlementMode,proto3,enum=dysonprotocol.whaleswap.v1.SettlementMode" json:"settlement_mode,omitempty"`
 }
 
@@ -2796,31 +2843,111 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	// AMM
+	// *
+	// CreatePool creates a two-asset pool with an optional price band and
+	// per-denom fee/interest/leverage parameters. It moves initial reserves to
+	// the module, mints initial shares to the creator, and asserts AMM
+	// invariants.
 	CreatePool(ctx context.Context, in *MsgCreatePool, opts ...grpc.CallOption) (*MsgCreatePoolResponse, error)
+	// *
+	// UpdatePoolConfig updates price band, fee rate, min collateral ratio, max
+	// leverage ratio, interest rate, and max borrow percent. Signer must hold a
+	// majority of shares. Validates bands and invariants.
 	UpdatePoolConfig(ctx context.Context, in *MsgUpdatePoolConfig, opts ...grpc.CallOption) (*MsgUpdatePoolConfigResponse, error)
+	// *
+	// AddLiquidity (owner-only) escrows provided amounts, refunds any unused
+	// amounts in band mode, mints shares, enforces the price band, and asserts
+	// AMM invariants.
 	AddLiquidity(ctx context.Context, in *MsgAddLiquidity, opts ...grpc.CallOption) (*MsgAddLiquidityResponse, error)
+	// *
+	// RemoveLiquidity burns the caller's shares and returns the underlying
+	// reserves.
+	//
+	// Modes:
+	//   - Full exit: burning all outstanding shares deletes the pool and pays
+	//     out the full reserves.
+	//   - Partial exit:
+	//   - Concentrated pools: outputs are computed from ΔL within the active
+	//     price band.
+	//   - Non-concentrated pools: outputs are pro-rata.
+	//
+	// Safety:
+	//   - Concentrated: post-state price must remain within the band and the
+	//     liquidity delta must be consistent with the burned share ratio within
+	//     a small tolerance.
+	//   - Partial exits cannot deplete any reserve; use full exit to withdraw the
+	//     last liquidity.
+	//   - Outputs must be non-zero.
+	//
+	// Emits EventPoolLiquidityRemoved on success.
 	RemoveLiquidity(ctx context.Context, in *MsgRemoveLiquidity, opts ...grpc.CallOption) (*MsgRemoveLiquidityResponse, error)
+	// *
+	// PoolSwap executes one or more pool swap legs with a single end-of-tx
+	// settlement, applying output-side fees per leg and enforcing aggregate
+	// max_input caps and min_output guarantees.
 	PoolSwap(ctx context.Context, in *MsgPoolSwap, opts ...grpc.CallOption) (*MsgPoolSwapResponse, error)
-	// Mixed operations: combine orderbook takes and pool swaps in one tx
+	// *
+	// MakeTrade executes swaps and orderbook takes in-order with a single
+	// settlement. Applies per-denom debit caps (max_input) and final min_output,
+	// releases PFAND on offer close, rejects duplicate ids per type; auction
+	// operations are currently rejected.
 	MakeTrade(ctx context.Context, in *MsgMakeTrade, opts ...grpc.CallOption) (*MsgMakeTradeResponse, error)
-	// Orderbook
+	// *
+	// MakeOffer creates an orderbook offer. ESCROW: base "have" is escrowed.
+	// LIQUID: lock PFAND; settlement draws from maker balance at take. Units are
+	// derived via GCD for partial fills.
 	MakeOffer(ctx context.Context, in *MsgMakeOffer, opts ...grpc.CallOption) (*MsgMakeOfferResponse, error)
+	// *
+	// TakeOffer executes one or more takes. Nets taker credits against maker
+	// wants, funds any deficit from taker base (module covers escrow), releases
+	// PFAND to the taker on full close, and records a single trade.
 	TakeOffer(ctx context.Context, in *MsgTakeOffer, opts ...grpc.CallOption) (*MsgTakeOfferResponse, error)
+	// *
+	// CancelOffer allows the maker to cancel at any time. For LIQUID offers, a
+	// third party may cancel if maker base-have balance < one unit_have; refunds
+	// escrow (ESCROW) to maker and sends PFAND to closer.
 	CancelOffer(ctx context.Context, in *MsgCancelOffer, opts ...grpc.CallOption) (*MsgCancelOfferResponse, error)
-	// Auctions
+	// *
+	// OpenAuction escrows the sell coin and mints an NFT under a class keyed by
+	// bid_denom; class policy (listing/valuation/bid timeouts/allowed denoms) is
+	// set from module params.
 	OpenAuction(ctx context.Context, in *MsgOpenAuction, opts ...grpc.CallOption) (*MsgOpenAuctionResponse, error)
+	// *
+	// RedeemAuction lets the current NFT owner redeem when no bid is active;
+	// burns the NFT and returns escrow. If owner != original seller and a
+	// valuation exists in bid_denom, a trade record is emitted.
 	RedeemAuction(ctx context.Context, in *MsgRedeemAuction, opts ...grpc.CallOption) (*MsgRedeemAuctionResponse, error)
-	// Leverage
+	// *
+	// OpenPosition opens a synthetic leveraged position. Borrows (subject to pool
+	// cap), swaps to the held denom, escrows collateral, snapshots interest rate
+	// and min CR, and records the position.
 	OpenPosition(ctx context.Context, in *MsgOpenPosition, opts ...grpc.CallOption) (*MsgOpenPositionResponse, error)
+	// *
+	// ClosePosition swaps held to borrowed, repays principal+interest, returns
+	// remaining collateral and any profit, updates pool accounting, and deletes
+	// the position (respects block delay).
 	ClosePosition(ctx context.Context, in *MsgClosePosition, opts ...grpc.CallOption) (*MsgClosePositionResponse, error)
+	// *
+	// AddCollateral deposits additional collateral, clears liquidation markers,
+	// and returns the new collateral and ratio.
 	AddCollateral(ctx context.Context, in *MsgAddCollateral, opts ...grpc.CallOption) (*MsgAddCollateralResponse, error)
-	// Repay accrued interest first, then principal; supports overpay → auto-close
-	// with refund
+	// *
+	// CoverPosition: If payment < total repayment, pays all interest and reduces
+	// principal (resets borrow_time). If payment >= total, unwinds held, repays
+	// in full, returns collateral, refunds unused payment and sends any profit.
 	CoverPosition(ctx context.Context, in *MsgCoverPosition, opts ...grpc.CallOption) (*MsgCoverPositionResponse, error)
+	// *
+	// InitializeLiquidation marks a position liquidatable when CR (with accrued
+	// interest at the snapshotted rate) falls below the pool’s
+	// liquidation_threshold and starts the block-delay countdown.
 	InitializeLiquidation(ctx context.Context, in *MsgInitializeLiquidation, opts ...grpc.CallOption) (*MsgInitializeLiquidationResponse, error)
+	// *
+	// FinalizeLiquidation: Liquidator repays debt and receives all collateral;
+	// the pool accrues interest and repayment; any pool loss is reported;
+	// position is deleted.
 	FinalizeLiquidation(ctx context.Context, in *MsgFinalizeLiquidation, opts ...grpc.CallOption) (*MsgFinalizeLiquidationResponse, error)
-	// Params
+	// *
+	// UpdateParams updates module parameters. Authority-only.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 }
 
@@ -2996,31 +3123,111 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	// AMM
+	// *
+	// CreatePool creates a two-asset pool with an optional price band and
+	// per-denom fee/interest/leverage parameters. It moves initial reserves to
+	// the module, mints initial shares to the creator, and asserts AMM
+	// invariants.
 	CreatePool(context.Context, *MsgCreatePool) (*MsgCreatePoolResponse, error)
+	// *
+	// UpdatePoolConfig updates price band, fee rate, min collateral ratio, max
+	// leverage ratio, interest rate, and max borrow percent. Signer must hold a
+	// majority of shares. Validates bands and invariants.
 	UpdatePoolConfig(context.Context, *MsgUpdatePoolConfig) (*MsgUpdatePoolConfigResponse, error)
+	// *
+	// AddLiquidity (owner-only) escrows provided amounts, refunds any unused
+	// amounts in band mode, mints shares, enforces the price band, and asserts
+	// AMM invariants.
 	AddLiquidity(context.Context, *MsgAddLiquidity) (*MsgAddLiquidityResponse, error)
+	// *
+	// RemoveLiquidity burns the caller's shares and returns the underlying
+	// reserves.
+	//
+	// Modes:
+	//   - Full exit: burning all outstanding shares deletes the pool and pays
+	//     out the full reserves.
+	//   - Partial exit:
+	//   - Concentrated pools: outputs are computed from ΔL within the active
+	//     price band.
+	//   - Non-concentrated pools: outputs are pro-rata.
+	//
+	// Safety:
+	//   - Concentrated: post-state price must remain within the band and the
+	//     liquidity delta must be consistent with the burned share ratio within
+	//     a small tolerance.
+	//   - Partial exits cannot deplete any reserve; use full exit to withdraw the
+	//     last liquidity.
+	//   - Outputs must be non-zero.
+	//
+	// Emits EventPoolLiquidityRemoved on success.
 	RemoveLiquidity(context.Context, *MsgRemoveLiquidity) (*MsgRemoveLiquidityResponse, error)
+	// *
+	// PoolSwap executes one or more pool swap legs with a single end-of-tx
+	// settlement, applying output-side fees per leg and enforcing aggregate
+	// max_input caps and min_output guarantees.
 	PoolSwap(context.Context, *MsgPoolSwap) (*MsgPoolSwapResponse, error)
-	// Mixed operations: combine orderbook takes and pool swaps in one tx
+	// *
+	// MakeTrade executes swaps and orderbook takes in-order with a single
+	// settlement. Applies per-denom debit caps (max_input) and final min_output,
+	// releases PFAND on offer close, rejects duplicate ids per type; auction
+	// operations are currently rejected.
 	MakeTrade(context.Context, *MsgMakeTrade) (*MsgMakeTradeResponse, error)
-	// Orderbook
+	// *
+	// MakeOffer creates an orderbook offer. ESCROW: base "have" is escrowed.
+	// LIQUID: lock PFAND; settlement draws from maker balance at take. Units are
+	// derived via GCD for partial fills.
 	MakeOffer(context.Context, *MsgMakeOffer) (*MsgMakeOfferResponse, error)
+	// *
+	// TakeOffer executes one or more takes. Nets taker credits against maker
+	// wants, funds any deficit from taker base (module covers escrow), releases
+	// PFAND to the taker on full close, and records a single trade.
 	TakeOffer(context.Context, *MsgTakeOffer) (*MsgTakeOfferResponse, error)
+	// *
+	// CancelOffer allows the maker to cancel at any time. For LIQUID offers, a
+	// third party may cancel if maker base-have balance < one unit_have; refunds
+	// escrow (ESCROW) to maker and sends PFAND to closer.
 	CancelOffer(context.Context, *MsgCancelOffer) (*MsgCancelOfferResponse, error)
-	// Auctions
+	// *
+	// OpenAuction escrows the sell coin and mints an NFT under a class keyed by
+	// bid_denom; class policy (listing/valuation/bid timeouts/allowed denoms) is
+	// set from module params.
 	OpenAuction(context.Context, *MsgOpenAuction) (*MsgOpenAuctionResponse, error)
+	// *
+	// RedeemAuction lets the current NFT owner redeem when no bid is active;
+	// burns the NFT and returns escrow. If owner != original seller and a
+	// valuation exists in bid_denom, a trade record is emitted.
 	RedeemAuction(context.Context, *MsgRedeemAuction) (*MsgRedeemAuctionResponse, error)
-	// Leverage
+	// *
+	// OpenPosition opens a synthetic leveraged position. Borrows (subject to pool
+	// cap), swaps to the held denom, escrows collateral, snapshots interest rate
+	// and min CR, and records the position.
 	OpenPosition(context.Context, *MsgOpenPosition) (*MsgOpenPositionResponse, error)
+	// *
+	// ClosePosition swaps held to borrowed, repays principal+interest, returns
+	// remaining collateral and any profit, updates pool accounting, and deletes
+	// the position (respects block delay).
 	ClosePosition(context.Context, *MsgClosePosition) (*MsgClosePositionResponse, error)
+	// *
+	// AddCollateral deposits additional collateral, clears liquidation markers,
+	// and returns the new collateral and ratio.
 	AddCollateral(context.Context, *MsgAddCollateral) (*MsgAddCollateralResponse, error)
-	// Repay accrued interest first, then principal; supports overpay → auto-close
-	// with refund
+	// *
+	// CoverPosition: If payment < total repayment, pays all interest and reduces
+	// principal (resets borrow_time). If payment >= total, unwinds held, repays
+	// in full, returns collateral, refunds unused payment and sends any profit.
 	CoverPosition(context.Context, *MsgCoverPosition) (*MsgCoverPositionResponse, error)
+	// *
+	// InitializeLiquidation marks a position liquidatable when CR (with accrued
+	// interest at the snapshotted rate) falls below the pool’s
+	// liquidation_threshold and starts the block-delay countdown.
 	InitializeLiquidation(context.Context, *MsgInitializeLiquidation) (*MsgInitializeLiquidationResponse, error)
+	// *
+	// FinalizeLiquidation: Liquidator repays debt and receives all collateral;
+	// the pool accrues interest and repayment; any pool loss is reported;
+	// position is deleted.
 	FinalizeLiquidation(context.Context, *MsgFinalizeLiquidation) (*MsgFinalizeLiquidationResponse, error)
-	// Params
+	// *
+	// UpdateParams updates module parameters. Authority-only.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 }
 

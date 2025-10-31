@@ -68,31 +68,111 @@ const (
 //
 // Msg defines the whaleswap Msg service.
 type MsgClient interface {
-	// AMM
+	// *
+	// CreatePool creates a two-asset pool with an optional price band and
+	// per-denom fee/interest/leverage parameters. It moves initial reserves to
+	// the module, mints initial shares to the creator, and asserts AMM
+	// invariants.
 	CreatePool(ctx context.Context, in *MsgCreatePool, opts ...grpc.CallOption) (*MsgCreatePoolResponse, error)
+	// *
+	// UpdatePoolConfig updates price band, fee rate, min collateral ratio, max
+	// leverage ratio, interest rate, and max borrow percent. Signer must hold a
+	// majority of shares. Validates bands and invariants.
 	UpdatePoolConfig(ctx context.Context, in *MsgUpdatePoolConfig, opts ...grpc.CallOption) (*MsgUpdatePoolConfigResponse, error)
+	// *
+	// AddLiquidity (owner-only) escrows provided amounts, refunds any unused
+	// amounts in band mode, mints shares, enforces the price band, and asserts
+	// AMM invariants.
 	AddLiquidity(ctx context.Context, in *MsgAddLiquidity, opts ...grpc.CallOption) (*MsgAddLiquidityResponse, error)
+	// *
+	// RemoveLiquidity burns the caller's shares and returns the underlying
+	// reserves.
+	//
+	// Modes:
+	//   - Full exit: burning all outstanding shares deletes the pool and pays
+	//     out the full reserves.
+	//   - Partial exit:
+	//   - Concentrated pools: outputs are computed from ΔL within the active
+	//     price band.
+	//   - Non-concentrated pools: outputs are pro-rata.
+	//
+	// Safety:
+	//   - Concentrated: post-state price must remain within the band and the
+	//     liquidity delta must be consistent with the burned share ratio within
+	//     a small tolerance.
+	//   - Partial exits cannot deplete any reserve; use full exit to withdraw the
+	//     last liquidity.
+	//   - Outputs must be non-zero.
+	//
+	// Emits EventPoolLiquidityRemoved on success.
 	RemoveLiquidity(ctx context.Context, in *MsgRemoveLiquidity, opts ...grpc.CallOption) (*MsgRemoveLiquidityResponse, error)
+	// *
+	// PoolSwap executes one or more pool swap legs with a single end-of-tx
+	// settlement, applying output-side fees per leg and enforcing aggregate
+	// max_input caps and min_output guarantees.
 	PoolSwap(ctx context.Context, in *MsgPoolSwap, opts ...grpc.CallOption) (*MsgPoolSwapResponse, error)
-	// Mixed operations: combine orderbook takes and pool swaps in one tx
+	// *
+	// MakeTrade executes swaps and orderbook takes in-order with a single
+	// settlement. Applies per-denom debit caps (max_input) and final min_output,
+	// releases PFAND on offer close, rejects duplicate ids per type; auction
+	// operations are currently rejected.
 	MakeTrade(ctx context.Context, in *MsgMakeTrade, opts ...grpc.CallOption) (*MsgMakeTradeResponse, error)
-	// Orderbook
+	// *
+	// MakeOffer creates an orderbook offer. ESCROW: base "have" is escrowed.
+	// LIQUID: lock PFAND; settlement draws from maker balance at take. Units are
+	// derived via GCD for partial fills.
 	MakeOffer(ctx context.Context, in *MsgMakeOffer, opts ...grpc.CallOption) (*MsgMakeOfferResponse, error)
+	// *
+	// TakeOffer executes one or more takes. Nets taker credits against maker
+	// wants, funds any deficit from taker base (module covers escrow), releases
+	// PFAND to the taker on full close, and records a single trade.
 	TakeOffer(ctx context.Context, in *MsgTakeOffer, opts ...grpc.CallOption) (*MsgTakeOfferResponse, error)
+	// *
+	// CancelOffer allows the maker to cancel at any time. For LIQUID offers, a
+	// third party may cancel if maker base-have balance < one unit_have; refunds
+	// escrow (ESCROW) to maker and sends PFAND to closer.
 	CancelOffer(ctx context.Context, in *MsgCancelOffer, opts ...grpc.CallOption) (*MsgCancelOfferResponse, error)
-	// Auctions
+	// *
+	// OpenAuction escrows the sell coin and mints an NFT under a class keyed by
+	// bid_denom; class policy (listing/valuation/bid timeouts/allowed denoms) is
+	// set from module params.
 	OpenAuction(ctx context.Context, in *MsgOpenAuction, opts ...grpc.CallOption) (*MsgOpenAuctionResponse, error)
+	// *
+	// RedeemAuction lets the current NFT owner redeem when no bid is active;
+	// burns the NFT and returns escrow. If owner != original seller and a
+	// valuation exists in bid_denom, a trade record is emitted.
 	RedeemAuction(ctx context.Context, in *MsgRedeemAuction, opts ...grpc.CallOption) (*MsgRedeemAuctionResponse, error)
-	// Leverage
+	// *
+	// OpenPosition opens a synthetic leveraged position. Borrows (subject to pool
+	// cap), swaps to the held denom, escrows collateral, snapshots interest rate
+	// and min CR, and records the position.
 	OpenPosition(ctx context.Context, in *MsgOpenPosition, opts ...grpc.CallOption) (*MsgOpenPositionResponse, error)
+	// *
+	// ClosePosition swaps held to borrowed, repays principal+interest, returns
+	// remaining collateral and any profit, updates pool accounting, and deletes
+	// the position (respects block delay).
 	ClosePosition(ctx context.Context, in *MsgClosePosition, opts ...grpc.CallOption) (*MsgClosePositionResponse, error)
+	// *
+	// AddCollateral deposits additional collateral, clears liquidation markers,
+	// and returns the new collateral and ratio.
 	AddCollateral(ctx context.Context, in *MsgAddCollateral, opts ...grpc.CallOption) (*MsgAddCollateralResponse, error)
-	// Repay accrued interest first, then principal; supports overpay → auto-close
-	// with refund
+	// *
+	// CoverPosition: If payment < total repayment, pays all interest and reduces
+	// principal (resets borrow_time). If payment >= total, unwinds held, repays
+	// in full, returns collateral, refunds unused payment and sends any profit.
 	CoverPosition(ctx context.Context, in *MsgCoverPosition, opts ...grpc.CallOption) (*MsgCoverPositionResponse, error)
+	// *
+	// InitializeLiquidation marks a position liquidatable when CR (with accrued
+	// interest at the snapshotted rate) falls below the pool’s
+	// liquidation_threshold and starts the block-delay countdown.
 	InitializeLiquidation(ctx context.Context, in *MsgInitializeLiquidation, opts ...grpc.CallOption) (*MsgInitializeLiquidationResponse, error)
+	// *
+	// FinalizeLiquidation: Liquidator repays debt and receives all collateral;
+	// the pool accrues interest and repayment; any pool loss is reported;
+	// position is deleted.
 	FinalizeLiquidation(ctx context.Context, in *MsgFinalizeLiquidation, opts ...grpc.CallOption) (*MsgFinalizeLiquidationResponse, error)
-	// Params
+	// *
+	// UpdateParams updates module parameters. Authority-only.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 }
 
@@ -313,31 +393,111 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 //
 // Msg defines the whaleswap Msg service.
 type MsgServer interface {
-	// AMM
+	// *
+	// CreatePool creates a two-asset pool with an optional price band and
+	// per-denom fee/interest/leverage parameters. It moves initial reserves to
+	// the module, mints initial shares to the creator, and asserts AMM
+	// invariants.
 	CreatePool(context.Context, *MsgCreatePool) (*MsgCreatePoolResponse, error)
+	// *
+	// UpdatePoolConfig updates price band, fee rate, min collateral ratio, max
+	// leverage ratio, interest rate, and max borrow percent. Signer must hold a
+	// majority of shares. Validates bands and invariants.
 	UpdatePoolConfig(context.Context, *MsgUpdatePoolConfig) (*MsgUpdatePoolConfigResponse, error)
+	// *
+	// AddLiquidity (owner-only) escrows provided amounts, refunds any unused
+	// amounts in band mode, mints shares, enforces the price band, and asserts
+	// AMM invariants.
 	AddLiquidity(context.Context, *MsgAddLiquidity) (*MsgAddLiquidityResponse, error)
+	// *
+	// RemoveLiquidity burns the caller's shares and returns the underlying
+	// reserves.
+	//
+	// Modes:
+	//   - Full exit: burning all outstanding shares deletes the pool and pays
+	//     out the full reserves.
+	//   - Partial exit:
+	//   - Concentrated pools: outputs are computed from ΔL within the active
+	//     price band.
+	//   - Non-concentrated pools: outputs are pro-rata.
+	//
+	// Safety:
+	//   - Concentrated: post-state price must remain within the band and the
+	//     liquidity delta must be consistent with the burned share ratio within
+	//     a small tolerance.
+	//   - Partial exits cannot deplete any reserve; use full exit to withdraw the
+	//     last liquidity.
+	//   - Outputs must be non-zero.
+	//
+	// Emits EventPoolLiquidityRemoved on success.
 	RemoveLiquidity(context.Context, *MsgRemoveLiquidity) (*MsgRemoveLiquidityResponse, error)
+	// *
+	// PoolSwap executes one or more pool swap legs with a single end-of-tx
+	// settlement, applying output-side fees per leg and enforcing aggregate
+	// max_input caps and min_output guarantees.
 	PoolSwap(context.Context, *MsgPoolSwap) (*MsgPoolSwapResponse, error)
-	// Mixed operations: combine orderbook takes and pool swaps in one tx
+	// *
+	// MakeTrade executes swaps and orderbook takes in-order with a single
+	// settlement. Applies per-denom debit caps (max_input) and final min_output,
+	// releases PFAND on offer close, rejects duplicate ids per type; auction
+	// operations are currently rejected.
 	MakeTrade(context.Context, *MsgMakeTrade) (*MsgMakeTradeResponse, error)
-	// Orderbook
+	// *
+	// MakeOffer creates an orderbook offer. ESCROW: base "have" is escrowed.
+	// LIQUID: lock PFAND; settlement draws from maker balance at take. Units are
+	// derived via GCD for partial fills.
 	MakeOffer(context.Context, *MsgMakeOffer) (*MsgMakeOfferResponse, error)
+	// *
+	// TakeOffer executes one or more takes. Nets taker credits against maker
+	// wants, funds any deficit from taker base (module covers escrow), releases
+	// PFAND to the taker on full close, and records a single trade.
 	TakeOffer(context.Context, *MsgTakeOffer) (*MsgTakeOfferResponse, error)
+	// *
+	// CancelOffer allows the maker to cancel at any time. For LIQUID offers, a
+	// third party may cancel if maker base-have balance < one unit_have; refunds
+	// escrow (ESCROW) to maker and sends PFAND to closer.
 	CancelOffer(context.Context, *MsgCancelOffer) (*MsgCancelOfferResponse, error)
-	// Auctions
+	// *
+	// OpenAuction escrows the sell coin and mints an NFT under a class keyed by
+	// bid_denom; class policy (listing/valuation/bid timeouts/allowed denoms) is
+	// set from module params.
 	OpenAuction(context.Context, *MsgOpenAuction) (*MsgOpenAuctionResponse, error)
+	// *
+	// RedeemAuction lets the current NFT owner redeem when no bid is active;
+	// burns the NFT and returns escrow. If owner != original seller and a
+	// valuation exists in bid_denom, a trade record is emitted.
 	RedeemAuction(context.Context, *MsgRedeemAuction) (*MsgRedeemAuctionResponse, error)
-	// Leverage
+	// *
+	// OpenPosition opens a synthetic leveraged position. Borrows (subject to pool
+	// cap), swaps to the held denom, escrows collateral, snapshots interest rate
+	// and min CR, and records the position.
 	OpenPosition(context.Context, *MsgOpenPosition) (*MsgOpenPositionResponse, error)
+	// *
+	// ClosePosition swaps held to borrowed, repays principal+interest, returns
+	// remaining collateral and any profit, updates pool accounting, and deletes
+	// the position (respects block delay).
 	ClosePosition(context.Context, *MsgClosePosition) (*MsgClosePositionResponse, error)
+	// *
+	// AddCollateral deposits additional collateral, clears liquidation markers,
+	// and returns the new collateral and ratio.
 	AddCollateral(context.Context, *MsgAddCollateral) (*MsgAddCollateralResponse, error)
-	// Repay accrued interest first, then principal; supports overpay → auto-close
-	// with refund
+	// *
+	// CoverPosition: If payment < total repayment, pays all interest and reduces
+	// principal (resets borrow_time). If payment >= total, unwinds held, repays
+	// in full, returns collateral, refunds unused payment and sends any profit.
 	CoverPosition(context.Context, *MsgCoverPosition) (*MsgCoverPositionResponse, error)
+	// *
+	// InitializeLiquidation marks a position liquidatable when CR (with accrued
+	// interest at the snapshotted rate) falls below the pool’s
+	// liquidation_threshold and starts the block-delay countdown.
 	InitializeLiquidation(context.Context, *MsgInitializeLiquidation) (*MsgInitializeLiquidationResponse, error)
+	// *
+	// FinalizeLiquidation: Liquidator repays debt and receives all collateral;
+	// the pool accrues interest and repayment; any pool loss is reported;
+	// position is deleted.
 	FinalizeLiquidation(context.Context, *MsgFinalizeLiquidation) (*MsgFinalizeLiquidationResponse, error)
-	// Params
+	// *
+	// UpdateParams updates module parameters. Authority-only.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }

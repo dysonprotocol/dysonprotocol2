@@ -6,20 +6,22 @@
             "dysonprotocol.whaleswap.v1.MsgRemoveLiquidity": {
                 "properties": {
                     "signer": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Account burning shares; must hold at least this amount."
                     },
                     "pool_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Target pool id."
                     },
                     "shares": {
                         "type": "string",
-                        "description": "shares to burn (sdk.Int string)"
+                        "description": "Shares to burn (sdk.Int string). Must be > 0; equals total supply to fully exit (pool is deleted)."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Remove Liquidity",
-                "description": "Remove liquidity (anyone). Must respect price band and produce non-zero outputs."
+                "description": "* Remove liquidity (anyone). Behavior: - Burns shares and returns the underlying reserves. - Full exit: burn all outstanding shares to delete the pool and receive the   full reserves. - Partial exit:   - Concentrated pools: \u0394L-based outputs within the current price band.   - Non-concentrated pools: pro-rata outputs using DecCoins. Safety and validation: - Pool must exist; signer must hold at least `shares`. - Outputs must be non-zero. - Partial exits cannot deplete any reserve; use full exit to withdraw the   last liquidity. - Concentrated pools: post-state price must remain within band; \u0394L must   match burned share ratio within a small tolerance. Emits: EventPoolLiquidityRemoved on success."
             }
         }
     },

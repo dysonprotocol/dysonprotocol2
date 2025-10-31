@@ -14,7 +14,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "End-of-tx debit caps per denom (vector cap). Missing denom implies 0."
+                        "description": "End-of-tx debit caps per denom (vector cap). Missing denom implies 0. Applied after aggregating all legs; tx fails if any denom's required debit exceeds its cap."
                     },
                     "legs": {
                         "items": {
@@ -22,7 +22,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Arbitrary set of swap legs; order does not need to be contiguous by denom."
+                        "description": "Arbitrary set of swap legs; order does not need to be contiguous by denom. Output-side fee is applied per leg based on the output denom."
                     },
                     "min_output": {
                         "items": {
@@ -59,7 +59,7 @@
                     "swap_in": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false,
-                        "description": "One of swap_in or swap_out must be set; both allowed for rate constraint"
+                        "description": "Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set. Use message-level min_output for rate constraints across legs."
                     },
                     "swap_out": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",

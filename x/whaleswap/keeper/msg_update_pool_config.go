@@ -10,6 +10,38 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+// UpdatePoolConfig updates a pool's dynamic configuration: price bands, per-denom
+// swap fee rates, leverage limits (min_collateral_ratio and max_leverage_ratio),
+// liquidation_threshold, interest_rate, and optional max_borrow_percent.
+// Requires the signer to hold a majority of pool shares.
+//
+// Behavior:
+//   - Loads the pool; validates signer address and checks majority ownership.
+//   - Fee rates: optional input; normalizes to exactly two DecCoins (pool order);
+//     amounts must satisfy 0 <= x < 1.
+//   - Leverage config: min_collateral_ratio and max_leverage_ratio are required
+//     with exactly two entries matching pool denoms; each amount must be > 1.
+//   - Liquidation threshold: required with exactly two entries; each amount > 1.
+//   - Interest rate: allows 0/1/2 entries; normalizes to exactly two; each
+//     amount must be >= 0.
+//   - Max borrow percent: optional; if provided, exactly two entries; amounts
+//     must satisfy 0 <= x < 1.
+//   - Price bands: if both min_price and max_price are empty, clears bands;
+//     otherwise requires both set, each as two coins matching pool denoms with
+//     positive amounts; enforces max_price > min_price and current price strictly
+//     within (min, max); stores canonical two-coin vectors.
+//   - Persists the pool with Updated timestamp, emits EventPoolUpdate, and asserts
+//     AMM and module invariants.
+//
+// Emits:
+//   - EventPoolUpdate (pool_id)
+//
+// Returns:
+//   - *whaleswapv1.MsgUpdatePoolConfigResponse (empty)
+//
+// Errors are returned on missing pool, invalid signer/ownership, malformed or
+// out-of-range inputs (denom/order mismatches, invalid ratios, band checks),
+// persistence or event emission failures, or invariant violations; no panics.
 func (k Keeper) UpdatePoolConfig(ctx context.Context, msg *whaleswapv1.MsgUpdatePoolConfig) (*whaleswapv1.MsgUpdatePoolConfigResponse, error) {
 	// Load pool
 	pool, err := k.PoolsMap.Get(ctx, msg.PoolId)

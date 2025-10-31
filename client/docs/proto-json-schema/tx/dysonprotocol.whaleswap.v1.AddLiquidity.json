@@ -6,10 +6,12 @@
             "dysonprotocol.whaleswap.v1.MsgAddLiquidity": {
                 "properties": {
                     "signer": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Account adding liquidity; must be majority owner of pool shares."
                     },
                     "pool_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Target pool id."
                     },
                     "amounts": {
                         "items": {
@@ -17,13 +19,13 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Amounts to add (two coins in any order; will be canonicalized)."
+                        "description": "Amounts to add: exactly two coins matching pool denoms; > 0. Canonicalized to pool denom order. Full amounts are escrowed; surplus is refunded (band mode refunds to match \u0394L; v2 refunds to match minted shares)."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Add Liquidity",
-                "description": "Add liquidity (owner-only). Behavior depends on v2/v3 mode. Amounts will be automatically sorted by denom to match pool's canonical order."
+                "description": "Add liquidity (owner-only: signer must hold > 50% of shares). - Escrows provided amounts and refunds any unused portion. - Enforces price band in concentrated mode; amounts canonicalized to pool order."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {
@@ -49,7 +51,7 @@
                 "properties": {
                     "shares": {
                         "type": "string",
-                        "description": "minted shares amount (sdk.Int string)"
+                        "description": "Shares minted to signer (sdk.Int string)."
                     }
                 },
                 "additionalProperties": false,

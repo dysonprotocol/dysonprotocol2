@@ -20,14 +20,16 @@
                             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "Lower price bound as coin2/coin1 ratio. See notes above; keeper canonicalizes order to pool denoms."
                     },
                     "max_price": {
                         "items": {
                             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "Upper price bound as coin2/coin1 ratio. Must follow the same rules as min_price."
                     },
                     "min_collateral_ratio": {
                         "items": {
@@ -35,7 +37,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Leverage configuration (per-denom) Minimum collateral ratio per reserve denom (exactly two, canonical order; > 1)"
+                        "description": "Leverage configuration (per-denom) Required: minimum collateral ratio per reserve denom (exactly two, canonical order; > 1)"
                     },
                     "max_leverage_ratio": {
                         "items": {
@@ -43,7 +45,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Maximum leverage ratio per reserve denom (exactly two, canonical order; > 1)"
+                        "description": "Required: maximum leverage ratio per reserve denom (exactly two, canonical order; > 1)"
                     },
                     "interest_rate": {
                         "items": {
@@ -51,7 +53,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Annual interest rates per reserve denom (exactly two, canonical order)."
+                        "description": "Required: annual interest rates per reserve denom (APR >= 0). Input may include 0, 1, or 2 entries; keeper normalizes to exactly two in canonical pool order."
                     },
                     "max_borrow_percent": {
                         "items": {
@@ -59,7 +61,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Maximum borrow capacity per reserve denom (exactly two, canonical order). Amounts in [0,1)."
+                        "description": "Optional: maximum borrow capacity per reserve denom (exactly two, canonical order). Amounts in [0,1)."
                     },
                     "liquidation_threshold": {
                         "items": {
@@ -67,7 +69,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Collateral ratio liquidation threshold per reserve denom (exactly two, canonical order; each amount is a LegacyDec string > 1)"
+                        "description": "Required: collateral ratio liquidation threshold per reserve denom (exactly two, canonical order; each amount is a LegacyDec string > 1)"
                     },
                     "fee_rate": {
                         "items": {
@@ -81,7 +83,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Update Pool Config",
-                "description": "Update pool config (owner-only: majority of shares > 50%). Notes: - All fields are required. Price bands must be both empty (no band) or both   contain exactly two coins in canonical order matching pool reserves."
+                "description": "Update pool config (owner-only: signer must hold > 50% of shares). Notes: - Bands: set both min_price and max_price empty to clear; otherwise both must   be set with exactly two coins matching pool reserves. Keeper canonicalizes,   enforces max > min, and requires current price strictly within (min, max). - Required: min_collateral_ratio, max_leverage_ratio, interest_rate,   liquidation_threshold. - Optional: fee_rate (0 <= x < 1 per denom), max_borrow_percent (0 <= x < 1   per denom)."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {

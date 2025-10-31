@@ -51,23 +51,27 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
   creator = "";
 
   /**
-   * Two initial reserves as coins; order will be canonicalized internally (by
-   * denom lexicographic order).
+   * Initial reserves. Required: exactly two coins with positive amounts.
+   * Order is canonicalized internally to pool denom order (lexicographic).
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin coins = 2;
    */
   coins: Coin[] = [];
 
   /**
-   * Optional price band expressed as ratios coin2/coin1 using two coins.
-   * Each must either be empty (unset) or contain exactly two coins whose
-   * denoms match the two pool reserve denoms.
+   * Optional lower price bound as coin2/coin1 ratio.
+   * If set, both this and max_price must contain exactly two coins whose
+   * denoms match the pool reserves; keeper normalizes order.
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin min_price = 3;
    */
   minPrice: Coin[] = [];
 
   /**
+   * Optional upper price bound as coin2/coin1 ratio; subject to the same
+   * rules as min_price. Keeper ensures min_price < max_price and the initial
+   * price is strictly within (min, max).
+   *
    * @generated from field: repeated cosmos.base.v1beta1.Coin max_price = 4;
    */
   maxPrice: Coin[] = [];
@@ -84,40 +88,41 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
   feePct = "";
 
   /**
-   * Minimum collateral ratio per reserve denom (exactly two, canonical order).
-   * Each amount is a LegacyDec string (> 1).
+   * Required: minimum collateral ratio per reserve denom (exactly two,
+   * canonical order). Each amount is a LegacyDec string (> 1).
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 6;
    */
   minCollateralRatio: DecCoin[] = [];
 
   /**
-   * Maximum leverage ratio per reserve denom (exactly two, canonical order).
-   * Each amount is a LegacyDec string (> 1).
+   * Required: maximum leverage ratio per reserve denom (exactly two,
+   * canonical order). Each amount is a LegacyDec string (> 1).
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7;
    */
   maxLeverageRatio: DecCoin[] = [];
 
   /**
-   * Annual interest rates per reserve denom (exactly two, canonical order).
-   * Each amount is a LegacyDec string representing APR (per-year accrual).
+   * Annual interest rates per reserve denom (APR >= 0).
+   * Input may include 0, 1, or 2 entries; keeper normalizes to exactly two
+   * entries in canonical pool order.
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin interest_rate = 8;
    */
   interestRate: DecCoin[] = [];
 
   /**
-   * Maximum borrow capacity per reserve denom as DecCoins (exactly two,
-   * canonical order). Each amount is a LegacyDec in [0,1).
+   * Required: maximum borrow capacity per reserve denom as DecCoins (exactly
+   * two, canonical order). Each amount is a LegacyDec in [0,1).
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_borrow_percent = 9;
    */
   maxBorrowPercent: DecCoin[] = [];
 
   /**
-   * Collateral ratio liquidation threshold per reserve denom (exactly two,
-   * canonical order; each amount is a LegacyDec string > 1)
+   * Required: collateral ratio liquidation threshold per reserve denom
+   * (exactly two, canonical order; each amount is a LegacyDec string > 1)
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin liquidation_threshold = 10;
    */
@@ -208,11 +213,16 @@ export class MsgCreatePoolResponse extends Message<MsgCreatePoolResponse> {
 }
 
 /**
- * Update pool config (owner-only: majority of shares > 50%).
+ * Update pool config (owner-only: signer must hold > 50% of shares).
  *
  * Notes:
- * - All fields are required. Price bands must be both empty (no band) or both
- *   contain exactly two coins in canonical order matching pool reserves.
+ * - Bands: set both min_price and max_price empty to clear; otherwise both must
+ *   be set with exactly two coins matching pool reserves. Keeper canonicalizes,
+ *   enforces max > min, and requires current price strictly within (min, max).
+ * - Required: min_collateral_ratio, max_leverage_ratio, interest_rate,
+ *   liquidation_threshold.
+ * - Optional: fee_rate (0 <= x < 1 per denom), max_borrow_percent (0 <= x < 1
+ *   per denom).
  *
  * @generated from message dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig
  */
@@ -239,50 +249,58 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
   feePct = "";
 
   /**
+   * Lower price bound as coin2/coin1 ratio. See notes above; keeper
+   * canonicalizes order to pool denoms.
+   *
    * @generated from field: repeated cosmos.base.v1beta1.Coin min_price = 4;
    */
   minPrice: Coin[] = [];
 
   /**
+   * Upper price bound as coin2/coin1 ratio. Must follow the same rules as
+   * min_price.
+   *
    * @generated from field: repeated cosmos.base.v1beta1.Coin max_price = 5;
    */
   maxPrice: Coin[] = [];
 
   /**
    * Leverage configuration (per-denom)
-   * Minimum collateral ratio per reserve denom (exactly two, canonical order; >
-   * 1)
+   * Required: minimum collateral ratio per reserve denom (exactly two,
+   * canonical order; > 1)
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 6;
    */
   minCollateralRatio: DecCoin[] = [];
 
   /**
-   * Maximum leverage ratio per reserve denom (exactly two, canonical order; >
-   * 1)
+   * Required: maximum leverage ratio per reserve denom (exactly two,
+   * canonical order; > 1)
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7;
    */
   maxLeverageRatio: DecCoin[] = [];
 
   /**
-   * Annual interest rates per reserve denom (exactly two, canonical order).
+   * Required: annual interest rates per reserve denom (APR >= 0).
+   * Input may include 0, 1, or 2 entries; keeper normalizes to exactly two in
+   * canonical pool order.
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin interest_rate = 8;
    */
   interestRate: DecCoin[] = [];
 
   /**
-   * Maximum borrow capacity per reserve denom (exactly two, canonical order).
-   * Amounts in [0,1).
+   * Optional: maximum borrow capacity per reserve denom (exactly two,
+   * canonical order). Amounts in [0,1).
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_borrow_percent = 9;
    */
   maxBorrowPercent: DecCoin[] = [];
 
   /**
-   * Collateral ratio liquidation threshold per reserve denom (exactly two,
-   * canonical order; each amount is a LegacyDec string > 1)
+   * Required: collateral ratio liquidation threshold per reserve denom
+   * (exactly two, canonical order; each amount is a LegacyDec string > 1)
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin liquidation_threshold = 10;
    */
@@ -367,25 +385,33 @@ export class MsgUpdatePoolConfigResponse extends Message<MsgUpdatePoolConfigResp
 }
 
 /**
- * Add liquidity (owner-only). Behavior depends on v2/v3 mode.
- * Amounts will be automatically sorted by denom to match pool's canonical
+ * Add liquidity (owner-only: signer must hold > 50% of shares).
+ * - Escrows provided amounts and refunds any unused portion.
+ * - Enforces price band in concentrated mode; amounts canonicalized to pool
  * order.
  *
  * @generated from message dysonprotocol.whaleswap.v1.MsgAddLiquidity
  */
 export class MsgAddLiquidity extends Message<MsgAddLiquidity> {
   /**
+   * Account adding liquidity; must be majority owner of pool shares.
+   *
    * @generated from field: string signer = 1;
    */
   signer = "";
 
   /**
+   * Target pool id.
+   *
    * @generated from field: uint64 pool_id = 2;
    */
   poolId = protoInt64.zero;
 
   /**
-   * Amounts to add (two coins in any order; will be canonicalized).
+   * Amounts to add: exactly two coins matching pool denoms; > 0.
+   * Canonicalized to pool denom order. Full amounts are escrowed; surplus is
+   * refunded (band mode refunds to match ΔL; v2 refunds to match minted
+   * shares).
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin amounts = 5;
    */
@@ -426,7 +452,7 @@ export class MsgAddLiquidity extends Message<MsgAddLiquidity> {
  */
 export class MsgAddLiquidityResponse extends Message<MsgAddLiquidityResponse> {
   /**
-   * minted shares amount (sdk.Int string)
+   * Shares minted to signer (sdk.Int string).
    *
    * @generated from field: string shares = 1;
    */
@@ -461,24 +487,47 @@ export class MsgAddLiquidityResponse extends Message<MsgAddLiquidityResponse> {
 }
 
 /**
- * Remove liquidity (anyone). Must respect price band and produce non-zero
- * outputs.
+ * *
+ * Remove liquidity (anyone).
+ *
+ * Behavior:
+ * - Burns shares and returns the underlying reserves.
+ * - Full exit: burn all outstanding shares to delete the pool and receive the
+ *   full reserves.
+ * - Partial exit:
+ *   - Concentrated pools: ΔL-based outputs within the current price band.
+ *   - Non-concentrated pools: pro-rata outputs using DecCoins.
+ *
+ * Safety and validation:
+ * - Pool must exist; signer must hold at least `shares`.
+ * - Outputs must be non-zero.
+ * - Partial exits cannot deplete any reserve; use full exit to withdraw the
+ *   last liquidity.
+ * - Concentrated pools: post-state price must remain within band; ΔL must
+ *   match burned share ratio within a small tolerance.
+ *
+ * Emits: EventPoolLiquidityRemoved on success.
  *
  * @generated from message dysonprotocol.whaleswap.v1.MsgRemoveLiquidity
  */
 export class MsgRemoveLiquidity extends Message<MsgRemoveLiquidity> {
   /**
+   * Account burning shares; must hold at least this amount.
+   *
    * @generated from field: string signer = 1;
    */
   signer = "";
 
   /**
+   * Target pool id.
+   *
    * @generated from field: uint64 pool_id = 2;
    */
   poolId = protoInt64.zero;
 
   /**
-   * shares to burn (sdk.Int string)
+   * Shares to burn (sdk.Int string). Must be > 0; equals total supply to fully
+   * exit (pool is deleted).
    *
    * @generated from field: string shares = 3;
    */
@@ -564,6 +613,8 @@ export class MsgPoolSwap extends Message<MsgPoolSwap> {
 
   /**
    * End-of-tx debit caps per denom (vector cap). Missing denom implies 0.
+   * Applied after aggregating all legs; tx fails if any denom's required debit
+   * exceeds its cap.
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin max_input = 2;
    */
@@ -571,6 +622,7 @@ export class MsgPoolSwap extends Message<MsgPoolSwap> {
 
   /**
    * Arbitrary set of swap legs; order does not need to be contiguous by denom.
+   * Output-side fee is applied per leg based on the output denom.
    *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.SwapLeg legs = 3;
    */
@@ -624,7 +676,8 @@ export class SwapLeg extends Message<SwapLeg> {
   poolId = protoInt64.zero;
 
   /**
-   * One of swap_in or swap_out must be set; both allowed for rate constraint
+   * Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set.
+   * Use message-level min_output for rate constraints across legs.
    *
    * @generated from field: cosmos.base.v1beta1.Coin swap_in = 2;
    */
@@ -973,6 +1026,7 @@ export class MsgMakeOffer extends Message<MsgMakeOffer> {
   /**
    * settlement_mode determines whether base have is escrowed (ESCROW) or
    * PFAND is locked and settlement occurs from maker balance at take (LIQUID).
+   * Maker must currently hold at least the full `have` amount.
    *
    * @generated from field: dysonprotocol.whaleswap.v1.SettlementMode settlement_mode = 4;
    */

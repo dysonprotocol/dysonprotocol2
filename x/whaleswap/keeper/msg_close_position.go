@@ -11,7 +11,25 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// ClosePosition closes an open leveraged position and settles collateral/profit.
+// ClosePosition closes a leveraged position by swapping held assets back to the
+// borrowed denomination, repaying principal plus accrued interest, and returning
+// any remaining collateral and profit to the user.
+//
+// Semantics:
+//   - Inputs: the position ID and user address; the caller must be the position owner.
+//   - Price impact: swaps are executed via MakeTrade through the borrow vault.
+//   - Interest: calculated from the per-position interest rate and elapsed time.
+//   - Settlement: pool reserves are restored by the full repayment; the position is deleted.
+//   - Invariants: AMM and module-wide invariants are asserted after state updates.
+//
+// Returns:
+//   - (*whaleswapv1.MsgClosePositionResponse, error). On success, InterestPaid and
+//     PrincipalPaid reflect the repayment and Profit is any excess returned to the user.
+//
+// Emits:
+//   - EventLeveragePositionClosed on successful close.
+//
+// Errors are returned on validation or invariant violations; no panics.
 func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosition) (*whaleswapv1.MsgClosePositionResponse, error) {
 	if msg == nil {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "message cannot be nil")

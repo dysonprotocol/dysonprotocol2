@@ -94,7 +94,7 @@ func (k Keeper) recordTradeWithOperations(
 				if err := k.TradesByAuctionIndex.Set(ctx, collections.Join(auctionId, tradeId), tradeId); err != nil {
 					return 0, cosmossdkerrors.Wrap(err, "failed to index trade by auction")
 				}
-				// Enhanced EventAuctionRedeemed already emitted by RedeemAuction handler (with trade_id=0 initially)
+				// EventAuctionRedeemed is emitted by RedeemAuction handler with the final trade_id
 			}
 		}
 	}

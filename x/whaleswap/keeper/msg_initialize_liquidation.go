@@ -10,7 +10,30 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// InitializeLiquidation marks a position for liquidation.
+// InitializeLiquidation marks a leveraged position for liquidation when its
+// collateral ratio falls below the pool's liquidation_threshold.
+//
+// Semantics:
+//   - Trigger: permissionless; any initializer may call this for any position.
+//   - Computation: accrues interest on the borrowed amount using the
+//     snapshotted per-denom APR and elapsed seconds since borrow_time; computes
+//     CR = collateral / (principal + interest) using the position snapshot.
+//   - Threshold: compares CR against the pool's per-denom liquidation_threshold
+//     for the borrowed denom; the threshold must be configured (> 1).
+//   - State updates: records liquidation markers (status and the current block
+//     height) on the position and persists it.
+//
+// Emits:
+//   - EventLeverageLiquidationInitialized (position_id, user, pool_id,
+//     collateral_ratio, liquidation_threshold, block_height)
+//
+// Returns:
+//   - *whaleswapv1.MsgInitializeLiquidationResponse with CollateralRatio and
+//     LiquidationThreshold.
+//
+// Errors are returned on validation failures (missing position/pool, malformed
+// snapshots or thresholds, position not liquidatable) or event emission
+// failures; no panics.
 func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgInitializeLiquidation) (*whaleswapv1.MsgInitializeLiquidationResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)

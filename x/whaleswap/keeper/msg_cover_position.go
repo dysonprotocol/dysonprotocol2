@@ -11,9 +11,56 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// CoverPosition lets a user repay accrued interest (must be fully covered) and optionally
-// reduce principal. If payment >= principal+interest, the position is auto-closed,
-// held is unwound via a swap, collateral is returned, and any overpay is refunded.
+// CoverPosition repays accrued interest (must be fully covered) and optionally reduces
+// principal for a leveraged position.
+//
+// Behavior:
+//
+//   - If payment >= principal + accrued interest:
+//
+//   - Enforces the position's close block delay,
+//
+//   - Unwinds held → borrowed via a pool swap from the borrow vault,
+//
+//   - Repays the full amount (principal + interest) to pool reserves and accounting,
+//
+//   - Returns full collateral to the user,
+//
+//   - Refunds any unused portion of the user's payment and sends any unwind PnL as
+//     profit to the user,
+//
+//   - Deletes the position (auto-close).
+//
+//   - If payment < total repayment:
+//
+//   - Transfers payment to the module,
+//
+//   - Pays all accrued interest and applies the remainder to reduce principal,
+//
+//   - Resets borrow_time and clears liquidation markers,
+//
+//   - Updates pool accounting and returns the new collateral ratio at the current
+//     price; the position remains open.
+//
+// Validation:
+//   - The position must exist and be owned by msg.User.
+//   - msg.Payment must be a positive coin whose denom equals the borrowed denom.
+//   - The position must have a two-entry interest_rate snapshot; payment must fully
+//     cover accrued interest.
+//   - The auto-close path respects the close block delay and requires the unwind swap
+//     to produce borrowed output.
+//
+// Emits:
+//   - EventLeveragePositionCovered (always; Closed = true when fully repaid)
+//   - EventLeveragePositionClosed (only on auto-close)
+//
+// Returns (*whaleswapv1.MsgCoverPositionResponse, error):
+//   - Auto-close: InterestPaid, PrincipalPaid = full borrowed, NewBorrowed = 0,
+//     NewCollateralRatio = 0, Closed = true, Refunded = unused payment, Profit = unwind PnL.
+//   - Partial cover: InterestPaid, PrincipalPaid, NewBorrowed (remaining),
+//     NewCollateralRatio at current price, Closed = false, Refunded = 0, Profit = 0.
+//
+// Errors are returned on validation or invariant violations; no panics.
 func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosition) (*whaleswapv1.MsgCoverPositionResponse, error) {
 	if msg == nil {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "message cannot be nil")

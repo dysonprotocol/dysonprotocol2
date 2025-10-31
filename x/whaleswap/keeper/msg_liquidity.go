@@ -12,6 +12,38 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+// AddLiquidity mints pool shares to the signer in exchange for adding two
+// reserve coins to a two-asset pool.
+//
+// Semantics:
+//   - Ownership: the signer must be a majority owner of the pool shares.
+//   - Inputs: exactly two positive coin amounts whose denoms match the pool
+//     reserves (order is canonicalized to the pool's denom order).
+//   - Escrow/Refund: the full provided amounts are escrowed first; any unused
+//     surplus is refunded after the precise amounts used are derived.
+//   - Minting:
+//   - Concentrated-liquidity pools (bounded by MinPrice/MaxPrice): compute
+//     the liquidity delta ΔL at the current sqrt price within the active band
+//     from the provided amounts, refund the surplus to match ΔL, then mint
+//     shares as floor(ΔL * totalShares / L_current).
+//   - Non-concentrated pools: compute minted shares from the limiting side
+//     min(add1/existingR1, add2/existingR2) * totalShares; refund the
+//     difference required to exactly fund the minted shares.
+//   - State updates: pool reserves are updated, the price band (if any) is
+//     enforced post-state, the pool is persisted, shares are minted via the
+//     nameservice module and transferred to the signer, an
+//     EventPoolLiquidityAdded is emitted, and AMM/intra-module invariants are
+//     asserted.
+//
+// Emits:
+//   - EventPoolUpdate (after persisting pool state)
+//   - EventPoolLiquidityAdded (on successful add)
+//
+// Returns:
+//   - *whaleswapv1.MsgAddLiquidityResponse with minted shares encoded as a
+//     decimal string in Shares.
+//
+// Errors are returned on validation or invariant violations; no panics.
 func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidity) (*whaleswapv1.MsgAddLiquidityResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)
@@ -247,6 +279,25 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 	return &whaleswapv1.MsgAddLiquidityResponse{Shares: minted.String()}, nil
 }
 
+// RemoveLiquidity removes liquidity from a pool by burning the caller's shares
+// and returning the underlying reserves. It supports two modes:
+//   - Full exit: if the caller burns all outstanding shares, the pool is
+//     deleted and the full reserves are paid out.
+//   - Partial exit: the caller burns a subset of shares and receives a payout
+//     proportional to that share. For concentrated-liquidity pools, the payout
+//     is computed using ΔL over the current price band; for non-concentrated
+//     pools, the payout is pro-rata using DecCoins.
+//
+// Validation and safety guarantees:
+//   - The pool must exist and the signer must hold at least msg.Shares.
+//   - Partial exits cannot deplete any reserve; withdrawing the last liquidity
+//     requires a full exit.
+//   - For concentrated pools, the resulting state must remain within the price
+//     band, and the liquidity delta must be consistent with the burned shares
+//     within a small tolerance.
+//
+// On success, an EventPoolLiquidityRemoved event is emitted and the updated
+// pool state is persisted. Errors are returned; no panics.
 func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveLiquidity) (*whaleswapv1.MsgRemoveLiquidityResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)

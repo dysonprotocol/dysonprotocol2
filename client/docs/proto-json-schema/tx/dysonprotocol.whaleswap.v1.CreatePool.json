@@ -14,7 +14,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Two initial reserves as coins; order will be canonicalized internally (by denom lexicographic order)."
+                        "description": "Initial reserves. Required: exactly two coins with positive amounts. Order is canonicalized internally to pool denom order (lexicographic)."
                     },
                     "min_price": {
                         "items": {
@@ -22,14 +22,15 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Optional price band expressed as ratios coin2/coin1 using two coins. Each must either be empty (unset) or contain exactly two coins whose denoms match the two pool reserve denoms."
+                        "description": "Optional lower price bound as coin2/coin1 ratio. If set, both this and max_price must contain exactly two coins whose denoms match the pool reserves; keeper normalizes order."
                     },
                     "max_price": {
                         "items": {
                             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "Optional upper price bound as coin2/coin1 ratio; subject to the same rules as min_price. Keeper ensures min_price < max_price and the initial price is strictly within (min, max)."
                     },
                     "fee_pct": {
                         "type": "string",
@@ -41,7 +42,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Minimum collateral ratio per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string (> 1)."
+                        "description": "Required: minimum collateral ratio per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string (> 1)."
                     },
                     "max_leverage_ratio": {
                         "items": {
@@ -49,7 +50,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Maximum leverage ratio per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string (> 1)."
+                        "description": "Required: maximum leverage ratio per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string (> 1)."
                     },
                     "interest_rate": {
                         "items": {
@@ -57,7 +58,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Annual interest rates per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string representing APR (per-year accrual)."
+                        "description": "Annual interest rates per reserve denom (APR >= 0). Input may include 0, 1, or 2 entries; keeper normalizes to exactly two entries in canonical pool order."
                     },
                     "max_borrow_percent": {
                         "items": {
@@ -65,7 +66,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Maximum borrow capacity per reserve denom as DecCoins (exactly two, canonical order). Each amount is a LegacyDec in [0,1)."
+                        "description": "Required: maximum borrow capacity per reserve denom as DecCoins (exactly two, canonical order). Each amount is a LegacyDec in [0,1)."
                     },
                     "liquidation_threshold": {
                         "items": {
@@ -73,7 +74,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Collateral ratio liquidation threshold per reserve denom (exactly two, canonical order; each amount is a LegacyDec string > 1)"
+                        "description": "Required: collateral ratio liquidation threshold per reserve denom (exactly two, canonical order; each amount is a LegacyDec string > 1)"
                     },
                     "fee_rate": {
                         "items": {

@@ -15,6 +15,23 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+// OpenAuction escrows the provided sell coin from the seller into the module,
+// creates or updates the auction NFT class keyed by bid_denom with policy
+// configured from module parameters, mints an NFT representing the escrow,
+// transfers it to the seller, and records the auction with reverse indexes.
+//
+// Validation:
+//   - seller must be a valid address
+//   - sell.amount must be > 0; sell.denom and bid_denom must be valid and differ
+//   - whaleswap root name must exist and resolve to the module account
+//
+// Returns:
+//   - *whaleswapv1.MsgOpenAuctionResponse containing the new auction_id
+//
+// Emits:
+//   - EventAuctionCreated on success
+//
+// Errors are returned on validation or module failures; no panics.
 func (k Keeper) OpenAuction(ctx context.Context, msg *whaleswapv1.MsgOpenAuction) (*whaleswapv1.MsgOpenAuctionResponse, error) {
 	sellerBz, err := k.accKeeper.AddressCodec().StringToBytes(msg.Seller)
 	if err != nil {
@@ -118,6 +135,26 @@ func (k Keeper) OpenAuction(ctx context.Context, msg *whaleswapv1.MsgOpenAuction
 	return &whaleswapv1.MsgOpenAuctionResponse{AuctionId: id}, nil
 }
 
+// RedeemAuction lets the current NFT owner redeem the auction escrow when no
+// bid is active. It transfers the escrowed sell coins from the module to the
+// caller, burns the NFT, deletes reverse indexes and the primary record, and
+// optionally records a Trade if the redeemer is the last winning bidder
+// (owner != original seller and a positive valuation exists in bid_denom).
+//
+// Validation:
+//   - auction must exist
+//   - caller must equal the current NFT owner
+//   - no current bidder may exist
+//   - module escrow must contain at least the sell amount
+//
+// Returns:
+//   - *whaleswapv1.MsgRedeemAuctionResponse (empty body)
+//
+// Emits:
+//   - EventAuctionRedeemed with auction_id and trade_id (0 if seller redeems
+//     without a recorded trade)
+//
+// Errors are returned on validation or module failures; no panics.
 func (k Keeper) RedeemAuction(ctx context.Context, msg *whaleswapv1.MsgRedeemAuction) (*whaleswapv1.MsgRedeemAuctionResponse, error) {
 	rec, err := k.AuctionsMap.Get(ctx, msg.AuctionId)
 	if err != nil {
@@ -125,6 +162,9 @@ func (k Keeper) RedeemAuction(ctx context.Context, msg *whaleswapv1.MsgRedeemAuc
 	}
 	// Require current NFT owner to redeem
 	ownerAddr := k.nft.GetOwner(ctx, rec.ClassId, rec.NftId)
+	if ownerAddr.Empty() {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrNotFound, "NFT not found: class %s, id %s", rec.ClassId, rec.NftId)
+	}
 	ownerStr, err := k.accKeeper.AddressCodec().BytesToString(ownerAddr.Bytes())
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to encode nft owner for %s/%s", rec.ClassId, rec.NftId)
@@ -195,6 +235,11 @@ func (k Keeper) RedeemAuction(ctx context.Context, msg *whaleswapv1.MsgRedeemAuc
 		TradeId:   tradeId,
 	}); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventAuctionRedeemed")
+	}
+
+	// Assert module balance invariants after redemption
+	if err := k.AssertInvariants(ctx); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "invariant after RedeemAuction")
 	}
 
 	return &whaleswapv1.MsgRedeemAuctionResponse{}, nil

@@ -10074,9 +10074,6 @@ paths:
                                   implements the custom method
 
                                   signatures required by gogoproto.
-                                title: >-
-                                  One of swap_in or swap_out must be set; both
-                                  allowed for rate constraint
                               swap_out:
                                 type: object
                                 properties:
@@ -10441,9 +10438,6 @@ paths:
                                   implements the custom method
 
                                   signatures required by gogoproto.
-                                title: >-
-                                  One of swap_in or swap_out must be set; both
-                                  allowed for rate constraint
                               swap_out:
                                 type: object
                                 properties:
@@ -10803,9 +10797,6 @@ paths:
                                   implements the custom method
 
                                   signatures required by gogoproto.
-                                title: >-
-                                  One of swap_in or swap_out must be set; both
-                                  allowed for rate constraint
                               swap_out:
                                 type: object
                                 properties:
@@ -11166,9 +11157,6 @@ paths:
                                   implements the custom method
 
                                   signatures required by gogoproto.
-                                title: >-
-                                  One of swap_in or swap_out must be set; both
-                                  allowed for rate constraint
                               swap_out:
                                 type: object
                                 properties:
@@ -11528,9 +11516,6 @@ paths:
                                   implements the custom method
 
                                   signatures required by gogoproto.
-                                title: >-
-                                  One of swap_in or swap_out must be set; both
-                                  allowed for rate constraint
                               swap_out:
                                 type: object
                                 properties:
@@ -11890,9 +11875,6 @@ paths:
                                 implements the custom method
 
                                 signatures required by gogoproto.
-                              title: >-
-                                One of swap_in or swap_out must be set; both
-                                allowed for rate constraint
                             swap_out:
                               type: object
                               properties:
@@ -33411,6 +33393,13 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgAddCollateral:
     post:
+      summary: >-
+        *
+
+        AddCollateral deposits additional collateral, clears liquidation
+        markers,
+
+        and returns the new collateral and ratio.
       operationId: dysonprotocol.whaleswap.v1.MsgAddCollateral
       responses:
         '200':
@@ -33491,6 +33480,11 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgAddLiquidity:
     post:
+      summary: |-
+        *
+        AddLiquidity (owner-only) escrows provided amounts, refunds any unused
+        amounts in band mode, mints shares, enforces the price band, and asserts
+        AMM invariants.
       operationId: dysonprotocol.whaleswap.v1.MsgAddLiquidity
       responses:
         '200':
@@ -33500,7 +33494,7 @@ paths:
             properties:
               shares:
                 type: string
-                title: minted shares amount (sdk.Int string)
+                description: Shares minted to signer (sdk.Int string).
         default:
           description: An unexpected error response.
           schema:
@@ -33532,9 +33526,13 @@ paths:
             properties:
               signer:
                 type: string
+                description: >-
+                  Account adding liquidity; must be majority owner of pool
+                  shares.
               pool_id:
                 type: string
                 format: uint64
+                description: Target pool id.
               amounts:
                 type: array
                 items:
@@ -33553,19 +33551,37 @@ paths:
 
                     signatures required by gogoproto.
                 description: >-
-                  Amounts to add (two coins in any order; will be
-                  canonicalized).
-            description: >-
-              Add liquidity (owner-only). Behavior depends on v2/v3 mode.
+                  Amounts to add: exactly two coins matching pool denoms; > 0.
 
-              Amounts will be automatically sorted by denom to match pool's
-              canonical
+                  Canonicalized to pool denom order. Full amounts are escrowed;
+                  surplus is
+
+                  refunded (band mode refunds to match ΔL; v2 refunds to match
+                  minted
+
+                  shares).
+            description: >-
+              Add liquidity (owner-only: signer must hold > 50% of shares).
+
+              - Escrows provided amounts and refunds any unused portion.
+
+              - Enforces price band in concentrated mode; amounts canonicalized
+              to pool
 
               order.
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgCancelOffer:
     post:
+      summary: >-
+        *
+
+        CancelOffer allows the maker to cancel at any time. For LIQUID offers, a
+
+        third party may cancel if maker base-have balance < one unit_have;
+        refunds
+
+        escrow (ESCROW) to maker and sends PFAND to closer.
       operationId: dysonprotocol.whaleswap.v1.MsgCancelOffer
       responses:
         '200':
@@ -33620,6 +33636,15 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgClosePosition:
     post:
+      summary: >-
+        *
+
+        ClosePosition swaps held to borrowed, repays principal+interest, returns
+
+        remaining collateral and any profit, updates pool accounting, and
+        deletes
+
+        the position (respects block delay).
       operationId: dysonprotocol.whaleswap.v1.MsgClosePosition
       responses:
         '200':
@@ -33713,10 +33738,16 @@ paths:
   dysonprotocol.whaleswap.v1.MsgCoverPosition:
     post:
       summary: >-
-        Repay accrued interest first, then principal; supports overpay →
-        auto-close
+        *
 
-        with refund
+        CoverPosition: If payment < total repayment, pays all interest and
+        reduces
+
+        principal (resets borrow_time). If payment >= total, unwinds held,
+        repays
+
+        in full, returns collateral, refunds unused payment and sends any
+        profit.
       operationId: dysonprotocol.whaleswap.v1.MsgCoverPosition
       responses:
         '200':
@@ -33859,7 +33890,12 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgCreatePool:
     post:
-      summary: AMM
+      summary: |-
+        *
+        CreatePool creates a two-asset pool with an optional price band and
+        per-denom fee/interest/leverage parameters. It moves initial reserves to
+        the module, mints initial shares to the creator, and asserts AMM
+        invariants.
       operationId: dysonprotocol.whaleswap.v1.MsgCreatePool
       responses:
         '200':
@@ -33919,10 +33955,11 @@ paths:
 
                     signatures required by gogoproto.
                 description: >-
-                  Two initial reserves as coins; order will be canonicalized
-                  internally (by
+                  Initial reserves. Required: exactly two coins with positive
+                  amounts.
 
-                  denom lexicographic order).
+                  Order is canonicalized internally to pool denom order
+                  (lexicographic).
               min_price:
                 type: array
                 items:
@@ -33941,13 +33978,12 @@ paths:
 
                     signatures required by gogoproto.
                 description: >-
-                  Optional price band expressed as ratios coin2/coin1 using two
-                  coins.
+                  Optional lower price bound as coin2/coin1 ratio.
 
-                  Each must either be empty (unset) or contain exactly two coins
+                  If set, both this and max_price must contain exactly two coins
                   whose
 
-                  denoms match the two pool reserve denoms.
+                  denoms match the pool reserves; keeper normalizes order.
               max_price:
                 type: array
                 items:
@@ -33965,6 +34001,14 @@ paths:
                     method
 
                     signatures required by gogoproto.
+                description: >-
+                  Optional upper price bound as coin2/coin1 ratio; subject to
+                  the same
+
+                  rules as min_price. Keeper ensures min_price < max_price and
+                  the initial
+
+                  price is strictly within (min, max).
               fee_pct:
                 type: string
                 description: >-
@@ -33997,10 +34041,10 @@ paths:
 
                     signatures required by gogoproto.
                 description: >-
-                  Minimum collateral ratio per reserve denom (exactly two,
-                  canonical order).
+                  Required: minimum collateral ratio per reserve denom (exactly
+                  two,
 
-                  Each amount is a LegacyDec string (> 1).
+                  canonical order). Each amount is a LegacyDec string (> 1).
               max_leverage_ratio:
                 type: array
                 items:
@@ -34020,10 +34064,10 @@ paths:
 
                     signatures required by gogoproto.
                 description: >-
-                  Maximum leverage ratio per reserve denom (exactly two,
-                  canonical order).
+                  Required: maximum leverage ratio per reserve denom (exactly
+                  two,
 
-                  Each amount is a LegacyDec string (> 1).
+                  canonical order). Each amount is a LegacyDec string (> 1).
               interest_rate:
                 type: array
                 items:
@@ -34043,11 +34087,12 @@ paths:
 
                     signatures required by gogoproto.
                 description: >-
-                  Annual interest rates per reserve denom (exactly two,
-                  canonical order).
+                  Annual interest rates per reserve denom (APR >= 0).
 
-                  Each amount is a LegacyDec string representing APR (per-year
-                  accrual).
+                  Input may include 0, 1, or 2 entries; keeper normalizes to
+                  exactly two
+
+                  entries in canonical pool order.
               max_borrow_percent:
                 type: array
                 items:
@@ -34067,10 +34112,10 @@ paths:
 
                     signatures required by gogoproto.
                 description: >-
-                  Maximum borrow capacity per reserve denom as DecCoins (exactly
-                  two,
+                  Required: maximum borrow capacity per reserve denom as
+                  DecCoins (exactly
 
-                  canonical order). Each amount is a LegacyDec in [0,1).
+                  two, canonical order). Each amount is a LegacyDec in [0,1).
               liquidation_threshold:
                 type: array
                 items:
@@ -34090,10 +34135,11 @@ paths:
 
                     signatures required by gogoproto.
                 title: >-
-                  Collateral ratio liquidation threshold per reserve denom
-                  (exactly two,
+                  Required: collateral ratio liquidation threshold per reserve
+                  denom
 
-                  canonical order; each amount is a LegacyDec string > 1)
+                  (exactly two, canonical order; each amount is a LegacyDec
+                  string > 1)
               fee_rate:
                 type: array
                 items:
@@ -34136,6 +34182,11 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation:
     post:
+      summary: |-
+        *
+        FinalizeLiquidation: Liquidator repays debt and receives all collateral;
+        the pool accrues interest and repayment; any pool loss is reported;
+        position is deleted.
       operationId: dysonprotocol.whaleswap.v1.MsgFinalizeLiquidation
       responses:
         '200':
@@ -34246,6 +34297,15 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgInitializeLiquidation:
     post:
+      summary: >-
+        *
+
+        InitializeLiquidation marks a position liquidatable when CR (with
+        accrued
+
+        interest at the snapshotted rate) falls below the pool’s
+
+        liquidation_threshold and starts the block-delay countdown.
       operationId: dysonprotocol.whaleswap.v1.MsgInitializeLiquidation
       responses:
         '200':
@@ -34300,7 +34360,15 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgMakeOffer:
     post:
-      summary: Orderbook
+      summary: >-
+        *
+
+        MakeOffer creates an orderbook offer. ESCROW: base "have" is escrowed.
+
+        LIQUID: lock PFAND; settlement draws from maker balance at take. Units
+        are
+
+        derived via GCD for partial fills.
       operationId: dysonprotocol.whaleswap.v1.MsgMakeOffer
       responses:
         '200':
@@ -34379,6 +34447,8 @@ paths:
 
                   PFAND is locked and settlement occurs from maker balance at
                   take (LIQUID).
+
+                  Maker must currently hold at least the full `have` amount.
                 type: string
                 enum:
                   - SETTLEMENT_ESCROW
@@ -34410,7 +34480,17 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgMakeTrade:
     post:
-      summary: 'Mixed operations: combine orderbook takes and pool swaps in one tx'
+      summary: >-
+        *
+
+        MakeTrade executes swaps and orderbook takes in-order with a single
+
+        settlement. Applies per-denom debit caps (max_input) and final
+        min_output,
+
+        releases PFAND on offer close, rejects duplicate ids per type; auction
+
+        operations are currently rejected.
       operationId: dysonprotocol.whaleswap.v1.MsgMakeTrade
       responses:
         '200':
@@ -34536,9 +34616,6 @@ paths:
                             the custom method
 
                             signatures required by gogoproto.
-                          title: >-
-                            One of swap_in or swap_out must be set; both allowed
-                            for rate constraint
                         swap_out:
                           type: object
                           properties:
@@ -34642,7 +34719,16 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgOpenAuction:
     post:
-      summary: Auctions
+      summary: >-
+        *
+
+        OpenAuction escrows the sell coin and mints an NFT under a class keyed
+        by
+
+        bid_denom; class policy (listing/valuation/bid timeouts/allowed denoms)
+        is
+
+        set from module params.
       operationId: dysonprotocol.whaleswap.v1.MsgOpenAuction
       responses:
         '200':
@@ -34712,7 +34798,16 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgOpenPosition:
     post:
-      summary: Leverage
+      summary: >-
+        *
+
+        OpenPosition opens a synthetic leveraged position. Borrows (subject to
+        pool
+
+        cap), swaps to the held denom, escrows collateral, snapshots interest
+        rate
+
+        and min CR, and records the position.
       operationId: dysonprotocol.whaleswap.v1.MsgOpenPosition
       responses:
         '200':
@@ -34825,6 +34920,11 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgPoolSwap:
     post:
+      summary: |-
+        *
+        PoolSwap executes one or more pool swap legs with a single end-of-tx
+        settlement, applying output-side fees per leg and enforcing aggregate
+        max_input caps and min_output guarantees.
       operationId: dysonprotocol.whaleswap.v1.MsgPoolSwap
       responses:
         '200':
@@ -34900,6 +35000,11 @@ paths:
                 description: >-
                   End-of-tx debit caps per denom (vector cap). Missing denom
                   implies 0.
+
+                  Applied after aggregating all legs; tx fails if any denom's
+                  required debit
+
+                  exceeds its cap.
               legs:
                 type: array
                 items:
@@ -34923,9 +35028,6 @@ paths:
                         custom method
 
                         signatures required by gogoproto.
-                      title: >-
-                        One of swap_in or swap_out must be set; both allowed for
-                        rate constraint
                     swap_out:
                       type: object
                       properties:
@@ -34944,6 +35046,8 @@ paths:
                 description: >-
                   Arbitrary set of swap legs; order does not need to be
                   contiguous by denom.
+
+                  Output-side fee is applied per leg based on the output denom.
               min_output:
                 type: array
                 items:
@@ -34966,6 +35070,11 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgRedeemAuction:
     post:
+      summary: |-
+        *
+        RedeemAuction lets the current NFT owner redeem when no bid is active;
+        burns the NFT and returns escrow. If owner != original seller and a
+        valuation exists in bid_denom, a trade record is emitted.
       operationId: dysonprotocol.whaleswap.v1.MsgRedeemAuction
       responses:
         '200':
@@ -35011,6 +35120,32 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgRemoveLiquidity:
     post:
+      summary: |-
+        *
+        RemoveLiquidity burns the caller's shares and returns the underlying
+        reserves.
+      description: >-
+        Modes:
+
+        - Full exit: burning all outstanding shares deletes the pool and pays
+          out the full reserves.
+        - Partial exit:
+          - Concentrated pools: outputs are computed from ΔL within the active
+            price band.
+          - Non-concentrated pools: outputs are pro-rata.
+
+        Safety:
+
+        - Concentrated: post-state price must remain within the band and the
+          liquidity delta must be consistent with the burned share ratio within
+          a small tolerance.
+        - Partial exits cannot deplete any reserve; use full exit to withdraw
+        the
+          last liquidity.
+        - Outputs must be non-zero.
+
+
+        Emits EventPoolLiquidityRemoved on success.
       operationId: dysonprotocol.whaleswap.v1.MsgRemoveLiquidity
       responses:
         '200':
@@ -35067,21 +35202,62 @@ paths:
             properties:
               signer:
                 type: string
+                description: Account burning shares; must hold at least this amount.
               pool_id:
                 type: string
                 format: uint64
+                description: Target pool id.
               shares:
                 type: string
-                title: shares to burn (sdk.Int string)
-            description: >-
-              Remove liquidity (anyone). Must respect price band and produce
-              non-zero
+                description: >-
+                  Shares to burn (sdk.Int string). Must be > 0; equals total
+                  supply to fully
 
-              outputs.
+                  exit (pool is deleted).
+            description: >-
+              *
+
+              Remove liquidity (anyone).
+
+
+              Behavior:
+
+              - Burns shares and returns the underlying reserves.
+
+              - Full exit: burn all outstanding shares to delete the pool and
+              receive the
+                full reserves.
+              - Partial exit:
+                - Concentrated pools: ΔL-based outputs within the current price band.
+                - Non-concentrated pools: pro-rata outputs using DecCoins.
+
+              Safety and validation:
+
+              - Pool must exist; signer must hold at least `shares`.
+
+              - Outputs must be non-zero.
+
+              - Partial exits cannot deplete any reserve; use full exit to
+              withdraw the
+                last liquidity.
+              - Concentrated pools: post-state price must remain within band; ΔL
+              must
+                match burned share ratio within a small tolerance.
+
+              Emits: EventPoolLiquidityRemoved on success.
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgTakeOffer:
     post:
+      summary: >-
+        *
+
+        TakeOffer executes one or more takes. Nets taker credits against maker
+
+        wants, funds any deficit from taker base (module covers escrow),
+        releases
+
+        PFAND to the taker on full close, and records a single trade.
       operationId: dysonprotocol.whaleswap.v1.MsgTakeOffer
       responses:
         '200':
@@ -35177,7 +35353,9 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgUpdateParams:
     post:
-      summary: Params
+      summary: |-
+        *
+        UpdateParams updates module parameters. Authority-only.
       operationId: dysonprotocol.whaleswap.v1.MsgUpdateParams
       responses:
         '200':
@@ -35280,6 +35458,15 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig:
     post:
+      summary: >-
+        *
+
+        UpdatePoolConfig updates price band, fee rate, min collateral ratio, max
+
+        leverage ratio, interest rate, and max borrow percent. Signer must hold
+        a
+
+        majority of shares. Validates bands and invariants.
       operationId: dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig
       responses:
         '200':
@@ -35350,6 +35537,11 @@ paths:
                     method
 
                     signatures required by gogoproto.
+                description: >-
+                  Lower price bound as coin2/coin1 ratio. See notes above;
+                  keeper
+
+                  canonicalizes order to pool denoms.
               max_price:
                 type: array
                 items:
@@ -35367,6 +35559,11 @@ paths:
                     method
 
                     signatures required by gogoproto.
+                description: >-
+                  Upper price bound as coin2/coin1 ratio. Must follow the same
+                  rules as
+
+                  min_price.
               min_collateral_ratio:
                 type: array
                 items:
@@ -35388,10 +35585,10 @@ paths:
                 title: >-
                   Leverage configuration (per-denom)
 
-                  Minimum collateral ratio per reserve denom (exactly two,
-                  canonical order; >
+                  Required: minimum collateral ratio per reserve denom (exactly
+                  two,
 
-                  1)
+                  canonical order; > 1)
               max_leverage_ratio:
                 type: array
                 items:
@@ -35411,10 +35608,10 @@ paths:
 
                     signatures required by gogoproto.
                 title: >-
-                  Maximum leverage ratio per reserve denom (exactly two,
-                  canonical order; >
+                  Required: maximum leverage ratio per reserve denom (exactly
+                  two,
 
-                  1)
+                  canonical order; > 1)
               interest_rate:
                 type: array
                 items:
@@ -35434,8 +35631,12 @@ paths:
 
                     signatures required by gogoproto.
                 description: >-
-                  Annual interest rates per reserve denom (exactly two,
-                  canonical order).
+                  Required: annual interest rates per reserve denom (APR >= 0).
+
+                  Input may include 0, 1, or 2 entries; keeper normalizes to
+                  exactly two in
+
+                  canonical pool order.
               max_borrow_percent:
                 type: array
                 items:
@@ -35455,10 +35656,10 @@ paths:
 
                     signatures required by gogoproto.
                 description: >-
-                  Maximum borrow capacity per reserve denom (exactly two,
-                  canonical order).
+                  Optional: maximum borrow capacity per reserve denom (exactly
+                  two,
 
-                  Amounts in [0,1).
+                  canonical order). Amounts in [0,1).
               liquidation_threshold:
                 type: array
                 items:
@@ -35478,10 +35679,11 @@ paths:
 
                     signatures required by gogoproto.
                 title: >-
-                  Collateral ratio liquidation threshold per reserve denom
-                  (exactly two,
+                  Required: collateral ratio liquidation threshold per reserve
+                  denom
 
-                  canonical order; each amount is a LegacyDec string > 1)
+                  (exactly two, canonical order; each amount is a LegacyDec
+                  string > 1)
               fee_rate:
                 type: array
                 items:
@@ -35509,14 +35711,21 @@ paths:
 
                   Replaces deprecated fee_pct field 3.
             description: >-
-              Update pool config (owner-only: majority of shares > 50%).
+              Update pool config (owner-only: signer must hold > 50% of shares).
 
 
               Notes:
 
-              - All fields are required. Price bands must be both empty (no
-              band) or both
-                contain exactly two coins in canonical order matching pool reserves.
+              - Bands: set both min_price and max_price empty to clear;
+              otherwise both must
+                be set with exactly two coins matching pool reserves. Keeper canonicalizes,
+                enforces max > min, and requires current price strictly within (min, max).
+              - Required: min_collateral_ratio, max_leverage_ratio,
+              interest_rate,
+                liquidation_threshold.
+              - Optional: fee_rate (0 <= x < 1 per denom), max_borrow_percent (0
+              <= x < 1
+                per denom).
       tags:
         - Msg
   dysonprotocol.script.v1.MsgCreateNewScript:
@@ -51682,9 +51891,6 @@ definitions:
                         custom method
 
                         signatures required by gogoproto.
-                      title: >-
-                        One of swap_in or swap_out must be set; both allowed for
-                        rate constraint
                     swap_out:
                       type: object
                       properties:
@@ -51939,9 +52145,6 @@ definitions:
                           custom method
 
                           signatures required by gogoproto.
-                        title: >-
-                          One of swap_in or swap_out must be set; both allowed
-                          for rate constraint
                       swap_out:
                         type: object
                         properties:
@@ -52226,9 +52429,6 @@ definitions:
                           custom method
 
                           signatures required by gogoproto.
-                        title: >-
-                          One of swap_in or swap_out must be set; both allowed
-                          for rate constraint
                       swap_out:
                         type: object
                         properties:
@@ -52513,9 +52713,6 @@ definitions:
                           custom method
 
                           signatures required by gogoproto.
-                        title: >-
-                          One of swap_in or swap_out must be set; both allowed
-                          for rate constraint
                       swap_out:
                         type: object
                         properties:
@@ -52800,9 +52997,6 @@ definitions:
                           custom method
 
                           signatures required by gogoproto.
-                        title: >-
-                          One of swap_in or swap_out must be set; both allowed
-                          for rate constraint
                       swap_out:
                         type: object
                         properties:
@@ -53087,9 +53281,6 @@ definitions:
                           custom method
 
                           signatures required by gogoproto.
-                        title: >-
-                          One of swap_in or swap_out must be set; both allowed
-                          for rate constraint
                       swap_out:
                         type: object
                         properties:
@@ -53285,9 +53476,6 @@ definitions:
 
           NOTE: The amount field is an Int which implements the custom method
           signatures required by gogoproto.
-        title: >-
-          One of swap_in or swap_out must be set; both allowed for rate
-          constraint
       swap_out:
         type: object
         properties:
@@ -53415,9 +53603,6 @@ definitions:
                     method
 
                     signatures required by gogoproto.
-                  title: >-
-                    One of swap_in or swap_out must be set; both allowed for
-                    rate constraint
                 swap_out:
                   type: object
                   properties:
@@ -53650,9 +53835,6 @@ definitions:
               method
 
               signatures required by gogoproto.
-            title: >-
-              One of swap_in or swap_out must be set; both allowed for rate
-              constraint
           swap_out:
             type: object
             properties:
@@ -74789,9 +74971,11 @@ definitions:
     properties:
       signer:
         type: string
+        description: Account adding liquidity; must be majority owner of pool shares.
       pool_id:
         type: string
         format: uint64
+        description: Target pool id.
       amounts:
         type: array
         items:
@@ -74806,17 +74990,26 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
-        description: Amounts to add (two coins in any order; will be canonicalized).
+        description: >-
+          Amounts to add: exactly two coins matching pool denoms; > 0.
+
+          Canonicalized to pool denom order. Full amounts are escrowed; surplus
+          is
+
+          refunded (band mode refunds to match ΔL; v2 refunds to match minted
+
+          shares).
     description: |-
-      Add liquidity (owner-only). Behavior depends on v2/v3 mode.
-      Amounts will be automatically sorted by denom to match pool's canonical
+      Add liquidity (owner-only: signer must hold > 50% of shares).
+      - Escrows provided amounts and refunds any unused portion.
+      - Enforces price band in concentrated mode; amounts canonicalized to pool
       order.
   dysonprotocol.whaleswap.v1.MsgAddLiquidityResponse:
     type: object
     properties:
       shares:
         type: string
-        title: minted shares amount (sdk.Int string)
+        description: Shares minted to signer (sdk.Int string).
   dysonprotocol.whaleswap.v1.MsgCancelOffer:
     type: object
     properties:
@@ -74994,11 +75187,9 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
-        description: >-
-          Two initial reserves as coins; order will be canonicalized internally
-          (by
-
-          denom lexicographic order).
+        description: |-
+          Initial reserves. Required: exactly two coins with positive amounts.
+          Order is canonicalized internally to pool denom order (lexicographic).
       min_price:
         type: array
         items:
@@ -75014,9 +75205,9 @@ definitions:
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
         description: |-
-          Optional price band expressed as ratios coin2/coin1 using two coins.
-          Each must either be empty (unset) or contain exactly two coins whose
-          denoms match the two pool reserve denoms.
+          Optional lower price bound as coin2/coin1 ratio.
+          If set, both this and max_price must contain exactly two coins whose
+          denoms match the pool reserves; keeper normalizes order.
       max_price:
         type: array
         items:
@@ -75031,6 +75222,13 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
+        description: >-
+          Optional upper price bound as coin2/coin1 ratio; subject to the same
+
+          rules as min_price. Keeper ensures min_price < max_price and the
+          initial
+
+          price is strictly within (min, max).
       fee_pct:
         type: string
         description: >-
@@ -75057,11 +75255,9 @@ definitions:
 
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
-        description: >-
-          Minimum collateral ratio per reserve denom (exactly two, canonical
-          order).
-
-          Each amount is a LegacyDec string (> 1).
+        description: |-
+          Required: minimum collateral ratio per reserve denom (exactly two,
+          canonical order). Each amount is a LegacyDec string (> 1).
       max_leverage_ratio:
         type: array
         items:
@@ -75076,11 +75272,9 @@ definitions:
 
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
-        description: >-
-          Maximum leverage ratio per reserve denom (exactly two, canonical
-          order).
-
-          Each amount is a LegacyDec string (> 1).
+        description: |-
+          Required: maximum leverage ratio per reserve denom (exactly two,
+          canonical order). Each amount is a LegacyDec string (> 1).
       interest_rate:
         type: array
         items:
@@ -75095,11 +75289,10 @@ definitions:
 
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
-        description: >-
-          Annual interest rates per reserve denom (exactly two, canonical
-          order).
-
-          Each amount is a LegacyDec string representing APR (per-year accrual).
+        description: |-
+          Annual interest rates per reserve denom (APR >= 0).
+          Input may include 0, 1, or 2 entries; keeper normalizes to exactly two
+          entries in canonical pool order.
       max_borrow_percent:
         type: array
         items:
@@ -75114,9 +75307,11 @@ definitions:
 
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
-        description: |-
-          Maximum borrow capacity per reserve denom as DecCoins (exactly two,
-          canonical order). Each amount is a LegacyDec in [0,1).
+        description: >-
+          Required: maximum borrow capacity per reserve denom as DecCoins
+          (exactly
+
+          two, canonical order). Each amount is a LegacyDec in [0,1).
       liquidation_threshold:
         type: array
         items:
@@ -75132,8 +75327,8 @@ definitions:
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
         title: |-
-          Collateral ratio liquidation threshold per reserve denom (exactly two,
-          canonical order; each amount is a LegacyDec string > 1)
+          Required: collateral ratio liquidation threshold per reserve denom
+          (exactly two, canonical order; each amount is a LegacyDec string > 1)
       fee_rate:
         type: array
         items:
@@ -75288,6 +75483,8 @@ definitions:
 
           PFAND is locked and settlement occurs from maker balance at take
           (LIQUID).
+
+          Maker must currently hold at least the full `have` amount.
         type: string
         enum:
           - SETTLEMENT_ESCROW
@@ -75357,9 +75554,6 @@ definitions:
                     method
 
                     signatures required by gogoproto.
-                  title: >-
-                    One of swap_in or swap_out must be set; both allowed for
-                    rate constraint
                 swap_out:
                   type: object
                   properties:
@@ -75612,7 +75806,13 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
-        description: End-of-tx debit caps per denom (vector cap). Missing denom implies 0.
+        description: >-
+          End-of-tx debit caps per denom (vector cap). Missing denom implies 0.
+
+          Applied after aggregating all legs; tx fails if any denom's required
+          debit
+
+          exceeds its cap.
       legs:
         type: array
         items:
@@ -75636,9 +75836,6 @@ definitions:
                 method
 
                 signatures required by gogoproto.
-              title: >-
-                One of swap_in or swap_out must be set; both allowed for rate
-                constraint
             swap_out:
               type: object
               properties:
@@ -75657,6 +75854,8 @@ definitions:
         description: >-
           Arbitrary set of swap legs; order does not need to be contiguous by
           denom.
+
+          Output-side fee is applied per leg based on the output denom.
       min_output:
         type: array
         items:
@@ -75705,15 +75904,47 @@ definitions:
     properties:
       signer:
         type: string
+        description: Account burning shares; must hold at least this amount.
       pool_id:
         type: string
         format: uint64
+        description: Target pool id.
       shares:
         type: string
-        title: shares to burn (sdk.Int string)
-    description: |-
-      Remove liquidity (anyone). Must respect price band and produce non-zero
-      outputs.
+        description: >-
+          Shares to burn (sdk.Int string). Must be > 0; equals total supply to
+          fully
+
+          exit (pool is deleted).
+    description: >-
+      *
+
+      Remove liquidity (anyone).
+
+
+      Behavior:
+
+      - Burns shares and returns the underlying reserves.
+
+      - Full exit: burn all outstanding shares to delete the pool and receive
+      the
+        full reserves.
+      - Partial exit:
+        - Concentrated pools: ΔL-based outputs within the current price band.
+        - Non-concentrated pools: pro-rata outputs using DecCoins.
+
+      Safety and validation:
+
+      - Pool must exist; signer must hold at least `shares`.
+
+      - Outputs must be non-zero.
+
+      - Partial exits cannot deplete any reserve; use full exit to withdraw the
+        last liquidity.
+      - Concentrated pools: post-state price must remain within band; ΔL must
+        match burned share ratio within a small tolerance.
+
+      Emits: EventPoolLiquidityRemoved on success.
   dysonprotocol.whaleswap.v1.MsgRemoveLiquidityResponse:
     type: object
     properties:
@@ -75884,6 +76115,9 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
+        description: |-
+          Lower price bound as coin2/coin1 ratio. See notes above; keeper
+          canonicalizes order to pool denoms.
       max_price:
         type: array
         items:
@@ -75898,6 +76132,9 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
+        description: |-
+          Upper price bound as coin2/coin1 ratio. Must follow the same rules as
+          min_price.
       min_collateral_ratio:
         type: array
         items:
@@ -75912,13 +76149,10 @@ definitions:
 
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
-        title: >-
+        title: |-
           Leverage configuration (per-denom)
-
-          Minimum collateral ratio per reserve denom (exactly two, canonical
-          order; >
-
-          1)
+          Required: minimum collateral ratio per reserve denom (exactly two,
+          canonical order; > 1)
       max_leverage_ratio:
         type: array
         items:
@@ -75933,11 +76167,9 @@ definitions:
 
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
-        title: >-
-          Maximum leverage ratio per reserve denom (exactly two, canonical
-          order; >
-
-          1)
+        title: |-
+          Required: maximum leverage ratio per reserve denom (exactly two,
+          canonical order; > 1)
       interest_rate:
         type: array
         items:
@@ -75953,8 +76185,12 @@ definitions:
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
         description: >-
-          Annual interest rates per reserve denom (exactly two, canonical
-          order).
+          Required: annual interest rates per reserve denom (APR >= 0).
+
+          Input may include 0, 1, or 2 entries; keeper normalizes to exactly two
+          in
+
+          canonical pool order.
       max_borrow_percent:
         type: array
         items:
@@ -75969,11 +76205,9 @@ definitions:
 
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
-        description: >-
-          Maximum borrow capacity per reserve denom (exactly two, canonical
-          order).
-
-          Amounts in [0,1).
+        description: |-
+          Optional: maximum borrow capacity per reserve denom (exactly two,
+          canonical order). Amounts in [0,1).
       liquidation_threshold:
         type: array
         items:
@@ -75989,8 +76223,8 @@ definitions:
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
         title: |-
-          Collateral ratio liquidation threshold per reserve denom (exactly two,
-          canonical order; each amount is a LegacyDec string > 1)
+          Required: collateral ratio liquidation threshold per reserve denom
+          (exactly two, canonical order; each amount is a LegacyDec string > 1)
       fee_rate:
         type: array
         items:
@@ -76010,14 +76244,20 @@ definitions:
           keeper normalizes to exactly two entries in canonical pool order.
           Replaces deprecated fee_pct field 3.
     description: >-
-      Update pool config (owner-only: majority of shares > 50%).
+      Update pool config (owner-only: signer must hold > 50% of shares).
 
 
       Notes:
 
-      - All fields are required. Price bands must be both empty (no band) or
-      both
-        contain exactly two coins in canonical order matching pool reserves.
+      - Bands: set both min_price and max_price empty to clear; otherwise both
+      must
+        be set with exactly two coins matching pool reserves. Keeper canonicalizes,
+        enforces max > min, and requires current price strictly within (min, max).
+      - Required: min_collateral_ratio, max_leverage_ratio, interest_rate,
+        liquidation_threshold.
+      - Optional: fee_rate (0 <= x < 1 per denom), max_borrow_percent (0 <= x <
+      1
+        per denom).
   dysonprotocol.whaleswap.v1.MsgUpdatePoolConfigResponse:
     type: object
   dysonprotocol.script.v1.MsgCreateNewScript:

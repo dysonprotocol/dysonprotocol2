@@ -12,6 +12,43 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+// CreatePool creates a two-asset pool with an optional price band and
+// per-denom fee/interest/leverage parameters. It moves initial reserves from the
+// creator to the module, mints initial shares to the creator, persists the pool,
+// emits pool lifecycle events, and asserts AMM/module invariants.
+//
+// Semantics:
+//   - Input normalization: canonicalizes msg.Coins (exactly two positive coins)
+//     and optional msg.MinPrice/msg.MaxPrice vectors to the pool's denom order.
+//   - Fees and rates: normalizes fee_rate and interest_rate to exactly two
+//     DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
+//     interest_rate >= 0 per denom.
+//   - Leverage configuration (required): validates min_collateral_ratio and
+//     max_leverage_ratio have exactly two entries (> 1) matching pool denoms;
+//     validates liquidation_threshold has exactly two entries (> 1) and
+//     max_borrow_percent has exactly two entries with amounts in [0,1).
+//   - Price band (optional): either both min_price and max_price are set or both
+//     unset. When set, ensures min_price < max_price (coin_b/coin_a orientation)
+//     and the initial price derived from the reserves is strictly within
+//     (min_price, max_price). Stores canonical two-coin vectors.
+//   - Funds and shares: sends initial reserves from creator → module; allocates
+//     a new pool id; persists the pool; computes initial shares as
+//     floor(L) for bounded pools using liquidityForReserves, or floor(sqrt(x*y))
+//     for unbounded pools; ensures at least 1 share; mints pool shares under the
+//     name service into the module and sends the minted shares to the creator.
+//   - Invariants: asserts AMM invariants (AssertAMMInvariants) and module
+//     invariants (AssertInvariants) before returning.
+//
+// Emits:
+//   - EventPoolCreated(pool_id)
+//   - EventPoolUpdate(pool_id)
+//
+// Returns:
+//   - *whaleswapv1.MsgCreatePoolResponse with PoolId set to the new pool id.
+//
+// Errors are returned on validation failures (bad coins, band, fees/rates,
+// leverage/threshold/cap vectors), address resolution, bank sends, minting
+// shares, or invariant violations. No panics.
 func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) (*whaleswapv1.MsgCreatePoolResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)
