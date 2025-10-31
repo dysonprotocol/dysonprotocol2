@@ -7,30 +7,31 @@
                 "properties": {
                     "trader": {
                         "type": "string",
-                        "description": "trader: account opening the synthetic leveraged position. Collateral will be escrowed from this address into the module account; no borrowed/held coins are transferred to the trader in synthetic mode."
+                        "description": "Account opening the leveraged position; collateral escrowed from this address."
                     },
                     "pool_id": {
                         "type": "string",
-                        "description": "pool_id: target two-asset pool providing price reference and borrow caps. The two allowed denoms for collateral/borrow/held must match this pool."
+                        "description": "Target two-asset pool providing price reference and borrow caps."
                     },
                     "collateral": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false,
-                        "description": "collateral: coin to escrow as security. Must be positive and one of the pool denoms."
+                        "description": "Coin to escrow as security; must be positive and one of the pool denoms."
                     },
                     "borrow": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false,
-                        "description": "borrow: liability coin. Must be positive and one of the pool denoms. Interest accrues on this amount until close/liquidation."
+                        "description": "Liability coin; must be positive and one of the pool denoms. Interest accrues on this amount."
                     },
                     "note": {
                         "type": "string",
-                        "description": "The held denom is implicitly the other pool denom (not the borrow denom)."
+                        "description": "Optional note for the position."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Open Position"
+                "title": "Msg Open Position",
+                "description": "*  v creates a leveraged position by borrowing against collateral. Behavior: - Validates pool (exactly 2 denoms), collateral/borrow amounts and denoms. - Computes collateral ratio CR = collateral_value / debt_value in borrow   units, accounting for current pool price. - Validates CR >= pool.min_collateral_ratio[borrow_denom] (> 1). - Validates leverage <= pool.max_leverage_ratio[borrow_denom] (> 1). - Reduces pool reserves by borrow amount, updates total_borrowed. - Moves borrowed amount to borrow vault, executes swap (borrowed \u2192 held). - Escrows collateral to whaleswap module after swap. - Creates position with interest rate and min_collateral_ratio snapshots. - Held denom is the pool denom not matching borrow denom. Validation: - Pool must exist with exactly 2 denoms. - Collateral/borrow amounts must be positive. - Collateral/borrow denoms must match pool denoms. - Collateral ratio must meet pool min_collateral_ratio for borrow denom. - Leverage must not exceed pool max_leverage_ratio for borrow denom. - Borrow amount must not exceed pool borrow cap (max_borrow_percent). - Swap must produce positive held output. Emits: - EventLeveragePositionOpened with position_id, user, pool_id,   collateral_denom, collateral_amount, borrowed_denom, borrowed_amount,   entry_price_held_per_borrow, collateral_ratio. Returns: - position_id and held coin in the response."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {
@@ -55,11 +56,13 @@
             "dysonprotocol.whaleswap.v1.MsgOpenPositionResponse": {
                 "properties": {
                     "position_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier for the newly created leveraged position."
                     },
                     "held": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Amount of held asset received from the AMM swap (borrow denom \u2192 held denom)."
                     }
                 },
                 "additionalProperties": false,

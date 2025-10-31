@@ -7312,6 +7312,500 @@ func (x *fastReflection_SwapLeg) ProtoMethods() *protoiface.Methods {
 	}
 }
 
+var _ protoreflect.List = (*_MsgPoolSwapResponse_1_list)(nil)
+
+type _MsgPoolSwapResponse_1_list struct {
+	list *[]*v1beta1.Coin
+}
+
+func (x *_MsgPoolSwapResponse_1_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_MsgPoolSwapResponse_1_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_MsgPoolSwapResponse_1_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_MsgPoolSwapResponse_1_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_MsgPoolSwapResponse_1_list) AppendMutable() protoreflect.Value {
+	v := new(v1beta1.Coin)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_MsgPoolSwapResponse_1_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_MsgPoolSwapResponse_1_list) NewElement() protoreflect.Value {
+	v := new(v1beta1.Coin)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_MsgPoolSwapResponse_1_list) IsValid() bool {
+	return x.list != nil
+}
+
+var (
+	md_MsgPoolSwapResponse            protoreflect.MessageDescriptor
+	fd_MsgPoolSwapResponse_amount_out protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_dysonprotocol_whaleswap_v1_tx_proto_init()
+	md_MsgPoolSwapResponse = File_dysonprotocol_whaleswap_v1_tx_proto.Messages().ByName("MsgPoolSwapResponse")
+	fd_MsgPoolSwapResponse_amount_out = md_MsgPoolSwapResponse.Fields().ByName("amount_out")
+}
+
+var _ protoreflect.Message = (*fastReflection_MsgPoolSwapResponse)(nil)
+
+type fastReflection_MsgPoolSwapResponse MsgPoolSwapResponse
+
+func (x *MsgPoolSwapResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgPoolSwapResponse)(x)
+}
+
+func (x *MsgPoolSwapResponse) slowProtoReflect() protoreflect.Message {
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_MsgPoolSwapResponse_messageType fastReflection_MsgPoolSwapResponse_messageType
+var _ protoreflect.MessageType = fastReflection_MsgPoolSwapResponse_messageType{}
+
+type fastReflection_MsgPoolSwapResponse_messageType struct{}
+
+func (x fastReflection_MsgPoolSwapResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgPoolSwapResponse)(nil)
+}
+func (x fastReflection_MsgPoolSwapResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgPoolSwapResponse)
+}
+func (x fastReflection_MsgPoolSwapResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgPoolSwapResponse
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_MsgPoolSwapResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgPoolSwapResponse
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_MsgPoolSwapResponse) Type() protoreflect.MessageType {
+	return _fastReflection_MsgPoolSwapResponse_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_MsgPoolSwapResponse) New() protoreflect.Message {
+	return new(fastReflection_MsgPoolSwapResponse)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_MsgPoolSwapResponse) Interface() protoreflect.ProtoMessage {
+	return (*MsgPoolSwapResponse)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_MsgPoolSwapResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if len(x.AmountOut) != 0 {
+		value := protoreflect.ValueOfList(&_MsgPoolSwapResponse_1_list{list: &x.AmountOut})
+		if !f(fd_MsgPoolSwapResponse_amount_out, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_MsgPoolSwapResponse) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out":
+		return len(x.AmountOut) != 0
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgPoolSwapResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgPoolSwapResponse) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out":
+		x.AmountOut = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgPoolSwapResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_MsgPoolSwapResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out":
+		if len(x.AmountOut) == 0 {
+			return protoreflect.ValueOfList(&_MsgPoolSwapResponse_1_list{})
+		}
+		listValue := &_MsgPoolSwapResponse_1_list{list: &x.AmountOut}
+		return protoreflect.ValueOfList(listValue)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgPoolSwapResponse does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgPoolSwapResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out":
+		lv := value.List()
+		clv := lv.(*_MsgPoolSwapResponse_1_list)
+		x.AmountOut = *clv.list
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgPoolSwapResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgPoolSwapResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out":
+		if x.AmountOut == nil {
+			x.AmountOut = []*v1beta1.Coin{}
+		}
+		value := &_MsgPoolSwapResponse_1_list{list: &x.AmountOut}
+		return protoreflect.ValueOfList(value)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgPoolSwapResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_MsgPoolSwapResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out":
+		list := []*v1beta1.Coin{}
+		return protoreflect.ValueOfList(&_MsgPoolSwapResponse_1_list{list: &list})
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgPoolSwapResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_MsgPoolSwapResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in dysonprotocol.whaleswap.v1.MsgPoolSwapResponse", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_MsgPoolSwapResponse) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgPoolSwapResponse) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_MsgPoolSwapResponse) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_MsgPoolSwapResponse) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*MsgPoolSwapResponse)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if len(x.AmountOut) > 0 {
+			for _, e := range x.AmountOut {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*MsgPoolSwapResponse)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.AmountOut) > 0 {
+			for iNdEx := len(x.AmountOut) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.AmountOut[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0xa
+			}
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*MsgPoolSwapResponse)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgPoolSwapResponse: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgPoolSwapResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AmountOut", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.AmountOut = append(x.AmountOut, &v1beta1.Coin{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.AmountOut[len(x.AmountOut)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
 var (
 	md_TradeOperation          protoreflect.MessageDescriptor
 	fd_TradeOperation_swap     protoreflect.FieldDescriptor
@@ -7340,7 +7834,7 @@ func (x *TradeOperation) ProtoReflect() protoreflect.Message {
 }
 
 func (x *TradeOperation) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[10]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8172,7 +8666,7 @@ func (x *AuctionRedeem) ProtoReflect() protoreflect.Message {
 }
 
 func (x *AuctionRedeem) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[11]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8737,7 +9231,7 @@ func (x *MsgMakeTrade) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgMakeTrade) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[12]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9580,7 +10074,7 @@ func (x *MsgMakeTradeResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgMakeTradeResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[13]
+	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10096,500 +10590,6 @@ func (x *fastReflection_MsgMakeTradeResponse) ProtoMethods() *protoiface.Methods
 				}
 				x.TraderOutputs = append(x.TraderOutputs, &v1beta1.Coin{})
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.TraderOutputs[len(x.TraderOutputs)-1]); err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				iNdEx = postIndex
-			default:
-				iNdEx = preIndex
-				skippy, err := runtime.Skip(dAtA[iNdEx:])
-				if err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				if (skippy < 0) || (iNdEx+skippy) < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if (iNdEx + skippy) > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if !options.DiscardUnknown {
-					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-				}
-				iNdEx += skippy
-			}
-		}
-
-		if iNdEx > l {
-			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-		}
-		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
-	}
-	return &protoiface.Methods{
-		NoUnkeyedLiterals: struct{}{},
-		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
-		Size:              size,
-		Marshal:           marshal,
-		Unmarshal:         unmarshal,
-		Merge:             nil,
-		CheckInitialized:  nil,
-	}
-}
-
-var _ protoreflect.List = (*_MsgPoolSwapResponse_1_list)(nil)
-
-type _MsgPoolSwapResponse_1_list struct {
-	list *[]*v1beta1.Coin
-}
-
-func (x *_MsgPoolSwapResponse_1_list) Len() int {
-	if x.list == nil {
-		return 0
-	}
-	return len(*x.list)
-}
-
-func (x *_MsgPoolSwapResponse_1_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
-}
-
-func (x *_MsgPoolSwapResponse_1_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
-	(*x.list)[i] = concreteValue
-}
-
-func (x *_MsgPoolSwapResponse_1_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*v1beta1.Coin)
-	*x.list = append(*x.list, concreteValue)
-}
-
-func (x *_MsgPoolSwapResponse_1_list) AppendMutable() protoreflect.Value {
-	v := new(v1beta1.Coin)
-	*x.list = append(*x.list, v)
-	return protoreflect.ValueOfMessage(v.ProtoReflect())
-}
-
-func (x *_MsgPoolSwapResponse_1_list) Truncate(n int) {
-	for i := n; i < len(*x.list); i++ {
-		(*x.list)[i] = nil
-	}
-	*x.list = (*x.list)[:n]
-}
-
-func (x *_MsgPoolSwapResponse_1_list) NewElement() protoreflect.Value {
-	v := new(v1beta1.Coin)
-	return protoreflect.ValueOfMessage(v.ProtoReflect())
-}
-
-func (x *_MsgPoolSwapResponse_1_list) IsValid() bool {
-	return x.list != nil
-}
-
-var (
-	md_MsgPoolSwapResponse            protoreflect.MessageDescriptor
-	fd_MsgPoolSwapResponse_amount_out protoreflect.FieldDescriptor
-)
-
-func init() {
-	file_dysonprotocol_whaleswap_v1_tx_proto_init()
-	md_MsgPoolSwapResponse = File_dysonprotocol_whaleswap_v1_tx_proto.Messages().ByName("MsgPoolSwapResponse")
-	fd_MsgPoolSwapResponse_amount_out = md_MsgPoolSwapResponse.Fields().ByName("amount_out")
-}
-
-var _ protoreflect.Message = (*fastReflection_MsgPoolSwapResponse)(nil)
-
-type fastReflection_MsgPoolSwapResponse MsgPoolSwapResponse
-
-func (x *MsgPoolSwapResponse) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgPoolSwapResponse)(x)
-}
-
-func (x *MsgPoolSwapResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[14]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-var _fastReflection_MsgPoolSwapResponse_messageType fastReflection_MsgPoolSwapResponse_messageType
-var _ protoreflect.MessageType = fastReflection_MsgPoolSwapResponse_messageType{}
-
-type fastReflection_MsgPoolSwapResponse_messageType struct{}
-
-func (x fastReflection_MsgPoolSwapResponse_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgPoolSwapResponse)(nil)
-}
-func (x fastReflection_MsgPoolSwapResponse_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgPoolSwapResponse)
-}
-func (x fastReflection_MsgPoolSwapResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgPoolSwapResponse
-}
-
-// Descriptor returns message descriptor, which contains only the protobuf
-// type information for the message.
-func (x *fastReflection_MsgPoolSwapResponse) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgPoolSwapResponse
-}
-
-// Type returns the message type, which encapsulates both Go and protobuf
-// type information. If the Go type information is not needed,
-// it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgPoolSwapResponse) Type() protoreflect.MessageType {
-	return _fastReflection_MsgPoolSwapResponse_messageType
-}
-
-// New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgPoolSwapResponse) New() protoreflect.Message {
-	return new(fastReflection_MsgPoolSwapResponse)
-}
-
-// Interface unwraps the message reflection interface and
-// returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgPoolSwapResponse) Interface() protoreflect.ProtoMessage {
-	return (*MsgPoolSwapResponse)(x)
-}
-
-// Range iterates over every populated field in an undefined order,
-// calling f for each field descriptor and value encountered.
-// Range returns immediately if f returns false.
-// While iterating, mutating operations may only be performed
-// on the current field descriptor.
-func (x *fastReflection_MsgPoolSwapResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if len(x.AmountOut) != 0 {
-		value := protoreflect.ValueOfList(&_MsgPoolSwapResponse_1_list{list: &x.AmountOut})
-		if !f(fd_MsgPoolSwapResponse_amount_out, value) {
-			return
-		}
-	}
-}
-
-// Has reports whether a field is populated.
-//
-// Some fields have the property of nullability where it is possible to
-// distinguish between the default value of a field and whether the field
-// was explicitly populated with the default value. Singular message fields,
-// member fields of a oneof, and proto2 scalar fields are nullable. Such
-// fields are populated only if explicitly set.
-//
-// In other cases (aside from the nullable cases above),
-// a proto3 scalar field is populated if it contains a non-zero value, and
-// a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgPoolSwapResponse) Has(fd protoreflect.FieldDescriptor) bool {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out":
-		return len(x.AmountOut) != 0
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgPoolSwapResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// Clear clears the field such that a subsequent Has call reports false.
-//
-// Clearing an extension field clears both the extension type and value
-// associated with the given field number.
-//
-// Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgPoolSwapResponse) Clear(fd protoreflect.FieldDescriptor) {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out":
-		x.AmountOut = nil
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgPoolSwapResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// Get retrieves the value for a field.
-//
-// For unpopulated scalars, it returns the default value, where
-// the default value of a bytes scalar is guaranteed to be a copy.
-// For unpopulated composite types, it returns an empty, read-only view
-// of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgPoolSwapResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
-	switch descriptor.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out":
-		if len(x.AmountOut) == 0 {
-			return protoreflect.ValueOfList(&_MsgPoolSwapResponse_1_list{})
-		}
-		listValue := &_MsgPoolSwapResponse_1_list{list: &x.AmountOut}
-		return protoreflect.ValueOfList(listValue)
-	default:
-		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgPoolSwapResponse does not contain field %s", descriptor.FullName()))
-	}
-}
-
-// Set stores the value for a field.
-//
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType.
-// When setting a composite type, it is unspecified whether the stored value
-// aliases the source's memory in any way. If the composite value is an
-// empty, read-only value, then it panics.
-//
-// Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgPoolSwapResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out":
-		lv := value.List()
-		clv := lv.(*_MsgPoolSwapResponse_1_list)
-		x.AmountOut = *clv.list
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgPoolSwapResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// Mutable returns a mutable reference to a composite type.
-//
-// If the field is unpopulated, it may allocate a composite value.
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType
-// if not already stored.
-// It panics if the field does not contain a composite type.
-//
-// Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgPoolSwapResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out":
-		if x.AmountOut == nil {
-			x.AmountOut = []*v1beta1.Coin{}
-		}
-		value := &_MsgPoolSwapResponse_1_list{list: &x.AmountOut}
-		return protoreflect.ValueOfList(value)
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgPoolSwapResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// NewField returns a new value that is assignable to the field
-// for the given descriptor. For scalars, this returns the default value.
-// For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgPoolSwapResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out":
-		list := []*v1beta1.Coin{}
-		return protoreflect.ValueOfList(&_MsgPoolSwapResponse_1_list{list: &list})
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse"))
-		}
-		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.MsgPoolSwapResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// WhichOneof reports which field within the oneof is populated,
-// returning nil if none are populated.
-// It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgPoolSwapResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
-	switch d.FullName() {
-	default:
-		panic(fmt.Errorf("%s is not a oneof field in dysonprotocol.whaleswap.v1.MsgPoolSwapResponse", d.FullName()))
-	}
-	panic("unreachable")
-}
-
-// GetUnknown retrieves the entire list of unknown fields.
-// The caller may only mutate the contents of the RawFields
-// if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgPoolSwapResponse) GetUnknown() protoreflect.RawFields {
-	return x.unknownFields
-}
-
-// SetUnknown stores an entire list of unknown fields.
-// The raw fields must be syntactically valid according to the wire format.
-// An implementation may panic if this is not the case.
-// Once stored, the caller must not mutate the content of the RawFields.
-// An empty RawFields may be passed to clear the fields.
-//
-// SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgPoolSwapResponse) SetUnknown(fields protoreflect.RawFields) {
-	x.unknownFields = fields
-}
-
-// IsValid reports whether the message is valid.
-//
-// An invalid message is an empty, read-only value.
-//
-// An invalid message often corresponds to a nil pointer of the concrete
-// message type, but the details are implementation dependent.
-// Validity is not part of the protobuf data model, and may not
-// be preserved in marshaling or other operations.
-func (x *fastReflection_MsgPoolSwapResponse) IsValid() bool {
-	return x != nil
-}
-
-// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
-// This method may return nil.
-//
-// The returned methods type is identical to
-// "google.golang.org/protobuf/runtime/protoiface".Methods.
-// Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgPoolSwapResponse) ProtoMethods() *protoiface.Methods {
-	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgPoolSwapResponse)
-		if x == nil {
-			return protoiface.SizeOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Size:              0,
-			}
-		}
-		options := runtime.SizeInputToOptions(input)
-		_ = options
-		var n int
-		var l int
-		_ = l
-		if len(x.AmountOut) > 0 {
-			for _, e := range x.AmountOut {
-				l = options.Size(e)
-				n += 1 + l + runtime.Sov(uint64(l))
-			}
-		}
-		if x.unknownFields != nil {
-			n += len(x.unknownFields)
-		}
-		return protoiface.SizeOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Size:              n,
-		}
-	}
-
-	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgPoolSwapResponse)
-		if x == nil {
-			return protoiface.MarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Buf:               input.Buf,
-			}, nil
-		}
-		options := runtime.MarshalInputToOptions(input)
-		_ = options
-		size := options.Size(x)
-		dAtA := make([]byte, size)
-		i := len(dAtA)
-		_ = i
-		var l int
-		_ = l
-		if x.unknownFields != nil {
-			i -= len(x.unknownFields)
-			copy(dAtA[i:], x.unknownFields)
-		}
-		if len(x.AmountOut) > 0 {
-			for iNdEx := len(x.AmountOut) - 1; iNdEx >= 0; iNdEx-- {
-				encoded, err := options.Marshal(x.AmountOut[iNdEx])
-				if err != nil {
-					return protoiface.MarshalOutput{
-						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-						Buf:               input.Buf,
-					}, err
-				}
-				i -= len(encoded)
-				copy(dAtA[i:], encoded)
-				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
-				i--
-				dAtA[i] = 0xa
-			}
-		}
-		if input.Buf != nil {
-			input.Buf = append(input.Buf, dAtA...)
-		} else {
-			input.Buf = dAtA
-		}
-		return protoiface.MarshalOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Buf:               input.Buf,
-		}, nil
-	}
-	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgPoolSwapResponse)
-		if x == nil {
-			return protoiface.UnmarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Flags:             input.Flags,
-			}, nil
-		}
-		options := runtime.UnmarshalInputToOptions(input)
-		_ = options
-		dAtA := input.Buf
-		l := len(dAtA)
-		iNdEx := 0
-		for iNdEx < l {
-			preIndex := iNdEx
-			var wire uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				wire |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			fieldNum := int32(wire >> 3)
-			wireType := int(wire & 0x7)
-			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgPoolSwapResponse: wiretype end group for non-group")
-			}
-			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgPoolSwapResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-			}
-			switch fieldNum {
-			case 1:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AmountOut", wireType)
-				}
-				var msglen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					msglen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if msglen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + msglen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.AmountOut = append(x.AmountOut, &v1beta1.Coin{})
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.AmountOut[len(x.AmountOut)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
 				iNdEx = postIndex
@@ -24457,25 +24457,31 @@ func (x *MsgAddLiquidityResponse) GetShares() string {
 }
 
 // *
-// Remove liquidity (anyone).
+// Remove liquidity from a pool by burning shares and returning underlying
+// reserves.
 //
 // Behavior:
-//   - Burns shares and returns the underlying reserves.
-//   - Full exit: burn all outstanding shares to delete the pool and receive the
-//     full reserves.
-//   - Partial exit:
-//   - Concentrated pools: ΔL-based outputs within the current price band.
-//   - Non-concentrated pools: pro-rata outputs using DecCoins.
+//   - Supports two modes: full exit and partial exit.
+//   - Full exit: when burning all outstanding shares, the pool is deleted and
+//     the full reserves are paid out to the caller.
+//   - Partial exit: burns a subset of shares and receives a payout proportional
+//     to that share using pro-rata DecCoins math; pool remains active with
+//     reduced reserves.
+//   - Ensures partial exits cannot deplete any reserve below zero; full exit
+//     required to withdraw the last liquidity.
 //
-// Safety and validation:
-//   - Pool must exist; signer must hold at least `shares`.
-//   - Outputs must be non-zero.
-//   - Partial exits cannot deplete any reserve; use full exit to withdraw the
-//     last liquidity.
-//   - Concentrated pools: post-state price must remain within band; ΔL must
-//     match burned share ratio within a small tolerance.
+// Validation:
+//   - Pool must exist.
+//   - Signer must hold at least shares.
+//   - Shares must be a positive integer string.
+//   - Partial exits cannot deplete any reserve; withdrawing the last liquidity
+//     requires a full exit (burning all shares).
 //
-// Emits: EventPoolLiquidityRemoved on success.
+// Emits:
+// - EventPoolLiquidityRemoved with pool_id and shares.
+//
+// Returns:
+// - coins returned to the caller in the amount field.
 type MsgRemoveLiquidity struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -24536,7 +24542,7 @@ type MsgRemoveLiquidityResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// coins returned
+	// Coins returned to the caller proportional to the burned shares.
 	Amount []*v1beta1.Coin `protobuf:"bytes,1,rep,name=amount,proto3" json:"amount,omitempty"`
 }
 
@@ -24719,6 +24725,42 @@ func (x *SwapLeg) GetSwapOut() *v1beta1.Coin {
 	return nil
 }
 
+type MsgPoolSwapResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Total coins credited to the trader after aggregation across all legs.
+	AmountOut []*v1beta1.Coin `protobuf:"bytes,1,rep,name=amount_out,json=amountOut,proto3" json:"amount_out,omitempty"`
+}
+
+func (x *MsgPoolSwapResponse) Reset() {
+	*x = MsgPoolSwapResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MsgPoolSwapResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MsgPoolSwapResponse) ProtoMessage() {}
+
+// Deprecated: Use MsgPoolSwapResponse.ProtoReflect.Descriptor instead.
+func (*MsgPoolSwapResponse) Descriptor() ([]byte, []int) {
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *MsgPoolSwapResponse) GetAmountOut() []*v1beta1.Coin {
+	if x != nil {
+		return x.AmountOut
+	}
+	return nil
+}
+
 // TradeOperation allows mixing pool swap legs, orderbook takes, and auction
 // redemptions. When stored in Trade.operations, sent/received fields are
 // populated with execution results. When used in MsgMakeTrade.operations,
@@ -24742,7 +24784,7 @@ type TradeOperation struct {
 func (x *TradeOperation) Reset() {
 	*x = TradeOperation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[10]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -24756,7 +24798,7 @@ func (*TradeOperation) ProtoMessage() {}
 
 // Deprecated: Use TradeOperation.ProtoReflect.Descriptor instead.
 func (*TradeOperation) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{10}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *TradeOperation) GetOp() isTradeOperation_Op {
@@ -24835,7 +24877,7 @@ type AuctionRedeem struct {
 func (x *AuctionRedeem) Reset() {
 	*x = AuctionRedeem{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[11]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -24849,7 +24891,7 @@ func (*AuctionRedeem) ProtoMessage() {}
 
 // Deprecated: Use AuctionRedeem.ProtoReflect.Descriptor instead.
 func (*AuctionRedeem) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{11}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *AuctionRedeem) GetAuctionId() uint64 {
@@ -24859,25 +24901,72 @@ func (x *AuctionRedeem) GetAuctionId() uint64 {
 	return 0
 }
 
+// *
+// MakeTrade combines AMM pool swaps and orderbook takes into a single
+// transaction.
+//
+// Behavior:
+// - Processes SwapLeg (AMM pool swaps) and TakeItem (orderbook takes)
+// operations in order.
+// - Aggregates all inputs/outputs across operations, then performs
+// orderbook-style netting.
+// - Trader credits offset maker wants; deficits covered from trader base
+// balance.
+// - PFAND released to trader when offers close, applied pre-netting.
+// - Enforces per-denom debit caps (max_input) and minimum outputs (min_output)
+// after netting.
+// - Executes final settlement via multisend; all operations succeed or
+// transaction fails.
+// - Enables circular trade dependencies through self-netting: trader
+// debit/credit pairs by denom are netted out, allowing complex arbitrage
+// chains where intermediate results cancel (e.g., A→B→C→A becomes net B+C
+// profit).
+//
+// Validation:
+// - Trader address must be valid.
+// - Operations must be non-empty.
+// - Note length capped by module params.
+// - Swap operations: pool must exist, denoms match pool, no duplicate pool_ids.
+// - Take operations: offer must exist and be open, no duplicate offer_ids.
+// - Auction operations currently rejected.
+//
+// State updates:
+// - AMM pools: reserves updated, fees accrued, trade counters incremented.
+// - Offers: remaining units/wants/haves updated; closed when fully taken.
+// - Trade recorded with all operations, indexed by trader/pool/offer/auction.
+//
+// Emits:
+// - EventPfandReleased for each closed offer (amount, offer_id, trade_id).
+// - EventPoolSwap for each swap (pool_id, trade_id, operation_index).
+// - EventOfferTaken for each take (offer_id, trade_id, units_taken).
+// - EventTradeRecorded summary (trade_id, trader, num_operations, note).
+//
+// Returns:
+// - trade_id and final net trader_inputs/outputs after
+// netting/coverage/self-net.
 type MsgMakeTrade struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Account executing the trade operations; all operations execute as this
+	// trader.
 	Trader string `protobuf:"bytes,1,opt,name=trader,proto3" json:"trader,omitempty"`
-	// End-of-tx debit caps per denom for the trader
+	// End-of-tx debit caps per denom for the trader; zero means no debits allowed
+	// for that denom.
 	MaxInput []*v1beta1.Coin `protobuf:"bytes,2,rep,name=max_input,json=maxInput,proto3" json:"max_input,omitempty"`
-	// Mixed operations processed in-order
+	// Mixed operations processed in-order; must contain at least one operation.
 	Operations []*TradeOperation `protobuf:"bytes,3,rep,name=operations,proto3" json:"operations,omitempty"`
-	// Final trader minimum outputs per denom after aggregation
+	// Final trader minimum outputs per denom after aggregation and netting.
 	MinOutput []*v1beta1.Coin `protobuf:"bytes,4,rep,name=min_output,json=minOutput,proto3" json:"min_output,omitempty"`
-	Note      string          `protobuf:"bytes,5,opt,name=note,proto3" json:"note,omitempty"`
+	// Optional note attached to the trade record.
+	Note string `protobuf:"bytes,5,opt,name=note,proto3" json:"note,omitempty"`
 }
 
 func (x *MsgMakeTrade) Reset() {
 	*x = MsgMakeTrade{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[12]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -24891,7 +24980,7 @@ func (*MsgMakeTrade) ProtoMessage() {}
 
 // Deprecated: Use MsgMakeTrade.ProtoReflect.Descriptor instead.
 func (*MsgMakeTrade) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{12}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *MsgMakeTrade) GetTrader() string {
@@ -24934,18 +25023,20 @@ type MsgMakeTradeResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// unique ID of the recorded trade
+	// Unique ID of the recorded trade containing all operations.
 	TradeId uint64 `protobuf:"varint,2,opt,name=trade_id,json=tradeId,proto3" json:"trade_id,omitempty"`
-	// net debits from trader after netting/coverage/self-net by denom
+	// Final net debits from trader by denom after netting, coverage, and
+	// self-netting.
 	TraderInputs []*v1beta1.Coin `protobuf:"bytes,3,rep,name=trader_inputs,json=traderInputs,proto3" json:"trader_inputs,omitempty"`
-	// net credits to trader after netting/coverage/self-net by denom
+	// Final net credits to trader by denom after netting, coverage, and
+	// self-netting.
 	TraderOutputs []*v1beta1.Coin `protobuf:"bytes,4,rep,name=trader_outputs,json=traderOutputs,proto3" json:"trader_outputs,omitempty"`
 }
 
 func (x *MsgMakeTradeResponse) Reset() {
 	*x = MsgMakeTradeResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[13]
+		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -24959,7 +25050,7 @@ func (*MsgMakeTradeResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgMakeTradeResponse.ProtoReflect.Descriptor instead.
 func (*MsgMakeTradeResponse) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{13}
+	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *MsgMakeTradeResponse) GetTradeId() uint64 {
@@ -24979,42 +25070,6 @@ func (x *MsgMakeTradeResponse) GetTraderInputs() []*v1beta1.Coin {
 func (x *MsgMakeTradeResponse) GetTraderOutputs() []*v1beta1.Coin {
 	if x != nil {
 		return x.TraderOutputs
-	}
-	return nil
-}
-
-type MsgPoolSwapResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Total coins credited to the trader after aggregation across all legs.
-	AmountOut []*v1beta1.Coin `protobuf:"bytes,1,rep,name=amount_out,json=amountOut,proto3" json:"amount_out,omitempty"`
-}
-
-func (x *MsgPoolSwapResponse) Reset() {
-	*x = MsgPoolSwapResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[14]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MsgPoolSwapResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MsgPoolSwapResponse) ProtoMessage() {}
-
-// Deprecated: Use MsgPoolSwapResponse.ProtoReflect.Descriptor instead.
-func (*MsgPoolSwapResponse) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *MsgPoolSwapResponse) GetAmountOut() []*v1beta1.Coin {
-	if x != nil {
-		return x.AmountOut
 	}
 	return nil
 }
@@ -25127,12 +25182,50 @@ func (x *MsgMakeOfferResponse) GetOfferId() uint64 {
 	return 0
 }
 
+// *
+// TakeOffer executes one or more orderbook takes with netting and settlement.
+//
+// Behavior:
+// - Processes multiple take operations in a single transaction with aggregated
+// settlement.
+// - For each take: validates offer exists and is open, parses take_units
+// (defaults to remaining), computes exchange amounts (required_want =
+// take_units × unit_want, deliver_have = take_units × unit_have), aggregates
+// outputs by address, updates offer state (closes when fully taken), records
+// operations.
+// - Post-processing: computes maker wants and taker credits, nets taker credits
+// against maker wants, covers deficits from taker base balance (uses module
+// backing for remaining solid deficits).
+// - Settlement: executes batch coin movements via wsMoveCoins for all
+// participants.
+// - PFAND release: when offers close, locked PFAND flows from module to taker.
+// - Trade recording: creates single Trade with all operations, indexed by
+// trader/offer.
+//
+// Validation:
+// - Taker address must be valid.
+// - Trades list must be non-empty.
+// - Each offer must exist and be in open status.
+// - Take_units must be valid integer string (positive, ≤ remaining); empty
+// defaults to remaining.
+// - For LIQUID settlement: maker must have sufficient balance for deliver_have.
+// - Module must have sufficient backing for any uncovered solid deficits.
+//
+// Emits:
+// - EventOfferTaken for each take (offer_id, trade_id, units_taken).
+// - EventTradeRecorded for the batch (trade_id, trader, num_operations).
+// - EventPfandReleased for each closed offer (amount, offer_id, trade_id).
+//
+// Returns:
+// - aggregated sent/received totals across all executed takes.
 type MsgTakeOffer struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Taker  string      `protobuf:"bytes,1,opt,name=taker,proto3" json:"taker,omitempty"`
+	// Account executing the takes; all takes execute as this trader.
+	Taker string `protobuf:"bytes,1,opt,name=taker,proto3" json:"taker,omitempty"`
+	// List of take operations to execute; must contain at least one item.
 	Trades []*TakeItem `protobuf:"bytes,2,rep,name=trades,proto3" json:"trades,omitempty"`
 }
 
@@ -25175,8 +25268,10 @@ type TakeItem struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// ID of the offer to take from; offer must exist and be in open status.
 	OfferId uint64 `protobuf:"varint,1,opt,name=offer_id,json=offerId,proto3" json:"offer_id,omitempty"`
-	// units to take (sdk.Int string). If empty, take full remaining.
+	// Units to take (sdk.Int string). If empty, take full remaining. Must be
+	// positive and ≤ remaining.
 	TakeUnits string `protobuf:"bytes,2,opt,name=take_units,json=takeUnits,proto3" json:"take_units,omitempty"`
 }
 
@@ -25545,14 +25640,39 @@ func (*MsgRedeemAuctionResponse) Descriptor() ([]byte, []int) {
 	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{25}
 }
 
-// UpdateParams is the Msg/UpdateParams request type.
+// *
+// UpdateParams updates module parameters.
+//
+// Behavior:
+// - Authority-only: verifies msg.Authority matches the module's configured
+// authority.
+// - Parameter validation: validates all parameter constraints (pfand amounts,
+// time durations, percentage bounds, block delays).
+// - State update: persists validated parameters to the module's parameter
+// store.
+//
+// Validation:
+// - Authority must match the module's configured authority address.
+// - Parameters must pass Params.Validate() which checks:
+//   - PfandPerOffer denom set when amount > 0
+//   - ValuationPeriod > 0
+//   - BidTimeout > 0
+//   - ValuationFeePct in [0,1) if set
+//   - MinimumBidPercentIncrease in [0,1) if set
+//   - BlockDelayBeforeClose > 0
+//   - BlockDelayBeforeLiquidation > 0
+//
+// Returns:
+// - MsgUpdateParamsResponse (empty) on success.
 type MsgUpdateParams struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Authority string  `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	Params    *Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params,omitempty"`
+	// Authority address that must match the module's configured authority.
+	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+	// New parameter values to set; must pass validation.
+	Params *Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params,omitempty"`
 }
 
 func (x *MsgUpdateParams) Reset() {
@@ -25615,25 +25735,54 @@ func (*MsgUpdateParamsResponse) Descriptor() ([]byte, []int) {
 	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{27}
 }
 
+// *
+//
+//	v creates a leveraged position by borrowing against collateral.
+//
+// Behavior:
+//   - Validates pool (exactly 2 denoms), collateral/borrow amounts and denoms.
+//   - Computes collateral ratio CR = collateral_value / debt_value in borrow
+//     units, accounting for current pool price.
+//   - Validates CR >= pool.min_collateral_ratio[borrow_denom] (> 1).
+//   - Validates leverage <= pool.max_leverage_ratio[borrow_denom] (> 1).
+//   - Reduces pool reserves by borrow amount, updates total_borrowed.
+//   - Moves borrowed amount to borrow vault, executes swap (borrowed → held).
+//   - Escrows collateral to whaleswap module after swap.
+//   - Creates position with interest rate and min_collateral_ratio snapshots.
+//   - Held denom is the pool denom not matching borrow denom.
+//
+// Validation:
+// - Pool must exist with exactly 2 denoms.
+// - Collateral/borrow amounts must be positive.
+// - Collateral/borrow denoms must match pool denoms.
+// - Collateral ratio must meet pool min_collateral_ratio for borrow denom.
+// - Leverage must not exceed pool max_leverage_ratio for borrow denom.
+// - Borrow amount must not exceed pool borrow cap (max_borrow_percent).
+// - Swap must produce positive held output.
+//
+// Emits:
+//   - EventLeveragePositionOpened with position_id, user, pool_id,
+//     collateral_denom, collateral_amount, borrowed_denom, borrowed_amount,
+//     entry_price_held_per_borrow, collateral_ratio.
+//
+// Returns:
+// - position_id and held coin in the response.
 type MsgOpenPosition struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// trader: account opening the synthetic leveraged position. Collateral will
-	// be escrowed from this address into the module account; no borrowed/held
-	// coins are transferred to the trader in synthetic mode.
+	// Account opening the leveraged position; collateral escrowed from this
+	// address.
 	Trader string `protobuf:"bytes,1,opt,name=trader,proto3" json:"trader,omitempty"`
-	// pool_id: target two-asset pool providing price reference and borrow caps.
-	// The two allowed denoms for collateral/borrow/held must match this pool.
+	// Target two-asset pool providing price reference and borrow caps.
 	PoolId uint64 `protobuf:"varint,2,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
-	// collateral: coin to escrow as security. Must be positive and one of the
-	// pool denoms.
+	// Coin to escrow as security; must be positive and one of the pool denoms.
 	Collateral *v1beta1.Coin `protobuf:"bytes,3,opt,name=collateral,proto3" json:"collateral,omitempty"`
-	// borrow: liability coin. Must be positive and one of the pool denoms.
-	// Interest accrues on this amount until close/liquidation.
+	// Liability coin; must be positive and one of the pool denoms. Interest
+	// accrues on this amount.
 	Borrow *v1beta1.Coin `protobuf:"bytes,4,opt,name=borrow,proto3" json:"borrow,omitempty"`
-	// The held denom is implicitly the other pool denom (not the borrow denom).
+	// Optional note for the position.
 	Note string `protobuf:"bytes,5,opt,name=note,proto3" json:"note,omitempty"`
 }
 
@@ -25697,8 +25846,11 @@ type MsgOpenPositionResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	PositionId uint64        `protobuf:"varint,1,opt,name=position_id,json=positionId,proto3" json:"position_id,omitempty"`
-	Held       *v1beta1.Coin `protobuf:"bytes,2,opt,name=held,proto3" json:"held,omitempty"`
+	// Unique identifier for the newly created leveraged position.
+	PositionId uint64 `protobuf:"varint,1,opt,name=position_id,json=positionId,proto3" json:"position_id,omitempty"`
+	// Amount of held asset received from the AMM swap (borrow denom → held
+	// denom).
+	Held *v1beta1.Coin `protobuf:"bytes,2,opt,name=held,proto3" json:"held,omitempty"`
 }
 
 func (x *MsgOpenPositionResponse) Reset() {
@@ -26700,82 +26852,7 @@ var file_dysonprotocol_whaleswap_v1_tx_proto_rawDesc = []byte{
 	0x08, 0x73, 0x77, 0x61, 0x70, 0x5f, 0x6f, 0x75, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32,
 	0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31,
 	0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00,
-	0x52, 0x07, 0x73, 0x77, 0x61, 0x70, 0x4f, 0x75, 0x74, 0x22, 0xea, 0x02, 0x0a, 0x0e, 0x54, 0x72,
-	0x61, 0x64, 0x65, 0x4f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x44, 0x0a, 0x04,
-	0x73, 0x77, 0x61, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x64, 0x79, 0x73,
-	0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65,
-	0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x77, 0x61, 0x70, 0x4c, 0x65, 0x67, 0x42,
-	0x09, 0xb2, 0xe7, 0xb0, 0x2a, 0x04, 0x73, 0x77, 0x61, 0x70, 0x48, 0x00, 0x52, 0x04, 0x73, 0x77,
-	0x61, 0x70, 0x12, 0x45, 0x0a, 0x04, 0x74, 0x61, 0x6b, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x24, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
-	0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x61,
-	0x6b, 0x65, 0x49, 0x74, 0x65, 0x6d, 0x42, 0x09, 0xb2, 0xe7, 0xb0, 0x2a, 0x04, 0x74, 0x61, 0x6b,
-	0x65, 0x48, 0x00, 0x52, 0x04, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x53, 0x0a, 0x07, 0x61, 0x75, 0x63,
-	0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29, 0x2e, 0x64, 0x79, 0x73,
-	0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65,
-	0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52,
-	0x65, 0x64, 0x65, 0x65, 0x6d, 0x42, 0x0c, 0xb2, 0xe7, 0xb0, 0x2a, 0x07, 0x61, 0x75, 0x63, 0x74,
-	0x69, 0x6f, 0x6e, 0x48, 0x00, 0x52, 0x07, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x33,
-	0x0a, 0x04, 0x73, 0x65, 0x6e, 0x74, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63,
-	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74,
-	0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x04, 0x73,
-	0x65, 0x6e, 0x74, 0x12, 0x3b, 0x0a, 0x08, 0x72, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x18,
-	0x0b, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62,
-	0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e,
-	0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x08, 0x72, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64,
-	0x42, 0x04, 0x0a, 0x02, 0x6f, 0x70, 0x22, 0x2e, 0x0a, 0x0d, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f,
-	0x6e, 0x52, 0x65, 0x64, 0x65, 0x65, 0x6d, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x75, 0x63, 0x74, 0x69,
-	0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x61, 0x75, 0x63,
-	0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x22, 0xb6, 0x03, 0x0a, 0x0c, 0x4d, 0x73, 0x67, 0x4d, 0x61,
-	0x6b, 0x65, 0x54, 0x72, 0x61, 0x64, 0x65, 0x12, 0x30, 0x0a, 0x06, 0x74, 0x72, 0x61, 0x64, 0x65,
-	0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73,
-	0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e,
-	0x67, 0x52, 0x06, 0x74, 0x72, 0x61, 0x64, 0x65, 0x72, 0x12, 0x7e, 0x0a, 0x09, 0x6d, 0x61, 0x78,
-	0x5f, 0x69, 0x6e, 0x70, 0x75, 0x74, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63,
-	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74,
-	0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x46, 0xc8, 0xde, 0x1f, 0x00, 0xaa, 0xdf, 0x1f,
-	0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d,
-	0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79,
-	0x70, 0x65, 0x73, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x9a, 0xe7, 0xb0, 0x2a, 0x0c, 0x6c, 0x65,
-	0x67, 0x61, 0x63, 0x79, 0x5f, 0x63, 0x6f, 0x69, 0x6e, 0x73, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52,
-	0x08, 0x6d, 0x61, 0x78, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x12, 0x50, 0x0a, 0x0a, 0x6f, 0x70, 0x65,
-	0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2a, 0x2e,
-	0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68,
-	0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x72, 0x61, 0x64, 0x65,
-	0x4f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52,
-	0x0a, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x80, 0x01, 0x0a, 0x0a,
-	0x6d, 0x69, 0x6e, 0x5f, 0x6f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b,
-	0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76,
-	0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x46, 0xc8, 0xde, 0x1f,
-	0x00, 0xaa, 0xdf, 0x1f, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64,
-	0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x9a, 0xe7, 0xb0,
-	0x2a, 0x0c, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x5f, 0x63, 0x6f, 0x69, 0x6e, 0x73, 0xa8, 0xe7,
-	0xb0, 0x2a, 0x01, 0x52, 0x09, 0x6d, 0x69, 0x6e, 0x4f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x12, 0x12,
-	0x0a, 0x04, 0x6e, 0x6f, 0x74, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x6f,
-	0x74, 0x65, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x74, 0x72, 0x61, 0x64, 0x65, 0x72, 0x22,
-	0xd7, 0x02, 0x0a, 0x14, 0x4d, 0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65, 0x54, 0x72, 0x61, 0x64, 0x65,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x72, 0x61, 0x64,
-	0x65, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x72, 0x61, 0x64,
-	0x65, 0x49, 0x64, 0x12, 0x86, 0x01, 0x0a, 0x0d, 0x74, 0x72, 0x61, 0x64, 0x65, 0x72, 0x5f, 0x69,
-	0x6e, 0x70, 0x75, 0x74, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f,
-	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61,
-	0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x46, 0xc8, 0xde, 0x1f, 0x00, 0xaa, 0xdf, 0x1f, 0x28,
-	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
-	0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70,
-	0x65, 0x73, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x9a, 0xe7, 0xb0, 0x2a, 0x0c, 0x6c, 0x65, 0x67,
-	0x61, 0x63, 0x79, 0x5f, 0x63, 0x6f, 0x69, 0x6e, 0x73, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0c,
-	0x74, 0x72, 0x61, 0x64, 0x65, 0x72, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x73, 0x12, 0x88, 0x01, 0x0a,
-	0x0e, 0x74, 0x72, 0x61, 0x64, 0x65, 0x72, 0x5f, 0x6f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x73, 0x18,
-	0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62,
-	0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e,
-	0x42, 0x46, 0xc8, 0xde, 0x1f, 0x00, 0xaa, 0xdf, 0x1f, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d,
-	0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x43, 0x6f, 0x69,
-	0x6e, 0x73, 0x9a, 0xe7, 0xb0, 0x2a, 0x0c, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x5f, 0x63, 0x6f,
-	0x69, 0x6e, 0x73, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0d, 0x74, 0x72, 0x61, 0x64, 0x65, 0x72,
-	0x4f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x73, 0x4a, 0x04, 0x08, 0x01, 0x10, 0x02, 0x52, 0x0a, 0x61,
-	0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x5f, 0x6f, 0x75, 0x74, 0x22, 0x98, 0x01, 0x0a, 0x13, 0x4d, 0x73,
+	0x52, 0x07, 0x73, 0x77, 0x61, 0x70, 0x4f, 0x75, 0x74, 0x22, 0x98, 0x01, 0x0a, 0x13, 0x4d, 0x73,
 	0x67, 0x50, 0x6f, 0x6f, 0x6c, 0x53, 0x77, 0x61, 0x70, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
 	0x65, 0x12, 0x80, 0x01, 0x0a, 0x0a, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x5f, 0x6f, 0x75, 0x74,
 	0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
@@ -26785,7 +26862,82 @@ var file_dysonprotocol_whaleswap_v1_tx_proto_rawDesc = []byte{
 	0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x43, 0x6f,
 	0x69, 0x6e, 0x73, 0x9a, 0xe7, 0xb0, 0x2a, 0x0c, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x5f, 0x63,
 	0x6f, 0x69, 0x6e, 0x73, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x09, 0x61, 0x6d, 0x6f, 0x75, 0x6e,
-	0x74, 0x4f, 0x75, 0x74, 0x22, 0x89, 0x02, 0x0a, 0x0c, 0x4d, 0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65,
+	0x74, 0x4f, 0x75, 0x74, 0x22, 0xea, 0x02, 0x0a, 0x0e, 0x54, 0x72, 0x61, 0x64, 0x65, 0x4f, 0x70,
+	0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x44, 0x0a, 0x04, 0x73, 0x77, 0x61, 0x70, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e,
+	0x76, 0x31, 0x2e, 0x53, 0x77, 0x61, 0x70, 0x4c, 0x65, 0x67, 0x42, 0x09, 0xb2, 0xe7, 0xb0, 0x2a,
+	0x04, 0x73, 0x77, 0x61, 0x70, 0x48, 0x00, 0x52, 0x04, 0x73, 0x77, 0x61, 0x70, 0x12, 0x45, 0x0a,
+	0x04, 0x74, 0x61, 0x6b, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x64, 0x79,
+	0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c,
+	0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x61, 0x6b, 0x65, 0x49, 0x74, 0x65,
+	0x6d, 0x42, 0x09, 0xb2, 0xe7, 0xb0, 0x2a, 0x04, 0x74, 0x61, 0x6b, 0x65, 0x48, 0x00, 0x52, 0x04,
+	0x74, 0x61, 0x6b, 0x65, 0x12, 0x53, 0x0a, 0x07, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e,
+	0x76, 0x31, 0x2e, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x64, 0x65, 0x65, 0x6d,
+	0x42, 0x0c, 0xb2, 0xe7, 0xb0, 0x2a, 0x07, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x48, 0x00,
+	0x52, 0x07, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x33, 0x0a, 0x04, 0x73, 0x65, 0x6e,
+	0x74, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f,
+	0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x04, 0x73, 0x65, 0x6e, 0x74, 0x12, 0x3b,
+	0x0a, 0x08, 0x72, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76,
+	0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f,
+	0x00, 0x52, 0x08, 0x72, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x42, 0x04, 0x0a, 0x02, 0x6f,
+	0x70, 0x22, 0x2e, 0x0a, 0x0d, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x64, 0x65,
+	0x65, 0x6d, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x49,
+	0x64, 0x22, 0xb6, 0x03, 0x0a, 0x0c, 0x4d, 0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65, 0x54, 0x72, 0x61,
+	0x64, 0x65, 0x12, 0x30, 0x0a, 0x06, 0x74, 0x72, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41,
+	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x06, 0x74, 0x72,
+	0x61, 0x64, 0x65, 0x72, 0x12, 0x7e, 0x0a, 0x09, 0x6d, 0x61, 0x78, 0x5f, 0x69, 0x6e, 0x70, 0x75,
+	0x74, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f,
+	0x69, 0x6e, 0x42, 0x46, 0xc8, 0xde, 0x1f, 0x00, 0xaa, 0xdf, 0x1f, 0x28, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x43,
+	0x6f, 0x69, 0x6e, 0x73, 0x9a, 0xe7, 0xb0, 0x2a, 0x0c, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x5f,
+	0x63, 0x6f, 0x69, 0x6e, 0x73, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x08, 0x6d, 0x61, 0x78, 0x49,
+	0x6e, 0x70, 0x75, 0x74, 0x12, 0x50, 0x0a, 0x0a, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2a, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77,
+	0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x72, 0x61, 0x64, 0x65, 0x4f, 0x70, 0x65, 0x72, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0a, 0x6f, 0x70, 0x65, 0x72,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x80, 0x01, 0x0a, 0x0a, 0x6d, 0x69, 0x6e, 0x5f, 0x6f,
+	0x75, 0x74, 0x70, 0x75, 0x74, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61,
+	0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x46, 0xc8, 0xde, 0x1f, 0x00, 0xaa, 0xdf, 0x1f, 0x28,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70,
+	0x65, 0x73, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x9a, 0xe7, 0xb0, 0x2a, 0x0c, 0x6c, 0x65, 0x67,
+	0x61, 0x63, 0x79, 0x5f, 0x63, 0x6f, 0x69, 0x6e, 0x73, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x09,
+	0x6d, 0x69, 0x6e, 0x4f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x6f, 0x74,
+	0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x6f, 0x74, 0x65, 0x3a, 0x0b, 0x82,
+	0xe7, 0xb0, 0x2a, 0x06, 0x74, 0x72, 0x61, 0x64, 0x65, 0x72, 0x22, 0xd7, 0x02, 0x0a, 0x14, 0x4d,
+	0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65, 0x54, 0x72, 0x61, 0x64, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x72, 0x61, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x72, 0x61, 0x64, 0x65, 0x49, 0x64, 0x12, 0x86,
+	0x01, 0x0a, 0x0d, 0x74, 0x72, 0x61, 0x64, 0x65, 0x72, 0x5f, 0x69, 0x6e, 0x70, 0x75, 0x74, 0x73,
+	0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
+	0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69,
+	0x6e, 0x42, 0x46, 0xc8, 0xde, 0x1f, 0x00, 0xaa, 0xdf, 0x1f, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x43, 0x6f,
+	0x69, 0x6e, 0x73, 0x9a, 0xe7, 0xb0, 0x2a, 0x0c, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x5f, 0x63,
+	0x6f, 0x69, 0x6e, 0x73, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0c, 0x74, 0x72, 0x61, 0x64, 0x65,
+	0x72, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x73, 0x12, 0x88, 0x01, 0x0a, 0x0e, 0x74, 0x72, 0x61, 0x64,
+	0x65, 0x72, 0x5f, 0x6f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76,
+	0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x46, 0xc8, 0xde, 0x1f,
+	0x00, 0xaa, 0xdf, 0x1f, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64,
+	0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x9a, 0xe7, 0xb0,
+	0x2a, 0x0c, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x5f, 0x63, 0x6f, 0x69, 0x6e, 0x73, 0xa8, 0xe7,
+	0xb0, 0x2a, 0x01, 0x52, 0x0d, 0x74, 0x72, 0x61, 0x64, 0x65, 0x72, 0x4f, 0x75, 0x74, 0x70, 0x75,
+	0x74, 0x73, 0x4a, 0x04, 0x08, 0x01, 0x10, 0x02, 0x52, 0x0a, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74,
+	0x5f, 0x6f, 0x75, 0x74, 0x22, 0x89, 0x02, 0x0a, 0x0c, 0x4d, 0x73, 0x67, 0x4d, 0x61, 0x6b, 0x65,
 	0x4f, 0x66, 0x66, 0x65, 0x72, 0x12, 0x2e, 0x0a, 0x05, 0x6d, 0x61, 0x6b, 0x65, 0x72, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
 	0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x05,
@@ -27215,11 +27367,11 @@ var file_dysonprotocol_whaleswap_v1_tx_proto_goTypes = []interface{}{
 	(*MsgRemoveLiquidityResponse)(nil),       // 8: dysonprotocol.whaleswap.v1.MsgRemoveLiquidityResponse
 	(*MsgPoolSwap)(nil),                      // 9: dysonprotocol.whaleswap.v1.MsgPoolSwap
 	(*SwapLeg)(nil),                          // 10: dysonprotocol.whaleswap.v1.SwapLeg
-	(*TradeOperation)(nil),                   // 11: dysonprotocol.whaleswap.v1.TradeOperation
-	(*AuctionRedeem)(nil),                    // 12: dysonprotocol.whaleswap.v1.AuctionRedeem
-	(*MsgMakeTrade)(nil),                     // 13: dysonprotocol.whaleswap.v1.MsgMakeTrade
-	(*MsgMakeTradeResponse)(nil),             // 14: dysonprotocol.whaleswap.v1.MsgMakeTradeResponse
-	(*MsgPoolSwapResponse)(nil),              // 15: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse
+	(*MsgPoolSwapResponse)(nil),              // 11: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse
+	(*TradeOperation)(nil),                   // 12: dysonprotocol.whaleswap.v1.TradeOperation
+	(*AuctionRedeem)(nil),                    // 13: dysonprotocol.whaleswap.v1.AuctionRedeem
+	(*MsgMakeTrade)(nil),                     // 14: dysonprotocol.whaleswap.v1.MsgMakeTrade
+	(*MsgMakeTradeResponse)(nil),             // 15: dysonprotocol.whaleswap.v1.MsgMakeTradeResponse
 	(*MsgMakeOffer)(nil),                     // 16: dysonprotocol.whaleswap.v1.MsgMakeOffer
 	(*MsgMakeOfferResponse)(nil),             // 17: dysonprotocol.whaleswap.v1.MsgMakeOfferResponse
 	(*MsgTakeOffer)(nil),                     // 18: dysonprotocol.whaleswap.v1.MsgTakeOffer
@@ -27272,17 +27424,17 @@ var file_dysonprotocol_whaleswap_v1_tx_proto_depIdxs = []int32{
 	41, // 19: dysonprotocol.whaleswap.v1.MsgPoolSwap.min_output:type_name -> cosmos.base.v1beta1.Coin
 	41, // 20: dysonprotocol.whaleswap.v1.SwapLeg.swap_in:type_name -> cosmos.base.v1beta1.Coin
 	41, // 21: dysonprotocol.whaleswap.v1.SwapLeg.swap_out:type_name -> cosmos.base.v1beta1.Coin
-	10, // 22: dysonprotocol.whaleswap.v1.TradeOperation.swap:type_name -> dysonprotocol.whaleswap.v1.SwapLeg
-	19, // 23: dysonprotocol.whaleswap.v1.TradeOperation.take:type_name -> dysonprotocol.whaleswap.v1.TakeItem
-	12, // 24: dysonprotocol.whaleswap.v1.TradeOperation.auction:type_name -> dysonprotocol.whaleswap.v1.AuctionRedeem
-	41, // 25: dysonprotocol.whaleswap.v1.TradeOperation.sent:type_name -> cosmos.base.v1beta1.Coin
-	41, // 26: dysonprotocol.whaleswap.v1.TradeOperation.received:type_name -> cosmos.base.v1beta1.Coin
-	41, // 27: dysonprotocol.whaleswap.v1.MsgMakeTrade.max_input:type_name -> cosmos.base.v1beta1.Coin
-	11, // 28: dysonprotocol.whaleswap.v1.MsgMakeTrade.operations:type_name -> dysonprotocol.whaleswap.v1.TradeOperation
-	41, // 29: dysonprotocol.whaleswap.v1.MsgMakeTrade.min_output:type_name -> cosmos.base.v1beta1.Coin
-	41, // 30: dysonprotocol.whaleswap.v1.MsgMakeTradeResponse.trader_inputs:type_name -> cosmos.base.v1beta1.Coin
-	41, // 31: dysonprotocol.whaleswap.v1.MsgMakeTradeResponse.trader_outputs:type_name -> cosmos.base.v1beta1.Coin
-	41, // 32: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out:type_name -> cosmos.base.v1beta1.Coin
+	41, // 22: dysonprotocol.whaleswap.v1.MsgPoolSwapResponse.amount_out:type_name -> cosmos.base.v1beta1.Coin
+	10, // 23: dysonprotocol.whaleswap.v1.TradeOperation.swap:type_name -> dysonprotocol.whaleswap.v1.SwapLeg
+	19, // 24: dysonprotocol.whaleswap.v1.TradeOperation.take:type_name -> dysonprotocol.whaleswap.v1.TakeItem
+	13, // 25: dysonprotocol.whaleswap.v1.TradeOperation.auction:type_name -> dysonprotocol.whaleswap.v1.AuctionRedeem
+	41, // 26: dysonprotocol.whaleswap.v1.TradeOperation.sent:type_name -> cosmos.base.v1beta1.Coin
+	41, // 27: dysonprotocol.whaleswap.v1.TradeOperation.received:type_name -> cosmos.base.v1beta1.Coin
+	41, // 28: dysonprotocol.whaleswap.v1.MsgMakeTrade.max_input:type_name -> cosmos.base.v1beta1.Coin
+	12, // 29: dysonprotocol.whaleswap.v1.MsgMakeTrade.operations:type_name -> dysonprotocol.whaleswap.v1.TradeOperation
+	41, // 30: dysonprotocol.whaleswap.v1.MsgMakeTrade.min_output:type_name -> cosmos.base.v1beta1.Coin
+	41, // 31: dysonprotocol.whaleswap.v1.MsgMakeTradeResponse.trader_inputs:type_name -> cosmos.base.v1beta1.Coin
+	41, // 32: dysonprotocol.whaleswap.v1.MsgMakeTradeResponse.trader_outputs:type_name -> cosmos.base.v1beta1.Coin
 	41, // 33: dysonprotocol.whaleswap.v1.MsgMakeOffer.have:type_name -> cosmos.base.v1beta1.Coin
 	41, // 34: dysonprotocol.whaleswap.v1.MsgMakeOffer.want:type_name -> cosmos.base.v1beta1.Coin
 	0,  // 35: dysonprotocol.whaleswap.v1.MsgMakeOffer.settlement_mode:type_name -> dysonprotocol.whaleswap.v1.SettlementMode
@@ -27313,7 +27465,7 @@ var file_dysonprotocol_whaleswap_v1_tx_proto_depIdxs = []int32{
 	5,  // 60: dysonprotocol.whaleswap.v1.Msg.AddLiquidity:input_type -> dysonprotocol.whaleswap.v1.MsgAddLiquidity
 	7,  // 61: dysonprotocol.whaleswap.v1.Msg.RemoveLiquidity:input_type -> dysonprotocol.whaleswap.v1.MsgRemoveLiquidity
 	9,  // 62: dysonprotocol.whaleswap.v1.Msg.PoolSwap:input_type -> dysonprotocol.whaleswap.v1.MsgPoolSwap
-	13, // 63: dysonprotocol.whaleswap.v1.Msg.MakeTrade:input_type -> dysonprotocol.whaleswap.v1.MsgMakeTrade
+	14, // 63: dysonprotocol.whaleswap.v1.Msg.MakeTrade:input_type -> dysonprotocol.whaleswap.v1.MsgMakeTrade
 	16, // 64: dysonprotocol.whaleswap.v1.Msg.MakeOffer:input_type -> dysonprotocol.whaleswap.v1.MsgMakeOffer
 	18, // 65: dysonprotocol.whaleswap.v1.Msg.TakeOffer:input_type -> dysonprotocol.whaleswap.v1.MsgTakeOffer
 	21, // 66: dysonprotocol.whaleswap.v1.Msg.CancelOffer:input_type -> dysonprotocol.whaleswap.v1.MsgCancelOffer
@@ -27330,8 +27482,8 @@ var file_dysonprotocol_whaleswap_v1_tx_proto_depIdxs = []int32{
 	4,  // 77: dysonprotocol.whaleswap.v1.Msg.UpdatePoolConfig:output_type -> dysonprotocol.whaleswap.v1.MsgUpdatePoolConfigResponse
 	6,  // 78: dysonprotocol.whaleswap.v1.Msg.AddLiquidity:output_type -> dysonprotocol.whaleswap.v1.MsgAddLiquidityResponse
 	8,  // 79: dysonprotocol.whaleswap.v1.Msg.RemoveLiquidity:output_type -> dysonprotocol.whaleswap.v1.MsgRemoveLiquidityResponse
-	15, // 80: dysonprotocol.whaleswap.v1.Msg.PoolSwap:output_type -> dysonprotocol.whaleswap.v1.MsgPoolSwapResponse
-	14, // 81: dysonprotocol.whaleswap.v1.Msg.MakeTrade:output_type -> dysonprotocol.whaleswap.v1.MsgMakeTradeResponse
+	11, // 80: dysonprotocol.whaleswap.v1.Msg.PoolSwap:output_type -> dysonprotocol.whaleswap.v1.MsgPoolSwapResponse
+	15, // 81: dysonprotocol.whaleswap.v1.Msg.MakeTrade:output_type -> dysonprotocol.whaleswap.v1.MsgMakeTradeResponse
 	17, // 82: dysonprotocol.whaleswap.v1.Msg.MakeOffer:output_type -> dysonprotocol.whaleswap.v1.MsgMakeOfferResponse
 	20, // 83: dysonprotocol.whaleswap.v1.Msg.TakeOffer:output_type -> dysonprotocol.whaleswap.v1.MsgTakeOfferResponse
 	22, // 84: dysonprotocol.whaleswap.v1.Msg.CancelOffer:output_type -> dysonprotocol.whaleswap.v1.MsgCancelOfferResponse
@@ -27480,7 +27632,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 			}
 		}
 		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TradeOperation); i {
+			switch v := v.(*MsgPoolSwapResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -27492,7 +27644,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 			}
 		}
 		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AuctionRedeem); i {
+			switch v := v.(*TradeOperation); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -27504,7 +27656,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 			}
 		}
 		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgMakeTrade); i {
+			switch v := v.(*AuctionRedeem); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -27516,7 +27668,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 			}
 		}
 		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgMakeTradeResponse); i {
+			switch v := v.(*MsgMakeTrade); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -27528,7 +27680,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 			}
 		}
 		file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgPoolSwapResponse); i {
+			switch v := v.(*MsgMakeTradeResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -27840,7 +27992,7 @@ func file_dysonprotocol_whaleswap_v1_tx_proto_init() {
 			}
 		}
 	}
-	file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[10].OneofWrappers = []interface{}{
+	file_dysonprotocol_whaleswap_v1_tx_proto_msgTypes[11].OneofWrappers = []interface{}{
 		(*TradeOperation_Swap)(nil),
 		(*TradeOperation_Take)(nil),
 		(*TradeOperation_Auction)(nil),

@@ -10,20 +10,37 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// RemoveLiquidity removes liquidity from a pool by burning the caller's shares
-// and returning the underlying reserves. It supports two modes:
-//   - Full exit: if the caller burns all outstanding shares, the pool is
-//     deleted and the full reserves are paid out.
-//   - Partial exit: the caller burns a subset of shares and receives a payout
-//     proportional to that share using pro-rata DecCoins math.
-//
-// Validation and safety guarantees:
-//   - The pool must exist and the signer must hold at least msg.Shares.
-//   - Partial exits cannot deplete any reserve; withdrawing the last liquidity
-//     requires a full exit.
-//
-// On success, an EventPoolLiquidityRemoved event is emitted and the updated
-// pool state is persisted. Errors are returned; no panics.
+/**
+ * RemoveLiquidity removes liquidity from a pool by burning the caller's shares
+ * and returning the underlying reserves proportional to the share burned.
+ *
+ * Behavior:
+ * - Supports two modes: full exit and partial exit.
+ * - Full exit: when burning all outstanding shares, the pool is deleted and
+ *   the full reserves are paid out to the caller.
+ * - Partial exit: burns a subset of shares and receives a payout proportional
+ *   to that share using pro-rata DecCoins math; pool remains active with
+ *   reduced reserves.
+ * - Ensures partial exits cannot deplete any reserve below zero; full exit
+ *   required to withdraw the last liquidity.
+ *
+ * Validation:
+ * - Pool must exist.
+ * - Signer must hold at least msg.Shares.
+ * - Shares must be a positive integer string.
+ * - Partial exits cannot deplete any reserve; withdrawing the last liquidity
+ *   requires a full exit (burning all shares).
+ *
+ * Emits:
+ * - EventPoolLiquidityRemoved (pool_id, shares)
+ *
+ * Returns:
+ * - *whaleswapv1.MsgRemoveLiquidityResponse with Amount (coins returned to
+ *   the caller).
+ *
+ * Errors are returned on validation failures, insufficient balance, reserve
+ * depletion attempts, or state update failures; no panics.
+ */
 func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveLiquidity) (*whaleswapv1.MsgRemoveLiquidityResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)

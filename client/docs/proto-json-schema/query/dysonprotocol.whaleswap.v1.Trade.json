@@ -77,11 +77,12 @@
             "dysonprotocol.whaleswap.v1.TakeItem": {
                 "properties": {
                     "offer_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the offer to take from; offer must exist and be in open status."
                     },
                     "take_units": {
                         "type": "string",
-                        "description": "units to take (sdk.Int string). If empty, take full remaining."
+                        "description": "Units to take (sdk.Int string). If empty, take full remaining. Must be positive and \u2264 remaining."
                     }
                 },
                 "additionalProperties": false,

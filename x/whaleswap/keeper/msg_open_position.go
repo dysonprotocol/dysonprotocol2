@@ -12,6 +12,53 @@ import (
 )
 
 // OpenPosition creates a leveraged position (long or short).
+//
+// Semantics:
+//   - Creates a leveraged position by borrowing against escrowed collateral.
+//   - Executes an AMM swap to convert borrowed amount to "held" asset.
+//   - Persists position with snapshots for interest accrual and liquidation.
+//
+// Behavior:
+//   - Validates pool (must exist, exactly 2 denoms), collateral (positive,
+//     pool denom), and borrow (positive, pool denom, within borrow caps).
+//   - Computes collateral ratio CR = collateral_value / debt_value in borrow
+//     units, where collateral_value accounts for current pool price.
+//   - Validates CR >= pool.min_collateral_ratio[borrow_denom] (> 1).
+//   - Validates leverage <= pool.max_leverage_ratio[borrow_denom] (> 1).
+//   - Reduces pool reserves by borrow amount, updates total_borrowed.
+//   - Moves borrowed amount to borrow vault module account.
+//   - Executes exact-in swap (borrowed → held) via MakeTrade.
+//   - Escrows collateral to whaleswap module after swap.
+//   - Creates position with interest rate and min_collateral_ratio snapshots.
+//   - Held denom is the pool denom not matching borrow denom.
+//
+// Validation:
+//   - Pool must exist with exactly 2 denoms.
+//   - Collateral/borrow amounts must be positive.
+//   - Collateral/borrow denoms must match pool denoms.
+//   - Collateral ratio must meet pool min_collateral_ratio for borrow denom.
+//   - Leverage must not exceed pool max_leverage_ratio for borrow denom.
+//   - Borrow amount must not exceed pool borrow cap (max_borrow_percent).
+//   - Swap must produce positive held output.
+//
+// State updates:
+//   - Pool reserves reduced by borrowed amount.
+//   - Pool total_borrowed increased by borrowed amount.
+//   - Borrowed amount moved to borrow vault module.
+//   - Held amount received in borrow vault from swap.
+//   - Collateral escrowed to whaleswap module.
+//   - New position persisted with status OPEN.
+//
+// Emits:
+//   - EventLeveragePositionOpened (position_id, user, pool_id,
+//     collateral_denom, collateral_amount, borrowed_denom, borrowed_amount,
+//     entry_price_held_per_borrow, collateral_ratio)
+//
+// Returns:
+//   - *whaleswapv1.MsgOpenPositionResponse with PositionId and Held coin.
+//
+// Errors are returned on validation failures, insufficient liquidity, swap
+// failures, or persistence failures; no panics.
 func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPosition) (*whaleswapv1.MsgOpenPositionResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
@@ -196,7 +243,7 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	}
 
 	// Persist final position after swap and collateral escrow
-	// Snapshot interest_rate, min_collateral_ratio at open per updated design
+	// Snapshot interest_rate, min_collateral_ratio, liquidation_threshold at open per updated design
 	// Prepare per-position snapshots
 	// Always persist exactly two entries for interest_rate in canonical pool order to avoid nil/empty cases later.
 	var snapIR sdk.DecCoins
@@ -217,19 +264,20 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		}
 	}
 	pos := whaleswapv1.LeveragePosition{
-		PositionId:         posID,
-		PoolId:             msg.PoolId,
-		User:               msg.Trader,
-		Status:             whaleswapv1.PositionStatus_POSITION_STATUS_OPEN,
-		Borrowed:           borrowed,
-		Held:               sdk.NewCoin(heldDenom, heldAmt),
-		Collateral:         msg.Collateral,
-		BorrowTime:         &now,
-		CreatedBlockHeight: uint64(sdkCtx.BlockHeight()),
-		LiquidationStatus:  whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE,
-		AccruedInterest:    sdk.NewCoin(borrowDenom, math.ZeroInt()),
-		InterestRate:       snapIR,
-		MinCollateralRatio: minCR.String(),
+		PositionId:           posID,
+		PoolId:               msg.PoolId,
+		User:                 msg.Trader,
+		Status:               whaleswapv1.PositionStatus_POSITION_STATUS_OPEN,
+		Borrowed:             borrowed,
+		Held:                 sdk.NewCoin(heldDenom, heldAmt),
+		Collateral:           msg.Collateral,
+		BorrowTime:           &now,
+		CreatedBlockHeight:   uint64(sdkCtx.BlockHeight()),
+		LiquidationStatus:    whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE,
+		AccruedInterest:      sdk.NewCoin(borrowDenom, math.ZeroInt()),
+		InterestRate:         snapIR,
+		MinCollateralRatio:   minCR.String(),
+		LiquidationThreshold: pool.LiquidationThreshold.AmountOf(borrowDenom).String(),
 	}
 	sdkCtx.Logger().Info("OpenPosition: position created", "posID", posID, "borrowDenom", pos.Borrowed.Denom, "heldDenom", pos.Held.Denom)
 	if err := k.savePosition(ctx, pos, whaleswapv1.PositionStatus_POSITION_STATUS_UNSPECIFIED); err != nil {

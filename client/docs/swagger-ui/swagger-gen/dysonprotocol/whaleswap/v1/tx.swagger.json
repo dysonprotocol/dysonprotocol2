@@ -310,7 +310,7 @@
     },
     "dysonprotocol.whaleswap.v1.MsgMakeTrade": {
       "post": {
-        "summary": "*\nMakeTrade executes swaps and orderbook takes in-order with a single\nsettlement. Applies per-denom debit caps (max_input) and final min_output,\nreleases PFAND on offer close, rejects duplicate ids per type; auction\noperations are currently rejected.",
+        "summary": "*\nMakeTrade combines AMM pool swaps and orderbook takes into a single\ntransaction with end-of-tx settlement.",
         "operationId": "dysonprotocol.whaleswap.v1.MsgMakeTrade",
         "responses": {
           "200": {
@@ -376,7 +376,7 @@
     },
     "dysonprotocol.whaleswap.v1.MsgOpenPosition": {
       "post": {
-        "summary": "*\nOpenPosition opens a synthetic leveraged position. Borrows (subject to pool\ncap), swaps to the held denom, escrows collateral, snapshots interest rate\nand min CR, and records the position.",
+        "summary": "*\nOpenPosition creates a leveraged position by borrowing against collateral,\nswapping to held asset, and recording the position with interest snapshots.",
         "operationId": "dysonprotocol.whaleswap.v1.MsgOpenPosition",
         "responses": {
           "200": {
@@ -475,8 +475,7 @@
     },
     "dysonprotocol.whaleswap.v1.MsgRemoveLiquidity": {
       "post": {
-        "summary": "*\nRemoveLiquidity burns the caller's shares and returns the underlying\nreserves.",
-        "description": "Modes:\n- Full exit: burning all outstanding shares deletes the pool and pays\n  out the full reserves.\n- Partial exit:\n  - Concentrated pools: outputs are computed from \u0394L within the active\n    price band.\n  - Non-concentrated pools: outputs are pro-rata.\n\nSafety:\n- Concentrated: post-state price must remain within the band and the\n  liquidity delta must be consistent with the burned share ratio within\n  a small tolerance.\n- Partial exits cannot deplete any reserve; use full exit to withdraw the\n  last liquidity.\n- Outputs must be non-zero.\n\nEmits EventPoolLiquidityRemoved on success.",
+        "summary": "*\nRemoveLiquidity burns the caller's shares and returns the underlying\nreserves proportional to the share burned.",
         "operationId": "dysonprotocol.whaleswap.v1.MsgRemoveLiquidity",
         "responses": {
           "200": {
@@ -509,7 +508,7 @@
     },
     "dysonprotocol.whaleswap.v1.MsgTakeOffer": {
       "post": {
-        "summary": "*\nTakeOffer executes one or more takes. Nets taker credits against maker\nwants, funds any deficit from taker base (module covers escrow), releases\nPFAND to the taker on full close, and records a single trade.",
+        "summary": "*\nTakeOffer executes one or more orderbook takes with netting and settlement.",
         "operationId": "dysonprotocol.whaleswap.v1.MsgTakeOffer",
         "responses": {
           "200": {
@@ -542,7 +541,7 @@
     },
     "dysonprotocol.whaleswap.v1.MsgUpdateParams": {
       "post": {
-        "summary": "*\nUpdateParams updates module parameters. Authority-only.",
+        "summary": "*\nUpdateParams (authority-only) updates module parameters.",
         "operationId": "dysonprotocol.whaleswap.v1.MsgUpdateParams",
         "responses": {
           "200": {
@@ -1009,33 +1008,36 @@
       "type": "object",
       "properties": {
         "trader": {
-          "type": "string"
+          "type": "string",
+          "description": "Account executing the trade operations; all operations execute as this\ntrader."
         },
         "max_input": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "title": "End-of-tx debit caps per denom for the trader"
+          "description": "End-of-tx debit caps per denom for the trader; zero means no debits allowed\nfor that denom."
         },
         "operations": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TradeOperation"
           },
-          "title": "Mixed operations processed in-order"
+          "description": "Mixed operations processed in-order; must contain at least one operation."
         },
         "min_output": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "title": "Final trader minimum outputs per denom after aggregation"
+          "description": "Final trader minimum outputs per denom after aggregation and netting."
         },
         "note": {
-          "type": "string"
+          "type": "string",
+          "description": "Optional note attached to the trade record."
         }
-      }
+      },
+      "description": "*\nMakeTrade combines AMM pool swaps and orderbook takes into a single\ntransaction.\n\nBehavior:\n- Processes SwapLeg (AMM pool swaps) and TakeItem (orderbook takes)\noperations in order.\n- Aggregates all inputs/outputs across operations, then performs\norderbook-style netting.\n- Trader credits offset maker wants; deficits covered from trader base\nbalance.\n- PFAND released to trader when offers close, applied pre-netting.\n- Enforces per-denom debit caps (max_input) and minimum outputs (min_output)\nafter netting.\n- Executes final settlement via multisend; all operations succeed or\ntransaction fails.\n- Enables circular trade dependencies through self-netting: trader\ndebit/credit pairs by denom are netted out, allowing complex arbitrage\nchains where intermediate results cancel (e.g., A\u2192B\u2192C\u2192A becomes net B+C\nprofit).\n\nValidation:\n- Trader address must be valid.\n- Operations must be non-empty.\n- Note length capped by module params.\n- Swap operations: pool must exist, denoms match pool, no duplicate pool_ids.\n- Take operations: offer must exist and be open, no duplicate offer_ids.\n- Auction operations currently rejected.\n\nState updates:\n- AMM pools: reserves updated, fees accrued, trade counters incremented.\n- Offers: remaining units/wants/haves updated; closed when fully taken.\n- Trade recorded with all operations, indexed by trader/pool/offer/auction.\n\nEmits:\n- EventPfandReleased for each closed offer (amount, offer_id, trade_id).\n- EventPoolSwap for each swap (pool_id, trade_id, operation_index).\n- EventOfferTaken for each take (offer_id, trade_id, units_taken).\n- EventTradeRecorded summary (trade_id, trader, num_operations, note).\n\nReturns:\n- trade_id and final net trader_inputs/outputs after\nnetting/coverage/self-net."
     },
     "dysonprotocol.whaleswap.v1.MsgMakeTradeResponse": {
       "type": "object",
@@ -1043,21 +1045,21 @@
         "trade_id": {
           "type": "string",
           "format": "uint64",
-          "title": "unique ID of the recorded trade"
+          "description": "Unique ID of the recorded trade containing all operations."
         },
         "trader_inputs": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "title": "net debits from trader after netting/coverage/self-net by denom"
+          "description": "Final net debits from trader by denom after netting, coverage, and\nself-netting."
         },
         "trader_outputs": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "title": "net credits to trader after netting/coverage/self-net by denom"
+          "description": "Final net credits to trader by denom after netting, coverage, and\nself-netting."
         }
       }
     },
@@ -1093,36 +1095,39 @@
       "properties": {
         "trader": {
           "type": "string",
-          "description": "trader: account opening the synthetic leveraged position. Collateral will\nbe escrowed from this address into the module account; no borrowed/held\ncoins are transferred to the trader in synthetic mode."
+          "description": "Account opening the leveraged position; collateral escrowed from this\naddress."
         },
         "pool_id": {
           "type": "string",
           "format": "uint64",
-          "description": "pool_id: target two-asset pool providing price reference and borrow caps.\nThe two allowed denoms for collateral/borrow/held must match this pool."
+          "description": "Target two-asset pool providing price reference and borrow caps."
         },
         "collateral": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "description": "collateral: coin to escrow as security. Must be positive and one of the\npool denoms."
+          "description": "Coin to escrow as security; must be positive and one of the pool denoms."
         },
         "borrow": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "description": "borrow: liability coin. Must be positive and one of the pool denoms.\nInterest accrues on this amount until close/liquidation."
+          "description": "Liability coin; must be positive and one of the pool denoms. Interest\naccrues on this amount."
         },
         "note": {
           "type": "string",
-          "description": "The held denom is implicitly the other pool denom (not the borrow denom)."
+          "description": "Optional note for the position."
         }
-      }
+      },
+      "description": "*\n v creates a leveraged position by borrowing against collateral.\n\nBehavior:\n- Validates pool (exactly 2 denoms), collateral/borrow amounts and denoms.\n- Computes collateral ratio CR = collateral_value / debt_value in borrow\n  units, accounting for current pool price.\n- Validates CR >= pool.min_collateral_ratio[borrow_denom] (> 1).\n- Validates leverage <= pool.max_leverage_ratio[borrow_denom] (> 1).\n- Reduces pool reserves by borrow amount, updates total_borrowed.\n- Moves borrowed amount to borrow vault, executes swap (borrowed \u2192 held).\n- Escrows collateral to whaleswap module after swap.\n- Creates position with interest rate and min_collateral_ratio snapshots.\n- Held denom is the pool denom not matching borrow denom.\n\nValidation:\n- Pool must exist with exactly 2 denoms.\n- Collateral/borrow amounts must be positive.\n- Collateral/borrow denoms must match pool denoms.\n- Collateral ratio must meet pool min_collateral_ratio for borrow denom.\n- Leverage must not exceed pool max_leverage_ratio for borrow denom.\n- Borrow amount must not exceed pool borrow cap (max_borrow_percent).\n- Swap must produce positive held output.\n\nEmits:\n- EventLeveragePositionOpened with position_id, user, pool_id,\n  collateral_denom, collateral_amount, borrowed_denom, borrowed_amount,\n  entry_price_held_per_borrow, collateral_ratio.\n\nReturns:\n- position_id and held coin in the response."
     },
     "dysonprotocol.whaleswap.v1.MsgOpenPositionResponse": {
       "type": "object",
       "properties": {
         "position_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Unique identifier for the newly created leveraged position."
         },
         "held": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Amount of held asset received from the AMM swap (borrow denom \u2192 held\ndenom)."
         }
       }
     },
@@ -1205,7 +1210,7 @@
           "description": "Shares to burn (sdk.Int string). Must be > 0; equals total supply to fully\nexit (pool is deleted)."
         }
       },
-      "description": "*\nRemove liquidity (anyone).\n\nBehavior:\n- Burns shares and returns the underlying reserves.\n- Full exit: burn all outstanding shares to delete the pool and receive the\n  full reserves.\n- Partial exit:\n  - Concentrated pools: \u0394L-based outputs within the current price band.\n  - Non-concentrated pools: pro-rata outputs using DecCoins.\n\nSafety and validation:\n- Pool must exist; signer must hold at least `shares`.\n- Outputs must be non-zero.\n- Partial exits cannot deplete any reserve; use full exit to withdraw the\n  last liquidity.\n- Concentrated pools: post-state price must remain within band; \u0394L must\n  match burned share ratio within a small tolerance.\n\nEmits: EventPoolLiquidityRemoved on success."
+      "description": "*\nRemove liquidity from a pool by burning shares and returning underlying\nreserves.\n\nBehavior:\n- Supports two modes: full exit and partial exit.\n- Full exit: when burning all outstanding shares, the pool is deleted and\n  the full reserves are paid out to the caller.\n- Partial exit: burns a subset of shares and receives a payout proportional\n  to that share using pro-rata DecCoins math; pool remains active with\n  reduced reserves.\n- Ensures partial exits cannot deplete any reserve below zero; full exit\n  required to withdraw the last liquidity.\n\nValidation:\n- Pool must exist.\n- Signer must hold at least shares.\n- Shares must be a positive integer string.\n- Partial exits cannot deplete any reserve; withdrawing the last liquidity\n  requires a full exit (burning all shares).\n\nEmits:\n- EventPoolLiquidityRemoved with pool_id and shares.\n\nReturns:\n- coins returned to the caller in the amount field."
     },
     "dysonprotocol.whaleswap.v1.MsgRemoveLiquidityResponse": {
       "type": "object",
@@ -1215,7 +1220,7 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "title": "coins returned"
+          "description": "Coins returned to the caller proportional to the burned shares."
         }
       }
     },
@@ -1223,15 +1228,18 @@
       "type": "object",
       "properties": {
         "taker": {
-          "type": "string"
+          "type": "string",
+          "description": "Account executing the takes; all takes execute as this trader."
         },
         "trades": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TakeItem"
-          }
+          },
+          "description": "List of take operations to execute; must contain at least one item."
         }
-      }
+      },
+      "description": "*\nTakeOffer executes one or more orderbook takes with netting and settlement.\n\nBehavior:\n- Processes multiple take operations in a single transaction with aggregated\nsettlement.\n- For each take: validates offer exists and is open, parses take_units\n(defaults to remaining), computes exchange amounts (required_want =\ntake_units \u00d7 unit_want, deliver_have = take_units \u00d7 unit_have), aggregates\noutputs by address, updates offer state (closes when fully taken), records\noperations.\n- Post-processing: computes maker wants and taker credits, nets taker credits\nagainst maker wants, covers deficits from taker base balance (uses module\nbacking for remaining solid deficits).\n- Settlement: executes batch coin movements via wsMoveCoins for all\nparticipants.\n- PFAND release: when offers close, locked PFAND flows from module to taker.\n- Trade recording: creates single Trade with all operations, indexed by\ntrader/offer.\n\nValidation:\n- Taker address must be valid.\n- Trades list must be non-empty.\n- Each offer must exist and be in open status.\n- Take_units must be valid integer string (positive, \u2264 remaining); empty\ndefaults to remaining.\n- For LIQUID settlement: maker must have sufficient balance for deliver_have.\n- Module must have sufficient backing for any uncovered solid deficits.\n\nEmits:\n- EventOfferTaken for each take (offer_id, trade_id, units_taken).\n- EventTradeRecorded for the batch (trade_id, trader, num_operations).\n- EventPfandReleased for each closed offer (amount, offer_id, trade_id).\n\nReturns:\n- aggregated sent/received totals across all executed takes."
     },
     "dysonprotocol.whaleswap.v1.MsgTakeOfferResponse": {
       "type": "object",
@@ -1256,13 +1264,15 @@
       "type": "object",
       "properties": {
         "authority": {
-          "type": "string"
+          "type": "string",
+          "description": "Authority address that must match the module's configured authority."
         },
         "params": {
-          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Params"
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Params",
+          "description": "New parameter values to set; must pass validation."
         }
       },
-      "description": "UpdateParams is the Msg/UpdateParams request type."
+      "description": "*\nUpdateParams updates module parameters.\n\nBehavior:\n- Authority-only: verifies msg.Authority matches the module's configured\nauthority.\n- Parameter validation: validates all parameter constraints (pfand amounts,\ntime durations, percentage bounds, block delays).\n- State update: persists validated parameters to the module's parameter\nstore.\n\nValidation:\n- Authority must match the module's configured authority address.\n- Parameters must pass Params.Validate() which checks:\n  - PfandPerOffer denom set when amount > 0\n  - ValuationPeriod > 0\n  - BidTimeout > 0\n  - ValuationFeePct in [0,1) if set\n  - MinimumBidPercentIncrease in [0,1) if set\n  - BlockDelayBeforeClose > 0\n  - BlockDelayBeforeLiquidation > 0\n\nReturns:\n- MsgUpdateParamsResponse (empty) on success."
     },
     "dysonprotocol.whaleswap.v1.MsgUpdateParamsResponse": {
       "type": "object"
@@ -1407,11 +1417,12 @@
       "properties": {
         "offer_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "ID of the offer to take from; offer must exist and be in open status."
         },
         "take_units": {
           "type": "string",
-          "description": "units to take (sdk.Int string). If empty, take full remaining."
+          "description": "Units to take (sdk.Int string). If empty, take full remaining. Must be\npositive and \u2264 remaining."
         }
       }
     },

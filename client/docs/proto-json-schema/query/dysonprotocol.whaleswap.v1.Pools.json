@@ -177,7 +177,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE FIELDS \u2550\u2550\u2550\u2550\u2550 Annual interest rates per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string representing APR (per-year accrual)."
+                        "description": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE FIELDS \u2550\u2550\u2550\u2550\u2550 Annual interest rates per reserve denom (exactly two, canonical order). Each amount is a decimal string representing APR (per-year accrual)."
                     },
                     "interest_earned": {
                         "items": {
@@ -201,7 +201,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "\u2550\u2550\u2550\u2550\u2550 PER-POOL LEVERAGE RISK PARAMETERS (per-denom) \u2550\u2550\u2550\u2550\u2550 Minimum collateral ratio required at position open per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string (> 1)."
+                        "description": "\u2550\u2550\u2550\u2550\u2550 PER-POOL LEVERAGE RISK PARAMETERS (per-denom) \u2550\u2550\u2550\u2550\u2550 Minimum collateral ratio required at position open per reserve denom (exactly two, canonical order). Each amount is a decimal string (> 1)."
                     },
                     "max_leverage_ratio": {
                         "items": {
@@ -209,7 +209,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Maximum leverage ratio allowed (collateral + borrowed) / collateral per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string (> 1)."
+                        "description": "Maximum leverage ratio allowed (collateral + borrowed) / collateral per reserve denom (exactly two, canonical order). Each amount is a decimal string (> 1)."
                     },
                     "liquidation_threshold": {
                         "items": {
@@ -217,7 +217,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Collateral ratio threshold below which position is liquidatable per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string (> 1)."
+                        "description": "Collateral ratio threshold below which position is liquidatable per reserve denom (exactly two, canonical order). Each amount is a decimal string (> 1)."
                     },
                     "max_borrow_percent": {
                         "items": {
@@ -225,7 +225,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Maximum borrow capacity per reserve denom as DecCoins (exactly two, canonical order). Each amount is a LegacyDec in [0,1)."
+                        "description": "Maximum borrow capacity per reserve denom as DecCoins (exactly two, canonical order). Each amount is a decimal in [0,1)."
                     },
                     "bound_percent": {
                         "items": {

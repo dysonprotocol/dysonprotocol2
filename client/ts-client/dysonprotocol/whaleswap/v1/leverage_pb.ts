@@ -154,6 +154,13 @@ export class LeveragePosition extends Message<LeveragePosition> {
    */
   minCollateralRatio = "";
 
+  /**
+   * Liquidation threshold used for liquidation checks (cosmos.Dec string).
+   *
+   * @generated from field: string liquidation_threshold = 24;
+   */
+  liquidationThreshold = "";
+
   constructor(data?: PartialMessage<LeveragePosition>) {
     super();
     proto3.util.initPartial(data, this);
@@ -176,6 +183,7 @@ export class LeveragePosition extends Message<LeveragePosition> {
     { no: 12, name: "accrued_interest", kind: "message", T: Coin },
     { no: 22, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 23, name: "min_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 24, name: "liquidation_threshold", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LeveragePosition {

@@ -83,25 +83,7 @@ type MsgClient interface {
 	AddLiquidity(ctx context.Context, in *MsgAddLiquidity, opts ...grpc.CallOption) (*MsgAddLiquidityResponse, error)
 	// *
 	// RemoveLiquidity burns the caller's shares and returns the underlying
-	// reserves.
-	//
-	// Modes:
-	//   - Full exit: burning all outstanding shares deletes the pool and pays
-	//     out the full reserves.
-	//   - Partial exit:
-	//   - Concentrated pools: outputs are computed from ΔL within the active
-	//     price band.
-	//   - Non-concentrated pools: outputs are pro-rata.
-	//
-	// Safety:
-	//   - Concentrated: post-state price must remain within the band and the
-	//     liquidity delta must be consistent with the burned share ratio within
-	//     a small tolerance.
-	//   - Partial exits cannot deplete any reserve; use full exit to withdraw the
-	//     last liquidity.
-	//   - Outputs must be non-zero.
-	//
-	// Emits EventPoolLiquidityRemoved on success.
+	// reserves proportional to the share burned.
 	RemoveLiquidity(ctx context.Context, in *MsgRemoveLiquidity, opts ...grpc.CallOption) (*MsgRemoveLiquidityResponse, error)
 	// *
 	// PoolSwap executes one or more exact-in or exact-out pool swap legs with a
@@ -109,10 +91,8 @@ type MsgClient interface {
 	// aggregate max_input caps and min_output guarantees.
 	PoolSwap(ctx context.Context, in *MsgPoolSwap, opts ...grpc.CallOption) (*MsgPoolSwapResponse, error)
 	// *
-	// MakeTrade executes swaps and orderbook takes in-order with a single
-	// settlement. Applies per-denom debit caps (max_input) and final min_output,
-	// releases PFAND on offer close, rejects duplicate ids per type; auction
-	// operations are currently rejected.
+	// MakeTrade combines AMM pool swaps and orderbook takes into a single
+	// transaction with end-of-tx settlement.
 	MakeTrade(ctx context.Context, in *MsgMakeTrade, opts ...grpc.CallOption) (*MsgMakeTradeResponse, error)
 	// *
 	// MakeOffer creates an orderbook offer. ESCROW: base "have" is escrowed.
@@ -120,9 +100,7 @@ type MsgClient interface {
 	// derived via GCD for partial fills.
 	MakeOffer(ctx context.Context, in *MsgMakeOffer, opts ...grpc.CallOption) (*MsgMakeOfferResponse, error)
 	// *
-	// TakeOffer executes one or more takes. Nets taker credits against maker
-	// wants, funds any deficit from taker base (module covers escrow), releases
-	// PFAND to the taker on full close, and records a single trade.
+	// TakeOffer executes one or more orderbook takes with netting and settlement.
 	TakeOffer(ctx context.Context, in *MsgTakeOffer, opts ...grpc.CallOption) (*MsgTakeOfferResponse, error)
 	// *
 	// CancelOffer (maker or authorized third party) cancels an open offer and
@@ -139,9 +117,8 @@ type MsgClient interface {
 	// valuation exists in bid_denom, a trade record is emitted.
 	RedeemAuction(ctx context.Context, in *MsgRedeemAuction, opts ...grpc.CallOption) (*MsgRedeemAuctionResponse, error)
 	// *
-	// OpenPosition opens a synthetic leveraged position. Borrows (subject to pool
-	// cap), swaps to the held denom, escrows collateral, snapshots interest rate
-	// and min CR, and records the position.
+	// OpenPosition creates a leveraged position by borrowing against collateral,
+	// swapping to held asset, and recording the position with interest snapshots.
 	OpenPosition(ctx context.Context, in *MsgOpenPosition, opts ...grpc.CallOption) (*MsgOpenPositionResponse, error)
 	// *
 	// ClosePosition swaps held to borrowed, repays principal+interest, returns
@@ -167,7 +144,7 @@ type MsgClient interface {
 	// liquidation.
 	FinalizeLiquidation(ctx context.Context, in *MsgFinalizeLiquidation, opts ...grpc.CallOption) (*MsgFinalizeLiquidationResponse, error)
 	// *
-	// UpdateParams updates module parameters. Authority-only.
+	// UpdateParams (authority-only) updates module parameters.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 }
 
@@ -403,25 +380,7 @@ type MsgServer interface {
 	AddLiquidity(context.Context, *MsgAddLiquidity) (*MsgAddLiquidityResponse, error)
 	// *
 	// RemoveLiquidity burns the caller's shares and returns the underlying
-	// reserves.
-	//
-	// Modes:
-	//   - Full exit: burning all outstanding shares deletes the pool and pays
-	//     out the full reserves.
-	//   - Partial exit:
-	//   - Concentrated pools: outputs are computed from ΔL within the active
-	//     price band.
-	//   - Non-concentrated pools: outputs are pro-rata.
-	//
-	// Safety:
-	//   - Concentrated: post-state price must remain within the band and the
-	//     liquidity delta must be consistent with the burned share ratio within
-	//     a small tolerance.
-	//   - Partial exits cannot deplete any reserve; use full exit to withdraw the
-	//     last liquidity.
-	//   - Outputs must be non-zero.
-	//
-	// Emits EventPoolLiquidityRemoved on success.
+	// reserves proportional to the share burned.
 	RemoveLiquidity(context.Context, *MsgRemoveLiquidity) (*MsgRemoveLiquidityResponse, error)
 	// *
 	// PoolSwap executes one or more exact-in or exact-out pool swap legs with a
@@ -429,10 +388,8 @@ type MsgServer interface {
 	// aggregate max_input caps and min_output guarantees.
 	PoolSwap(context.Context, *MsgPoolSwap) (*MsgPoolSwapResponse, error)
 	// *
-	// MakeTrade executes swaps and orderbook takes in-order with a single
-	// settlement. Applies per-denom debit caps (max_input) and final min_output,
-	// releases PFAND on offer close, rejects duplicate ids per type; auction
-	// operations are currently rejected.
+	// MakeTrade combines AMM pool swaps and orderbook takes into a single
+	// transaction with end-of-tx settlement.
 	MakeTrade(context.Context, *MsgMakeTrade) (*MsgMakeTradeResponse, error)
 	// *
 	// MakeOffer creates an orderbook offer. ESCROW: base "have" is escrowed.
@@ -440,9 +397,7 @@ type MsgServer interface {
 	// derived via GCD for partial fills.
 	MakeOffer(context.Context, *MsgMakeOffer) (*MsgMakeOfferResponse, error)
 	// *
-	// TakeOffer executes one or more takes. Nets taker credits against maker
-	// wants, funds any deficit from taker base (module covers escrow), releases
-	// PFAND to the taker on full close, and records a single trade.
+	// TakeOffer executes one or more orderbook takes with netting and settlement.
 	TakeOffer(context.Context, *MsgTakeOffer) (*MsgTakeOfferResponse, error)
 	// *
 	// CancelOffer (maker or authorized third party) cancels an open offer and
@@ -459,9 +414,8 @@ type MsgServer interface {
 	// valuation exists in bid_denom, a trade record is emitted.
 	RedeemAuction(context.Context, *MsgRedeemAuction) (*MsgRedeemAuctionResponse, error)
 	// *
-	// OpenPosition opens a synthetic leveraged position. Borrows (subject to pool
-	// cap), swaps to the held denom, escrows collateral, snapshots interest rate
-	// and min CR, and records the position.
+	// OpenPosition creates a leveraged position by borrowing against collateral,
+	// swapping to held asset, and recording the position with interest snapshots.
 	OpenPosition(context.Context, *MsgOpenPosition) (*MsgOpenPositionResponse, error)
 	// *
 	// ClosePosition swaps held to borrowed, repays principal+interest, returns
@@ -487,7 +441,7 @@ type MsgServer interface {
 	// liquidation.
 	FinalizeLiquidation(context.Context, *MsgFinalizeLiquidation) (*MsgFinalizeLiquidationResponse, error)
 	// *
-	// UpdateParams updates module parameters. Authority-only.
+	// UpdateParams (authority-only) updates module parameters.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }

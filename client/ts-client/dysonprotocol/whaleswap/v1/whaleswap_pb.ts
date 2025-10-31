@@ -95,7 +95,7 @@ export class Pool extends Message<Pool> {
   /**
    * ═════ LEVERAGE FIELDS ═════
    * Annual interest rates per reserve denom (exactly two, canonical order).
-   * Each amount is a LegacyDec string representing APR (per-year accrual).
+   * Each amount is a decimal string representing APR (per-year accrual).
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin interest_rate = 15;
    */
@@ -118,7 +118,7 @@ export class Pool extends Message<Pool> {
   /**
    * ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
    * Minimum collateral ratio required at position open per reserve denom
-   * (exactly two, canonical order). Each amount is a LegacyDec string (> 1).
+   * (exactly two, canonical order). Each amount is a decimal string (> 1).
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 21;
    */
@@ -126,7 +126,7 @@ export class Pool extends Message<Pool> {
 
   /**
    * Maximum leverage ratio allowed (collateral + borrowed) / collateral per
-   * reserve denom (exactly two, canonical order). Each amount is a LegacyDec
+   * reserve denom (exactly two, canonical order). Each amount is a decimal
    * string (> 1).
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 22;
@@ -135,7 +135,7 @@ export class Pool extends Message<Pool> {
 
   /**
    * Collateral ratio threshold below which position is liquidatable per reserve
-   * denom (exactly two, canonical order). Each amount is a LegacyDec string
+   * denom (exactly two, canonical order). Each amount is a decimal string
    * (> 1).
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin liquidation_threshold = 23;
@@ -144,7 +144,7 @@ export class Pool extends Message<Pool> {
 
   /**
    * Maximum borrow capacity per reserve denom as DecCoins (exactly two,
-   * canonical order). Each amount is a LegacyDec in [0,1).
+   * canonical order). Each amount is a decimal in [0,1).
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_borrow_percent = 24;
    */

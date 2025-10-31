@@ -61,7 +61,7 @@ type Pool struct {
 	FeesEarned github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,14,rep,name=fees_earned,json=feesEarned,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"fees_earned"`
 	// ═════ LEVERAGE FIELDS ═════
 	// Annual interest rates per reserve denom (exactly two, canonical order).
-	// Each amount is a LegacyDec string representing APR (per-year accrual).
+	// Each amount is a decimal string representing APR (per-year accrual).
 	InterestRate github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,15,rep,name=interest_rate,json=interestRate,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"interest_rate"`
 	// Total accrued interest (yield for LPs)
 	InterestEarned github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,19,rep,name=interest_earned,json=interestEarned,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"interest_earned"`
@@ -69,18 +69,18 @@ type Pool struct {
 	TotalBorrowed github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,20,rep,name=total_borrowed,json=totalBorrowed,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"total_borrowed"`
 	// ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
 	// Minimum collateral ratio required at position open per reserve denom
-	// (exactly two, canonical order). Each amount is a LegacyDec string (> 1).
+	// (exactly two, canonical order). Each amount is a decimal string (> 1).
 	MinCollateralRatio github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,21,rep,name=min_collateral_ratio,json=minCollateralRatio,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"min_collateral_ratio"`
 	// Maximum leverage ratio allowed (collateral + borrowed) / collateral per
-	// reserve denom (exactly two, canonical order). Each amount is a LegacyDec
+	// reserve denom (exactly two, canonical order). Each amount is a decimal
 	// string (> 1).
 	MaxLeverageRatio github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,22,rep,name=max_leverage_ratio,json=maxLeverageRatio,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"max_leverage_ratio"`
 	// Collateral ratio threshold below which position is liquidatable per reserve
-	// denom (exactly two, canonical order). Each amount is a LegacyDec string
+	// denom (exactly two, canonical order). Each amount is a decimal string
 	// (> 1).
 	LiquidationThreshold github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,23,rep,name=liquidation_threshold,json=liquidationThreshold,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"liquidation_threshold"`
 	// Maximum borrow capacity per reserve denom as DecCoins (exactly two,
-	// canonical order). Each amount is a LegacyDec in [0,1).
+	// canonical order). Each amount is a decimal in [0,1).
 	MaxBorrowPercent github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,24,rep,name=max_borrow_percent,json=maxBorrowPercent,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"max_borrow_percent"`
 	// Directional price-impact bounds keyed by the sold denom.
 	// Each amount must satisfy 0 < x <= 1; x == 1 disables the bound (unbounded).

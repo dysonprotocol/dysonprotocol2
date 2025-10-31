@@ -6414,7 +6414,7 @@ paths:
                         Annual interest rates per reserve denom (exactly two,
                         canonical order).
 
-                        Each amount is a LegacyDec string representing APR
+                        Each amount is a decimal string representing APR
                         (per-year accrual).
                     interest_earned:
                       type: array
@@ -6479,8 +6479,8 @@ paths:
                         Minimum collateral ratio required at position open per
                         reserve denom
 
-                        (exactly two, canonical order). Each amount is a
-                        LegacyDec string (> 1).
+                        (exactly two, canonical order). Each amount is a decimal
+                        string (> 1).
                     max_leverage_ratio:
                       type: array
                       items:
@@ -6504,7 +6504,7 @@ paths:
                         collateral per
 
                         reserve denom (exactly two, canonical order). Each
-                        amount is a LegacyDec
+                        amount is a decimal
 
                         string (> 1).
                     liquidation_threshold:
@@ -6530,7 +6530,7 @@ paths:
                         liquidatable per reserve
 
                         denom (exactly two, canonical order). Each amount is a
-                        LegacyDec string
+                        decimal string
 
                         (> 1).
                     max_borrow_percent:
@@ -6555,7 +6555,7 @@ paths:
                         Maximum borrow capacity per reserve denom as DecCoins
                         (exactly two,
 
-                        canonical order). Each amount is a LegacyDec in [0,1).
+                        canonical order). Each amount is a decimal in [0,1).
                     bound_percent:
                       type: array
                       items:
@@ -6880,7 +6880,7 @@ paths:
                         Annual interest rates per reserve denom (exactly two,
                         canonical order).
 
-                        Each amount is a LegacyDec string representing APR
+                        Each amount is a decimal string representing APR
                         (per-year accrual).
                     interest_earned:
                       type: array
@@ -6945,8 +6945,8 @@ paths:
                         Minimum collateral ratio required at position open per
                         reserve denom
 
-                        (exactly two, canonical order). Each amount is a
-                        LegacyDec string (> 1).
+                        (exactly two, canonical order). Each amount is a decimal
+                        string (> 1).
                     max_leverage_ratio:
                       type: array
                       items:
@@ -6970,7 +6970,7 @@ paths:
                         collateral per
 
                         reserve denom (exactly two, canonical order). Each
-                        amount is a LegacyDec
+                        amount is a decimal
 
                         string (> 1).
                     liquidation_threshold:
@@ -6996,7 +6996,7 @@ paths:
                         liquidatable per reserve
 
                         denom (exactly two, canonical order). Each amount is a
-                        LegacyDec string
+                        decimal string
 
                         (> 1).
                     max_borrow_percent:
@@ -7021,7 +7021,7 @@ paths:
                         Maximum borrow capacity per reserve denom as DecCoins
                         (exactly two,
 
-                        canonical order). Each amount is a LegacyDec in [0,1).
+                        canonical order). Each amount is a decimal in [0,1).
                     bound_percent:
                       type: array
                       items:
@@ -7350,7 +7350,7 @@ paths:
                         Annual interest rates per reserve denom (exactly two,
                         canonical order).
 
-                        Each amount is a LegacyDec string representing APR
+                        Each amount is a decimal string representing APR
                         (per-year accrual).
                     interest_earned:
                       type: array
@@ -7415,8 +7415,8 @@ paths:
                         Minimum collateral ratio required at position open per
                         reserve denom
 
-                        (exactly two, canonical order). Each amount is a
-                        LegacyDec string (> 1).
+                        (exactly two, canonical order). Each amount is a decimal
+                        string (> 1).
                     max_leverage_ratio:
                       type: array
                       items:
@@ -7440,7 +7440,7 @@ paths:
                         collateral per
 
                         reserve denom (exactly two, canonical order). Each
-                        amount is a LegacyDec
+                        amount is a decimal
 
                         string (> 1).
                     liquidation_threshold:
@@ -7466,7 +7466,7 @@ paths:
                         liquidatable per reserve
 
                         denom (exactly two, canonical order). Each amount is a
-                        LegacyDec string
+                        decimal string
 
                         (> 1).
                     max_borrow_percent:
@@ -7491,7 +7491,7 @@ paths:
                         Maximum borrow capacity per reserve denom as DecCoins
                         (exactly two,
 
-                        canonical order). Each amount is a LegacyDec in [0,1).
+                        canonical order). Each amount is a decimal in [0,1).
                     bound_percent:
                       type: array
                       items:
@@ -7831,7 +7831,7 @@ paths:
                         Annual interest rates per reserve denom (exactly two,
                         canonical order).
 
-                        Each amount is a LegacyDec string representing APR
+                        Each amount is a decimal string representing APR
                         (per-year accrual).
                     interest_earned:
                       type: array
@@ -7896,8 +7896,8 @@ paths:
                         Minimum collateral ratio required at position open per
                         reserve denom
 
-                        (exactly two, canonical order). Each amount is a
-                        LegacyDec string (> 1).
+                        (exactly two, canonical order). Each amount is a decimal
+                        string (> 1).
                     max_leverage_ratio:
                       type: array
                       items:
@@ -7921,7 +7921,7 @@ paths:
                         collateral per
 
                         reserve denom (exactly two, canonical order). Each
-                        amount is a LegacyDec
+                        amount is a decimal
 
                         string (> 1).
                     liquidation_threshold:
@@ -7947,7 +7947,7 @@ paths:
                         liquidatable per reserve
 
                         denom (exactly two, canonical order). Each amount is a
-                        LegacyDec string
+                        decimal string
 
                         (> 1).
                     max_borrow_percent:
@@ -7972,7 +7972,7 @@ paths:
                         Maximum borrow capacity per reserve denom as DecCoins
                         (exactly two,
 
-                        canonical order). Each amount is a LegacyDec in [0,1).
+                        canonical order). Each amount is a decimal in [0,1).
                     bound_percent:
                       type: array
                       items:
@@ -8304,8 +8304,8 @@ paths:
                       Annual interest rates per reserve denom (exactly two,
                       canonical order).
 
-                      Each amount is a LegacyDec string representing APR
-                      (per-year accrual).
+                      Each amount is a decimal string representing APR (per-year
+                      accrual).
                   interest_earned:
                     type: array
                     items:
@@ -8366,7 +8366,7 @@ paths:
                       Minimum collateral ratio required at position open per
                       reserve denom
 
-                      (exactly two, canonical order). Each amount is a LegacyDec
+                      (exactly two, canonical order). Each amount is a decimal
                       string (> 1).
                   max_leverage_ratio:
                     type: array
@@ -8391,7 +8391,7 @@ paths:
                       collateral per
 
                       reserve denom (exactly two, canonical order). Each amount
-                      is a LegacyDec
+                      is a decimal
 
                       string (> 1).
                   liquidation_threshold:
@@ -8417,7 +8417,7 @@ paths:
                       liquidatable per reserve
 
                       denom (exactly two, canonical order). Each amount is a
-                      LegacyDec string
+                      decimal string
 
                       (> 1).
                   max_borrow_percent:
@@ -8442,7 +8442,7 @@ paths:
                       Maximum borrow capacity per reserve denom as DecCoins
                       (exactly two,
 
-                      canonical order). Each amount is a LegacyDec in [0,1).
+                      canonical order). Each amount is a decimal in [0,1).
                   bound_percent:
                     type: array
                     items:
@@ -8724,7 +8724,7 @@ paths:
                         Annual interest rates per reserve denom (exactly two,
                         canonical order).
 
-                        Each amount is a LegacyDec string representing APR
+                        Each amount is a decimal string representing APR
                         (per-year accrual).
                     interest_earned:
                       type: array
@@ -8789,8 +8789,8 @@ paths:
                         Minimum collateral ratio required at position open per
                         reserve denom
 
-                        (exactly two, canonical order). Each amount is a
-                        LegacyDec string (> 1).
+                        (exactly two, canonical order). Each amount is a decimal
+                        string (> 1).
                     max_leverage_ratio:
                       type: array
                       items:
@@ -8814,7 +8814,7 @@ paths:
                         collateral per
 
                         reserve denom (exactly two, canonical order). Each
-                        amount is a LegacyDec
+                        amount is a decimal
 
                         string (> 1).
                     liquidation_threshold:
@@ -8840,7 +8840,7 @@ paths:
                         liquidatable per reserve
 
                         denom (exactly two, canonical order). Each amount is a
-                        LegacyDec string
+                        decimal string
 
                         (> 1).
                     max_borrow_percent:
@@ -8865,7 +8865,7 @@ paths:
                         Maximum borrow capacity per reserve denom as DecCoins
                         (exactly two,
 
-                        canonical order). Each amount is a LegacyDec in [0,1).
+                        canonical order). Each amount is a decimal in [0,1).
                     bound_percent:
                       type: array
                       items:
@@ -9184,8 +9184,8 @@ paths:
                       Annual interest rates per reserve denom (exactly two,
                       canonical order).
 
-                      Each amount is a LegacyDec string representing APR
-                      (per-year accrual).
+                      Each amount is a decimal string representing APR (per-year
+                      accrual).
                   interest_earned:
                     type: array
                     items:
@@ -9246,7 +9246,7 @@ paths:
                       Minimum collateral ratio required at position open per
                       reserve denom
 
-                      (exactly two, canonical order). Each amount is a LegacyDec
+                      (exactly two, canonical order). Each amount is a decimal
                       string (> 1).
                   max_leverage_ratio:
                     type: array
@@ -9271,7 +9271,7 @@ paths:
                       collateral per
 
                       reserve denom (exactly two, canonical order). Each amount
-                      is a LegacyDec
+                      is a decimal
 
                       string (> 1).
                   liquidation_threshold:
@@ -9297,7 +9297,7 @@ paths:
                       liquidatable per reserve
 
                       denom (exactly two, canonical order). Each amount is a
-                      LegacyDec string
+                      decimal string
 
                       (> 1).
                   max_borrow_percent:
@@ -9322,7 +9322,7 @@ paths:
                       Maximum borrow capacity per reserve denom as DecCoins
                       (exactly two,
 
-                      canonical order). Each amount is a LegacyDec in [0,1).
+                      canonical order). Each amount is a decimal in [0,1).
                   bound_percent:
                     type: array
                     items:
@@ -9585,6 +9585,11 @@ paths:
                         checks (cosmos.Dec
 
                         string).
+                    liquidation_threshold:
+                      type: string
+                      description: >-
+                        Liquidation threshold used for liquidation checks
+                        (cosmos.Dec string).
                   description: >-
                     LeveragePosition represents an active leverage position for
                     a trader.
@@ -9825,6 +9830,11 @@ paths:
                         checks (cosmos.Dec
 
                         string).
+                    liquidation_threshold:
+                      type: string
+                      description: >-
+                        Liquidation threshold used for liquidation checks
+                        (cosmos.Dec string).
                   description: >-
                     LeveragePosition represents an active leverage position for
                     a trader.
@@ -10078,6 +10088,11 @@ paths:
                       checks (cosmos.Dec
 
                       string).
+                  liquidation_threshold:
+                    type: string
+                    description: >-
+                      Liquidation threshold used for liquidation checks
+                      (cosmos.Dec string).
                 description: >-
                   LeveragePosition represents an active leverage position for a
                   trader.
@@ -10329,11 +10344,16 @@ paths:
                               offer_id:
                                 type: string
                                 format: uint64
+                                description: >-
+                                  ID of the offer to take from; offer must exist
+                                  and be in open status.
                               take_units:
                                 type: string
                                 description: >-
-                                  units to take (sdk.Int string). If empty, take
-                                  full remaining.
+                                  Units to take (sdk.Int string). If empty, take
+                                  full remaining. Must be
+
+                                  positive and ≤ remaining.
                           auction:
                             type: object
                             properties:
@@ -10693,11 +10713,16 @@ paths:
                               offer_id:
                                 type: string
                                 format: uint64
+                                description: >-
+                                  ID of the offer to take from; offer must exist
+                                  and be in open status.
                               take_units:
                                 type: string
                                 description: >-
-                                  units to take (sdk.Int string). If empty, take
-                                  full remaining.
+                                  Units to take (sdk.Int string). If empty, take
+                                  full remaining. Must be
+
+                                  positive and ≤ remaining.
                           auction:
                             type: object
                             properties:
@@ -11052,11 +11077,16 @@ paths:
                               offer_id:
                                 type: string
                                 format: uint64
+                                description: >-
+                                  ID of the offer to take from; offer must exist
+                                  and be in open status.
                               take_units:
                                 type: string
                                 description: >-
-                                  units to take (sdk.Int string). If empty, take
-                                  full remaining.
+                                  Units to take (sdk.Int string). If empty, take
+                                  full remaining. Must be
+
+                                  positive and ≤ remaining.
                           auction:
                             type: object
                             properties:
@@ -11412,11 +11442,16 @@ paths:
                               offer_id:
                                 type: string
                                 format: uint64
+                                description: >-
+                                  ID of the offer to take from; offer must exist
+                                  and be in open status.
                               take_units:
                                 type: string
                                 description: >-
-                                  units to take (sdk.Int string). If empty, take
-                                  full remaining.
+                                  Units to take (sdk.Int string). If empty, take
+                                  full remaining. Must be
+
+                                  positive and ≤ remaining.
                           auction:
                             type: object
                             properties:
@@ -11771,11 +11806,16 @@ paths:
                               offer_id:
                                 type: string
                                 format: uint64
+                                description: >-
+                                  ID of the offer to take from; offer must exist
+                                  and be in open status.
                               take_units:
                                 type: string
                                 description: >-
-                                  units to take (sdk.Int string). If empty, take
-                                  full remaining.
+                                  Units to take (sdk.Int string). If empty, take
+                                  full remaining. Must be
+
+                                  positive and ≤ remaining.
                           auction:
                             type: object
                             properties:
@@ -12130,11 +12170,16 @@ paths:
                             offer_id:
                               type: string
                               format: uint64
+                              description: >-
+                                ID of the offer to take from; offer must exist
+                                and be in open status.
                             take_units:
                               type: string
                               description: >-
-                                units to take (sdk.Int string). If empty, take
-                                full remaining.
+                                Units to take (sdk.Int string). If empty, take
+                                full remaining. Must be
+
+                                positive and ≤ remaining.
                         auction:
                           type: object
                           properties:
@@ -35014,17 +35059,10 @@ paths:
         - Msg
   dysonprotocol.whaleswap.v1.MsgMakeTrade:
     post:
-      summary: >-
+      summary: |-
         *
-
-        MakeTrade executes swaps and orderbook takes in-order with a single
-
-        settlement. Applies per-denom debit caps (max_input) and final
-        min_output,
-
-        releases PFAND on offer close, rejects duplicate ids per type; auction
-
-        operations are currently rejected.
+        MakeTrade combines AMM pool swaps and orderbook takes into a single
+        transaction with end-of-tx settlement.
       operationId: dysonprotocol.whaleswap.v1.MsgMakeTrade
       responses:
         '200':
@@ -35035,7 +35073,7 @@ paths:
               trade_id:
                 type: string
                 format: uint64
-                title: unique ID of the recorded trade
+                description: Unique ID of the recorded trade containing all operations.
               trader_inputs:
                 type: array
                 items:
@@ -35053,9 +35091,11 @@ paths:
                     method
 
                     signatures required by gogoproto.
-                title: >-
-                  net debits from trader after netting/coverage/self-net by
-                  denom
+                description: >-
+                  Final net debits from trader by denom after netting, coverage,
+                  and
+
+                  self-netting.
               trader_outputs:
                 type: array
                 items:
@@ -35073,7 +35113,11 @@ paths:
                     method
 
                     signatures required by gogoproto.
-                title: net credits to trader after netting/coverage/self-net by denom
+                description: >-
+                  Final net credits to trader by denom after netting, coverage,
+                  and
+
+                  self-netting.
         default:
           description: An unexpected error response.
           schema:
@@ -35105,6 +35149,11 @@ paths:
             properties:
               trader:
                 type: string
+                description: >-
+                  Account executing the trade operations; all operations execute
+                  as this
+
+                  trader.
               max_input:
                 type: array
                 items:
@@ -35122,7 +35171,11 @@ paths:
                     method
 
                     signatures required by gogoproto.
-                title: End-of-tx debit caps per denom for the trader
+                description: >-
+                  End-of-tx debit caps per denom for the trader; zero means no
+                  debits allowed
+
+                  for that denom.
               operations:
                 type: array
                 items:
@@ -35172,11 +35225,16 @@ paths:
                         offer_id:
                           type: string
                           format: uint64
+                          description: >-
+                            ID of the offer to take from; offer must exist and
+                            be in open status.
                         take_units:
                           type: string
                           description: >-
-                            units to take (sdk.Int string). If empty, take full
-                            remaining.
+                            Units to take (sdk.Int string). If empty, take full
+                            remaining. Must be
+
+                            positive and ≤ remaining.
                     auction:
                       type: object
                       properties:
@@ -35228,7 +35286,9 @@ paths:
                     MsgMakeTrade.operations,
 
                     sent/received are empty (populated during execution).
-                title: Mixed operations processed in-order
+                description: >-
+                  Mixed operations processed in-order; must contain at least one
+                  operation.
               min_output:
                 type: array
                 items:
@@ -35246,9 +35306,108 @@ paths:
                     method
 
                     signatures required by gogoproto.
-                title: Final trader minimum outputs per denom after aggregation
+                description: >-
+                  Final trader minimum outputs per denom after aggregation and
+                  netting.
               note:
                 type: string
+                description: Optional note attached to the trade record.
+            description: >-
+              *
+
+              MakeTrade combines AMM pool swaps and orderbook takes into a
+              single
+
+              transaction.
+
+
+              Behavior:
+
+              - Processes SwapLeg (AMM pool swaps) and TakeItem (orderbook
+              takes)
+
+              operations in order.
+
+              - Aggregates all inputs/outputs across operations, then performs
+
+              orderbook-style netting.
+
+              - Trader credits offset maker wants; deficits covered from trader
+              base
+
+              balance.
+
+              - PFAND released to trader when offers close, applied pre-netting.
+
+              - Enforces per-denom debit caps (max_input) and minimum outputs
+              (min_output)
+
+              after netting.
+
+              - Executes final settlement via multisend; all operations succeed
+              or
+
+              transaction fails.
+
+              - Enables circular trade dependencies through self-netting: trader
+
+              debit/credit pairs by denom are netted out, allowing complex
+              arbitrage
+
+              chains where intermediate results cancel (e.g., A→B→C→A becomes
+              net B+C
+
+              profit).
+
+
+              Validation:
+
+              - Trader address must be valid.
+
+              - Operations must be non-empty.
+
+              - Note length capped by module params.
+
+              - Swap operations: pool must exist, denoms match pool, no
+              duplicate pool_ids.
+
+              - Take operations: offer must exist and be open, no duplicate
+              offer_ids.
+
+              - Auction operations currently rejected.
+
+
+              State updates:
+
+              - AMM pools: reserves updated, fees accrued, trade counters
+              incremented.
+
+              - Offers: remaining units/wants/haves updated; closed when fully
+              taken.
+
+              - Trade recorded with all operations, indexed by
+              trader/pool/offer/auction.
+
+
+              Emits:
+
+              - EventPfandReleased for each closed offer (amount, offer_id,
+              trade_id).
+
+              - EventPoolSwap for each swap (pool_id, trade_id,
+              operation_index).
+
+              - EventOfferTaken for each take (offer_id, trade_id, units_taken).
+
+              - EventTradeRecorded summary (trade_id, trader, num_operations,
+              note).
+
+
+              Returns:
+
+              - trade_id and final net trader_inputs/outputs after
+
+              netting/coverage/self-net.
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgOpenAuction:
@@ -35350,13 +35509,11 @@ paths:
       summary: >-
         *
 
-        OpenPosition opens a synthetic leveraged position. Borrows (subject to
-        pool
+        OpenPosition creates a leveraged position by borrowing against
+        collateral,
 
-        cap), swaps to the held denom, escrows collateral, snapshots interest
-        rate
-
-        and min CR, and records the position.
+        swapping to held asset, and recording the position with interest
+        snapshots.
       operationId: dysonprotocol.whaleswap.v1.MsgOpenPosition
       responses:
         '200':
@@ -35367,6 +35524,7 @@ paths:
               position_id:
                 type: string
                 format: uint64
+                description: Unique identifier for the newly created leveraged position.
               held:
                 type: object
                 properties:
@@ -35414,22 +35572,16 @@ paths:
               trader:
                 type: string
                 description: >-
-                  trader: account opening the synthetic leveraged position.
-                  Collateral will
+                  Account opening the leveraged position; collateral escrowed
+                  from this
 
-                  be escrowed from this address into the module account; no
-                  borrowed/held
-
-                  coins are transferred to the trader in synthetic mode.
+                  address.
               pool_id:
                 type: string
                 format: uint64
                 description: >-
-                  pool_id: target two-asset pool providing price reference and
-                  borrow caps.
-
-                  The two allowed denoms for collateral/borrow/held must match
-                  this pool.
+                  Target two-asset pool providing price reference and borrow
+                  caps.
               collateral:
                 type: object
                 properties:
@@ -35462,9 +35614,66 @@ paths:
                   signatures required by gogoproto.
               note:
                 type: string
-                description: >-
-                  The held denom is implicitly the other pool denom (not the
-                  borrow denom).
+                description: Optional note for the position.
+            description: >-
+              *
+               v creates a leveraged position by borrowing against collateral.
+
+              Behavior:
+
+              - Validates pool (exactly 2 denoms), collateral/borrow amounts and
+              denoms.
+
+              - Computes collateral ratio CR = collateral_value / debt_value in
+              borrow
+                units, accounting for current pool price.
+              - Validates CR >= pool.min_collateral_ratio[borrow_denom] (> 1).
+
+              - Validates leverage <= pool.max_leverage_ratio[borrow_denom] (>
+              1).
+
+              - Reduces pool reserves by borrow amount, updates total_borrowed.
+
+              - Moves borrowed amount to borrow vault, executes swap (borrowed →
+              held).
+
+              - Escrows collateral to whaleswap module after swap.
+
+              - Creates position with interest rate and min_collateral_ratio
+              snapshots.
+
+              - Held denom is the pool denom not matching borrow denom.
+
+
+              Validation:
+
+              - Pool must exist with exactly 2 denoms.
+
+              - Collateral/borrow amounts must be positive.
+
+              - Collateral/borrow denoms must match pool denoms.
+
+              - Collateral ratio must meet pool min_collateral_ratio for borrow
+              denom.
+
+              - Leverage must not exceed pool max_leverage_ratio for borrow
+              denom.
+
+              - Borrow amount must not exceed pool borrow cap
+              (max_borrow_percent).
+
+              - Swap must produce positive held output.
+
+
+              Emits:
+
+              - EventLeveragePositionOpened with position_id, user, pool_id,
+                collateral_denom, collateral_amount, borrowed_denom, borrowed_amount,
+                entry_price_held_per_borrow, collateral_ratio.
+
+              Returns:
+
+              - position_id and held coin in the response.
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgPoolSwap:
@@ -35769,29 +35978,7 @@ paths:
       summary: |-
         *
         RemoveLiquidity burns the caller's shares and returns the underlying
-        reserves.
-      description: >-
-        Modes:
-
-        - Full exit: burning all outstanding shares deletes the pool and pays
-          out the full reserves.
-        - Partial exit:
-          - Concentrated pools: outputs are computed from ΔL within the active
-            price band.
-          - Non-concentrated pools: outputs are pro-rata.
-
-        Safety:
-
-        - Concentrated: post-state price must remain within the band and the
-          liquidity delta must be consistent with the burned share ratio within
-          a small tolerance.
-        - Partial exits cannot deplete any reserve; use full exit to withdraw
-        the
-          last liquidity.
-        - Outputs must be non-zero.
-
-
-        Emits EventPoolLiquidityRemoved on success.
+        reserves proportional to the share burned.
       operationId: dysonprotocol.whaleswap.v1.MsgRemoveLiquidity
       responses:
         '200':
@@ -35816,7 +36003,9 @@ paths:
                     method
 
                     signatures required by gogoproto.
-                title: coins returned
+                description: >-
+                  Coins returned to the caller proportional to the burned
+                  shares.
         default:
           description: An unexpected error response.
           schema:
@@ -35863,34 +36052,47 @@ paths:
             description: >-
               *
 
-              Remove liquidity (anyone).
+              Remove liquidity from a pool by burning shares and returning
+              underlying
+
+              reserves.
 
 
               Behavior:
 
-              - Burns shares and returns the underlying reserves.
+              - Supports two modes: full exit and partial exit.
 
-              - Full exit: burn all outstanding shares to delete the pool and
-              receive the
-                full reserves.
-              - Partial exit:
-                - Concentrated pools: ΔL-based outputs within the current price band.
-                - Non-concentrated pools: pro-rata outputs using DecCoins.
+              - Full exit: when burning all outstanding shares, the pool is
+              deleted and
+                the full reserves are paid out to the caller.
+              - Partial exit: burns a subset of shares and receives a payout
+              proportional
+                to that share using pro-rata DecCoins math; pool remains active with
+                reduced reserves.
+              - Ensures partial exits cannot deplete any reserve below zero;
+              full exit
+                required to withdraw the last liquidity.
 
-              Safety and validation:
+              Validation:
 
-              - Pool must exist; signer must hold at least `shares`.
+              - Pool must exist.
 
-              - Outputs must be non-zero.
+              - Signer must hold at least shares.
 
-              - Partial exits cannot deplete any reserve; use full exit to
-              withdraw the
-                last liquidity.
-              - Concentrated pools: post-state price must remain within band; ΔL
-              must
-                match burned share ratio within a small tolerance.
+              - Shares must be a positive integer string.
 
-              Emits: EventPoolLiquidityRemoved on success.
+              - Partial exits cannot deplete any reserve; withdrawing the last
+              liquidity
+                requires a full exit (burning all shares).
+
+              Emits:
+
+              - EventPoolLiquidityRemoved with pool_id and shares.
+
+
+              Returns:
+
+              - coins returned to the caller in the amount field.
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgTakeOffer:
@@ -35898,12 +36100,8 @@ paths:
       summary: >-
         *
 
-        TakeOffer executes one or more takes. Nets taker credits against maker
-
-        wants, funds any deficit from taker base (module covers escrow),
-        releases
-
-        PFAND to the taker on full close, and records a single trade.
+        TakeOffer executes one or more orderbook takes with netting and
+        settlement.
       operationId: dysonprotocol.whaleswap.v1.MsgTakeOffer
       responses:
         '200':
@@ -35982,6 +36180,7 @@ paths:
             properties:
               taker:
                 type: string
+                description: Account executing the takes; all takes execute as this trader.
               trades:
                 type: array
                 items:
@@ -35990,18 +36189,110 @@ paths:
                     offer_id:
                       type: string
                       format: uint64
+                      description: >-
+                        ID of the offer to take from; offer must exist and be in
+                        open status.
                     take_units:
                       type: string
                       description: >-
-                        units to take (sdk.Int string). If empty, take full
-                        remaining.
+                        Units to take (sdk.Int string). If empty, take full
+                        remaining. Must be
+
+                        positive and ≤ remaining.
+                description: >-
+                  List of take operations to execute; must contain at least one
+                  item.
+            description: >-
+              *
+
+              TakeOffer executes one or more orderbook takes with netting and
+              settlement.
+
+
+              Behavior:
+
+              - Processes multiple take operations in a single transaction with
+              aggregated
+
+              settlement.
+
+              - For each take: validates offer exists and is open, parses
+              take_units
+
+              (defaults to remaining), computes exchange amounts (required_want
+              =
+
+              take_units × unit_want, deliver_have = take_units × unit_have),
+              aggregates
+
+              outputs by address, updates offer state (closes when fully taken),
+              records
+
+              operations.
+
+              - Post-processing: computes maker wants and taker credits, nets
+              taker credits
+
+              against maker wants, covers deficits from taker base balance (uses
+              module
+
+              backing for remaining solid deficits).
+
+              - Settlement: executes batch coin movements via wsMoveCoins for
+              all
+
+              participants.
+
+              - PFAND release: when offers close, locked PFAND flows from module
+              to taker.
+
+              - Trade recording: creates single Trade with all operations,
+              indexed by
+
+              trader/offer.
+
+
+              Validation:
+
+              - Taker address must be valid.
+
+              - Trades list must be non-empty.
+
+              - Each offer must exist and be in open status.
+
+              - Take_units must be valid integer string (positive, ≤ remaining);
+              empty
+
+              defaults to remaining.
+
+              - For LIQUID settlement: maker must have sufficient balance for
+              deliver_have.
+
+              - Module must have sufficient backing for any uncovered solid
+              deficits.
+
+
+              Emits:
+
+              - EventOfferTaken for each take (offer_id, trade_id, units_taken).
+
+              - EventTradeRecorded for the batch (trade_id, trader,
+              num_operations).
+
+              - EventPfandReleased for each closed offer (amount, offer_id,
+              trade_id).
+
+
+              Returns:
+
+              - aggregated sent/received totals across all executed takes.
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgUpdateParams:
     post:
       summary: |-
         *
-        UpdateParams updates module parameters. Authority-only.
+        UpdateParams (authority-only) updates module parameters.
       operationId: dysonprotocol.whaleswap.v1.MsgUpdateParams
       responses:
         '200':
@@ -36039,7 +36330,11 @@ paths:
             properties:
               authority:
                 type: string
+                description: >-
+                  Authority address that must match the module's configured
+                  authority.
               params:
+                description: New parameter values to set; must pass validation.
                 type: object
                 properties:
                   pfand_per_offer:
@@ -36099,7 +36394,46 @@ paths:
                     title: >-
                       Block delay before liquidation can be finalized after
                       initialization
-            description: UpdateParams is the Msg/UpdateParams request type.
+            description: >-
+              *
+
+              UpdateParams updates module parameters.
+
+
+              Behavior:
+
+              - Authority-only: verifies msg.Authority matches the module's
+              configured
+
+              authority.
+
+              - Parameter validation: validates all parameter constraints (pfand
+              amounts,
+
+              time durations, percentage bounds, block delays).
+
+              - State update: persists validated parameters to the module's
+              parameter
+
+              store.
+
+
+              Validation:
+
+              - Authority must match the module's configured authority address.
+
+              - Parameters must pass Params.Validate() which checks:
+                - PfandPerOffer denom set when amount > 0
+                - ValuationPeriod > 0
+                - BidTimeout > 0
+                - ValuationFeePct in [0,1) if set
+                - MinimumBidPercentIncrease in [0,1) if set
+                - BlockDelayBeforeClose > 0
+                - BlockDelayBeforeLiquidation > 0
+
+              Returns:
+
+              - MsgUpdateParamsResponse (empty) on success.
       tags:
         - Msg
   dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig:
@@ -47760,6 +48094,9 @@ definitions:
           (cosmos.Dec
 
           string).
+      liquidation_threshold:
+        type: string
+        description: Liquidation threshold used for liquidation checks (cosmos.Dec string).
     description: LeveragePosition represents an active leverage position for a trader.
   dysonprotocol.whaleswap.v1.LiquidationStatus:
     type: string
@@ -48026,7 +48363,7 @@ definitions:
           Annual interest rates per reserve denom (exactly two, canonical
           order).
 
-          Each amount is a LegacyDec string representing APR (per-year accrual).
+          Each amount is a decimal string representing APR (per-year accrual).
       interest_earned:
         type: array
         items:
@@ -48071,13 +48408,10 @@ definitions:
 
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
-        description: >-
+        description: |-
           ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
-
           Minimum collateral ratio required at position open per reserve denom
-
-          (exactly two, canonical order). Each amount is a LegacyDec string (>
-          1).
+          (exactly two, canonical order). Each amount is a decimal string (> 1).
       max_leverage_ratio:
         type: array
         items:
@@ -48096,8 +48430,7 @@ definitions:
           Maximum leverage ratio allowed (collateral + borrowed) / collateral
           per
 
-          reserve denom (exactly two, canonical order). Each amount is a
-          LegacyDec
+          reserve denom (exactly two, canonical order). Each amount is a decimal
 
           string (> 1).
       liquidation_threshold:
@@ -48118,8 +48451,7 @@ definitions:
           Collateral ratio threshold below which position is liquidatable per
           reserve
 
-          denom (exactly two, canonical order). Each amount is a LegacyDec
-          string
+          denom (exactly two, canonical order). Each amount is a decimal string
 
           (> 1).
       max_borrow_percent:
@@ -48138,7 +48470,7 @@ definitions:
             signatures required by gogoproto.
         description: |-
           Maximum borrow capacity per reserve denom as DecCoins (exactly two,
-          canonical order). Each amount is a LegacyDec in [0,1).
+          canonical order). Each amount is a decimal in [0,1).
       bound_percent:
         type: array
         items:
@@ -49581,7 +49913,7 @@ definitions:
               Annual interest rates per reserve denom (exactly two, canonical
               order).
 
-              Each amount is a LegacyDec string representing APR (per-year
+              Each amount is a decimal string representing APR (per-year
               accrual).
           interest_earned:
             type: array
@@ -49643,8 +49975,8 @@ definitions:
               Minimum collateral ratio required at position open per reserve
               denom
 
-              (exactly two, canonical order). Each amount is a LegacyDec string
-              (> 1).
+              (exactly two, canonical order). Each amount is a decimal string (>
+              1).
           max_leverage_ratio:
             type: array
             items:
@@ -49668,7 +50000,7 @@ definitions:
               collateral per
 
               reserve denom (exactly two, canonical order). Each amount is a
-              LegacyDec
+              decimal
 
               string (> 1).
           liquidation_threshold:
@@ -49693,7 +50025,7 @@ definitions:
               Collateral ratio threshold below which position is liquidatable
               per reserve
 
-              denom (exactly two, canonical order). Each amount is a LegacyDec
+              denom (exactly two, canonical order). Each amount is a decimal
               string
 
               (> 1).
@@ -49719,7 +50051,7 @@ definitions:
               Maximum borrow capacity per reserve denom as DecCoins (exactly
               two,
 
-              canonical order). Each amount is a LegacyDec in [0,1).
+              canonical order). Each amount is a decimal in [0,1).
           bound_percent:
             type: array
             items:
@@ -49942,7 +50274,7 @@ definitions:
               Annual interest rates per reserve denom (exactly two, canonical
               order).
 
-              Each amount is a LegacyDec string representing APR (per-year
+              Each amount is a decimal string representing APR (per-year
               accrual).
           interest_earned:
             type: array
@@ -50004,8 +50336,8 @@ definitions:
               Minimum collateral ratio required at position open per reserve
               denom
 
-              (exactly two, canonical order). Each amount is a LegacyDec string
-              (> 1).
+              (exactly two, canonical order). Each amount is a decimal string (>
+              1).
           max_leverage_ratio:
             type: array
             items:
@@ -50029,7 +50361,7 @@ definitions:
               collateral per
 
               reserve denom (exactly two, canonical order). Each amount is a
-              LegacyDec
+              decimal
 
               string (> 1).
           liquidation_threshold:
@@ -50054,7 +50386,7 @@ definitions:
               Collateral ratio threshold below which position is liquidatable
               per reserve
 
-              denom (exactly two, canonical order). Each amount is a LegacyDec
+              denom (exactly two, canonical order). Each amount is a decimal
               string
 
               (> 1).
@@ -50080,7 +50412,7 @@ definitions:
               Maximum borrow capacity per reserve denom as DecCoins (exactly
               two,
 
-              canonical order). Each amount is a LegacyDec in [0,1).
+              canonical order). Each amount is a decimal in [0,1).
           bound_percent:
             type: array
             items:
@@ -50306,7 +50638,7 @@ definitions:
                 Annual interest rates per reserve denom (exactly two, canonical
                 order).
 
-                Each amount is a LegacyDec string representing APR (per-year
+                Each amount is a decimal string representing APR (per-year
                 accrual).
             interest_earned:
               type: array
@@ -50368,8 +50700,8 @@ definitions:
                 Minimum collateral ratio required at position open per reserve
                 denom
 
-                (exactly two, canonical order). Each amount is a LegacyDec
-                string (> 1).
+                (exactly two, canonical order). Each amount is a decimal string
+                (> 1).
             max_leverage_ratio:
               type: array
               items:
@@ -50393,7 +50725,7 @@ definitions:
                 collateral per
 
                 reserve denom (exactly two, canonical order). Each amount is a
-                LegacyDec
+                decimal
 
                 string (> 1).
             liquidation_threshold:
@@ -50418,7 +50750,7 @@ definitions:
                 Collateral ratio threshold below which position is liquidatable
                 per reserve
 
-                denom (exactly two, canonical order). Each amount is a LegacyDec
+                denom (exactly two, canonical order). Each amount is a decimal
                 string
 
                 (> 1).
@@ -50444,7 +50776,7 @@ definitions:
                 Maximum borrow capacity per reserve denom as DecCoins (exactly
                 two,
 
-                canonical order). Each amount is a LegacyDec in [0,1).
+                canonical order). Each amount is a decimal in [0,1).
             bound_percent:
               type: array
               items:
@@ -50702,7 +51034,7 @@ definitions:
                 Annual interest rates per reserve denom (exactly two, canonical
                 order).
 
-                Each amount is a LegacyDec string representing APR (per-year
+                Each amount is a decimal string representing APR (per-year
                 accrual).
             interest_earned:
               type: array
@@ -50764,8 +51096,8 @@ definitions:
                 Minimum collateral ratio required at position open per reserve
                 denom
 
-                (exactly two, canonical order). Each amount is a LegacyDec
-                string (> 1).
+                (exactly two, canonical order). Each amount is a decimal string
+                (> 1).
             max_leverage_ratio:
               type: array
               items:
@@ -50789,7 +51121,7 @@ definitions:
                 collateral per
 
                 reserve denom (exactly two, canonical order). Each amount is a
-                LegacyDec
+                decimal
 
                 string (> 1).
             liquidation_threshold:
@@ -50814,7 +51146,7 @@ definitions:
                 Collateral ratio threshold below which position is liquidatable
                 per reserve
 
-                denom (exactly two, canonical order). Each amount is a LegacyDec
+                denom (exactly two, canonical order). Each amount is a decimal
                 string
 
                 (> 1).
@@ -50840,7 +51172,7 @@ definitions:
                 Maximum borrow capacity per reserve denom as DecCoins (exactly
                 two,
 
-                canonical order). Each amount is a LegacyDec in [0,1).
+                canonical order). Each amount is a decimal in [0,1).
             bound_percent:
               type: array
               items:
@@ -51098,7 +51430,7 @@ definitions:
                 Annual interest rates per reserve denom (exactly two, canonical
                 order).
 
-                Each amount is a LegacyDec string representing APR (per-year
+                Each amount is a decimal string representing APR (per-year
                 accrual).
             interest_earned:
               type: array
@@ -51160,8 +51492,8 @@ definitions:
                 Minimum collateral ratio required at position open per reserve
                 denom
 
-                (exactly two, canonical order). Each amount is a LegacyDec
-                string (> 1).
+                (exactly two, canonical order). Each amount is a decimal string
+                (> 1).
             max_leverage_ratio:
               type: array
               items:
@@ -51185,7 +51517,7 @@ definitions:
                 collateral per
 
                 reserve denom (exactly two, canonical order). Each amount is a
-                LegacyDec
+                decimal
 
                 string (> 1).
             liquidation_threshold:
@@ -51210,7 +51542,7 @@ definitions:
                 Collateral ratio threshold below which position is liquidatable
                 per reserve
 
-                denom (exactly two, canonical order). Each amount is a LegacyDec
+                denom (exactly two, canonical order). Each amount is a decimal
                 string
 
                 (> 1).
@@ -51236,7 +51568,7 @@ definitions:
                 Maximum borrow capacity per reserve denom as DecCoins (exactly
                 two,
 
-                canonical order). Each amount is a LegacyDec in [0,1).
+                canonical order). Each amount is a decimal in [0,1).
             bound_percent:
               type: array
               items:
@@ -51494,7 +51826,7 @@ definitions:
                 Annual interest rates per reserve denom (exactly two, canonical
                 order).
 
-                Each amount is a LegacyDec string representing APR (per-year
+                Each amount is a decimal string representing APR (per-year
                 accrual).
             interest_earned:
               type: array
@@ -51556,8 +51888,8 @@ definitions:
                 Minimum collateral ratio required at position open per reserve
                 denom
 
-                (exactly two, canonical order). Each amount is a LegacyDec
-                string (> 1).
+                (exactly two, canonical order). Each amount is a decimal string
+                (> 1).
             max_leverage_ratio:
               type: array
               items:
@@ -51581,7 +51913,7 @@ definitions:
                 collateral per
 
                 reserve denom (exactly two, canonical order). Each amount is a
-                LegacyDec
+                decimal
 
                 string (> 1).
             liquidation_threshold:
@@ -51606,7 +51938,7 @@ definitions:
                 Collateral ratio threshold below which position is liquidatable
                 per reserve
 
-                denom (exactly two, canonical order). Each amount is a LegacyDec
+                denom (exactly two, canonical order). Each amount is a decimal
                 string
 
                 (> 1).
@@ -51632,7 +51964,7 @@ definitions:
                 Maximum borrow capacity per reserve denom as DecCoins (exactly
                 two,
 
-                canonical order). Each amount is a LegacyDec in [0,1).
+                canonical order). Each amount is a decimal in [0,1).
             bound_percent:
               type: array
               items:
@@ -51890,7 +52222,7 @@ definitions:
                 Annual interest rates per reserve denom (exactly two, canonical
                 order).
 
-                Each amount is a LegacyDec string representing APR (per-year
+                Each amount is a decimal string representing APR (per-year
                 accrual).
             interest_earned:
               type: array
@@ -51952,8 +52284,8 @@ definitions:
                 Minimum collateral ratio required at position open per reserve
                 denom
 
-                (exactly two, canonical order). Each amount is a LegacyDec
-                string (> 1).
+                (exactly two, canonical order). Each amount is a decimal string
+                (> 1).
             max_leverage_ratio:
               type: array
               items:
@@ -51977,7 +52309,7 @@ definitions:
                 collateral per
 
                 reserve denom (exactly two, canonical order). Each amount is a
-                LegacyDec
+                decimal
 
                 string (> 1).
             liquidation_threshold:
@@ -52002,7 +52334,7 @@ definitions:
                 Collateral ratio threshold below which position is liquidatable
                 per reserve
 
-                denom (exactly two, canonical order). Each amount is a LegacyDec
+                denom (exactly two, canonical order). Each amount is a decimal
                 string
 
                 (> 1).
@@ -52028,7 +52360,7 @@ definitions:
                 Maximum borrow capacity per reserve denom as DecCoins (exactly
                 two,
 
-                canonical order). Each amount is a LegacyDec in [0,1).
+                canonical order). Each amount is a decimal in [0,1).
             bound_percent:
               type: array
               items:
@@ -52276,6 +52608,11 @@ definitions:
               (cosmos.Dec
 
               string).
+          liquidation_threshold:
+            type: string
+            description: >-
+              Liquidation threshold used for liquidation checks (cosmos.Dec
+              string).
         description: LeveragePosition represents an active leverage position for a trader.
       health_status:
         title: Health Information
@@ -52469,6 +52806,11 @@ definitions:
                 (cosmos.Dec
 
                 string).
+            liquidation_threshold:
+              type: string
+              description: >-
+                Liquidation threshold used for liquidation checks (cosmos.Dec
+                string).
           description: >-
             LeveragePosition represents an active leverage position for a
             trader.
@@ -52631,6 +52973,11 @@ definitions:
                 Minimum collateral ratio used for health/liquidation checks
                 (cosmos.Dec
 
+                string).
+            liquidation_threshold:
+              type: string
+              description: >-
+                Liquidation threshold used for liquidation checks (cosmos.Dec
                 string).
           description: >-
             LeveragePosition represents an active leverage position for a
@@ -52797,11 +53144,16 @@ definitions:
                     offer_id:
                       type: string
                       format: uint64
+                      description: >-
+                        ID of the offer to take from; offer must exist and be in
+                        open status.
                     take_units:
                       type: string
                       description: >-
-                        units to take (sdk.Int string). If empty, take full
-                        remaining.
+                        Units to take (sdk.Int string). If empty, take full
+                        remaining. Must be
+
+                        positive and ≤ remaining.
                 auction:
                   type: object
                   properties:
@@ -53052,11 +53404,16 @@ definitions:
                       offer_id:
                         type: string
                         format: uint64
+                        description: >-
+                          ID of the offer to take from; offer must exist and be
+                          in open status.
                       take_units:
                         type: string
                         description: >-
-                          units to take (sdk.Int string). If empty, take full
-                          remaining.
+                          Units to take (sdk.Int string). If empty, take full
+                          remaining. Must be
+
+                          positive and ≤ remaining.
                   auction:
                     type: object
                     properties:
@@ -53336,11 +53693,16 @@ definitions:
                       offer_id:
                         type: string
                         format: uint64
+                        description: >-
+                          ID of the offer to take from; offer must exist and be
+                          in open status.
                       take_units:
                         type: string
                         description: >-
-                          units to take (sdk.Int string). If empty, take full
-                          remaining.
+                          Units to take (sdk.Int string). If empty, take full
+                          remaining. Must be
+
+                          positive and ≤ remaining.
                   auction:
                     type: object
                     properties:
@@ -53620,11 +53982,16 @@ definitions:
                       offer_id:
                         type: string
                         format: uint64
+                        description: >-
+                          ID of the offer to take from; offer must exist and be
+                          in open status.
                       take_units:
                         type: string
                         description: >-
-                          units to take (sdk.Int string). If empty, take full
-                          remaining.
+                          Units to take (sdk.Int string). If empty, take full
+                          remaining. Must be
+
+                          positive and ≤ remaining.
                   auction:
                     type: object
                     properties:
@@ -53904,11 +54271,16 @@ definitions:
                       offer_id:
                         type: string
                         format: uint64
+                        description: >-
+                          ID of the offer to take from; offer must exist and be
+                          in open status.
                       take_units:
                         type: string
                         description: >-
-                          units to take (sdk.Int string). If empty, take full
-                          remaining.
+                          Units to take (sdk.Int string). If empty, take full
+                          remaining. Must be
+
+                          positive and ≤ remaining.
                   auction:
                     type: object
                     properties:
@@ -54188,11 +54560,16 @@ definitions:
                       offer_id:
                         type: string
                         format: uint64
+                        description: >-
+                          ID of the offer to take from; offer must exist and be
+                          in open status.
                       take_units:
                         type: string
                         description: >-
-                          units to take (sdk.Int string). If empty, take full
-                          remaining.
+                          Units to take (sdk.Int string). If empty, take full
+                          remaining. Must be
+
+                          positive and ≤ remaining.
                   auction:
                     type: object
                     properties:
@@ -54379,9 +54756,12 @@ definitions:
       offer_id:
         type: string
         format: uint64
+        description: ID of the offer to take from; offer must exist and be in open status.
       take_units:
         type: string
-        description: units to take (sdk.Int string). If empty, take full remaining.
+        description: |-
+          Units to take (sdk.Int string). If empty, take full remaining. Must be
+          positive and ≤ remaining.
   dysonprotocol.whaleswap.v1.Trade:
     type: object
     properties:
@@ -54509,11 +54889,16 @@ definitions:
                 offer_id:
                   type: string
                   format: uint64
+                  description: >-
+                    ID of the offer to take from; offer must exist and be in
+                    open status.
                 take_units:
                   type: string
                   description: >-
-                    units to take (sdk.Int string). If empty, take full
-                    remaining.
+                    Units to take (sdk.Int string). If empty, take full
+                    remaining. Must be
+
+                    positive and ≤ remaining.
             auction:
               type: object
               properties:
@@ -54741,9 +55126,16 @@ definitions:
           offer_id:
             type: string
             format: uint64
+            description: >-
+              ID of the offer to take from; offer must exist and be in open
+              status.
           take_units:
             type: string
-            description: units to take (sdk.Int string). If empty, take full remaining.
+            description: >-
+              Units to take (sdk.Int string). If empty, take full remaining.
+              Must be
+
+              positive and ≤ remaining.
       auction:
         type: object
         properties:
@@ -76672,6 +77064,9 @@ definitions:
     properties:
       trader:
         type: string
+        description: |-
+          Account executing the trade operations; all operations execute as this
+          trader.
       max_input:
         type: array
         items:
@@ -76686,7 +77081,11 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
-        title: End-of-tx debit caps per denom for the trader
+        description: >-
+          End-of-tx debit caps per denom for the trader; zero means no debits
+          allowed
+
+          for that denom.
       operations:
         type: array
         items:
@@ -76734,11 +77133,16 @@ definitions:
                 offer_id:
                   type: string
                   format: uint64
+                  description: >-
+                    ID of the offer to take from; offer must exist and be in
+                    open status.
                 take_units:
                   type: string
                   description: >-
-                    units to take (sdk.Int string). If empty, take full
-                    remaining.
+                    Units to take (sdk.Int string). If empty, take full
+                    remaining. Must be
+
+                    positive and ≤ remaining.
             auction:
               type: object
               properties:
@@ -76790,7 +77194,9 @@ definitions:
             MsgMakeTrade.operations,
 
             sent/received are empty (populated during execution).
-        title: Mixed operations processed in-order
+        description: >-
+          Mixed operations processed in-order; must contain at least one
+          operation.
       min_output:
         type: array
         items:
@@ -76805,16 +77211,101 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
-        title: Final trader minimum outputs per denom after aggregation
+        description: Final trader minimum outputs per denom after aggregation and netting.
       note:
         type: string
+        description: Optional note attached to the trade record.
+    description: >-
+      *
+
+      MakeTrade combines AMM pool swaps and orderbook takes into a single
+
+      transaction.
+
+
+      Behavior:
+
+      - Processes SwapLeg (AMM pool swaps) and TakeItem (orderbook takes)
+
+      operations in order.
+
+      - Aggregates all inputs/outputs across operations, then performs
+
+      orderbook-style netting.
+
+      - Trader credits offset maker wants; deficits covered from trader base
+
+      balance.
+
+      - PFAND released to trader when offers close, applied pre-netting.
+
+      - Enforces per-denom debit caps (max_input) and minimum outputs
+      (min_output)
+
+      after netting.
+
+      - Executes final settlement via multisend; all operations succeed or
+
+      transaction fails.
+
+      - Enables circular trade dependencies through self-netting: trader
+
+      debit/credit pairs by denom are netted out, allowing complex arbitrage
+
+      chains where intermediate results cancel (e.g., A→B→C→A becomes net B+C
+
+      profit).
+
+
+      Validation:
+
+      - Trader address must be valid.
+
+      - Operations must be non-empty.
+
+      - Note length capped by module params.
+
+      - Swap operations: pool must exist, denoms match pool, no duplicate
+      pool_ids.
+
+      - Take operations: offer must exist and be open, no duplicate offer_ids.
+
+      - Auction operations currently rejected.
+
+
+      State updates:
+
+      - AMM pools: reserves updated, fees accrued, trade counters incremented.
+
+      - Offers: remaining units/wants/haves updated; closed when fully taken.
+
+      - Trade recorded with all operations, indexed by
+      trader/pool/offer/auction.
+
+
+      Emits:
+
+      - EventPfandReleased for each closed offer (amount, offer_id, trade_id).
+
+      - EventPoolSwap for each swap (pool_id, trade_id, operation_index).
+
+      - EventOfferTaken for each take (offer_id, trade_id, units_taken).
+
+      - EventTradeRecorded summary (trade_id, trader, num_operations, note).
+
+
+      Returns:
+
+      - trade_id and final net trader_inputs/outputs after
+
+      netting/coverage/self-net.
   dysonprotocol.whaleswap.v1.MsgMakeTradeResponse:
     type: object
     properties:
       trade_id:
         type: string
         format: uint64
-        title: unique ID of the recorded trade
+        description: Unique ID of the recorded trade containing all operations.
       trader_inputs:
         type: array
         items:
@@ -76829,7 +77320,9 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
-        title: net debits from trader after netting/coverage/self-net by denom
+        description: |-
+          Final net debits from trader by denom after netting, coverage, and
+          self-netting.
       trader_outputs:
         type: array
         items:
@@ -76844,7 +77337,9 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
-        title: net credits to trader after netting/coverage/self-net by denom
+        description: |-
+          Final net credits to trader by denom after netting, coverage, and
+          self-netting.
   dysonprotocol.whaleswap.v1.MsgOpenAuction:
     type: object
     properties:
@@ -76895,23 +77390,13 @@ definitions:
     properties:
       trader:
         type: string
-        description: >-
-          trader: account opening the synthetic leveraged position. Collateral
-          will
-
-          be escrowed from this address into the module account; no
-          borrowed/held
-
-          coins are transferred to the trader in synthetic mode.
+        description: |-
+          Account opening the leveraged position; collateral escrowed from this
+          address.
       pool_id:
         type: string
         format: uint64
-        description: >-
-          pool_id: target two-asset pool providing price reference and borrow
-          caps.
-
-          The two allowed denoms for collateral/borrow/held must match this
-          pool.
+        description: Target two-asset pool providing price reference and borrow caps.
       collateral:
         type: object
         properties:
@@ -76938,15 +77423,46 @@ definitions:
           signatures required by gogoproto.
       note:
         type: string
-        description: >-
-          The held denom is implicitly the other pool denom (not the borrow
-          denom).
+        description: Optional note for the position.
+    description: |-
+      *
+       v creates a leveraged position by borrowing against collateral.
+
+      Behavior:
+      - Validates pool (exactly 2 denoms), collateral/borrow amounts and denoms.
+      - Computes collateral ratio CR = collateral_value / debt_value in borrow
+        units, accounting for current pool price.
+      - Validates CR >= pool.min_collateral_ratio[borrow_denom] (> 1).
+      - Validates leverage <= pool.max_leverage_ratio[borrow_denom] (> 1).
+      - Reduces pool reserves by borrow amount, updates total_borrowed.
+      - Moves borrowed amount to borrow vault, executes swap (borrowed → held).
+      - Escrows collateral to whaleswap module after swap.
+      - Creates position with interest rate and min_collateral_ratio snapshots.
+      - Held denom is the pool denom not matching borrow denom.
+
+      Validation:
+      - Pool must exist with exactly 2 denoms.
+      - Collateral/borrow amounts must be positive.
+      - Collateral/borrow denoms must match pool denoms.
+      - Collateral ratio must meet pool min_collateral_ratio for borrow denom.
+      - Leverage must not exceed pool max_leverage_ratio for borrow denom.
+      - Borrow amount must not exceed pool borrow cap (max_borrow_percent).
+      - Swap must produce positive held output.
+
+      Emits:
+      - EventLeveragePositionOpened with position_id, user, pool_id,
+        collateral_denom, collateral_amount, borrowed_denom, borrowed_amount,
+        entry_price_held_per_borrow, collateral_ratio.
+
+      Returns:
+      - position_id and held coin in the response.
   dysonprotocol.whaleswap.v1.MsgOpenPositionResponse:
     type: object
     properties:
       position_id:
         type: string
         format: uint64
+        description: Unique identifier for the newly created leveraged position.
       held:
         type: object
         properties:
@@ -77171,32 +77687,43 @@ definitions:
     description: >-
       *
 
-      Remove liquidity (anyone).
+      Remove liquidity from a pool by burning shares and returning underlying
+
+      reserves.
 
 
       Behavior:
 
-      - Burns shares and returns the underlying reserves.
+      - Supports two modes: full exit and partial exit.
 
-      - Full exit: burn all outstanding shares to delete the pool and receive
-      the
-        full reserves.
-      - Partial exit:
-        - Concentrated pools: ΔL-based outputs within the current price band.
-        - Non-concentrated pools: pro-rata outputs using DecCoins.
+      - Full exit: when burning all outstanding shares, the pool is deleted and
+        the full reserves are paid out to the caller.
+      - Partial exit: burns a subset of shares and receives a payout
+      proportional
+        to that share using pro-rata DecCoins math; pool remains active with
+        reduced reserves.
+      - Ensures partial exits cannot deplete any reserve below zero; full exit
+        required to withdraw the last liquidity.
 
-      Safety and validation:
+      Validation:
 
-      - Pool must exist; signer must hold at least `shares`.
+      - Pool must exist.
 
-      - Outputs must be non-zero.
+      - Signer must hold at least shares.
 
-      - Partial exits cannot deplete any reserve; use full exit to withdraw the
-        last liquidity.
-      - Concentrated pools: post-state price must remain within band; ΔL must
-        match burned share ratio within a small tolerance.
+      - Shares must be a positive integer string.
 
-      Emits: EventPoolLiquidityRemoved on success.
+      - Partial exits cannot deplete any reserve; withdrawing the last liquidity
+        requires a full exit (burning all shares).
+
+      Emits:
+
+      - EventPoolLiquidityRemoved with pool_id and shares.
+
+
+      Returns:
+
+      - coins returned to the caller in the amount field.
   dysonprotocol.whaleswap.v1.MsgRemoveLiquidityResponse:
     type: object
     properties:
@@ -77214,12 +77741,13 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
-        title: coins returned
+        description: Coins returned to the caller proportional to the burned shares.
   dysonprotocol.whaleswap.v1.MsgTakeOffer:
     type: object
     properties:
       taker:
         type: string
+        description: Account executing the takes; all takes execute as this trader.
       trades:
         type: array
         items:
@@ -77228,9 +77756,90 @@ definitions:
             offer_id:
               type: string
               format: uint64
+              description: >-
+                ID of the offer to take from; offer must exist and be in open
+                status.
             take_units:
               type: string
-              description: units to take (sdk.Int string). If empty, take full remaining.
+              description: >-
+                Units to take (sdk.Int string). If empty, take full remaining.
+                Must be
+
+                positive and ≤ remaining.
+        description: List of take operations to execute; must contain at least one item.
+    description: >-
+      *
+
+      TakeOffer executes one or more orderbook takes with netting and
+      settlement.
+
+
+      Behavior:
+
+      - Processes multiple take operations in a single transaction with
+      aggregated
+
+      settlement.
+
+      - For each take: validates offer exists and is open, parses take_units
+
+      (defaults to remaining), computes exchange amounts (required_want =
+
+      take_units × unit_want, deliver_have = take_units × unit_have), aggregates
+
+      outputs by address, updates offer state (closes when fully taken), records
+
+      operations.
+
+      - Post-processing: computes maker wants and taker credits, nets taker
+      credits
+
+      against maker wants, covers deficits from taker base balance (uses module
+
+      backing for remaining solid deficits).
+
+      - Settlement: executes batch coin movements via wsMoveCoins for all
+
+      participants.
+
+      - PFAND release: when offers close, locked PFAND flows from module to
+      taker.
+
+      - Trade recording: creates single Trade with all operations, indexed by
+
+      trader/offer.
+
+
+      Validation:
+
+      - Taker address must be valid.
+
+      - Trades list must be non-empty.
+
+      - Each offer must exist and be in open status.
+
+      - Take_units must be valid integer string (positive, ≤ remaining); empty
+
+      defaults to remaining.
+
+      - For LIQUID settlement: maker must have sufficient balance for
+      deliver_have.
+
+      - Module must have sufficient backing for any uncovered solid deficits.
+
+
+      Emits:
+
+      - EventOfferTaken for each take (offer_id, trade_id, units_taken).
+
+      - EventTradeRecorded for the batch (trade_id, trader, num_operations).
+
+      - EventPfandReleased for each closed offer (amount, offer_id, trade_id).
+
+
+      Returns:
+
+      - aggregated sent/received totals across all executed takes.
   dysonprotocol.whaleswap.v1.MsgTakeOfferResponse:
     type: object
     properties:
@@ -77273,7 +77882,9 @@ definitions:
     properties:
       authority:
         type: string
+        description: Authority address that must match the module's configured authority.
       params:
+        description: New parameter values to set; must pass validation.
         type: object
         properties:
           pfand_per_offer:
@@ -77330,7 +77941,44 @@ definitions:
             title: >-
               Block delay before liquidation can be finalized after
               initialization
-    description: UpdateParams is the Msg/UpdateParams request type.
+    description: >-
+      *
+
+      UpdateParams updates module parameters.
+
+
+      Behavior:
+
+      - Authority-only: verifies msg.Authority matches the module's configured
+
+      authority.
+
+      - Parameter validation: validates all parameter constraints (pfand
+      amounts,
+
+      time durations, percentage bounds, block delays).
+
+      - State update: persists validated parameters to the module's parameter
+
+      store.
+
+
+      Validation:
+
+      - Authority must match the module's configured authority address.
+
+      - Parameters must pass Params.Validate() which checks:
+        - PfandPerOffer denom set when amount > 0
+        - ValuationPeriod > 0
+        - BidTimeout > 0
+        - ValuationFeePct in [0,1) if set
+        - MinimumBidPercentIncrease in [0,1) if set
+        - BlockDelayBeforeClose > 0
+        - BlockDelayBeforeLiquidation > 0
+
+      Returns:
+
+      - MsgUpdateParamsResponse (empty) on success.
   dysonprotocol.whaleswap.v1.MsgUpdateParamsResponse:
     type: object
   dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig:

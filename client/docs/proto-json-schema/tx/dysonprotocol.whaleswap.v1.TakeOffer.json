@@ -6,28 +6,32 @@
             "dysonprotocol.whaleswap.v1.MsgTakeOffer": {
                 "properties": {
                     "taker": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Account executing the takes; all takes execute as this trader."
                     },
                     "trades": {
                         "items": {
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TakeItem"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of take operations to execute; must contain at least one item."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Take Offer"
+                "title": "Msg Take Offer",
+                "description": "* TakeOffer executes one or more orderbook takes with netting and settlement. Behavior: - Processes multiple take operations in a single transaction with aggregated settlement. - For each take: validates offer exists and is open, parses take_units (defaults to remaining), computes exchange amounts (required_want = take_units \u00d7 unit_want, deliver_have = take_units \u00d7 unit_have), aggregates outputs by address, updates offer state (closes when fully taken), records operations. - Post-processing: computes maker wants and taker credits, nets taker credits against maker wants, covers deficits from taker base balance (uses module backing for remaining solid deficits). - Settlement: executes batch coin movements via wsMoveCoins for all participants. - PFAND release: when offers close, locked PFAND flows from module to taker. - Trade recording: creates single Trade with all operations, indexed by trader/offer. Validation: - Taker address must be valid. - Trades list must be non-empty. - Each offer must exist and be in open status. - Take_units must be valid integer string (positive, \u2264 remaining); empty defaults to remaining. - For LIQUID settlement: maker must have sufficient balance for deliver_have. - Module must have sufficient backing for any uncovered solid deficits. Emits: - EventOfferTaken for each take (offer_id, trade_id, units_taken). - EventTradeRecorded for the batch (trade_id, trader, num_operations). - EventPfandReleased for each closed offer (amount, offer_id, trade_id). Returns: - aggregated sent/received totals across all executed takes."
             },
             "dysonprotocol.whaleswap.v1.TakeItem": {
                 "properties": {
                     "offer_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the offer to take from; offer must exist and be in open status."
                     },
                     "take_units": {
                         "type": "string",
-                        "description": "units to take (sdk.Int string). If empty, take full remaining."
+                        "description": "Units to take (sdk.Int string). If empty, take full remaining. Must be positive and \u2264 remaining."
                     }
                 },
                 "additionalProperties": false,

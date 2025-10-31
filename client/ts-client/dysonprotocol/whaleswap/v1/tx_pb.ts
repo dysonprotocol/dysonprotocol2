@@ -531,25 +531,31 @@ export class MsgAddLiquidityResponse extends Message<MsgAddLiquidityResponse> {
 
 /**
  * *
- * Remove liquidity (anyone).
+ * Remove liquidity from a pool by burning shares and returning underlying
+ * reserves.
  *
  * Behavior:
- * - Burns shares and returns the underlying reserves.
- * - Full exit: burn all outstanding shares to delete the pool and receive the
- *   full reserves.
- * - Partial exit:
- *   - Concentrated pools: ΔL-based outputs within the current price band.
- *   - Non-concentrated pools: pro-rata outputs using DecCoins.
+ * - Supports two modes: full exit and partial exit.
+ * - Full exit: when burning all outstanding shares, the pool is deleted and
+ *   the full reserves are paid out to the caller.
+ * - Partial exit: burns a subset of shares and receives a payout proportional
+ *   to that share using pro-rata DecCoins math; pool remains active with
+ *   reduced reserves.
+ * - Ensures partial exits cannot deplete any reserve below zero; full exit
+ *   required to withdraw the last liquidity.
  *
- * Safety and validation:
- * - Pool must exist; signer must hold at least `shares`.
- * - Outputs must be non-zero.
- * - Partial exits cannot deplete any reserve; use full exit to withdraw the
- *   last liquidity.
- * - Concentrated pools: post-state price must remain within band; ΔL must
- *   match burned share ratio within a small tolerance.
+ * Validation:
+ * - Pool must exist.
+ * - Signer must hold at least shares.
+ * - Shares must be a positive integer string.
+ * - Partial exits cannot deplete any reserve; withdrawing the last liquidity
+ *   requires a full exit (burning all shares).
  *
- * Emits: EventPoolLiquidityRemoved on success.
+ * Emits:
+ * - EventPoolLiquidityRemoved with pool_id and shares.
+ *
+ * Returns:
+ * - coins returned to the caller in the amount field.
  *
  * @generated from message dysonprotocol.whaleswap.v1.MsgRemoveLiquidity
  */
@@ -611,7 +617,7 @@ export class MsgRemoveLiquidity extends Message<MsgRemoveLiquidity> {
  */
 export class MsgRemoveLiquidityResponse extends Message<MsgRemoveLiquidityResponse> {
   /**
-   * coins returned
+   * Coins returned to the caller proportional to the burned shares.
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin amount = 1;
    */
@@ -798,6 +804,45 @@ export class SwapLeg extends Message<SwapLeg> {
 }
 
 /**
+ * @generated from message dysonprotocol.whaleswap.v1.MsgPoolSwapResponse
+ */
+export class MsgPoolSwapResponse extends Message<MsgPoolSwapResponse> {
+  /**
+   * Total coins credited to the trader after aggregation across all legs.
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin amount_out = 1;
+   */
+  amountOut: Coin[] = [];
+
+  constructor(data?: PartialMessage<MsgPoolSwapResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "amount_out", kind: "message", T: Coin, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgPoolSwapResponse {
+    return new MsgPoolSwapResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgPoolSwapResponse {
+    return new MsgPoolSwapResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgPoolSwapResponse {
+    return new MsgPoolSwapResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgPoolSwapResponse | PlainMessage<MsgPoolSwapResponse> | undefined, b: MsgPoolSwapResponse | PlainMessage<MsgPoolSwapResponse> | undefined): boolean {
+    return proto3.util.equals(MsgPoolSwapResponse, a, b);
+  }
+}
+
+/**
  * TradeOperation allows mixing pool swap legs, orderbook takes, and auction
  * redemptions. When stored in Trade.operations, sent/received fields are
  * populated with execution results. When used in MsgMakeTrade.operations,
@@ -913,36 +958,86 @@ export class AuctionRedeem extends Message<AuctionRedeem> {
 }
 
 /**
+ * *
+ * MakeTrade combines AMM pool swaps and orderbook takes into a single
+ * transaction.
+ *
+ * Behavior:
+ * - Processes SwapLeg (AMM pool swaps) and TakeItem (orderbook takes)
+ * operations in order.
+ * - Aggregates all inputs/outputs across operations, then performs
+ * orderbook-style netting.
+ * - Trader credits offset maker wants; deficits covered from trader base
+ * balance.
+ * - PFAND released to trader when offers close, applied pre-netting.
+ * - Enforces per-denom debit caps (max_input) and minimum outputs (min_output)
+ * after netting.
+ * - Executes final settlement via multisend; all operations succeed or
+ * transaction fails.
+ * - Enables circular trade dependencies through self-netting: trader
+ * debit/credit pairs by denom are netted out, allowing complex arbitrage
+ * chains where intermediate results cancel (e.g., A→B→C→A becomes net B+C
+ * profit).
+ *
+ * Validation:
+ * - Trader address must be valid.
+ * - Operations must be non-empty.
+ * - Note length capped by module params.
+ * - Swap operations: pool must exist, denoms match pool, no duplicate pool_ids.
+ * - Take operations: offer must exist and be open, no duplicate offer_ids.
+ * - Auction operations currently rejected.
+ *
+ * State updates:
+ * - AMM pools: reserves updated, fees accrued, trade counters incremented.
+ * - Offers: remaining units/wants/haves updated; closed when fully taken.
+ * - Trade recorded with all operations, indexed by trader/pool/offer/auction.
+ *
+ * Emits:
+ * - EventPfandReleased for each closed offer (amount, offer_id, trade_id).
+ * - EventPoolSwap for each swap (pool_id, trade_id, operation_index).
+ * - EventOfferTaken for each take (offer_id, trade_id, units_taken).
+ * - EventTradeRecorded summary (trade_id, trader, num_operations, note).
+ *
+ * Returns:
+ * - trade_id and final net trader_inputs/outputs after
+ * netting/coverage/self-net.
+ *
  * @generated from message dysonprotocol.whaleswap.v1.MsgMakeTrade
  */
 export class MsgMakeTrade extends Message<MsgMakeTrade> {
   /**
+   * Account executing the trade operations; all operations execute as this
+   * trader.
+   *
    * @generated from field: string trader = 1;
    */
   trader = "";
 
   /**
-   * End-of-tx debit caps per denom for the trader
+   * End-of-tx debit caps per denom for the trader; zero means no debits allowed
+   * for that denom.
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin max_input = 2;
    */
   maxInput: Coin[] = [];
 
   /**
-   * Mixed operations processed in-order
+   * Mixed operations processed in-order; must contain at least one operation.
    *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.TradeOperation operations = 3;
    */
   operations: TradeOperation[] = [];
 
   /**
-   * Final trader minimum outputs per denom after aggregation
+   * Final trader minimum outputs per denom after aggregation and netting.
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin min_output = 4;
    */
   minOutput: Coin[] = [];
 
   /**
+   * Optional note attached to the trade record.
+   *
    * @generated from field: string note = 5;
    */
   note = "";
@@ -984,21 +1079,23 @@ export class MsgMakeTrade extends Message<MsgMakeTrade> {
  */
 export class MsgMakeTradeResponse extends Message<MsgMakeTradeResponse> {
   /**
-   * unique ID of the recorded trade
+   * Unique ID of the recorded trade containing all operations.
    *
    * @generated from field: uint64 trade_id = 2;
    */
   tradeId = protoInt64.zero;
 
   /**
-   * net debits from trader after netting/coverage/self-net by denom
+   * Final net debits from trader by denom after netting, coverage, and
+   * self-netting.
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin trader_inputs = 3;
    */
   traderInputs: Coin[] = [];
 
   /**
-   * net credits to trader after netting/coverage/self-net by denom
+   * Final net credits to trader by denom after netting, coverage, and
+   * self-netting.
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin trader_outputs = 4;
    */
@@ -1031,45 +1128,6 @@ export class MsgMakeTradeResponse extends Message<MsgMakeTradeResponse> {
 
   static equals(a: MsgMakeTradeResponse | PlainMessage<MsgMakeTradeResponse> | undefined, b: MsgMakeTradeResponse | PlainMessage<MsgMakeTradeResponse> | undefined): boolean {
     return proto3.util.equals(MsgMakeTradeResponse, a, b);
-  }
-}
-
-/**
- * @generated from message dysonprotocol.whaleswap.v1.MsgPoolSwapResponse
- */
-export class MsgPoolSwapResponse extends Message<MsgPoolSwapResponse> {
-  /**
-   * Total coins credited to the trader after aggregation across all legs.
-   *
-   * @generated from field: repeated cosmos.base.v1beta1.Coin amount_out = 1;
-   */
-  amountOut: Coin[] = [];
-
-  constructor(data?: PartialMessage<MsgPoolSwapResponse>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "amount_out", kind: "message", T: Coin, repeated: true },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgPoolSwapResponse {
-    return new MsgPoolSwapResponse().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgPoolSwapResponse {
-    return new MsgPoolSwapResponse().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgPoolSwapResponse {
-    return new MsgPoolSwapResponse().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: MsgPoolSwapResponse | PlainMessage<MsgPoolSwapResponse> | undefined, b: MsgPoolSwapResponse | PlainMessage<MsgPoolSwapResponse> | undefined): boolean {
-    return proto3.util.equals(MsgPoolSwapResponse, a, b);
   }
 }
 
@@ -1182,15 +1240,56 @@ export class MsgMakeOfferResponse extends Message<MsgMakeOfferResponse> {
 }
 
 /**
+ * *
+ * TakeOffer executes one or more orderbook takes with netting and settlement.
+ *
+ * Behavior:
+ * - Processes multiple take operations in a single transaction with aggregated
+ * settlement.
+ * - For each take: validates offer exists and is open, parses take_units
+ * (defaults to remaining), computes exchange amounts (required_want =
+ * take_units × unit_want, deliver_have = take_units × unit_have), aggregates
+ * outputs by address, updates offer state (closes when fully taken), records
+ * operations.
+ * - Post-processing: computes maker wants and taker credits, nets taker credits
+ * against maker wants, covers deficits from taker base balance (uses module
+ * backing for remaining solid deficits).
+ * - Settlement: executes batch coin movements via wsMoveCoins for all
+ * participants.
+ * - PFAND release: when offers close, locked PFAND flows from module to taker.
+ * - Trade recording: creates single Trade with all operations, indexed by
+ * trader/offer.
+ *
+ * Validation:
+ * - Taker address must be valid.
+ * - Trades list must be non-empty.
+ * - Each offer must exist and be in open status.
+ * - Take_units must be valid integer string (positive, ≤ remaining); empty
+ * defaults to remaining.
+ * - For LIQUID settlement: maker must have sufficient balance for deliver_have.
+ * - Module must have sufficient backing for any uncovered solid deficits.
+ *
+ * Emits:
+ * - EventOfferTaken for each take (offer_id, trade_id, units_taken).
+ * - EventTradeRecorded for the batch (trade_id, trader, num_operations).
+ * - EventPfandReleased for each closed offer (amount, offer_id, trade_id).
+ *
+ * Returns:
+ * - aggregated sent/received totals across all executed takes.
+ *
  * @generated from message dysonprotocol.whaleswap.v1.MsgTakeOffer
  */
 export class MsgTakeOffer extends Message<MsgTakeOffer> {
   /**
+   * Account executing the takes; all takes execute as this trader.
+   *
    * @generated from field: string taker = 1;
    */
   taker = "";
 
   /**
+   * List of take operations to execute; must contain at least one item.
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.TakeItem trades = 2;
    */
   trades: TakeItem[] = [];
@@ -1229,12 +1328,15 @@ export class MsgTakeOffer extends Message<MsgTakeOffer> {
  */
 export class TakeItem extends Message<TakeItem> {
   /**
+   * ID of the offer to take from; offer must exist and be in open status.
+   *
    * @generated from field: uint64 offer_id = 1;
    */
   offerId = protoInt64.zero;
 
   /**
-   * units to take (sdk.Int string). If empty, take full remaining.
+   * Units to take (sdk.Int string). If empty, take full remaining. Must be
+   * positive and ≤ remaining.
    *
    * @generated from field: string take_units = 2;
    */
@@ -1624,17 +1726,44 @@ export class MsgRedeemAuctionResponse extends Message<MsgRedeemAuctionResponse> 
 }
 
 /**
- * UpdateParams is the Msg/UpdateParams request type.
+ * *
+ * UpdateParams updates module parameters.
+ *
+ * Behavior:
+ * - Authority-only: verifies msg.Authority matches the module's configured
+ * authority.
+ * - Parameter validation: validates all parameter constraints (pfand amounts,
+ * time durations, percentage bounds, block delays).
+ * - State update: persists validated parameters to the module's parameter
+ * store.
+ *
+ * Validation:
+ * - Authority must match the module's configured authority address.
+ * - Parameters must pass Params.Validate() which checks:
+ *   - PfandPerOffer denom set when amount > 0
+ *   - ValuationPeriod > 0
+ *   - BidTimeout > 0
+ *   - ValuationFeePct in [0,1) if set
+ *   - MinimumBidPercentIncrease in [0,1) if set
+ *   - BlockDelayBeforeClose > 0
+ *   - BlockDelayBeforeLiquidation > 0
+ *
+ * Returns:
+ * - MsgUpdateParamsResponse (empty) on success.
  *
  * @generated from message dysonprotocol.whaleswap.v1.MsgUpdateParams
  */
 export class MsgUpdateParams extends Message<MsgUpdateParams> {
   /**
+   * Authority address that must match the module's configured authority.
+   *
    * @generated from field: string authority = 1;
    */
   authority = "";
 
   /**
+   * New parameter values to set; must pass validation.
+   *
    * @generated from field: dysonprotocol.whaleswap.v1.Params params = 2;
    */
   params?: Params;
@@ -1700,44 +1829,73 @@ export class MsgUpdateParamsResponse extends Message<MsgUpdateParamsResponse> {
 }
 
 /**
+ * *
+ *  v creates a leveraged position by borrowing against collateral.
+ *
+ * Behavior:
+ * - Validates pool (exactly 2 denoms), collateral/borrow amounts and denoms.
+ * - Computes collateral ratio CR = collateral_value / debt_value in borrow
+ *   units, accounting for current pool price.
+ * - Validates CR >= pool.min_collateral_ratio[borrow_denom] (> 1).
+ * - Validates leverage <= pool.max_leverage_ratio[borrow_denom] (> 1).
+ * - Reduces pool reserves by borrow amount, updates total_borrowed.
+ * - Moves borrowed amount to borrow vault, executes swap (borrowed → held).
+ * - Escrows collateral to whaleswap module after swap.
+ * - Creates position with interest rate and min_collateral_ratio snapshots.
+ * - Held denom is the pool denom not matching borrow denom.
+ *
+ * Validation:
+ * - Pool must exist with exactly 2 denoms.
+ * - Collateral/borrow amounts must be positive.
+ * - Collateral/borrow denoms must match pool denoms.
+ * - Collateral ratio must meet pool min_collateral_ratio for borrow denom.
+ * - Leverage must not exceed pool max_leverage_ratio for borrow denom.
+ * - Borrow amount must not exceed pool borrow cap (max_borrow_percent).
+ * - Swap must produce positive held output.
+ *
+ * Emits:
+ * - EventLeveragePositionOpened with position_id, user, pool_id,
+ *   collateral_denom, collateral_amount, borrowed_denom, borrowed_amount,
+ *   entry_price_held_per_borrow, collateral_ratio.
+ *
+ * Returns:
+ * - position_id and held coin in the response.
+ *
  * @generated from message dysonprotocol.whaleswap.v1.MsgOpenPosition
  */
 export class MsgOpenPosition extends Message<MsgOpenPosition> {
   /**
-   * trader: account opening the synthetic leveraged position. Collateral will
-   * be escrowed from this address into the module account; no borrowed/held
-   * coins are transferred to the trader in synthetic mode.
+   * Account opening the leveraged position; collateral escrowed from this
+   * address.
    *
    * @generated from field: string trader = 1;
    */
   trader = "";
 
   /**
-   * pool_id: target two-asset pool providing price reference and borrow caps.
-   * The two allowed denoms for collateral/borrow/held must match this pool.
+   * Target two-asset pool providing price reference and borrow caps.
    *
    * @generated from field: uint64 pool_id = 2;
    */
   poolId = protoInt64.zero;
 
   /**
-   * collateral: coin to escrow as security. Must be positive and one of the
-   * pool denoms.
+   * Coin to escrow as security; must be positive and one of the pool denoms.
    *
    * @generated from field: cosmos.base.v1beta1.Coin collateral = 3;
    */
   collateral?: Coin;
 
   /**
-   * borrow: liability coin. Must be positive and one of the pool denoms.
-   * Interest accrues on this amount until close/liquidation.
+   * Liability coin; must be positive and one of the pool denoms. Interest
+   * accrues on this amount.
    *
    * @generated from field: cosmos.base.v1beta1.Coin borrow = 4;
    */
   borrow?: Coin;
 
   /**
-   * The held denom is implicitly the other pool denom (not the borrow denom).
+   * Optional note for the position.
    *
    * @generated from field: string note = 5;
    */
@@ -1780,11 +1938,16 @@ export class MsgOpenPosition extends Message<MsgOpenPosition> {
  */
 export class MsgOpenPositionResponse extends Message<MsgOpenPositionResponse> {
   /**
+   * Unique identifier for the newly created leveraged position.
+   *
    * @generated from field: uint64 position_id = 1;
    */
   positionId = protoInt64.zero;
 
   /**
+   * Amount of held asset received from the AMM swap (borrow denom → held
+   * denom).
+   *
    * @generated from field: cosmos.base.v1beta1.Coin held = 2;
    */
   held?: Coin;

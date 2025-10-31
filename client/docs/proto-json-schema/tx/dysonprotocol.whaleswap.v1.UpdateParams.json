@@ -6,17 +6,19 @@
             "dysonprotocol.whaleswap.v1.MsgUpdateParams": {
                 "properties": {
                     "authority": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Authority address that must match the module's configured authority."
                     },
                     "params": {
                         "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Params",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "New parameter values to set; must pass validation."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Update Params",
-                "description": "UpdateParams is the Msg/UpdateParams request type."
+                "title": "UpdateParams is the Msg/UpdateParams request type.",
+                "description": "UpdateParams is the Msg/UpdateParams request type.  * UpdateParams updates module parameters. Behavior: - Authority-only: verifies msg.Authority matches the module's configured authority. - Parameter validation: validates all parameter constraints (pfand amounts, time durations, percentage bounds, block delays). - State update: persists validated parameters to the module's parameter store. Validation: - Authority must match the module's configured authority address. - Parameters must pass Params.Validate() which checks:   - PfandPerOffer denom set when amount > 0   - ValuationPeriod > 0   - BidTimeout > 0   - ValuationFeePct in [0,1) if set   - MinimumBidPercentIncrease in [0,1) if set   - BlockDelayBeforeClose > 0   - BlockDelayBeforeLiquidation > 0 Returns: - MsgUpdateParamsResponse (empty) on success."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {

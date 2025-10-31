@@ -11,14 +11,14 @@ import (
 )
 
 // InitializeLiquidation marks a leveraged position for liquidation when its
-// collateral ratio falls below the pool's liquidation_threshold.
+// collateral ratio falls below the position's snapshotted liquidation_threshold.
 //
 // Semantics:
 //   - Trigger: permissionless; any initializer may call this for any position.
 //   - Computation: accrues interest on the borrowed amount using the
 //     snapshotted per-denom APR and elapsed seconds since borrow_time; computes
 //     CR = collateral / (principal + interest) using the position snapshot.
-//   - Threshold: compares CR against the pool's per-denom liquidation_threshold
+//   - Threshold: compares CR against the position's snapshotted liquidation_threshold
 //     for the borrowed denom; the threshold must be configured (> 1).
 //   - State updates: records liquidation markers (status and the current block
 //     height) on the position and persists it.
@@ -59,11 +59,6 @@ func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgI
 		"liquidation_status", pos.LiquidationStatus.String(),
 	)
 
-	pool, err := k.PoolsMap.Get(ctx, pos.PoolId)
-	if err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "pool %d not found", pos.PoolId)
-	}
-
 	// Calculate CR using per-position snapshot rate; must be set (len 2)
 	if len(pos.InterestRate) != 2 {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "position interest_rate must have exactly 2 entries")
@@ -83,13 +78,13 @@ func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgI
 		"cr", cr.String(),
 	)
 
-	// Require pool liquidation_threshold to be set; use per-borrow denom
-	if len(pool.LiquidationThreshold) != 2 {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool liquidation_threshold must be set")
+	// Use position's snapshotted liquidation_threshold
+	liquidationThreshold, err := math.LegacyNewDecFromStr(pos.LiquidationThreshold)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "invalid position liquidation_threshold: %s", pos.LiquidationThreshold)
 	}
-	liquidationThreshold := pool.LiquidationThreshold.AmountOf(pos.Borrowed.Denom)
 	if !liquidationThreshold.GT(math.LegacyNewDec(1)) {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool liquidation_threshold")
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid position liquidation_threshold")
 	}
 	logger.Info("InitializeLiquidation: thresholds",
 		"liquidation_threshold", liquidationThreshold.String(),

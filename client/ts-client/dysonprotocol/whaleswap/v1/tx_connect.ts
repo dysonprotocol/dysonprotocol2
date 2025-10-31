@@ -81,25 +81,7 @@ export const Msg = {
     /**
      * *
      * RemoveLiquidity burns the caller's shares and returns the underlying
-     * reserves.
-     *
-     * Modes:
-     * - Full exit: burning all outstanding shares deletes the pool and pays
-     *   out the full reserves.
-     * - Partial exit:
-     *   - Concentrated pools: outputs are computed from ΔL within the active
-     *     price band.
-     *   - Non-concentrated pools: outputs are pro-rata.
-     *
-     * Safety:
-     * - Concentrated: post-state price must remain within the band and the
-     *   liquidity delta must be consistent with the burned share ratio within
-     *   a small tolerance.
-     * - Partial exits cannot deplete any reserve; use full exit to withdraw the
-     *   last liquidity.
-     * - Outputs must be non-zero.
-     *
-     * Emits EventPoolLiquidityRemoved on success.
+     * reserves proportional to the share burned.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.RemoveLiquidity
      */
@@ -125,10 +107,8 @@ export const Msg = {
     },
     /**
      * *
-     * MakeTrade executes swaps and orderbook takes in-order with a single
-     * settlement. Applies per-denom debit caps (max_input) and final min_output,
-     * releases PFAND on offer close, rejects duplicate ids per type; auction
-     * operations are currently rejected.
+     * MakeTrade combines AMM pool swaps and orderbook takes into a single
+     * transaction with end-of-tx settlement.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.MakeTrade
      */
@@ -154,9 +134,7 @@ export const Msg = {
     },
     /**
      * *
-     * TakeOffer executes one or more takes. Nets taker credits against maker
-     * wants, funds any deficit from taker base (module covers escrow), releases
-     * PFAND to the taker on full close, and records a single trade.
+     * TakeOffer executes one or more orderbook takes with netting and settlement.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.TakeOffer
      */
@@ -209,9 +187,8 @@ export const Msg = {
     },
     /**
      * *
-     * OpenPosition opens a synthetic leveraged position. Borrows (subject to pool
-     * cap), swaps to the held denom, escrows collateral, snapshots interest rate
-     * and min CR, and records the position.
+     * OpenPosition creates a leveraged position by borrowing against collateral,
+     * swapping to held asset, and recording the position with interest snapshots.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.OpenPosition
      */
@@ -291,7 +268,7 @@ export const Msg = {
     },
     /**
      * *
-     * UpdateParams updates module parameters. Authority-only.
+     * UpdateParams (authority-only) updates module parameters.
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.UpdateParams
      */

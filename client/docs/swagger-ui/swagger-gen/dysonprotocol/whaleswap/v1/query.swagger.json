@@ -1846,6 +1846,10 @@
         "min_collateral_ratio": {
           "type": "string",
           "description": "Minimum collateral ratio used for health/liquidation checks (cosmos.Dec\nstring)."
+        },
+        "liquidation_threshold": {
+          "type": "string",
+          "description": "Liquidation threshold used for liquidation checks (cosmos.Dec string)."
         }
       },
       "description": "LeveragePosition represents an active leverage position for a trader."
@@ -2013,7 +2017,7 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
-          "description": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE FIELDS \u2550\u2550\u2550\u2550\u2550\nAnnual interest rates per reserve denom (exactly two, canonical order).\nEach amount is a LegacyDec string representing APR (per-year accrual)."
+          "description": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE FIELDS \u2550\u2550\u2550\u2550\u2550\nAnnual interest rates per reserve denom (exactly two, canonical order).\nEach amount is a decimal string representing APR (per-year accrual)."
         },
         "interest_earned": {
           "type": "array",
@@ -2034,28 +2038,28 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
-          "description": "\u2550\u2550\u2550\u2550\u2550 PER-POOL LEVERAGE RISK PARAMETERS (per-denom) \u2550\u2550\u2550\u2550\u2550\nMinimum collateral ratio required at position open per reserve denom\n(exactly two, canonical order). Each amount is a LegacyDec string (> 1)."
+          "description": "\u2550\u2550\u2550\u2550\u2550 PER-POOL LEVERAGE RISK PARAMETERS (per-denom) \u2550\u2550\u2550\u2550\u2550\nMinimum collateral ratio required at position open per reserve denom\n(exactly two, canonical order). Each amount is a decimal string (> 1)."
         },
         "max_leverage_ratio": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
-          "description": "Maximum leverage ratio allowed (collateral + borrowed) / collateral per\nreserve denom (exactly two, canonical order). Each amount is a LegacyDec\nstring (> 1)."
+          "description": "Maximum leverage ratio allowed (collateral + borrowed) / collateral per\nreserve denom (exactly two, canonical order). Each amount is a decimal\nstring (> 1)."
         },
         "liquidation_threshold": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
-          "description": "Collateral ratio threshold below which position is liquidatable per reserve\ndenom (exactly two, canonical order). Each amount is a LegacyDec string\n(> 1)."
+          "description": "Collateral ratio threshold below which position is liquidatable per reserve\ndenom (exactly two, canonical order). Each amount is a decimal string\n(> 1)."
         },
         "max_borrow_percent": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
-          "description": "Maximum borrow capacity per reserve denom as DecCoins (exactly two,\ncanonical order). Each amount is a LegacyDec in [0,1)."
+          "description": "Maximum borrow capacity per reserve denom as DecCoins (exactly two,\ncanonical order). Each amount is a decimal in [0,1)."
         },
         "bound_percent": {
           "type": "array",
@@ -2521,11 +2525,12 @@
       "properties": {
         "offer_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "ID of the offer to take from; offer must exist and be in open status."
         },
         "take_units": {
           "type": "string",
-          "description": "units to take (sdk.Int string). If empty, take full remaining."
+          "description": "Units to take (sdk.Int string). If empty, take full remaining. Must be\npositive and \u2264 remaining."
         }
       }
     },

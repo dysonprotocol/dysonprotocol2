@@ -21,7 +21,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Remove Liquidity",
-                "description": "* Remove liquidity (anyone). Behavior: - Burns shares and returns the underlying reserves. - Full exit: burn all outstanding shares to delete the pool and receive the   full reserves. - Partial exit:   - Concentrated pools: \u0394L-based outputs within the current price band.   - Non-concentrated pools: pro-rata outputs using DecCoins. Safety and validation: - Pool must exist; signer must hold at least `shares`. - Outputs must be non-zero. - Partial exits cannot deplete any reserve; use full exit to withdraw the   last liquidity. - Concentrated pools: post-state price must remain within band; \u0394L must   match burned share ratio within a small tolerance. Emits: EventPoolLiquidityRemoved on success."
+                "description": "* Remove liquidity from a pool by burning shares and returning underlying reserves. Behavior: - Supports two modes: full exit and partial exit. - Full exit: when burning all outstanding shares, the pool is deleted and   the full reserves are paid out to the caller. - Partial exit: burns a subset of shares and receives a payout proportional   to that share using pro-rata DecCoins math; pool remains active with   reduced reserves. - Ensures partial exits cannot deplete any reserve below zero; full exit   required to withdraw the last liquidity. Validation: - Pool must exist. - Signer must hold at least shares. - Shares must be a positive integer string. - Partial exits cannot deplete any reserve; withdrawing the last liquidity   requires a full exit (burning all shares). Emits: - EventPoolLiquidityRemoved with pool_id and shares. Returns: - coins returned to the caller in the amount field."
             }
         }
     },
@@ -37,7 +37,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "coins returned"
+                        "description": "Coins returned to the caller proportional to the burned shares."
                     }
                 },
                 "additionalProperties": false,

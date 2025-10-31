@@ -56,7 +56,7 @@ message Pool {
 
   // ═════ LEVERAGE FIELDS ═════
   // Annual interest rates per reserve denom (exactly two, canonical order).
-  // Each amount is a LegacyDec string representing APR (per-year accrual).
+  // Each amount is a decimal string representing APR (per-year accrual).
   repeated cosmos.base.v1beta1.DecCoin interest_rate = 15 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
@@ -76,14 +76,14 @@ message Pool {
 
   // ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
   // Minimum collateral ratio required at position open per reserve denom
-  // (exactly two, canonical order). Each amount is a LegacyDec string (> 1).
+  // (exactly two, canonical order). Each amount is a decimal string (> 1).
   repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 21 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
   ];
 
   // Maximum leverage ratio allowed (collateral + borrowed) / collateral per
-  // reserve denom (exactly two, canonical order). Each amount is a LegacyDec
+  // reserve denom (exactly two, canonical order). Each amount is a decimal
   // string (> 1).
   repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 22 [
     (gogoproto.nullable) = false,
@@ -91,7 +91,7 @@ message Pool {
   ];
 
   // Collateral ratio threshold below which position is liquidatable per reserve
-  // denom (exactly two, canonical order). Each amount is a LegacyDec string
+  // denom (exactly two, canonical order). Each amount is a decimal string
   // (> 1).
   repeated cosmos.base.v1beta1.DecCoin liquidation_threshold = 23 [
     (gogoproto.nullable) = false,
@@ -99,7 +99,7 @@ message Pool {
   ];
 
   // Maximum borrow capacity per reserve denom as DecCoins (exactly two,
-  // canonical order). Each amount is a LegacyDec in [0,1).
+  // canonical order). Each amount is a decimal in [0,1).
   repeated cosmos.base.v1beta1.DecCoin max_borrow_percent = 24 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"

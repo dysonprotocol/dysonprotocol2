@@ -6,7 +6,8 @@
             "dysonprotocol.whaleswap.v1.MsgMakeTrade": {
                 "properties": {
                     "trader": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Account executing the trade operations; all operations execute as this trader."
                     },
                     "max_input": {
                         "items": {
@@ -14,7 +15,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "End-of-tx debit caps per denom for the trader"
+                        "description": "End-of-tx debit caps per denom for the trader; zero means no debits allowed for that denom."
                     },
                     "operations": {
                         "items": {
@@ -22,7 +23,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Mixed operations processed in-order"
+                        "description": "Mixed operations processed in-order; must contain at least one operation."
                     },
                     "min_output": {
                         "items": {
@@ -30,15 +31,17 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Final trader minimum outputs per denom after aggregation"
+                        "description": "Final trader minimum outputs per denom after aggregation and netting."
                     },
                     "note": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Optional note attached to the trade record."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Make Trade"
+                "title": "Msg Make Trade",
+                "description": "* MakeTrade combines AMM pool swaps and orderbook takes into a single transaction. Behavior: - Processes SwapLeg (AMM pool swaps) and TakeItem (orderbook takes) operations in order. - Aggregates all inputs/outputs across operations, then performs orderbook-style netting. - Trader credits offset maker wants; deficits covered from trader base balance. - PFAND released to trader when offers close, applied pre-netting. - Enforces per-denom debit caps (max_input) and minimum outputs (min_output) after netting. - Executes final settlement via multisend; all operations succeed or transaction fails. - Enables circular trade dependencies through self-netting: trader debit/credit pairs by denom are netted out, allowing complex arbitrage chains where intermediate results cancel (e.g., A\u2192B\u2192C\u2192A becomes net B+C profit). Validation: - Trader address must be valid. - Operations must be non-empty. - Note length capped by module params. - Swap operations: pool must exist, denoms match pool, no duplicate pool_ids. - Take operations: offer must exist and be open, no duplicate offer_ids. - Auction operations currently rejected. State updates: - AMM pools: reserves updated, fees accrued, trade counters incremented. - Offers: remaining units/wants/haves updated; closed when fully taken. - Trade recorded with all operations, indexed by trader/pool/offer/auction. Emits: - EventPfandReleased for each closed offer (amount, offer_id, trade_id). - EventPoolSwap for each swap (pool_id, trade_id, operation_index). - EventOfferTaken for each take (offer_id, trade_id, units_taken). - EventTradeRecorded summary (trade_id, trader, num_operations, note). Returns: - trade_id and final net trader_inputs/outputs after netting/coverage/self-net."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {
@@ -87,11 +90,12 @@
             "dysonprotocol.whaleswap.v1.TakeItem": {
                 "properties": {
                     "offer_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the offer to take from; offer must exist and be in open status."
                     },
                     "take_units": {
                         "type": "string",
-                        "description": "units to take (sdk.Int string). If empty, take full remaining."
+                        "description": "Units to take (sdk.Int string). If empty, take full remaining. Must be positive and \u2264 remaining."
                     }
                 },
                 "additionalProperties": false,
@@ -137,7 +141,7 @@
                 "properties": {
                     "trade_id": {
                         "type": "string",
-                        "description": "unique ID of the recorded trade"
+                        "description": "Unique ID of the recorded trade containing all operations."
                     },
                     "trader_inputs": {
                         "items": {
@@ -145,7 +149,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "net debits from trader after netting/coverage/self-net by denom"
+                        "description": "Final net debits from trader by denom after netting, coverage, and self-netting."
                     },
                     "trader_outputs": {
                         "items": {
@@ -153,7 +157,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "net credits to trader after netting/coverage/self-net by denom"
+                        "description": "Final net credits to trader by denom after netting, coverage, and self-netting."
                     }
                 },
                 "additionalProperties": false,

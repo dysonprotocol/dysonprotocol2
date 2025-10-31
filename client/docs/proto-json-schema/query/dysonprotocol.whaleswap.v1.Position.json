@@ -214,6 +214,10 @@
                     "min_collateral_ratio": {
                         "type": "string",
                         "description": "Minimum collateral ratio used for health/liquidation checks (cosmos.Dec string)."
+                    },
+                    "liquidation_threshold": {
+                        "type": "string",
+                        "description": "Liquidation threshold used for liquidation checks (cosmos.Dec string)."
                     }
                 },
                 "additionalProperties": false,
