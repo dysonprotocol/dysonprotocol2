@@ -6,11 +6,13 @@
             "dysonprotocol.whaleswap.v1.QueryPositionsByPoolRequest": {
                 "properties": {
                     "pool_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Pool ID to filter positions by; returns all positions in this pool"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by position ID ascending"
                     },
                     "status": {
                         "enum": [
@@ -38,8 +40,7 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Positions By Pool Request",
-                "description": "QueryPositionsByPoolRequest lists all positions in a pool"
+                "title": "Query Positions By Pool Request"
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -84,11 +85,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.LeveragePosition"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of positions in the specified pool"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

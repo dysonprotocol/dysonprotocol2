@@ -6,21 +6,23 @@
             "dysonprotocol.whaleswap.v1.QueryOffersByDenomRequest": {
                 "properties": {
                     "denom": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Denomination to search for in offers"
                     },
                     "role": {
                         "type": "string",
-                        "description": "\"have\" | \"want\" | \"\""
+                        "description": "Role filter: \"have\" restricts to have-denom, \"want\" restricts to want-denom, empty string includes both sides"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by offer ID ascending"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "--- Offer extended queries ---",
-                "description": "--- Offer extended queries ---  QueryOffersByDenomRequest lists offers that reference the provided denom. role = \"have\" restricts to have-denom; role = \"want\" restricts to want-denom; if empty or unset, both sides are included."
+                "description": "--- Offer extended queries ---"
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -65,11 +67,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of offers referencing the specified denomination"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

@@ -6,11 +6,13 @@
             "dysonprotocol.whaleswap.v1.QueryTradesByTakerRequest": {
                 "properties": {
                     "taker": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Taker address to filter trades by; returns all trades executed by this address"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by trade ID ascending"
                     }
                 },
                 "additionalProperties": false,
@@ -60,11 +62,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Trade"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of trades executed by the specified taker"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

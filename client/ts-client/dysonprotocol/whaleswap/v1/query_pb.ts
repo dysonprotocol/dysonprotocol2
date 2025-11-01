@@ -118,6 +118,8 @@ export class QueryParamsResponse extends Message<QueryParamsResponse> {
  */
 export class QueryPoolRequest extends Message<QueryPoolRequest> {
   /**
+   * ID of the pool to retrieve
+   *
    * @generated from field: uint64 pool_id = 1;
    */
   poolId = protoInt64.zero;
@@ -155,6 +157,8 @@ export class QueryPoolRequest extends Message<QueryPoolRequest> {
  */
 export class QueryPoolResponse extends Message<QueryPoolResponse> {
   /**
+   * The requested pool data
+   *
    * @generated from field: dysonprotocol.whaleswap.v1.Pool pool = 1;
    */
   pool?: Pool;
@@ -192,6 +196,8 @@ export class QueryPoolResponse extends Message<QueryPoolResponse> {
  */
 export class QueryPoolsRequest extends Message<QueryPoolsRequest> {
   /**
+   * Standard pagination parameters for listing pools
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 1;
    */
   pagination?: PageRequest;
@@ -229,11 +235,15 @@ export class QueryPoolsRequest extends Message<QueryPoolsRequest> {
  */
 export class QueryPoolsResponse extends Message<QueryPoolsResponse> {
   /**
+   * List of pools matching the query criteria
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.Pool pools = 1;
    */
   pools: Pool[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -268,27 +278,27 @@ export class QueryPoolsResponse extends Message<QueryPoolsResponse> {
 }
 
 /**
- * QueryPoolByPairRequest selects a pool by denom pair regardless of order.
- * The implementation canonicalizes the pair to a unique internal key.
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryPoolsByPairRequest
  */
 export class QueryPoolsByPairRequest extends Message<QueryPoolsByPairRequest> {
   /**
-   * base of the pair (price is quote/base)
+   * Base denom of the pair (price is quote/base); order with quote_denom is
+   * irrelevant
    *
    * @generated from field: string base_denom = 1;
    */
   baseDenom = "";
 
   /**
-   * quote of the pair
+   * Quote denom of the pair; combined with base_denom forms the trading pair
    *
    * @generated from field: string quote_denom = 2;
    */
   quoteDenom = "";
 
   /**
+   * Standard pagination parameters; results ordered by pool ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 3;
    */
   pagination?: PageRequest;
@@ -328,11 +338,15 @@ export class QueryPoolsByPairRequest extends Message<QueryPoolsByPairRequest> {
  */
 export class QueryPoolsByPairResponse extends Message<QueryPoolsByPairResponse> {
   /**
+   * List of pools containing the exact denom pair, ordered by pool ID
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.Pool pools = 1;
    */
   pools: Pool[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -367,20 +381,20 @@ export class QueryPoolsByPairResponse extends Message<QueryPoolsByPairResponse> 
 }
 
 /**
- * QueryPoolsByDenomRequest lists pools containing the provided denom on either
- * side.
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryPoolsByDenomRequest
  */
 export class QueryPoolsByDenomRequest extends Message<QueryPoolsByDenomRequest> {
   /**
-   * any pool where coin_a==denom or coin_b==denom
+   * Denomination to search for; returns pools where this denom appears on
+   * either side
    *
    * @generated from field: string denom = 1;
    */
   denom = "";
 
   /**
+   * Standard pagination parameters; results ordered by pool ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 2;
    */
   pagination?: PageRequest;
@@ -419,11 +433,15 @@ export class QueryPoolsByDenomRequest extends Message<QueryPoolsByDenomRequest> 
  */
 export class QueryPoolsByDenomResponse extends Message<QueryPoolsByDenomResponse> {
   /**
+   * List of pools containing the specified denom on either side
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.Pool pools = 1;
    */
   pools: Pool[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -458,13 +476,12 @@ export class QueryPoolsByDenomResponse extends Message<QueryPoolsByDenomResponse
 }
 
 /**
- * QueryPoolBySharesDenomRequest selects the pool that mints the given shares
- * denom.
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryPoolBySharesDenomRequest
  */
 export class QueryPoolBySharesDenomRequest extends Message<QueryPoolBySharesDenomRequest> {
   /**
+   * Shares denomination to find the corresponding pool for
+   *
    * @generated from field: string shares_denom = 1;
    */
   sharesDenom = "";
@@ -502,6 +519,8 @@ export class QueryPoolBySharesDenomRequest extends Message<QueryPoolBySharesDeno
  */
 export class QueryPoolBySharesDenomResponse extends Message<QueryPoolBySharesDenomResponse> {
   /**
+   * The pool that mints the specified shares denomination
+   *
    * @generated from field: dysonprotocol.whaleswap.v1.Pool pool = 1;
    */
   pool?: Pool;
@@ -535,36 +554,41 @@ export class QueryPoolBySharesDenomResponse extends Message<QueryPoolBySharesDen
 }
 
 /**
- * QueryPoolsByPairPriceRangeRequest filters pools for the pair by instantaneous
- * price range. Prices are cosmos.Dec strings; bounds are optional and
- * inclusive.
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryPoolsByPairPriceRangeRequest
  */
 export class QueryPoolsByPairPriceRangeRequest extends Message<QueryPoolsByPairPriceRangeRequest> {
   /**
-   * Price is interpreted as quote/base using these fields
+   * Base denom of the pair (price is quote/base); order with quote_denom is
+   * irrelevant
    *
    * @generated from field: string base_denom = 1;
    */
   baseDenom = "";
 
   /**
+   * Quote denom of the pair; combined with base_denom forms the trading pair
+   *
    * @generated from field: string quote_denom = 2;
    */
   quoteDenom = "";
 
   /**
+   * Minimum price threshold as cosmos.Dec string (optional, inclusive)
+   *
    * @generated from field: string min_price = 3;
    */
   minPrice = "";
 
   /**
+   * Maximum price threshold as cosmos.Dec string (optional, inclusive)
+   *
    * @generated from field: string max_price = 4;
    */
   maxPrice = "";
 
   /**
+   * Standard pagination parameters; results ordered by pool ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 5;
    */
   pagination?: PageRequest;
@@ -606,11 +630,15 @@ export class QueryPoolsByPairPriceRangeRequest extends Message<QueryPoolsByPairP
  */
 export class QueryPoolsByPairPriceRangeResponse extends Message<QueryPoolsByPairPriceRangeResponse> {
   /**
+   * List of pools within the specified price range, ordered by pool ID
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.Pool pools = 1;
    */
   pools: Pool[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -645,17 +673,19 @@ export class QueryPoolsByPairPriceRangeResponse extends Message<QueryPoolsByPair
 }
 
 /**
- * QueryPoolsByOwnerRequest returns pools where the owner holds non-zero shares.
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryPoolsByOwnerRequest
  */
 export class QueryPoolsByOwnerRequest extends Message<QueryPoolsByOwnerRequest> {
   /**
+   * Owner address to filter pools by; must be a valid bech32 address
+   *
    * @generated from field: string owner = 1;
    */
   owner = "";
 
   /**
+   * Standard pagination parameters; results ordered by pool ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 2;
    */
   pagination?: PageRequest;
@@ -694,11 +724,15 @@ export class QueryPoolsByOwnerRequest extends Message<QueryPoolsByOwnerRequest> 
  */
 export class QueryPoolsByOwnerResponse extends Message<QueryPoolsByOwnerResponse> {
   /**
+   * List of pools where the owner holds non-zero shares balance
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.Pool pools = 1;
    */
   pools: Pool[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -737,6 +771,8 @@ export class QueryPoolsByOwnerResponse extends Message<QueryPoolsByOwnerResponse
  */
 export class QueryOfferRequest extends Message<QueryOfferRequest> {
   /**
+   * ID of the offer to retrieve
+   *
    * @generated from field: uint64 offer_id = 1;
    */
   offerId = protoInt64.zero;
@@ -774,6 +810,8 @@ export class QueryOfferRequest extends Message<QueryOfferRequest> {
  */
 export class QueryOfferResponse extends Message<QueryOfferResponse> {
   /**
+   * The requested offer data
+   *
    * @generated from field: dysonprotocol.whaleswap.v1.OfferData offer = 1;
    */
   offer?: OfferData;
@@ -811,18 +849,24 @@ export class QueryOfferResponse extends Message<QueryOfferResponse> {
  */
 export class QueryOffersByOwnerRequest extends Message<QueryOffersByOwnerRequest> {
   /**
+   * Owner address to filter offers by; must be a valid bech32 address
+   *
    * @generated from field: string owner = 1;
    */
   owner = "";
 
   /**
-   * optional filter
+   * Optional status filter; valid values are "open", "closed", "cancelled"
+   * If empty, returns offers with any status. Enables indexed queries when
+   * combined with owner.
    *
    * @generated from field: string status = 2;
    */
   status = "";
 
   /**
+   * Standard pagination parameters; results ordered by offer ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 3;
    */
   pagination?: PageRequest;
@@ -862,11 +906,15 @@ export class QueryOffersByOwnerRequest extends Message<QueryOffersByOwnerRequest
  */
 export class QueryOffersByOwnerResponse extends Message<QueryOffersByOwnerResponse> {
   /**
+   * List of offers matching the owner and status criteria, ordered by offer ID
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.OfferData offers = 1;
    */
   offers: OfferData[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -905,18 +953,22 @@ export class QueryOffersByOwnerResponse extends Message<QueryOffersByOwnerRespon
  */
 export class QueryOffersRequest extends Message<QueryOffersRequest> {
   /**
-   * optional filters; if unset returns all
+   * Optional have denom filter; restricts to offers selling this denomination
    *
    * @generated from field: string have_denom = 1;
    */
   haveDenom = "";
 
   /**
+   * Optional want denom filter; restricts to offers buying this denomination
+   *
    * @generated from field: string want_denom = 2;
    */
   wantDenom = "";
 
   /**
+   * Standard pagination parameters; results ordered by offer ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 3;
    */
   pagination?: PageRequest;
@@ -956,11 +1008,15 @@ export class QueryOffersRequest extends Message<QueryOffersRequest> {
  */
 export class QueryOffersResponse extends Message<QueryOffersResponse> {
   /**
+   * List of offers matching the denom filters
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.OfferData offers = 1;
    */
   offers: OfferData[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -995,26 +1051,27 @@ export class QueryOffersResponse extends Message<QueryOffersResponse> {
 }
 
 /**
- * QueryOffersByDenomRequest lists offers that reference the provided denom.
- * role = "have" restricts to have-denom; role = "want" restricts to want-denom;
- * if empty or unset, both sides are included.
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryOffersByDenomRequest
  */
 export class QueryOffersByDenomRequest extends Message<QueryOffersByDenomRequest> {
   /**
+   * Denomination to search for in offers
+   *
    * @generated from field: string denom = 1;
    */
   denom = "";
 
   /**
-   * "have" | "want" | ""
+   * Role filter: "have" restricts to have-denom, "want" restricts to
+   * want-denom, empty string includes both sides
    *
    * @generated from field: string role = 2;
    */
   role = "";
 
   /**
+   * Standard pagination parameters; results ordered by offer ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 3;
    */
   pagination?: PageRequest;
@@ -1054,11 +1111,15 @@ export class QueryOffersByDenomRequest extends Message<QueryOffersByDenomRequest
  */
 export class QueryOffersByDenomResponse extends Message<QueryOffersByDenomResponse> {
   /**
+   * List of offers referencing the specified denomination
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.OfferData offers = 1;
    */
   offers: OfferData[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -1093,34 +1154,42 @@ export class QueryOffersByDenomResponse extends Message<QueryOffersByDenomRespon
 }
 
 /**
- * QueryOffersByPairPriceRangeRequest filters offers for a pair by price range.
- * Prices are expressed as want-per-have (high-per-low orientation) cosmos.Dec
- * strings.
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryOffersByPairPriceRangeRequest
  */
 export class QueryOffersByPairPriceRangeRequest extends Message<QueryOffersByPairPriceRangeRequest> {
   /**
+   * Have denom of the pair (denomination being sold)
+   *
    * @generated from field: string have_denom = 1;
    */
   haveDenom = "";
 
   /**
+   * Want denom of the pair (denomination being bought)
+   *
    * @generated from field: string want_denom = 2;
    */
   wantDenom = "";
 
   /**
+   * Minimum price threshold as want-per-have cosmos.Dec string (optional,
+   * inclusive)
+   *
    * @generated from field: string min_price = 3;
    */
   minPrice = "";
 
   /**
+   * Maximum price threshold as want-per-have cosmos.Dec string (optional,
+   * inclusive)
+   *
    * @generated from field: string max_price = 4;
    */
   maxPrice = "";
 
   /**
+   * Standard pagination parameters; results ordered by price ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 5;
    */
   pagination?: PageRequest;
@@ -1162,11 +1231,15 @@ export class QueryOffersByPairPriceRangeRequest extends Message<QueryOffersByPai
  */
 export class QueryOffersByPairPriceRangeResponse extends Message<QueryOffersByPairPriceRangeResponse> {
   /**
+   * List of offers within the specified price range, ordered by price
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.OfferData offers = 1;
    */
   offers: OfferData[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -1201,23 +1274,25 @@ export class QueryOffersByPairPriceRangeResponse extends Message<QueryOffersByPa
 }
 
 /**
- * QueryOffersBestRequest fetches up to `limit` best-priced offers for a pair.
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryOffersBestRequest
  */
 export class QueryOffersBestRequest extends Message<QueryOffersBestRequest> {
   /**
+   * Have denom of the pair (denomination being sold)
+   *
    * @generated from field: string have_denom = 1;
    */
   haveDenom = "";
 
   /**
+   * Want denom of the pair (denomination being bought)
+   *
    * @generated from field: string want_denom = 2;
    */
   wantDenom = "";
 
   /**
-   * number of top offers to return
+   * Maximum number of best-priced offers to return (default: 10)
    *
    * @generated from field: uint32 limit = 3;
    */
@@ -1258,6 +1333,8 @@ export class QueryOffersBestRequest extends Message<QueryOffersBestRequest> {
  */
 export class QueryOffersBestResponse extends Message<QueryOffersBestResponse> {
   /**
+   * Up to limit best-priced offers for the pair, ordered by price ascending
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.OfferData offers = 1;
    */
   offers: OfferData[] = [];
@@ -1295,18 +1372,23 @@ export class QueryOffersBestResponse extends Message<QueryOffersBestResponse> {
  */
 export class QueryTradesRequest extends Message<QueryTradesRequest> {
   /**
-   * optional filters; if unset, returns all
+   * Optional sent denom filter; restricts to trades where this denom was sent
    *
    * @generated from field: string sent_denom = 1;
    */
   sentDenom = "";
 
   /**
+   * Optional received denom filter; restricts to trades where this denom was
+   * received
+   *
    * @generated from field: string received_denom = 2;
    */
   receivedDenom = "";
 
   /**
+   * Standard pagination parameters; results ordered by trade ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 3;
    */
   pagination?: PageRequest;
@@ -1346,11 +1428,15 @@ export class QueryTradesRequest extends Message<QueryTradesRequest> {
  */
 export class QueryTradesResponse extends Message<QueryTradesResponse> {
   /**
+   * List of trades matching the denom filters
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.Trade trades = 1;
    */
   trades: Trade[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -1389,11 +1475,15 @@ export class QueryTradesResponse extends Message<QueryTradesResponse> {
  */
 export class QueryTradesByOfferRequest extends Message<QueryTradesByOfferRequest> {
   /**
+   * Offer ID to filter trades by; returns all trades involving this offer
+   *
    * @generated from field: uint64 offer_id = 1;
    */
   offerId = protoInt64.zero;
 
   /**
+   * Standard pagination parameters; results ordered by trade ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 2;
    */
   pagination?: PageRequest;
@@ -1432,11 +1522,15 @@ export class QueryTradesByOfferRequest extends Message<QueryTradesByOfferRequest
  */
 export class QueryTradesByOfferResponse extends Message<QueryTradesByOfferResponse> {
   /**
+   * List of trades involving the specified offer
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.Trade trades = 1;
    */
   trades: Trade[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -1475,11 +1569,16 @@ export class QueryTradesByOfferResponse extends Message<QueryTradesByOfferRespon
  */
 export class QueryTradesByTakerRequest extends Message<QueryTradesByTakerRequest> {
   /**
+   * Taker address to filter trades by; returns all trades executed by this
+   * address
+   *
    * @generated from field: string taker = 1;
    */
   taker = "";
 
   /**
+   * Standard pagination parameters; results ordered by trade ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 2;
    */
   pagination?: PageRequest;
@@ -1518,11 +1617,15 @@ export class QueryTradesByTakerRequest extends Message<QueryTradesByTakerRequest
  */
 export class QueryTradesByTakerResponse extends Message<QueryTradesByTakerResponse> {
   /**
+   * List of trades executed by the specified taker
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.Trade trades = 1;
    */
   trades: Trade[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -1557,17 +1660,19 @@ export class QueryTradesByTakerResponse extends Message<QueryTradesByTakerRespon
 }
 
 /**
- * QueryTradesByPoolRequest returns trades filtered by pool id
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryTradesByPoolRequest
  */
 export class QueryTradesByPoolRequest extends Message<QueryTradesByPoolRequest> {
   /**
+   * Pool ID to filter trades by; returns all trades involving this AMM pool
+   *
    * @generated from field: uint64 pool_id = 1;
    */
   poolId = protoInt64.zero;
 
   /**
+   * Standard pagination parameters; results ordered by trade ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 2;
    */
   pagination?: PageRequest;
@@ -1606,11 +1711,15 @@ export class QueryTradesByPoolRequest extends Message<QueryTradesByPoolRequest> 
  */
 export class QueryTradesByPoolResponse extends Message<QueryTradesByPoolResponse> {
   /**
+   * List of trades involving the specified AMM pool
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.Trade trades = 1;
    */
   trades: Trade[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -1649,11 +1758,15 @@ export class QueryTradesByPoolResponse extends Message<QueryTradesByPoolResponse
  */
 export class QueryTradesByAuctionRequest extends Message<QueryTradesByAuctionRequest> {
   /**
+   * Auction ID to filter trades by; returns all trades involving this auction
+   *
    * @generated from field: uint64 auction_id = 1;
    */
   auctionId = protoInt64.zero;
 
   /**
+   * Standard pagination parameters; results ordered by trade ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 2;
    */
   pagination?: PageRequest;
@@ -1692,11 +1805,15 @@ export class QueryTradesByAuctionRequest extends Message<QueryTradesByAuctionReq
  */
 export class QueryTradesByAuctionResponse extends Message<QueryTradesByAuctionResponse> {
   /**
+   * List of trades involving auction redemptions for the specified auction
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.Trade trades = 1;
    */
   trades: Trade[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -1735,6 +1852,8 @@ export class QueryTradesByAuctionResponse extends Message<QueryTradesByAuctionRe
  */
 export class QueryTradeRequest extends Message<QueryTradeRequest> {
   /**
+   * ID of the trade to retrieve
+   *
    * @generated from field: uint64 trade_id = 1;
    */
   tradeId = protoInt64.zero;
@@ -1772,6 +1891,8 @@ export class QueryTradeRequest extends Message<QueryTradeRequest> {
  */
 export class QueryTradeResponse extends Message<QueryTradeResponse> {
   /**
+   * The requested trade data
+   *
    * @generated from field: dysonprotocol.whaleswap.v1.Trade trade = 1;
    */
   trade?: Trade;
@@ -1809,6 +1930,8 @@ export class QueryTradeResponse extends Message<QueryTradeResponse> {
  */
 export class QueryAuctionRequest extends Message<QueryAuctionRequest> {
   /**
+   * ID of the auction to retrieve
+   *
    * @generated from field: uint64 auction_id = 1;
    */
   auctionId = protoInt64.zero;
@@ -1846,6 +1969,8 @@ export class QueryAuctionRequest extends Message<QueryAuctionRequest> {
  */
 export class QueryAuctionResponse extends Message<QueryAuctionResponse> {
   /**
+   * The requested auction data
+   *
    * @generated from field: dysonprotocol.whaleswap.v1.AuctionRecord auction = 1;
    */
   auction?: AuctionRecord;
@@ -1883,18 +2008,22 @@ export class QueryAuctionResponse extends Message<QueryAuctionResponse> {
  */
 export class QueryAuctionsRequest extends Message<QueryAuctionsRequest> {
   /**
-   * optional filters; if unset, returns all
+   * Optional sell denom filter; restricts to auctions selling this denomination
    *
    * @generated from field: string sell_denom = 1;
    */
   sellDenom = "";
 
   /**
+   * Optional bid denom filter; restricts to auctions bidding this denomination
+   *
    * @generated from field: string bid_denom = 2;
    */
   bidDenom = "";
 
   /**
+   * Standard pagination parameters; results ordered by auction ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 3;
    */
   pagination?: PageRequest;
@@ -1934,11 +2063,15 @@ export class QueryAuctionsRequest extends Message<QueryAuctionsRequest> {
  */
 export class QueryAuctionsResponse extends Message<QueryAuctionsResponse> {
   /**
+   * List of auctions matching the denom filters
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.AuctionRecord auctions = 1;
    */
   auctions: AuctionRecord[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -1973,17 +2106,20 @@ export class QueryAuctionsResponse extends Message<QueryAuctionsResponse> {
 }
 
 /**
- * QueryAuctionsBySellerRequest lists auctions created by the seller address.
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryAuctionsBySellerRequest
  */
 export class QueryAuctionsBySellerRequest extends Message<QueryAuctionsBySellerRequest> {
   /**
+   * Seller address to filter auctions by; returns auctions created by this
+   * address
+   *
    * @generated from field: string seller = 1;
    */
   seller = "";
 
   /**
+   * Standard pagination parameters; results ordered by auction ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 2;
    */
   pagination?: PageRequest;
@@ -2022,11 +2158,15 @@ export class QueryAuctionsBySellerRequest extends Message<QueryAuctionsBySellerR
  */
 export class QueryAuctionsBySellerResponse extends Message<QueryAuctionsBySellerResponse> {
   /**
+   * List of auctions created by the specified seller
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.AuctionRecord auctions = 1;
    */
   auctions: AuctionRecord[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -2061,17 +2201,19 @@ export class QueryAuctionsBySellerResponse extends Message<QueryAuctionsBySeller
 }
 
 /**
- * QueryAuctionByNFTRequest selects an auction by the escrow NFT identity.
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryAuctionByNFTRequest
  */
 export class QueryAuctionByNFTRequest extends Message<QueryAuctionByNFTRequest> {
   /**
+   * NFT class ID of the escrow marker
+   *
    * @generated from field: string class_id = 1;
    */
   classId = "";
 
   /**
+   * NFT ID of the escrow marker
+   *
    * @generated from field: string nft_id = 2;
    */
   nftId = "";
@@ -2110,6 +2252,8 @@ export class QueryAuctionByNFTRequest extends Message<QueryAuctionByNFTRequest> 
  */
 export class QueryAuctionByNFTResponse extends Message<QueryAuctionByNFTResponse> {
   /**
+   * The auction associated with the specified NFT escrow markers
+   *
    * @generated from field: dysonprotocol.whaleswap.v1.AuctionRecord auction = 1;
    */
   auction?: AuctionRecord;
@@ -2143,34 +2287,42 @@ export class QueryAuctionByNFTResponse extends Message<QueryAuctionByNFTResponse
 }
 
 /**
- * QueryAuctionsByPairPriceRangeRequest filters auctions by their effective
- * price (bid-per-sell). Implementations may need to iterate candidate auctions
- * and compute the price from valuation/current bid and redeemable sell amounts.
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryAuctionsByPairPriceRangeRequest
  */
 export class QueryAuctionsByPairPriceRangeRequest extends Message<QueryAuctionsByPairPriceRangeRequest> {
   /**
+   * Sell denom of the pair (denomination being auctioned)
+   *
    * @generated from field: string sell_denom = 1;
    */
   sellDenom = "";
 
   /**
+   * Bid denom of the pair (denomination used for bidding)
+   *
    * @generated from field: string bid_denom = 2;
    */
   bidDenom = "";
 
   /**
+   * Minimum price threshold as bid-per-sell cosmos.Dec string (optional,
+   * inclusive)
+   *
    * @generated from field: string min_price = 3;
    */
   minPrice = "";
 
   /**
+   * Maximum price threshold as bid-per-sell cosmos.Dec string (optional,
+   * inclusive)
+   *
    * @generated from field: string max_price = 4;
    */
   maxPrice = "";
 
   /**
+   * Standard pagination parameters; results ordered by auction ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 5;
    */
   pagination?: PageRequest;
@@ -2212,11 +2364,15 @@ export class QueryAuctionsByPairPriceRangeRequest extends Message<QueryAuctionsB
  */
 export class QueryAuctionsByPairPriceRangeResponse extends Message<QueryAuctionsByPairPriceRangeResponse> {
   /**
+   * List of auctions within the specified price range
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.AuctionRecord auctions = 1;
    */
   auctions: AuctionRecord[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -2286,6 +2442,8 @@ export class QueryMetricsRequest extends Message<QueryMetricsRequest> {
  */
 export class QueryMetricsResponse extends Message<QueryMetricsResponse> {
   /**
+   * Comprehensive module metrics including escrow balances and trade statistics
+   *
    * @generated from field: dysonprotocol.whaleswap.v1.TradeMetrics metrics = 1;
    */
   metrics?: TradeMetrics;
@@ -2319,12 +2477,12 @@ export class QueryMetricsResponse extends Message<QueryMetricsResponse> {
 }
 
 /**
- * QueryPositionRequest queries a single position by ID
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryPositionRequest
  */
 export class QueryPositionRequest extends Message<QueryPositionRequest> {
   /**
+   * ID of the leverage position to retrieve
+   *
    * @generated from field: uint64 position_id = 1;
    */
   positionId = protoInt64.zero;
@@ -2483,46 +2641,47 @@ export class QueryPositionResponse extends Message<QueryPositionResponse> {
 }
 
 /**
- * QueryPositionsByUserRequest lists all positions for a user with optional
- * filters
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest
  */
 export class QueryPositionsByUserRequest extends Message<QueryPositionsByUserRequest> {
   /**
+   * User address to filter positions by; returns all positions owned by this
+   * address
+   *
    * @generated from field: string user = 1;
    */
   user = "";
 
   /**
-   * Optional: filter by borrowed denom
+   * Optional filter by borrowed denomination
    *
    * @generated from field: string borrowed_denom = 2;
    */
   borrowedDenom = "";
 
   /**
-   * Optional: filter by collateral denom
+   * Optional filter by collateral denomination
    *
    * @generated from field: string collateral_denom = 3;
    */
   collateralDenom = "";
 
   /**
-   * Optional: filter by pool_id (cannot combine with borrowed/collateral
-   * denoms)
+   * Optional filter by pool ID (cannot combine with borrowed/collateral denoms)
    *
    * @generated from field: uint64 pool_id = 4;
    */
   poolId = protoInt64.zero;
 
   /**
+   * Standard pagination parameters; results ordered by position ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 5;
    */
   pagination?: PageRequest;
 
   /**
-   * Optional: filter by lifecycle status; defaults to OPEN positions.
+   * Optional filter by lifecycle status; defaults to OPEN positions
    *
    * @generated from field: dysonprotocol.whaleswap.v1.PositionStatus status = 6;
    */
@@ -2566,11 +2725,15 @@ export class QueryPositionsByUserRequest extends Message<QueryPositionsByUserReq
  */
 export class QueryPositionsByUserResponse extends Message<QueryPositionsByUserResponse> {
   /**
+   * List of positions matching the user and filter criteria
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.LeveragePosition positions = 1;
    */
   positions: LeveragePosition[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -2605,23 +2768,25 @@ export class QueryPositionsByUserResponse extends Message<QueryPositionsByUserRe
 }
 
 /**
- * QueryPositionsByPoolRequest lists all positions in a pool
- *
  * @generated from message dysonprotocol.whaleswap.v1.QueryPositionsByPoolRequest
  */
 export class QueryPositionsByPoolRequest extends Message<QueryPositionsByPoolRequest> {
   /**
+   * Pool ID to filter positions by; returns all positions in this pool
+   *
    * @generated from field: uint64 pool_id = 1;
    */
   poolId = protoInt64.zero;
 
   /**
+   * Standard pagination parameters; results ordered by position ID ascending
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 2;
    */
   pagination?: PageRequest;
 
   /**
-   * Optional: filter by lifecycle status; defaults to OPEN positions.
+   * Optional filter by lifecycle status; defaults to OPEN positions
    *
    * @generated from field: dysonprotocol.whaleswap.v1.PositionStatus status = 3;
    */
@@ -2662,11 +2827,15 @@ export class QueryPositionsByPoolRequest extends Message<QueryPositionsByPoolReq
  */
 export class QueryPositionsByPoolResponse extends Message<QueryPositionsByPoolResponse> {
   /**
+   * List of positions in the specified pool
+   *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.LeveragePosition positions = 1;
    */
   positions: LeveragePosition[] = [];
 
   /**
+   * Pagination metadata for result set navigation
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;

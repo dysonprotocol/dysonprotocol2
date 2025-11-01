@@ -6,7 +6,8 @@
             "dysonprotocol.whaleswap.v1.QueryOfferRequest": {
                 "properties": {
                     "offer_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the offer to retrieve"
                     }
                 },
                 "additionalProperties": false,
@@ -23,7 +24,8 @@
                 "properties": {
                     "offer": {
                         "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "The requested offer data"
                     }
                 },
                 "additionalProperties": false,

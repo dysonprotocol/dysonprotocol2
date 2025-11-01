@@ -13,6 +13,20 @@ import (
 
 var _ whaleswapv1.QueryServer = Keeper{}
 
+// Offer queries a single offer by ID.
+//
+// Semantics:
+//   - Retrieves offer data from the offers map using the provided offer_id.
+//   - Returns the complete OfferData including maker, amounts, status, and timestamps.
+//
+// Validation:
+//   - Request must be non-nil.
+//   - OfferId must be positive.
+//
+// Returns:
+//   - *whaleswapv1.QueryOfferResponse containing the offer data.
+//
+// Errors are returned on invalid request parameters or when offer not found; no panics.
 func (k Keeper) Offer(ctx context.Context, req *whaleswapv1.QueryOfferRequest) (*whaleswapv1.QueryOfferResponse, error) {
 	if req == nil || req.OfferId == 0 {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "offer_id required")
@@ -24,7 +38,22 @@ func (k Keeper) Offer(ctx context.Context, req *whaleswapv1.QueryOfferRequest) (
 	return &whaleswapv1.QueryOfferResponse{Offer: &offer}, nil
 }
 
-// Metrics computes TradeMetrics and returns them
+// Metrics computes comprehensive module metrics including escrow balances and trade statistics.
+//
+// Semantics:
+//   - Aggregates escrow balances: AMM pool reserves, offer-locked coins, PFAND requirements.
+//   - Counts auctions across all records by summing sell amounts.
+//   - Calculates total fees earned across all pools.
+//   - Counts total trades by iterating the trades map.
+//   - Returns consolidated TradeMetrics for monitoring and invariants checking.
+//
+// Validation:
+//   - No validation required (empty request accepted).
+//
+// Returns:
+//   - *whaleswapv1.QueryMetricsResponse with complete TradeMetrics breakdown.
+//
+// Errors are returned on tally computation failures; no panics.
 func (k Keeper) Metrics(ctx context.Context, _ *whaleswapv1.QueryMetricsRequest) (*whaleswapv1.QueryMetricsResponse, error) {
 	amm, err := k.tallyAMMReserves(ctx)
 	if err != nil {
@@ -72,8 +101,23 @@ func (k Keeper) Metrics(ctx context.Context, _ *whaleswapv1.QueryMetricsRequest)
 // Leverage Query Handlers
 
 // Position: see query_leverage_health.go
-// PositionsByUser lists all positions for a user with optional filters
-// This is the concrete implementation for the gRPC PositionsByUser query
+
+// PositionsByUser lists all leverage positions for a user with optional filters.
+//
+// Semantics:
+//   - Uses indexed queries on PositionsByUserIndex with (user,status,position_id) keys.
+//   - Defaults to OPEN positions when status unspecified.
+//   - Applies additional filters for pool_id, borrowed_denom, collateral_denom as specified.
+//   - Supports pagination with consistent ordering by position ID.
+//
+// Validation:
+//   - Request must be non-nil.
+//   - User address must be non-empty.
+//
+// Returns:
+//   - *whaleswapv1.QueryPositionsByUserResponse with matching positions and pagination metadata.
+//
+// Errors are returned on invalid parameters or pagination failures; no panics.
 func (k Keeper) PositionsByUser(ctx context.Context, req *whaleswapv1.QueryPositionsByUserRequest) (*whaleswapv1.QueryPositionsByUserResponse, error) {
 	if req == nil {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "request cannot be nil")
@@ -123,8 +167,22 @@ func (k Keeper) PositionsByUser(ctx context.Context, req *whaleswapv1.QueryPosit
 	}, nil
 }
 
-// PositionsByPool lists all positions in a pool
-// This is the concrete implementation for the gRPC PositionsByPool query
+// PositionsByPool lists all leverage positions in a specific pool with optional status filter.
+//
+// Semantics:
+//   - Uses indexed queries on PositionsByPoolIndex with (pool_id,status,position_id) keys.
+//   - Defaults to OPEN positions when status unspecified.
+//   - Filters positions by the specified pool_id.
+//   - Supports pagination with consistent ordering by position ID.
+//
+// Validation:
+//   - Request must be non-nil.
+//   - PoolId must be positive.
+//
+// Returns:
+//   - *whaleswapv1.QueryPositionsByPoolResponse with matching positions and pagination metadata.
+//
+// Errors are returned on invalid parameters or pagination failures; no panics.
 func (k Keeper) PositionsByPool(ctx context.Context, req *whaleswapv1.QueryPositionsByPoolRequest) (*whaleswapv1.QueryPositionsByPoolResponse, error) {
 	if req == nil {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "request cannot be nil")

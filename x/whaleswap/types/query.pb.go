@@ -146,6 +146,7 @@ func (m *QueryParamsResponse) GetParams() Params {
 }
 
 type QueryPoolRequest struct {
+	// ID of the pool to retrieve
 	PoolId uint64 `protobuf:"varint,1,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
 }
 
@@ -190,6 +191,7 @@ func (m *QueryPoolRequest) GetPoolId() uint64 {
 }
 
 type QueryPoolResponse struct {
+	// The requested pool data
 	Pool *Pool `protobuf:"bytes,1,opt,name=pool,proto3" json:"pool,omitempty"`
 }
 
@@ -234,6 +236,7 @@ func (m *QueryPoolResponse) GetPool() *Pool {
 }
 
 type QueryPoolsRequest struct {
+	// Standard pagination parameters for listing pools
 	Pagination *query.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -278,7 +281,9 @@ func (m *QueryPoolsRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryPoolsResponse struct {
-	Pools      []*Pool             `protobuf:"bytes,1,rep,name=pools,proto3" json:"pools,omitempty"`
+	// List of pools matching the query criteria
+	Pools []*Pool `protobuf:"bytes,1,rep,name=pools,proto3" json:"pools,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -329,11 +334,13 @@ func (m *QueryPoolsResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryPoolByPairRequest selects a pool by denom pair regardless of order.
-// The implementation canonicalizes the pair to a unique internal key.
 type QueryPoolsByPairRequest struct {
-	BaseDenom  string             `protobuf:"bytes,1,opt,name=base_denom,json=baseDenom,proto3" json:"base_denom,omitempty"`
-	QuoteDenom string             `protobuf:"bytes,2,opt,name=quote_denom,json=quoteDenom,proto3" json:"quote_denom,omitempty"`
+	// Base denom of the pair (price is quote/base); order with quote_denom is
+	// irrelevant
+	BaseDenom string `protobuf:"bytes,1,opt,name=base_denom,json=baseDenom,proto3" json:"base_denom,omitempty"`
+	// Quote denom of the pair; combined with base_denom forms the trading pair
+	QuoteDenom string `protobuf:"bytes,2,opt,name=quote_denom,json=quoteDenom,proto3" json:"quote_denom,omitempty"`
+	// Standard pagination parameters; results ordered by pool ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -392,7 +399,9 @@ func (m *QueryPoolsByPairRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryPoolsByPairResponse struct {
-	Pools      []*Pool             `protobuf:"bytes,1,rep,name=pools,proto3" json:"pools,omitempty"`
+	// List of pools containing the exact denom pair, ordered by pool ID
+	Pools []*Pool `protobuf:"bytes,1,rep,name=pools,proto3" json:"pools,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -443,10 +452,11 @@ func (m *QueryPoolsByPairResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryPoolsByDenomRequest lists pools containing the provided denom on either
-// side.
 type QueryPoolsByDenomRequest struct {
-	Denom      string             `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom,omitempty"`
+	// Denomination to search for; returns pools where this denom appears on
+	// either side
+	Denom string `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom,omitempty"`
+	// Standard pagination parameters; results ordered by pool ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -498,7 +508,9 @@ func (m *QueryPoolsByDenomRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryPoolsByDenomResponse struct {
-	Pools      []*Pool             `protobuf:"bytes,1,rep,name=pools,proto3" json:"pools,omitempty"`
+	// List of pools containing the specified denom on either side
+	Pools []*Pool `protobuf:"bytes,1,rep,name=pools,proto3" json:"pools,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -549,9 +561,8 @@ func (m *QueryPoolsByDenomResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryPoolBySharesDenomRequest selects the pool that mints the given shares
-// denom.
 type QueryPoolBySharesDenomRequest struct {
+	// Shares denomination to find the corresponding pool for
 	SharesDenom string `protobuf:"bytes,1,opt,name=shares_denom,json=sharesDenom,proto3" json:"shares_denom,omitempty"`
 }
 
@@ -596,6 +607,7 @@ func (m *QueryPoolBySharesDenomRequest) GetSharesDenom() string {
 }
 
 type QueryPoolBySharesDenomResponse struct {
+	// The pool that mints the specified shares denomination
 	Pool *Pool `protobuf:"bytes,1,opt,name=pool,proto3" json:"pool,omitempty"`
 }
 
@@ -639,15 +651,17 @@ func (m *QueryPoolBySharesDenomResponse) GetPool() *Pool {
 	return nil
 }
 
-// QueryPoolsByPairPriceRangeRequest filters pools for the pair by instantaneous
-// price range. Prices are cosmos.Dec strings; bounds are optional and
-// inclusive.
 type QueryPoolsByPairPriceRangeRequest struct {
-	// Price is interpreted as quote/base using these fields
-	BaseDenom  string             `protobuf:"bytes,1,opt,name=base_denom,json=baseDenom,proto3" json:"base_denom,omitempty"`
-	QuoteDenom string             `protobuf:"bytes,2,opt,name=quote_denom,json=quoteDenom,proto3" json:"quote_denom,omitempty"`
-	MinPrice   string             `protobuf:"bytes,3,opt,name=min_price,json=minPrice,proto3" json:"min_price,omitempty"`
-	MaxPrice   string             `protobuf:"bytes,4,opt,name=max_price,json=maxPrice,proto3" json:"max_price,omitempty"`
+	// Base denom of the pair (price is quote/base); order with quote_denom is
+	// irrelevant
+	BaseDenom string `protobuf:"bytes,1,opt,name=base_denom,json=baseDenom,proto3" json:"base_denom,omitempty"`
+	// Quote denom of the pair; combined with base_denom forms the trading pair
+	QuoteDenom string `protobuf:"bytes,2,opt,name=quote_denom,json=quoteDenom,proto3" json:"quote_denom,omitempty"`
+	// Minimum price threshold as cosmos.Dec string (optional, inclusive)
+	MinPrice string `protobuf:"bytes,3,opt,name=min_price,json=minPrice,proto3" json:"min_price,omitempty"`
+	// Maximum price threshold as cosmos.Dec string (optional, inclusive)
+	MaxPrice string `protobuf:"bytes,4,opt,name=max_price,json=maxPrice,proto3" json:"max_price,omitempty"`
+	// Standard pagination parameters; results ordered by pool ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,5,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -720,7 +734,9 @@ func (m *QueryPoolsByPairPriceRangeRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryPoolsByPairPriceRangeResponse struct {
-	Pools      []*Pool             `protobuf:"bytes,1,rep,name=pools,proto3" json:"pools,omitempty"`
+	// List of pools within the specified price range, ordered by pool ID
+	Pools []*Pool `protobuf:"bytes,1,rep,name=pools,proto3" json:"pools,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -771,9 +787,10 @@ func (m *QueryPoolsByPairPriceRangeResponse) GetPagination() *query.PageResponse
 	return nil
 }
 
-// QueryPoolsByOwnerRequest returns pools where the owner holds non-zero shares.
 type QueryPoolsByOwnerRequest struct {
-	Owner      string             `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
+	// Owner address to filter pools by; must be a valid bech32 address
+	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
+	// Standard pagination parameters; results ordered by pool ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -825,7 +842,9 @@ func (m *QueryPoolsByOwnerRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryPoolsByOwnerResponse struct {
-	Pools      []*Pool             `protobuf:"bytes,1,rep,name=pools,proto3" json:"pools,omitempty"`
+	// List of pools where the owner holds non-zero shares balance
+	Pools []*Pool `protobuf:"bytes,1,rep,name=pools,proto3" json:"pools,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -877,6 +896,7 @@ func (m *QueryPoolsByOwnerResponse) GetPagination() *query.PageResponse {
 }
 
 type QueryOfferRequest struct {
+	// ID of the offer to retrieve
 	OfferId uint64 `protobuf:"varint,1,opt,name=offer_id,json=offerId,proto3" json:"offer_id,omitempty"`
 }
 
@@ -921,6 +941,7 @@ func (m *QueryOfferRequest) GetOfferId() uint64 {
 }
 
 type QueryOfferResponse struct {
+	// The requested offer data
 	Offer *OfferData `protobuf:"bytes,1,opt,name=offer,proto3" json:"offer,omitempty"`
 }
 
@@ -965,8 +986,13 @@ func (m *QueryOfferResponse) GetOffer() *OfferData {
 }
 
 type QueryOffersByOwnerRequest struct {
-	Owner      string             `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
-	Status     string             `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	// Owner address to filter offers by; must be a valid bech32 address
+	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
+	// Optional status filter; valid values are "open", "closed", "cancelled"
+	// If empty, returns offers with any status. Enables indexed queries when
+	// combined with owner.
+	Status string `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	// Standard pagination parameters; results ordered by offer ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1025,7 +1051,9 @@ func (m *QueryOffersByOwnerRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryOffersByOwnerResponse struct {
-	Offers     []*OfferData        `protobuf:"bytes,1,rep,name=offers,proto3" json:"offers,omitempty"`
+	// List of offers matching the owner and status criteria, ordered by offer ID
+	Offers []*OfferData `protobuf:"bytes,1,rep,name=offers,proto3" json:"offers,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1077,9 +1105,11 @@ func (m *QueryOffersByOwnerResponse) GetPagination() *query.PageResponse {
 }
 
 type QueryOffersRequest struct {
-	// optional filters; if unset returns all
-	HaveDenom  string             `protobuf:"bytes,1,opt,name=have_denom,json=haveDenom,proto3" json:"have_denom,omitempty"`
-	WantDenom  string             `protobuf:"bytes,2,opt,name=want_denom,json=wantDenom,proto3" json:"want_denom,omitempty"`
+	// Optional have denom filter; restricts to offers selling this denomination
+	HaveDenom string `protobuf:"bytes,1,opt,name=have_denom,json=haveDenom,proto3" json:"have_denom,omitempty"`
+	// Optional want denom filter; restricts to offers buying this denomination
+	WantDenom string `protobuf:"bytes,2,opt,name=want_denom,json=wantDenom,proto3" json:"want_denom,omitempty"`
+	// Standard pagination parameters; results ordered by offer ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1138,7 +1168,9 @@ func (m *QueryOffersRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryOffersResponse struct {
-	Offers     []*OfferData        `protobuf:"bytes,1,rep,name=offers,proto3" json:"offers,omitempty"`
+	// List of offers matching the denom filters
+	Offers []*OfferData `protobuf:"bytes,1,rep,name=offers,proto3" json:"offers,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1189,12 +1221,13 @@ func (m *QueryOffersResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryOffersByDenomRequest lists offers that reference the provided denom.
-// role = "have" restricts to have-denom; role = "want" restricts to want-denom;
-// if empty or unset, both sides are included.
 type QueryOffersByDenomRequest struct {
-	Denom      string             `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom,omitempty"`
-	Role       string             `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`
+	// Denomination to search for in offers
+	Denom string `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom,omitempty"`
+	// Role filter: "have" restricts to have-denom, "want" restricts to
+	// want-denom, empty string includes both sides
+	Role string `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`
+	// Standard pagination parameters; results ordered by offer ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1253,7 +1286,9 @@ func (m *QueryOffersByDenomRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryOffersByDenomResponse struct {
-	Offers     []*OfferData        `protobuf:"bytes,1,rep,name=offers,proto3" json:"offers,omitempty"`
+	// List of offers referencing the specified denomination
+	Offers []*OfferData `protobuf:"bytes,1,rep,name=offers,proto3" json:"offers,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1304,14 +1339,18 @@ func (m *QueryOffersByDenomResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryOffersByPairPriceRangeRequest filters offers for a pair by price range.
-// Prices are expressed as want-per-have (high-per-low orientation) cosmos.Dec
-// strings.
 type QueryOffersByPairPriceRangeRequest struct {
-	HaveDenom  string             `protobuf:"bytes,1,opt,name=have_denom,json=haveDenom,proto3" json:"have_denom,omitempty"`
-	WantDenom  string             `protobuf:"bytes,2,opt,name=want_denom,json=wantDenom,proto3" json:"want_denom,omitempty"`
-	MinPrice   string             `protobuf:"bytes,3,opt,name=min_price,json=minPrice,proto3" json:"min_price,omitempty"`
-	MaxPrice   string             `protobuf:"bytes,4,opt,name=max_price,json=maxPrice,proto3" json:"max_price,omitempty"`
+	// Have denom of the pair (denomination being sold)
+	HaveDenom string `protobuf:"bytes,1,opt,name=have_denom,json=haveDenom,proto3" json:"have_denom,omitempty"`
+	// Want denom of the pair (denomination being bought)
+	WantDenom string `protobuf:"bytes,2,opt,name=want_denom,json=wantDenom,proto3" json:"want_denom,omitempty"`
+	// Minimum price threshold as want-per-have cosmos.Dec string (optional,
+	// inclusive)
+	MinPrice string `protobuf:"bytes,3,opt,name=min_price,json=minPrice,proto3" json:"min_price,omitempty"`
+	// Maximum price threshold as want-per-have cosmos.Dec string (optional,
+	// inclusive)
+	MaxPrice string `protobuf:"bytes,4,opt,name=max_price,json=maxPrice,proto3" json:"max_price,omitempty"`
+	// Standard pagination parameters; results ordered by price ascending
 	Pagination *query.PageRequest `protobuf:"bytes,5,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1384,7 +1423,9 @@ func (m *QueryOffersByPairPriceRangeRequest) GetPagination() *query.PageRequest 
 }
 
 type QueryOffersByPairPriceRangeResponse struct {
-	Offers     []*OfferData        `protobuf:"bytes,1,rep,name=offers,proto3" json:"offers,omitempty"`
+	// List of offers within the specified price range, ordered by price
+	Offers []*OfferData `protobuf:"bytes,1,rep,name=offers,proto3" json:"offers,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1435,11 +1476,13 @@ func (m *QueryOffersByPairPriceRangeResponse) GetPagination() *query.PageRespons
 	return nil
 }
 
-// QueryOffersBestRequest fetches up to `limit` best-priced offers for a pair.
 type QueryOffersBestRequest struct {
+	// Have denom of the pair (denomination being sold)
 	HaveDenom string `protobuf:"bytes,1,opt,name=have_denom,json=haveDenom,proto3" json:"have_denom,omitempty"`
+	// Want denom of the pair (denomination being bought)
 	WantDenom string `protobuf:"bytes,2,opt,name=want_denom,json=wantDenom,proto3" json:"want_denom,omitempty"`
-	Limit     uint32 `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	// Maximum number of best-priced offers to return (default: 10)
+	Limit uint32 `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
 }
 
 func (m *QueryOffersBestRequest) Reset()         { *m = QueryOffersBestRequest{} }
@@ -1497,6 +1540,7 @@ func (m *QueryOffersBestRequest) GetLimit() uint32 {
 }
 
 type QueryOffersBestResponse struct {
+	// Up to limit best-priced offers for the pair, ordered by price ascending
 	Offers []*OfferData `protobuf:"bytes,1,rep,name=offers,proto3" json:"offers,omitempty"`
 }
 
@@ -1541,10 +1585,13 @@ func (m *QueryOffersBestResponse) GetOffers() []*OfferData {
 }
 
 type QueryTradesRequest struct {
-	// optional filters; if unset, returns all
-	SentDenom     string             `protobuf:"bytes,1,opt,name=sent_denom,json=sentDenom,proto3" json:"sent_denom,omitempty"`
-	ReceivedDenom string             `protobuf:"bytes,2,opt,name=received_denom,json=receivedDenom,proto3" json:"received_denom,omitempty"`
-	Pagination    *query.PageRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	// Optional sent denom filter; restricts to trades where this denom was sent
+	SentDenom string `protobuf:"bytes,1,opt,name=sent_denom,json=sentDenom,proto3" json:"sent_denom,omitempty"`
+	// Optional received denom filter; restricts to trades where this denom was
+	// received
+	ReceivedDenom string `protobuf:"bytes,2,opt,name=received_denom,json=receivedDenom,proto3" json:"received_denom,omitempty"`
+	// Standard pagination parameters; results ordered by trade ID ascending
+	Pagination *query.PageRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
 func (m *QueryTradesRequest) Reset()         { *m = QueryTradesRequest{} }
@@ -1602,7 +1649,9 @@ func (m *QueryTradesRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryTradesResponse struct {
-	Trades     []*Trade            `protobuf:"bytes,1,rep,name=trades,proto3" json:"trades,omitempty"`
+	// List of trades matching the denom filters
+	Trades []*Trade `protobuf:"bytes,1,rep,name=trades,proto3" json:"trades,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1654,7 +1703,9 @@ func (m *QueryTradesResponse) GetPagination() *query.PageResponse {
 }
 
 type QueryTradesByOfferRequest struct {
-	OfferId    uint64             `protobuf:"varint,1,opt,name=offer_id,json=offerId,proto3" json:"offer_id,omitempty"`
+	// Offer ID to filter trades by; returns all trades involving this offer
+	OfferId uint64 `protobuf:"varint,1,opt,name=offer_id,json=offerId,proto3" json:"offer_id,omitempty"`
+	// Standard pagination parameters; results ordered by trade ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1706,7 +1757,9 @@ func (m *QueryTradesByOfferRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryTradesByOfferResponse struct {
-	Trades     []*Trade            `protobuf:"bytes,1,rep,name=trades,proto3" json:"trades,omitempty"`
+	// List of trades involving the specified offer
+	Trades []*Trade `protobuf:"bytes,1,rep,name=trades,proto3" json:"trades,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1758,7 +1811,10 @@ func (m *QueryTradesByOfferResponse) GetPagination() *query.PageResponse {
 }
 
 type QueryTradesByTakerRequest struct {
-	Taker      string             `protobuf:"bytes,1,opt,name=taker,proto3" json:"taker,omitempty"`
+	// Taker address to filter trades by; returns all trades executed by this
+	// address
+	Taker string `protobuf:"bytes,1,opt,name=taker,proto3" json:"taker,omitempty"`
+	// Standard pagination parameters; results ordered by trade ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1810,7 +1866,9 @@ func (m *QueryTradesByTakerRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryTradesByTakerResponse struct {
-	Trades     []*Trade            `protobuf:"bytes,1,rep,name=trades,proto3" json:"trades,omitempty"`
+	// List of trades executed by the specified taker
+	Trades []*Trade `protobuf:"bytes,1,rep,name=trades,proto3" json:"trades,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1861,9 +1919,10 @@ func (m *QueryTradesByTakerResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryTradesByPoolRequest returns trades filtered by pool id
 type QueryTradesByPoolRequest struct {
-	PoolId     uint64             `protobuf:"varint,1,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
+	// Pool ID to filter trades by; returns all trades involving this AMM pool
+	PoolId uint64 `protobuf:"varint,1,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
+	// Standard pagination parameters; results ordered by trade ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1915,7 +1974,9 @@ func (m *QueryTradesByPoolRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryTradesByPoolResponse struct {
-	Trades     []*Trade            `protobuf:"bytes,1,rep,name=trades,proto3" json:"trades,omitempty"`
+	// List of trades involving the specified AMM pool
+	Trades []*Trade `protobuf:"bytes,1,rep,name=trades,proto3" json:"trades,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -1967,7 +2028,9 @@ func (m *QueryTradesByPoolResponse) GetPagination() *query.PageResponse {
 }
 
 type QueryTradesByAuctionRequest struct {
-	AuctionId  uint64             `protobuf:"varint,1,opt,name=auction_id,json=auctionId,proto3" json:"auction_id,omitempty"`
+	// Auction ID to filter trades by; returns all trades involving this auction
+	AuctionId uint64 `protobuf:"varint,1,opt,name=auction_id,json=auctionId,proto3" json:"auction_id,omitempty"`
+	// Standard pagination parameters; results ordered by trade ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -2019,7 +2082,9 @@ func (m *QueryTradesByAuctionRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryTradesByAuctionResponse struct {
-	Trades     []*Trade            `protobuf:"bytes,1,rep,name=trades,proto3" json:"trades,omitempty"`
+	// List of trades involving auction redemptions for the specified auction
+	Trades []*Trade `protobuf:"bytes,1,rep,name=trades,proto3" json:"trades,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -2071,6 +2136,7 @@ func (m *QueryTradesByAuctionResponse) GetPagination() *query.PageResponse {
 }
 
 type QueryTradeRequest struct {
+	// ID of the trade to retrieve
 	TradeId uint64 `protobuf:"varint,1,opt,name=trade_id,json=tradeId,proto3" json:"trade_id,omitempty"`
 }
 
@@ -2115,6 +2181,7 @@ func (m *QueryTradeRequest) GetTradeId() uint64 {
 }
 
 type QueryTradeResponse struct {
+	// The requested trade data
 	Trade *Trade `protobuf:"bytes,1,opt,name=trade,proto3" json:"trade,omitempty"`
 }
 
@@ -2159,6 +2226,7 @@ func (m *QueryTradeResponse) GetTrade() *Trade {
 }
 
 type QueryAuctionRequest struct {
+	// ID of the auction to retrieve
 	AuctionId uint64 `protobuf:"varint,1,opt,name=auction_id,json=auctionId,proto3" json:"auction_id,omitempty"`
 }
 
@@ -2203,6 +2271,7 @@ func (m *QueryAuctionRequest) GetAuctionId() uint64 {
 }
 
 type QueryAuctionResponse struct {
+	// The requested auction data
 	Auction *AuctionRecord `protobuf:"bytes,1,opt,name=auction,proto3" json:"auction,omitempty"`
 }
 
@@ -2247,9 +2316,11 @@ func (m *QueryAuctionResponse) GetAuction() *AuctionRecord {
 }
 
 type QueryAuctionsRequest struct {
-	// optional filters; if unset, returns all
-	SellDenom  string             `protobuf:"bytes,1,opt,name=sell_denom,json=sellDenom,proto3" json:"sell_denom,omitempty"`
-	BidDenom   string             `protobuf:"bytes,2,opt,name=bid_denom,json=bidDenom,proto3" json:"bid_denom,omitempty"`
+	// Optional sell denom filter; restricts to auctions selling this denomination
+	SellDenom string `protobuf:"bytes,1,opt,name=sell_denom,json=sellDenom,proto3" json:"sell_denom,omitempty"`
+	// Optional bid denom filter; restricts to auctions bidding this denomination
+	BidDenom string `protobuf:"bytes,2,opt,name=bid_denom,json=bidDenom,proto3" json:"bid_denom,omitempty"`
+	// Standard pagination parameters; results ordered by auction ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -2308,7 +2379,9 @@ func (m *QueryAuctionsRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryAuctionsResponse struct {
-	Auctions   []*AuctionRecord    `protobuf:"bytes,1,rep,name=auctions,proto3" json:"auctions,omitempty"`
+	// List of auctions matching the denom filters
+	Auctions []*AuctionRecord `protobuf:"bytes,1,rep,name=auctions,proto3" json:"auctions,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -2359,9 +2432,11 @@ func (m *QueryAuctionsResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryAuctionsBySellerRequest lists auctions created by the seller address.
 type QueryAuctionsBySellerRequest struct {
-	Seller     string             `protobuf:"bytes,1,opt,name=seller,proto3" json:"seller,omitempty"`
+	// Seller address to filter auctions by; returns auctions created by this
+	// address
+	Seller string `protobuf:"bytes,1,opt,name=seller,proto3" json:"seller,omitempty"`
+	// Standard pagination parameters; results ordered by auction ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -2413,7 +2488,9 @@ func (m *QueryAuctionsBySellerRequest) GetPagination() *query.PageRequest {
 }
 
 type QueryAuctionsBySellerResponse struct {
-	Auctions   []*AuctionRecord    `protobuf:"bytes,1,rep,name=auctions,proto3" json:"auctions,omitempty"`
+	// List of auctions created by the specified seller
+	Auctions []*AuctionRecord `protobuf:"bytes,1,rep,name=auctions,proto3" json:"auctions,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -2464,10 +2541,11 @@ func (m *QueryAuctionsBySellerResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryAuctionByNFTRequest selects an auction by the escrow NFT identity.
 type QueryAuctionByNFTRequest struct {
+	// NFT class ID of the escrow marker
 	ClassId string `protobuf:"bytes,1,opt,name=class_id,json=classId,proto3" json:"class_id,omitempty"`
-	NftId   string `protobuf:"bytes,2,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	// NFT ID of the escrow marker
+	NftId string `protobuf:"bytes,2,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
 }
 
 func (m *QueryAuctionByNFTRequest) Reset()         { *m = QueryAuctionByNFTRequest{} }
@@ -2518,6 +2596,7 @@ func (m *QueryAuctionByNFTRequest) GetNftId() string {
 }
 
 type QueryAuctionByNFTResponse struct {
+	// The auction associated with the specified NFT escrow markers
 	Auction *AuctionRecord `protobuf:"bytes,1,opt,name=auction,proto3" json:"auction,omitempty"`
 }
 
@@ -2561,14 +2640,18 @@ func (m *QueryAuctionByNFTResponse) GetAuction() *AuctionRecord {
 	return nil
 }
 
-// QueryAuctionsByPairPriceRangeRequest filters auctions by their effective
-// price (bid-per-sell). Implementations may need to iterate candidate auctions
-// and compute the price from valuation/current bid and redeemable sell amounts.
 type QueryAuctionsByPairPriceRangeRequest struct {
-	SellDenom  string             `protobuf:"bytes,1,opt,name=sell_denom,json=sellDenom,proto3" json:"sell_denom,omitempty"`
-	BidDenom   string             `protobuf:"bytes,2,opt,name=bid_denom,json=bidDenom,proto3" json:"bid_denom,omitempty"`
-	MinPrice   string             `protobuf:"bytes,3,opt,name=min_price,json=minPrice,proto3" json:"min_price,omitempty"`
-	MaxPrice   string             `protobuf:"bytes,4,opt,name=max_price,json=maxPrice,proto3" json:"max_price,omitempty"`
+	// Sell denom of the pair (denomination being auctioned)
+	SellDenom string `protobuf:"bytes,1,opt,name=sell_denom,json=sellDenom,proto3" json:"sell_denom,omitempty"`
+	// Bid denom of the pair (denomination used for bidding)
+	BidDenom string `protobuf:"bytes,2,opt,name=bid_denom,json=bidDenom,proto3" json:"bid_denom,omitempty"`
+	// Minimum price threshold as bid-per-sell cosmos.Dec string (optional,
+	// inclusive)
+	MinPrice string `protobuf:"bytes,3,opt,name=min_price,json=minPrice,proto3" json:"min_price,omitempty"`
+	// Maximum price threshold as bid-per-sell cosmos.Dec string (optional,
+	// inclusive)
+	MaxPrice string `protobuf:"bytes,4,opt,name=max_price,json=maxPrice,proto3" json:"max_price,omitempty"`
+	// Standard pagination parameters; results ordered by auction ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,5,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -2641,7 +2724,9 @@ func (m *QueryAuctionsByPairPriceRangeRequest) GetPagination() *query.PageReques
 }
 
 type QueryAuctionsByPairPriceRangeResponse struct {
-	Auctions   []*AuctionRecord    `protobuf:"bytes,1,rep,name=auctions,proto3" json:"auctions,omitempty"`
+	// List of auctions within the specified price range
+	Auctions []*AuctionRecord `protobuf:"bytes,1,rep,name=auctions,proto3" json:"auctions,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -2729,6 +2814,7 @@ func (m *QueryMetricsRequest) XXX_DiscardUnknown() {
 var xxx_messageInfo_QueryMetricsRequest proto.InternalMessageInfo
 
 type QueryMetricsResponse struct {
+	// Comprehensive module metrics including escrow balances and trade statistics
 	Metrics *TradeMetrics `protobuf:"bytes,1,opt,name=metrics,proto3" json:"metrics,omitempty"`
 }
 
@@ -2772,8 +2858,8 @@ func (m *QueryMetricsResponse) GetMetrics() *TradeMetrics {
 	return nil
 }
 
-// QueryPositionRequest queries a single position by ID
 type QueryPositionRequest struct {
+	// ID of the leverage position to retrieve
 	PositionId uint64 `protobuf:"varint,1,opt,name=position_id,json=positionId,proto3" json:"position_id,omitempty"`
 }
 
@@ -2933,19 +3019,19 @@ func (m *QueryPositionResponse) GetTimeElapsed() uint64 {
 	return 0
 }
 
-// QueryPositionsByUserRequest lists all positions for a user with optional
-// filters
 type QueryPositionsByUserRequest struct {
+	// User address to filter positions by; returns all positions owned by this
+	// address
 	User string `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	// Optional: filter by borrowed denom
+	// Optional filter by borrowed denomination
 	BorrowedDenom string `protobuf:"bytes,2,opt,name=borrowed_denom,json=borrowedDenom,proto3" json:"borrowed_denom,omitempty"`
-	// Optional: filter by collateral denom
+	// Optional filter by collateral denomination
 	CollateralDenom string `protobuf:"bytes,3,opt,name=collateral_denom,json=collateralDenom,proto3" json:"collateral_denom,omitempty"`
-	// Optional: filter by pool_id (cannot combine with borrowed/collateral
-	// denoms)
-	PoolId     uint64             `protobuf:"varint,4,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
+	// Optional filter by pool ID (cannot combine with borrowed/collateral denoms)
+	PoolId uint64 `protobuf:"varint,4,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
+	// Standard pagination parameters; results ordered by position ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,5,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	// Optional: filter by lifecycle status; defaults to OPEN positions.
+	// Optional filter by lifecycle status; defaults to OPEN positions
 	Status PositionStatus `protobuf:"varint,6,opt,name=status,proto3,enum=dysonprotocol.whaleswap.v1.PositionStatus" json:"status,omitempty"`
 }
 
@@ -3025,7 +3111,9 @@ func (m *QueryPositionsByUserRequest) GetStatus() PositionStatus {
 }
 
 type QueryPositionsByUserResponse struct {
-	Positions  []*LeveragePosition `protobuf:"bytes,1,rep,name=positions,proto3" json:"positions,omitempty"`
+	// List of positions matching the user and filter criteria
+	Positions []*LeveragePosition `protobuf:"bytes,1,rep,name=positions,proto3" json:"positions,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -3076,11 +3164,12 @@ func (m *QueryPositionsByUserResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryPositionsByPoolRequest lists all positions in a pool
 type QueryPositionsByPoolRequest struct {
-	PoolId     uint64             `protobuf:"varint,1,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
+	// Pool ID to filter positions by; returns all positions in this pool
+	PoolId uint64 `protobuf:"varint,1,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
+	// Standard pagination parameters; results ordered by position ID ascending
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	// Optional: filter by lifecycle status; defaults to OPEN positions.
+	// Optional filter by lifecycle status; defaults to OPEN positions
 	Status PositionStatus `protobuf:"varint,3,opt,name=status,proto3,enum=dysonprotocol.whaleswap.v1.PositionStatus" json:"status,omitempty"`
 }
 
@@ -3139,7 +3228,9 @@ func (m *QueryPositionsByPoolRequest) GetStatus() PositionStatus {
 }
 
 type QueryPositionsByPoolResponse struct {
-	Positions  []*LeveragePosition `protobuf:"bytes,1,rep,name=positions,proto3" json:"positions,omitempty"`
+	// List of positions in the specified pool
+	Positions []*LeveragePosition `protobuf:"bytes,1,rep,name=positions,proto3" json:"positions,omitempty"`
+	// Pagination metadata for result set navigation
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -3447,82 +3538,129 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// Params queries the whaleswap module parameters
+	// *
+	// Params queries the current whaleswap module parameters.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	// Pools
+	// *
+	// Pool queries a single AMM pool by ID.
 	Pool(ctx context.Context, in *QueryPoolRequest, opts ...grpc.CallOption) (*QueryPoolResponse, error)
+	// *
+	// Pools lists all AMM pools with pagination.
 	Pools(ctx context.Context, in *QueryPoolsRequest, opts ...grpc.CallOption) (*QueryPoolsResponse, error)
-	// PoolsByPair returns all pools matching the provided denom pair with
-	// pagination. Denom order in the request is irrelevant.
+	// *
+	// PoolsByPair queries all pools matching a denom pair with pagination.
+	// Denom order in the request is irrelevant as pairs are canonicalized
+	// internally. Results ordered by pool ID for consistent pagination.
 	PoolsByPair(ctx context.Context, in *QueryPoolsByPairRequest, opts ...grpc.CallOption) (*QueryPoolsByPairResponse, error)
-	// PoolsByDenom returns all pools that include the provided denom on either
-	// side of the pair.
+	// *
+	// PoolsByDenom queries all pools that include a specific denom on either
+	// side. Returns pools where the specified denom appears in either coin
+	// position. Results ordered by pool ID ascending.
 	PoolsByDenom(ctx context.Context, in *QueryPoolsByDenomRequest, opts ...grpc.CallOption) (*QueryPoolsByDenomResponse, error)
-	// PoolBySharesDenom returns the pool that mints the provided shares denom.
+	// *
+	// PoolBySharesDenom queries the pool that mints a specific shares denom.
+	// Returns the pool with matching shares_denom (expected to be unique).
 	PoolBySharesDenom(ctx context.Context, in *QueryPoolBySharesDenomRequest, opts ...grpc.CallOption) (*QueryPoolBySharesDenomResponse, error)
-	// PoolsByPairPriceRange returns pools for a given pair whose instantaneous
-	// price (derived from reserves, P = coin_b/coin_a) falls within the optional
-	// [min_price, max_price] range. Prices are expressed as cosmos.Dec strings.
-	// If neither bound is provided, it returns all pools for the pair.
+	// *
+	// PoolsByPairPriceRange queries pools for a pair whose instantaneous price
+	// falls within optional bounds. Filters pools by denom pair and price range
+	// (quote/base ratio from reserves). Bounds are inclusive and optional;
+	// omitting both returns all matching pairs. Results ordered by pool ID
+	// ascending.
 	PoolsByPairPriceRange(ctx context.Context, in *QueryPoolsByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryPoolsByPairPriceRangeResponse, error)
-	// PoolsByOwner returns pools where the requested owner holds a non-zero
-	// balance of pool shares. This may be implemented via a filtered scan unless
-	// the application maintains a dedicated reverse index.
+	// *
+	// PoolsByOwner queries pools where the owner holds non-zero shares balance.
+	// Returns pools where the specified owner has a positive balance of pool
+	// shares. Uses bank module balance checks; results ordered by pool ID
+	// ascending.
 	PoolsByOwner(ctx context.Context, in *QueryPoolsByOwnerRequest, opts ...grpc.CallOption) (*QueryPoolsByOwnerResponse, error)
-	// Offers
+	// *
+	// Offer queries a single offer by ID.
 	Offer(ctx context.Context, in *QueryOfferRequest, opts ...grpc.CallOption) (*QueryOfferResponse, error)
+	// *
+	// OffersByOwner queries offers by owner address with optional status filter.
+	// Uses indexed queries for owner+status combinations for optimal performance.
+	// Falls back to filtered scans when only partial filters are provided.
 	OffersByOwner(ctx context.Context, in *QueryOffersByOwnerRequest, opts ...grpc.CallOption) (*QueryOffersByOwnerResponse, error)
-	// Unified offers listing with optional filters and pagination
+	// *
+	// Offers provides unified offer listing with optional denom filters and
+	// pagination. Supports multiple query patterns based on provided filters for
+	// optimal performance. Canonicalizes pairs for consistent indexing and
+	// ordering.
 	Offers(ctx context.Context, in *QueryOffersRequest, opts ...grpc.CallOption) (*QueryOffersResponse, error)
-	// OffersByDenom returns offers that mention the provided denom either as the
-	// have or want side, depending on the optional role filter. When role is
-	// unset or empty, both sides are considered.
+	// *
+	// OffersByDenom queries offers that reference a specific denom either as have
+	// or want side. Uses role filter to restrict to "have" side, "want" side, or
+	// both (when empty). Leverages appropriate indices when role is specified for
+	// efficiency.
 	OffersByDenom(ctx context.Context, in *QueryOffersByDenomRequest, opts ...grpc.CallOption) (*QueryOffersByDenomResponse, error)
-	// OffersByPairPriceRange returns offers for a pair (order of have/want is
-	// irrelevant; the implementation canonicalizes to pairKey) whose price lies
-	// within the optional [min_price, max_price] range. Prices are cosmos.Dec
-	// strings representing want-per-have (high-per-low orientation), so lower is
-	// better for takers paying want to receive have.
+	// *
+	// OffersByPairPriceRange queries offers for a pair whose price lies within
+	// optional bounds. Filters offers by denom pair and price range
+	// (want-per-have ratio). Canonicalizes pair for consistent indexing; bounds
+	// are inclusive and optional. Uses OffersByPairPrice index for efficient
+	// ordered scanning.
 	OffersByPairPriceRange(ctx context.Context, in *QueryOffersByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryOffersByPairPriceRangeResponse, error)
-	// OffersBest returns up to `limit` best-priced offers for the given pair
-	// (treating price as want-per-have, sorted ascending). This is a convenience
-	// endpoint for top-of-book queries.
+	// *
+	// OffersBest returns up to limit best-priced offers for a pair (convenience
+	// endpoint). Returns top offers for a pair sorted by price (want-per-have,
+	// ascending = best for takers). Canonicalizes pair for indexing; applies
+	// limit (defaulting to 10) via pagination.
 	OffersBest(ctx context.Context, in *QueryOffersBestRequest, opts ...grpc.CallOption) (*QueryOffersBestResponse, error)
-	// Trades
-	// Get a single trade by id
+	// *
+	// Trade queries a single trade by ID.
 	Trade(ctx context.Context, in *QueryTradeRequest, opts ...grpc.CallOption) (*QueryTradeResponse, error)
-	// List trades with optional filters and pagination
+	// *
+	// Trades lists trades with optional denom filters and pagination.
 	Trades(ctx context.Context, in *QueryTradesRequest, opts ...grpc.CallOption) (*QueryTradesResponse, error)
+	// *
+	// TradesByOffer queries all trades involving a specific offer.
 	TradesByOffer(ctx context.Context, in *QueryTradesByOfferRequest, opts ...grpc.CallOption) (*QueryTradesByOfferResponse, error)
+	// *
+	// TradesByTaker queries all trades executed by a specific taker address.
 	TradesByTaker(ctx context.Context, in *QueryTradesByTakerRequest, opts ...grpc.CallOption) (*QueryTradesByTakerResponse, error)
-	// TradesByPool lists trades for an AMM pool
+	// *
+	// TradesByPool queries all trades involving a specific AMM pool.
 	TradesByPool(ctx context.Context, in *QueryTradesByPoolRequest, opts ...grpc.CallOption) (*QueryTradesByPoolResponse, error)
-	// TradesByAuction lists trades for auction redemptions
+	// *
+	// TradesByAuction queries all trades involving auction redemptions for a
+	// specific auction.
 	TradesByAuction(ctx context.Context, in *QueryTradesByAuctionRequest, opts ...grpc.CallOption) (*QueryTradesByAuctionResponse, error)
-	// Auctions
+	// *
+	// Auction queries a single auction by ID.
 	Auction(ctx context.Context, in *QueryAuctionRequest, opts ...grpc.CallOption) (*QueryAuctionResponse, error)
-	// List auctions with optional filters and pagination
+	// *
+	// Auctions provides unified auction listing with optional denom filters and
+	// pagination. Supports multiple query patterns based on provided filters for
+	// optimal performance.
 	Auctions(ctx context.Context, in *QueryAuctionsRequest, opts ...grpc.CallOption) (*QueryAuctionsResponse, error)
-	// AuctionsBySeller returns auctions opened by the specified seller address.
+	// *
+	// AuctionsBySeller queries auctions created by a specific seller address.
 	AuctionsBySeller(ctx context.Context, in *QueryAuctionsBySellerRequest, opts ...grpc.CallOption) (*QueryAuctionsBySellerResponse, error)
-	// AuctionByNFT returns the auction associated with the specific NFT
-	// (class_id, nft_id) used as the escrow marker.
+	// *
+	// AuctionByNFT queries the auction associated with specific NFT escrow
+	// markers.
 	AuctionByNFT(ctx context.Context, in *QueryAuctionByNFTRequest, opts ...grpc.CallOption) (*QueryAuctionByNFTResponse, error)
-	// AuctionsByPairPriceRange returns auctions for a given (sell,bid) pair whose
-	// effective price (bid-per-sell) falls within [min_price, max_price].
-	// IMPORTANT: This endpoint requires iterating relevant NFTs/auctions and
-	// computing the current effective price from valuation or current bid and the
-	// redeemable sell-coin amount. It is designed for UI discovery and may be
-	// more expensive than index-backed queries.
+	// *
+	// AuctionsByPairPriceRange queries auctions for a pair whose effective price
+	// falls within bounds. Filters auctions by sell/bid denom pair; price
+	// filtering is placeholder. Results ordered by auction ID ascending.
 	AuctionsByPairPriceRange(ctx context.Context, in *QueryAuctionsByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryAuctionsByPairPriceRangeResponse, error)
-	// Leverage
+	// *
+	// Position queries a leverage position by ID and includes comprehensive
+	// health and interest information.
 	Position(ctx context.Context, in *QueryPositionRequest, opts ...grpc.CallOption) (*QueryPositionResponse, error)
-	// QueryPositionsByUser lists all positions for a user with optional filters
+	// *
+	// PositionsByUser lists all leverage positions for a user with optional
+	// filters.
 	PositionsByUser(ctx context.Context, in *QueryPositionsByUserRequest, opts ...grpc.CallOption) (*QueryPositionsByUserResponse, error)
-	// QueryPositionsByPool lists all positions in a pool
+	// *
+	// PositionsByPool lists all leverage positions in a specific pool with
+	// optional status filter.
 	PositionsByPool(ctx context.Context, in *QueryPositionsByPoolRequest, opts ...grpc.CallOption) (*QueryPositionsByPoolResponse, error)
-	// Metrics returns a breakdown of module-expected balances by subsystem
-	// and summary counters for invariants and monitoring.
+	// *
+	// Metrics computes comprehensive module metrics including escrow balances and
+	// trade statistics.
 	Metrics(ctx context.Context, in *QueryMetricsRequest, opts ...grpc.CallOption) (*QueryMetricsResponse, error)
 }
 
@@ -3797,82 +3935,129 @@ func (c *queryClient) Metrics(ctx context.Context, in *QueryMetricsRequest, opts
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// Params queries the whaleswap module parameters
+	// *
+	// Params queries the current whaleswap module parameters.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	// Pools
+	// *
+	// Pool queries a single AMM pool by ID.
 	Pool(context.Context, *QueryPoolRequest) (*QueryPoolResponse, error)
+	// *
+	// Pools lists all AMM pools with pagination.
 	Pools(context.Context, *QueryPoolsRequest) (*QueryPoolsResponse, error)
-	// PoolsByPair returns all pools matching the provided denom pair with
-	// pagination. Denom order in the request is irrelevant.
+	// *
+	// PoolsByPair queries all pools matching a denom pair with pagination.
+	// Denom order in the request is irrelevant as pairs are canonicalized
+	// internally. Results ordered by pool ID for consistent pagination.
 	PoolsByPair(context.Context, *QueryPoolsByPairRequest) (*QueryPoolsByPairResponse, error)
-	// PoolsByDenom returns all pools that include the provided denom on either
-	// side of the pair.
+	// *
+	// PoolsByDenom queries all pools that include a specific denom on either
+	// side. Returns pools where the specified denom appears in either coin
+	// position. Results ordered by pool ID ascending.
 	PoolsByDenom(context.Context, *QueryPoolsByDenomRequest) (*QueryPoolsByDenomResponse, error)
-	// PoolBySharesDenom returns the pool that mints the provided shares denom.
+	// *
+	// PoolBySharesDenom queries the pool that mints a specific shares denom.
+	// Returns the pool with matching shares_denom (expected to be unique).
 	PoolBySharesDenom(context.Context, *QueryPoolBySharesDenomRequest) (*QueryPoolBySharesDenomResponse, error)
-	// PoolsByPairPriceRange returns pools for a given pair whose instantaneous
-	// price (derived from reserves, P = coin_b/coin_a) falls within the optional
-	// [min_price, max_price] range. Prices are expressed as cosmos.Dec strings.
-	// If neither bound is provided, it returns all pools for the pair.
+	// *
+	// PoolsByPairPriceRange queries pools for a pair whose instantaneous price
+	// falls within optional bounds. Filters pools by denom pair and price range
+	// (quote/base ratio from reserves). Bounds are inclusive and optional;
+	// omitting both returns all matching pairs. Results ordered by pool ID
+	// ascending.
 	PoolsByPairPriceRange(context.Context, *QueryPoolsByPairPriceRangeRequest) (*QueryPoolsByPairPriceRangeResponse, error)
-	// PoolsByOwner returns pools where the requested owner holds a non-zero
-	// balance of pool shares. This may be implemented via a filtered scan unless
-	// the application maintains a dedicated reverse index.
+	// *
+	// PoolsByOwner queries pools where the owner holds non-zero shares balance.
+	// Returns pools where the specified owner has a positive balance of pool
+	// shares. Uses bank module balance checks; results ordered by pool ID
+	// ascending.
 	PoolsByOwner(context.Context, *QueryPoolsByOwnerRequest) (*QueryPoolsByOwnerResponse, error)
-	// Offers
+	// *
+	// Offer queries a single offer by ID.
 	Offer(context.Context, *QueryOfferRequest) (*QueryOfferResponse, error)
+	// *
+	// OffersByOwner queries offers by owner address with optional status filter.
+	// Uses indexed queries for owner+status combinations for optimal performance.
+	// Falls back to filtered scans when only partial filters are provided.
 	OffersByOwner(context.Context, *QueryOffersByOwnerRequest) (*QueryOffersByOwnerResponse, error)
-	// Unified offers listing with optional filters and pagination
+	// *
+	// Offers provides unified offer listing with optional denom filters and
+	// pagination. Supports multiple query patterns based on provided filters for
+	// optimal performance. Canonicalizes pairs for consistent indexing and
+	// ordering.
 	Offers(context.Context, *QueryOffersRequest) (*QueryOffersResponse, error)
-	// OffersByDenom returns offers that mention the provided denom either as the
-	// have or want side, depending on the optional role filter. When role is
-	// unset or empty, both sides are considered.
+	// *
+	// OffersByDenom queries offers that reference a specific denom either as have
+	// or want side. Uses role filter to restrict to "have" side, "want" side, or
+	// both (when empty). Leverages appropriate indices when role is specified for
+	// efficiency.
 	OffersByDenom(context.Context, *QueryOffersByDenomRequest) (*QueryOffersByDenomResponse, error)
-	// OffersByPairPriceRange returns offers for a pair (order of have/want is
-	// irrelevant; the implementation canonicalizes to pairKey) whose price lies
-	// within the optional [min_price, max_price] range. Prices are cosmos.Dec
-	// strings representing want-per-have (high-per-low orientation), so lower is
-	// better for takers paying want to receive have.
+	// *
+	// OffersByPairPriceRange queries offers for a pair whose price lies within
+	// optional bounds. Filters offers by denom pair and price range
+	// (want-per-have ratio). Canonicalizes pair for consistent indexing; bounds
+	// are inclusive and optional. Uses OffersByPairPrice index for efficient
+	// ordered scanning.
 	OffersByPairPriceRange(context.Context, *QueryOffersByPairPriceRangeRequest) (*QueryOffersByPairPriceRangeResponse, error)
-	// OffersBest returns up to `limit` best-priced offers for the given pair
-	// (treating price as want-per-have, sorted ascending). This is a convenience
-	// endpoint for top-of-book queries.
+	// *
+	// OffersBest returns up to limit best-priced offers for a pair (convenience
+	// endpoint). Returns top offers for a pair sorted by price (want-per-have,
+	// ascending = best for takers). Canonicalizes pair for indexing; applies
+	// limit (defaulting to 10) via pagination.
 	OffersBest(context.Context, *QueryOffersBestRequest) (*QueryOffersBestResponse, error)
-	// Trades
-	// Get a single trade by id
+	// *
+	// Trade queries a single trade by ID.
 	Trade(context.Context, *QueryTradeRequest) (*QueryTradeResponse, error)
-	// List trades with optional filters and pagination
+	// *
+	// Trades lists trades with optional denom filters and pagination.
 	Trades(context.Context, *QueryTradesRequest) (*QueryTradesResponse, error)
+	// *
+	// TradesByOffer queries all trades involving a specific offer.
 	TradesByOffer(context.Context, *QueryTradesByOfferRequest) (*QueryTradesByOfferResponse, error)
+	// *
+	// TradesByTaker queries all trades executed by a specific taker address.
 	TradesByTaker(context.Context, *QueryTradesByTakerRequest) (*QueryTradesByTakerResponse, error)
-	// TradesByPool lists trades for an AMM pool
+	// *
+	// TradesByPool queries all trades involving a specific AMM pool.
 	TradesByPool(context.Context, *QueryTradesByPoolRequest) (*QueryTradesByPoolResponse, error)
-	// TradesByAuction lists trades for auction redemptions
+	// *
+	// TradesByAuction queries all trades involving auction redemptions for a
+	// specific auction.
 	TradesByAuction(context.Context, *QueryTradesByAuctionRequest) (*QueryTradesByAuctionResponse, error)
-	// Auctions
+	// *
+	// Auction queries a single auction by ID.
 	Auction(context.Context, *QueryAuctionRequest) (*QueryAuctionResponse, error)
-	// List auctions with optional filters and pagination
+	// *
+	// Auctions provides unified auction listing with optional denom filters and
+	// pagination. Supports multiple query patterns based on provided filters for
+	// optimal performance.
 	Auctions(context.Context, *QueryAuctionsRequest) (*QueryAuctionsResponse, error)
-	// AuctionsBySeller returns auctions opened by the specified seller address.
+	// *
+	// AuctionsBySeller queries auctions created by a specific seller address.
 	AuctionsBySeller(context.Context, *QueryAuctionsBySellerRequest) (*QueryAuctionsBySellerResponse, error)
-	// AuctionByNFT returns the auction associated with the specific NFT
-	// (class_id, nft_id) used as the escrow marker.
+	// *
+	// AuctionByNFT queries the auction associated with specific NFT escrow
+	// markers.
 	AuctionByNFT(context.Context, *QueryAuctionByNFTRequest) (*QueryAuctionByNFTResponse, error)
-	// AuctionsByPairPriceRange returns auctions for a given (sell,bid) pair whose
-	// effective price (bid-per-sell) falls within [min_price, max_price].
-	// IMPORTANT: This endpoint requires iterating relevant NFTs/auctions and
-	// computing the current effective price from valuation or current bid and the
-	// redeemable sell-coin amount. It is designed for UI discovery and may be
-	// more expensive than index-backed queries.
+	// *
+	// AuctionsByPairPriceRange queries auctions for a pair whose effective price
+	// falls within bounds. Filters auctions by sell/bid denom pair; price
+	// filtering is placeholder. Results ordered by auction ID ascending.
 	AuctionsByPairPriceRange(context.Context, *QueryAuctionsByPairPriceRangeRequest) (*QueryAuctionsByPairPriceRangeResponse, error)
-	// Leverage
+	// *
+	// Position queries a leverage position by ID and includes comprehensive
+	// health and interest information.
 	Position(context.Context, *QueryPositionRequest) (*QueryPositionResponse, error)
-	// QueryPositionsByUser lists all positions for a user with optional filters
+	// *
+	// PositionsByUser lists all leverage positions for a user with optional
+	// filters.
 	PositionsByUser(context.Context, *QueryPositionsByUserRequest) (*QueryPositionsByUserResponse, error)
-	// QueryPositionsByPool lists all positions in a pool
+	// *
+	// PositionsByPool lists all leverage positions in a specific pool with
+	// optional status filter.
 	PositionsByPool(context.Context, *QueryPositionsByPoolRequest) (*QueryPositionsByPoolResponse, error)
-	// Metrics returns a breakdown of module-expected balances by subsystem
-	// and summary counters for invariants and monitoring.
+	// *
+	// Metrics computes comprehensive module metrics including escrow balances and
+	// trade statistics.
 	Metrics(context.Context, *QueryMetricsRequest) (*QueryMetricsResponse, error)
 }
 

@@ -6,13 +6,13 @@
             "dysonprotocol.whaleswap.v1.QueryPoolBySharesDenomRequest": {
                 "properties": {
                     "shares_denom": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Shares denomination to find the corresponding pool for"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Pool By Shares Denom Request",
-                "description": "QueryPoolBySharesDenomRequest selects the pool that mints the given shares denom."
+                "title": "Query Pool By Shares Denom Request"
             }
         }
     },
@@ -24,7 +24,8 @@
                 "properties": {
                     "pool": {
                         "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "The pool that mints the specified shares denomination"
                     }
                 },
                 "additionalProperties": false,

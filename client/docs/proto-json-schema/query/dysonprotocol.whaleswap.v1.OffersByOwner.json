@@ -6,15 +6,17 @@
             "dysonprotocol.whaleswap.v1.QueryOffersByOwnerRequest": {
                 "properties": {
                     "owner": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Owner address to filter offers by; must be a valid bech32 address"
                     },
                     "status": {
                         "type": "string",
-                        "description": "optional filter"
+                        "description": "Optional status filter; valid values are \"open\", \"closed\", \"cancelled\" If empty, returns offers with any status. Enables indexed queries when combined with owner."
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by offer ID ascending"
                     }
                 },
                 "additionalProperties": false,
@@ -64,11 +66,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of offers matching the owner and status criteria, ordered by offer ID"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

@@ -6,17 +6,19 @@
             "dysonprotocol.whaleswap.v1.QueryAuctionsBySellerRequest": {
                 "properties": {
                     "seller": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Seller address to filter auctions by; returns auctions created by this address"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by auction ID ascending"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "--- Auction extended queries ---",
-                "description": "--- Auction extended queries ---  QueryAuctionsBySellerRequest lists auctions created by the seller address."
+                "description": "--- Auction extended queries ---"
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -61,11 +63,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of auctions created by the specified seller"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

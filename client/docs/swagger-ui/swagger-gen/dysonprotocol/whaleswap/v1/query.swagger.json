@@ -13,7 +13,7 @@
   "paths": {
     "/dysonprotocol/whaleswap/v1/auctions": {
       "get": {
-        "summary": "List auctions with optional filters and pagination",
+        "summary": "*\nAuctions provides unified auction listing with optional denom filters and\npagination. Supports multiple query patterns based on provided filters for\noptimal performance.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryAuctionsRequest",
         "responses": {
           "200": {
@@ -32,13 +32,14 @@
         "parameters": [
           {
             "name": "sell_denom",
-            "description": "optional filters; if unset, returns all.",
+            "description": "Optional sell denom filter; restricts to auctions selling this denomination.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "bid_denom",
+            "description": "Optional bid denom filter; restricts to auctions bidding this denomination.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -84,7 +85,7 @@
     },
     "/dysonprotocol/whaleswap/v1/auctions/by_nft": {
       "get": {
-        "summary": "AuctionByNFT returns the auction associated with the specific NFT\n(class_id, nft_id) used as the escrow marker.",
+        "summary": "*\nAuctionByNFT queries the auction associated with specific NFT escrow\nmarkers.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryAuctionByNFTRequest",
         "responses": {
           "200": {
@@ -103,12 +104,14 @@
         "parameters": [
           {
             "name": "class_id",
+            "description": "NFT class ID of the escrow marker.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "nft_id",
+            "description": "NFT ID of the escrow marker.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -121,7 +124,7 @@
     },
     "/dysonprotocol/whaleswap/v1/auctions/by_pair_price": {
       "get": {
-        "summary": "AuctionsByPairPriceRange returns auctions for a given (sell,bid) pair whose\neffective price (bid-per-sell) falls within [min_price, max_price].\nIMPORTANT: This endpoint requires iterating relevant NFTs/auctions and\ncomputing the current effective price from valuation or current bid and the\nredeemable sell-coin amount. It is designed for UI discovery and may be\nmore expensive than index-backed queries.",
+        "summary": "*\nAuctionsByPairPriceRange queries auctions for a pair whose effective price\nfalls within bounds. Filters auctions by sell/bid denom pair; price\nfiltering is placeholder. Results ordered by auction ID ascending.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryAuctionsByPairPriceRangeRequest",
         "responses": {
           "200": {
@@ -140,24 +143,28 @@
         "parameters": [
           {
             "name": "sell_denom",
+            "description": "Sell denom of the pair (denomination being auctioned).",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "bid_denom",
+            "description": "Bid denom of the pair (denomination used for bidding).",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "min_price",
+            "description": "Minimum price threshold as bid-per-sell cosmos.Dec string (optional,\ninclusive).",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "max_price",
+            "description": "Maximum price threshold as bid-per-sell cosmos.Dec string (optional,\ninclusive).",
             "in": "query",
             "required": false,
             "type": "string"
@@ -203,7 +210,7 @@
     },
     "/dysonprotocol/whaleswap/v1/auctions/seller/{seller}": {
       "get": {
-        "summary": "AuctionsBySeller returns auctions opened by the specified seller address.",
+        "summary": "*\nAuctionsBySeller queries auctions created by a specific seller address.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryAuctionsBySellerRequest",
         "responses": {
           "200": {
@@ -222,6 +229,7 @@
         "parameters": [
           {
             "name": "seller",
+            "description": "Seller address to filter auctions by; returns auctions created by this\naddress",
             "in": "path",
             "required": true,
             "type": "string"
@@ -267,7 +275,7 @@
     },
     "/dysonprotocol/whaleswap/v1/auctions/{auction_id}": {
       "get": {
-        "summary": "Auctions",
+        "summary": "*\nAuction queries a single auction by ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryAuctionRequest",
         "responses": {
           "200": {
@@ -286,6 +294,7 @@
         "parameters": [
           {
             "name": "auction_id",
+            "description": "ID of the auction to retrieve",
             "in": "path",
             "required": true,
             "type": "string",
@@ -299,7 +308,7 @@
     },
     "/dysonprotocol/whaleswap/v1/metrics": {
       "get": {
-        "summary": "Metrics returns a breakdown of module-expected balances by subsystem\nand summary counters for invariants and monitoring.",
+        "summary": "*\nMetrics computes comprehensive module metrics including escrow balances and\ntrade statistics.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryMetricsRequest",
         "responses": {
           "200": {
@@ -322,7 +331,7 @@
     },
     "/dysonprotocol/whaleswap/v1/offers": {
       "get": {
-        "summary": "Unified offers listing with optional filters and pagination",
+        "summary": "*\nOffers provides unified offer listing with optional denom filters and\npagination. Supports multiple query patterns based on provided filters for\noptimal performance. Canonicalizes pairs for consistent indexing and\nordering.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryOffersRequest",
         "responses": {
           "200": {
@@ -341,13 +350,14 @@
         "parameters": [
           {
             "name": "have_denom",
-            "description": "optional filters; if unset returns all.",
+            "description": "Optional have denom filter; restricts to offers selling this denomination.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "want_denom",
+            "description": "Optional want denom filter; restricts to offers buying this denomination.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -393,7 +403,7 @@
     },
     "/dysonprotocol/whaleswap/v1/offers/best": {
       "get": {
-        "summary": "OffersBest returns up to `limit` best-priced offers for the given pair\n(treating price as want-per-have, sorted ascending). This is a convenience\nendpoint for top-of-book queries.",
+        "summary": "*\nOffersBest returns up to limit best-priced offers for a pair (convenience\nendpoint). Returns top offers for a pair sorted by price (want-per-have,\nascending = best for takers). Canonicalizes pair for indexing; applies\nlimit (defaulting to 10) via pagination.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryOffersBestRequest",
         "responses": {
           "200": {
@@ -412,18 +422,21 @@
         "parameters": [
           {
             "name": "have_denom",
+            "description": "Have denom of the pair (denomination being sold).",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "want_denom",
+            "description": "Want denom of the pair (denomination being bought).",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "limit",
+            "description": "Maximum number of best-priced offers to return (default: 10).",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -437,7 +450,7 @@
     },
     "/dysonprotocol/whaleswap/v1/offers/by_denom": {
       "get": {
-        "summary": "OffersByDenom returns offers that mention the provided denom either as the\nhave or want side, depending on the optional role filter. When role is\nunset or empty, both sides are considered.",
+        "summary": "*\nOffersByDenom queries offers that reference a specific denom either as have\nor want side. Uses role filter to restrict to \"have\" side, \"want\" side, or\nboth (when empty). Leverages appropriate indices when role is specified for\nefficiency.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryOffersByDenomRequest",
         "responses": {
           "200": {
@@ -456,12 +469,14 @@
         "parameters": [
           {
             "name": "denom",
+            "description": "Denomination to search for in offers.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "role",
+            "description": "Role filter: \"have\" restricts to have-denom, \"want\" restricts to\nwant-denom, empty string includes both sides.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -507,7 +522,7 @@
     },
     "/dysonprotocol/whaleswap/v1/offers/by_pair_price": {
       "get": {
-        "summary": "OffersByPairPriceRange returns offers for a pair (order of have/want is\nirrelevant; the implementation canonicalizes to pairKey) whose price lies\nwithin the optional [min_price, max_price] range. Prices are cosmos.Dec\nstrings representing want-per-have (high-per-low orientation), so lower is\nbetter for takers paying want to receive have.",
+        "summary": "*\nOffersByPairPriceRange queries offers for a pair whose price lies within\noptional bounds. Filters offers by denom pair and price range\n(want-per-have ratio). Canonicalizes pair for consistent indexing; bounds\nare inclusive and optional. Uses OffersByPairPrice index for efficient\nordered scanning.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryOffersByPairPriceRangeRequest",
         "responses": {
           "200": {
@@ -526,24 +541,28 @@
         "parameters": [
           {
             "name": "have_denom",
+            "description": "Have denom of the pair (denomination being sold).",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "want_denom",
+            "description": "Want denom of the pair (denomination being bought).",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "min_price",
+            "description": "Minimum price threshold as want-per-have cosmos.Dec string (optional,\ninclusive).",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "max_price",
+            "description": "Maximum price threshold as want-per-have cosmos.Dec string (optional,\ninclusive).",
             "in": "query",
             "required": false,
             "type": "string"
@@ -589,6 +608,7 @@
     },
     "/dysonprotocol/whaleswap/v1/offers/owner/{owner}": {
       "get": {
+        "summary": "*\nOffersByOwner queries offers by owner address with optional status filter.\nUses indexed queries for owner+status combinations for optimal performance.\nFalls back to filtered scans when only partial filters are provided.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryOffersByOwnerRequest",
         "responses": {
           "200": {
@@ -607,12 +627,14 @@
         "parameters": [
           {
             "name": "owner",
+            "description": "Owner address to filter offers by; must be a valid bech32 address",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "status",
+            "description": "Optional status filter; valid values are \"open\", \"closed\", \"cancelled\"\nIf empty, returns offers with any status. Enables indexed queries when\ncombined with owner.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -658,7 +680,7 @@
     },
     "/dysonprotocol/whaleswap/v1/offers/{offer_id}": {
       "get": {
-        "summary": "Offers",
+        "summary": "*\nOffer queries a single offer by ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryOfferRequest",
         "responses": {
           "200": {
@@ -677,6 +699,7 @@
         "parameters": [
           {
             "name": "offer_id",
+            "description": "ID of the offer to retrieve",
             "in": "path",
             "required": true,
             "type": "string",
@@ -690,7 +713,7 @@
     },
     "/dysonprotocol/whaleswap/v1/params": {
       "get": {
-        "summary": "Params queries the whaleswap module parameters",
+        "summary": "*\nParams queries the current whaleswap module parameters.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryParamsRequest",
         "responses": {
           "200": {
@@ -713,6 +736,7 @@
     },
     "/dysonprotocol/whaleswap/v1/pools": {
       "get": {
+        "summary": "*\nPools lists all AMM pools with pagination.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolsRequest",
         "responses": {
           "200": {
@@ -770,7 +794,7 @@
     },
     "/dysonprotocol/whaleswap/v1/pools/by_denom": {
       "get": {
-        "summary": "PoolsByDenom returns all pools that include the provided denom on either\nside of the pair.",
+        "summary": "*\nPoolsByDenom queries all pools that include a specific denom on either\nside. Returns pools where the specified denom appears in either coin\nposition. Results ordered by pool ID ascending.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolsByDenomRequest",
         "responses": {
           "200": {
@@ -789,6 +813,7 @@
         "parameters": [
           {
             "name": "denom",
+            "description": "Denomination to search for; returns pools where this denom appears on\neither side.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -834,7 +859,7 @@
     },
     "/dysonprotocol/whaleswap/v1/pools/by_pair": {
       "get": {
-        "summary": "PoolsByPair returns all pools matching the provided denom pair with\npagination. Denom order in the request is irrelevant.",
+        "summary": "*\nPoolsByPair queries all pools matching a denom pair with pagination.\nDenom order in the request is irrelevant as pairs are canonicalized\ninternally. Results ordered by pool ID for consistent pagination.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolsByPairRequest",
         "responses": {
           "200": {
@@ -853,12 +878,14 @@
         "parameters": [
           {
             "name": "base_denom",
+            "description": "Base denom of the pair (price is quote/base); order with quote_denom is\nirrelevant.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "quote_denom",
+            "description": "Quote denom of the pair; combined with base_denom forms the trading pair.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -904,7 +931,7 @@
     },
     "/dysonprotocol/whaleswap/v1/pools/by_pair_price": {
       "get": {
-        "summary": "PoolsByPairPriceRange returns pools for a given pair whose instantaneous\nprice (derived from reserves, P = coin_b/coin_a) falls within the optional\n[min_price, max_price] range. Prices are expressed as cosmos.Dec strings.\nIf neither bound is provided, it returns all pools for the pair.",
+        "summary": "*\nPoolsByPairPriceRange queries pools for a pair whose instantaneous price\nfalls within optional bounds. Filters pools by denom pair and price range\n(quote/base ratio from reserves). Bounds are inclusive and optional;\nomitting both returns all matching pairs. Results ordered by pool ID\nascending.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolsByPairPriceRangeRequest",
         "responses": {
           "200": {
@@ -923,25 +950,28 @@
         "parameters": [
           {
             "name": "base_denom",
-            "description": "Price is interpreted as quote/base using these fields.",
+            "description": "Base denom of the pair (price is quote/base); order with quote_denom is\nirrelevant.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "quote_denom",
+            "description": "Quote denom of the pair; combined with base_denom forms the trading pair.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "min_price",
+            "description": "Minimum price threshold as cosmos.Dec string (optional, inclusive).",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "max_price",
+            "description": "Maximum price threshold as cosmos.Dec string (optional, inclusive).",
             "in": "query",
             "required": false,
             "type": "string"
@@ -987,7 +1017,7 @@
     },
     "/dysonprotocol/whaleswap/v1/pools/by_shares": {
       "get": {
-        "summary": "PoolBySharesDenom returns the pool that mints the provided shares denom.",
+        "summary": "*\nPoolBySharesDenom queries the pool that mints a specific shares denom.\nReturns the pool with matching shares_denom (expected to be unique).",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolBySharesDenomRequest",
         "responses": {
           "200": {
@@ -1006,6 +1036,7 @@
         "parameters": [
           {
             "name": "shares_denom",
+            "description": "Shares denomination to find the corresponding pool for.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1018,7 +1049,7 @@
     },
     "/dysonprotocol/whaleswap/v1/pools/owner/{owner}": {
       "get": {
-        "summary": "PoolsByOwner returns pools where the requested owner holds a non-zero\nbalance of pool shares. This may be implemented via a filtered scan unless\nthe application maintains a dedicated reverse index.",
+        "summary": "*\nPoolsByOwner queries pools where the owner holds non-zero shares balance.\nReturns pools where the specified owner has a positive balance of pool\nshares. Uses bank module balance checks; results ordered by pool ID\nascending.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolsByOwnerRequest",
         "responses": {
           "200": {
@@ -1037,6 +1068,7 @@
         "parameters": [
           {
             "name": "owner",
+            "description": "Owner address to filter pools by; must be a valid bech32 address",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1082,7 +1114,7 @@
     },
     "/dysonprotocol/whaleswap/v1/pools/{pool_id}": {
       "get": {
-        "summary": "Pools",
+        "summary": "*\nPool queries a single AMM pool by ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolRequest",
         "responses": {
           "200": {
@@ -1101,6 +1133,7 @@
         "parameters": [
           {
             "name": "pool_id",
+            "description": "ID of the pool to retrieve",
             "in": "path",
             "required": true,
             "type": "string",
@@ -1114,7 +1147,7 @@
     },
     "/dysonprotocol/whaleswap/v1/positions/pool/{pool_id}": {
       "get": {
-        "summary": "QueryPositionsByPool lists all positions in a pool",
+        "summary": "*\nPositionsByPool lists all leverage positions in a specific pool with\noptional status filter.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPositionsByPoolRequest",
         "responses": {
           "200": {
@@ -1133,6 +1166,7 @@
         "parameters": [
           {
             "name": "pool_id",
+            "description": "Pool ID to filter positions by; returns all positions in this pool",
             "in": "path",
             "required": true,
             "type": "string",
@@ -1173,7 +1207,7 @@
           },
           {
             "name": "status",
-            "description": "Optional: filter by lifecycle status; defaults to OPEN positions.",
+            "description": "Optional filter by lifecycle status; defaults to OPEN positions.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -1194,7 +1228,7 @@
     },
     "/dysonprotocol/whaleswap/v1/positions/user/{user}": {
       "get": {
-        "summary": "QueryPositionsByUser lists all positions for a user with optional filters",
+        "summary": "*\nPositionsByUser lists all leverage positions for a user with optional\nfilters.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest",
         "responses": {
           "200": {
@@ -1213,27 +1247,28 @@
         "parameters": [
           {
             "name": "user",
+            "description": "User address to filter positions by; returns all positions owned by this\naddress",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "borrowed_denom",
-            "description": "Optional: filter by borrowed denom.",
+            "description": "Optional filter by borrowed denomination.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "collateral_denom",
-            "description": "Optional: filter by collateral denom.",
+            "description": "Optional filter by collateral denomination.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "pool_id",
-            "description": "Optional: filter by pool_id (cannot combine with borrowed/collateral\ndenoms).",
+            "description": "Optional filter by pool ID (cannot combine with borrowed/collateral denoms).",
             "in": "query",
             "required": false,
             "type": "string",
@@ -1274,7 +1309,7 @@
           },
           {
             "name": "status",
-            "description": "Optional: filter by lifecycle status; defaults to OPEN positions.",
+            "description": "Optional filter by lifecycle status; defaults to OPEN positions.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -1295,7 +1330,7 @@
     },
     "/dysonprotocol/whaleswap/v1/positions/{position_id}": {
       "get": {
-        "summary": "Leverage",
+        "summary": "*\nPosition queries a leverage position by ID and includes comprehensive\nhealth and interest information.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPositionRequest",
         "responses": {
           "200": {
@@ -1314,6 +1349,7 @@
         "parameters": [
           {
             "name": "position_id",
+            "description": "ID of the leverage position to retrieve",
             "in": "path",
             "required": true,
             "type": "string",
@@ -1327,7 +1363,7 @@
     },
     "/dysonprotocol/whaleswap/v1/trades": {
       "get": {
-        "summary": "List trades with optional filters and pagination",
+        "summary": "*\nTrades lists trades with optional denom filters and pagination.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryTradesRequest",
         "responses": {
           "200": {
@@ -1346,13 +1382,14 @@
         "parameters": [
           {
             "name": "sent_denom",
-            "description": "optional filters; if unset, returns all.",
+            "description": "Optional sent denom filter; restricts to trades where this denom was sent.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "received_denom",
+            "description": "Optional received denom filter; restricts to trades where this denom was\nreceived.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1398,7 +1435,7 @@
     },
     "/dysonprotocol/whaleswap/v1/trades/auction/{auction_id}": {
       "get": {
-        "summary": "TradesByAuction lists trades for auction redemptions",
+        "summary": "*\nTradesByAuction queries all trades involving auction redemptions for a\nspecific auction.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryTradesByAuctionRequest",
         "responses": {
           "200": {
@@ -1417,6 +1454,7 @@
         "parameters": [
           {
             "name": "auction_id",
+            "description": "Auction ID to filter trades by; returns all trades involving this auction",
             "in": "path",
             "required": true,
             "type": "string",
@@ -1463,6 +1501,7 @@
     },
     "/dysonprotocol/whaleswap/v1/trades/offer/{offer_id}": {
       "get": {
+        "summary": "*\nTradesByOffer queries all trades involving a specific offer.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryTradesByOfferRequest",
         "responses": {
           "200": {
@@ -1481,6 +1520,7 @@
         "parameters": [
           {
             "name": "offer_id",
+            "description": "Offer ID to filter trades by; returns all trades involving this offer",
             "in": "path",
             "required": true,
             "type": "string",
@@ -1527,7 +1567,7 @@
     },
     "/dysonprotocol/whaleswap/v1/trades/pool/{pool_id}": {
       "get": {
-        "summary": "TradesByPool lists trades for an AMM pool",
+        "summary": "*\nTradesByPool queries all trades involving a specific AMM pool.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryTradesByPoolRequest",
         "responses": {
           "200": {
@@ -1546,6 +1586,7 @@
         "parameters": [
           {
             "name": "pool_id",
+            "description": "Pool ID to filter trades by; returns all trades involving this AMM pool",
             "in": "path",
             "required": true,
             "type": "string",
@@ -1592,6 +1633,7 @@
     },
     "/dysonprotocol/whaleswap/v1/trades/taker/{taker}": {
       "get": {
+        "summary": "*\nTradesByTaker queries all trades executed by a specific taker address.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryTradesByTakerRequest",
         "responses": {
           "200": {
@@ -1610,6 +1652,7 @@
         "parameters": [
           {
             "name": "taker",
+            "description": "Taker address to filter trades by; returns all trades executed by this\naddress",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1655,7 +1698,7 @@
     },
     "/dysonprotocol/whaleswap/v1/trades/{trade_id}": {
       "get": {
-        "summary": "Trades\nGet a single trade by id",
+        "summary": "*\nTrade queries a single trade by ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryTradeRequest",
         "responses": {
           "200": {
@@ -1674,6 +1717,7 @@
         "parameters": [
           {
             "name": "trade_id",
+            "description": "ID of the trade to retrieve",
             "in": "path",
             "required": true,
             "type": "string",
@@ -2104,7 +2148,8 @@
       "type": "object",
       "properties": {
         "auction": {
-          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord"
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord",
+          "title": "The auction associated with the specified NFT escrow markers"
         }
       }
     },
@@ -2112,7 +2157,8 @@
       "type": "object",
       "properties": {
         "auction": {
-          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord"
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord",
+          "title": "The requested auction data"
         }
       }
     },
@@ -2123,10 +2169,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord"
-          }
+          },
+          "title": "List of auctions within the specified price range"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2137,10 +2185,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord"
-          }
+          },
+          "title": "List of auctions created by the specified seller"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2151,10 +2201,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord"
-          }
+          },
+          "title": "List of auctions matching the denom filters"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2162,7 +2214,8 @@
       "type": "object",
       "properties": {
         "metrics": {
-          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TradeMetrics"
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TradeMetrics",
+          "title": "Comprehensive module metrics including escrow balances and trade statistics"
         }
       }
     },
@@ -2170,7 +2223,8 @@
       "type": "object",
       "properties": {
         "offer": {
-          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData",
+          "title": "The requested offer data"
         }
       }
     },
@@ -2181,7 +2235,8 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
-          }
+          },
+          "title": "Up to limit best-priced offers for the pair, ordered by price ascending"
         }
       }
     },
@@ -2192,10 +2247,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
-          }
+          },
+          "title": "List of offers referencing the specified denomination"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2206,10 +2263,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
-          }
+          },
+          "title": "List of offers matching the owner and status criteria, ordered by offer ID"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2220,10 +2279,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
-          }
+          },
+          "title": "List of offers within the specified price range, ordered by price"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2234,10 +2295,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
-          }
+          },
+          "title": "List of offers matching the denom filters"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2253,7 +2316,8 @@
       "type": "object",
       "properties": {
         "pool": {
-          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool",
+          "title": "The pool that mints the specified shares denomination"
         }
       }
     },
@@ -2261,7 +2325,8 @@
       "type": "object",
       "properties": {
         "pool": {
-          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool",
+          "title": "The requested pool data"
         }
       }
     },
@@ -2272,10 +2337,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
-          }
+          },
+          "title": "List of pools containing the specified denom on either side"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2286,10 +2353,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
-          }
+          },
+          "title": "List of pools where the owner holds non-zero shares balance"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2300,10 +2369,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
-          }
+          },
+          "title": "List of pools within the specified price range, ordered by pool ID"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2314,10 +2385,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
-          }
+          },
+          "title": "List of pools containing the exact denom pair, ordered by pool ID"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2328,10 +2401,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
-          }
+          },
+          "title": "List of pools matching the query criteria"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2396,10 +2471,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.LeveragePosition"
-          }
+          },
+          "title": "List of positions in the specified pool"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2410,10 +2487,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.LeveragePosition"
-          }
+          },
+          "title": "List of positions matching the user and filter criteria"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2421,7 +2500,8 @@
       "type": "object",
       "properties": {
         "trade": {
-          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Trade"
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Trade",
+          "title": "The requested trade data"
         }
       }
     },
@@ -2432,10 +2512,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Trade"
-          }
+          },
+          "title": "List of trades involving auction redemptions for the specified auction"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2446,10 +2528,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Trade"
-          }
+          },
+          "title": "List of trades involving the specified offer"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2460,10 +2544,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Trade"
-          }
+          },
+          "title": "List of trades involving the specified AMM pool"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2474,10 +2560,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Trade"
-          }
+          },
+          "title": "List of trades executed by the specified taker"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },
@@ -2488,10 +2576,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Trade"
-          }
+          },
+          "title": "List of trades matching the denom filters"
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
         }
       }
     },

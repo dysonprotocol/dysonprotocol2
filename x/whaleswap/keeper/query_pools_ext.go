@@ -11,6 +11,22 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
+// PoolsByPair queries all pools matching a denom pair with pagination.
+//
+// Semantics:
+//   - Returns pools containing exactly the specified denom pair, regardless of order.
+//   - Canonicalizes the pair internally for consistent lookup.
+//   - Uses filtered pagination over the primary PoolsMap.
+//   - Results ordered by pool ID ascending.
+//
+// Validation:
+//   - Request can be nil (defaults handled internally).
+//   - Both base_denom and quote_denom must be non-empty.
+//
+// Returns:
+//   - *whaleswapv1.QueryPoolsByPairResponse with matching pools and pagination metadata.
+//
+// Errors are returned on invalid parameters or pagination failures; no panics.
 func (k Keeper) PoolsByPair(ctx context.Context, req *whaleswapv1.QueryPoolsByPairRequest) (*whaleswapv1.QueryPoolsByPairResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryPoolsByPairRequest{}
@@ -57,6 +73,21 @@ func (k Keeper) PoolsByPair(ctx context.Context, req *whaleswapv1.QueryPoolsByPa
 	return &whaleswapv1.QueryPoolsByPairResponse{Pools: results, Pagination: pageRes}, nil
 }
 
+// PoolsByDenom queries all pools that include a specific denom on either side.
+//
+// Semantics:
+//   - Returns pools where the specified denom appears in either coin position.
+//   - Uses filtered pagination over the primary PoolsMap.
+//   - Results ordered by pool ID ascending.
+//
+// Validation:
+//   - Request can be nil (defaults handled internally).
+//   - Denom must be non-empty.
+//
+// Returns:
+//   - *whaleswapv1.QueryPoolsByDenomResponse with matching pools and pagination metadata.
+//
+// Errors are returned on invalid parameters or pagination failures; no panics.
 func (k Keeper) PoolsByDenom(ctx context.Context, req *whaleswapv1.QueryPoolsByDenomRequest) (*whaleswapv1.QueryPoolsByDenomResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryPoolsByDenomRequest{}
@@ -102,6 +133,21 @@ func (k Keeper) PoolsByDenom(ctx context.Context, req *whaleswapv1.QueryPoolsByD
 	return &whaleswapv1.QueryPoolsByDenomResponse{Pools: results, Pagination: pageRes}, nil
 }
 
+// PoolBySharesDenom queries the pool that mints a specific shares denom.
+//
+// Semantics:
+//   - Scans pools to find the one with matching shares_denom.
+//   - Returns the first (and should be only) matching pool.
+//   - Uses unpaginated scan since shares denoms are expected to be unique.
+//
+// Validation:
+//   - Request can be nil (defaults handled internally).
+//   - SharesDenom must be non-empty.
+//
+// Returns:
+//   - *whaleswapv1.QueryPoolBySharesDenomResponse with the matching pool.
+//
+// Errors are returned on invalid parameters, pagination failures, or when no matching pool found; no panics.
 func (k Keeper) PoolBySharesDenom(ctx context.Context, req *whaleswapv1.QueryPoolBySharesDenomRequest) (*whaleswapv1.QueryPoolBySharesDenomResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryPoolBySharesDenomRequest{}
@@ -127,6 +173,23 @@ func (k Keeper) PoolBySharesDenom(ctx context.Context, req *whaleswapv1.QueryPoo
 	return &whaleswapv1.QueryPoolBySharesDenomResponse{Pool: matched}, nil
 }
 
+// PoolsByPairPriceRange queries pools for a pair whose instantaneous price falls within optional bounds.
+//
+// Semantics:
+//   - Filters pools by denom pair and price range (quote/base ratio from reserves).
+//   - Price calculated as coin_b/coin_a where the pair matches requested denoms.
+//   - Bounds are inclusive and optional; omitting both returns all matching pairs.
+//   - Uses filtered pagination over the primary PoolsMap.
+//
+// Validation:
+//   - Request can be nil (defaults handled internally).
+//   - Both base_denom and quote_denom must be non-empty.
+//   - Min/max prices must be valid decimal strings if provided.
+//
+// Returns:
+//   - *whaleswapv1.QueryPoolsByPairPriceRangeResponse with matching pools and pagination metadata.
+//
+// Errors are returned on invalid parameters or pagination failures; no panics.
 func (k Keeper) PoolsByPairPriceRange(ctx context.Context, req *whaleswapv1.QueryPoolsByPairPriceRangeRequest) (*whaleswapv1.QueryPoolsByPairPriceRangeResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryPoolsByPairPriceRangeRequest{}
@@ -183,6 +246,22 @@ func (k Keeper) PoolsByPairPriceRange(ctx context.Context, req *whaleswapv1.Quer
 	return &whaleswapv1.QueryPoolsByPairPriceRangeResponse{Pools: results, Pagination: pageRes}, nil
 }
 
+// PoolsByOwner queries pools where the owner holds non-zero shares balance.
+//
+// Semantics:
+//   - Returns pools where the specified owner has a positive balance of pool shares.
+//   - Uses bank module balance checks for each pool's shares denom.
+//   - Falls back to filtered scan when no dedicated index exists.
+//   - Results ordered by pool ID ascending.
+//
+// Validation:
+//   - Request can be nil (defaults handled internally).
+//   - Owner must be non-empty and a valid address.
+//
+// Returns:
+//   - *whaleswapv1.QueryPoolsByOwnerResponse with matching pools and pagination metadata.
+//
+// Errors are returned on invalid parameters or pagination failures; no panics.
 func (k Keeper) PoolsByOwner(ctx context.Context, req *whaleswapv1.QueryPoolsByOwnerRequest) (*whaleswapv1.QueryPoolsByOwnerResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryPoolsByOwnerRequest{}

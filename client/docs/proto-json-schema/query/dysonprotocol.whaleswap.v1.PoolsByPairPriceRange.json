@@ -7,26 +7,29 @@
                 "properties": {
                     "base_denom": {
                         "type": "string",
-                        "description": "Price is interpreted as quote/base using these fields"
+                        "description": "Base denom of the pair (price is quote/base); order with quote_denom is irrelevant"
                     },
                     "quote_denom": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Quote denom of the pair; combined with base_denom forms the trading pair"
                     },
                     "min_price": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Minimum price threshold as cosmos.Dec string (optional, inclusive)"
                     },
                     "max_price": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Maximum price threshold as cosmos.Dec string (optional, inclusive)"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by pool ID ascending"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Pools By Pair Price Range Request",
-                "description": "QueryPoolsByPairPriceRangeRequest filters pools for the pair by instantaneous price range. Prices are cosmos.Dec strings; bounds are optional and inclusive."
+                "title": "Query Pools By Pair Price Range Request"
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -71,11 +74,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of pools within the specified price range, ordered by pool ID"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

@@ -18,7 +18,8 @@
                 "properties": {
                     "metrics": {
                         "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TradeMetrics",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Comprehensive module metrics including escrow balances and trade statistics"
                     }
                 },
                 "additionalProperties": false,

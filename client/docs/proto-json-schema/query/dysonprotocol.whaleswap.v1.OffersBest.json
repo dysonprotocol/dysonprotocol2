@@ -6,20 +6,21 @@
             "dysonprotocol.whaleswap.v1.QueryOffersBestRequest": {
                 "properties": {
                     "have_denom": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Have denom of the pair (denomination being sold)"
                     },
                     "want_denom": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Want denom of the pair (denomination being bought)"
                     },
                     "limit": {
                         "type": "integer",
-                        "description": "number of top offers to return"
+                        "description": "Maximum number of best-priced offers to return (default: 10)"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Offers Best Request",
-                "description": "QueryOffersBestRequest fetches up to `limit` best-priced offers for a pair."
+                "title": "Query Offers Best Request"
             }
         }
     },
@@ -34,7 +35,8 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "Up to limit best-priced offers for the pair, ordered by price ascending"
                     }
                 },
                 "additionalProperties": false,

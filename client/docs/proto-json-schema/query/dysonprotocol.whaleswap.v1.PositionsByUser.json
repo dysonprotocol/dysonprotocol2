@@ -6,23 +6,25 @@
             "dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest": {
                 "properties": {
                     "user": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "User address to filter positions by; returns all positions owned by this address"
                     },
                     "borrowed_denom": {
                         "type": "string",
-                        "description": "Optional: filter by borrowed denom"
+                        "description": "Optional filter by borrowed denomination"
                     },
                     "collateral_denom": {
                         "type": "string",
-                        "description": "Optional: filter by collateral denom"
+                        "description": "Optional filter by collateral denomination"
                     },
                     "pool_id": {
                         "type": "string",
-                        "description": "Optional: filter by pool_id (cannot combine with borrowed/collateral denoms)"
+                        "description": "Optional filter by pool ID (cannot combine with borrowed/collateral denoms)"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by position ID ascending"
                     },
                     "status": {
                         "enum": [
@@ -50,8 +52,7 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Positions By User Request",
-                "description": "QueryPositionsByUserRequest lists all positions for a user with optional filters"
+                "title": "Query Positions By User Request"
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -96,11 +97,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.LeveragePosition"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of positions matching the user and filter criteria"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

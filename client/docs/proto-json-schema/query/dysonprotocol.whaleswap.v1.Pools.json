@@ -7,7 +7,8 @@
                 "properties": {
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters for listing pools"
                     }
                 },
                 "additionalProperties": false,
@@ -57,11 +58,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of pools matching the query criteria"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

@@ -11,6 +11,23 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
+// OffersByOwner queries offers by owner address with optional status filter.
+//
+// Semantics:
+//   - Returns offers owned by the specified address, optionally filtered by status.
+//   - Uses indexed queries on OffersByOwnerStatus when both owner and status provided for optimal performance.
+//   - Falls back to filtered scans over primary OffersMap for partial filters.
+//   - Supports pagination with consistent ordering by offer ID.
+//
+// Validation:
+//   - Request can be nil (defaults handled internally).
+//   - Owner must be non-empty.
+//   - Status must be valid ("open", "closed", "cancelled") if provided.
+//
+// Returns:
+//   - *whaleswapv1.QueryOffersByOwnerResponse with matching offers and pagination metadata.
+//
+// Errors are returned on invalid parameters or pagination failures; no panics.
 func (k Keeper) OffersByOwner(ctx context.Context, req *whaleswapv1.QueryOffersByOwnerRequest) (*whaleswapv1.QueryOffersByOwnerResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryOffersByOwnerRequest{}
@@ -71,6 +88,25 @@ func (k Keeper) OffersByOwner(ctx context.Context, req *whaleswapv1.QueryOffersB
 	return &whaleswapv1.QueryOffersByOwnerResponse{Offers: results, Pagination: pageRes}, nil
 }
 
+// Offers provides unified offer listing with optional denom filters and pagination.
+//
+// Semantics:
+//   - Supports multiple query patterns based on provided filters:
+//   - Both have_denom and want_denom: uses OffersByPairPrice index with canonical pair keys
+//   - Only have_denom: uses OffersByHave index for efficient prefix scanning
+//   - Only want_denom: uses OffersByWant index for efficient prefix scanning
+//   - No filters: direct pagination over primary OffersMap
+//   - Canonicalizes pairs (low|high) for consistent indexing.
+//   - Supports pagination with consistent ordering by offer ID.
+//
+// Validation:
+//   - Request can be nil (defaults handled internally).
+//   - Denom filters are optional but must be valid denomination strings if provided.
+//
+// Returns:
+//   - *whaleswapv1.QueryOffersResponse with matching offers and pagination metadata.
+//
+// Errors are returned on invalid parameters or pagination failures; no panics.
 func (k Keeper) Offers(ctx context.Context, req *whaleswapv1.QueryOffersRequest) (*whaleswapv1.QueryOffersResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryOffersRequest{}

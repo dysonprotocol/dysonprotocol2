@@ -10,7 +10,23 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// Position queries a leverage position by ID and includes health and interest information.
+// Position queries a leverage position by ID and includes comprehensive health and interest information.
+//
+// Semantics:
+//   - Retrieves complete position data including collateral, debt, and status.
+//   - Computes real-time interest accrual based on elapsed time and rates.
+//   - Calculates current collateral ratio and liquidation health status.
+//   - Determines action permissions: close by owner, initialize/finalize liquidation.
+//   - Returns enriched position data with computed fields for UI consumption.
+//
+// Validation:
+//   - Request must be non-nil.
+//   - PositionId must be positive.
+//
+// Returns:
+//   - *whaleswapv1.QueryPositionResponse with position data and computed health metrics.
+//
+// Errors are returned on invalid parameters, position not found, or computation failures; no panics.
 func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequest) (*whaleswapv1.QueryPositionResponse, error) {
 	if req == nil {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "request cannot be nil")

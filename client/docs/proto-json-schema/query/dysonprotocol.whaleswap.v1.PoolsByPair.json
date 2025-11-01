@@ -7,21 +7,22 @@
                 "properties": {
                     "base_denom": {
                         "type": "string",
-                        "description": "base of the pair (price is quote/base)"
+                        "description": "Base denom of the pair (price is quote/base); order with quote_denom is irrelevant"
                     },
                     "quote_denom": {
                         "type": "string",
-                        "description": "quote of the pair"
+                        "description": "Quote denom of the pair; combined with base_denom forms the trading pair"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by pool ID ascending"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "--- Pool extended queries ---",
-                "description": "--- Pool extended queries ---  QueryPoolByPairRequest selects a pool by denom pair regardless of order. The implementation canonicalizes the pair to a unique internal key."
+                "description": "--- Pool extended queries ---"
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -66,11 +67,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of pools containing the exact denom pair, ordered by pool ID"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

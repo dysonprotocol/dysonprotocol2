@@ -6,7 +6,8 @@
             "dysonprotocol.whaleswap.v1.QueryAuctionRequest": {
                 "properties": {
                     "auction_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the auction to retrieve"
                     }
                 },
                 "additionalProperties": false,
@@ -23,7 +24,8 @@
                 "properties": {
                     "auction": {
                         "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "The requested auction data"
                     }
                 },
                 "additionalProperties": false,

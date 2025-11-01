@@ -6,11 +6,13 @@
             "dysonprotocol.whaleswap.v1.QueryTradesByAuctionRequest": {
                 "properties": {
                     "auction_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Auction ID to filter trades by; returns all trades involving this auction"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by trade ID ascending"
                     }
                 },
                 "additionalProperties": false,
@@ -60,11 +62,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Trade"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of trades involving auction redemptions for the specified auction"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

@@ -7,14 +7,16 @@
                 "properties": {
                     "have_denom": {
                         "type": "string",
-                        "description": "optional filters; if unset returns all"
+                        "description": "Optional have denom filter; restricts to offers selling this denomination"
                     },
                     "want_denom": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Optional want denom filter; restricts to offers buying this denomination"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by offer ID ascending"
                     }
                 },
                 "additionalProperties": false,
@@ -64,11 +66,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of offers matching the denom filters"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

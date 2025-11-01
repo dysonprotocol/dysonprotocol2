@@ -6,17 +6,18 @@
             "dysonprotocol.whaleswap.v1.QueryTradesByPoolRequest": {
                 "properties": {
                     "pool_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Pool ID to filter trades by; returns all trades involving this AMM pool"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by trade ID ascending"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Trades By Pool Request",
-                "description": "QueryTradesByPoolRequest returns trades filtered by pool id"
+                "title": "Query Trades By Pool Request"
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -61,11 +62,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Trade"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of trades involving the specified AMM pool"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

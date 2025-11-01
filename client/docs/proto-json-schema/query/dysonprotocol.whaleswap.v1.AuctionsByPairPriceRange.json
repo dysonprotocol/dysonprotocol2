@@ -6,26 +6,30 @@
             "dysonprotocol.whaleswap.v1.QueryAuctionsByPairPriceRangeRequest": {
                 "properties": {
                     "sell_denom": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Sell denom of the pair (denomination being auctioned)"
                     },
                     "bid_denom": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Bid denom of the pair (denomination used for bidding)"
                     },
                     "min_price": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Minimum price threshold as bid-per-sell cosmos.Dec string (optional, inclusive)"
                     },
                     "max_price": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Maximum price threshold as bid-per-sell cosmos.Dec string (optional, inclusive)"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by auction ID ascending"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Auctions By Pair Price Range Request",
-                "description": "QueryAuctionsByPairPriceRangeRequest filters auctions by their effective price (bid-per-sell). Implementations may need to iterate candidate auctions and compute the price from valuation/current bid and redeemable sell amounts."
+                "title": "Query Auctions By Pair Price Range Request"
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -70,11 +74,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of auctions within the specified price range"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

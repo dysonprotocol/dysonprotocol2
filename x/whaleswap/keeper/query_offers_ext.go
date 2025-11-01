@@ -11,6 +11,24 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
+// OffersByDenom queries offers that reference a specific denom either as have or want side.
+//
+// Semantics:
+//   - Returns offers where the specified denom appears in either have_denom or want_denom.
+//   - Uses role filter to restrict to "have" side, "want" side, or both (when empty).
+//   - Leverages OffersByHave and OffersByWant indices when role is specified for efficiency.
+//   - Falls back to filtered scan over primary OffersMap when role is unspecified.
+//   - Supports pagination with consistent ordering by offer ID.
+//
+// Validation:
+//   - Request can be nil (defaults handled internally).
+//   - Denom must be non-empty.
+//   - Role must be "have", "want", or empty if specified.
+//
+// Returns:
+//   - *whaleswapv1.QueryOffersByDenomResponse with matching offers and pagination metadata.
+//
+// Errors are returned on invalid parameters or pagination failures; no panics.
 func (k Keeper) OffersByDenom(ctx context.Context, req *whaleswapv1.QueryOffersByDenomRequest) (*whaleswapv1.QueryOffersByDenomResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryOffersByDenomRequest{}
@@ -82,6 +100,25 @@ func (k Keeper) OffersByDenom(ctx context.Context, req *whaleswapv1.QueryOffersB
 	return &whaleswapv1.QueryOffersByDenomResponse{Offers: results, Pagination: pageRes}, nil
 }
 
+// OffersByPairPriceRange queries offers for a pair whose price lies within optional bounds.
+//
+// Semantics:
+//   - Filters offers by denom pair and price range (want-per-have ratio).
+//   - Canonicalizes pair to consistent internal key (low|high) for indexing.
+//   - Calculates price as want_amount/have_amount for each offer in the pair.
+//   - Bounds are inclusive and optional; omitting both returns all offers for the pair.
+//   - Uses OffersByPairPrice index for efficient ordered scanning.
+//   - Supports pagination with ordering by price (ascending, best offers first).
+//
+// Validation:
+//   - Request can be nil (defaults handled internally).
+//   - Both have_denom and want_denom must be non-empty.
+//   - Min/max prices must be valid decimal strings if provided.
+//
+// Returns:
+//   - *whaleswapv1.QueryOffersByPairPriceRangeResponse with matching offers and pagination metadata.
+//
+// Errors are returned on invalid parameters or pagination failures; no panics.
 func (k Keeper) OffersByPairPriceRange(ctx context.Context, req *whaleswapv1.QueryOffersByPairPriceRangeRequest) (*whaleswapv1.QueryOffersByPairPriceRangeResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryOffersByPairPriceRangeRequest{}
@@ -148,6 +185,24 @@ func (k Keeper) OffersByPairPriceRange(ctx context.Context, req *whaleswapv1.Que
 	return &whaleswapv1.QueryOffersByPairPriceRangeResponse{Offers: results, Pagination: pageRes}, nil
 }
 
+// OffersBest returns up to limit best-priced offers for a pair (convenience endpoint).
+//
+// Semantics:
+//   - Returns top offers for a pair sorted by price (want-per-have, ascending = best for takers).
+//   - Canonicalizes pair to consistent internal key for indexing.
+//   - Uses OffersByPairPrice index for efficient ordered retrieval.
+//   - Applies limit (defaulting to 10) via pagination parameters.
+//   - Filters to ensure offers match the requested orientation (have/want denoms).
+//
+// Validation:
+//   - Request can be nil (defaults handled internally).
+//   - Both have_denom and want_denom must be non-empty.
+//   - Limit defaults to 10 if zero or negative.
+//
+// Returns:
+//   - *whaleswapv1.QueryOffersBestResponse with up to limit best offers (price-ordered).
+//
+// Errors are returned on invalid parameters or pagination failures; no panics.
 func (k Keeper) OffersBest(ctx context.Context, req *whaleswapv1.QueryOffersBestRequest) (*whaleswapv1.QueryOffersBestResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryOffersBestRequest{}

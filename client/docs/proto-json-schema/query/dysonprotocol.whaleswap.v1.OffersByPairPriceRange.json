@@ -6,26 +6,30 @@
             "dysonprotocol.whaleswap.v1.QueryOffersByPairPriceRangeRequest": {
                 "properties": {
                     "have_denom": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Have denom of the pair (denomination being sold)"
                     },
                     "want_denom": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Want denom of the pair (denomination being bought)"
                     },
                     "min_price": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Minimum price threshold as want-per-have cosmos.Dec string (optional, inclusive)"
                     },
                     "max_price": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Maximum price threshold as want-per-have cosmos.Dec string (optional, inclusive)"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by price ascending"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Offers By Pair Price Range Request",
-                "description": "QueryOffersByPairPriceRangeRequest filters offers for a pair by price range. Prices are expressed as want-per-have (high-per-low orientation) cosmos.Dec strings."
+                "title": "Query Offers By Pair Price Range Request"
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -70,11 +74,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of offers within the specified price range, ordered by price"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

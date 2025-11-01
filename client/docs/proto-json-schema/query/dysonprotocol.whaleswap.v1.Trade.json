@@ -6,7 +6,8 @@
             "dysonprotocol.whaleswap.v1.QueryTradeRequest": {
                 "properties": {
                     "trade_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the trade to retrieve"
                     }
                 },
                 "additionalProperties": false,
@@ -23,7 +24,8 @@
                 "properties": {
                     "trade": {
                         "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Trade",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "The requested trade data"
                     }
                 },
                 "additionalProperties": false,

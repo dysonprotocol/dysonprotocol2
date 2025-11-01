@@ -7,17 +7,17 @@
                 "properties": {
                     "denom": {
                         "type": "string",
-                        "description": "any pool where coin_a==denom or coin_b==denom"
+                        "description": "Denomination to search for; returns pools where this denom appears on either side"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by pool ID ascending"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Pools By Denom Request",
-                "description": "QueryPoolsByDenomRequest lists pools containing the provided denom on either side."
+                "title": "Query Pools By Denom Request"
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -62,11 +62,13 @@
                             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of pools containing the specified denom on either side"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
                     }
                 },
                 "additionalProperties": false,

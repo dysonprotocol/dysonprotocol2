@@ -11,6 +11,21 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
+// AuctionsBySeller queries auctions created by a specific seller address.
+//
+// Semantics:
+//   - Returns auctions where the specified address appears as the seller.
+//   - Uses filtered pagination over primary AuctionsMap (no dedicated index assumed).
+//   - Results ordered by auction ID ascending.
+//
+// Validation:
+//   - Request can be nil (defaults handled internally).
+//   - Seller address must be non-empty.
+//
+// Returns:
+//   - *whaleswapv1.QueryAuctionsBySellerResponse with matching auctions and pagination metadata.
+//
+// Errors are returned on invalid parameters or pagination failures; no panics.
 func (k Keeper) AuctionsBySeller(ctx context.Context, req *whaleswapv1.QueryAuctionsBySellerRequest) (*whaleswapv1.QueryAuctionsBySellerResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryAuctionsBySellerRequest{}
@@ -36,6 +51,21 @@ func (k Keeper) AuctionsBySeller(ctx context.Context, req *whaleswapv1.QueryAuct
 	return &whaleswapv1.QueryAuctionsBySellerResponse{Auctions: results, Pagination: pageRes}, nil
 }
 
+// AuctionByNFT queries the auction associated with specific NFT escrow markers.
+//
+// Semantics:
+//   - Returns the auction where the specified class_id and nft_id appear as escrow markers.
+//   - Scans auctions to find matching NFT identifiers (expected to be unique).
+//   - Uses unpaginated scan since NFT markers should be unique per auction.
+//
+// Validation:
+//   - Request can be nil (defaults handled internally).
+//   - Both class_id and nft_id must be non-empty.
+//
+// Returns:
+//   - *whaleswapv1.QueryAuctionByNFTResponse with the matching auction.
+//
+// Errors are returned on invalid parameters, pagination failures, or when no matching auction found; no panics.
 func (k Keeper) AuctionByNFT(ctx context.Context, req *whaleswapv1.QueryAuctionByNFTRequest) (*whaleswapv1.QueryAuctionByNFTResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryAuctionByNFTRequest{}
@@ -61,6 +91,23 @@ func (k Keeper) AuctionByNFT(ctx context.Context, req *whaleswapv1.QueryAuctionB
 	return &whaleswapv1.QueryAuctionByNFTResponse{Auction: matched}, nil
 }
 
+// AuctionsByPairPriceRange queries auctions for a pair whose effective price falls within bounds.
+//
+// Semantics:
+//   - Filters auctions by sell/bid denom pair using AuctionsBySellBid index.
+//   - Applies prefix filtering to iterate only auctions for the specified pair.
+//   - Price filtering is placeholder (marked as TODO in implementation).
+//   - Supports pagination with consistent ordering by auction ID.
+//
+// Validation:
+//   - Request can be nil (defaults handled internally).
+//   - Both sell_denom and bid_denom must be non-empty.
+//   - Min/max prices must be valid decimal strings if provided.
+//
+// Returns:
+//   - *whaleswapv1.QueryAuctionsByPairPriceRangeResponse with matching auctions and pagination metadata.
+//
+// Errors are returned on invalid parameters or pagination failures; no panics.
 func (k Keeper) AuctionsByPairPriceRange(ctx context.Context, req *whaleswapv1.QueryAuctionsByPairPriceRangeRequest) (*whaleswapv1.QueryAuctionsByPairPriceRangeResponse, error) {
 	if req == nil {
 		req = &whaleswapv1.QueryAuctionsByPairPriceRangeRequest{}

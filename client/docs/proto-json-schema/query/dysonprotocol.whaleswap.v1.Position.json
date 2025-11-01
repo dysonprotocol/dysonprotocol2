@@ -6,13 +6,13 @@
             "dysonprotocol.whaleswap.v1.QueryPositionRequest": {
                 "properties": {
                     "position_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the leverage position to retrieve"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Position Request",
-                "description": "QueryPositionRequest queries a single position by ID"
+                "title": "Query Position Request"
             }
         }
     },

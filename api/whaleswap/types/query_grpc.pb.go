@@ -56,82 +56,129 @@ const (
 //
 // Query defines the gRPC querier service for whaleswap.
 type QueryClient interface {
-	// Params queries the whaleswap module parameters
+	// *
+	// Params queries the current whaleswap module parameters.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	// Pools
+	// *
+	// Pool queries a single AMM pool by ID.
 	Pool(ctx context.Context, in *QueryPoolRequest, opts ...grpc.CallOption) (*QueryPoolResponse, error)
+	// *
+	// Pools lists all AMM pools with pagination.
 	Pools(ctx context.Context, in *QueryPoolsRequest, opts ...grpc.CallOption) (*QueryPoolsResponse, error)
-	// PoolsByPair returns all pools matching the provided denom pair with
-	// pagination. Denom order in the request is irrelevant.
+	// *
+	// PoolsByPair queries all pools matching a denom pair with pagination.
+	// Denom order in the request is irrelevant as pairs are canonicalized
+	// internally. Results ordered by pool ID for consistent pagination.
 	PoolsByPair(ctx context.Context, in *QueryPoolsByPairRequest, opts ...grpc.CallOption) (*QueryPoolsByPairResponse, error)
-	// PoolsByDenom returns all pools that include the provided denom on either
-	// side of the pair.
+	// *
+	// PoolsByDenom queries all pools that include a specific denom on either
+	// side. Returns pools where the specified denom appears in either coin
+	// position. Results ordered by pool ID ascending.
 	PoolsByDenom(ctx context.Context, in *QueryPoolsByDenomRequest, opts ...grpc.CallOption) (*QueryPoolsByDenomResponse, error)
-	// PoolBySharesDenom returns the pool that mints the provided shares denom.
+	// *
+	// PoolBySharesDenom queries the pool that mints a specific shares denom.
+	// Returns the pool with matching shares_denom (expected to be unique).
 	PoolBySharesDenom(ctx context.Context, in *QueryPoolBySharesDenomRequest, opts ...grpc.CallOption) (*QueryPoolBySharesDenomResponse, error)
-	// PoolsByPairPriceRange returns pools for a given pair whose instantaneous
-	// price (derived from reserves, P = coin_b/coin_a) falls within the optional
-	// [min_price, max_price] range. Prices are expressed as cosmos.Dec strings.
-	// If neither bound is provided, it returns all pools for the pair.
+	// *
+	// PoolsByPairPriceRange queries pools for a pair whose instantaneous price
+	// falls within optional bounds. Filters pools by denom pair and price range
+	// (quote/base ratio from reserves). Bounds are inclusive and optional;
+	// omitting both returns all matching pairs. Results ordered by pool ID
+	// ascending.
 	PoolsByPairPriceRange(ctx context.Context, in *QueryPoolsByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryPoolsByPairPriceRangeResponse, error)
-	// PoolsByOwner returns pools where the requested owner holds a non-zero
-	// balance of pool shares. This may be implemented via a filtered scan unless
-	// the application maintains a dedicated reverse index.
+	// *
+	// PoolsByOwner queries pools where the owner holds non-zero shares balance.
+	// Returns pools where the specified owner has a positive balance of pool
+	// shares. Uses bank module balance checks; results ordered by pool ID
+	// ascending.
 	PoolsByOwner(ctx context.Context, in *QueryPoolsByOwnerRequest, opts ...grpc.CallOption) (*QueryPoolsByOwnerResponse, error)
-	// Offers
+	// *
+	// Offer queries a single offer by ID.
 	Offer(ctx context.Context, in *QueryOfferRequest, opts ...grpc.CallOption) (*QueryOfferResponse, error)
+	// *
+	// OffersByOwner queries offers by owner address with optional status filter.
+	// Uses indexed queries for owner+status combinations for optimal performance.
+	// Falls back to filtered scans when only partial filters are provided.
 	OffersByOwner(ctx context.Context, in *QueryOffersByOwnerRequest, opts ...grpc.CallOption) (*QueryOffersByOwnerResponse, error)
-	// Unified offers listing with optional filters and pagination
+	// *
+	// Offers provides unified offer listing with optional denom filters and
+	// pagination. Supports multiple query patterns based on provided filters for
+	// optimal performance. Canonicalizes pairs for consistent indexing and
+	// ordering.
 	Offers(ctx context.Context, in *QueryOffersRequest, opts ...grpc.CallOption) (*QueryOffersResponse, error)
-	// OffersByDenom returns offers that mention the provided denom either as the
-	// have or want side, depending on the optional role filter. When role is
-	// unset or empty, both sides are considered.
+	// *
+	// OffersByDenom queries offers that reference a specific denom either as have
+	// or want side. Uses role filter to restrict to "have" side, "want" side, or
+	// both (when empty). Leverages appropriate indices when role is specified for
+	// efficiency.
 	OffersByDenom(ctx context.Context, in *QueryOffersByDenomRequest, opts ...grpc.CallOption) (*QueryOffersByDenomResponse, error)
-	// OffersByPairPriceRange returns offers for a pair (order of have/want is
-	// irrelevant; the implementation canonicalizes to pairKey) whose price lies
-	// within the optional [min_price, max_price] range. Prices are cosmos.Dec
-	// strings representing want-per-have (high-per-low orientation), so lower is
-	// better for takers paying want to receive have.
+	// *
+	// OffersByPairPriceRange queries offers for a pair whose price lies within
+	// optional bounds. Filters offers by denom pair and price range
+	// (want-per-have ratio). Canonicalizes pair for consistent indexing; bounds
+	// are inclusive and optional. Uses OffersByPairPrice index for efficient
+	// ordered scanning.
 	OffersByPairPriceRange(ctx context.Context, in *QueryOffersByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryOffersByPairPriceRangeResponse, error)
-	// OffersBest returns up to `limit` best-priced offers for the given pair
-	// (treating price as want-per-have, sorted ascending). This is a convenience
-	// endpoint for top-of-book queries.
+	// *
+	// OffersBest returns up to limit best-priced offers for a pair (convenience
+	// endpoint). Returns top offers for a pair sorted by price (want-per-have,
+	// ascending = best for takers). Canonicalizes pair for indexing; applies
+	// limit (defaulting to 10) via pagination.
 	OffersBest(ctx context.Context, in *QueryOffersBestRequest, opts ...grpc.CallOption) (*QueryOffersBestResponse, error)
-	// Trades
-	// Get a single trade by id
+	// *
+	// Trade queries a single trade by ID.
 	Trade(ctx context.Context, in *QueryTradeRequest, opts ...grpc.CallOption) (*QueryTradeResponse, error)
-	// List trades with optional filters and pagination
+	// *
+	// Trades lists trades with optional denom filters and pagination.
 	Trades(ctx context.Context, in *QueryTradesRequest, opts ...grpc.CallOption) (*QueryTradesResponse, error)
+	// *
+	// TradesByOffer queries all trades involving a specific offer.
 	TradesByOffer(ctx context.Context, in *QueryTradesByOfferRequest, opts ...grpc.CallOption) (*QueryTradesByOfferResponse, error)
+	// *
+	// TradesByTaker queries all trades executed by a specific taker address.
 	TradesByTaker(ctx context.Context, in *QueryTradesByTakerRequest, opts ...grpc.CallOption) (*QueryTradesByTakerResponse, error)
-	// TradesByPool lists trades for an AMM pool
+	// *
+	// TradesByPool queries all trades involving a specific AMM pool.
 	TradesByPool(ctx context.Context, in *QueryTradesByPoolRequest, opts ...grpc.CallOption) (*QueryTradesByPoolResponse, error)
-	// TradesByAuction lists trades for auction redemptions
+	// *
+	// TradesByAuction queries all trades involving auction redemptions for a
+	// specific auction.
 	TradesByAuction(ctx context.Context, in *QueryTradesByAuctionRequest, opts ...grpc.CallOption) (*QueryTradesByAuctionResponse, error)
-	// Auctions
+	// *
+	// Auction queries a single auction by ID.
 	Auction(ctx context.Context, in *QueryAuctionRequest, opts ...grpc.CallOption) (*QueryAuctionResponse, error)
-	// List auctions with optional filters and pagination
+	// *
+	// Auctions provides unified auction listing with optional denom filters and
+	// pagination. Supports multiple query patterns based on provided filters for
+	// optimal performance.
 	Auctions(ctx context.Context, in *QueryAuctionsRequest, opts ...grpc.CallOption) (*QueryAuctionsResponse, error)
-	// AuctionsBySeller returns auctions opened by the specified seller address.
+	// *
+	// AuctionsBySeller queries auctions created by a specific seller address.
 	AuctionsBySeller(ctx context.Context, in *QueryAuctionsBySellerRequest, opts ...grpc.CallOption) (*QueryAuctionsBySellerResponse, error)
-	// AuctionByNFT returns the auction associated with the specific NFT
-	// (class_id, nft_id) used as the escrow marker.
+	// *
+	// AuctionByNFT queries the auction associated with specific NFT escrow
+	// markers.
 	AuctionByNFT(ctx context.Context, in *QueryAuctionByNFTRequest, opts ...grpc.CallOption) (*QueryAuctionByNFTResponse, error)
-	// AuctionsByPairPriceRange returns auctions for a given (sell,bid) pair whose
-	// effective price (bid-per-sell) falls within [min_price, max_price].
-	// IMPORTANT: This endpoint requires iterating relevant NFTs/auctions and
-	// computing the current effective price from valuation or current bid and the
-	// redeemable sell-coin amount. It is designed for UI discovery and may be
-	// more expensive than index-backed queries.
+	// *
+	// AuctionsByPairPriceRange queries auctions for a pair whose effective price
+	// falls within bounds. Filters auctions by sell/bid denom pair; price
+	// filtering is placeholder. Results ordered by auction ID ascending.
 	AuctionsByPairPriceRange(ctx context.Context, in *QueryAuctionsByPairPriceRangeRequest, opts ...grpc.CallOption) (*QueryAuctionsByPairPriceRangeResponse, error)
-	// Leverage
+	// *
+	// Position queries a leverage position by ID and includes comprehensive
+	// health and interest information.
 	Position(ctx context.Context, in *QueryPositionRequest, opts ...grpc.CallOption) (*QueryPositionResponse, error)
-	// QueryPositionsByUser lists all positions for a user with optional filters
+	// *
+	// PositionsByUser lists all leverage positions for a user with optional
+	// filters.
 	PositionsByUser(ctx context.Context, in *QueryPositionsByUserRequest, opts ...grpc.CallOption) (*QueryPositionsByUserResponse, error)
-	// QueryPositionsByPool lists all positions in a pool
+	// *
+	// PositionsByPool lists all leverage positions in a specific pool with
+	// optional status filter.
 	PositionsByPool(ctx context.Context, in *QueryPositionsByPoolRequest, opts ...grpc.CallOption) (*QueryPositionsByPoolResponse, error)
-	// Metrics returns a breakdown of module-expected balances by subsystem
-	// and summary counters for invariants and monitoring.
+	// *
+	// Metrics computes comprehensive module metrics including escrow balances and
+	// trade statistics.
 	Metrics(ctx context.Context, in *QueryMetricsRequest, opts ...grpc.CallOption) (*QueryMetricsResponse, error)
 }
 
@@ -439,82 +486,129 @@ func (c *queryClient) Metrics(ctx context.Context, in *QueryMetricsRequest, opts
 //
 // Query defines the gRPC querier service for whaleswap.
 type QueryServer interface {
-	// Params queries the whaleswap module parameters
+	// *
+	// Params queries the current whaleswap module parameters.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	// Pools
+	// *
+	// Pool queries a single AMM pool by ID.
 	Pool(context.Context, *QueryPoolRequest) (*QueryPoolResponse, error)
+	// *
+	// Pools lists all AMM pools with pagination.
 	Pools(context.Context, *QueryPoolsRequest) (*QueryPoolsResponse, error)
-	// PoolsByPair returns all pools matching the provided denom pair with
-	// pagination. Denom order in the request is irrelevant.
+	// *
+	// PoolsByPair queries all pools matching a denom pair with pagination.
+	// Denom order in the request is irrelevant as pairs are canonicalized
+	// internally. Results ordered by pool ID for consistent pagination.
 	PoolsByPair(context.Context, *QueryPoolsByPairRequest) (*QueryPoolsByPairResponse, error)
-	// PoolsByDenom returns all pools that include the provided denom on either
-	// side of the pair.
+	// *
+	// PoolsByDenom queries all pools that include a specific denom on either
+	// side. Returns pools where the specified denom appears in either coin
+	// position. Results ordered by pool ID ascending.
 	PoolsByDenom(context.Context, *QueryPoolsByDenomRequest) (*QueryPoolsByDenomResponse, error)
-	// PoolBySharesDenom returns the pool that mints the provided shares denom.
+	// *
+	// PoolBySharesDenom queries the pool that mints a specific shares denom.
+	// Returns the pool with matching shares_denom (expected to be unique).
 	PoolBySharesDenom(context.Context, *QueryPoolBySharesDenomRequest) (*QueryPoolBySharesDenomResponse, error)
-	// PoolsByPairPriceRange returns pools for a given pair whose instantaneous
-	// price (derived from reserves, P = coin_b/coin_a) falls within the optional
-	// [min_price, max_price] range. Prices are expressed as cosmos.Dec strings.
-	// If neither bound is provided, it returns all pools for the pair.
+	// *
+	// PoolsByPairPriceRange queries pools for a pair whose instantaneous price
+	// falls within optional bounds. Filters pools by denom pair and price range
+	// (quote/base ratio from reserves). Bounds are inclusive and optional;
+	// omitting both returns all matching pairs. Results ordered by pool ID
+	// ascending.
 	PoolsByPairPriceRange(context.Context, *QueryPoolsByPairPriceRangeRequest) (*QueryPoolsByPairPriceRangeResponse, error)
-	// PoolsByOwner returns pools where the requested owner holds a non-zero
-	// balance of pool shares. This may be implemented via a filtered scan unless
-	// the application maintains a dedicated reverse index.
+	// *
+	// PoolsByOwner queries pools where the owner holds non-zero shares balance.
+	// Returns pools where the specified owner has a positive balance of pool
+	// shares. Uses bank module balance checks; results ordered by pool ID
+	// ascending.
 	PoolsByOwner(context.Context, *QueryPoolsByOwnerRequest) (*QueryPoolsByOwnerResponse, error)
-	// Offers
+	// *
+	// Offer queries a single offer by ID.
 	Offer(context.Context, *QueryOfferRequest) (*QueryOfferResponse, error)
+	// *
+	// OffersByOwner queries offers by owner address with optional status filter.
+	// Uses indexed queries for owner+status combinations for optimal performance.
+	// Falls back to filtered scans when only partial filters are provided.
 	OffersByOwner(context.Context, *QueryOffersByOwnerRequest) (*QueryOffersByOwnerResponse, error)
-	// Unified offers listing with optional filters and pagination
+	// *
+	// Offers provides unified offer listing with optional denom filters and
+	// pagination. Supports multiple query patterns based on provided filters for
+	// optimal performance. Canonicalizes pairs for consistent indexing and
+	// ordering.
 	Offers(context.Context, *QueryOffersRequest) (*QueryOffersResponse, error)
-	// OffersByDenom returns offers that mention the provided denom either as the
-	// have or want side, depending on the optional role filter. When role is
-	// unset or empty, both sides are considered.
+	// *
+	// OffersByDenom queries offers that reference a specific denom either as have
+	// or want side. Uses role filter to restrict to "have" side, "want" side, or
+	// both (when empty). Leverages appropriate indices when role is specified for
+	// efficiency.
 	OffersByDenom(context.Context, *QueryOffersByDenomRequest) (*QueryOffersByDenomResponse, error)
-	// OffersByPairPriceRange returns offers for a pair (order of have/want is
-	// irrelevant; the implementation canonicalizes to pairKey) whose price lies
-	// within the optional [min_price, max_price] range. Prices are cosmos.Dec
-	// strings representing want-per-have (high-per-low orientation), so lower is
-	// better for takers paying want to receive have.
+	// *
+	// OffersByPairPriceRange queries offers for a pair whose price lies within
+	// optional bounds. Filters offers by denom pair and price range
+	// (want-per-have ratio). Canonicalizes pair for consistent indexing; bounds
+	// are inclusive and optional. Uses OffersByPairPrice index for efficient
+	// ordered scanning.
 	OffersByPairPriceRange(context.Context, *QueryOffersByPairPriceRangeRequest) (*QueryOffersByPairPriceRangeResponse, error)
-	// OffersBest returns up to `limit` best-priced offers for the given pair
-	// (treating price as want-per-have, sorted ascending). This is a convenience
-	// endpoint for top-of-book queries.
+	// *
+	// OffersBest returns up to limit best-priced offers for a pair (convenience
+	// endpoint). Returns top offers for a pair sorted by price (want-per-have,
+	// ascending = best for takers). Canonicalizes pair for indexing; applies
+	// limit (defaulting to 10) via pagination.
 	OffersBest(context.Context, *QueryOffersBestRequest) (*QueryOffersBestResponse, error)
-	// Trades
-	// Get a single trade by id
+	// *
+	// Trade queries a single trade by ID.
 	Trade(context.Context, *QueryTradeRequest) (*QueryTradeResponse, error)
-	// List trades with optional filters and pagination
+	// *
+	// Trades lists trades with optional denom filters and pagination.
 	Trades(context.Context, *QueryTradesRequest) (*QueryTradesResponse, error)
+	// *
+	// TradesByOffer queries all trades involving a specific offer.
 	TradesByOffer(context.Context, *QueryTradesByOfferRequest) (*QueryTradesByOfferResponse, error)
+	// *
+	// TradesByTaker queries all trades executed by a specific taker address.
 	TradesByTaker(context.Context, *QueryTradesByTakerRequest) (*QueryTradesByTakerResponse, error)
-	// TradesByPool lists trades for an AMM pool
+	// *
+	// TradesByPool queries all trades involving a specific AMM pool.
 	TradesByPool(context.Context, *QueryTradesByPoolRequest) (*QueryTradesByPoolResponse, error)
-	// TradesByAuction lists trades for auction redemptions
+	// *
+	// TradesByAuction queries all trades involving auction redemptions for a
+	// specific auction.
 	TradesByAuction(context.Context, *QueryTradesByAuctionRequest) (*QueryTradesByAuctionResponse, error)
-	// Auctions
+	// *
+	// Auction queries a single auction by ID.
 	Auction(context.Context, *QueryAuctionRequest) (*QueryAuctionResponse, error)
-	// List auctions with optional filters and pagination
+	// *
+	// Auctions provides unified auction listing with optional denom filters and
+	// pagination. Supports multiple query patterns based on provided filters for
+	// optimal performance.
 	Auctions(context.Context, *QueryAuctionsRequest) (*QueryAuctionsResponse, error)
-	// AuctionsBySeller returns auctions opened by the specified seller address.
+	// *
+	// AuctionsBySeller queries auctions created by a specific seller address.
 	AuctionsBySeller(context.Context, *QueryAuctionsBySellerRequest) (*QueryAuctionsBySellerResponse, error)
-	// AuctionByNFT returns the auction associated with the specific NFT
-	// (class_id, nft_id) used as the escrow marker.
+	// *
+	// AuctionByNFT queries the auction associated with specific NFT escrow
+	// markers.
 	AuctionByNFT(context.Context, *QueryAuctionByNFTRequest) (*QueryAuctionByNFTResponse, error)
-	// AuctionsByPairPriceRange returns auctions for a given (sell,bid) pair whose
-	// effective price (bid-per-sell) falls within [min_price, max_price].
-	// IMPORTANT: This endpoint requires iterating relevant NFTs/auctions and
-	// computing the current effective price from valuation or current bid and the
-	// redeemable sell-coin amount. It is designed for UI discovery and may be
-	// more expensive than index-backed queries.
+	// *
+	// AuctionsByPairPriceRange queries auctions for a pair whose effective price
+	// falls within bounds. Filters auctions by sell/bid denom pair; price
+	// filtering is placeholder. Results ordered by auction ID ascending.
 	AuctionsByPairPriceRange(context.Context, *QueryAuctionsByPairPriceRangeRequest) (*QueryAuctionsByPairPriceRangeResponse, error)
-	// Leverage
+	// *
+	// Position queries a leverage position by ID and includes comprehensive
+	// health and interest information.
 	Position(context.Context, *QueryPositionRequest) (*QueryPositionResponse, error)
-	// QueryPositionsByUser lists all positions for a user with optional filters
+	// *
+	// PositionsByUser lists all leverage positions for a user with optional
+	// filters.
 	PositionsByUser(context.Context, *QueryPositionsByUserRequest) (*QueryPositionsByUserResponse, error)
-	// QueryPositionsByPool lists all positions in a pool
+	// *
+	// PositionsByPool lists all leverage positions in a specific pool with
+	// optional status filter.
 	PositionsByPool(context.Context, *QueryPositionsByPoolRequest) (*QueryPositionsByPoolResponse, error)
-	// Metrics returns a breakdown of module-expected balances by subsystem
-	// and summary counters for invariants and monitoring.
+	// *
+	// Metrics computes comprehensive module metrics including escrow balances and
+	// trade statistics.
 	Metrics(context.Context, *QueryMetricsRequest) (*QueryMetricsResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
