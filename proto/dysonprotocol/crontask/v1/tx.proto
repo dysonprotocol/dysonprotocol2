@@ -17,60 +17,184 @@ service Msg {
   option (cosmos.msg.v1.service) = true;
 
   /*
-   * CreateTask creates a new scheduled task with specified execution time and messages.
-   * Tasks are executed automatically at the scheduled timestamp with gas limits and fees.
+   * CreateTask creates a new scheduled task with specified execution time and
+   * messages.
+   *
+   * Behavior:
+   * - Creates a task scheduled for execution at a future timestamp.
+   * - Parses flexible timestamp formats (Unix timestamps or duration offsets
+   * like
+   * "+1h30m").
+   * - Validates scheduling constraints and gas limits against module
+   * parameters.
+   * - Calculates gas price from fee and limit, stores task with unpacked
+   * messages.
+   * - Tasks remain in SCHEDULED status until execution time.
+   *
+   * Validation:
+   * - Creator address must be valid.
+   * - Scheduled timestamp must be in the future and within MaxScheduledTime
+   * limit.
+   * - Expiry timestamp must be after scheduled time (defaults to scheduled +
+   * ExpiryLimit if not provided).
+   * - Gas limit must be positive and not exceed BlockGasLimit.
+   * - Gas fee must be positive and denominated in "udys".
+   * - At least one message must be provided in the task.
+   *
+   * Emits:
+   * - EventTaskCreated(task_id, creator) on successful task creation.
+   *
+   * Returns:
+   * - MsgCreateTaskResponse with allocated task ID.
    */
   rpc CreateTask(MsgCreateTask) returns (MsgCreateTaskResponse);
 
   /*
    * DeleteTask permanently removes a scheduled task.
-   * Only the creator of the task can delete it. No refunds are provided.
+   *
+   * Behavior:
+   * - Permanently removes a task from storage before execution.
+   * - Only the creator of the task can delete it.
+   * - No refunds are provided for task fees or gas.
+   *
+   * Validation:
+   * - Task must exist with the provided ID.
+   * - Creator must match the task's creator field.
+   *
+   * Emits:
+   * - EventTaskDeleted(task_id, creator) on successful deletion.
+   *
+   * Returns:
+   * - Empty MsgDeleteTaskResponse.
    */
   rpc DeleteTask(MsgDeleteTask) returns (MsgDeleteTaskResponse);
 
   /*
-   * UpdateParams updates the parameters of the x/crontask module via governance proposal.
-   * Parameters control task scheduling limits, gas constraints, and subscription rules.
+   * UpdateParams updates the parameters of the x/crontask module via
+   * governance proposal.
+   *
+   * Behavior:
+   * - Updates all module parameters in a single governance operation.
+   * - Authority is typically the x/gov module account.
+   * - Parameters control task scheduling limits, gas constraints, and
+   * subscription rules.
+   *
+   * Validation:
+   * - Authority must be valid (typically x/gov module account).
+   * - All parameter values must pass individual validation (Validate method).
+   *
+   * Emits:
+   * - No events are emitted for parameter updates.
+   *
+   * Returns:
+   * - Empty MsgUpdateParamsResponse.
    */
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 
   /*
-   * CreateSubscription creates a new event-triggered subscription with upfront fee payment.
-   * The subscription will automatically execute a script function when events match the filter criteria.
-   * Requires sufficient bonded stake if MinStakePerSubscription is configured.
+   * CreateSubscription creates a new event-triggered subscription with upfront
+   * fee payment.
+   *
+   * Behavior:
+   * - Creates a subscription that triggers script execution when events match
+   * the filter.
+   * - Enforces minimum stake requirements across all creator's subscriptions.
+   * - Deducts anti-spam fee to fee_collector module account.
+   * - Allocates unique subscription ID and sets expiry to current time +
+   * max_subscription_duration.
+   * - Minifies JSON args/kwargs for storage efficiency.
+   * - Initializes subscription with "enabled" status and zero trigger count.
+   *
+   * Validation:
+   * - Creator address must be valid.
+   * - Script address must be valid and non-empty.
+   * - Function name must be non-empty.
+   * - Task gas limit must be positive.
+   * - Task gas fee must be positive.
+   * - Filter, script_address, function, args, kwargs must not exceed length
+   * limits.
+   * - Creator must have sufficient bonded stake if MinStakePerSubscription is
+   * configured.
+   * - Args/kwargs must be valid JSON (array for args, object for kwargs).
+   *
+   * Emits:
+   * - EventSubscriptionCreated(subscription_id, creator) on successful
+   * creation.
+   *
+   * Returns:
+   * - MsgCreateSubscriptionResponse with allocated subscription ID.
    */
   rpc CreateSubscription(MsgCreateSubscription)
       returns (MsgCreateSubscriptionResponse);
 
   /*
    * DeleteSubscription permanently removes an existing subscription.
-   * Only the creator of the subscription can delete it. No refunds are provided.
+   *
+   * Behavior:
+   * - Permanently removes a subscription from storage.
+   * - Only the creator of the subscription can delete it.
+   * - No refunds are provided for remaining subscription time or fees.
+   *
+   * Validation:
+   * - Creator address must be valid.
+   * - Subscription must exist.
+   * - Creator must match the subscription's creator field.
+   *
+   * Emits:
+   * - EventSubscriptionDeleted(subscription_id, creator) on successful
+   * deletion.
+   *
+   * Returns:
+   * - Empty MsgDeleteSubscriptionResponse.
    */
   rpc DeleteSubscription(MsgDeleteSubscription)
       returns (MsgDeleteSubscriptionResponse);
 
   /*
    * RenewSubscription extends subscription expiry and recharges the fee.
-   * Only the creator can renew their subscription. Re-enables expired subscriptions.
+   *
+   * Behavior:
+   * - Extends subscription expiry to current time + max_subscription_duration.
+   * - Recharges the task gas fee from creator to fee_collector.
+   * - Re-enables expired subscriptions if they were in "expired" status.
+   * - Enforces minimum stake requirements before renewal.
+   *
+   * Validation:
+   * - Creator address must be valid.
+   * - Subscription must exist.
+   * - Creator must match the subscription's creator field.
+   * - Creator must have sufficient bonded stake if MinStakePerSubscription is
+   * configured.
+   *
+   * Emits:
+   * - No events are emitted for renewal (subscription remains active).
+   *
+   * Returns:
+   * - Empty MsgRenewSubscriptionResponse.
    */
   rpc RenewSubscription(MsgRenewSubscription)
       returns (MsgRenewSubscriptionResponse);
 }
 
 /*
- * MsgCreateTask creates a new scheduled task with specified execution time and messages.
+ * MsgCreateTask creates a new scheduled task with specified execution time and
+ * messages.
  *
  * Behavior:
  * - Creates a task scheduled for execution at a future timestamp.
- * - Parses flexible timestamp formats (Unix timestamps or duration offsets like "+1h30m").
+ * - Parses flexible timestamp formats (Unix timestamps or duration offsets like
+ * "+1h30m").
  * - Validates scheduling constraints and gas limits against module parameters.
- * - Calculates gas price from fee and limit, stores task with unpacked messages.
+ * - Calculates gas price from fee and limit, stores task with unpacked
+ * messages.
  * - Tasks remain in SCHEDULED status until execution time.
  *
  * Validation:
  * - Creator address must be valid.
- * - Scheduled timestamp must be in the future and within MaxScheduledTime limit.
- * - Expiry timestamp must be after scheduled time (defaults to scheduled + ExpiryLimit if not provided).
+ * - Scheduled timestamp must be in the future and within MaxScheduledTime
+ * limit.
+ * - Expiry timestamp must be after scheduled time (defaults to scheduled +
+ * ExpiryLimit if not provided).
  * - Gas limit must be positive and not exceed BlockGasLimit.
  * - Gas fee must be positive and denominated in "udys".
  * - At least one message must be provided in the task.
@@ -88,14 +212,15 @@ message MsgCreateTask {
   string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
   // Unix timestamp or duration offset when the task is scheduled to execute.
-  // Can be either a Unix timestamp or a time offset prefixed with "+" (e.g. "+1h30m").
-  // Offset is relative to the current block time.
+  // Can be either a Unix timestamp or a time offset prefixed with "+" (e.g.
+  // "+1h30m"). Offset is relative to the current block time.
   string scheduled_timestamp = 2;
 
-  // Unix timestamp or duration offset after which the task will expire if not executed.
-  // Can be either a Unix timestamp or a time offset prefixed with "+" (e.g. "+2h").
-  // When using an offset, it's relative to the scheduled_timestamp.
-  // If empty, defaults to scheduled_timestamp + ExpiryLimit.
+  // Unix timestamp or duration offset after which the task will expire if not
+  // executed. Can be either a Unix timestamp or a time offset prefixed with "+"
+  // (e.g. "+2h"). When using an offset, it's relative to the
+  // scheduled_timestamp. If empty, defaults to scheduled_timestamp +
+  // ExpiryLimit.
   string expiry_timestamp = 3;
 
   // Maximum gas limit for the task execution.
@@ -111,6 +236,7 @@ message MsgCreateTask {
 
 /*
  * MsgCreateTaskResponse contains the result of task creation.
+ * Empty response indicates successful task creation with allocated task ID.
  */
 message MsgCreateTaskResponse {
   // Unique identifier assigned to the newly created task.
@@ -152,12 +278,14 @@ message MsgDeleteTask {
 message MsgDeleteTaskResponse {}
 
 /*
- * MsgUpdateParams updates the parameters of the x/crontask module via governance proposal.
+ * MsgUpdateParams updates the parameters of the x/crontask module via
+ * governance proposal.
  *
  * Behavior:
  * - Updates all module parameters in a single governance operation.
  * - Authority is typically the x/gov module account.
- * - Parameters control task scheduling limits, gas constraints, and subscription rules.
+ * - Parameters control task scheduling limits, gas constraints, and
+ * subscription rules.
  *
  * Validation:
  * - Authority must be valid (typically x/gov module account).
@@ -173,7 +301,8 @@ message MsgUpdateParams {
   option (cosmos.msg.v1.signer) = "authority";
   option (amino.name) = "dys/crontask/MsgUpdateParams";
 
-  // Authority is the address that controls the module (defaults to x/gov unless overwritten).
+  // Authority is the address that controls the module (defaults to x/gov unless
+  // overwritten).
   string authority = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
   // Parameters defines the x/crontask parameters to update.
@@ -188,13 +317,16 @@ message MsgUpdateParams {
 message MsgUpdateParamsResponse {}
 
 /*
- * MsgCreateSubscription creates a new event-triggered subscription with upfront fee payment.
+ * MsgCreateSubscription creates a new event-triggered subscription with upfront
+ * fee payment.
  *
  * Behavior:
- * - Creates a subscription that triggers script execution when events match the filter.
+ * - Creates a subscription that triggers script execution when events match the
+ * filter.
  * - Enforces minimum stake requirements across all creator's subscriptions.
  * - Deducts anti-spam fee to fee_collector module account.
- * - Allocates unique subscription ID and sets expiry to current time + max_subscription_duration.
+ * - Allocates unique subscription ID and sets expiry to current time +
+ * max_subscription_duration.
  * - Minifies JSON args/kwargs for storage efficiency.
  * - Initializes subscription with "enabled" status and zero trigger count.
  *
@@ -204,8 +336,10 @@ message MsgUpdateParamsResponse {}
  * - Function name must be non-empty.
  * - Task gas limit must be positive.
  * - Task gas fee must be positive.
- * - Filter, script_address, function, args, kwargs must not exceed length limits.
- * - Creator must have sufficient bonded stake if MinStakePerSubscription is configured.
+ * - Filter, script_address, function, args, kwargs must not exceed length
+ * limits.
+ * - Creator must have sufficient bonded stake if MinStakePerSubscription is
+ * configured.
  * - Args/kwargs must be valid JSON (array for args, object for kwargs).
  *
  * Emits:
@@ -217,10 +351,12 @@ message MsgUpdateParamsResponse {}
 message MsgCreateSubscription {
   option (cosmos.msg.v1.signer) = "creator";
 
-  // Account creating the subscription; must have sufficient bonded stake if MinStakePerSubscription is set.
+  // Account creating the subscription; must have sufficient bonded stake if
+  // MinStakePerSubscription is set.
   string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
-  // Event filter string used to match blockchain events that trigger the subscription.
+  // Event filter string used to match blockchain events that trigger the
+  // subscription.
   string filter = 2;
 
   // Address of the script containing the function to execute on trigger.
@@ -244,6 +380,8 @@ message MsgCreateSubscription {
 
 /*
  * MsgCreateSubscriptionResponse contains the result of subscription creation.
+ * Empty response indicates successful subscription creation with allocated
+ * subscription ID.
  */
 message MsgCreateSubscriptionResponse {
   // Unique identifier assigned to the newly created subscription.
@@ -298,7 +436,8 @@ message MsgDeleteSubscriptionResponse {}
  * - Creator address must be valid.
  * - Subscription must exist.
  * - Creator must match the subscription's creator field.
- * - Creator must have sufficient bonded stake if MinStakePerSubscription is configured.
+ * - Creator must have sufficient bonded stake if MinStakePerSubscription is
+ * configured.
  *
  * Emits:
  * - No events are emitted for renewal (subscription remains active).

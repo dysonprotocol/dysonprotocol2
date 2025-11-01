@@ -14,22 +14,40 @@ option go_package = "dysonprotocol.com/x/crontask/types";
 
 // Query defines the gRPC query service for the crontask module
 service Query {
-  // TaskByID returns a task by its ID
+  /*
+   * TaskByID returns a task by its ID.
+   *
+   * Returns the complete task record for the specified task ID, including all
+   * scheduling information, messages, and execution status. Uses direct key
+   * lookup for optimal performance.
+   */
   rpc TaskByID(QueryTaskByIDRequest) returns (QueryTaskByIDResponse) {
     option (google.api.http) = {
       get : "/dysonprotocol/crontask/v1/tasks/{task_id}"
     };
   }
 
-  // TasksByAddress returns all tasks created by a specific address
+  /*
+   * TasksByAddress returns all tasks created by a specific address.
+   *
+   * Returns paginated list of tasks created by the specified address, ordered
+   * by task ID. Uses indexed queries for efficient lookup. Supports standard
+   * pagination with customizable page size and navigation.
+   */
   rpc TasksByAddress(QueryTasksByAddressRequest) returns (QueryTasksResponse) {
     option (google.api.http) = {
       get : "/dysonprotocol/crontask/v1/tasks/creator/{creator}"
     };
   }
 
-  // TasksByStatusTimestamp returns tasks filtered by status and ordered by
-  // timestamp
+  /*
+   * TasksByStatusTimestamp returns tasks filtered by status and ordered by
+   * timestamp.
+   *
+   * Returns paginated list of tasks with the specified status, ordered by
+   * scheduled timestamp (earliest first). Uses indexed queries for efficient
+   * status filtering. Supports pagination with reverse ordering capability.
+   */
   rpc TasksByStatusTimestamp(QueryTasksByStatusTimestampRequest)
       returns (QueryTasksResponse) {
     option (google.api.http) = {
@@ -37,8 +55,15 @@ service Query {
     };
   }
 
-  // TasksByStatusGasPrice returns tasks filtered by status and ordered by gas
-  // price
+  /*
+   * TasksByStatusGasPrice returns tasks filtered by status and ordered by gas
+   * price.
+   *
+   * Returns paginated list of tasks with the specified status, ordered by gas
+   * price (lowest first). Uses indexed queries for efficient status filtering
+   * and gas price ordering. Supports pagination with reverse ordering
+   * capability.
+   */
   rpc TasksByStatusGasPrice(QueryTasksByStatusGasPriceRequest)
       returns (QueryTasksResponse) {
     option (google.api.http) = {
@@ -46,28 +71,53 @@ service Query {
     };
   }
 
-  // TasksAll returns all tasks ordered by ID
+  /*
+   * TasksAll returns all tasks ordered by ID.
+   *
+   * Returns paginated list of all tasks in the system, ordered by task ID
+   * ascending. Uses direct store iteration for comprehensive task listing.
+   * Supports standard pagination for large result sets.
+   */
   rpc TasksAll(QueryAllTasksRequest) returns (QueryTasksResponse) {
     option (google.api.http) = {
       get : "/dysonprotocol/crontask/v1/tasks"
     };
   }
 
-  // Params returns the module parameters
+  /*
+   * Params returns the module parameters.
+   *
+   * Returns the current crontask module configuration including scheduling
+   * limits, gas constraints, subscription rules, and stake requirements.
+   * Parameters control task creation, execution limits, and subscription
+   * behavior.
+   */
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http) = {
       get : "/dysonprotocol/crontask/v1/params"
     };
   }
 
-  // Metrics returns last-block crontask metrics
+  /*
+   * Metrics returns last-block crontask metrics.
+   *
+   * Returns operational metrics from the most recent block including task
+   * execution counts, gas usage statistics, subscription activity, and system
+   * performance indicators. Metrics are updated at the end of each block.
+   */
   rpc Metrics(QueryMetricsRequest) returns (QueryMetricsResponse) {
     option (google.api.http) = {
       get : "/dysonprotocol/crontask/v1/metrics"
     };
   }
 
-  // SubscriptionByID returns a subscription by id
+  /*
+   * SubscriptionByID returns a subscription by id.
+   *
+   * Returns the complete subscription record for the specified subscription ID,
+   * including filter criteria, script configuration, execution parameters, and
+   * current status. Uses direct key lookup for optimal performance.
+   */
   rpc SubscriptionByID(QuerySubscriptionByIDRequest)
       returns (QuerySubscriptionByIDResponse) {
     option (google.api.http) = {
@@ -75,7 +125,13 @@ service Query {
     };
   }
 
-  // SubscriptionsByCreator returns subscriptions for a creator
+  /*
+   * SubscriptionsByCreator returns subscriptions for a creator.
+   *
+   * Returns paginated list of subscriptions created by the specified address,
+   * ordered by subscription ID. Uses collection filtering with indexed queries
+   * for efficient creator-based lookups. Supports standard pagination.
+   */
   rpc SubscriptionsByCreator(QuerySubscriptionsByCreatorRequest)
       returns (QuerySubscriptionsResponse) {
     option (google.api.http) = {
@@ -83,7 +139,13 @@ service Query {
     };
   }
 
-  // SubscriptionsAll returns all subscriptions
+  /*
+   * SubscriptionsAll returns all subscriptions.
+   *
+   * Returns paginated list of all subscriptions in the system, ordered by
+   * subscription ID ascending. Uses collection pagination for comprehensive
+   * subscription listing. Supports standard pagination for large result sets.
+   */
   rpc SubscriptionsAll(QuerySubscriptionsAllRequest)
       returns (QuerySubscriptionsResponse) {
     option (google.api.http) = {
@@ -92,72 +154,161 @@ service Query {
   }
 }
 
-// QueryTaskByIDRequest is the request type for the Query/TaskByID RPC method
-message QueryTaskByIDRequest { uint64 task_id = 1; }
+/*
+ * QueryTaskByIDRequest is the request type for the Query/TaskByID RPC method.
+ */
+message QueryTaskByIDRequest {
+  // Unique identifier of the task to retrieve; must exist in storage.
+  uint64 task_id = 1;
+}
 
-// QueryTaskByIDResponse is the response type for the Query/TaskByID RPC method
-message QueryTaskByIDResponse { Task task = 1; }
+/*
+ * QueryTaskByIDResponse is the response type for the Query/TaskByID RPC method.
+ */
+message QueryTaskByIDResponse {
+  // Complete task record including scheduling, messages, and execution status.
+  Task task = 1;
+}
 
-// QueryTasksByAddressRequest is the request type for the Query/TasksByAddress
-// RPC method
+/*
+ * QueryTasksByAddressRequest is the request type for the Query/TasksByAddress
+ * RPC method.
+ */
 message QueryTasksByAddressRequest {
+  // Creator address to filter tasks by; must be a valid bech32 address.
   string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Standard pagination parameters; results ordered by task ID ascending.
   cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
-// QueryTasksByStatusTimestampRequest is the request type for the
-// Query/TasksByStatusTimestamp RPC method
+/*
+ * QueryTasksByStatusTimestampRequest is the request type for the
+ * Query/TasksByStatusTimestamp RPC method.
+ */
 message QueryTasksByStatusTimestampRequest {
+  // Task status filter; valid values are "scheduled", "pending", "done",
+  // "failed", "expired".
   string status = 1;
+  // Standard pagination parameters; results ordered by scheduled timestamp
+  // ascending (earliest first). Pagination is reversed internally for proper
+  // chronological ordering.
   cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
-// QueryTasksByStatusGasPriceRequest is the request type for the
-// Query/TasksByStatusGasPrice RPC method
+/*
+ * QueryTasksByStatusGasPriceRequest is the request type for the
+ * Query/TasksByStatusGasPrice RPC method.
+ */
 message QueryTasksByStatusGasPriceRequest {
+  // Task status filter; valid values are "scheduled", "pending", "done",
+  // "failed", "expired".
   string status = 1;
+  // Standard pagination parameters; results ordered by gas price ascending
+  // (lowest first). Pagination is reversed internally for proper price
+  // ordering.
   cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
-// QueryTasksResponse is the response type for task queries with multiple
-// results
+/*
+ * QueryTasksResponse is the response type for task queries with multiple
+ * results.
+ */
 message QueryTasksResponse {
-  // Explicit json tag without omitempty to ensure empty arrays are included in
-  // marshalled output so clients can reliably expect the "tasks" key.
+  // List of tasks matching the query criteria, ordered according to the
+  // specific query endpoint (e.g., by ID, status, gas price).
   repeated Task tasks = 1;
+  // Pagination metadata for result set navigation.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-// QueryParamsRequest is the request type for the Query/Params RPC method
+/*
+ * QueryParamsRequest is the request type for the Query/Params RPC method.
+ * Empty request body as parameters are retrieved from module state.
+ */
 message QueryParamsRequest {}
 
-// QueryParamsResponse is the response type for the Query/Params RPC method
-message QueryParamsResponse { Params params = 1; }
+/*
+ * QueryParamsResponse is the response type for the Query/Params RPC method.
+ */
+message QueryParamsResponse {
+  // Current crontask module parameters including scheduling limits, gas
+  // constraints, and subscription configuration.
+  Params params = 1;
+}
 
-// QueryMetricsRequest is the request type for Metrics
+/*
+ * QueryMetricsRequest is the request type for the Query/Metrics RPC method.
+ * Empty request body as metrics are retrieved from the latest block state.
+ */
 message QueryMetricsRequest {}
 
-// QueryMetricsResponse carries last-block metrics
-message QueryMetricsResponse { Metrics metrics = 1; }
+/*
+ * QueryMetricsResponse carries last-block metrics.
+ */
+message QueryMetricsResponse {
+  // Operational metrics from the most recent block including execution counts,
+  // gas usage, subscription activity, and performance indicators.
+  Metrics metrics = 1;
+}
 
 // Request messages for new query endpoints
 
+/*
+ * QueryAllTasksRequest is the request type for the Query/TasksAll RPC method.
+ */
 message QueryAllTasksRequest {
+  // Standard pagination parameters; results ordered by task ID ascending.
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
 }
 
 // Subscription queries
-message QuerySubscriptionByIDRequest { uint64 subscription_id = 1; }
-message QuerySubscriptionByIDResponse { Subscription subscription = 1; }
+/*
+ * QuerySubscriptionByIDRequest is the request type for the
+ * Query/SubscriptionByID RPC method.
+ */
+message QuerySubscriptionByIDRequest {
+  // Unique identifier of the subscription to retrieve; must exist in storage.
+  uint64 subscription_id = 1;
+}
 
+/*
+ * QuerySubscriptionByIDResponse is the response type for the
+ * Query/SubscriptionByID RPC method.
+ */
+message QuerySubscriptionByIDResponse {
+  // Complete subscription record including filter criteria, script
+  // configuration, execution parameters, and current status.
+  Subscription subscription = 1;
+}
+
+/*
+ * QuerySubscriptionsByCreatorRequest is the request type for the
+ * Query/SubscriptionsByCreator RPC method.
+ */
 message QuerySubscriptionsByCreatorRequest {
+  // Creator address to filter subscriptions by; must be a valid bech32 address.
   string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Standard pagination parameters; results ordered by subscription ID
+  // ascending.
   cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
+/*
+ * QuerySubscriptionsAllRequest is the request type for the
+ * Query/SubscriptionsAll RPC method.
+ */
 message QuerySubscriptionsAllRequest {
+  // Standard pagination parameters; results ordered by subscription ID
+  // ascending.
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
 }
+/*
+ * QuerySubscriptionsResponse is the response type for subscription queries with
+ * multiple results.
+ */
 message QuerySubscriptionsResponse {
+  // List of subscriptions matching the query criteria, ordered according to the
+  // specific query endpoint (e.g., by ID or creator).
   repeated Subscription subscriptions = 1;
+  // Pagination metadata for result set navigation.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

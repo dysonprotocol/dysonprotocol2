@@ -10,12 +10,15 @@ import { PageRequest, PageResponse } from "../../../cosmos/base/query/v1beta1/pa
 import { Subscription } from "./subscription_pb.js";
 
 /**
- * QueryTaskByIDRequest is the request type for the Query/TaskByID RPC method
+ *
+ * QueryTaskByIDRequest is the request type for the Query/TaskByID RPC method.
  *
  * @generated from message dysonprotocol.crontask.v1.QueryTaskByIDRequest
  */
 export class QueryTaskByIDRequest extends Message<QueryTaskByIDRequest> {
   /**
+   * Unique identifier of the task to retrieve; must exist in storage.
+   *
    * @generated from field: uint64 task_id = 1;
    */
   taskId = protoInt64.zero;
@@ -49,12 +52,15 @@ export class QueryTaskByIDRequest extends Message<QueryTaskByIDRequest> {
 }
 
 /**
- * QueryTaskByIDResponse is the response type for the Query/TaskByID RPC method
+ *
+ * QueryTaskByIDResponse is the response type for the Query/TaskByID RPC method.
  *
  * @generated from message dysonprotocol.crontask.v1.QueryTaskByIDResponse
  */
 export class QueryTaskByIDResponse extends Message<QueryTaskByIDResponse> {
   /**
+   * Complete task record including scheduling, messages, and execution status.
+   *
    * @generated from field: dysonprotocol.crontask.v1.Task task = 1;
    */
   task?: Task;
@@ -88,18 +94,23 @@ export class QueryTaskByIDResponse extends Message<QueryTaskByIDResponse> {
 }
 
 /**
+ *
  * QueryTasksByAddressRequest is the request type for the Query/TasksByAddress
- * RPC method
+ * RPC method.
  *
  * @generated from message dysonprotocol.crontask.v1.QueryTasksByAddressRequest
  */
 export class QueryTasksByAddressRequest extends Message<QueryTasksByAddressRequest> {
   /**
+   * Creator address to filter tasks by; must be a valid bech32 address.
+   *
    * @generated from field: string creator = 1;
    */
   creator = "";
 
   /**
+   * Standard pagination parameters; results ordered by task ID ascending.
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 2;
    */
   pagination?: PageRequest;
@@ -134,18 +145,26 @@ export class QueryTasksByAddressRequest extends Message<QueryTasksByAddressReque
 }
 
 /**
+ *
  * QueryTasksByStatusTimestampRequest is the request type for the
- * Query/TasksByStatusTimestamp RPC method
+ * Query/TasksByStatusTimestamp RPC method.
  *
  * @generated from message dysonprotocol.crontask.v1.QueryTasksByStatusTimestampRequest
  */
 export class QueryTasksByStatusTimestampRequest extends Message<QueryTasksByStatusTimestampRequest> {
   /**
+   * Task status filter; valid values are "scheduled", "pending", "done",
+   * "failed", "expired".
+   *
    * @generated from field: string status = 1;
    */
   status = "";
 
   /**
+   * Standard pagination parameters; results ordered by scheduled timestamp
+   * ascending (earliest first). Pagination is reversed internally for proper
+   * chronological ordering.
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 3;
    */
   pagination?: PageRequest;
@@ -180,18 +199,26 @@ export class QueryTasksByStatusTimestampRequest extends Message<QueryTasksByStat
 }
 
 /**
+ *
  * QueryTasksByStatusGasPriceRequest is the request type for the
- * Query/TasksByStatusGasPrice RPC method
+ * Query/TasksByStatusGasPrice RPC method.
  *
  * @generated from message dysonprotocol.crontask.v1.QueryTasksByStatusGasPriceRequest
  */
 export class QueryTasksByStatusGasPriceRequest extends Message<QueryTasksByStatusGasPriceRequest> {
   /**
+   * Task status filter; valid values are "scheduled", "pending", "done",
+   * "failed", "expired".
+   *
    * @generated from field: string status = 1;
    */
   status = "";
 
   /**
+   * Standard pagination parameters; results ordered by gas price ascending
+   * (lowest first). Pagination is reversed internally for proper price
+   * ordering.
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 3;
    */
   pagination?: PageRequest;
@@ -226,21 +253,24 @@ export class QueryTasksByStatusGasPriceRequest extends Message<QueryTasksByStatu
 }
 
 /**
+ *
  * QueryTasksResponse is the response type for task queries with multiple
- * results
+ * results.
  *
  * @generated from message dysonprotocol.crontask.v1.QueryTasksResponse
  */
 export class QueryTasksResponse extends Message<QueryTasksResponse> {
   /**
-   * Explicit json tag without omitempty to ensure empty arrays are included in
-   * marshalled output so clients can reliably expect the "tasks" key.
+   * List of tasks matching the query criteria, ordered according to the
+   * specific query endpoint (e.g., by ID, status, gas price).
    *
    * @generated from field: repeated dysonprotocol.crontask.v1.Task tasks = 1;
    */
   tasks: Task[] = [];
 
   /**
+   * Pagination metadata for result set navigation.
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -275,7 +305,9 @@ export class QueryTasksResponse extends Message<QueryTasksResponse> {
 }
 
 /**
- * QueryParamsRequest is the request type for the Query/Params RPC method
+ *
+ * QueryParamsRequest is the request type for the Query/Params RPC method.
+ * Empty request body as parameters are retrieved from module state.
  *
  * @generated from message dysonprotocol.crontask.v1.QueryParamsRequest
  */
@@ -308,12 +340,16 @@ export class QueryParamsRequest extends Message<QueryParamsRequest> {
 }
 
 /**
- * QueryParamsResponse is the response type for the Query/Params RPC method
+ *
+ * QueryParamsResponse is the response type for the Query/Params RPC method.
  *
  * @generated from message dysonprotocol.crontask.v1.QueryParamsResponse
  */
 export class QueryParamsResponse extends Message<QueryParamsResponse> {
   /**
+   * Current crontask module parameters including scheduling limits, gas
+   * constraints, and subscription configuration.
+   *
    * @generated from field: dysonprotocol.crontask.v1.Params params = 1;
    */
   params?: Params;
@@ -347,7 +383,9 @@ export class QueryParamsResponse extends Message<QueryParamsResponse> {
 }
 
 /**
- * QueryMetricsRequest is the request type for Metrics
+ *
+ * QueryMetricsRequest is the request type for the Query/Metrics RPC method.
+ * Empty request body as metrics are retrieved from the latest block state.
  *
  * @generated from message dysonprotocol.crontask.v1.QueryMetricsRequest
  */
@@ -380,12 +418,16 @@ export class QueryMetricsRequest extends Message<QueryMetricsRequest> {
 }
 
 /**
- * QueryMetricsResponse carries last-block metrics
+ *
+ * QueryMetricsResponse carries last-block metrics.
  *
  * @generated from message dysonprotocol.crontask.v1.QueryMetricsResponse
  */
 export class QueryMetricsResponse extends Message<QueryMetricsResponse> {
   /**
+   * Operational metrics from the most recent block including execution counts,
+   * gas usage, subscription activity, and performance indicators.
+   *
    * @generated from field: dysonprotocol.crontask.v1.Metrics metrics = 1;
    */
   metrics?: Metrics;
@@ -419,10 +461,15 @@ export class QueryMetricsResponse extends Message<QueryMetricsResponse> {
 }
 
 /**
+ *
+ * QueryAllTasksRequest is the request type for the Query/TasksAll RPC method.
+ *
  * @generated from message dysonprotocol.crontask.v1.QueryAllTasksRequest
  */
 export class QueryAllTasksRequest extends Message<QueryAllTasksRequest> {
   /**
+   * Standard pagination parameters; results ordered by task ID ascending.
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 1;
    */
   pagination?: PageRequest;
@@ -456,12 +503,16 @@ export class QueryAllTasksRequest extends Message<QueryAllTasksRequest> {
 }
 
 /**
- * Subscription queries
+ *
+ * QuerySubscriptionByIDRequest is the request type for the
+ * Query/SubscriptionByID RPC method.
  *
  * @generated from message dysonprotocol.crontask.v1.QuerySubscriptionByIDRequest
  */
 export class QuerySubscriptionByIDRequest extends Message<QuerySubscriptionByIDRequest> {
   /**
+   * Unique identifier of the subscription to retrieve; must exist in storage.
+   *
    * @generated from field: uint64 subscription_id = 1;
    */
   subscriptionId = protoInt64.zero;
@@ -495,10 +546,17 @@ export class QuerySubscriptionByIDRequest extends Message<QuerySubscriptionByIDR
 }
 
 /**
+ *
+ * QuerySubscriptionByIDResponse is the response type for the
+ * Query/SubscriptionByID RPC method.
+ *
  * @generated from message dysonprotocol.crontask.v1.QuerySubscriptionByIDResponse
  */
 export class QuerySubscriptionByIDResponse extends Message<QuerySubscriptionByIDResponse> {
   /**
+   * Complete subscription record including filter criteria, script
+   * configuration, execution parameters, and current status.
+   *
    * @generated from field: dysonprotocol.crontask.v1.Subscription subscription = 1;
    */
   subscription?: Subscription;
@@ -532,15 +590,24 @@ export class QuerySubscriptionByIDResponse extends Message<QuerySubscriptionByID
 }
 
 /**
+ *
+ * QuerySubscriptionsByCreatorRequest is the request type for the
+ * Query/SubscriptionsByCreator RPC method.
+ *
  * @generated from message dysonprotocol.crontask.v1.QuerySubscriptionsByCreatorRequest
  */
 export class QuerySubscriptionsByCreatorRequest extends Message<QuerySubscriptionsByCreatorRequest> {
   /**
+   * Creator address to filter subscriptions by; must be a valid bech32 address.
+   *
    * @generated from field: string creator = 1;
    */
   creator = "";
 
   /**
+   * Standard pagination parameters; results ordered by subscription ID
+   * ascending.
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 2;
    */
   pagination?: PageRequest;
@@ -575,10 +642,17 @@ export class QuerySubscriptionsByCreatorRequest extends Message<QuerySubscriptio
 }
 
 /**
+ *
+ * QuerySubscriptionsAllRequest is the request type for the
+ * Query/SubscriptionsAll RPC method.
+ *
  * @generated from message dysonprotocol.crontask.v1.QuerySubscriptionsAllRequest
  */
 export class QuerySubscriptionsAllRequest extends Message<QuerySubscriptionsAllRequest> {
   /**
+   * Standard pagination parameters; results ordered by subscription ID
+   * ascending.
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 1;
    */
   pagination?: PageRequest;
@@ -612,15 +686,24 @@ export class QuerySubscriptionsAllRequest extends Message<QuerySubscriptionsAllR
 }
 
 /**
+ *
+ * QuerySubscriptionsResponse is the response type for subscription queries with
+ * multiple results.
+ *
  * @generated from message dysonprotocol.crontask.v1.QuerySubscriptionsResponse
  */
 export class QuerySubscriptionsResponse extends Message<QuerySubscriptionsResponse> {
   /**
+   * List of subscriptions matching the query criteria, ordered according to the
+   * specific query endpoint (e.g., by ID or creator).
+   *
    * @generated from field: repeated dysonprotocol.crontask.v1.Subscription subscriptions = 1;
    */
   subscriptions: Subscription[] = [];
 
   /**
+   * Pagination metadata for result set navigation.
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;

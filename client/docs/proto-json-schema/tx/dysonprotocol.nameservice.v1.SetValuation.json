@@ -6,27 +6,31 @@
             "dysonprotocol.nameservice.v1.MsgSetValuation": {
                 "properties": {
                     "owner": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "NFT owner address performing the valuation update."
                     },
                     "nft_class_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "NFT class identifier."
                     },
                     "nft_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "NFT identifier within the class."
                     },
                     "valuation": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false,
-                        "description": "valuation is the new valuation of the NFT"
+                        "description": "New valuation amount for the NFT."
                     },
                     "max_valuation_fee_pct": {
                         "type": "string",
-                        "description": "max_valuation_fee_pct (optional) is the maximum valuation fee percent the user is willing to pay for setting the new valuation (e.g. \"0.025\" for 2.5% per valuation period). This guards against unexpected fee amounts if the class updates valuation_fee_pct."
+                        "description": "Maximum valuation fee percentage the user is willing to pay (e.g. \"0.025\" for 2.5%). Guards against unexpected fee amounts if class parameters change."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Set Valuation"
+                "title": "Msg Set Valuation",
+                "description": "MsgSetValuation updates the self-valuation of an NFT, charging Harberger tax on increases. Behavior: - Updates NFT valuation, charging fee only on incremental increases. - Fee is proportional to remaining time in current valuation period. - Fee destination depends on NFT class ownership (community pool vs class owner). - Valuation expiry remains unchanged; use MsgRenew to extend expiry. Validation: - Sender must be NFT owner. - NFT valuation must not be expired. - No active bids can exist (reject bids first). - New valuation must be valid according to class rules. - Max fee percent guard prevents unexpected fee increases. Emits: - EventNameValuationUpdated(name, new_valuation) on successful update. Returns: - Empty response on success."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {
@@ -51,7 +55,8 @@
             "dysonprotocol.nameservice.v1.MsgSetValuationResponse": {
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Set Valuation Response"
+                "title": "Msg Set Valuation Response",
+                "description": "Empty response for successful valuation update."
             }
         }
     }

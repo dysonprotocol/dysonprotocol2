@@ -13,47 +13,98 @@ option go_package = "dysonprotocol.com/x/storage/types";
 // Msg defines the storage Msg service.
 service Msg {
   option (cosmos.msg.v1.service) = true;
-/*
- * StorageSet sets a storage entry for the specified owner and index.
- */
-rpc StorageSet(MsgStorageSet) returns (MsgStorageSetResponse);
-/*
- * StorageDelete removes specified storage entries owned by the requesting account.
- */
-rpc StorageDelete(MsgStorageDelete) returns (MsgStorageDeleteResponse);
-/*
- * UpdateParams updates the x/storage module parameters via governance proposal.
- */
-rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+  /*
+   * StorageSet sets a storage entry for the specified owner and index.
+   *
+   * Sets a storage entry for the specified owner and index with stake
+   * validation, size limits, and automatic metadata tracking including data
+   * hashing and timestamp recording.
+   *
+   * Behavior:
+   * - Stores JSON data under a composite key of owner/index, creating or
+   *   updating the entry
+   * - Validates data size against module's MaxStorageSize parameter
+   * - Enforces stake requirements when StorageStakeMultiple > 0: requires owner
+   *   to have sufficient delegated stake
+   * - Calculates data hash using SHA256 and stores metadata including block
+   *   height and timestamp
+   * - Updates owner's storage metrics (total bytes) for stake validation and
+   *   monitoring
+   *
+   * Validation:
+   * - Owner must be a valid bech32 address
+   * - Index must be non-empty and contain only printable ASCII characters
+   * - Data size must not exceed MaxStorageSize parameter
+   * - When stake validation is enabled, owner's delegated stake must meet
+   *   minimum requirement
+   *
+   * Emits:
+   * - EventStorageUpdated(address, index) upon successful storage operation
+   *
+   * Returns:
+   * - Empty response body on success
+   */
+  rpc StorageSet(MsgStorageSet) returns (MsgStorageSetResponse);
+
+  /*
+   * StorageDelete removes specified storage entries owned by the requesting
+   * account.
+   *
+   * Behavior:
+   * - Deletes multiple storage entries by index for the specified owner
+   * - Verifies ownership of each entry before deletion to prevent unauthorized
+   *   removal
+   * - Updates owner's storage metrics by subtracting deleted bytes from total
+   * - Returns list of successfully deleted indexes for transparency
+   *
+   * Validation:
+   * - Owner must be a valid bech32 address
+   * - At least one index must be specified for deletion
+   * - Each specified index must exist and be owned by the requesting account
+   *
+   * Emits:
+   * - EventStorageDelete(owner, deleted_indexes) with list of successfully
+   *   deleted indexes
+   *
+   * Returns:
+   * - List of indexes that were successfully deleted
+   */
+  rpc StorageDelete(MsgStorageDelete) returns (MsgStorageDeleteResponse);
+  /*
+   * UpdateParams updates the x/storage module parameters via governance
+   * proposal.
+   *
+   * Behavior:
+   * - Validates that the signer has authority to update module parameters
+   *   (typically governance module)
+   * - Validates that all provided parameters are valid according to parameter
+   *   constraints
+   * - Updates the module's parameter state with the new values
+   *
+   * Validation:
+   * - Authority must match the module's configured authority address
+   * - All parameter values must pass individual validation (MaxStorageSize,
+   *   StorageStakeMultiple)
+   *
+   * Emits:
+   * - No events emitted for parameter updates
+   *
+   * Returns:
+   * - Empty response body on success
+   */
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 
 /*
- * MsgStorageSet is the message for setting a storage entry.
- *
- * Behavior:
- * - Stores JSON data under a composite key of owner/index, creating or updating the entry.
- * - Validates data size against module's MaxStorageSize parameter.
- * - Enforces stake requirements when StorageStakeMultiple > 0: requires owner to have sufficient delegated stake.
- * - Calculates data hash using SHA256 and stores metadata including block height and timestamp.
- * - Updates owner's storage metrics (total bytes) for stake validation and monitoring.
- *
- * Validation:
- * - Owner must be a valid bech32 address.
- * - Index must be non-empty and contain only printable ASCII characters.
- * - Data size must not exceed MaxStorageSize parameter.
- * - When stake validation is enabled, owner's delegated stake must meet minimum requirement.
- *
- * Emits:
- * - EventStorageUpdated(address, index) upon successful storage operation.
- *
- * Returns:
- * - Empty response body on success.
+ * MsgStorageSet
  */
 message MsgStorageSet {
   option (cosmos.msg.v1.signer) = "owner";
-  // Account address that owns the storage entry; must be a valid bech32 address.
+  // Account address that owns the storage entry; must be a valid bech32
+  // address.
   string owner = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  // Index key for the storage entry; must be non-empty and printable ASCII only.
+  // Index key for the storage entry; must be non-empty and printable ASCII
+  // only.
   string index = 2;
   // JSON data to store; size limited by MaxStorageSize parameter.
   string data = 3;
@@ -69,7 +120,8 @@ message MsgStorageSetResponse {}
  *
  * Behavior:
  * - Deletes multiple storage entries by index for the specified owner.
- * - Verifies ownership of each entry before deletion to prevent unauthorized removal.
+ * - Verifies ownership of each entry before deletion to prevent unauthorized
+ * removal.
  * - Updates owner's storage metrics by subtracting deleted bytes from total.
  * - Returns list of successfully deleted indexes for transparency.
  *
@@ -79,14 +131,16 @@ message MsgStorageSetResponse {}
  * - Each specified index must exist and be owned by the requesting account.
  *
  * Emits:
- * - EventStorageDelete(owner, deleted_indexes) with list of successfully deleted indexes.
+ * - EventStorageDelete(owner, deleted_indexes) with list of successfully
+ * deleted indexes.
  *
  * Returns:
  * - List of indexes that were successfully deleted.
  */
 message MsgStorageDelete {
   option (cosmos.msg.v1.signer) = "owner";
-  // Account address that owns the storage entries; must be a valid bech32 address.
+  // Account address that owns the storage entries; must be a valid bech32
+  // address.
   string owner = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
   // List of specific indexes to delete; must contain at least one index.
@@ -97,7 +151,8 @@ message MsgStorageDelete {
  * Response containing the list of indexes that were successfully deleted.
  */
 message MsgStorageDeleteResponse {
-  // List of indexes that were successfully deleted; may be fewer than requested if some didn't exist.
+  // List of indexes that were successfully deleted; may be fewer than requested
+  // if some didn't exist.
   repeated string deleted_indexes = 1;
 }
 
@@ -105,13 +160,16 @@ message MsgStorageDeleteResponse {
  * MsgUpdateParams is the Msg/UpdateParams request type.
  *
  * Behavior:
- * - Validates that the signer has authority to update module parameters (typically governance module).
- * - Validates that all provided parameters are valid according to parameter constraints.
+ * - Validates that the signer has authority to update module parameters
+ * (typically governance module).
+ * - Validates that all provided parameters are valid according to parameter
+ * constraints.
  * - Updates the module's parameter state with the new values.
  *
  * Validation:
  * - Authority must match the module's configured authority address.
- * - All parameter values must pass individual validation (MaxStorageSize, StorageStakeMultiple).
+ * - All parameter values must pass individual validation (MaxStorageSize,
+ * StorageStakeMultiple).
  *
  * Emits:
  * - No events emitted for parameter updates.
@@ -123,10 +181,12 @@ message MsgUpdateParams {
   option (cosmos.msg.v1.signer) = "authority";
   option (amino.name) = "dys/storage/MsgUpdateParams";
 
-  // Authority is the address that controls the module (defaults to x/gov unless overwritten).
+  // Authority is the address that controls the module (defaults to x/gov unless
+  // overwritten).
   string authority = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
-  // Params defines the x/storage parameters to update; all parameters must be supplied.
+  // Params defines the x/storage parameters to update; all parameters must be
+  // supplied.
   Params params = 2 [ (gogoproto.nullable) = false ];
 }
 

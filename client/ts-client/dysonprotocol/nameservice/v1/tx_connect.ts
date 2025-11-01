@@ -15,6 +15,11 @@ export const Msg = {
   typeName: "dysonprotocol.nameservice.v1.Msg",
   methods: {
     /**
+     *
+     * Commit creates a commitment for name registration using commit-reveal
+     * scheme. Stores hash commitment that can be revealed later to prevent
+     * front-running.
+     *
      * @generated from rpc dysonprotocol.nameservice.v1.Msg.Commit
      */
     commit: {
@@ -24,6 +29,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     *
+     * Reveal completes name registration by validating revealed name matches
+     * commitment hash. Mints Name NFT, charges valuation fee, and creates reverse
+     * mapping for resolution.
+     *
      * @generated from rpc dysonprotocol.nameservice.v1.Msg.Reveal
      */
     reveal: {
@@ -33,6 +43,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     *
+     * SetValuation updates the self-valuation of an NFT, charging Harberger tax
+     * on increases. Fee goes to community pool or class owner based on governance
+     * status.
+     *
      * @generated from rpc dysonprotocol.nameservice.v1.Msg.SetValuation
      */
     setValuation: {
@@ -42,6 +57,10 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     *
+     * Renew extends valuation expiry by charging proportional annual fee.
+     * Fee is paid to the NFT class owner.
+     *
      * @generated from rpc dysonprotocol.nameservice.v1.Msg.Renew
      */
     renew: {
@@ -51,6 +70,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     *
+     * PlaceBid places or outbids on a listed NFT, escrowing funds until
+     * acceptance or expiry. First bids must meet/exceed valuation; subsequent
+     * bids require minimum increase percentage.
+     *
      * @generated from rpc dysonprotocol.nameservice.v1.Msg.PlaceBid
      */
     placeBid: {
@@ -60,6 +84,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     *
+     * AcceptBid accepts current active bid, transferring NFT ownership and
+     * releasing escrowed funds. Updates NFT valuation to accepted bid amount and
+     * clears bid state.
+     *
      * @generated from rpc dysonprotocol.nameservice.v1.Msg.AcceptBid
      */
     acceptBid: {
@@ -69,9 +98,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
-     * RejectBid is used to reject a bid and set a new valuation for the NFT, to
-     * prevent abuse a rejection fee as a percentage of the new valuation is paid
-     * to the community pool.
+     *
+     * RejectBid rejects current bid and sets new valuation, charging rejection
+     * fee. Fee routing: to NFT class owner for user-controlled classes, to
+     * community pool for governance-controlled classes. Refunds the rejected
+     * bidder's escrowed bid amount back to them.
      *
      * @generated from rpc dysonprotocol.nameservice.v1.Msg.RejectBid
      */
@@ -82,6 +113,11 @@ export const Msg = {
       kind: MethodKind.Unary,
     },
     /**
+     *
+     * ClaimBid allows bidder to claim NFT after bid timeout expires without
+     * acceptance. Transfers escrowed bid to previous owner and NFT ownership to
+     * bidder.
+     *
      * @generated from rpc dysonprotocol.nameservice.v1.Msg.ClaimBid
      */
     claimBid: {

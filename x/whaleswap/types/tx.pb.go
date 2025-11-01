@@ -64,36 +64,7 @@ func (SettlementMode) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_90b095e4db319dd9, []int{0}
 }
 
-// *
-// Create a two-asset pool with per-denom fee/interest/leverage parameters and
-// optional directional bound_percent limits.
-//
-// Behavior:
-//   - Input normalization: canonicalizes `coins` (exactly two positive coins) to
-//     the pool's denom order.
-//   - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two
-//     DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
-//     interest_rate >= 0 per denom.
-//   - Leverage configuration (required): `min_collateral_ratio` and
-//     `max_leverage_ratio` must have exactly two entries (> 1) matching pool
-//     denoms; `liquidation_threshold` must have exactly two entries (> 1);
-//     `max_borrow_percent` must have exactly two entries with amounts in [0,1).
-//   - Bound percent (optional): when omitted defaults to 1 (unbounded) for both
-//     denoms. When provided, must contain exactly two DecCoins matching pool
-//     denoms with amounts in (0,1]; 1 disables the bound for that denom.
-//   - Funds and shares: sends initial reserves from `creator` → module; allocates
-//     a new pool_id; persists the pool; computes initial shares as
-//
-// floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends
-// them to the creator.
-// - Invariants: asserts AMM and module invariants before returning.
-//
-// Emits:
-// - EventPoolCreated(pool_id)
-// - EventPoolUpdate(pool_id)
-//
-// Returns:
-// - `pool_id` of the newly created pool (see response).
+// MsgCreatePool
 type MsgCreatePool struct {
 	// Account creating the pool; receives the initial minted shares.
 	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
@@ -236,6 +207,7 @@ func (m *MsgCreatePool) GetBoundPercent() github_com_cosmos_cosmos_sdk_types.Dec
 	return nil
 }
 
+// Empty response. See EventPoolCreated for emitted details.
 type MsgCreatePoolResponse struct {
 	// Newly created pool id.
 	PoolId uint64 `protobuf:"varint,1,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
@@ -281,28 +253,7 @@ func (m *MsgCreatePoolResponse) GetPoolId() uint64 {
 	return 0
 }
 
-// *
-// Update a pool's dynamic configuration (owner-only).
-//
-// Behavior:
-//   - Loads pool; validates signer and majority-ownership.
-//   - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1.
-//   - Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`
-//     with exactly two entries matching pool denoms; each > 1.
-//   - Liquidation threshold: required with exactly two entries; each > 1.
-//   - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.
-//   - Max borrow percent: optional; if provided exactly two entries; 0 <= x < 1.
-//   - Bound percent: optional; when provided must contain exactly two DecCoins
-//     matching pool denoms with amounts in (0,1]; 1 disables the bound. Omit to
-//     leave existing bounds unchanged.
-//   - Persists pool with `updated` timestamp; emits EventPoolUpdate; asserts AMM
-//     and module invariants.
-//
-// Emits:
-// - EventPoolUpdate(pool_id).
-//
-// Returns:
-// - Empty response.
+// MsgUpdatePoolConfig
 type MsgUpdatePoolConfig struct {
 	// Signer address; must be the majority owner of pool shares.
 	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
@@ -445,6 +396,7 @@ func (m *MsgUpdatePoolConfig) GetBoundPercent() github_com_cosmos_cosmos_sdk_typ
 	return nil
 }
 
+// Empty response. See EventPoolUpdate for emitted details.
 type MsgUpdatePoolConfigResponse struct {
 }
 
@@ -481,27 +433,7 @@ func (m *MsgUpdatePoolConfigResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgUpdatePoolConfigResponse proto.InternalMessageInfo
 
-// *
-// Add liquidity (owner-only).
-//
-// Behavior:
-//   - Escrows the full provided amounts, then refunds any unused surplus.
-//   - Concentrated pools: compute ΔL from the inputs at the current price within
-//     [min_price, max_price]; refund the side that exceeds the limiting ΔL; mint
-//     shares as floor(ΔL * total_shares / L_current).
-//   - Non-concentrated pools: minted shares are derived from the limiting side
-//     min(add1/R1, add2/R2) * total_shares; refund the difference.
-//   - Updates reserves, enforces the price band (if set), persists the pool,
-//     emits events, and asserts AMM invariants.
-//
-// Validation:
-//   - Pool must exist and signer must hold a majority of shares.
-//   - `amounts` must contain exactly two positive coins whose denoms match the
-//     pool reserves (canonical order).
-//
-// Emits:
-// - EventPoolUpdate (after persisting pool state)
-// - EventPoolLiquidityAdded (on successful add)
+// MsgAddLiquidity
 type MsgAddLiquidity struct {
 	// Account adding liquidity; must be majority owner of pool shares.
 	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
@@ -568,6 +500,7 @@ func (m *MsgAddLiquidity) GetAmounts() github_com_cosmos_cosmos_sdk_types.Coins 
 	return nil
 }
 
+// Empty response. See EventPoolLiquidityAdded for emitted details.
 type MsgAddLiquidityResponse struct {
 	// Shares minted to signer (sdk.Int string).
 	Shares string `protobuf:"bytes,1,opt,name=shares,proto3" json:"shares,omitempty"`
@@ -618,24 +551,27 @@ func (m *MsgAddLiquidityResponse) GetShares() string {
 // reserves.
 //
 // Behavior:
-//   - Supports two modes: full exit and partial exit.
-//   - Full exit: when burning all outstanding shares, the pool is deleted and
-//     the full reserves are paid out to the caller.
-//   - Partial exit: burns a subset of shares and receives a payout proportional
-//     to that share using pro-rata DecCoins math; pool remains active with
-//     reduced reserves.
-//   - Ensures partial exits cannot deplete any reserve below zero; full exit
-//     required to withdraw the last liquidity.
+//   - Supports full exit (burning all shares, deletes pool, returns all reserves)
+//     and partial exit (burns subset, returns proportional reserves, pool
+//
+// remains).
+// - Full exit: when shares = total_supply, deletes pool, pays out full
+// reserves.
+// - Partial exit: computes pro-rata payout using DecCoins math, ensures
+// reserves don't go to zero (requires full exit for last liquidity).
+// - Burns shares from signer, sends proportional reserves from module to
+// signer.
+// - For partial exits: updates pool reserves, persists pool; asserts AMM
+// invariants.
 //
 // Validation:
-//   - Pool must exist.
-//   - Signer must hold at least shares.
-//   - Shares must be a positive integer string.
-//   - Partial exits cannot deplete any reserve; withdrawing the last liquidity
-//     requires a full exit (burning all shares).
+// - Pool must exist.
+// - Shares must be positive integer string.
+// - Signer must hold at least shares amount.
+// - Partial exits cannot deplete any reserve to zero.
 //
 // Emits:
-// - EventPoolLiquidityRemoved with pool_id and shares.
+// - EventPoolLiquidityRemoved with pool_id and shares
 //
 // Returns:
 // - coins returned to the caller in the amount field.
@@ -749,7 +685,9 @@ func (m *MsgRemoveLiquidityResponse) GetAmount() github_com_cosmos_cosmos_sdk_ty
 }
 
 // *
-// Execute one or more pool swap legs with a single settlement.
+// PoolSwap executes one or more exact-in or exact-out pool swap legs with a
+// single end-of-tx settlement. Applies output-side fees per leg and enforces
+// aggregate max_input caps and min_output guarantees.
 //
 // Behavior:
 //   - Per-leg execution: for each leg, validates the pool/denoms and computes
@@ -776,8 +714,8 @@ func (m *MsgRemoveLiquidityResponse) GetAmount() github_com_cosmos_cosmos_sdk_ty
 //
 // Emits:
 //   - EventPoolSwap per executed leg (with pool_id, trade_id, operation_index)
-//     via recordTradeWithOperations.
-//   - EventTradeRecorded once after all legs are recorded.
+//     via recordTradeWithOperations
+//   - EventTradeRecorded once after all legs are recorded
 //
 // Returns:
 // - amount_out: total coins credited to the trader across all legs.
@@ -1163,10 +1101,10 @@ func (m *AuctionRedeem) GetAuctionId() uint64 {
 // - Trade recorded with all operations, indexed by trader/pool/offer/auction.
 //
 // Emits:
-// - EventPfandReleased for each closed offer (amount, offer_id, trade_id).
-// - EventPoolSwap for each swap (pool_id, trade_id, operation_index).
-// - EventOfferTaken for each take (offer_id, trade_id, units_taken).
-// - EventTradeRecorded summary (trade_id, trader, num_operations, note).
+// - EventPfandReleased for each closed offer (amount, offer_id, trade_id)
+// - EventPoolSwap for each swap (pool_id, trade_id, operation_index)
+// - EventOfferTaken for each take (offer_id, trade_id, units_taken)
+// - EventTradeRecorded summary (trade_id, trader, num_operations, note)
 //
 // Returns:
 // - trade_id and final net trader_inputs/outputs after
@@ -1319,17 +1257,33 @@ func (m *MsgMakeTradeResponse) GetTraderOutputs() github_com_cosmos_cosmos_sdk_t
 	return nil
 }
 
-// Make an orderbook offer.
+// *
+// MakeOffer creates an orderbook offer. ESCROW: base "have" is escrowed.
+// LIQUID: lock PFAND; settlement draws from maker balance at take. Units are
+// derived via GCD for partial fills.
 //
-// Constraints and semantics:
-// - have and want must be different denoms and strictly positive.
-// - Any denom allowed (including PFAND); settlement behavior controlled by
-// settlement_mode.
-// - If settlement_mode == LIQUID, the transaction locks PFAND per module
-// params.
-//   - The keeper computes GCD(have.amount, want.amount) to establish integral
-//     units for partial fills: unit_have = have/gcd, unit_want = want/gcd.
-//   - RemainingUnits starts at gcd and decreases as fills occur.
+// Behavior:
+// - Validates maker address, have/want coins (different denoms, positive
+// amounts).
+// - For ESCROW mode: escrows base have from maker to module.
+// - For LIQUID mode: locks PFAND from maker to module (if configured).
+// - Computes GCD of have/want amounts to establish unit_have/unit_want ratios.
+// - Creates offer with remaining_units = GCD, status = open.
+// - Persists offer and indexes it for queries.
+//
+// Validation:
+// - Maker address must be valid.
+// - Have/want denoms must be valid and different.
+// - Have/want amounts must be positive.
+// - Maker must hold sufficient have amount (for escrow check).
+// - For LIQUID mode: maker must hold sufficient PFAND if configured.
+//
+// Emits:
+// - EventOfferCreated with offer_id
+// - EventPfandLocked with amount, offer_id (if PFAND locked)
+//
+// Returns:
+// - offer_id of the newly created offer.
 type MsgMakeOffer struct {
 	Maker string     `protobuf:"bytes,1,opt,name=maker,proto3" json:"maker,omitempty"`
 	Have  types.Coin `protobuf:"bytes,2,opt,name=have,proto3" json:"have"`
@@ -1475,9 +1429,9 @@ func (m *MsgMakeOfferResponse) GetOfferId() uint64 {
 // - Module must have sufficient backing for any uncovered solid deficits.
 //
 // Emits:
-// - EventOfferTaken for each take (offer_id, trade_id, units_taken).
-// - EventTradeRecorded for the batch (trade_id, trader, num_operations).
-// - EventPfandReleased for each closed offer (amount, offer_id, trade_id).
+// - EventOfferTaken for each take (offer_id, trade_id, units_taken)
+// - EventTradeRecorded for the batch (trade_id, trader, num_operations)
+// - EventPfandReleased for each closed offer (amount, offer_id, trade_id)
 //
 // Returns:
 // - aggregated sent/received totals across all executed takes.
@@ -1666,8 +1620,8 @@ func (m *MsgTakeOfferResponse) GetReceived() github_com_cosmos_cosmos_sdk_types.
 //     must be insufficient.
 //
 // Emits:
-// - EventOfferCancelled with offer_id.
-// - EventPfandReleased with amount, offer_id, trade_id=0 if PFAND was locked.
+// - EventOfferCancelled with offer_id
+// - EventPfandReleased with amount, offer_id, trade_id=0 if PFAND was locked
 //
 // Returns:
 // - MsgCancelOfferResponse (empty).
@@ -1769,7 +1723,7 @@ var xxx_messageInfo_MsgCancelOfferResponse proto.InternalMessageInfo
 // set from module params. The NFT is sent to the seller and the auction record
 // with reverse indexes is persisted.
 //
-// Emits: EventAuctionCreated on success.
+// Emits: EventAuctionCreated on success
 type MsgOpenAuction struct {
 	// Account opening the auction (receives the minted NFT).
 	Seller string `protobuf:"bytes,1,opt,name=seller,proto3" json:"seller,omitempty"`
@@ -1893,7 +1847,7 @@ func (m *MsgOpenAuctionResponse) GetAuctionId() uint64 {
 // - No current bidder may exist.
 // - Module escrow must contain at least the sell amount.
 //
-// Emits: EventAuctionRedeemed (trade_id = 0 when seller redeems without trade).
+// Emits: EventAuctionRedeemed (trade_id = 0 when seller redeems without trade)
 type MsgRedeemAuction struct {
 	// Account redeeming; must be the current NFT owner.
 	Caller string `protobuf:"bytes,1,opt,name=caller,proto3" json:"caller,omitempty"`
@@ -2279,7 +2233,7 @@ func (m *MsgOpenPositionResponse) GetHeld() types.Coin {
 //     repayment, returns remaining collateral and any profit to the user,
 //     updates pool accounting, and deletes the position.
 //
-// Emits: EventLeveragePositionClosed on success.
+// Emits: EventLeveragePositionClosed on success
 type MsgClosePosition struct {
 	// Account closing the position; must be the position owner.
 	User string `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
@@ -2576,8 +2530,8 @@ func (m *MsgAddCollateralResponse) GetNewCollateral() types.Coin {
 //     to produce borrowed output.
 //
 // Emits:
-// - EventLeveragePositionCovered (always; closed = true when fully repaid).
-// - EventLeveragePositionClosed (auto-close only).
+// - EventLeveragePositionCovered (always; closed = true when fully repaid)
+// - EventLeveragePositionClosed (auto-close only)
 //
 // Returns:
 // - Auto-close: interest_paid, principal_paid = full borrowed, new_borrowed =
@@ -3276,17 +3230,118 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
 	// *
-	// CreatePool creates a two-asset pool; moves initial reserves, mints initial
-	// shares, and asserts invariants.
+	// CreatePool creates a two-asset pool with per-denom fee/interest/leverage
+	// parameters and optional directional bound_percent limits.
+	//
+	// Behavior:
+	// - Input normalization: canonicalizes `coins` (exactly two positive coins)
+	// to the pool's denom order.
+	//   - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two
+	//     DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
+	//     interest_rate >= 0 per denom.
+	//   - Leverage configuration (required): `min_collateral_ratio` and
+	//     `max_leverage_ratio` must have exactly two entries (> 1) matching pool
+	//     denoms; `liquidation_threshold` must have exactly two entries (> 1);
+	//     `max_borrow_percent` must have exactly two entries with amounts in [0,1).
+	//   - Bound percent (optional): when omitted defaults to 1 (unbounded) for both
+	//     denoms. When provided, must contain exactly two DecCoins matching pool
+	//     denoms with amounts in (0,1]; 1 disables the bound for that denom.
+	//   - Funds and shares: sends initial reserves from `creator` → module;
+	//
+	// allocates a new pool_id; persists the pool; computes initial shares as
+	//
+	//	floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends
+	//	them to the creator.
+	//
+	// - Invariants: asserts AMM and module invariants before returning.
+	//
+	// Validation:
+	//   - coins must contain exactly two positive coins with valid denoms.
+	//   - fee_rate amounts must satisfy 0 <= x < 1 for both denoms when provided.
+	//   - interest_rate amounts must be >= 0 for both denoms when provided.
+	//   - min_collateral_ratio must have exactly two entries (> 1) matching pool
+	//     denoms in canonical order.
+	//   - max_leverage_ratio must have exactly two entries (> 1) matching pool
+	//
+	// denoms in canonical order.
+	//   - liquidation_threshold must have exactly two entries (> 1) matching pool
+	//     denoms in canonical order.
+	//   - max_borrow_percent must have exactly two entries with amounts in [0,1)
+	//     matching pool denoms in canonical order.
+	//   - bound_percent when provided must contain at most two entries with amounts
+	//     in (0,1] matching pool denoms.
+	//
+	// Emits:
+	// - EventPoolCreated(pool_id)
+	// - EventPoolUpdate(pool_id)
+	//
+	// Returns:
+	// - pool_id of the newly created pool (see response).
 	CreatePool(ctx context.Context, in *MsgCreatePool, opts ...grpc.CallOption) (*MsgCreatePoolResponse, error)
 	// *
 	// UpdatePoolConfig updates pool fees, leverage/threshold params, interest,
 	// optional max_borrow_percent, and bound_percent; majority-owner only.
+	//
+	// Behavior:
+	//   - Loads pool; validates signer and majority-ownership.
+	//   - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1.
+	//   - Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`
+	//     with exactly two entries matching pool denoms; each > 1.
+	//   - Liquidation threshold: required with exactly two entries; each > 1.
+	//   - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.
+	//   - Max borrow percent: optional; if provided exactly two entries; 0 <= x
+	//
+	// < 1.
+	//   - Bound percent: optional; when provided must contain exactly two DecCoins
+	//     matching pool denoms with amounts in (0,1]; 1 disables the bound. Omit to
+	//     leave existing bounds unchanged.
+	//   - Persists pool with `updated` timestamp; emits EventPoolUpdate; asserts
+	//
+	// AMM and module invariants.
+	//
+	// Validation:
+	//   - Pool must exist.
+	//   - Signer must be valid address and hold majority of pool shares.
+	//   - Fee rates when provided must satisfy 0 <= x < 1 for both denoms.
+	//   - Leverage config (min_collateral_ratio, max_leverage_ratio) must have
+	//     exactly two entries (> 1) matching pool denoms in canonical order.
+	//   - Liquidation threshold must have exactly two entries (> 1) matching pool
+	//     denoms in canonical order.
+	//   - Interest rates when provided must be >= 0 for both denoms.
+	//   - Max borrow percent when provided must have exactly two entries with
+	//
+	// amounts in [0,1) matching pool denoms in canonical order.
+	//   - Bound percent when provided must contain at most two entries with amounts
+	//     in (0,1] matching pool denoms.
+	//
+	// Emits:
+	// - EventPoolUpdate(pool_id)
+	//
+	// Returns:
+	// - Empty response.
 	UpdatePoolConfig(ctx context.Context, in *MsgUpdatePoolConfig, opts ...grpc.CallOption) (*MsgUpdatePoolConfigResponse, error)
 	// *
 	// AddLiquidity (owner-only) escrows provided amounts, refunds any unused
-	// amounts in band mode, mints shares, enforces the price band, and asserts
-	// AMM invariants.
+	// amounts, mints shares, and asserts AMM invariants.
+	//
+	// Behavior:
+	//   - Loads pool; validates signer majority ownership.
+	//   - Escrows full provided amounts first, then refunds unused surplus.
+	//   - Computes shares as floor(min(add1/R1, add2/R2) × totalShares).
+	//   - Updates pool reserves with used amounts.
+	//   - Mints computed shares via nameservice and transfers to signer.
+	//   - Persists pool with updated reserves/timestamp; emits events; asserts AMM
+	//     and module invariants.
+	//
+	// Validation:
+	//   - Pool must exist and have exactly two positive reserves.
+	//   - Signer must be valid address and hold majority of pool shares.
+	//   - Amounts must contain exactly two positive coins matching pool denoms in
+	//     canonical order.
+	//
+	// Emits:
+	// - EventPoolUpdate (after persisting pool state)
+	// - EventPoolLiquidityAdded (pool_id, shares_minted)
 	AddLiquidity(ctx context.Context, in *MsgAddLiquidity, opts ...grpc.CallOption) (*MsgAddLiquidityResponse, error)
 	// *
 	// RemoveLiquidity burns the caller's shares and returns the underlying
@@ -3528,17 +3583,118 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	// *
-	// CreatePool creates a two-asset pool; moves initial reserves, mints initial
-	// shares, and asserts invariants.
+	// CreatePool creates a two-asset pool with per-denom fee/interest/leverage
+	// parameters and optional directional bound_percent limits.
+	//
+	// Behavior:
+	// - Input normalization: canonicalizes `coins` (exactly two positive coins)
+	// to the pool's denom order.
+	//   - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two
+	//     DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
+	//     interest_rate >= 0 per denom.
+	//   - Leverage configuration (required): `min_collateral_ratio` and
+	//     `max_leverage_ratio` must have exactly two entries (> 1) matching pool
+	//     denoms; `liquidation_threshold` must have exactly two entries (> 1);
+	//     `max_borrow_percent` must have exactly two entries with amounts in [0,1).
+	//   - Bound percent (optional): when omitted defaults to 1 (unbounded) for both
+	//     denoms. When provided, must contain exactly two DecCoins matching pool
+	//     denoms with amounts in (0,1]; 1 disables the bound for that denom.
+	//   - Funds and shares: sends initial reserves from `creator` → module;
+	//
+	// allocates a new pool_id; persists the pool; computes initial shares as
+	//
+	//	floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends
+	//	them to the creator.
+	//
+	// - Invariants: asserts AMM and module invariants before returning.
+	//
+	// Validation:
+	//   - coins must contain exactly two positive coins with valid denoms.
+	//   - fee_rate amounts must satisfy 0 <= x < 1 for both denoms when provided.
+	//   - interest_rate amounts must be >= 0 for both denoms when provided.
+	//   - min_collateral_ratio must have exactly two entries (> 1) matching pool
+	//     denoms in canonical order.
+	//   - max_leverage_ratio must have exactly two entries (> 1) matching pool
+	//
+	// denoms in canonical order.
+	//   - liquidation_threshold must have exactly two entries (> 1) matching pool
+	//     denoms in canonical order.
+	//   - max_borrow_percent must have exactly two entries with amounts in [0,1)
+	//     matching pool denoms in canonical order.
+	//   - bound_percent when provided must contain at most two entries with amounts
+	//     in (0,1] matching pool denoms.
+	//
+	// Emits:
+	// - EventPoolCreated(pool_id)
+	// - EventPoolUpdate(pool_id)
+	//
+	// Returns:
+	// - pool_id of the newly created pool (see response).
 	CreatePool(context.Context, *MsgCreatePool) (*MsgCreatePoolResponse, error)
 	// *
 	// UpdatePoolConfig updates pool fees, leverage/threshold params, interest,
 	// optional max_borrow_percent, and bound_percent; majority-owner only.
+	//
+	// Behavior:
+	//   - Loads pool; validates signer and majority-ownership.
+	//   - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1.
+	//   - Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`
+	//     with exactly two entries matching pool denoms; each > 1.
+	//   - Liquidation threshold: required with exactly two entries; each > 1.
+	//   - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.
+	//   - Max borrow percent: optional; if provided exactly two entries; 0 <= x
+	//
+	// < 1.
+	//   - Bound percent: optional; when provided must contain exactly two DecCoins
+	//     matching pool denoms with amounts in (0,1]; 1 disables the bound. Omit to
+	//     leave existing bounds unchanged.
+	//   - Persists pool with `updated` timestamp; emits EventPoolUpdate; asserts
+	//
+	// AMM and module invariants.
+	//
+	// Validation:
+	//   - Pool must exist.
+	//   - Signer must be valid address and hold majority of pool shares.
+	//   - Fee rates when provided must satisfy 0 <= x < 1 for both denoms.
+	//   - Leverage config (min_collateral_ratio, max_leverage_ratio) must have
+	//     exactly two entries (> 1) matching pool denoms in canonical order.
+	//   - Liquidation threshold must have exactly two entries (> 1) matching pool
+	//     denoms in canonical order.
+	//   - Interest rates when provided must be >= 0 for both denoms.
+	//   - Max borrow percent when provided must have exactly two entries with
+	//
+	// amounts in [0,1) matching pool denoms in canonical order.
+	//   - Bound percent when provided must contain at most two entries with amounts
+	//     in (0,1] matching pool denoms.
+	//
+	// Emits:
+	// - EventPoolUpdate(pool_id)
+	//
+	// Returns:
+	// - Empty response.
 	UpdatePoolConfig(context.Context, *MsgUpdatePoolConfig) (*MsgUpdatePoolConfigResponse, error)
 	// *
 	// AddLiquidity (owner-only) escrows provided amounts, refunds any unused
-	// amounts in band mode, mints shares, enforces the price band, and asserts
-	// AMM invariants.
+	// amounts, mints shares, and asserts AMM invariants.
+	//
+	// Behavior:
+	//   - Loads pool; validates signer majority ownership.
+	//   - Escrows full provided amounts first, then refunds unused surplus.
+	//   - Computes shares as floor(min(add1/R1, add2/R2) × totalShares).
+	//   - Updates pool reserves with used amounts.
+	//   - Mints computed shares via nameservice and transfers to signer.
+	//   - Persists pool with updated reserves/timestamp; emits events; asserts AMM
+	//     and module invariants.
+	//
+	// Validation:
+	//   - Pool must exist and have exactly two positive reserves.
+	//   - Signer must be valid address and hold majority of pool shares.
+	//   - Amounts must contain exactly two positive coins matching pool denoms in
+	//     canonical order.
+	//
+	// Emits:
+	// - EventPoolUpdate (after persisting pool state)
+	// - EventPoolLiquidityAdded (pool_id, shares_minted)
 	AddLiquidity(context.Context, *MsgAddLiquidity) (*MsgAddLiquidityResponse, error)
 	// *
 	// RemoveLiquidity burns the caller's shares and returns the underlying

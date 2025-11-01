@@ -7303,12 +7303,13 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// QueryTaskByIDRequest is the request type for the Query/TaskByID RPC method
+// QueryTaskByIDRequest is the request type for the Query/TaskByID RPC method.
 type QueryTaskByIDRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Unique identifier of the task to retrieve; must exist in storage.
 	TaskId uint64 `protobuf:"varint,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
 }
 
@@ -7339,12 +7340,13 @@ func (x *QueryTaskByIDRequest) GetTaskId() uint64 {
 	return 0
 }
 
-// QueryTaskByIDResponse is the response type for the Query/TaskByID RPC method
+// QueryTaskByIDResponse is the response type for the Query/TaskByID RPC method.
 type QueryTaskByIDResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Complete task record including scheduling, messages, and execution status.
 	Task *Task `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
 }
 
@@ -7376,13 +7378,15 @@ func (x *QueryTaskByIDResponse) GetTask() *Task {
 }
 
 // QueryTasksByAddressRequest is the request type for the Query/TasksByAddress
-// RPC method
+// RPC method.
 type QueryTasksByAddressRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Creator    string               `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	// Creator address to filter tasks by; must be a valid bech32 address.
+	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	// Standard pagination parameters; results ordered by task ID ascending.
 	Pagination *v1beta1.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -7421,13 +7425,18 @@ func (x *QueryTasksByAddressRequest) GetPagination() *v1beta1.PageRequest {
 }
 
 // QueryTasksByStatusTimestampRequest is the request type for the
-// Query/TasksByStatusTimestamp RPC method
+// Query/TasksByStatusTimestamp RPC method.
 type QueryTasksByStatusTimestampRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Status     string               `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	// Task status filter; valid values are "scheduled", "pending", "done",
+	// "failed", "expired".
+	Status string `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	// Standard pagination parameters; results ordered by scheduled timestamp
+	// ascending (earliest first). Pagination is reversed internally for proper
+	// chronological ordering.
 	Pagination *v1beta1.PageRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -7466,13 +7475,18 @@ func (x *QueryTasksByStatusTimestampRequest) GetPagination() *v1beta1.PageReques
 }
 
 // QueryTasksByStatusGasPriceRequest is the request type for the
-// Query/TasksByStatusGasPrice RPC method
+// Query/TasksByStatusGasPrice RPC method.
 type QueryTasksByStatusGasPriceRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Status     string               `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	// Task status filter; valid values are "scheduled", "pending", "done",
+	// "failed", "expired".
+	Status string `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	// Standard pagination parameters; results ordered by gas price ascending
+	// (lowest first). Pagination is reversed internally for proper price
+	// ordering.
 	Pagination *v1beta1.PageRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -7511,15 +7525,16 @@ func (x *QueryTasksByStatusGasPriceRequest) GetPagination() *v1beta1.PageRequest
 }
 
 // QueryTasksResponse is the response type for task queries with multiple
-// results
+// results.
 type QueryTasksResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Explicit json tag without omitempty to ensure empty arrays are included in
-	// marshalled output so clients can reliably expect the "tasks" key.
-	Tasks      []*Task               `protobuf:"bytes,1,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	// List of tasks matching the query criteria, ordered according to the
+	// specific query endpoint (e.g., by ID, status, gas price).
+	Tasks []*Task `protobuf:"bytes,1,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	// Pagination metadata for result set navigation.
 	Pagination *v1beta1.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -7557,7 +7572,8 @@ func (x *QueryTasksResponse) GetPagination() *v1beta1.PageResponse {
 	return nil
 }
 
-// QueryParamsRequest is the request type for the Query/Params RPC method
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+// Empty request body as parameters are retrieved from module state.
 type QueryParamsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -7584,12 +7600,14 @@ func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
 	return file_dysonprotocol_crontask_v1_query_proto_rawDescGZIP(), []int{6}
 }
 
-// QueryParamsResponse is the response type for the Query/Params RPC method
+// QueryParamsResponse is the response type for the Query/Params RPC method.
 type QueryParamsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Current crontask module parameters including scheduling limits, gas
+	// constraints, and subscription configuration.
 	Params *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
 }
 
@@ -7620,7 +7638,8 @@ func (x *QueryParamsResponse) GetParams() *Params {
 	return nil
 }
 
-// QueryMetricsRequest is the request type for Metrics
+// QueryMetricsRequest is the request type for the Query/Metrics RPC method.
+// Empty request body as metrics are retrieved from the latest block state.
 type QueryMetricsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -7647,12 +7666,14 @@ func (*QueryMetricsRequest) Descriptor() ([]byte, []int) {
 	return file_dysonprotocol_crontask_v1_query_proto_rawDescGZIP(), []int{8}
 }
 
-// QueryMetricsResponse carries last-block metrics
+// QueryMetricsResponse carries last-block metrics.
 type QueryMetricsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Operational metrics from the most recent block including execution counts,
+	// gas usage, subscription activity, and performance indicators.
 	Metrics *Metrics `protobuf:"bytes,1,opt,name=metrics,proto3" json:"metrics,omitempty"`
 }
 
@@ -7683,11 +7704,13 @@ func (x *QueryMetricsResponse) GetMetrics() *Metrics {
 	return nil
 }
 
+// QueryAllTasksRequest is the request type for the Query/TasksAll RPC method.
 type QueryAllTasksRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Standard pagination parameters; results ordered by task ID ascending.
 	Pagination *v1beta1.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -7718,12 +7741,14 @@ func (x *QueryAllTasksRequest) GetPagination() *v1beta1.PageRequest {
 	return nil
 }
 
-// Subscription queries
+// QuerySubscriptionByIDRequest is the request type for the
+// Query/SubscriptionByID RPC method.
 type QuerySubscriptionByIDRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Unique identifier of the subscription to retrieve; must exist in storage.
 	SubscriptionId uint64 `protobuf:"varint,1,opt,name=subscription_id,json=subscriptionId,proto3" json:"subscription_id,omitempty"`
 }
 
@@ -7754,11 +7779,15 @@ func (x *QuerySubscriptionByIDRequest) GetSubscriptionId() uint64 {
 	return 0
 }
 
+// QuerySubscriptionByIDResponse is the response type for the
+// Query/SubscriptionByID RPC method.
 type QuerySubscriptionByIDResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Complete subscription record including filter criteria, script
+	// configuration, execution parameters, and current status.
 	Subscription *Subscription `protobuf:"bytes,1,opt,name=subscription,proto3" json:"subscription,omitempty"`
 }
 
@@ -7789,12 +7818,17 @@ func (x *QuerySubscriptionByIDResponse) GetSubscription() *Subscription {
 	return nil
 }
 
+// QuerySubscriptionsByCreatorRequest is the request type for the
+// Query/SubscriptionsByCreator RPC method.
 type QuerySubscriptionsByCreatorRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Creator    string               `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	// Creator address to filter subscriptions by; must be a valid bech32 address.
+	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	// Standard pagination parameters; results ordered by subscription ID
+	// ascending.
 	Pagination *v1beta1.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -7832,11 +7866,15 @@ func (x *QuerySubscriptionsByCreatorRequest) GetPagination() *v1beta1.PageReques
 	return nil
 }
 
+// QuerySubscriptionsAllRequest is the request type for the
+// Query/SubscriptionsAll RPC method.
 type QuerySubscriptionsAllRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Standard pagination parameters; results ordered by subscription ID
+	// ascending.
 	Pagination *v1beta1.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -7867,13 +7905,18 @@ func (x *QuerySubscriptionsAllRequest) GetPagination() *v1beta1.PageRequest {
 	return nil
 }
 
+// QuerySubscriptionsResponse is the response type for subscription queries with
+// multiple results.
 type QuerySubscriptionsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Subscriptions []*Subscription       `protobuf:"bytes,1,rep,name=subscriptions,proto3" json:"subscriptions,omitempty"`
-	Pagination    *v1beta1.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	// List of subscriptions matching the query criteria, ordered according to the
+	// specific query endpoint (e.g., by ID or creator).
+	Subscriptions []*Subscription `protobuf:"bytes,1,rep,name=subscriptions,proto3" json:"subscriptions,omitempty"`
+	// Pagination metadata for result set navigation.
+	Pagination *v1beta1.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
 func (x *QuerySubscriptionsResponse) Reset() {

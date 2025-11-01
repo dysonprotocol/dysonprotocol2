@@ -13,7 +13,7 @@ import (
 // UpdatePoolConfig updates a pool's dynamic configuration (fees, leverage/threshold
 // params, interest, optional max_borrow_percent, and bound_percent); majority-owner only.
 //
-// Semantics:
+// Behavior:
 //   - Loads pool; validates signer and majority-ownership.
 //   - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1.
 //   - Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`

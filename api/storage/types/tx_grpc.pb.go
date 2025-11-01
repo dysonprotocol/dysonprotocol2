@@ -30,12 +30,78 @@ const (
 //
 // Msg defines the storage Msg service.
 type MsgClient interface {
-	// Sets a storage entry. Only the owner can set.
+	// StorageSet sets a storage entry for the specified owner and index.
+	//
+	// Sets a storage entry for the specified owner and index with stake
+	// validation, size limits, and automatic metadata tracking including data
+	// hashing and timestamp recording.
+	//
+	// Behavior:
+	//   - Stores JSON data under a composite key of owner/index, creating or
+	//     updating the entry
+	//   - Validates data size against module's MaxStorageSize parameter
+	//   - Enforces stake requirements when StorageStakeMultiple > 0: requires owner
+	//     to have sufficient delegated stake
+	//   - Calculates data hash using SHA256 and stores metadata including block
+	//     height and timestamp
+	//   - Updates owner's storage metrics (total bytes) for stake validation and
+	//     monitoring
+	//
+	// Validation:
+	//   - Owner must be a valid bech32 address
+	//   - Index must be non-empty and contain only printable ASCII characters
+	//   - Data size must not exceed MaxStorageSize parameter
+	//   - When stake validation is enabled, owner's delegated stake must meet
+	//     minimum requirement
+	//
+	// Emits:
+	// - EventStorageUpdated(address, index) upon successful storage operation
+	//
+	// Returns:
+	// - Empty response body on success
 	StorageSet(ctx context.Context, in *MsgStorageSet, opts ...grpc.CallOption) (*MsgStorageSetResponse, error)
-	// Deletes storage entries. Only the owner can delete.
+	// StorageDelete removes specified storage entries owned by the requesting
+	// account.
+	//
+	// Behavior:
+	//   - Deletes multiple storage entries by index for the specified owner
+	//   - Verifies ownership of each entry before deletion to prevent unauthorized
+	//     removal
+	//   - Updates owner's storage metrics by subtracting deleted bytes from total
+	//   - Returns list of successfully deleted indexes for transparency
+	//
+	// Validation:
+	// - Owner must be a valid bech32 address
+	// - At least one index must be specified for deletion
+	// - Each specified index must exist and be owned by the requesting account
+	//
+	// Emits:
+	//   - EventStorageDelete(owner, deleted_indexes) with list of successfully
+	//     deleted indexes
+	//
+	// Returns:
+	// - List of indexes that were successfully deleted
 	StorageDelete(ctx context.Context, in *MsgStorageDelete, opts ...grpc.CallOption) (*MsgStorageDeleteResponse, error)
-	// UpdateParams defines a governance operation for updating the x/storage
-	// module parameters. The authority defaults to the x/gov module account.
+	// UpdateParams updates the x/storage module parameters via governance
+	// proposal.
+	//
+	// Behavior:
+	//   - Validates that the signer has authority to update module parameters
+	//     (typically governance module)
+	//   - Validates that all provided parameters are valid according to parameter
+	//     constraints
+	//   - Updates the module's parameter state with the new values
+	//
+	// Validation:
+	//   - Authority must match the module's configured authority address
+	//   - All parameter values must pass individual validation (MaxStorageSize,
+	//     StorageStakeMultiple)
+	//
+	// Emits:
+	// - No events emitted for parameter updates
+	//
+	// Returns:
+	// - Empty response body on success
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 }
 
@@ -83,12 +149,78 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 //
 // Msg defines the storage Msg service.
 type MsgServer interface {
-	// Sets a storage entry. Only the owner can set.
+	// StorageSet sets a storage entry for the specified owner and index.
+	//
+	// Sets a storage entry for the specified owner and index with stake
+	// validation, size limits, and automatic metadata tracking including data
+	// hashing and timestamp recording.
+	//
+	// Behavior:
+	//   - Stores JSON data under a composite key of owner/index, creating or
+	//     updating the entry
+	//   - Validates data size against module's MaxStorageSize parameter
+	//   - Enforces stake requirements when StorageStakeMultiple > 0: requires owner
+	//     to have sufficient delegated stake
+	//   - Calculates data hash using SHA256 and stores metadata including block
+	//     height and timestamp
+	//   - Updates owner's storage metrics (total bytes) for stake validation and
+	//     monitoring
+	//
+	// Validation:
+	//   - Owner must be a valid bech32 address
+	//   - Index must be non-empty and contain only printable ASCII characters
+	//   - Data size must not exceed MaxStorageSize parameter
+	//   - When stake validation is enabled, owner's delegated stake must meet
+	//     minimum requirement
+	//
+	// Emits:
+	// - EventStorageUpdated(address, index) upon successful storage operation
+	//
+	// Returns:
+	// - Empty response body on success
 	StorageSet(context.Context, *MsgStorageSet) (*MsgStorageSetResponse, error)
-	// Deletes storage entries. Only the owner can delete.
+	// StorageDelete removes specified storage entries owned by the requesting
+	// account.
+	//
+	// Behavior:
+	//   - Deletes multiple storage entries by index for the specified owner
+	//   - Verifies ownership of each entry before deletion to prevent unauthorized
+	//     removal
+	//   - Updates owner's storage metrics by subtracting deleted bytes from total
+	//   - Returns list of successfully deleted indexes for transparency
+	//
+	// Validation:
+	// - Owner must be a valid bech32 address
+	// - At least one index must be specified for deletion
+	// - Each specified index must exist and be owned by the requesting account
+	//
+	// Emits:
+	//   - EventStorageDelete(owner, deleted_indexes) with list of successfully
+	//     deleted indexes
+	//
+	// Returns:
+	// - List of indexes that were successfully deleted
 	StorageDelete(context.Context, *MsgStorageDelete) (*MsgStorageDeleteResponse, error)
-	// UpdateParams defines a governance operation for updating the x/storage
-	// module parameters. The authority defaults to the x/gov module account.
+	// UpdateParams updates the x/storage module parameters via governance
+	// proposal.
+	//
+	// Behavior:
+	//   - Validates that the signer has authority to update module parameters
+	//     (typically governance module)
+	//   - Validates that all provided parameters are valid according to parameter
+	//     constraints
+	//   - Updates the module's parameter state with the new values
+	//
+	// Validation:
+	//   - Authority must match the module's configured authority address
+	//   - All parameter values must pass individual validation (MaxStorageSize,
+	//     StorageStakeMultiple)
+	//
+	// Emits:
+	// - No events emitted for parameter updates
+	//
+	// Returns:
+	// - Empty response body on success
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }

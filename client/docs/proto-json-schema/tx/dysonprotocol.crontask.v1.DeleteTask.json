@@ -7,17 +7,17 @@
                 "properties": {
                     "creator": {
                         "type": "string",
-                        "description": "Address of the creator of the task"
+                        "description": "Account deleting the task; must be the task's creator."
                     },
                     "task_id": {
                         "type": "string",
-                        "description": "ID of the task to delete"
+                        "description": "Unique identifier of the task to delete."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Delete Task",
-                "description": "MsgDeleteTask defines the message for deleting a task"
+                "description": "MsgDeleteTask removes a scheduled task permanently. Behavior: - Permanently removes a task from storage before execution. - Only the creator of the task can delete it. - No refunds are provided for task fees or gas. Validation: - Task must exist with the provided ID. - Creator must match the task's creator field. Emits: - EventTaskDeleted(task_id, creator) on successful deletion. Returns: - Empty MsgDeleteTaskResponse."
             }
         }
     },
@@ -29,7 +29,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Delete Task Response",
-                "description": "MsgDeleteTaskResponse defines the response for deleting a task"
+                "description": "MsgDeleteTaskResponse contains the result of task deletion. Empty response indicates successful deletion."
             }
         }
     }

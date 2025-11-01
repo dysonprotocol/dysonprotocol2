@@ -7,18 +7,18 @@
                 "properties": {
                     "authority": {
                         "type": "string",
-                        "description": "authority is the address that controls the module (defaults to x/gov unless overwritten)."
+                        "description": "Authority is the address that controls the module (defaults to x/gov unless overwritten)."
                     },
                     "params": {
                         "$ref": "#/definitions/dysonprotocol.crontask.v1.Params",
                         "additionalProperties": false,
-                        "description": "params defines the x/crontask parameters to update. NOTE: All parameters must be supplied."
+                        "description": "Parameters defines the x/crontask parameters to update. NOTE: All parameters must be supplied."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Update Params",
-                "description": "--------------------------------------------------------------------------- MsgUpdateParams --------------------------------------------------------------------------- UpdateParams defines a governance operation for updating the x/crontask module parameters. The authority defaults to the x/gov module account."
+                "description": "MsgUpdateParams updates the parameters of the x/crontask module via governance proposal. Behavior: - Updates all module parameters in a single governance operation. - Authority is typically the x/gov module account. - Parameters control task scheduling limits, gas constraints, and subscription rules. Validation: - Authority must be valid (typically x/gov module account). - All parameter values must pass individual validation (Validate method). Emits: - No events are emitted for parameter updates. Returns: - Empty MsgUpdateParamsResponse."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {
@@ -79,7 +79,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Update Params Response",
-                "description": "MsgUpdateParamsResponse defines the response structure for executing a MsgUpdateParams message."
+                "description": "MsgUpdateParamsResponse contains the result of parameter update. Empty response indicates successful parameter update."
             }
         }
     }

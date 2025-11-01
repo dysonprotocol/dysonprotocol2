@@ -13,7 +13,8 @@
   "paths": {
     "/dysonprotocol/crontask/v1/metrics": {
       "get": {
-        "summary": "Metrics returns last-block crontask metrics",
+        "summary": "Metrics returns last-block crontask metrics.",
+        "description": "Returns operational metrics from the most recent block including task\nexecution counts, gas usage statistics, subscription activity, and system\nperformance indicators. Metrics are updated at the end of each block.",
         "operationId": "dysonprotocol.crontask.v1.QueryMetricsRequest",
         "responses": {
           "200": {
@@ -36,7 +37,8 @@
     },
     "/dysonprotocol/crontask/v1/params": {
       "get": {
-        "summary": "Params returns the module parameters",
+        "summary": "Params returns the module parameters.",
+        "description": "Returns the current crontask module configuration including scheduling\nlimits, gas constraints, subscription rules, and stake requirements.\nParameters control task creation, execution limits, and subscription\nbehavior.",
         "operationId": "dysonprotocol.crontask.v1.QueryParamsRequest",
         "responses": {
           "200": {
@@ -59,7 +61,8 @@
     },
     "/dysonprotocol/crontask/v1/subscriptions": {
       "get": {
-        "summary": "SubscriptionsAll returns all subscriptions",
+        "summary": "SubscriptionsAll returns all subscriptions.",
+        "description": "Returns paginated list of all subscriptions in the system, ordered by\nsubscription ID ascending. Uses collection pagination for comprehensive\nsubscription listing. Supports standard pagination for large result sets.",
         "operationId": "dysonprotocol.crontask.v1.QuerySubscriptionsAllRequest",
         "responses": {
           "200": {
@@ -117,7 +120,8 @@
     },
     "/dysonprotocol/crontask/v1/subscriptions/creator/{creator}": {
       "get": {
-        "summary": "SubscriptionsByCreator returns subscriptions for a creator",
+        "summary": "SubscriptionsByCreator returns subscriptions for a creator.",
+        "description": "Returns paginated list of subscriptions created by the specified address,\nordered by subscription ID. Uses collection filtering with indexed queries\nfor efficient creator-based lookups. Supports standard pagination.",
         "operationId": "dysonprotocol.crontask.v1.QuerySubscriptionsByCreatorRequest",
         "responses": {
           "200": {
@@ -136,6 +140,7 @@
         "parameters": [
           {
             "name": "creator",
+            "description": "Creator address to filter subscriptions by; must be a valid bech32 address.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -181,7 +186,8 @@
     },
     "/dysonprotocol/crontask/v1/subscriptions/{subscription_id}": {
       "get": {
-        "summary": "SubscriptionByID returns a subscription by id",
+        "summary": "SubscriptionByID returns a subscription by id.",
+        "description": "Returns the complete subscription record for the specified subscription ID,\nincluding filter criteria, script configuration, execution parameters, and\ncurrent status. Uses direct key lookup for optimal performance.",
         "operationId": "dysonprotocol.crontask.v1.QuerySubscriptionByIDRequest",
         "responses": {
           "200": {
@@ -200,6 +206,7 @@
         "parameters": [
           {
             "name": "subscription_id",
+            "description": "Unique identifier of the subscription to retrieve; must exist in storage.",
             "in": "path",
             "required": true,
             "type": "string",
@@ -213,7 +220,8 @@
     },
     "/dysonprotocol/crontask/v1/tasks": {
       "get": {
-        "summary": "TasksAll returns all tasks ordered by ID",
+        "summary": "TasksAll returns all tasks ordered by ID.",
+        "description": "Returns paginated list of all tasks in the system, ordered by task ID\nascending. Uses direct store iteration for comprehensive task listing.\nSupports standard pagination for large result sets.",
         "operationId": "dysonprotocol.crontask.v1.QueryTasksAllRequest",
         "responses": {
           "200": {
@@ -271,7 +279,8 @@
     },
     "/dysonprotocol/crontask/v1/tasks/creator/{creator}": {
       "get": {
-        "summary": "TasksByAddress returns all tasks created by a specific address",
+        "summary": "TasksByAddress returns all tasks created by a specific address.",
+        "description": "Returns paginated list of tasks created by the specified address, ordered\nby task ID. Uses indexed queries for efficient lookup. Supports standard\npagination with customizable page size and navigation.",
         "operationId": "dysonprotocol.crontask.v1.QueryTasksByAddressRequest",
         "responses": {
           "200": {
@@ -290,6 +299,7 @@
         "parameters": [
           {
             "name": "creator",
+            "description": "Creator address to filter tasks by; must be a valid bech32 address.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -335,7 +345,8 @@
     },
     "/dysonprotocol/crontask/v1/tasks/status/{status}": {
       "get": {
-        "summary": "TasksByStatusTimestamp returns tasks filtered by status and ordered by\ntimestamp",
+        "summary": "TasksByStatusTimestamp returns tasks filtered by status and ordered by\ntimestamp.",
+        "description": "Returns paginated list of tasks with the specified status, ordered by\nscheduled timestamp (earliest first). Uses indexed queries for efficient\nstatus filtering. Supports pagination with reverse ordering capability.",
         "operationId": "dysonprotocol.crontask.v1.QueryTasksByStatusTimestampRequest",
         "responses": {
           "200": {
@@ -354,6 +365,7 @@
         "parameters": [
           {
             "name": "status",
+            "description": "Task status filter; valid values are \"scheduled\", \"pending\", \"done\",\n\"failed\", \"expired\".",
             "in": "path",
             "required": true,
             "type": "string"
@@ -399,7 +411,8 @@
     },
     "/dysonprotocol/crontask/v1/tasks/status/{status}/by_gas": {
       "get": {
-        "summary": "TasksByStatusGasPrice returns tasks filtered by status and ordered by gas\nprice",
+        "summary": "TasksByStatusGasPrice returns tasks filtered by status and ordered by gas\nprice.",
+        "description": "Returns paginated list of tasks with the specified status, ordered by gas\nprice (lowest first). Uses indexed queries for efficient status filtering\nand gas price ordering. Supports pagination with reverse ordering\ncapability.",
         "operationId": "dysonprotocol.crontask.v1.QueryTasksByStatusGasPriceRequest",
         "responses": {
           "200": {
@@ -418,6 +431,7 @@
         "parameters": [
           {
             "name": "status",
+            "description": "Task status filter; valid values are \"scheduled\", \"pending\", \"done\",\n\"failed\", \"expired\".",
             "in": "path",
             "required": true,
             "type": "string"
@@ -463,7 +477,8 @@
     },
     "/dysonprotocol/crontask/v1/tasks/{task_id}": {
       "get": {
-        "summary": "TaskByID returns a task by its ID",
+        "summary": "TaskByID returns a task by its ID.",
+        "description": "Returns the complete task record for the specified task ID, including all\nscheduling information, messages, and execution status. Uses direct key\nlookup for optimal performance.",
         "operationId": "dysonprotocol.crontask.v1.QueryTaskByIDRequest",
         "responses": {
           "200": {
@@ -482,6 +497,7 @@
         "parameters": [
           {
             "name": "task_id",
+            "description": "Unique identifier of the task to retrieve; must exist in storage.",
             "in": "path",
             "required": true,
             "type": "string",
@@ -641,27 +657,31 @@
       "type": "object",
       "properties": {
         "metrics": {
-          "$ref": "#/definitions/dysonprotocol.crontask.v1.Metrics"
+          "$ref": "#/definitions/dysonprotocol.crontask.v1.Metrics",
+          "description": "Operational metrics from the most recent block including execution counts,\ngas usage, subscription activity, and performance indicators."
         }
       },
-      "title": "QueryMetricsResponse carries last-block metrics"
+      "description": "QueryMetricsResponse carries last-block metrics."
     },
     "dysonprotocol.crontask.v1.QueryParamsResponse": {
       "type": "object",
       "properties": {
         "params": {
-          "$ref": "#/definitions/dysonprotocol.crontask.v1.Params"
+          "$ref": "#/definitions/dysonprotocol.crontask.v1.Params",
+          "description": "Current crontask module parameters including scheduling limits, gas\nconstraints, and subscription configuration."
         }
       },
-      "title": "QueryParamsResponse is the response type for the Query/Params RPC method"
+      "description": "QueryParamsResponse is the response type for the Query/Params RPC method."
     },
     "dysonprotocol.crontask.v1.QuerySubscriptionByIDResponse": {
       "type": "object",
       "properties": {
         "subscription": {
-          "$ref": "#/definitions/dysonprotocol.crontask.v1.Subscription"
+          "$ref": "#/definitions/dysonprotocol.crontask.v1.Subscription",
+          "description": "Complete subscription record including filter criteria, script\nconfiguration, execution parameters, and current status."
         }
-      }
+      },
+      "description": "QuerySubscriptionByIDResponse is the response type for the\nQuery/SubscriptionByID RPC method."
     },
     "dysonprotocol.crontask.v1.QuerySubscriptionsResponse": {
       "type": "object",
@@ -670,21 +690,25 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.crontask.v1.Subscription"
-          }
+          },
+          "description": "List of subscriptions matching the query criteria, ordered according to the\nspecific query endpoint (e.g., by ID or creator)."
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "description": "Pagination metadata for result set navigation."
         }
-      }
+      },
+      "description": "QuerySubscriptionsResponse is the response type for subscription queries with\nmultiple results."
     },
     "dysonprotocol.crontask.v1.QueryTaskByIDResponse": {
       "type": "object",
       "properties": {
         "task": {
-          "$ref": "#/definitions/dysonprotocol.crontask.v1.Task"
+          "$ref": "#/definitions/dysonprotocol.crontask.v1.Task",
+          "description": "Complete task record including scheduling, messages, and execution status."
         }
       },
-      "title": "QueryTaskByIDResponse is the response type for the Query/TaskByID RPC method"
+      "description": "QueryTaskByIDResponse is the response type for the Query/TaskByID RPC method."
     },
     "dysonprotocol.crontask.v1.QueryTasksResponse": {
       "type": "object",
@@ -694,13 +718,14 @@
           "items": {
             "$ref": "#/definitions/dysonprotocol.crontask.v1.Task"
           },
-          "description": "Explicit json tag without omitempty to ensure empty arrays are included in\nmarshalled output so clients can reliably expect the \"tasks\" key."
+          "description": "List of tasks matching the query criteria, ordered according to the\nspecific query endpoint (e.g., by ID, status, gas price)."
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "description": "Pagination metadata for result set navigation."
         }
       },
-      "title": "QueryTasksResponse is the response type for task queries with multiple\nresults"
+      "description": "QueryTasksResponse is the response type for task queries with multiple\nresults."
     },
     "dysonprotocol.crontask.v1.Subscription": {
       "type": "object",

@@ -6,13 +6,14 @@
             "dysonprotocol.crontask.v1.QuerySubscriptionByIDRequest": {
                 "properties": {
                     "subscription_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier of the subscription to retrieve; must exist in storage."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Subscription By ID Request",
-                "description": "Subscription queries"
+                "title": "Subscription queries",
+                "description": "Subscription queries  QuerySubscriptionByIDRequest is the request type for the Query/SubscriptionByID RPC method."
             }
         }
     },
@@ -24,12 +25,14 @@
                 "properties": {
                     "subscription": {
                         "$ref": "#/definitions/dysonprotocol.crontask.v1.Subscription",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Complete subscription record including filter criteria, script configuration, execution parameters, and current status."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Subscription By ID Response"
+                "title": "Query Subscription By ID Response",
+                "description": "QuerySubscriptionByIDResponse is the response type for the Query/SubscriptionByID RPC method."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {

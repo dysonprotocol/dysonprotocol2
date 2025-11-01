@@ -6,35 +6,43 @@
             "dysonprotocol.crontask.v1.MsgCreateSubscription": {
                 "properties": {
                     "creator": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Account creating the subscription; must have sufficient bonded stake if MinStakePerSubscription is set."
                     },
                     "filter": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Event filter string used to match blockchain events that trigger the subscription."
                     },
                     "script_address": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Address of the script containing the function to execute on trigger."
                     },
                     "function": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Name of the function to call in the script when triggered."
                     },
                     "args": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "JSON array of positional arguments to pass to the script function."
                     },
                     "kwargs": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "JSON object of keyword arguments to pass to the script function."
                     },
                     "task_gas_limit": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Maximum gas limit for each script execution triggered by this subscription."
                     },
                     "task_gas_fee": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Gas fee charged upfront and deducted for each trigger execution."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Create Subscription",
-                "description": "CreateSubscription"
+                "description": "MsgCreateSubscription creates a new event-triggered subscription with upfront fee payment. Behavior: - Creates a subscription that triggers script execution when events match the filter. - Enforces minimum stake requirements across all creator's subscriptions. - Deducts anti-spam fee to fee_collector module account. - Allocates unique subscription ID and sets expiry to current time + max_subscription_duration. - Minifies JSON args/kwargs for storage efficiency. - Initializes subscription with \"enabled\" status and zero trigger count. Validation: - Creator address must be valid. - Script address must be valid and non-empty. - Function name must be non-empty. - Task gas limit must be positive. - Task gas fee must be positive. - Filter, script_address, function, args, kwargs must not exceed length limits. - Creator must have sufficient bonded stake if MinStakePerSubscription is configured. - Args/kwargs must be valid JSON (array for args, object for kwargs). Emits: - EventSubscriptionCreated(subscription_id, creator) on successful creation. Returns: - MsgCreateSubscriptionResponse with allocated subscription ID."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {
@@ -59,12 +67,14 @@
             "dysonprotocol.crontask.v1.MsgCreateSubscriptionResponse": {
                 "properties": {
                     "subscription_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier assigned to the newly created subscription."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Create Subscription Response"
+                "title": "Msg Create Subscription Response",
+                "description": "MsgCreateSubscriptionResponse contains the result of subscription creation. Empty response indicates successful subscription creation with allocated subscription ID."
             }
         }
     }

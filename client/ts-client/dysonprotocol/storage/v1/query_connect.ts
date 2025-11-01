@@ -13,7 +13,26 @@ export const Query = {
   typeName: "dysonprotocol.storage.v1.Query",
   methods: {
     /**
-     * Gets the stored data for the given owner and index.
+     *
+     * StorageGet retrieves a single storage entry by owner and index with
+     * optional GJSON extraction.
+     *
+     * Supports nameservice name resolution for owner field. Extract parameter
+     * enables field-level data retrieval.
+     *
+     * Behavior:
+     * - Resolves owner identifier (supports both nameservice names and bech32
+     *   addresses)
+     * - Retrieves storage entry using composite key of resolved_owner/index
+     * - Applies optional GJSON path extraction to filter returned data
+     * - Normalizes index in response by removing owner prefix for cleaner API
+     *
+     * Validation:
+     * - Owner must be resolvable to a valid account address
+     * - Extract path length limited to 100 characters if provided
+     *
+     * Returns:
+     * - Storage entry with extracted data if extract path was provided
      *
      * @generated from rpc dysonprotocol.storage.v1.Query.StorageGet
      */
@@ -24,9 +43,32 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * Lists all storage entries for the owner under a given index prefix. Use
-     * filter and extract to filter and extract the data and iterate over the data
-     * efficiently.
+     *
+     * StorageList lists storage entries for an owner under a given index prefix
+     * with optional filtering and extraction.
+     *
+     * Supports GJSON filtering for complex queries, field extraction, and full
+     * pagination with offset/key navigation. Results ordered by composite key for
+     * consistent pagination.
+     *
+     * Behavior:
+     * - Resolves owner identifier (supports both nameservice names and bech32
+     *   addresses)
+     * - Lists entries with composite keys starting with
+     * resolved_owner/index_prefix
+     * - Applies optional GJSON filter to include only matching entries
+     * - Applies optional GJSON extract to transform returned data
+     * - Supports full pagination with offset/key-based navigation and reverse
+     *   iteration
+     * - Normalizes index fields in response by removing owner prefix
+     *
+     * Validation:
+     * - Owner must be resolvable to a valid account address
+     * - Filter and extract path lengths limited to 100 characters if provided
+     * - Pagination parameters must be valid (no both offset and key specified)
+     *
+     * Returns:
+     * - List of storage entries matching owner, index_prefix, and filter criteria
      *
      * @generated from rpc dysonprotocol.storage.v1.Query.StorageList
      */
@@ -37,7 +79,15 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * Params queries the storage module parameters
+     *
+     * Params returns the current x/storage module parameters.
+     *
+     * Behavior:
+     * - Retrieves current parameter values from module state
+     * - Returns default parameters if none have been set (fresh chain state)
+     *
+     * Returns:
+     * - Current MaxStorageSize and StorageStakeMultiple parameter values
      *
      * @generated from rpc dysonprotocol.storage.v1.Query.Params
      */
@@ -48,7 +98,27 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * Metrics queries the storage metrics for a given owner address
+     *
+     * Metrics returns storage usage statistics and stake requirements for an
+     * owner address.
+     *
+     * Includes total bytes stored, minimum stake required, and current stake
+     * amount for compliance checking.
+     *
+     * Behavior:
+     * - Resolves owner identifier (supports both nameservice names and bech32
+     *   addresses)
+     * - Retrieves total bytes stored by the owner across all entries
+     * - Calculates minimum stake amount required based on StorageStakeMultiple
+     *   parameter
+     * - Returns current stake amount from staking module for comparison
+     * - Returns zero metrics if owner has no storage entries
+     *
+     * Validation:
+     * - Owner must be resolvable to a valid account address
+     *
+     * Returns:
+     * - Total bytes, minimum stake requirement, and current stake amount
      *
      * @generated from rpc dysonprotocol.storage.v1.Query.Metrics
      */

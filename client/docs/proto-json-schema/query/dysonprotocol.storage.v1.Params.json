@@ -7,7 +7,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Params Request",
-                "description": "QueryParamsRequest is request type for the Query/Params RPC method."
+                "description": "Empty request for retrieving current storage module parameters."
             }
         }
     },
@@ -20,13 +20,13 @@
                     "params": {
                         "$ref": "#/definitions/dysonprotocol.storage.v1.Params",
                         "additionalProperties": false,
-                        "description": "params holds all the parameters of this module."
+                        "description": "Current module parameters including MaxStorageSize and StorageStakeMultiple."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Params Response",
-                "description": "QueryParamsResponse is response type for the Query/Params RPC method."
+                "description": "Response containing the current storage module parameters."
             },
             "dysonprotocol.storage.v1.Params": {
                 "properties": {

@@ -11,7 +11,7 @@ import (
 
 // Params queries the current whaleswap module parameters.
 //
-// Semantics:
+// Behavior:
 //   - Retrieves all module parameters from the parameter store.
 //   - Returns configuration values including fees, limits, and module settings.
 //
@@ -29,7 +29,7 @@ func (k Keeper) Params(ctx context.Context, _ *whaleswapv1.QueryParamsRequest) (
 
 // Pool queries a single AMM pool by ID.
 //
-// Semantics:
+// Behavior:
 //   - Retrieves complete pool data including reserves, shares denom, and configuration.
 //   - Returns the full Pool structure with all metadata and current state.
 //
@@ -54,7 +54,7 @@ func (k Keeper) Pool(ctx context.Context, req *whaleswapv1.QueryPoolRequest) (*w
 
 // Pools lists all AMM pools with pagination.
 //
-// Semantics:
+// Behavior:
 //   - Returns all pools in the system with no filtering.
 //   - Uses direct pagination over the primary PoolsMap.
 //   - Results ordered by pool ID ascending.

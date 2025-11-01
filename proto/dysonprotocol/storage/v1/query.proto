@@ -14,58 +14,126 @@ import "dysonprotocol/storage/v1/params.proto";
 option go_package = "dysonprotocol.com/x/storage/types";
 
 service Query {
-/*
- * StorageGet retrieves a single storage entry by owner and index with optional GJSON extraction.
- * Supports nameservice name resolution for owner field. Extract parameter enables field-level data retrieval.
- */
-rpc StorageGet(QueryStorageGetRequest) returns (QueryStorageGetResponse) {
-  option (google.api.http) = {
-    get : "/dysonprotocol/storage/v1/storage_get"
-  };
+  /*
+   * StorageGet retrieves a single storage entry by owner and index with
+   * optional GJSON extraction.
+   *
+   * Supports nameservice name resolution for owner field. Extract parameter
+   * enables field-level data retrieval.
+   *
+   * Behavior:
+   * - Resolves owner identifier (supports both nameservice names and bech32
+   *   addresses)
+   * - Retrieves storage entry using composite key of resolved_owner/index
+   * - Applies optional GJSON path extraction to filter returned data
+   * - Normalizes index in response by removing owner prefix for cleaner API
+   *
+   * Validation:
+   * - Owner must be resolvable to a valid account address
+   * - Extract path length limited to 100 characters if provided
+   *
+   * Returns:
+   * - Storage entry with extracted data if extract path was provided
+   */
+  rpc StorageGet(QueryStorageGetRequest) returns (QueryStorageGetResponse) {
+    option (google.api.http) = {
+      get : "/dysonprotocol/storage/v1/storage_get"
+    };
+  }
+
+  /*
+   * StorageList lists storage entries for an owner under a given index prefix
+   * with optional filtering and extraction.
+   *
+   * Supports GJSON filtering for complex queries, field extraction, and full
+   * pagination with offset/key navigation. Results ordered by composite key for
+   * consistent pagination.
+   *
+   * Behavior:
+   * - Resolves owner identifier (supports both nameservice names and bech32
+   *   addresses)
+   * - Lists entries with composite keys starting with
+   * resolved_owner/index_prefix
+   * - Applies optional GJSON filter to include only matching entries
+   * - Applies optional GJSON extract to transform returned data
+   * - Supports full pagination with offset/key-based navigation and reverse
+   *   iteration
+   * - Normalizes index fields in response by removing owner prefix
+   *
+   * Validation:
+   * - Owner must be resolvable to a valid account address
+   * - Filter and extract path lengths limited to 100 characters if provided
+   * - Pagination parameters must be valid (no both offset and key specified)
+   *
+   * Returns:
+   * - List of storage entries matching owner, index_prefix, and filter criteria
+   */
+  rpc StorageList(QueryStorageListRequest) returns (QueryStorageListResponse) {
+    option (google.api.http) = {
+      get : "/dysonprotocol/storage/v1/storage_list"
+    };
+  }
+
+  /*
+   * Params returns the current x/storage module parameters.
+   *
+   * Behavior:
+   * - Retrieves current parameter values from module state
+   * - Returns default parameters if none have been set (fresh chain state)
+   *
+   * Returns:
+   * - Current MaxStorageSize and StorageStakeMultiple parameter values
+   */
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/dysonprotocol/storage/v1/params";
+  }
+
+  /*
+   * Metrics returns storage usage statistics and stake requirements for an
+   * owner address.
+   *
+   * Includes total bytes stored, minimum stake required, and current stake
+   * amount for compliance checking.
+   *
+   * Behavior:
+   * - Resolves owner identifier (supports both nameservice names and bech32
+   *   addresses)
+   * - Retrieves total bytes stored by the owner across all entries
+   * - Calculates minimum stake amount required based on StorageStakeMultiple
+   *   parameter
+   * - Returns current stake amount from staking module for comparison
+   * - Returns zero metrics if owner has no storage entries
+   *
+   * Validation:
+   * - Owner must be resolvable to a valid account address
+   *
+   * Returns:
+   * - Total bytes, minimum stake requirement, and current stake amount
+   */
+  rpc Metrics(QueryMetricsRequest) returns (QueryMetricsResponse) {
+    option (google.api.http) = {
+      get : "/dysonprotocol/storage/v1/metrics"
+    };
+  }
 }
 
 /*
- * StorageList lists storage entries for an owner under a given index prefix with optional filtering and extraction.
- * Supports GJSON filtering for complex queries, field extraction, and full pagination with offset/key navigation.
- * Results ordered by composite key for consistent pagination.
- */
-rpc StorageList(QueryStorageListRequest) returns (QueryStorageListResponse) {
-  option (google.api.http) = {
-    get : "/dysonprotocol/storage/v1/storage_list"
-  };
-}
-
-/*
- * Params returns the current x/storage module parameters including MaxStorageSize and StorageStakeMultiple.
- */
-rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-  option (google.api.http).get = "/dysonprotocol/storage/v1/params";
-}
-
-/*
- * Metrics returns storage usage statistics and stake requirements for an owner address.
- * Includes total bytes stored, minimum stake required, and current stake amount for compliance checking.
- */
-rpc Metrics(QueryMetricsRequest) returns (QueryMetricsResponse) {
-  option (google.api.http) = {
-    get : "/dysonprotocol/storage/v1/metrics"
-  };
-}
-}
-
-/*
- * QueryStorageGetRequest retrieves a single storage entry with optional field extraction.
+ * QueryStorageGetRequest retrieves a single storage entry with optional field
+ * extraction.
  *
  * Owner resolution supports both nameservice names and bech32 addresses.
- * Extract parameter enables GJSON path-based field retrieval from stored JSON data.
+ * Extract parameter enables GJSON path-based field retrieval from stored JSON
+ * data.
  */
 message QueryStorageGetRequest {
-  // Owner identifier to look up by; accepts nameservice names (e.g. "alice.dys") or bech32 addresses.
-  // Resolution is performed server-side prior to querying the store.
+  // Owner identifier to look up by; accepts nameservice names (e.g.
+  // "alice.dys") or bech32 addresses. Resolution is performed server-side prior
+  // to querying the store.
   string owner = 1;
   // Index of the storage entry to retrieve.
   string index = 2;
-  // Optional GJSON path to extract from the storage entry (e.g., "user.name"); max 100 characters.
+  // Optional GJSON path to extract from the storage entry (e.g., "user.name");
+  // max 100 characters.
   string extract = 3;
 }
 
@@ -73,30 +141,37 @@ message QueryStorageGetRequest {
  * Response containing the retrieved storage entry.
  */
 message QueryStorageGetResponse {
-  // The storage entry matching the query; data field contains extracted data if extract path was provided.
+  // The storage entry matching the query; data field contains extracted data if
+  // extract path was provided.
   Storage entry = 1;
 }
 
 /*
- * QueryStorageListRequest lists storage entries with prefix filtering, GJSON filtering, and extraction.
+ * QueryStorageListRequest lists storage entries with prefix filtering, GJSON
+ * filtering, and extraction.
  *
  * Supports complex queries through index_prefix for efficient range scans,
- * GJSON filter for content-based filtering, and GJSON extract for field-level retrieval.
- * Pagination enables efficient iteration over large result sets.
+ * GJSON filter for content-based filtering, and GJSON extract for field-level
+ * retrieval. Pagination enables efficient iteration over large result sets.
  */
 message QueryStorageListRequest {
-  // Owner identifier to list under; accepts nameservice names (e.g. "alice.dys") or bech32 addresses.
-  // Resolution is performed server-side prior to building the range iterator.
+  // Owner identifier to list under; accepts nameservice names (e.g.
+  // "alice.dys") or bech32 addresses. Resolution is performed server-side prior
+  // to building the range iterator.
   string owner = 1;
-  // Index prefix to filter storage entries by; only entries with indexes starting with this prefix are returned.
+  // Index prefix to filter storage entries by; only entries with indexes
+  // starting with this prefix are returned.
   string index_prefix = 2;
-  // Optional GJSON filter to further filter entries; supports comparison operators (==, !=, <, <=, >, >=)
-  // and pattern matching (% for like, !% for not like); only matching entries included in results; max 100 chars.
+  // Optional GJSON filter to further filter entries; supports comparison
+  // operators (==, !=, <, <=, >, >=) and pattern matching (% for like, !% for
+  // not like); only matching entries included in results; max 100 chars.
   string filter = 3;
-  // Optional GJSON path to extract from each entry (e.g., "user.name" extracts "jeff" from {"user": {"name": "jeff"}});
-  // transforms data field in response; max 100 characters.
+  // Optional GJSON path to extract from each entry (e.g., "user.name" extracts
+  // "jeff" from {"user": {"name": "jeff"}}); transforms data field in response;
+  // max 100 characters.
   string extract = 4;
-  // Pagination parameters for result set navigation; supports offset, limit, and key-based pagination.
+  // Pagination parameters for result set navigation; supports offset, limit,
+  // and key-based pagination.
   cosmos.base.query.v1beta1.PageRequest pagination = 5;
 }
 
@@ -104,9 +179,11 @@ message QueryStorageListRequest {
  * Response containing list of storage entries matching the query criteria.
  */
 message QueryStorageListResponse {
-  // List of storage entries matching owner, index_prefix, and filter criteria; data may be transformed by extract parameter.
+  // List of storage entries matching owner, index_prefix, and filter criteria;
+  // data may be transformed by extract parameter.
   repeated Storage entries = 1;
-  // Pagination metadata including next key for continued iteration and total count if requested.
+  // Pagination metadata including next key for continued iteration and total
+  // count if requested.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
@@ -119,18 +196,21 @@ message QueryParamsRequest {}
  * Response containing the current storage module parameters.
  */
 message QueryParamsResponse {
-  // Current module parameters including MaxStorageSize and StorageStakeMultiple.
+  // Current module parameters including MaxStorageSize and
+  // StorageStakeMultiple.
   Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
 /*
  * QueryMetricsRequest retrieves storage usage metrics for an owner.
  *
- * Metrics include total bytes stored, calculated stake requirements, and current stake amount.
+ * Metrics include total bytes stored, calculated stake requirements, and
+ * current stake amount.
  */
 message QueryMetricsRequest {
-  // Owner identifier to query metrics for; accepts nameservice names (resolved to addresses) or bech32 addresses directly.
-  // Resolution occurs server-side before computing metrics.
+  // Owner identifier to query metrics for; accepts nameservice names (resolved
+  // to addresses) or bech32 addresses directly. Resolution occurs server-side
+  // before computing metrics.
   string owner = 1;
 }
 
@@ -142,7 +222,8 @@ message QueryMetricsResponse {
   string owner = 1;
   // Total number of bytes consumed by all storage entries for this owner.
   uint64 total_bytes = 2;
-  // Minimum stake required in udys for current storage usage (total_bytes × storage_stake_multiple).
+  // Minimum stake required in udys for current storage usage (total_bytes ×
+  // storage_stake_multiple).
   string min_stake_amount = 3;
   // Owner's current total delegated stake in udys across all validators.
   string current_stake_amount = 4;

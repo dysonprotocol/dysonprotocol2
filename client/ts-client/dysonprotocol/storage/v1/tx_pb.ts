@@ -8,27 +8,30 @@ import { Message, proto3 } from "@bufbuild/protobuf";
 import { Params } from "./params_pb.js";
 
 /**
- * MsgStorageSet is the message for setting a storage entry.
+ *
+ * MsgStorageSet
  *
  * @generated from message dysonprotocol.storage.v1.MsgStorageSet
  */
 export class MsgStorageSet extends Message<MsgStorageSet> {
   /**
-   * The owner of the storage entry to set.
+   * Account address that owns the storage entry; must be a valid bech32
+   * address.
    *
    * @generated from field: string owner = 1;
    */
   owner = "";
 
   /**
-   * The index of the storage entry to set.
+   * Index key for the storage entry; must be non-empty and printable ASCII
+   * only.
    *
    * @generated from field: string index = 2;
    */
   index = "";
 
   /**
-   * The data to set for the storage entry.
+   * JSON data to store; size limited by MaxStorageSize parameter.
    *
    * @generated from field: string data = 3;
    */
@@ -65,7 +68,8 @@ export class MsgStorageSet extends Message<MsgStorageSet> {
 }
 
 /**
- * MsgStorageSetResponse is the response for setting a storage entry.
+ *
+ * Empty response. See EventStorageUpdated for emitted details.
  *
  * @generated from message dysonprotocol.storage.v1.MsgStorageSetResponse
  */
@@ -98,20 +102,41 @@ export class MsgStorageSetResponse extends Message<MsgStorageSetResponse> {
 }
 
 /**
+ *
  * MsgStorageDelete is the message for deleting storage entries.
+ *
+ * Behavior:
+ * - Deletes multiple storage entries by index for the specified owner.
+ * - Verifies ownership of each entry before deletion to prevent unauthorized
+ * removal.
+ * - Updates owner's storage metrics by subtracting deleted bytes from total.
+ * - Returns list of successfully deleted indexes for transparency.
+ *
+ * Validation:
+ * - Owner must be a valid bech32 address.
+ * - At least one index must be specified for deletion.
+ * - Each specified index must exist and be owned by the requesting account.
+ *
+ * Emits:
+ * - EventStorageDelete(owner, deleted_indexes) with list of successfully
+ * deleted indexes.
+ *
+ * Returns:
+ * - List of indexes that were successfully deleted.
  *
  * @generated from message dysonprotocol.storage.v1.MsgStorageDelete
  */
 export class MsgStorageDelete extends Message<MsgStorageDelete> {
   /**
-   * The owner of the storage entries to delete.
+   * Account address that owns the storage entries; must be a valid bech32
+   * address.
    *
    * @generated from field: string owner = 1;
    */
   owner = "";
 
   /**
-   * List of specific indexes to delete.
+   * List of specific indexes to delete; must contain at least one index.
    *
    * @generated from field: repeated string indexes = 2;
    */
@@ -147,13 +172,15 @@ export class MsgStorageDelete extends Message<MsgStorageDelete> {
 }
 
 /**
- * MsgStorageDeleteResponse is the response for deleting storage entries.
+ *
+ * Response containing the list of indexes that were successfully deleted.
  *
  * @generated from message dysonprotocol.storage.v1.MsgStorageDeleteResponse
  */
 export class MsgStorageDeleteResponse extends Message<MsgStorageDeleteResponse> {
   /**
-   * List of indexes that were successfully deleted
+   * List of indexes that were successfully deleted; may be fewer than requested
+   * if some didn't exist.
    *
    * @generated from field: repeated string deleted_indexes = 1;
    */
@@ -188,13 +215,32 @@ export class MsgStorageDeleteResponse extends Message<MsgStorageDeleteResponse> 
 }
 
 /**
+ *
  * MsgUpdateParams is the Msg/UpdateParams request type.
+ *
+ * Behavior:
+ * - Validates that the signer has authority to update module parameters
+ * (typically governance module).
+ * - Validates that all provided parameters are valid according to parameter
+ * constraints.
+ * - Updates the module's parameter state with the new values.
+ *
+ * Validation:
+ * - Authority must match the module's configured authority address.
+ * - All parameter values must pass individual validation (MaxStorageSize,
+ * StorageStakeMultiple).
+ *
+ * Emits:
+ * - No events emitted for parameter updates.
+ *
+ * Returns:
+ * - Empty response body on success.
  *
  * @generated from message dysonprotocol.storage.v1.MsgUpdateParams
  */
 export class MsgUpdateParams extends Message<MsgUpdateParams> {
   /**
-   * authority is the address that controls the module (defaults to x/gov unless
+   * Authority is the address that controls the module (defaults to x/gov unless
    * overwritten).
    *
    * @generated from field: string authority = 1;
@@ -202,8 +248,8 @@ export class MsgUpdateParams extends Message<MsgUpdateParams> {
   authority = "";
 
   /**
-   * params defines the x/storage parameters to update.
-   * NOTE: All parameters must be supplied.
+   * Params defines the x/storage parameters to update; all parameters must be
+   * supplied.
    *
    * @generated from field: dysonprotocol.storage.v1.Params params = 2;
    */
@@ -239,8 +285,8 @@ export class MsgUpdateParams extends Message<MsgUpdateParams> {
 }
 
 /**
- * MsgUpdateParamsResponse defines the response structure for executing a
- * MsgUpdateParams message.
+ *
+ * Empty response. Parameter updates do not emit events.
  *
  * @generated from message dysonprotocol.storage.v1.MsgUpdateParamsResponse
  */

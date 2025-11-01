@@ -23958,36 +23958,7 @@ func (SettlementMode) EnumDescriptor() ([]byte, []int) {
 	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{0}
 }
 
-// *
-// Create a two-asset pool with per-denom fee/interest/leverage parameters and
-// optional directional bound_percent limits.
-//
-// Behavior:
-//   - Input normalization: canonicalizes `coins` (exactly two positive coins) to
-//     the pool's denom order.
-//   - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two
-//     DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
-//     interest_rate >= 0 per denom.
-//   - Leverage configuration (required): `min_collateral_ratio` and
-//     `max_leverage_ratio` must have exactly two entries (> 1) matching pool
-//     denoms; `liquidation_threshold` must have exactly two entries (> 1);
-//     `max_borrow_percent` must have exactly two entries with amounts in [0,1).
-//   - Bound percent (optional): when omitted defaults to 1 (unbounded) for both
-//     denoms. When provided, must contain exactly two DecCoins matching pool
-//     denoms with amounts in (0,1]; 1 disables the bound for that denom.
-//   - Funds and shares: sends initial reserves from `creator` → module; allocates
-//     a new pool_id; persists the pool; computes initial shares as
-//
-// floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends
-// them to the creator.
-// - Invariants: asserts AMM and module invariants before returning.
-//
-// Emits:
-// - EventPoolCreated(pool_id)
-// - EventPoolUpdate(pool_id)
-//
-// Returns:
-// - `pool_id` of the newly created pool (see response).
+// MsgCreatePool
 type MsgCreatePool struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -24123,6 +24094,7 @@ func (x *MsgCreatePool) GetBoundPercent() []*v1beta1.DecCoin {
 	return nil
 }
 
+// Empty response. See EventPoolCreated for emitted details.
 type MsgCreatePoolResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -24159,28 +24131,7 @@ func (x *MsgCreatePoolResponse) GetPoolId() uint64 {
 	return 0
 }
 
-// *
-// Update a pool's dynamic configuration (owner-only).
-//
-// Behavior:
-//   - Loads pool; validates signer and majority-ownership.
-//   - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1.
-//   - Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`
-//     with exactly two entries matching pool denoms; each > 1.
-//   - Liquidation threshold: required with exactly two entries; each > 1.
-//   - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.
-//   - Max borrow percent: optional; if provided exactly two entries; 0 <= x < 1.
-//   - Bound percent: optional; when provided must contain exactly two DecCoins
-//     matching pool denoms with amounts in (0,1]; 1 disables the bound. Omit to
-//     leave existing bounds unchanged.
-//   - Persists pool with `updated` timestamp; emits EventPoolUpdate; asserts AMM
-//     and module invariants.
-//
-// Emits:
-// - EventPoolUpdate(pool_id).
-//
-// Returns:
-// - Empty response.
+// MsgUpdatePoolConfig
 type MsgUpdatePoolConfig struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -24316,6 +24267,7 @@ func (x *MsgUpdatePoolConfig) GetBoundPercent() []*v1beta1.DecCoin {
 	return nil
 }
 
+// Empty response. See EventPoolUpdate for emitted details.
 type MsgUpdatePoolConfigResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -24342,27 +24294,7 @@ func (*MsgUpdatePoolConfigResponse) Descriptor() ([]byte, []int) {
 	return file_dysonprotocol_whaleswap_v1_tx_proto_rawDescGZIP(), []int{3}
 }
 
-// *
-// Add liquidity (owner-only).
-//
-// Behavior:
-//   - Escrows the full provided amounts, then refunds any unused surplus.
-//   - Concentrated pools: compute ΔL from the inputs at the current price within
-//     [min_price, max_price]; refund the side that exceeds the limiting ΔL; mint
-//     shares as floor(ΔL * total_shares / L_current).
-//   - Non-concentrated pools: minted shares are derived from the limiting side
-//     min(add1/R1, add2/R2) * total_shares; refund the difference.
-//   - Updates reserves, enforces the price band (if set), persists the pool,
-//     emits events, and asserts AMM invariants.
-//
-// Validation:
-//   - Pool must exist and signer must hold a majority of shares.
-//   - `amounts` must contain exactly two positive coins whose denoms match the
-//     pool reserves (canonical order).
-//
-// Emits:
-// - EventPoolUpdate (after persisting pool state)
-// - EventPoolLiquidityAdded (on successful add)
+// MsgAddLiquidity
 type MsgAddLiquidity struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -24420,6 +24352,7 @@ func (x *MsgAddLiquidity) GetAmounts() []*v1beta1.Coin {
 	return nil
 }
 
+// Empty response. See EventPoolLiquidityAdded for emitted details.
 type MsgAddLiquidityResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -24461,24 +24394,27 @@ func (x *MsgAddLiquidityResponse) GetShares() string {
 // reserves.
 //
 // Behavior:
-//   - Supports two modes: full exit and partial exit.
-//   - Full exit: when burning all outstanding shares, the pool is deleted and
-//     the full reserves are paid out to the caller.
-//   - Partial exit: burns a subset of shares and receives a payout proportional
-//     to that share using pro-rata DecCoins math; pool remains active with
-//     reduced reserves.
-//   - Ensures partial exits cannot deplete any reserve below zero; full exit
-//     required to withdraw the last liquidity.
+//   - Supports full exit (burning all shares, deletes pool, returns all reserves)
+//     and partial exit (burns subset, returns proportional reserves, pool
+//
+// remains).
+// - Full exit: when shares = total_supply, deletes pool, pays out full
+// reserves.
+// - Partial exit: computes pro-rata payout using DecCoins math, ensures
+// reserves don't go to zero (requires full exit for last liquidity).
+// - Burns shares from signer, sends proportional reserves from module to
+// signer.
+// - For partial exits: updates pool reserves, persists pool; asserts AMM
+// invariants.
 //
 // Validation:
-//   - Pool must exist.
-//   - Signer must hold at least shares.
-//   - Shares must be a positive integer string.
-//   - Partial exits cannot deplete any reserve; withdrawing the last liquidity
-//     requires a full exit (burning all shares).
+// - Pool must exist.
+// - Shares must be positive integer string.
+// - Signer must hold at least shares amount.
+// - Partial exits cannot deplete any reserve to zero.
 //
 // Emits:
-// - EventPoolLiquidityRemoved with pool_id and shares.
+// - EventPoolLiquidityRemoved with pool_id and shares
 //
 // Returns:
 // - coins returned to the caller in the amount field.
@@ -24574,7 +24510,9 @@ func (x *MsgRemoveLiquidityResponse) GetAmount() []*v1beta1.Coin {
 }
 
 // *
-// Execute one or more pool swap legs with a single settlement.
+// PoolSwap executes one or more exact-in or exact-out pool swap legs with a
+// single end-of-tx settlement. Applies output-side fees per leg and enforces
+// aggregate max_input caps and min_output guarantees.
 //
 // Behavior:
 //   - Per-leg execution: for each leg, validates the pool/denoms and computes
@@ -24601,8 +24539,8 @@ func (x *MsgRemoveLiquidityResponse) GetAmount() []*v1beta1.Coin {
 //
 // Emits:
 //   - EventPoolSwap per executed leg (with pool_id, trade_id, operation_index)
-//     via recordTradeWithOperations.
-//   - EventTradeRecorded once after all legs are recorded.
+//     via recordTradeWithOperations
+//   - EventTradeRecorded once after all legs are recorded
 //
 // Returns:
 // - amount_out: total coins credited to the trader across all legs.
@@ -24936,10 +24874,10 @@ func (x *AuctionRedeem) GetAuctionId() uint64 {
 // - Trade recorded with all operations, indexed by trader/pool/offer/auction.
 //
 // Emits:
-// - EventPfandReleased for each closed offer (amount, offer_id, trade_id).
-// - EventPoolSwap for each swap (pool_id, trade_id, operation_index).
-// - EventOfferTaken for each take (offer_id, trade_id, units_taken).
-// - EventTradeRecorded summary (trade_id, trader, num_operations, note).
+// - EventPfandReleased for each closed offer (amount, offer_id, trade_id)
+// - EventPoolSwap for each swap (pool_id, trade_id, operation_index)
+// - EventOfferTaken for each take (offer_id, trade_id, units_taken)
+// - EventTradeRecorded summary (trade_id, trader, num_operations, note)
 //
 // Returns:
 // - trade_id and final net trader_inputs/outputs after
@@ -25074,17 +25012,33 @@ func (x *MsgMakeTradeResponse) GetTraderOutputs() []*v1beta1.Coin {
 	return nil
 }
 
-// Make an orderbook offer.
+// *
+// MakeOffer creates an orderbook offer. ESCROW: base "have" is escrowed.
+// LIQUID: lock PFAND; settlement draws from maker balance at take. Units are
+// derived via GCD for partial fills.
 //
-// Constraints and semantics:
-// - have and want must be different denoms and strictly positive.
-// - Any denom allowed (including PFAND); settlement behavior controlled by
-// settlement_mode.
-// - If settlement_mode == LIQUID, the transaction locks PFAND per module
-// params.
-//   - The keeper computes GCD(have.amount, want.amount) to establish integral
-//     units for partial fills: unit_have = have/gcd, unit_want = want/gcd.
-//   - RemainingUnits starts at gcd and decreases as fills occur.
+// Behavior:
+// - Validates maker address, have/want coins (different denoms, positive
+// amounts).
+// - For ESCROW mode: escrows base have from maker to module.
+// - For LIQUID mode: locks PFAND from maker to module (if configured).
+// - Computes GCD of have/want amounts to establish unit_have/unit_want ratios.
+// - Creates offer with remaining_units = GCD, status = open.
+// - Persists offer and indexes it for queries.
+//
+// Validation:
+// - Maker address must be valid.
+// - Have/want denoms must be valid and different.
+// - Have/want amounts must be positive.
+// - Maker must hold sufficient have amount (for escrow check).
+// - For LIQUID mode: maker must hold sufficient PFAND if configured.
+//
+// Emits:
+// - EventOfferCreated with offer_id
+// - EventPfandLocked with amount, offer_id (if PFAND locked)
+//
+// Returns:
+// - offer_id of the newly created offer.
 type MsgMakeOffer struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -25212,9 +25166,9 @@ func (x *MsgMakeOfferResponse) GetOfferId() uint64 {
 // - Module must have sufficient backing for any uncovered solid deficits.
 //
 // Emits:
-// - EventOfferTaken for each take (offer_id, trade_id, units_taken).
-// - EventTradeRecorded for the batch (trade_id, trader, num_operations).
-// - EventPfandReleased for each closed offer (amount, offer_id, trade_id).
+// - EventOfferTaken for each take (offer_id, trade_id, units_taken)
+// - EventTradeRecorded for the batch (trade_id, trader, num_operations)
+// - EventPfandReleased for each closed offer (amount, offer_id, trade_id)
 //
 // Returns:
 // - aggregated sent/received totals across all executed takes.
@@ -25376,8 +25330,8 @@ func (x *MsgTakeOfferResponse) GetReceived() []*v1beta1.Coin {
 //     must be insufficient.
 //
 // Emits:
-// - EventOfferCancelled with offer_id.
-// - EventPfandReleased with amount, offer_id, trade_id=0 if PFAND was locked.
+// - EventOfferCancelled with offer_id
+// - EventPfandReleased with amount, offer_id, trade_id=0 if PFAND was locked
 //
 // Returns:
 // - MsgCancelOfferResponse (empty).
@@ -25460,7 +25414,7 @@ func (*MsgCancelOfferResponse) Descriptor() ([]byte, []int) {
 // set from module params. The NFT is sent to the seller and the auction record
 // with reverse indexes is persisted.
 //
-// Emits: EventAuctionCreated on success.
+// Emits: EventAuctionCreated on success
 type MsgOpenAuction struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -25566,7 +25520,7 @@ func (x *MsgOpenAuctionResponse) GetAuctionId() uint64 {
 // - No current bidder may exist.
 // - Module escrow must contain at least the sell amount.
 //
-// Emits: EventAuctionRedeemed (trade_id = 0 when seller redeems without trade).
+// Emits: EventAuctionRedeemed (trade_id = 0 when seller redeems without trade)
 type MsgRedeemAuction struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -25896,7 +25850,7 @@ func (x *MsgOpenPositionResponse) GetHeld() *v1beta1.Coin {
 //     repayment, returns remaining collateral and any profit to the user,
 //     updates pool accounting, and deletes the position.
 //
-// Emits: EventLeveragePositionClosed on success.
+// Emits: EventLeveragePositionClosed on success
 type MsgClosePosition struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -26164,8 +26118,8 @@ func (x *MsgAddCollateralResponse) GetNewCollateralRatio() string {
 //     to produce borrowed output.
 //
 // Emits:
-// - EventLeveragePositionCovered (always; closed = true when fully repaid).
-// - EventLeveragePositionClosed (auto-close only).
+// - EventLeveragePositionCovered (always; closed = true when fully repaid)
+// - EventLeveragePositionClosed (auto-close only)
 //
 // Returns:
 // - Auto-close: interest_paid, principal_paid = full borrowed, new_borrowed =

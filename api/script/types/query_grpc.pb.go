@@ -38,24 +38,94 @@ const (
 //
 // Query is the dysonprotocol.script.v1 Query service.
 type QueryClient interface {
-	// ScriptInfo queries script info based on script address
+	// ScriptInfo queries script information by address or nameservice name.
+	// Supports both direct bech32 addresses and nameservice resolution.
 	ScriptInfo(ctx context.Context, in *QueryScriptInfoRequest, opts ...grpc.CallOption) (*QueryScriptInfoResponse, error)
-	// EncodeJson encodes a JSON string to bytes.
+	// EncodeJson encodes a JSON string to protobuf bytes for message
+	// construction. Useful for converting human-readable JSON to binary protobuf
+	// format.
 	EncodeJson(ctx context.Context, in *QueryEncodeJsonRequest, opts ...grpc.CallOption) (*QueryEncodeJsonResponse, error)
-	// DecodeBytes decodes bytes to a JSON string.
+	// DecodeBytes decodes protobuf bytes to JSON string for message inspection.
+	// Useful for converting binary protobuf messages to human-readable JSON
+	// format.
 	DecodeBytes(ctx context.Context, in *QueryDecodeBytesRequest, opts ...grpc.CallOption) (*QueryDecodeBytesResponse, error)
-	// VerifyTx verifies a transaction.
+	// VerifyTx verifies the signatures of an arbitrary transaction for
+	// MsgArbitraryData. Implements ADR-036 arbitrary signature verification with
+	// empty chain ID and sequence.
+	//
+	// Example transaction JSON for verification:
+	// ```json
+	//
+	//	{
+	//	  "body": {
+	//	    "messages": [
+	//	      {
+	//	        "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
+	//	        "signer": "dys1example_address",
+	//	        "data": "arbitrary data to sign",
+	//	        "app_domain": "my_app/v1.0"
+	//	      }
+	//	    ],
+	//	    "memo": "",
+	//	    "timeout_height": "0"
+	//	  },
+	//	  "auth_info": {
+	//	    "signer_infos": [
+	//	      {
+	//	        "public_key": {
+	//	          "@type": "/cosmos.crypto.secp256k1.PubKey",
+	//	          "key": "base64_encoded_public_key"
+	//	        },
+	//	        "mode_info": {
+	//	          "single": {
+	//	            "mode": "SIGN_MODE_DIRECT"
+	//	          }
+	//	        },
+	//	        "sequence": "0"
+	//	      }
+	//	    ],
+	//	    "fee": {
+	//	      "amount": [],
+	//	      "gas_limit": "0"
+	//	    }
+	//	  },
+	//	  "signatures": [
+	//	    "base64_encoded_signature"
+	//	  ]
+	//	}
+	//
+	// ```
+	//
+	// CLI Example:
+	//
+	// # Create a signed MsgArbitraryData transaction for verification
+	// ```bash
+	// dysond tx script sign-arbitrary-data "your data to sign" --app-domain
+	// "my_app/v1.0" --from alice --chain-id "" --account-number 0 --sequence 0
+	// --offline --output-document signed_tx.json
+	// ```
+	//
+	// # Verify the signed transaction
+	// ```bash
+	// dysond query script verify-tx --tx-json "$(cat signed_tx.json)" -o json
+	// ```
 	VerifyTx(ctx context.Context, in *QueryVerifyTxRequest, opts ...grpc.CallOption) (*QueryVerifyTxResponse, error)
 	// Params queries the parameters of the script module.
+	// Returns current configuration parameters for script execution and limits.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	// Queries the WSGI web application function of a script.
+	// Web queries the WSGI web application function of a script.
+	// This is used in the REST API and not intended for direct use.
+	// Executes script's WSGI application in read-only mode for web requests.
 	Web(ctx context.Context, in *WebRequest, opts ...grpc.CallOption) (*WebResponse, error)
-	// Run executes a script function in read-only mode without modifying
-	// state.
+	// Run executes a script function in read-only mode without modifying state.
+	// Uses cached context to ensure execution has no persistent effects.
 	Run(ctx context.Context, in *RunScript, opts ...grpc.CallOption) (*ResponseRunScript, error)
 	// GetBlock returns the current block information.
+	// Provides block height, time, chain ID, hashes, and proposer for scripts.
 	GetBlock(ctx context.Context, in *QueryGetBlockRequest, opts ...grpc.CallOption) (*QueryGetBlockResponse, error)
 	// FunctionSchema returns JSON schemas for all public functions in a script.
+	// Extracts function signatures, parameter types, and return types for tooling
+	// and documentation.
 	FunctionSchema(ctx context.Context, in *QueryFunctionSchemaRequest, opts ...grpc.CallOption) (*QueryFunctionSchemaResponse, error)
 }
 
@@ -163,24 +233,94 @@ func (c *queryClient) FunctionSchema(ctx context.Context, in *QueryFunctionSchem
 //
 // Query is the dysonprotocol.script.v1 Query service.
 type QueryServer interface {
-	// ScriptInfo queries script info based on script address
+	// ScriptInfo queries script information by address or nameservice name.
+	// Supports both direct bech32 addresses and nameservice resolution.
 	ScriptInfo(context.Context, *QueryScriptInfoRequest) (*QueryScriptInfoResponse, error)
-	// EncodeJson encodes a JSON string to bytes.
+	// EncodeJson encodes a JSON string to protobuf bytes for message
+	// construction. Useful for converting human-readable JSON to binary protobuf
+	// format.
 	EncodeJson(context.Context, *QueryEncodeJsonRequest) (*QueryEncodeJsonResponse, error)
-	// DecodeBytes decodes bytes to a JSON string.
+	// DecodeBytes decodes protobuf bytes to JSON string for message inspection.
+	// Useful for converting binary protobuf messages to human-readable JSON
+	// format.
 	DecodeBytes(context.Context, *QueryDecodeBytesRequest) (*QueryDecodeBytesResponse, error)
-	// VerifyTx verifies a transaction.
+	// VerifyTx verifies the signatures of an arbitrary transaction for
+	// MsgArbitraryData. Implements ADR-036 arbitrary signature verification with
+	// empty chain ID and sequence.
+	//
+	// Example transaction JSON for verification:
+	// ```json
+	//
+	//	{
+	//	  "body": {
+	//	    "messages": [
+	//	      {
+	//	        "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
+	//	        "signer": "dys1example_address",
+	//	        "data": "arbitrary data to sign",
+	//	        "app_domain": "my_app/v1.0"
+	//	      }
+	//	    ],
+	//	    "memo": "",
+	//	    "timeout_height": "0"
+	//	  },
+	//	  "auth_info": {
+	//	    "signer_infos": [
+	//	      {
+	//	        "public_key": {
+	//	          "@type": "/cosmos.crypto.secp256k1.PubKey",
+	//	          "key": "base64_encoded_public_key"
+	//	        },
+	//	        "mode_info": {
+	//	          "single": {
+	//	            "mode": "SIGN_MODE_DIRECT"
+	//	          }
+	//	        },
+	//	        "sequence": "0"
+	//	      }
+	//	    ],
+	//	    "fee": {
+	//	      "amount": [],
+	//	      "gas_limit": "0"
+	//	    }
+	//	  },
+	//	  "signatures": [
+	//	    "base64_encoded_signature"
+	//	  ]
+	//	}
+	//
+	// ```
+	//
+	// CLI Example:
+	//
+	// # Create a signed MsgArbitraryData transaction for verification
+	// ```bash
+	// dysond tx script sign-arbitrary-data "your data to sign" --app-domain
+	// "my_app/v1.0" --from alice --chain-id "" --account-number 0 --sequence 0
+	// --offline --output-document signed_tx.json
+	// ```
+	//
+	// # Verify the signed transaction
+	// ```bash
+	// dysond query script verify-tx --tx-json "$(cat signed_tx.json)" -o json
+	// ```
 	VerifyTx(context.Context, *QueryVerifyTxRequest) (*QueryVerifyTxResponse, error)
 	// Params queries the parameters of the script module.
+	// Returns current configuration parameters for script execution and limits.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	// Queries the WSGI web application function of a script.
+	// Web queries the WSGI web application function of a script.
+	// This is used in the REST API and not intended for direct use.
+	// Executes script's WSGI application in read-only mode for web requests.
 	Web(context.Context, *WebRequest) (*WebResponse, error)
-	// Run executes a script function in read-only mode without modifying
-	// state.
+	// Run executes a script function in read-only mode without modifying state.
+	// Uses cached context to ensure execution has no persistent effects.
 	Run(context.Context, *RunScript) (*ResponseRunScript, error)
 	// GetBlock returns the current block information.
+	// Provides block height, time, chain ID, hashes, and proposer for scripts.
 	GetBlock(context.Context, *QueryGetBlockRequest) (*QueryGetBlockResponse, error)
 	// FunctionSchema returns JSON schemas for all public functions in a script.
+	// Extracts function signatures, parameter types, and return types for tooling
+	// and documentation.
 	FunctionSchema(context.Context, *QueryFunctionSchemaRequest) (*QueryFunctionSchemaResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }

@@ -33,8 +33,9 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// QueryTaskByIDRequest is the request type for the Query/TaskByID RPC method
+// QueryTaskByIDRequest is the request type for the Query/TaskByID RPC method.
 type QueryTaskByIDRequest struct {
+	// Unique identifier of the task to retrieve; must exist in storage.
 	TaskId uint64 `protobuf:"varint,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
 }
 
@@ -78,8 +79,9 @@ func (m *QueryTaskByIDRequest) GetTaskId() uint64 {
 	return 0
 }
 
-// QueryTaskByIDResponse is the response type for the Query/TaskByID RPC method
+// QueryTaskByIDResponse is the response type for the Query/TaskByID RPC method.
 type QueryTaskByIDResponse struct {
+	// Complete task record including scheduling, messages, and execution status.
 	Task *Task `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
 }
 
@@ -124,9 +126,11 @@ func (m *QueryTaskByIDResponse) GetTask() *Task {
 }
 
 // QueryTasksByAddressRequest is the request type for the Query/TasksByAddress
-// RPC method
+// RPC method.
 type QueryTasksByAddressRequest struct {
-	Creator    string             `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	// Creator address to filter tasks by; must be a valid bech32 address.
+	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	// Standard pagination parameters; results ordered by task ID ascending.
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -178,9 +182,14 @@ func (m *QueryTasksByAddressRequest) GetPagination() *query.PageRequest {
 }
 
 // QueryTasksByStatusTimestampRequest is the request type for the
-// Query/TasksByStatusTimestamp RPC method
+// Query/TasksByStatusTimestamp RPC method.
 type QueryTasksByStatusTimestampRequest struct {
-	Status     string             `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	// Task status filter; valid values are "scheduled", "pending", "done",
+	// "failed", "expired".
+	Status string `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	// Standard pagination parameters; results ordered by scheduled timestamp
+	// ascending (earliest first). Pagination is reversed internally for proper
+	// chronological ordering.
 	Pagination *query.PageRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -232,9 +241,14 @@ func (m *QueryTasksByStatusTimestampRequest) GetPagination() *query.PageRequest 
 }
 
 // QueryTasksByStatusGasPriceRequest is the request type for the
-// Query/TasksByStatusGasPrice RPC method
+// Query/TasksByStatusGasPrice RPC method.
 type QueryTasksByStatusGasPriceRequest struct {
-	Status     string             `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	// Task status filter; valid values are "scheduled", "pending", "done",
+	// "failed", "expired".
+	Status string `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	// Standard pagination parameters; results ordered by gas price ascending
+	// (lowest first). Pagination is reversed internally for proper price
+	// ordering.
 	Pagination *query.PageRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -286,11 +300,12 @@ func (m *QueryTasksByStatusGasPriceRequest) GetPagination() *query.PageRequest {
 }
 
 // QueryTasksResponse is the response type for task queries with multiple
-// results
+// results.
 type QueryTasksResponse struct {
-	// Explicit json tag without omitempty to ensure empty arrays are included in
-	// marshalled output so clients can reliably expect the "tasks" key.
-	Tasks      []*Task             `protobuf:"bytes,1,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	// List of tasks matching the query criteria, ordered according to the
+	// specific query endpoint (e.g., by ID, status, gas price).
+	Tasks []*Task `protobuf:"bytes,1,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	// Pagination metadata for result set navigation.
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -341,7 +356,8 @@ func (m *QueryTasksResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryParamsRequest is the request type for the Query/Params RPC method
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+// Empty request body as parameters are retrieved from module state.
 type QueryParamsRequest struct {
 }
 
@@ -378,8 +394,10 @@ func (m *QueryParamsRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryParamsRequest proto.InternalMessageInfo
 
-// QueryParamsResponse is the response type for the Query/Params RPC method
+// QueryParamsResponse is the response type for the Query/Params RPC method.
 type QueryParamsResponse struct {
+	// Current crontask module parameters including scheduling limits, gas
+	// constraints, and subscription configuration.
 	Params *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
 }
 
@@ -423,7 +441,8 @@ func (m *QueryParamsResponse) GetParams() *Params {
 	return nil
 }
 
-// QueryMetricsRequest is the request type for Metrics
+// QueryMetricsRequest is the request type for the Query/Metrics RPC method.
+// Empty request body as metrics are retrieved from the latest block state.
 type QueryMetricsRequest struct {
 }
 
@@ -460,8 +479,10 @@ func (m *QueryMetricsRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryMetricsRequest proto.InternalMessageInfo
 
-// QueryMetricsResponse carries last-block metrics
+// QueryMetricsResponse carries last-block metrics.
 type QueryMetricsResponse struct {
+	// Operational metrics from the most recent block including execution counts,
+	// gas usage, subscription activity, and performance indicators.
 	Metrics *Metrics `protobuf:"bytes,1,opt,name=metrics,proto3" json:"metrics,omitempty"`
 }
 
@@ -505,7 +526,9 @@ func (m *QueryMetricsResponse) GetMetrics() *Metrics {
 	return nil
 }
 
+// QueryAllTasksRequest is the request type for the Query/TasksAll RPC method.
 type QueryAllTasksRequest struct {
+	// Standard pagination parameters; results ordered by task ID ascending.
 	Pagination *query.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -549,8 +572,10 @@ func (m *QueryAllTasksRequest) GetPagination() *query.PageRequest {
 	return nil
 }
 
-// Subscription queries
+// QuerySubscriptionByIDRequest is the request type for the
+// Query/SubscriptionByID RPC method.
 type QuerySubscriptionByIDRequest struct {
+	// Unique identifier of the subscription to retrieve; must exist in storage.
 	SubscriptionId uint64 `protobuf:"varint,1,opt,name=subscription_id,json=subscriptionId,proto3" json:"subscription_id,omitempty"`
 }
 
@@ -594,7 +619,11 @@ func (m *QuerySubscriptionByIDRequest) GetSubscriptionId() uint64 {
 	return 0
 }
 
+// QuerySubscriptionByIDResponse is the response type for the
+// Query/SubscriptionByID RPC method.
 type QuerySubscriptionByIDResponse struct {
+	// Complete subscription record including filter criteria, script
+	// configuration, execution parameters, and current status.
 	Subscription *Subscription `protobuf:"bytes,1,opt,name=subscription,proto3" json:"subscription,omitempty"`
 }
 
@@ -638,8 +667,13 @@ func (m *QuerySubscriptionByIDResponse) GetSubscription() *Subscription {
 	return nil
 }
 
+// QuerySubscriptionsByCreatorRequest is the request type for the
+// Query/SubscriptionsByCreator RPC method.
 type QuerySubscriptionsByCreatorRequest struct {
-	Creator    string             `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	// Creator address to filter subscriptions by; must be a valid bech32 address.
+	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	// Standard pagination parameters; results ordered by subscription ID
+	// ascending.
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -690,7 +724,11 @@ func (m *QuerySubscriptionsByCreatorRequest) GetPagination() *query.PageRequest 
 	return nil
 }
 
+// QuerySubscriptionsAllRequest is the request type for the
+// Query/SubscriptionsAll RPC method.
 type QuerySubscriptionsAllRequest struct {
+	// Standard pagination parameters; results ordered by subscription ID
+	// ascending.
 	Pagination *query.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -734,9 +772,14 @@ func (m *QuerySubscriptionsAllRequest) GetPagination() *query.PageRequest {
 	return nil
 }
 
+// QuerySubscriptionsResponse is the response type for subscription queries with
+// multiple results.
 type QuerySubscriptionsResponse struct {
-	Subscriptions []*Subscription     `protobuf:"bytes,1,rep,name=subscriptions,proto3" json:"subscriptions,omitempty"`
-	Pagination    *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	// List of subscriptions matching the query criteria, ordered according to the
+	// specific query endpoint (e.g., by ID or creator).
+	Subscriptions []*Subscription `protobuf:"bytes,1,rep,name=subscriptions,proto3" json:"subscriptions,omitempty"`
+	// Pagination metadata for result set navigation.
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
 func (m *QuerySubscriptionsResponse) Reset()         { *m = QuerySubscriptionsResponse{} }
@@ -886,27 +929,79 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// TaskByID returns a task by its ID
+	//
+	// TaskByID returns a task by its ID.
+	//
+	// Returns the complete task record for the specified task ID, including all
+	// scheduling information, messages, and execution status. Uses direct key
+	// lookup for optimal performance.
 	TaskByID(ctx context.Context, in *QueryTaskByIDRequest, opts ...grpc.CallOption) (*QueryTaskByIDResponse, error)
-	// TasksByAddress returns all tasks created by a specific address
+	//
+	// TasksByAddress returns all tasks created by a specific address.
+	//
+	// Returns paginated list of tasks created by the specified address, ordered
+	// by task ID. Uses indexed queries for efficient lookup. Supports standard
+	// pagination with customizable page size and navigation.
 	TasksByAddress(ctx context.Context, in *QueryTasksByAddressRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
+	//
 	// TasksByStatusTimestamp returns tasks filtered by status and ordered by
-	// timestamp
+	// timestamp.
+	//
+	// Returns paginated list of tasks with the specified status, ordered by
+	// scheduled timestamp (earliest first). Uses indexed queries for efficient
+	// status filtering. Supports pagination with reverse ordering capability.
 	TasksByStatusTimestamp(ctx context.Context, in *QueryTasksByStatusTimestampRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
+	//
 	// TasksByStatusGasPrice returns tasks filtered by status and ordered by gas
-	// price
+	// price.
+	//
+	// Returns paginated list of tasks with the specified status, ordered by gas
+	// price (lowest first). Uses indexed queries for efficient status filtering
+	// and gas price ordering. Supports pagination with reverse ordering
+	// capability.
 	TasksByStatusGasPrice(ctx context.Context, in *QueryTasksByStatusGasPriceRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
-	// TasksAll returns all tasks ordered by ID
+	//
+	// TasksAll returns all tasks ordered by ID.
+	//
+	// Returns paginated list of all tasks in the system, ordered by task ID
+	// ascending. Uses direct store iteration for comprehensive task listing.
+	// Supports standard pagination for large result sets.
 	TasksAll(ctx context.Context, in *QueryAllTasksRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
-	// Params returns the module parameters
+	//
+	// Params returns the module parameters.
+	//
+	// Returns the current crontask module configuration including scheduling
+	// limits, gas constraints, subscription rules, and stake requirements.
+	// Parameters control task creation, execution limits, and subscription
+	// behavior.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	// Metrics returns last-block crontask metrics
+	//
+	// Metrics returns last-block crontask metrics.
+	//
+	// Returns operational metrics from the most recent block including task
+	// execution counts, gas usage statistics, subscription activity, and system
+	// performance indicators. Metrics are updated at the end of each block.
 	Metrics(ctx context.Context, in *QueryMetricsRequest, opts ...grpc.CallOption) (*QueryMetricsResponse, error)
-	// SubscriptionByID returns a subscription by id
+	//
+	// SubscriptionByID returns a subscription by id.
+	//
+	// Returns the complete subscription record for the specified subscription ID,
+	// including filter criteria, script configuration, execution parameters, and
+	// current status. Uses direct key lookup for optimal performance.
 	SubscriptionByID(ctx context.Context, in *QuerySubscriptionByIDRequest, opts ...grpc.CallOption) (*QuerySubscriptionByIDResponse, error)
-	// SubscriptionsByCreator returns subscriptions for a creator
+	//
+	// SubscriptionsByCreator returns subscriptions for a creator.
+	//
+	// Returns paginated list of subscriptions created by the specified address,
+	// ordered by subscription ID. Uses collection filtering with indexed queries
+	// for efficient creator-based lookups. Supports standard pagination.
 	SubscriptionsByCreator(ctx context.Context, in *QuerySubscriptionsByCreatorRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error)
-	// SubscriptionsAll returns all subscriptions
+	//
+	// SubscriptionsAll returns all subscriptions.
+	//
+	// Returns paginated list of all subscriptions in the system, ordered by
+	// subscription ID ascending. Uses collection pagination for comprehensive
+	// subscription listing. Supports standard pagination for large result sets.
 	SubscriptionsAll(ctx context.Context, in *QuerySubscriptionsAllRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error)
 }
 
@@ -1010,27 +1105,79 @@ func (c *queryClient) SubscriptionsAll(ctx context.Context, in *QuerySubscriptio
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// TaskByID returns a task by its ID
+	//
+	// TaskByID returns a task by its ID.
+	//
+	// Returns the complete task record for the specified task ID, including all
+	// scheduling information, messages, and execution status. Uses direct key
+	// lookup for optimal performance.
 	TaskByID(context.Context, *QueryTaskByIDRequest) (*QueryTaskByIDResponse, error)
-	// TasksByAddress returns all tasks created by a specific address
+	//
+	// TasksByAddress returns all tasks created by a specific address.
+	//
+	// Returns paginated list of tasks created by the specified address, ordered
+	// by task ID. Uses indexed queries for efficient lookup. Supports standard
+	// pagination with customizable page size and navigation.
 	TasksByAddress(context.Context, *QueryTasksByAddressRequest) (*QueryTasksResponse, error)
+	//
 	// TasksByStatusTimestamp returns tasks filtered by status and ordered by
-	// timestamp
+	// timestamp.
+	//
+	// Returns paginated list of tasks with the specified status, ordered by
+	// scheduled timestamp (earliest first). Uses indexed queries for efficient
+	// status filtering. Supports pagination with reverse ordering capability.
 	TasksByStatusTimestamp(context.Context, *QueryTasksByStatusTimestampRequest) (*QueryTasksResponse, error)
+	//
 	// TasksByStatusGasPrice returns tasks filtered by status and ordered by gas
-	// price
+	// price.
+	//
+	// Returns paginated list of tasks with the specified status, ordered by gas
+	// price (lowest first). Uses indexed queries for efficient status filtering
+	// and gas price ordering. Supports pagination with reverse ordering
+	// capability.
 	TasksByStatusGasPrice(context.Context, *QueryTasksByStatusGasPriceRequest) (*QueryTasksResponse, error)
-	// TasksAll returns all tasks ordered by ID
+	//
+	// TasksAll returns all tasks ordered by ID.
+	//
+	// Returns paginated list of all tasks in the system, ordered by task ID
+	// ascending. Uses direct store iteration for comprehensive task listing.
+	// Supports standard pagination for large result sets.
 	TasksAll(context.Context, *QueryAllTasksRequest) (*QueryTasksResponse, error)
-	// Params returns the module parameters
+	//
+	// Params returns the module parameters.
+	//
+	// Returns the current crontask module configuration including scheduling
+	// limits, gas constraints, subscription rules, and stake requirements.
+	// Parameters control task creation, execution limits, and subscription
+	// behavior.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	// Metrics returns last-block crontask metrics
+	//
+	// Metrics returns last-block crontask metrics.
+	//
+	// Returns operational metrics from the most recent block including task
+	// execution counts, gas usage statistics, subscription activity, and system
+	// performance indicators. Metrics are updated at the end of each block.
 	Metrics(context.Context, *QueryMetricsRequest) (*QueryMetricsResponse, error)
-	// SubscriptionByID returns a subscription by id
+	//
+	// SubscriptionByID returns a subscription by id.
+	//
+	// Returns the complete subscription record for the specified subscription ID,
+	// including filter criteria, script configuration, execution parameters, and
+	// current status. Uses direct key lookup for optimal performance.
 	SubscriptionByID(context.Context, *QuerySubscriptionByIDRequest) (*QuerySubscriptionByIDResponse, error)
-	// SubscriptionsByCreator returns subscriptions for a creator
+	//
+	// SubscriptionsByCreator returns subscriptions for a creator.
+	//
+	// Returns paginated list of subscriptions created by the specified address,
+	// ordered by subscription ID. Uses collection filtering with indexed queries
+	// for efficient creator-based lookups. Supports standard pagination.
 	SubscriptionsByCreator(context.Context, *QuerySubscriptionsByCreatorRequest) (*QuerySubscriptionsResponse, error)
-	// SubscriptionsAll returns all subscriptions
+	//
+	// SubscriptionsAll returns all subscriptions.
+	//
+	// Returns paginated list of all subscriptions in the system, ordered by
+	// subscription ID ascending. Uses collection pagination for comprehensive
+	// subscription listing. Supports standard pagination for large result sets.
 	SubscriptionsAll(context.Context, *QuerySubscriptionsAllRequest) (*QuerySubscriptionsResponse, error)
 }
 

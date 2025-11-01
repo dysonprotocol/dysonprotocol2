@@ -4084,20 +4084,25 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// QueryStorageGetRequest retrieves a single storage entry with optional field
+// extraction.
+//
+// Owner resolution supports both nameservice names and bech32 addresses.
+// Extract parameter enables GJSON path-based field retrieval from stored JSON
+// data.
 type QueryStorageGetRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Owner identifier to look up by. Accepts either:
-	// - a nameservice name (e.g. "alice.dys"), which will be resolved to an
-	// address, or
-	// - a bech32 address directly
-	// Resolution is performed server-side prior to querying the store.
+	// Owner identifier to look up by; accepts nameservice names (e.g.
+	// "alice.dys") or bech32 addresses. Resolution is performed server-side prior
+	// to querying the store.
 	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
-	// The index of the storage entry.
+	// Index of the storage entry to retrieve.
 	Index string `protobuf:"bytes,2,opt,name=index,proto3" json:"index,omitempty"`
-	// The gjson path to extract from the storage entry.
+	// Optional GJSON path to extract from the storage entry (e.g., "user.name");
+	// max 100 characters.
 	Extract string `protobuf:"bytes,3,opt,name=extract,proto3" json:"extract,omitempty"`
 }
 
@@ -4142,11 +4147,14 @@ func (x *QueryStorageGetRequest) GetExtract() string {
 	return ""
 }
 
+// Response containing the retrieved storage entry.
 type QueryStorageGetResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The storage entry matching the query; data field contains extracted data if
+	// extract path was provided.
 	Entry *Storage `protobuf:"bytes,1,opt,name=entry,proto3" json:"entry,omitempty"`
 }
 
@@ -4177,32 +4185,34 @@ func (x *QueryStorageGetResponse) GetEntry() *Storage {
 	return nil
 }
 
+// QueryStorageListRequest lists storage entries with prefix filtering, GJSON
+// filtering, and extraction.
+//
+// Supports complex queries through index_prefix for efficient range scans,
+// GJSON filter for content-based filtering, and GJSON extract for field-level
+// retrieval. Pagination enables efficient iteration over large result sets.
 type QueryStorageListRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Owner identifier to list under. Accepts either:
-	// - a nameservice name (e.g. "alice.dys"), which will be resolved to an
-	// address, or
-	// - a bech32 address directly
-	// Resolution is performed server-side prior to building the range iterator.
+	// Owner identifier to list under; accepts nameservice names (e.g.
+	// "alice.dys") or bech32 addresses. Resolution is performed server-side prior
+	// to building the range iterator.
 	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
-	// The index prefix of the storage entry to filter by.
+	// Index prefix to filter storage entries by; only entries with indexes
+	// starting with this prefix are returned.
 	IndexPrefix string `protobuf:"bytes,2,opt,name=index_prefix,json=indexPrefix,proto3" json:"index_prefix,omitempty"`
-	// The optional gjson filter to filter the storage entry.
-	// Supports GJSON query syntax with comparison operators:
-	// - Equality: status == "active", age == 18
-	// - Inequality: type != "test"
-	// - Comparison: age > 18, count <= 100, score >= 50
-	// - Pattern matching: name % "John*" (like), tag !% "*beta*" (not like)
-	// Only entries matching the filter will be included in results.
+	// Optional GJSON filter to further filter entries; supports comparison
+	// operators (==, !=, <, <=, >, >=) and pattern matching (% for like, !% for
+	// not like); only matching entries included in results; max 100 chars.
 	Filter string `protobuf:"bytes,3,opt,name=filter,proto3" json:"filter,omitempty"`
-	// The optional gjson path to extract from the storage entry. For example,
-	// Given data like {"user": {"name": "jeff"}}, the extract "user.name" will
-	// return "jeff".
+	// Optional GJSON path to extract from each entry (e.g., "user.name" extracts
+	// "jeff" from {"user": {"name": "jeff"}}); transforms data field in response;
+	// max 100 characters.
 	Extract string `protobuf:"bytes,4,opt,name=extract,proto3" json:"extract,omitempty"`
-	// The pagination request.
+	// Pagination parameters for result set navigation; supports offset, limit,
+	// and key-based pagination.
 	Pagination *v1beta1.PageRequest `protobuf:"bytes,5,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -4261,12 +4271,17 @@ func (x *QueryStorageListRequest) GetPagination() *v1beta1.PageRequest {
 	return nil
 }
 
+// Response containing list of storage entries matching the query criteria.
 type QueryStorageListResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Entries    []*Storage            `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	// List of storage entries matching owner, index_prefix, and filter criteria;
+	// data may be transformed by extract parameter.
+	Entries []*Storage `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	// Pagination metadata including next key for continued iteration and total
+	// count if requested.
 	Pagination *v1beta1.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -4304,7 +4319,7 @@ func (x *QueryStorageListResponse) GetPagination() *v1beta1.PageResponse {
 	return nil
 }
 
-// QueryParamsRequest is request type for the Query/Params RPC method.
+// Empty request for retrieving current storage module parameters.
 type QueryParamsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4331,13 +4346,14 @@ func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
 	return file_dysonprotocol_storage_v1_query_proto_rawDescGZIP(), []int{4}
 }
 
-// QueryParamsResponse is response type for the Query/Params RPC method.
+// Response containing the current storage module parameters.
 type QueryParamsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// params holds all the parameters of this module.
+	// Current module parameters including MaxStorageSize and
+	// StorageStakeMultiple.
 	Params *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
 }
 
@@ -4368,15 +4384,18 @@ func (x *QueryParamsResponse) GetParams() *Params {
 	return nil
 }
 
-// QueryMetricsRequest is request type for the Query/Metrics RPC method.
+// QueryMetricsRequest retrieves storage usage metrics for an owner.
+//
+// Metrics include total bytes stored, calculated stake requirements, and
+// current stake amount.
 type QueryMetricsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Owner identifier to query metrics for. Accepts either a nameservice name
-	// (resolved to an address) or a bech32 address directly. Resolution occurs
-	// server-side before computing metrics.
+	// Owner identifier to query metrics for; accepts nameservice names (resolved
+	// to addresses) or bech32 addresses directly. Resolution occurs server-side
+	// before computing metrics.
 	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
 }
 
@@ -4407,22 +4426,20 @@ func (x *QueryMetricsRequest) GetOwner() string {
 	return ""
 }
 
-// QueryMetricsResponse is response type for the Query/Metrics RPC method.
+// Response containing storage metrics and stake information for an owner.
 type QueryMetricsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// owner is the resolved account address that owns storage entries.
+	// Resolved account address that owns the storage entries.
 	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
-	// total_bytes is the total number of bytes consumed by all storage entries
-	// for this owner address.
+	// Total number of bytes consumed by all storage entries for this owner.
 	TotalBytes uint64 `protobuf:"varint,2,opt,name=total_bytes,json=totalBytes,proto3" json:"total_bytes,omitempty"`
-	// min_stake_amount is the minimum stake required in udys for the current
-	// storage usage (total_bytes × storage_stake_multiple).
+	// Minimum stake required in udys for current storage usage (total_bytes ×
+	// storage_stake_multiple).
 	MinStakeAmount string `protobuf:"bytes,3,opt,name=min_stake_amount,json=minStakeAmount,proto3" json:"min_stake_amount,omitempty"`
-	// current_stake_amount is the owner's current total delegated stake in udys
-	// across all validators.
+	// Owner's current total delegated stake in udys across all validators.
 	CurrentStakeAmount string `protobuf:"bytes,4,opt,name=current_stake_amount,json=currentStakeAmount,proto3" json:"current_stake_amount,omitempty"`
 }
 

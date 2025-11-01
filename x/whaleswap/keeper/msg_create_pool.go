@@ -15,37 +15,38 @@ import (
 // CreatePool creates a two-asset pool with per-denom fee/interest/leverage
 // parameters and optional directional bound_percent limits.
 //
-// Semantics:
-//   - Input normalization: canonicalizes msg.Coins (exactly two positive coins) to
+// Behavior:
+//   - Input normalization: canonicalizes `coins` (exactly two positive coins) to
 //     the pool's denom order.
-//   - Fees and rates: normalizes fee_rate and interest_rate to exactly two
+//   - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two
 //     DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
 //     interest_rate >= 0 per denom.
-//   - Leverage configuration (required): validates min_collateral_ratio and
-//     max_leverage_ratio have exactly two entries (> 1) matching pool denoms;
-//     validates liquidation_threshold has exactly two entries (> 1) and
-//     max_borrow_percent has exactly two entries with amounts in [0,1).
+//   - Leverage configuration (required): `min_collateral_ratio` and
+//     `max_leverage_ratio` must have exactly two entries (> 1) matching pool
+//     denoms; `liquidation_threshold` must have exactly two entries (> 1);
+//     `max_borrow_percent` must have exactly two entries with amounts in [0,1).
 //   - Bound percent (optional): when omitted defaults to 1 (unbounded) for both
 //     denoms. When provided, must contain exactly two DecCoins matching pool
 //     denoms with amounts in (0,1]; 1 disables the bound for that denom.
-//   - Funds and shares: sends initial reserves from creator → module; allocates
-//     a new pool id; persists the pool; computes initial shares as
-//     floor(sqrt(x*y)); ensures at least 1 share; mints pool shares under the
-//     name service into the module and sends the minted shares to the creator.
-//   - Invariants: asserts AMM invariants (AssertAMMInvariants) and module
-//     invariants (AssertInvariants) before returning.
+//   - Funds and shares: sends initial reserves from `creator` → module; allocates
+//     a new pool_id; persists the pool; computes initial shares as
+//     floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends
+//     them to the creator.
+//   - Invariants: asserts AMM and module invariants before returning.
 //
 // Validation:
-//   - msg.Coins must contain exactly two positive coins with valid denoms.
-//   - Fee rates must satisfy 0 <= x < 1 for both denoms when provided.
-//   - Interest rates must be >= 0 for both denoms when provided.
-//   - Leverage config (min_collateral_ratio, max_leverage_ratio) must have
-//     exactly two entries (> 1) matching pool denoms in canonical order.
-//   - Liquidation threshold must have exactly two entries (> 1) matching pool
+//   - coins must contain exactly two positive coins with valid denoms.
+//   - fee_rate amounts must satisfy 0 <= x < 1 for both denoms when provided.
+//   - interest_rate amounts must be >= 0 for both denoms when provided.
+//   - min_collateral_ratio must have exactly two entries (> 1) matching pool
 //     denoms in canonical order.
-//   - Max borrow percent must have exactly two entries with amounts in [0,1)
+//   - max_leverage_ratio must have exactly two entries (> 1) matching pool denoms
+//     in canonical order.
+//   - liquidation_threshold must have exactly two entries (> 1) matching pool
+//     denoms in canonical order.
+//   - max_borrow_percent must have exactly two entries with amounts in [0,1)
 //     matching pool denoms in canonical order.
-//   - Bound percent when provided must contain at most two entries with amounts
+//   - bound_percent when provided must contain at most two entries with amounts
 //     in (0,1] matching pool denoms.
 //
 // State Updates:
@@ -53,11 +54,10 @@ import (
 //   - Persists pool with all configuration to PoolsMap.
 //   - Transfers initial reserves from creator to module account.
 //   - Mints initial shares via nameservice and transfers to creator.
-//   - Updates pool accounting (reserves, shares supply).
 //
 // Emits:
-//   - EventPoolCreated with pool_id
-//   - EventPoolUpdate with pool_id
+//   - EventPoolCreated(pool_id)
+//   - EventPoolUpdate(pool_id)
 //
 // Returns:
 //   - *whaleswapv1.MsgCreatePoolResponse with pool_id of the newly created pool.

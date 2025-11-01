@@ -17,7 +17,9 @@ export const Query = {
   typeName: "dysonprotocol.script.v1.Query",
   methods: {
     /**
-     * ScriptInfo queries script info based on script address
+     *
+     * ScriptInfo queries script information by address or nameservice name.
+     * Supports both direct bech32 addresses and nameservice resolution.
      *
      * @generated from rpc dysonprotocol.script.v1.Query.ScriptInfo
      */
@@ -28,7 +30,10 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * EncodeJson encodes a JSON string to bytes.
+     *
+     * EncodeJson encodes a JSON string to protobuf bytes for message
+     * construction. Useful for converting human-readable JSON to binary protobuf
+     * format.
      *
      * @generated from rpc dysonprotocol.script.v1.Query.EncodeJson
      */
@@ -39,7 +44,10 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * DecodeBytes decodes bytes to a JSON string.
+     *
+     * DecodeBytes decodes protobuf bytes to JSON string for message inspection.
+     * Useful for converting binary protobuf messages to human-readable JSON
+     * format.
      *
      * @generated from rpc dysonprotocol.script.v1.Query.DecodeBytes
      */
@@ -50,7 +58,65 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * VerifyTx verifies a transaction.
+     *
+     * VerifyTx verifies the signatures of an arbitrary transaction for
+     * MsgArbitraryData. Implements ADR-036 arbitrary signature verification with
+     * empty chain ID and sequence.
+     *
+     * Example transaction JSON for verification:
+     * ```json
+     * {
+     *   "body": {
+     *     "messages": [
+     *       {
+     *         "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
+     *         "signer": "dys1example_address",
+     *         "data": "arbitrary data to sign",
+     *         "app_domain": "my_app/v1.0"
+     *       }
+     *     ],
+     *     "memo": "",
+     *     "timeout_height": "0"
+     *   },
+     *   "auth_info": {
+     *     "signer_infos": [
+     *       {
+     *         "public_key": {
+     *           "@type": "/cosmos.crypto.secp256k1.PubKey",
+     *           "key": "base64_encoded_public_key"
+     *         },
+     *         "mode_info": {
+     *           "single": {
+     *             "mode": "SIGN_MODE_DIRECT"
+     *           }
+     *         },
+     *         "sequence": "0"
+     *       }
+     *     ],
+     *     "fee": {
+     *       "amount": [],
+     *       "gas_limit": "0"
+     *     }
+     *   },
+     *   "signatures": [
+     *     "base64_encoded_signature"
+     *   ]
+     * }
+     * ```
+     *
+     * CLI Example:
+     *
+     * # Create a signed MsgArbitraryData transaction for verification
+     * ```bash
+     * dysond tx script sign-arbitrary-data "your data to sign" --app-domain
+     * "my_app/v1.0" --from alice --chain-id "" --account-number 0 --sequence 0
+     * --offline --output-document signed_tx.json
+     * ```
+     *
+     * # Verify the signed transaction
+     * ```bash
+     * dysond query script verify-tx --tx-json "$(cat signed_tx.json)" -o json
+     * ```
      *
      * @generated from rpc dysonprotocol.script.v1.Query.VerifyTx
      */
@@ -61,7 +127,9 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
+     *
      * Params queries the parameters of the script module.
+     * Returns current configuration parameters for script execution and limits.
      *
      * @generated from rpc dysonprotocol.script.v1.Query.Params
      */
@@ -72,7 +140,10 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * Queries the WSGI web application function of a script.
+     *
+     * Web queries the WSGI web application function of a script.
+     * This is used in the REST API and not intended for direct use.
+     * Executes script's WSGI application in read-only mode for web requests.
      *
      * @generated from rpc dysonprotocol.script.v1.Query.Web
      */
@@ -83,8 +154,9 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * Run executes a script function in read-only mode without modifying
-     * state.
+     *
+     * Run executes a script function in read-only mode without modifying state.
+     * Uses cached context to ensure execution has no persistent effects.
      *
      * @generated from rpc dysonprotocol.script.v1.Query.Run
      */
@@ -95,7 +167,9 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
+     *
      * GetBlock returns the current block information.
+     * Provides block height, time, chain ID, hashes, and proposer for scripts.
      *
      * @generated from rpc dysonprotocol.script.v1.Query.GetBlock
      */
@@ -106,7 +180,10 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
+     *
      * FunctionSchema returns JSON schemas for all public functions in a script.
+     * Extracts function signatures, parameter types, and return types for tooling
+     * and documentation.
      *
      * @generated from rpc dysonprotocol.script.v1.Query.FunctionSchema
      */

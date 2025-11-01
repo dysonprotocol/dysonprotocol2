@@ -7,29 +7,30 @@
                 "properties": {
                     "owner": {
                         "type": "string",
-                        "description": "Owner identifier to list under. Accepts either: - a nameservice name (e.g. \"alice.dys\"), which will be resolved to an address, or - a bech32 address directly Resolution is performed server-side prior to building the range iterator."
+                        "description": "Owner identifier to list under; accepts nameservice names (e.g. \"alice.dys\") or bech32 addresses. Resolution is performed server-side prior to building the range iterator."
                     },
                     "index_prefix": {
                         "type": "string",
-                        "description": "The index prefix of the storage entry to filter by."
+                        "description": "Index prefix to filter storage entries by; only entries with indexes starting with this prefix are returned."
                     },
                     "filter": {
                         "type": "string",
-                        "description": "The optional gjson filter to filter the storage entry. Supports GJSON query syntax with comparison operators: - Equality: status == \"active\", age == 18 - Inequality: type != \"test\" - Comparison: age > 18, count <= 100, score >= 50 - Pattern matching: name % \"John*\" (like), tag !% \"*beta*\" (not like) Only entries matching the filter will be included in results."
+                        "description": "Optional GJSON filter to further filter entries; supports comparison operators (==, !=, <, <=, >, >=) and pattern matching (% for like, !% for not like); only matching entries included in results; max 100 chars."
                     },
                     "extract": {
                         "type": "string",
-                        "description": "The optional gjson path to extract from the storage entry. For example, Given data like {\"user\": {\"name\": \"jeff\"}}, the extract \"user.name\" will return \"jeff\"."
+                        "description": "Optional GJSON path to extract from each entry (e.g., \"user.name\" extracts \"jeff\" from {\"user\": {\"name\": \"jeff\"}}); transforms data field in response; max 100 characters."
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
                         "additionalProperties": false,
-                        "description": "The pagination request."
+                        "description": "Pagination parameters for result set navigation; supports offset, limit, and key-based pagination."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Storage List Request"
+                "title": "Query Storage List Request",
+                "description": "QueryStorageListRequest lists storage entries with prefix filtering, GJSON filtering, and extraction. Supports complex queries through index_prefix for efficient range scans, GJSON filter for content-based filtering, and GJSON extract for field-level retrieval. Pagination enables efficient iteration over large result sets."
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -74,16 +75,19 @@
                             "$ref": "#/definitions/dysonprotocol.storage.v1.Storage"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of storage entries matching owner, index_prefix, and filter criteria; data may be transformed by extract parameter."
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata including next key for continued iteration and total count if requested."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Storage List Response"
+                "title": "Query Storage List Response",
+                "description": "Response containing list of storage entries matching the query criteria."
             },
             "cosmos.base.query.v1beta1.PageResponse": {
                 "properties": {

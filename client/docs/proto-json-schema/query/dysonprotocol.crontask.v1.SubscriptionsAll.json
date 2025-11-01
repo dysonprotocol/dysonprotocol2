@@ -7,12 +7,14 @@
                 "properties": {
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by subscription ID ascending."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Subscriptions All Request"
+                "title": "Query Subscriptions All Request",
+                "description": "QuerySubscriptionsAllRequest is the request type for the Query/SubscriptionsAll RPC method."
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -57,16 +59,19 @@
                             "$ref": "#/definitions/dysonprotocol.crontask.v1.Subscription"
                         },
                         "additionalProperties": false,
-                        "type": "array"
+                        "type": "array",
+                        "description": "List of subscriptions matching the query criteria, ordered according to the specific query endpoint (e.g., by ID or creator)."
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Subscriptions Response"
+                "title": "Query Subscriptions Response",
+                "description": "QuerySubscriptionsResponse is the response type for subscription queries with multiple results."
             },
             "cosmos.base.query.v1beta1.PageResponse": {
                 "properties": {

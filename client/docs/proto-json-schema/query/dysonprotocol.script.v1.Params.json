@@ -7,7 +7,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Params Request",
-                "description": "QueryParamsRequest is the request type for the Query/Params RPC method."
+                "description": "QueryParamsRequest requests the current script module parameters. This is an empty request message - no parameters needed."
             }
         }
     },
@@ -20,13 +20,13 @@
                     "params": {
                         "$ref": "#/definitions/dysonprotocol.script.v1.Params",
                         "additionalProperties": false,
-                        "description": "params holds all the parameters of this module."
+                        "description": "Current script module parameters including execution limits and configuration."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Params Response",
-                "description": "QueryParamsResponse is the response type for the Query/Params RPC method."
+                "description": "QueryParamsResponse contains the current script module parameters."
             },
             "dysonprotocol.script.v1.Params": {
                 "additionalProperties": false,

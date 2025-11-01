@@ -13,7 +13,8 @@
   "paths": {
     "/dysonprotocol/storage/v1/metrics": {
       "get": {
-        "summary": "Metrics queries the storage metrics for a given owner address",
+        "summary": "Metrics returns storage usage statistics and stake requirements for an\nowner address.",
+        "description": "Includes total bytes stored, minimum stake required, and current stake\namount for compliance checking.\n\nBehavior:\n- Resolves owner identifier (supports both nameservice names and bech32\n  addresses)\n- Retrieves total bytes stored by the owner across all entries\n- Calculates minimum stake amount required based on StorageStakeMultiple\n  parameter\n- Returns current stake amount from staking module for comparison\n- Returns zero metrics if owner has no storage entries\n\nValidation:\n- Owner must be resolvable to a valid account address\n\nReturns:\n- Total bytes, minimum stake requirement, and current stake amount",
         "operationId": "dysonprotocol.storage.v1.QueryMetricsRequest",
         "responses": {
           "200": {
@@ -32,7 +33,7 @@
         "parameters": [
           {
             "name": "owner",
-            "description": "Owner identifier to query metrics for. Accepts either a nameservice name\n(resolved to an address) or a bech32 address directly. Resolution occurs\nserver-side before computing metrics.",
+            "description": "Owner identifier to query metrics for; accepts nameservice names (resolved\nto addresses) or bech32 addresses directly. Resolution occurs server-side\nbefore computing metrics.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -45,7 +46,8 @@
     },
     "/dysonprotocol/storage/v1/params": {
       "get": {
-        "summary": "Params queries the storage module parameters",
+        "summary": "Params returns the current x/storage module parameters.",
+        "description": "Behavior:\n- Retrieves current parameter values from module state\n- Returns default parameters if none have been set (fresh chain state)\n\nReturns:\n- Current MaxStorageSize and StorageStakeMultiple parameter values",
         "operationId": "dysonprotocol.storage.v1.QueryParamsRequest",
         "responses": {
           "200": {
@@ -68,7 +70,8 @@
     },
     "/dysonprotocol/storage/v1/storage_get": {
       "get": {
-        "summary": "Gets the stored data for the given owner and index.",
+        "summary": "StorageGet retrieves a single storage entry by owner and index with\noptional GJSON extraction.",
+        "description": "Supports nameservice name resolution for owner field. Extract parameter\nenables field-level data retrieval.\n\nBehavior:\n- Resolves owner identifier (supports both nameservice names and bech32\n  addresses)\n- Retrieves storage entry using composite key of resolved_owner/index\n- Applies optional GJSON path extraction to filter returned data\n- Normalizes index in response by removing owner prefix for cleaner API\n\nValidation:\n- Owner must be resolvable to a valid account address\n- Extract path length limited to 100 characters if provided\n\nReturns:\n- Storage entry with extracted data if extract path was provided",
         "operationId": "dysonprotocol.storage.v1.QueryStorageGetRequest",
         "responses": {
           "200": {
@@ -87,21 +90,21 @@
         "parameters": [
           {
             "name": "owner",
-            "description": "Owner identifier to look up by. Accepts either:\n- a nameservice name (e.g. \"alice.dys\"), which will be resolved to an\naddress, or\n- a bech32 address directly\nResolution is performed server-side prior to querying the store.",
+            "description": "Owner identifier to look up by; accepts nameservice names (e.g.\n\"alice.dys\") or bech32 addresses. Resolution is performed server-side prior\nto querying the store.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "index",
-            "description": "The index of the storage entry.",
+            "description": "Index of the storage entry to retrieve.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "extract",
-            "description": "The gjson path to extract from the storage entry.",
+            "description": "Optional GJSON path to extract from the storage entry (e.g., \"user.name\");\nmax 100 characters.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -114,7 +117,8 @@
     },
     "/dysonprotocol/storage/v1/storage_list": {
       "get": {
-        "summary": "Lists all storage entries for the owner under a given index prefix. Use\nfilter and extract to filter and extract the data and iterate over the data\nefficiently.",
+        "summary": "StorageList lists storage entries for an owner under a given index prefix\nwith optional filtering and extraction.",
+        "description": "Supports GJSON filtering for complex queries, field extraction, and full\npagination with offset/key navigation. Results ordered by composite key for\nconsistent pagination.\n\nBehavior:\n- Resolves owner identifier (supports both nameservice names and bech32\n  addresses)\n- Lists entries with composite keys starting with\nresolved_owner/index_prefix\n- Applies optional GJSON filter to include only matching entries\n- Applies optional GJSON extract to transform returned data\n- Supports full pagination with offset/key-based navigation and reverse\n  iteration\n- Normalizes index fields in response by removing owner prefix\n\nValidation:\n- Owner must be resolvable to a valid account address\n- Filter and extract path lengths limited to 100 characters if provided\n- Pagination parameters must be valid (no both offset and key specified)\n\nReturns:\n- List of storage entries matching owner, index_prefix, and filter criteria",
         "operationId": "dysonprotocol.storage.v1.QueryStorageListRequest",
         "responses": {
           "200": {
@@ -133,28 +137,28 @@
         "parameters": [
           {
             "name": "owner",
-            "description": "Owner identifier to list under. Accepts either:\n- a nameservice name (e.g. \"alice.dys\"), which will be resolved to an\naddress, or\n- a bech32 address directly\nResolution is performed server-side prior to building the range iterator.",
+            "description": "Owner identifier to list under; accepts nameservice names (e.g.\n\"alice.dys\") or bech32 addresses. Resolution is performed server-side prior\nto building the range iterator.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "index_prefix",
-            "description": "The index prefix of the storage entry to filter by.",
+            "description": "Index prefix to filter storage entries by; only entries with indexes\nstarting with this prefix are returned.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "filter",
-            "description": "The optional gjson filter to filter the storage entry.\nSupports GJSON query syntax with comparison operators:\n- Equality: status == \"active\", age == 18\n- Inequality: type != \"test\"\n- Comparison: age > 18, count <= 100, score >= 50\n- Pattern matching: name % \"John*\" (like), tag !% \"*beta*\" (not like)\nOnly entries matching the filter will be included in results.",
+            "description": "Optional GJSON filter to further filter entries; supports comparison\noperators (==, !=, <, <=, >, >=) and pattern matching (% for like, !% for\nnot like); only matching entries included in results; max 100 chars.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "extract",
-            "description": "The optional gjson path to extract from the storage entry. For example,\nGiven data like {\"user\": {\"name\": \"jeff\"}}, the extract \"user.name\" will\nreturn \"jeff\".",
+            "description": "Optional GJSON path to extract from each entry (e.g., \"user.name\" extracts\n\"jeff\" from {\"user\": {\"name\": \"jeff\"}}); transforms data field in response;\nmax 100 characters.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -266,41 +270,43 @@
       "properties": {
         "owner": {
           "type": "string",
-          "description": "owner is the resolved account address that owns storage entries."
+          "description": "Resolved account address that owns the storage entries."
         },
         "total_bytes": {
           "type": "string",
           "format": "uint64",
-          "description": "total_bytes is the total number of bytes consumed by all storage entries\nfor this owner address."
+          "description": "Total number of bytes consumed by all storage entries for this owner."
         },
         "min_stake_amount": {
           "type": "string",
-          "description": "min_stake_amount is the minimum stake required in udys for the current\nstorage usage (total_bytes \u00d7 storage_stake_multiple)."
+          "description": "Minimum stake required in udys for current storage usage (total_bytes \u00d7\nstorage_stake_multiple)."
         },
         "current_stake_amount": {
           "type": "string",
-          "description": "current_stake_amount is the owner's current total delegated stake in udys\nacross all validators."
+          "description": "Owner's current total delegated stake in udys across all validators."
         }
       },
-      "description": "QueryMetricsResponse is response type for the Query/Metrics RPC method."
+      "description": "Response containing storage metrics and stake information for an owner."
     },
     "dysonprotocol.storage.v1.QueryParamsResponse": {
       "type": "object",
       "properties": {
         "params": {
           "$ref": "#/definitions/dysonprotocol.storage.v1.Params",
-          "description": "params holds all the parameters of this module."
+          "description": "Current module parameters including MaxStorageSize and\nStorageStakeMultiple."
         }
       },
-      "description": "QueryParamsResponse is response type for the Query/Params RPC method."
+      "description": "Response containing the current storage module parameters."
     },
     "dysonprotocol.storage.v1.QueryStorageGetResponse": {
       "type": "object",
       "properties": {
         "entry": {
-          "$ref": "#/definitions/dysonprotocol.storage.v1.Storage"
+          "$ref": "#/definitions/dysonprotocol.storage.v1.Storage",
+          "description": "The storage entry matching the query; data field contains extracted data if\nextract path was provided."
         }
-      }
+      },
+      "description": "Response containing the retrieved storage entry."
     },
     "dysonprotocol.storage.v1.QueryStorageListResponse": {
       "type": "object",
@@ -309,12 +315,15 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/dysonprotocol.storage.v1.Storage"
-          }
+          },
+          "description": "List of storage entries matching owner, index_prefix, and filter criteria;\ndata may be transformed by extract parameter."
         },
         "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse"
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "description": "Pagination metadata including next key for continued iteration and total\ncount if requested."
         }
-      }
+      },
+      "description": "Response containing list of storage entries matching the query criteria."
     },
     "dysonprotocol.storage.v1.Storage": {
       "type": "object",

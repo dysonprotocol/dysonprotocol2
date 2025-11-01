@@ -7,31 +7,31 @@
                 "properties": {
                     "executor_address": {
                         "type": "string",
-                        "description": "executor is the account address used to execute the script"
+                        "description": "Account address used to execute the script; must be a valid bech32 address."
                     },
                     "script_address": {
                         "type": "string",
-                        "description": "address is the script bech32 address to execute."
+                        "description": "Script bech32 address to execute; mutually exclusive with script_name."
                     },
                     "script_name": {
                         "type": "string",
-                        "description": "script_name is the optional nameservice name of the script to execute (e.g., \"example.dys\")"
+                        "description": "Optional nameservice name of the script to execute (e.g., \"example.dys\")."
                     },
                     "extra_code": {
                         "type": "string",
-                        "description": "Only if the executor is the owner of the script will the optional extra_code be temporary appended to the script for this message before calling the function"
+                        "description": "Optional extra code temporarily appended to the script for this execution. Only allowed if the executor is the script owner."
                     },
                     "function_name": {
                         "type": "string",
-                        "description": "The function name to run"
+                        "description": "Name of the function to call within the script."
                     },
                     "args": {
                         "type": "string",
-                        "description": "The positional arguments to pass to the function (*args) encoded as a json list"
+                        "description": "Positional arguments (*args) encoded as a JSON array."
                     },
                     "kwargs": {
                         "type": "string",
-                        "description": "The keyword arguments to pass to the function (**kwargs) encoded as a json dict"
+                        "description": "Keyword arguments (**kwargs) encoded as a JSON object."
                     },
                     "attached_messages": {
                         "items": {
@@ -54,13 +54,13 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "The list of messages to run before the script."
+                        "description": "Messages executed before the script; results available but state changes discarded."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Run Script",
-                "description": "RunScript is the Query/Run request type."
+                "description": "RunScript requests execution of a script function in read-only mode. Similar to MsgExec but executed in a cached context with no persistent state changes. All execution results are returned but any state modifications are discarded."
             }
         }
     },
@@ -72,7 +72,7 @@
                 "properties": {
                     "result": {
                         "type": "string",
-                        "description": "result is the execution result returned by the script function."
+                        "description": "Execution result returned by the script function."
                     },
                     "attached_message_results": {
                         "items": {
@@ -95,13 +95,13 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Results of the attached messages."
+                        "description": "Results of the attached messages executed before the script."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Response Run Script",
-                "description": "ResponseRunScript is the Query/Run response type."
+                "description": "ResponseRunScript contains script execution results from read-only run."
             }
         }
     }

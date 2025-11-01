@@ -21,7 +21,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Close Position",
-                "description": "* ClosePosition closes a synthetic leveraged position. Behavior: - Swaps held to the borrowed denom via the borrow vault, computes accrued   interest at the snapshotted rate, restores pool reserves by full   repayment, returns remaining collateral and any profit to the user,   updates pool accounting, and deletes the position. Emits: EventLeveragePositionClosed on success."
+                "description": "* ClosePosition closes a synthetic leveraged position. Behavior: - Swaps held to the borrowed denom via the borrow vault, computes accrued   interest at the snapshotted rate, restores pool reserves by full   repayment, returns remaining collateral and any profit to the user,   updates pool accounting, and deletes the position. Emits: EventLeveragePositionClosed on success"
             }
         }
     },

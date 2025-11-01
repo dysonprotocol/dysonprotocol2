@@ -13,10 +13,9 @@ import (
 )
 
 // AddLiquidity (owner-only) escrows provided amounts, refunds any unused
-// amounts in band mode, mints shares, enforces the price band, and asserts
-// AMM invariants.
+// amounts, mints shares, and asserts AMM invariants.
 //
-// Semantics:
+// Behavior:
 //   - Loads pool; validates signer majority ownership.
 //   - Escrows full provided amounts first, then refunds unused surplus.
 //   - Computes shares as floor(min(add1/R1, add2/R2) × totalShares).

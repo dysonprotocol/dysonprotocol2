@@ -81,7 +81,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Create Pool",
-                "description": "* Create a two-asset pool with per-denom fee/interest/leverage parameters and optional directional bound_percent limits. Behavior: - Input normalization: canonicalizes `coins` (exactly two positive coins) to   the pool's denom order. - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two   DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and   interest_rate >= 0 per denom. - Leverage configuration (required): `min_collateral_ratio` and   `max_leverage_ratio` must have exactly two entries (> 1) matching pool   denoms; `liquidation_threshold` must have exactly two entries (> 1);   `max_borrow_percent` must have exactly two entries with amounts in [0,1). - Bound percent (optional): when omitted defaults to 1 (unbounded) for both   denoms. When provided, must contain exactly two DecCoins matching pool   denoms with amounts in (0,1]; 1 disables the bound for that denom. - Funds and shares: sends initial reserves from `creator` \u2192 module; allocates   a new pool_id; persists the pool; computes initial shares as floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends them to the creator. - Invariants: asserts AMM and module invariants before returning. Emits: - EventPoolCreated(pool_id) - EventPoolUpdate(pool_id) Returns: - `pool_id` of the newly created pool (see response)."
+                "description": "MsgCreatePool"
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {
@@ -126,7 +126,8 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Create Pool Response"
+                "title": "Msg Create Pool Response",
+                "description": "Empty response. See EventPoolCreated for emitted details."
             }
         }
     }

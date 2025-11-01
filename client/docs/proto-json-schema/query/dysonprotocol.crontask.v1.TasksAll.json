@@ -7,13 +7,14 @@
                 "properties": {
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by task ID ascending."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Request messages for new query endpoints",
-                "description": "Request messages for new query endpoints"
+                "description": "Request messages for new query endpoints  QueryAllTasksRequest is the request type for the Query/TasksAll RPC method."
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -59,17 +60,18 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Explicit json tag without omitempty to ensure empty arrays are included in marshalled output so clients can reliably expect the \"tasks\" key."
+                        "description": "List of tasks matching the query criteria, ordered according to the specific query endpoint (e.g., by ID, status, gas price)."
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Tasks Response",
-                "description": "QueryTasksResponse is the response type for task queries with multiple results"
+                "description": "QueryTasksResponse is the response type for task queries with multiple results."
             },
             "cosmos.base.query.v1beta1.PageResponse": {
                 "properties": {

@@ -7,13 +7,13 @@
                 "properties": {
                     "address": {
                         "type": "string",
-                        "description": "address is the account address of the script."
+                        "description": "Script address or nameservice name to query; supports both bech32 addresses and names."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Script Info Request",
-                "description": "QueryScriptInfoRequest is the Query/ScriptInfo request type."
+                "description": "QueryScriptInfoRequest requests script information by address or name. The address field accepts both bech32 addresses and nameservice names. Nameservice names will be resolved to addresses automatically."
             }
         }
     },
@@ -26,13 +26,13 @@
                     "script": {
                         "$ref": "#/definitions/dysonprotocol.script.v1.Script",
                         "additionalProperties": false,
-                        "description": "info is the ScriptInfo of the script."
+                        "description": "Complete script information including code, version, and metadata."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Script Info Response",
-                "description": "QueryScriptInfoResponse is the Query/ScriptInfo response type."
+                "description": "QueryScriptInfoResponse contains the complete script information."
             },
             "dysonprotocol.script.v1.Script": {
                 "properties": {

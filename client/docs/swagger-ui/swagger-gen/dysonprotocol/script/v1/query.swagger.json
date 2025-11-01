@@ -13,7 +13,7 @@
   "paths": {
     "/dysonprotocol/script/v1/block": {
       "get": {
-        "summary": "GetBlock returns the current block information.",
+        "summary": "GetBlock returns the current block information.\nProvides block height, time, chain ID, hashes, and proposer for scripts.",
         "operationId": "dysonprotocol.script.v1.QueryGetBlockRequest",
         "responses": {
           "200": {
@@ -36,7 +36,7 @@
     },
     "/dysonprotocol/script/v1/decode_bytes": {
       "get": {
-        "summary": "DecodeBytes decodes bytes to a JSON string.",
+        "summary": "DecodeBytes decodes protobuf bytes to JSON string for message inspection.\nUseful for converting binary protobuf messages to human-readable JSON\nformat.",
         "operationId": "dysonprotocol.script.v1.QueryDecodeBytesRequest",
         "responses": {
           "200": {
@@ -55,13 +55,14 @@
         "parameters": [
           {
             "name": "type_url",
+            "description": "Type URL of the message type to decode (e.g.,\n\"/cosmos.bank.v1beta1.MsgSend\").",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "bytes",
-            "description": "bytes is the encoded bytes.",
+            "description": "Protobuf-encoded bytes of the message to decode to JSON.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -75,7 +76,7 @@
     },
     "/dysonprotocol/script/v1/encode_json": {
       "get": {
-        "summary": "EncodeJson encodes a JSON string to bytes.",
+        "summary": "EncodeJson encodes a JSON string to protobuf bytes for message\nconstruction. Useful for converting human-readable JSON to binary protobuf\nformat.",
         "operationId": "dysonprotocol.script.v1.QueryEncodeJsonRequest",
         "responses": {
           "200": {
@@ -94,7 +95,7 @@
         "parameters": [
           {
             "name": "json",
-            "description": "json is the json string to encode.",
+            "description": "JSON string representing a Cosmos SDK message to encode to protobuf bytes.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -107,7 +108,7 @@
     },
     "/dysonprotocol/script/v1/function_schema": {
       "post": {
-        "summary": "FunctionSchema returns JSON schemas for all public functions in a script.",
+        "summary": "FunctionSchema returns JSON schemas for all public functions in a script.\nExtracts function signatures, parameter types, and return types for tooling\nand documentation.",
         "operationId": "dysonprotocol.script.v1.QueryFunctionSchemaRequest",
         "responses": {
           "200": {
@@ -140,7 +141,7 @@
     },
     "/dysonprotocol/script/v1/params": {
       "get": {
-        "summary": "Params queries the parameters of the script module.",
+        "summary": "Params queries the parameters of the script module.\nReturns current configuration parameters for script execution and limits.",
         "operationId": "dysonprotocol.script.v1.QueryParamsRequest",
         "responses": {
           "200": {
@@ -163,7 +164,7 @@
     },
     "/dysonprotocol/script/v1/run": {
       "post": {
-        "summary": "Run executes a script function in read-only mode without modifying\nstate.",
+        "summary": "Run executes a script function in read-only mode without modifying state.\nUses cached context to ensure execution has no persistent effects.",
         "operationId": "dysonprotocol.script.v1.QueryRunRequest",
         "responses": {
           "200": {
@@ -196,7 +197,7 @@
     },
     "/dysonprotocol/script/v1/script_info/{address}": {
       "get": {
-        "summary": "ScriptInfo queries script info based on script address",
+        "summary": "ScriptInfo queries script information by address or nameservice name.\nSupports both direct bech32 addresses and nameservice resolution.",
         "operationId": "dysonprotocol.script.v1.QueryScriptInfoRequest",
         "responses": {
           "200": {
@@ -215,7 +216,7 @@
         "parameters": [
           {
             "name": "address",
-            "description": "address is the account address of the script.",
+            "description": "Script address or nameservice name to query; supports both bech32 addresses\nand names.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -228,7 +229,8 @@
     },
     "/dysonprotocol/script/v1/verify_tx": {
       "get": {
-        "summary": "VerifyTx verifies a transaction.",
+        "summary": "VerifyTx verifies the signatures of an arbitrary transaction for\nMsgArbitraryData. Implements ADR-036 arbitrary signature verification with\nempty chain ID and sequence.",
+        "description": "Example transaction JSON for verification:\n```json\n{\n  \"body\": {\n    \"messages\": [\n      {\n        \"@type\": \"/dysonprotocol.script.v1.MsgArbitraryData\",\n        \"signer\": \"dys1example_address\",\n        \"data\": \"arbitrary data to sign\",\n        \"app_domain\": \"my_app/v1.0\"\n      }\n    ],\n    \"memo\": \"\",\n    \"timeout_height\": \"0\"\n  },\n  \"auth_info\": {\n    \"signer_infos\": [\n      {\n        \"public_key\": {\n          \"@type\": \"/cosmos.crypto.secp256k1.PubKey\",\n          \"key\": \"base64_encoded_public_key\"\n        },\n        \"mode_info\": {\n          \"single\": {\n            \"mode\": \"SIGN_MODE_DIRECT\"\n          }\n        },\n        \"sequence\": \"0\"\n      }\n    ],\n    \"fee\": {\n      \"amount\": [],\n      \"gas_limit\": \"0\"\n    }\n  },\n  \"signatures\": [\n    \"base64_encoded_signature\"\n  ]\n}\n```\n\nCLI Example:\n\n# Create a signed MsgArbitraryData transaction for verification\n```bash\ndysond tx script sign-arbitrary-data \"your data to sign\" --app-domain\n\"my_app/v1.0\" --from alice --chain-id \"\" --account-number 0 --sequence 0\n--offline --output-document signed_tx.json\n```\n\n# Verify the signed transaction\n```bash\ndysond query script verify-tx --tx-json \"$(cat signed_tx.json)\" -o json\n```",
         "operationId": "dysonprotocol.script.v1.QueryVerifyTxRequest",
         "responses": {
           "200": {
@@ -247,7 +249,7 @@
         "parameters": [
           {
             "name": "tx_json",
-            "description": "The transaction as a JSON string.",
+            "description": "JSON representation of the transaction to verify (must contain\nMsgArbitraryData).",
             "in": "query",
             "required": false,
             "type": "string"
@@ -260,7 +262,7 @@
     },
     "/dysonprotocol/script/v1/web_request": {
       "post": {
-        "summary": "Queries the WSGI web application function of a script.",
+        "summary": "Web queries the WSGI web application function of a script.\nThis is used in the REST API and not intended for direct use.\nExecutes script's WSGI application in read-only mode for web requests.",
         "operationId": "dysonprotocol.script.v1.QueryWebRequest",
         "responses": {
           "200": {
@@ -302,10 +304,10 @@
       "properties": {
         "json": {
           "type": "string",
-          "description": "json is the decoded json string."
+          "description": "JSON representation of the decoded protobuf message."
         }
       },
-      "description": "QueryDecodeBytesResponse is the Query/DecodeBytes response type."
+      "description": "QueryDecodeBytesResponse contains the decoded JSON string."
     },
     "dysonprotocol.script.v1.QueryEncodeJsonResponse": {
       "type": "object",
@@ -313,38 +315,38 @@
         "bytes": {
           "type": "string",
           "format": "byte",
-          "description": "bytes is the encoded bytes."
+          "description": "Protobuf-encoded bytes of the input JSON message."
         }
       },
-      "description": "QueryEncodeJsonResponse is the Query/EncodeJson response type."
+      "description": "QueryEncodeJsonResponse contains the protobuf-encoded bytes."
     },
     "dysonprotocol.script.v1.QueryFunctionSchemaRequest": {
       "type": "object",
       "properties": {
         "executor_address": {
           "type": "string",
-          "title": "executor is the account address used to evaluate the script"
+          "description": "Account address used to evaluate the script; must be a valid bech32\naddress."
         },
         "script_address": {
           "type": "string",
-          "description": "address is the script bech32 address to inspect."
+          "description": "Script bech32 address to inspect; mutually exclusive with script_name."
         },
         "script_name": {
           "type": "string",
-          "title": "script_name is the optional nameservice name of the script to inspect\n(e.g., \"example.dys\")"
+          "description": "Optional nameservice name of the script to inspect (e.g., \"example.dys\")."
         }
       },
-      "description": "QueryFunctionSchemaRequest requests function schemas for a script."
+      "description": "QueryFunctionSchemaRequest requests function schemas for a script.\n\nEither script_address or script_name must be provided. The script will be\nintrospected to extract schemas for all public functions."
     },
     "dysonprotocol.script.v1.QueryFunctionSchemaResponse": {
       "type": "object",
       "properties": {
         "schema_json": {
           "type": "string",
-          "title": "schema_json is a JSON object: [{\"name\": \"func_name\", \"schema\":\n{schema...}}, ...]"
+          "title": "JSON array of function schemas: [{\"name\": \"func_name\", \"schema\": {...}},\n...]"
         }
       },
-      "description": "QueryFunctionSchemaResponse contains a JSON object mapping function names to\nschemas."
+      "description": "QueryFunctionSchemaResponse contains function schemas extracted from a\nscript."
     },
     "dysonprotocol.script.v1.QueryGetBlockResponse": {
       "type": "object",
@@ -352,121 +354,121 @@
         "block_height": {
           "type": "string",
           "format": "int64",
-          "description": "block_height is the height of the block."
+          "description": "Height of the current block."
         },
         "block_time": {
           "type": "string",
           "format": "date-time",
-          "description": "block_time is the time of the block."
+          "description": "Timestamp of the current block."
         },
         "chain_id": {
           "type": "string",
-          "description": "chain_id is the chain ID."
+          "description": "Chain ID of the blockchain."
         },
         "block_hash": {
           "type": "string",
           "format": "byte",
-          "description": "block_hash is the hash of the block."
+          "description": "Hash of the current block (app hash from header)."
         },
         "app_hash": {
           "type": "string",
           "format": "byte",
-          "description": "app_hash is the application hash."
+          "description": "Application hash of the current block."
         },
         "proposer_address": {
           "type": "string",
-          "description": "proposer_address is the address of the block proposer."
+          "description": "Bech32 address of the block proposer."
         }
       },
-      "description": "QueryGetBlockResponse is the Query/GetBlock response type."
+      "description": "QueryGetBlockResponse contains current block information."
     },
     "dysonprotocol.script.v1.QueryParamsResponse": {
       "type": "object",
       "properties": {
         "params": {
           "$ref": "#/definitions/dysonprotocol.script.v1.Params",
-          "description": "params holds all the parameters of this module."
+          "description": "Current script module parameters including execution limits and\nconfiguration."
         }
       },
-      "description": "QueryParamsResponse is the response type for the Query/Params RPC method."
+      "description": "QueryParamsResponse contains the current script module parameters."
     },
     "dysonprotocol.script.v1.QueryScriptInfoResponse": {
       "type": "object",
       "properties": {
         "script": {
           "$ref": "#/definitions/dysonprotocol.script.v1.Script",
-          "description": "info is the ScriptInfo of the script."
+          "description": "Complete script information including code, version, and metadata."
         }
       },
-      "description": "QueryScriptInfoResponse is the Query/ScriptInfo response type."
+      "description": "QueryScriptInfoResponse contains the complete script information."
     },
     "dysonprotocol.script.v1.QueryVerifyTxResponse": {
       "type": "object",
       "properties": {
         "signer": {
           "type": "string",
-          "title": "The signer address of the MsgArbitraryData"
+          "description": "Bech32 address of the verified signer of the MsgArbitraryData transaction."
         }
       },
-      "title": "QueryVerifyTxResponse will return the signer address of the MsgArbitraryData\nor error if the signature is invalid"
+      "description": "QueryVerifyTxResponse contains the verified signer address."
     },
     "dysonprotocol.script.v1.ResponseRunScript": {
       "type": "object",
       "properties": {
         "result": {
           "type": "string",
-          "description": "result is the execution result returned by the script function."
+          "description": "Execution result returned by the script function."
         },
         "attached_message_results": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/google.protobuf.Any"
           },
-          "description": "Results of the attached messages."
+          "description": "Results of the attached messages executed before the script."
         }
       },
-      "description": "ResponseRunScript is the Query/Run response type."
+      "description": "ResponseRunScript contains script execution results from read-only run."
     },
     "dysonprotocol.script.v1.RunScript": {
       "type": "object",
       "properties": {
         "executor_address": {
           "type": "string",
-          "title": "executor is the account address used to execute the script"
+          "description": "Account address used to execute the script; must be a valid bech32 address."
         },
         "script_address": {
           "type": "string",
-          "description": "address is the script bech32 address to execute."
+          "description": "Script bech32 address to execute; mutually exclusive with script_name."
         },
         "script_name": {
           "type": "string",
-          "title": "script_name is the optional nameservice name of the script to execute\n(e.g., \"example.dys\")"
+          "description": "Optional nameservice name of the script to execute (e.g., \"example.dys\")."
         },
         "extra_code": {
           "type": "string",
-          "title": "Only if the executor is the owner of the script will the optional\nextra_code be temporary appended to the script for this message before\ncalling the function"
+          "description": "Optional extra code temporarily appended to the script for this execution.\nOnly allowed if the executor is the script owner."
         },
         "function_name": {
           "type": "string",
-          "title": "The function name to run"
+          "description": "Name of the function to call within the script."
         },
         "args": {
           "type": "string",
-          "title": "The positional arguments to pass to the function (*args) encoded as a json\nlist"
+          "description": "Positional arguments (*args) encoded as a JSON array."
         },
         "kwargs": {
           "type": "string",
-          "title": "The keyword arguments to pass to the function (**kwargs) encoded as a json\ndict"
+          "description": "Keyword arguments (**kwargs) encoded as a JSON object."
         },
         "attached_messages": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/google.protobuf.Any"
           },
-          "description": "The list of messages to run before the script."
+          "description": "Messages executed before the script; results available but state changes\ndiscarded."
         }
       },
-      "description": "RunScript is the Query/Run request type."
+      "description": "RunScript requests execution of a script function in read-only mode.\n\nSimilar to MsgExec but executed in a cached context with no persistent state\nchanges. All execution results are returned but any state modifications are\ndiscarded."
     },
     "dysonprotocol.script.v1.Script": {
       "type": "object",
@@ -493,28 +495,28 @@
       "properties": {
         "script_address": {
           "type": "string",
-          "description": "script_address is the bech32 account address of the script."
+          "description": "Bech32 account address of the script to execute."
         },
         "script_name": {
           "type": "string",
-          "description": "script_name is the name of the script (e.g., \"example.dys\")."
+          "description": "Nameservice name of the script to execute (e.g., \"example.dys\")."
         },
         "httprequest": {
           "type": "string",
-          "description": "httprequest is the http request."
+          "description": "HTTP request string to pass to the script's WSGI application."
         }
       },
-      "description": "WebRequest is the Service/Web request type."
+      "description": "WebRequest requests execution of a script's WSGI web application.\n\nEither script_address or script_name must be provided. The script's WSGI\napplication will be executed in read-only mode with no state modifications\nallowed."
     },
     "dysonprotocol.script.v1.WebResponse": {
       "type": "object",
       "properties": {
         "httpresponse": {
           "type": "string",
-          "description": "httpresponse is the http response."
+          "description": "HTTP response string returned by the script's WSGI application."
         }
       },
-      "description": "WebResponse is the Service/Web response type."
+      "description": "WebResponse contains the HTTP response from the script's WSGI application."
     },
     "google.protobuf.Any": {
       "type": "object",

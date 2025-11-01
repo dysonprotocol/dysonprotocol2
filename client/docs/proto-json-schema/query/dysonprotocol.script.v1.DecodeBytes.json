@@ -6,11 +6,12 @@
             "dysonprotocol.script.v1.QueryDecodeBytesRequest": {
                 "properties": {
                     "type_url": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Type URL of the message type to decode (e.g., \"/cosmos.bank.v1beta1.MsgSend\")."
                     },
                     "bytes": {
                         "type": "string",
-                        "description": "bytes is the encoded bytes.",
+                        "description": "Protobuf-encoded bytes of the message to decode to JSON.",
                         "format": "binary",
                         "binaryEncoding": "base64"
                     }
@@ -18,7 +19,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Decode Bytes Request",
-                "description": "QueryDecodeBytesRequest is the Query/DecodeBytes request type."
+                "description": "QueryDecodeBytesRequest requests decoding of protobuf bytes to JSON. The type_url specifies the message type to decode, and bytes contains the protobuf-encoded data."
             }
         }
     },
@@ -30,13 +31,13 @@
                 "properties": {
                     "json": {
                         "type": "string",
-                        "description": "json is the decoded json string."
+                        "description": "JSON representation of the decoded protobuf message."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Decode Bytes Response",
-                "description": "QueryDecodeBytesResponse is the Query/DecodeBytes response type."
+                "description": "QueryDecodeBytesResponse contains the decoded JSON string."
             }
         }
     }

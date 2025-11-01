@@ -6,18 +6,22 @@
             "dysonprotocol.nameservice.v1.MsgClaimBid": {
                 "properties": {
                     "bidder": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Bidder claiming the NFT after timeout."
                     },
                     "nft_class_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "NFT class identifier."
                     },
                     "nft_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "NFT identifier within the class."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Claim Bid"
+                "title": "Msg Claim Bid",
+                "description": "MsgClaimBid allows bidder to claim NFT after bid timeout expires without acceptance. Behavior: - Allows bidder to claim NFT ownership after bid timeout. - Transfers escrowed bid amount to previous owner. - Transfers NFT ownership to bidder. - Updates NFT valuation to claimed bid amount. - Resets valuation expiry to bid timestamp. Validation: - NFT must have active bid. - Sender must be current bidder. - Bid timeout period must have elapsed since bid placement. Emits: - EventBidClaimed(class_id, nft_id, bidder) on successful claim. Returns: - Empty response on success."
             }
         }
     },
@@ -28,7 +32,8 @@
             "dysonprotocol.nameservice.v1.MsgClaimBidResponse": {
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Claim Bid Response"
+                "title": "Msg Claim Bid Response",
+                "description": "Empty response for successful bid claim."
             }
         }
     }

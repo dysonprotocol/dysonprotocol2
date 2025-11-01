@@ -13,6 +13,7 @@
   "paths": {
     "dysonprotocol.nameservice.v1.MsgAcceptBid": {
       "post": {
+        "summary": "AcceptBid accepts current active bid, transferring NFT ownership and\nreleasing escrowed funds. Updates NFT valuation to accepted bid amount and\nclears bid state.",
         "operationId": "dysonprotocol.nameservice.v1.MsgAcceptBid",
         "responses": {
           "200": {
@@ -109,6 +110,7 @@
     },
     "dysonprotocol.nameservice.v1.MsgClaimBid": {
       "post": {
+        "summary": "ClaimBid allows bidder to claim NFT after bid timeout expires without\nacceptance. Transfers escrowed bid to previous owner and NFT ownership to\nbidder.",
         "operationId": "dysonprotocol.nameservice.v1.MsgClaimBid",
         "responses": {
           "200": {
@@ -141,6 +143,7 @@
     },
     "dysonprotocol.nameservice.v1.MsgCommit": {
       "post": {
+        "summary": "Commit creates a commitment for name registration using commit-reveal\nscheme. Stores hash commitment that can be revealed later to prevent\nfront-running.",
         "operationId": "dysonprotocol.nameservice.v1.MsgCommit",
         "responses": {
           "200": {
@@ -366,6 +369,7 @@
     },
     "dysonprotocol.nameservice.v1.MsgPlaceBid": {
       "post": {
+        "summary": "PlaceBid places or outbids on a listed NFT, escrowing funds until\nacceptance or expiry. First bids must meet/exceed valuation; subsequent\nbids require minimum increase percentage.",
         "operationId": "dysonprotocol.nameservice.v1.MsgPlaceBid",
         "responses": {
           "200": {
@@ -398,7 +402,7 @@
     },
     "dysonprotocol.nameservice.v1.MsgRejectBid": {
       "post": {
-        "summary": "RejectBid is used to reject a bid and set a new valuation for the NFT, to\nprevent abuse a rejection fee as a percentage of the new valuation is paid\nto the community pool.",
+        "summary": "RejectBid rejects current bid and sets new valuation, charging rejection\nfee. Fee routing: to NFT class owner for user-controlled classes, to\ncommunity pool for governance-controlled classes. Refunds the rejected\nbidder's escrowed bid amount back to them.",
         "operationId": "dysonprotocol.nameservice.v1.MsgRejectBid",
         "responses": {
           "200": {
@@ -431,6 +435,7 @@
     },
     "dysonprotocol.nameservice.v1.MsgRenew": {
       "post": {
+        "summary": "Renew extends valuation expiry by charging proportional annual fee.\nFee is paid to the NFT class owner.",
         "operationId": "dysonprotocol.nameservice.v1.MsgRenew",
         "responses": {
           "200": {
@@ -463,6 +468,7 @@
     },
     "dysonprotocol.nameservice.v1.MsgReveal": {
       "post": {
+        "summary": "Reveal completes name registration by validating revealed name matches\ncommitment hash. Mints Name NFT, charges valuation fee, and creates reverse\nmapping for resolution.",
         "operationId": "dysonprotocol.nameservice.v1.MsgReveal",
         "responses": {
           "200": {
@@ -1014,6 +1020,7 @@
     },
     "dysonprotocol.nameservice.v1.MsgSetValuation": {
       "post": {
+        "summary": "SetValuation updates the self-valuation of an NFT, charging Harberger tax\non increases. Fee goes to community pool or class owner based on governance\nstatus.",
         "operationId": "dysonprotocol.nameservice.v1.MsgSetValuation",
         "responses": {
           "200": {
@@ -1186,18 +1193,23 @@
       "type": "object",
       "properties": {
         "owner": {
-          "type": "string"
+          "type": "string",
+          "description": "Current NFT owner accepting the bid."
         },
         "nft_class_id": {
-          "type": "string"
+          "type": "string",
+          "description": "NFT class identifier."
         },
         "nft_id": {
-          "type": "string"
+          "type": "string",
+          "description": "NFT identifier within the class."
         }
-      }
+      },
+      "description": "MsgAcceptBid accepts current active bid, transferring NFT ownership and\nreleasing escrowed funds.\n\nBehavior:\n- Accepts highest current bid on owned NFT.\n- Transfers escrowed bid amount to current NFT owner.\n- Transfers NFT ownership to bidder.\n- Updates NFT valuation to accepted bid amount.\n- Clears all bid-related state.\n\nValidation:\n- Sender must be current NFT owner.\n- NFT must have active bid (non-zero amount and bidder).\n\nEmits:\n- EventBidAccepted(class_id, nft_id, new_owner) on successful acceptance.\n\nReturns:\n- Empty response on success."
     },
     "dysonprotocol.nameservice.v1.MsgAcceptBidResponse": {
-      "type": "object"
+      "type": "object",
+      "description": "Empty response for successful bid acceptance."
     },
     "dysonprotocol.nameservice.v1.MsgBurnCoins": {
       "type": "object",
@@ -1242,35 +1254,45 @@
       "type": "object",
       "properties": {
         "bidder": {
-          "type": "string"
+          "type": "string",
+          "description": "Bidder claiming the NFT after timeout."
         },
         "nft_class_id": {
-          "type": "string"
+          "type": "string",
+          "description": "NFT class identifier."
         },
         "nft_id": {
-          "type": "string"
+          "type": "string",
+          "description": "NFT identifier within the class."
         }
-      }
+      },
+      "description": "MsgClaimBid allows bidder to claim NFT after bid timeout expires without\nacceptance.\n\nBehavior:\n- Allows bidder to claim NFT ownership after bid timeout.\n- Transfers escrowed bid amount to previous owner.\n- Transfers NFT ownership to bidder.\n- Updates NFT valuation to claimed bid amount.\n- Resets valuation expiry to bid timestamp.\n\nValidation:\n- NFT must have active bid.\n- Sender must be current bidder.\n- Bid timeout period must have elapsed since bid placement.\n\nEmits:\n- EventBidClaimed(class_id, nft_id, bidder) on successful claim.\n\nReturns:\n- Empty response on success."
     },
     "dysonprotocol.nameservice.v1.MsgClaimBidResponse": {
-      "type": "object"
+      "type": "object",
+      "description": "Empty response for successful bid claim."
     },
     "dysonprotocol.nameservice.v1.MsgCommit": {
       "type": "object",
       "properties": {
         "committer": {
-          "type": "string"
+          "type": "string",
+          "description": "Address that will own the name after successful reveal."
         },
         "hexhash": {
-          "type": "string"
+          "type": "string",
+          "description": "Hex-encoded hash of (name + committer + salt) computed by client."
         },
         "valuation": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Proposed valuation for the name NFT (determines annual fee rate)."
         }
-      }
+      },
+      "description": "MsgCommit creates a commitment for name registration using commit-reveal\nscheme. Stores hash commitment that can be revealed later to prevent\nfront-running.\n\nBehavior:\n- Stores commitment with hash, owner, timestamp, and proposed valuation.\n- Commitment hash must be unique and computed as hash(name + committer +\nsalt).\n- Valuation specifies the initial self-valuation for the name NFT.\n\nValidation:\n- Committer address must be valid bech32.\n- Hexhash cannot be empty and must be unique.\n- Valuation must be valid according to nameservice class rules.\n\nEmits:\n- EventCommitmentCreated(hexhash) on successful commitment.\n\nReturns:\n- Empty response on success."
     },
     "dysonprotocol.nameservice.v1.MsgCommitResponse": {
-      "type": "object"
+      "type": "object",
+      "description": "Empty response for successful commitment creation."
     },
     "dysonprotocol.nameservice.v1.MsgCreateExternalName": {
       "type": "object",
@@ -1408,38 +1430,49 @@
       "type": "object",
       "properties": {
         "bidder": {
-          "type": "string"
+          "type": "string",
+          "description": "Address placing the bid."
         },
         "nft_class_id": {
-          "type": "string"
+          "type": "string",
+          "description": "NFT class identifier."
         },
         "nft_id": {
-          "type": "string"
+          "type": "string",
+          "description": "NFT identifier within the class."
         },
         "bid_amount": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Bid amount to offer for the NFT."
         }
-      }
+      },
+      "description": "MsgPlaceBid places or outbids on a listed NFT, escrowing funds until\nacceptance or expiry.\n\nBehavior:\n- Places bid on listed NFT, refunding any previous bidder.\n- First bids must meet/exceed current valuation.\n- Subsequent bids must exceed current bid by minimum percentage increase.\n- Funds escrowed in module until bid accepted, rejected, or claimed after\ntimeout.\n\nValidation:\n- Bid amount must be valid according to class rules.\n- NFT must be listed (directly or via class always_listed).\n- Cannot bid on authority-owned or module-owned NFTs.\n- Bid denomination must match valuation/current bid.\n- Bid must meet minimum increase requirements.\n\nEmits:\n- EventBidPlaced(class_id, nft_id, bidder, bid_amount) on successful bid.\n\nReturns:\n- Empty response on success."
     },
     "dysonprotocol.nameservice.v1.MsgPlaceBidResponse": {
-      "type": "object"
+      "type": "object",
+      "description": "Empty response for successful bid placement."
     },
     "dysonprotocol.nameservice.v1.MsgRejectBid": {
       "type": "object",
       "properties": {
         "owner": {
-          "type": "string"
+          "type": "string",
+          "description": "Current NFT owner rejecting the bid."
         },
         "nft_class_id": {
-          "type": "string"
+          "type": "string",
+          "description": "NFT class identifier."
         },
         "nft_id": {
-          "type": "string"
+          "type": "string",
+          "description": "NFT identifier within the class."
         },
         "new_valuation": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "New valuation amount (must be higher than current valuation)."
         }
-      }
+      },
+      "description": "MsgRejectBid rejects current bid and sets new valuation, charging rejection\nfee.\n\nBehavior:\n- Rejects current active bid on owned NFT.\n- Sets new NFT valuation, charging rejection fee proportional to new\nvaluation.\n- Rejection fee routing: to NFT class owner for user-controlled classes, to\ncommunity pool for governance-controlled classes.\n- Refunds the rejected bidder's escrowed bid amount back to them.\n- Clears bid state from NFT.\n\nValidation:\n- Sender must be current NFT owner.\n- NFT must have active bid to reject.\n- New valuation must be valid and higher than current.\n\nEmits:\n- EventBidRejected(class_id, nft_id, rejection_fee) on successful rejection.\n\nReturns:\n- Rejection fee amount collected."
     },
     "dysonprotocol.nameservice.v1.MsgRejectBidResponse": {
       "type": "object",
@@ -1449,7 +1482,7 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "title": "Fee collected by the community pool when a bid is rejected"
+          "description": "Fee collected by the NFT class owner when a bid is rejected."
         }
       }
     },
@@ -1457,22 +1490,27 @@
       "type": "object",
       "properties": {
         "payer": {
-          "type": "string"
+          "type": "string",
+          "description": "Address paying for the renewal fee."
         },
         "nft_class_id": {
-          "type": "string"
+          "type": "string",
+          "description": "NFT class identifier."
         },
         "nft_id": {
-          "type": "string"
+          "type": "string",
+          "description": "NFT identifier within the class."
         }
-      }
+      },
+      "description": "MsgRenew extends NFT valuation expiry by charging proportional annual fee.\n\nBehavior:\n- Extends valuation expiry by one full valuation period.\n- Calculates fee as: current_valuation \u00d7 fee_percent \u00d7 (period /\nvaluation_period).\n- Handles retroactive renewal if expiry has already passed.\n- Fee is paid to the NFT class owner.\n\nValidation:\n- Payer address must be valid.\n- NFT must exist with valid valuation.\n- Class must have valuation period and fee percentage configured.\n\nEmits:\n- EventNameRenewed(name, new_expiry) on successful renewal.\n\nReturns:\n- New expiry timestamp."
     },
     "dysonprotocol.nameservice.v1.MsgRenewResponse": {
       "type": "object",
       "properties": {
         "expiry": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "description": "New valuation expiry timestamp after renewal."
         }
       }
     },
@@ -1480,18 +1518,23 @@
       "type": "object",
       "properties": {
         "committer": {
-          "type": "string"
+          "type": "string",
+          "description": "Address that committed to this name registration (must match commitment\nowner)."
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Name to register (must match commitment hash when combined with salt)."
         },
         "salt": {
-          "type": "string"
+          "type": "string",
+          "description": "Salt used in commitment hash calculation (revealed here)."
         }
-      }
+      },
+      "description": "MsgReveal completes name registration by revealing the committed name and\nsalt. Validates revealed data matches commitment hash and mints Name NFT.\n\nBehavior:\n- Validates revealed name + salt produce the committed hash.\n- Mints new Name NFT in nameservice.dys class with name as NFT ID.\n- Charges annual valuation fee to community pool based on committed\nvaluation.\n- Sets NFT data with valuation, expiry, and default listing status.\n- Creates reverse mapping from owner address to name for resolution.\n- Deletes the used commitment after successful registration.\n\nValidation:\n- Committer address must be valid bech32.\n- Name must match format regex (lowercase, alphanumeric+dashes, ends with\n.dys).\n- Name must not already be registered.\n- Commitment must exist for computed hash (name + committer + salt).\n- Revealed committer must match commitment owner.\n- Valuation from commitment must be valid and non-zero.\n\nEmits:\n- EventNameRegistered(name, fee) on successful registration.\n\nReturns:\n- Empty response on success."
     },
     "dysonprotocol.nameservice.v1.MsgRevealResponse": {
-      "type": "object"
+      "type": "object",
+      "description": "Empty response for successful name registration."
     },
     "dysonprotocol.nameservice.v1.MsgSaveClass": {
       "type": "object",
@@ -1825,26 +1868,31 @@
       "type": "object",
       "properties": {
         "owner": {
-          "type": "string"
+          "type": "string",
+          "description": "NFT owner address performing the valuation update."
         },
         "nft_class_id": {
-          "type": "string"
+          "type": "string",
+          "description": "NFT class identifier."
         },
         "nft_id": {
-          "type": "string"
+          "type": "string",
+          "description": "NFT identifier within the class."
         },
         "valuation": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "title": "valuation is the new valuation of the NFT"
+          "description": "New valuation amount for the NFT."
         },
         "max_valuation_fee_pct": {
           "type": "string",
-          "description": "max_valuation_fee_pct (optional) is the maximum valuation fee percent the\nuser is willing to pay for setting the new valuation (e.g. \"0.025\" for\n2.5% per valuation period). This guards against unexpected fee amounts if\nthe class updates valuation_fee_pct."
+          "description": "Maximum valuation fee percentage the user is willing to pay (e.g. \"0.025\"\nfor 2.5%). Guards against unexpected fee amounts if class parameters\nchange."
         }
-      }
+      },
+      "description": "MsgSetValuation updates the self-valuation of an NFT, charging Harberger tax\non increases.\n\nBehavior:\n- Updates NFT valuation, charging fee only on incremental increases.\n- Fee is proportional to remaining time in current valuation period.\n- Fee destination depends on NFT class ownership (community pool vs class\nowner).\n- Valuation expiry remains unchanged; use MsgRenew to extend expiry.\n\nValidation:\n- Sender must be NFT owner.\n- NFT valuation must not be expired.\n- No active bids can exist (reject bids first).\n- New valuation must be valid according to class rules.\n- Max fee percent guard prevents unexpected fee increases.\n\nEmits:\n- EventNameValuationUpdated(name, new_valuation) on successful update.\n\nReturns:\n- Empty response on success."
     },
     "dysonprotocol.nameservice.v1.MsgSetValuationResponse": {
-      "type": "object"
+      "type": "object",
+      "description": "Empty response for successful valuation update."
     },
     "dysonprotocol.nameservice.v1.MsgUpdateParams": {
       "type": "object",

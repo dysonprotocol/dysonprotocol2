@@ -7,13 +7,13 @@
                 "properties": {
                     "owner": {
                         "type": "string",
-                        "description": "Owner identifier to query metrics for. Accepts either a nameservice name (resolved to an address) or a bech32 address directly. Resolution occurs server-side before computing metrics."
+                        "description": "Owner identifier to query metrics for; accepts nameservice names (resolved to addresses) or bech32 addresses directly. Resolution occurs server-side before computing metrics."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Metrics Request",
-                "description": "QueryMetricsRequest is request type for the Query/Metrics RPC method."
+                "description": "QueryMetricsRequest retrieves storage usage metrics for an owner. Metrics include total bytes stored, calculated stake requirements, and current stake amount."
             }
         }
     },
@@ -25,25 +25,25 @@
                 "properties": {
                     "owner": {
                         "type": "string",
-                        "description": "owner is the resolved account address that owns storage entries."
+                        "description": "Resolved account address that owns the storage entries."
                     },
                     "total_bytes": {
                         "type": "string",
-                        "description": "total_bytes is the total number of bytes consumed by all storage entries for this owner address."
+                        "description": "Total number of bytes consumed by all storage entries for this owner."
                     },
                     "min_stake_amount": {
                         "type": "string",
-                        "description": "min_stake_amount is the minimum stake required in udys for the current storage usage (total_bytes \u00d7 storage_stake_multiple)."
+                        "description": "Minimum stake required in udys for current storage usage (total_bytes \u00d7 storage_stake_multiple)."
                     },
                     "current_stake_amount": {
                         "type": "string",
-                        "description": "current_stake_amount is the owner's current total delegated stake in udys across all validators."
+                        "description": "Owner's current total delegated stake in udys across all validators."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Metrics Response",
-                "description": "QueryMetricsResponse is response type for the Query/Metrics RPC method."
+                "description": "Response containing storage metrics and stake information for an owner."
             }
         }
     }

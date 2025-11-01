@@ -7,7 +7,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Params Request",
-                "description": "QueryParamsRequest is the request type for the Query/Params RPC method"
+                "description": "QueryParamsRequest is the request type for the Query/Params RPC method. Empty request body as parameters are retrieved from module state."
             }
         }
     },
@@ -19,13 +19,14 @@
                 "properties": {
                     "params": {
                         "$ref": "#/definitions/dysonprotocol.crontask.v1.Params",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Current crontask module parameters including scheduling limits, gas constraints, and subscription configuration."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Params Response",
-                "description": "QueryParamsResponse is the response type for the Query/Params RPC method"
+                "description": "QueryParamsResponse is the response type for the Query/Params RPC method."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {

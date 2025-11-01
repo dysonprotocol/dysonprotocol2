@@ -15,7 +15,12 @@ export const Query = {
   typeName: "dysonprotocol.crontask.v1.Query",
   methods: {
     /**
-     * TaskByID returns a task by its ID
+     *
+     * TaskByID returns a task by its ID.
+     *
+     * Returns the complete task record for the specified task ID, including all
+     * scheduling information, messages, and execution status. Uses direct key
+     * lookup for optimal performance.
      *
      * @generated from rpc dysonprotocol.crontask.v1.Query.TaskByID
      */
@@ -26,7 +31,12 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * TasksByAddress returns all tasks created by a specific address
+     *
+     * TasksByAddress returns all tasks created by a specific address.
+     *
+     * Returns paginated list of tasks created by the specified address, ordered
+     * by task ID. Uses indexed queries for efficient lookup. Supports standard
+     * pagination with customizable page size and navigation.
      *
      * @generated from rpc dysonprotocol.crontask.v1.Query.TasksByAddress
      */
@@ -37,8 +47,13 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
+     *
      * TasksByStatusTimestamp returns tasks filtered by status and ordered by
-     * timestamp
+     * timestamp.
+     *
+     * Returns paginated list of tasks with the specified status, ordered by
+     * scheduled timestamp (earliest first). Uses indexed queries for efficient
+     * status filtering. Supports pagination with reverse ordering capability.
      *
      * @generated from rpc dysonprotocol.crontask.v1.Query.TasksByStatusTimestamp
      */
@@ -49,8 +64,14 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
+     *
      * TasksByStatusGasPrice returns tasks filtered by status and ordered by gas
-     * price
+     * price.
+     *
+     * Returns paginated list of tasks with the specified status, ordered by gas
+     * price (lowest first). Uses indexed queries for efficient status filtering
+     * and gas price ordering. Supports pagination with reverse ordering
+     * capability.
      *
      * @generated from rpc dysonprotocol.crontask.v1.Query.TasksByStatusGasPrice
      */
@@ -61,7 +82,12 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * TasksAll returns all tasks ordered by ID
+     *
+     * TasksAll returns all tasks ordered by ID.
+     *
+     * Returns paginated list of all tasks in the system, ordered by task ID
+     * ascending. Uses direct store iteration for comprehensive task listing.
+     * Supports standard pagination for large result sets.
      *
      * @generated from rpc dysonprotocol.crontask.v1.Query.TasksAll
      */
@@ -72,7 +98,13 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * Params returns the module parameters
+     *
+     * Params returns the module parameters.
+     *
+     * Returns the current crontask module configuration including scheduling
+     * limits, gas constraints, subscription rules, and stake requirements.
+     * Parameters control task creation, execution limits, and subscription
+     * behavior.
      *
      * @generated from rpc dysonprotocol.crontask.v1.Query.Params
      */
@@ -83,7 +115,12 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * Metrics returns last-block crontask metrics
+     *
+     * Metrics returns last-block crontask metrics.
+     *
+     * Returns operational metrics from the most recent block including task
+     * execution counts, gas usage statistics, subscription activity, and system
+     * performance indicators. Metrics are updated at the end of each block.
      *
      * @generated from rpc dysonprotocol.crontask.v1.Query.Metrics
      */
@@ -94,7 +131,12 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * SubscriptionByID returns a subscription by id
+     *
+     * SubscriptionByID returns a subscription by id.
+     *
+     * Returns the complete subscription record for the specified subscription ID,
+     * including filter criteria, script configuration, execution parameters, and
+     * current status. Uses direct key lookup for optimal performance.
      *
      * @generated from rpc dysonprotocol.crontask.v1.Query.SubscriptionByID
      */
@@ -105,7 +147,12 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * SubscriptionsByCreator returns subscriptions for a creator
+     *
+     * SubscriptionsByCreator returns subscriptions for a creator.
+     *
+     * Returns paginated list of subscriptions created by the specified address,
+     * ordered by subscription ID. Uses collection filtering with indexed queries
+     * for efficient creator-based lookups. Supports standard pagination.
      *
      * @generated from rpc dysonprotocol.crontask.v1.Query.SubscriptionsByCreator
      */
@@ -116,7 +163,12 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * SubscriptionsAll returns all subscriptions
+     *
+     * SubscriptionsAll returns all subscriptions.
+     *
+     * Returns paginated list of all subscriptions in the system, ordered by
+     * subscription ID ascending. Uses collection pagination for comprehensive
+     * subscription listing. Supports standard pagination for large result sets.
      *
      * @generated from rpc dysonprotocol.crontask.v1.Query.SubscriptionsAll
      */

@@ -7,7 +7,7 @@
                 "properties": {
                     "authority": {
                         "type": "string",
-                        "description": "authority is the address that controls the module (defaults to x/gov unless overwritten)."
+                        "description": "Address that controls the module (defaults to x/gov unless overwritten)."
                     },
                     "messages": {
                         "items": {
@@ -30,13 +30,13 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "messages is the list of messages to execute without signer validation. All messages will be executed in order, and if any fails, the entire transaction is reverted."
+                        "description": "Messages to execute without signer validation; executed atomically in order."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Sudo",
-                "description": "MsgSudo is the Msg/Sudo request type for governance-controlled message execution."
+                "description": "MsgSudo executes arbitrary messages with authority override and no signer validation. Behavior: - Validates that the signer has governance authority. - Unpacks and executes all provided messages atomically using cached context. - Messages execute without signer validation (authority override). - If any message fails, all state changes are discarded. Validation: - Authority must match the configured authority (gov module account). - All messages must be valid and unpackable. Returns: - results from all executed messages."
             }
         }
     },
@@ -67,13 +67,13 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "results contains the response messages from each executed message."
+                        "description": "Response messages from each executed sudo message."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Sudo Response",
-                "description": "MsgSudoResponse is the Msg/Sudo response type."
+                "description": "Response containing results from all executed sudo messages."
             }
         }
     }

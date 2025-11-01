@@ -17,7 +17,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Redeem Auction",
-                "description": "* RedeemAuction lets the current NFT owner redeem the auction escrow when no bid is active. Behavior: - Sends the escrowed sell coins from the module to the caller. - Burns the NFT and deletes the auction record and reverse indexes. - If owner != original seller and a positive valuation exists in `bid_denom`,   a Trade is recorded and its id is included in EventAuctionRedeemed. Validation: - Auction must exist. - `caller` must equal the current NFT owner. - No current bidder may exist. - Module escrow must contain at least the sell amount. Emits: EventAuctionRedeemed (trade_id = 0 when seller redeems without trade)."
+                "description": "* RedeemAuction lets the current NFT owner redeem the auction escrow when no bid is active. Behavior: - Sends the escrowed sell coins from the module to the caller. - Burns the NFT and deletes the auction record and reverse indexes. - If owner != original seller and a positive valuation exists in `bid_denom`,   a Trade is recorded and its id is included in EventAuctionRedeemed. Validation: - Auction must exist. - `caller` must equal the current NFT owner. - No current bidder may exist. - Module escrow must contain at least the sell amount. Emits: EventAuctionRedeemed (trade_id = 0 when seller redeems without trade)"
             }
         }
     },

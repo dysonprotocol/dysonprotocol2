@@ -7,31 +7,31 @@
                 "properties": {
                     "executor_address": {
                         "type": "string",
-                        "description": "executor is the account address used to execute the script."
+                        "description": "Account address used to execute the script; must be a valid bech32 address."
                     },
                     "script_address": {
                         "type": "string",
-                        "description": "address is the script bech32 address to execute."
+                        "description": "Script bech32 address to execute; mutually exclusive with script_name."
                     },
                     "script_name": {
                         "type": "string",
-                        "description": "script_name is the optional nameservice name of the script to execute (e.g., \"example.dys\")"
+                        "description": "Optional nameservice name of the script to execute (e.g., \"example.dys\")."
                     },
                     "extra_code": {
                         "type": "string",
-                        "description": "Only if the executor is the owner of the script  will the optional extra_code be temporary appended to the script for this message before calling the function."
+                        "description": "Optional extra code temporarily appended to the script for this execution. Only allowed if the executor is the script owner."
                     },
                     "function_name": {
                         "type": "string",
-                        "description": "The function name to run"
+                        "description": "Name of the function to call within the script."
                     },
                     "args": {
                         "type": "string",
-                        "description": "The positional arguments to pass to the function (*args) encoded as a json list"
+                        "description": "Positional arguments (*args) encoded as a JSON array."
                     },
                     "kwargs": {
                         "type": "string",
-                        "description": "The keyword argument to pass to the function (**kwargs) encoded as a json dict"
+                        "description": "Keyword arguments (**kwargs) encoded as a JSON object."
                     },
                     "attached_messages": {
                         "items": {
@@ -54,13 +54,13 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "The list of messages to run before the script and the result will be available in `dys.get_attached_messages()`. If any of the attached messages fails, the script execution will be aborted. The script can assume that the attached messages have been executed successfully by virtue of the fact that the script execution will never occur if any of the attached messages had failed. The attached messages are executed in the order they are provided."
+                        "description": "Messages executed before the script; results available via dys.get_attached_messages(). If any attached message fails, script execution is aborted. Messages execute in order."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Exec",
-                "description": "MsgExec executes a script by calling a function with arguments."
+                "description": "MsgExec executes a script function with arguments and handles attached messages. Behavior: - Resolves script address via direct address or nameservice name resolution. - Validates that script exists or creates empty script if not found. - Executes attached messages first, collecting their results. - Runs the specified function with provided args/kwargs in isolated context. - Commits state changes only if execution succeeds. - Emits execution event with full context for monitoring. Validation: - Either script_address or script_name must be provided. - If both are provided, they must resolve to the same address. - Executor address must be valid. - Function name, args, kwargs must be valid JSON strings. - Attached messages must be valid and executable. Emits: - EventExecScript with execution details (executor, script, function, result). Returns: - function execution result and attached message results."
             }
         }
     },
@@ -72,7 +72,7 @@
                 "properties": {
                     "result": {
                         "type": "string",
-                        "description": "result is the final result of the proposal execution."
+                        "description": "Final result of the script function execution."
                     },
                     "attached_message_results": {
                         "items": {
@@ -95,13 +95,13 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Results of the attached messages."
+                        "description": "Results of the attached messages executed before the script."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Exec Response",
-                "description": "MsgExecResponse is the Msg/Exec request type."
+                "description": "Response containing script execution results and attached message outcomes."
             }
         }
     }

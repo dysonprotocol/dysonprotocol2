@@ -77,7 +77,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Update Pool Config",
-                "description": "* Update a pool's dynamic configuration (owner-only). Behavior: - Loads pool; validates signer and majority-ownership. - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1. - Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`   with exactly two entries matching pool denoms; each > 1. - Liquidation threshold: required with exactly two entries; each > 1. - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0. - Max borrow percent: optional; if provided exactly two entries; 0 <= x < 1. - Bound percent: optional; when provided must contain exactly two DecCoins   matching pool denoms with amounts in (0,1]; 1 disables the bound. Omit to   leave existing bounds unchanged. - Persists pool with `updated` timestamp; emits EventPoolUpdate; asserts AMM   and module invariants. Emits: - EventPoolUpdate(pool_id). Returns: - Empty response."
+                "description": "MsgUpdatePoolConfig"
             },
             "cosmos.base.v1beta1.DecCoin": {
                 "properties": {
@@ -102,7 +102,8 @@
             "dysonprotocol.whaleswap.v1.MsgUpdatePoolConfigResponse": {
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Update Pool Config Response"
+                "title": "Msg Update Pool Config Response",
+                "description": "Empty response. See EventPoolUpdate for emitted details."
             }
         }
     }

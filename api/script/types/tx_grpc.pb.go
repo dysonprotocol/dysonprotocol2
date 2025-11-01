@@ -34,21 +34,24 @@ const (
 //
 // Msg is the dysonprotocol.script.v1 Msg service.
 type MsgClient interface {
-	// Update Script updates the script of the given address and increments the
-	// the version.
+	// UpdateScript updates the script code at the given address and increments
+	// its version. Automatically formats code using DysFormat and handles script
+	// creation if address doesn't exist.
 	UpdateScript(ctx context.Context, in *MsgUpdateScript, opts ...grpc.CallOption) (*MsgUpdateScriptResponse, error)
-	// ExecScript executes a script by calling a function with arguments.
+	// ExecScript executes a script function with arguments and handles attached
+	// messages. Supports script resolution via address or nameservice name with
+	// validation.
 	ExecScript(ctx context.Context, in *MsgExec, opts ...grpc.CallOption) (*MsgExecResponse, error)
-	// CreateNewScript | Create a new script with new address = hash(creator +
-	// content), a new authz updatescript permission will also be created for the
-	// creator
+	// CreateNewScript creates a new script with deterministic address and grants
+	// update permissions. Generates address from SHA256 hash of creator +
+	// formatted code, creates authz grant for updates.
 	CreateNewScript(ctx context.Context, in *MsgCreateNewScript, opts ...grpc.CallOption) (*MsgCreateNewScriptResponse, error)
-	// UpdateParams defines a governance operation for updating the x/script
-	// module parameters. The authority defaults to the x/gov module account.
+	// UpdateParams updates the module parameters via governance proposal.
+	// Authority validation ensures only governance can modify parameters.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
-	// Sudo defines a governance operation for executing arbitrary messages
-	// with authority override. The authority defaults to the x/gov module
-	// account. Messages are executed without signer validation.
+	// Sudo executes arbitrary messages with authority override and no signer
+	// validation. Governance operation that allows executing any messages
+	// atomically without validation.
 	Sudo(ctx context.Context, in *MsgSudo, opts ...grpc.CallOption) (*MsgSudoResponse, error)
 }
 
@@ -116,21 +119,24 @@ func (c *msgClient) Sudo(ctx context.Context, in *MsgSudo, opts ...grpc.CallOpti
 //
 // Msg is the dysonprotocol.script.v1 Msg service.
 type MsgServer interface {
-	// Update Script updates the script of the given address and increments the
-	// the version.
+	// UpdateScript updates the script code at the given address and increments
+	// its version. Automatically formats code using DysFormat and handles script
+	// creation if address doesn't exist.
 	UpdateScript(context.Context, *MsgUpdateScript) (*MsgUpdateScriptResponse, error)
-	// ExecScript executes a script by calling a function with arguments.
+	// ExecScript executes a script function with arguments and handles attached
+	// messages. Supports script resolution via address or nameservice name with
+	// validation.
 	ExecScript(context.Context, *MsgExec) (*MsgExecResponse, error)
-	// CreateNewScript | Create a new script with new address = hash(creator +
-	// content), a new authz updatescript permission will also be created for the
-	// creator
+	// CreateNewScript creates a new script with deterministic address and grants
+	// update permissions. Generates address from SHA256 hash of creator +
+	// formatted code, creates authz grant for updates.
 	CreateNewScript(context.Context, *MsgCreateNewScript) (*MsgCreateNewScriptResponse, error)
-	// UpdateParams defines a governance operation for updating the x/script
-	// module parameters. The authority defaults to the x/gov module account.
+	// UpdateParams updates the module parameters via governance proposal.
+	// Authority validation ensures only governance can modify parameters.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
-	// Sudo defines a governance operation for executing arbitrary messages
-	// with authority override. The authority defaults to the x/gov module
-	// account. Messages are executed without signer validation.
+	// Sudo executes arbitrary messages with authority override and no signer
+	// validation. Governance operation that allows executing any messages
+	// atomically without validation.
 	Sudo(context.Context, *MsgSudo) (*MsgSudoResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }

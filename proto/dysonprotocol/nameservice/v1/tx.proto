@@ -16,18 +16,21 @@ option go_package = "dysonprotocol.com/x/nameservice/types";
 service Msg {
   option (cosmos.msg.v1.service) = true;
   /*
-   * Commit creates a commitment for name registration using commit-reveal scheme.
-   * Stores hash commitment that can be revealed later to prevent front-running.
+   * Commit creates a commitment for name registration using commit-reveal
+   * scheme. Stores hash commitment that can be revealed later to prevent
+   * front-running.
    */
   rpc Commit(MsgCommit) returns (MsgCommitResponse);
   /*
-   * Reveal completes name registration by validating revealed name matches commitment hash.
-   * Mints Name NFT, charges valuation fee, and creates reverse mapping for resolution.
+   * Reveal completes name registration by validating revealed name matches
+   * commitment hash. Mints Name NFT, charges valuation fee, and creates reverse
+   * mapping for resolution.
    */
   rpc Reveal(MsgReveal) returns (MsgRevealResponse);
   /*
-   * SetValuation updates the self-valuation of an NFT, charging Harberger tax on increases.
-   * Fee goes to community pool or class owner based on governance status.
+   * SetValuation updates the self-valuation of an NFT, charging Harberger tax
+   * on increases. Fee goes to community pool or class owner based on governance
+   * status.
    */
   rpc SetValuation(MsgSetValuation) returns (MsgSetValuationResponse);
   /*
@@ -36,24 +39,28 @@ service Msg {
    */
   rpc Renew(MsgRenew) returns (MsgRenewResponse);
   /*
-   * PlaceBid places or outbids on a listed NFT, escrowing funds until acceptance or expiry.
-   * First bids must meet/exceed valuation; subsequent bids require minimum increase percentage.
+   * PlaceBid places or outbids on a listed NFT, escrowing funds until
+   * acceptance or expiry. First bids must meet/exceed valuation; subsequent
+   * bids require minimum increase percentage.
    */
   rpc PlaceBid(MsgPlaceBid) returns (MsgPlaceBidResponse);
   /*
-   * AcceptBid accepts current active bid, transferring NFT ownership and releasing escrowed funds.
-   * Updates NFT valuation to accepted bid amount and clears bid state.
+   * AcceptBid accepts current active bid, transferring NFT ownership and
+   * releasing escrowed funds. Updates NFT valuation to accepted bid amount and
+   * clears bid state.
    */
   rpc AcceptBid(MsgAcceptBid) returns (MsgAcceptBidResponse);
   /*
-   * RejectBid rejects current bid and sets new valuation, charging rejection fee.
-   * Fee routing: to NFT class owner for user-controlled classes, to community pool for governance-controlled classes.
-   * Refunds the rejected bidder's escrowed bid amount back to them.
+   * RejectBid rejects current bid and sets new valuation, charging rejection
+   * fee. Fee routing: to NFT class owner for user-controlled classes, to
+   * community pool for governance-controlled classes. Refunds the rejected
+   * bidder's escrowed bid amount back to them.
    */
   rpc RejectBid(MsgRejectBid) returns (MsgRejectBidResponse);
   /*
-   * ClaimBid allows bidder to claim NFT after bid timeout expires without acceptance.
-   * Transfers escrowed bid to previous owner and NFT ownership to bidder.
+   * ClaimBid allows bidder to claim NFT after bid timeout expires without
+   * acceptance. Transfers escrowed bid to previous owner and NFT ownership to
+   * bidder.
    */
   rpc ClaimBid(MsgClaimBid) returns (MsgClaimBidResponse);
   rpc SetDestination(MsgSetDestination) returns (MsgSetDestinationResponse);
@@ -106,12 +113,14 @@ service Msg {
 }
 
 /*
- * MsgCommit creates a commitment for name registration using commit-reveal scheme.
- * Stores hash commitment that can be revealed later to prevent front-running.
+ * MsgCommit creates a commitment for name registration using commit-reveal
+ * scheme. Stores hash commitment that can be revealed later to prevent
+ * front-running.
  *
  * Behavior:
  * - Stores commitment with hash, owner, timestamp, and proposed valuation.
- * - Commitment hash must be unique and computed as hash(name + committer + salt).
+ * - Commitment hash must be unique and computed as hash(name + committer +
+ * salt).
  * - Valuation specifies the initial self-valuation for the name NFT.
  *
  * Validation:
@@ -140,20 +149,22 @@ message MsgCommit {
 message MsgCommitResponse {}
 
 /*
- * MsgReveal completes name registration by revealing the committed name and salt.
- * Validates revealed data matches commitment hash and mints Name NFT.
+ * MsgReveal completes name registration by revealing the committed name and
+ * salt. Validates revealed data matches commitment hash and mints Name NFT.
  *
  * Behavior:
  * - Validates revealed name + salt produce the committed hash.
  * - Mints new Name NFT in nameservice.dys class with name as NFT ID.
- * - Charges annual valuation fee to community pool based on committed valuation.
+ * - Charges annual valuation fee to community pool based on committed
+ * valuation.
  * - Sets NFT data with valuation, expiry, and default listing status.
  * - Creates reverse mapping from owner address to name for resolution.
  * - Deletes the used commitment after successful registration.
  *
  * Validation:
  * - Committer address must be valid bech32.
- * - Name must match format regex (lowercase, alphanumeric+dashes, ends with .dys).
+ * - Name must match format regex (lowercase, alphanumeric+dashes, ends with
+ * .dys).
  * - Name must not already be registered.
  * - Commitment must exist for computed hash (name + committer + salt).
  * - Revealed committer must match commitment owner.
@@ -167,7 +178,8 @@ message MsgCommitResponse {}
  */
 message MsgReveal {
   option (cosmos.msg.v1.signer) = "committer";
-  // Address that committed to this name registration (must match commitment owner).
+  // Address that committed to this name registration (must match commitment
+  // owner).
   string committer = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   // Name to register (must match commitment hash when combined with salt).
   string name = 2;
@@ -190,12 +202,14 @@ message MsgCreateExternalName {
 message MsgCreateExternalNameResponse {}
 
 /*
- * MsgSetValuation updates the self-valuation of an NFT, charging Harberger tax on increases.
+ * MsgSetValuation updates the self-valuation of an NFT, charging Harberger tax
+ * on increases.
  *
  * Behavior:
  * - Updates NFT valuation, charging fee only on incremental increases.
  * - Fee is proportional to remaining time in current valuation period.
- * - Fee destination depends on NFT class ownership (community pool vs class owner).
+ * - Fee destination depends on NFT class ownership (community pool vs class
+ * owner).
  * - Valuation expiry remains unchanged; use MsgRenew to extend expiry.
  *
  * Validation:
@@ -222,8 +236,9 @@ message MsgSetValuation {
   // New valuation amount for the NFT.
   cosmos.base.v1beta1.Coin valuation = 4
       [ (gogoproto.nullable) = false, (amino.dont_omitempty) = true ];
-  // Maximum valuation fee percentage the user is willing to pay (e.g. "0.025" for 2.5%).
-  // Guards against unexpected fee amounts if class parameters change.
+  // Maximum valuation fee percentage the user is willing to pay (e.g. "0.025"
+  // for 2.5%). Guards against unexpected fee amounts if class parameters
+  // change.
   string max_valuation_fee_pct = 5;
 }
 /*
@@ -236,7 +251,8 @@ message MsgSetValuationResponse {}
  *
  * Behavior:
  * - Extends valuation expiry by one full valuation period.
- * - Calculates fee as: current_valuation × fee_percent × (period / valuation_period).
+ * - Calculates fee as: current_valuation × fee_percent × (period /
+ * valuation_period).
  * - Handles retroactive renewal if expiry has already passed.
  * - Fee is paid to the NFT class owner.
  *
@@ -267,13 +283,15 @@ message MsgRenewResponse {
 }
 
 /*
- * MsgPlaceBid places or outbids on a listed NFT, escrowing funds until acceptance or expiry.
+ * MsgPlaceBid places or outbids on a listed NFT, escrowing funds until
+ * acceptance or expiry.
  *
  * Behavior:
  * - Places bid on listed NFT, refunding any previous bidder.
  * - First bids must meet/exceed current valuation.
  * - Subsequent bids must exceed current bid by minimum percentage increase.
- * - Funds escrowed in module until bid accepted, rejected, or claimed after timeout.
+ * - Funds escrowed in module until bid accepted, rejected, or claimed after
+ * timeout.
  *
  * Validation:
  * - Bid amount must be valid according to class rules.
@@ -306,7 +324,8 @@ message MsgPlaceBid {
 message MsgPlaceBidResponse {}
 
 /*
- * MsgAcceptBid accepts current active bid, transferring NFT ownership and releasing escrowed funds.
+ * MsgAcceptBid accepts current active bid, transferring NFT ownership and
+ * releasing escrowed funds.
  *
  * Behavior:
  * - Accepts highest current bid on owned NFT.
@@ -340,12 +359,15 @@ message MsgAcceptBid {
 message MsgAcceptBidResponse {}
 
 /*
- * MsgRejectBid rejects current bid and sets new valuation, charging rejection fee.
+ * MsgRejectBid rejects current bid and sets new valuation, charging rejection
+ * fee.
  *
  * Behavior:
  * - Rejects current active bid on owned NFT.
- * - Sets new NFT valuation, charging rejection fee proportional to new valuation.
- * - Rejection fee routing: to NFT class owner for user-controlled classes, to community pool for governance-controlled classes.
+ * - Sets new NFT valuation, charging rejection fee proportional to new
+ * valuation.
+ * - Rejection fee routing: to NFT class owner for user-controlled classes, to
+ * community pool for governance-controlled classes.
  * - Refunds the rejected bidder's escrowed bid amount back to them.
  * - Clears bid state from NFT.
  *
@@ -379,7 +401,8 @@ message MsgRejectBidResponse {
 }
 
 /*
- * MsgClaimBid allows bidder to claim NFT after bid timeout expires without acceptance.
+ * MsgClaimBid allows bidder to claim NFT after bid timeout expires without
+ * acceptance.
  *
  * Behavior:
  * - Allows bidder to claim NFT ownership after bid timeout.

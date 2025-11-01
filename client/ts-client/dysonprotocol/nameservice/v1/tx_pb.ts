@@ -10,20 +10,48 @@ import { Params } from "./params_pb.js";
 import { Input, Metadata, Output } from "../../../cosmos/bank/v1beta1/bank_pb.js";
 
 /**
+ *
+ * MsgCommit creates a commitment for name registration using commit-reveal
+ * scheme. Stores hash commitment that can be revealed later to prevent
+ * front-running.
+ *
+ * Behavior:
+ * - Stores commitment with hash, owner, timestamp, and proposed valuation.
+ * - Commitment hash must be unique and computed as hash(name + committer +
+ * salt).
+ * - Valuation specifies the initial self-valuation for the name NFT.
+ *
+ * Validation:
+ * - Committer address must be valid bech32.
+ * - Hexhash cannot be empty and must be unique.
+ * - Valuation must be valid according to nameservice class rules.
+ *
+ * Emits:
+ * - EventCommitmentCreated(hexhash) on successful commitment.
+ *
+ * Returns:
+ * - Empty response on success.
+ *
  * @generated from message dysonprotocol.nameservice.v1.MsgCommit
  */
 export class MsgCommit extends Message<MsgCommit> {
   /**
+   * Address that will own the name after successful reveal.
+   *
    * @generated from field: string committer = 1;
    */
   committer = "";
 
   /**
+   * Hex-encoded hash of (name + committer + salt) computed by client.
+   *
    * @generated from field: string hexhash = 2;
    */
   hexhash = "";
 
   /**
+   * Proposed valuation for the name NFT (determines annual fee rate).
+   *
    * @generated from field: cosmos.base.v1beta1.Coin valuation = 3;
    */
   valuation?: Coin;
@@ -59,6 +87,9 @@ export class MsgCommit extends Message<MsgCommit> {
 }
 
 /**
+ *
+ * Empty response for successful commitment creation.
+ *
  * @generated from message dysonprotocol.nameservice.v1.MsgCommitResponse
  */
 export class MsgCommitResponse extends Message<MsgCommitResponse> {
@@ -90,20 +121,55 @@ export class MsgCommitResponse extends Message<MsgCommitResponse> {
 }
 
 /**
+ *
+ * MsgReveal completes name registration by revealing the committed name and
+ * salt. Validates revealed data matches commitment hash and mints Name NFT.
+ *
+ * Behavior:
+ * - Validates revealed name + salt produce the committed hash.
+ * - Mints new Name NFT in nameservice.dys class with name as NFT ID.
+ * - Charges annual valuation fee to community pool based on committed
+ * valuation.
+ * - Sets NFT data with valuation, expiry, and default listing status.
+ * - Creates reverse mapping from owner address to name for resolution.
+ * - Deletes the used commitment after successful registration.
+ *
+ * Validation:
+ * - Committer address must be valid bech32.
+ * - Name must match format regex (lowercase, alphanumeric+dashes, ends with
+ * .dys).
+ * - Name must not already be registered.
+ * - Commitment must exist for computed hash (name + committer + salt).
+ * - Revealed committer must match commitment owner.
+ * - Valuation from commitment must be valid and non-zero.
+ *
+ * Emits:
+ * - EventNameRegistered(name, fee) on successful registration.
+ *
+ * Returns:
+ * - Empty response on success.
+ *
  * @generated from message dysonprotocol.nameservice.v1.MsgReveal
  */
 export class MsgReveal extends Message<MsgReveal> {
   /**
+   * Address that committed to this name registration (must match commitment
+   * owner).
+   *
    * @generated from field: string committer = 1;
    */
   committer = "";
 
   /**
+   * Name to register (must match commitment hash when combined with salt).
+   *
    * @generated from field: string name = 2;
    */
   name = "";
 
   /**
+   * Salt used in commitment hash calculation (revealed here).
+   *
    * @generated from field: string salt = 3;
    */
   salt = "";
@@ -139,6 +205,9 @@ export class MsgReveal extends Message<MsgReveal> {
 }
 
 /**
+ *
+ * Empty response for successful name registration.
+ *
  * @generated from message dysonprotocol.nameservice.v1.MsgRevealResponse
  */
 export class MsgRevealResponse extends Message<MsgRevealResponse> {
@@ -249,36 +318,65 @@ export class MsgCreateExternalNameResponse extends Message<MsgCreateExternalName
 }
 
 /**
+ *
+ * MsgSetValuation updates the self-valuation of an NFT, charging Harberger tax
+ * on increases.
+ *
+ * Behavior:
+ * - Updates NFT valuation, charging fee only on incremental increases.
+ * - Fee is proportional to remaining time in current valuation period.
+ * - Fee destination depends on NFT class ownership (community pool vs class
+ * owner).
+ * - Valuation expiry remains unchanged; use MsgRenew to extend expiry.
+ *
+ * Validation:
+ * - Sender must be NFT owner.
+ * - NFT valuation must not be expired.
+ * - No active bids can exist (reject bids first).
+ * - New valuation must be valid according to class rules.
+ * - Max fee percent guard prevents unexpected fee increases.
+ *
+ * Emits:
+ * - EventNameValuationUpdated(name, new_valuation) on successful update.
+ *
+ * Returns:
+ * - Empty response on success.
+ *
  * @generated from message dysonprotocol.nameservice.v1.MsgSetValuation
  */
 export class MsgSetValuation extends Message<MsgSetValuation> {
   /**
+   * NFT owner address performing the valuation update.
+   *
    * @generated from field: string owner = 1;
    */
   owner = "";
 
   /**
+   * NFT class identifier.
+   *
    * @generated from field: string nft_class_id = 2;
    */
   nftClassId = "";
 
   /**
+   * NFT identifier within the class.
+   *
    * @generated from field: string nft_id = 3;
    */
   nftId = "";
 
   /**
-   * valuation is the new valuation of the NFT
+   * New valuation amount for the NFT.
    *
    * @generated from field: cosmos.base.v1beta1.Coin valuation = 4;
    */
   valuation?: Coin;
 
   /**
-   * max_valuation_fee_pct (optional) is the maximum valuation fee percent the
-   * user is willing to pay for setting the new valuation (e.g. "0.025" for
-   * 2.5% per valuation period). This guards against unexpected fee amounts if
-   * the class updates valuation_fee_pct.
+   * Maximum valuation fee percentage the user is willing to pay (e.g. "0.025"
+   * for 2.5%). Guards against unexpected fee amounts if class parameters
+   * change.
    *
    * @generated from field: string max_valuation_fee_pct = 5;
    */
@@ -317,6 +415,9 @@ export class MsgSetValuation extends Message<MsgSetValuation> {
 }
 
 /**
+ *
+ * Empty response for successful valuation update.
+ *
  * @generated from message dysonprotocol.nameservice.v1.MsgSetValuationResponse
  */
 export class MsgSetValuationResponse extends Message<MsgSetValuationResponse> {
@@ -348,20 +449,47 @@ export class MsgSetValuationResponse extends Message<MsgSetValuationResponse> {
 }
 
 /**
+ *
+ * MsgRenew extends NFT valuation expiry by charging proportional annual fee.
+ *
+ * Behavior:
+ * - Extends valuation expiry by one full valuation period.
+ * - Calculates fee as: current_valuation × fee_percent × (period /
+ * valuation_period).
+ * - Handles retroactive renewal if expiry has already passed.
+ * - Fee is paid to the NFT class owner.
+ *
+ * Validation:
+ * - Payer address must be valid.
+ * - NFT must exist with valid valuation.
+ * - Class must have valuation period and fee percentage configured.
+ *
+ * Emits:
+ * - EventNameRenewed(name, new_expiry) on successful renewal.
+ *
+ * Returns:
+ * - New expiry timestamp.
+ *
  * @generated from message dysonprotocol.nameservice.v1.MsgRenew
  */
 export class MsgRenew extends Message<MsgRenew> {
   /**
+   * Address paying for the renewal fee.
+   *
    * @generated from field: string payer = 1;
    */
   payer = "";
 
   /**
+   * NFT class identifier.
+   *
    * @generated from field: string nft_class_id = 2;
    */
   nftClassId = "";
 
   /**
+   * NFT identifier within the class.
+   *
    * @generated from field: string nft_id = 3;
    */
   nftId = "";
@@ -401,6 +529,8 @@ export class MsgRenew extends Message<MsgRenew> {
  */
 export class MsgRenewResponse extends Message<MsgRenewResponse> {
   /**
+   * New valuation expiry timestamp after renewal.
+   *
    * @generated from field: google.protobuf.Timestamp expiry = 1;
    */
   expiry?: Timestamp;
@@ -434,25 +564,57 @@ export class MsgRenewResponse extends Message<MsgRenewResponse> {
 }
 
 /**
+ *
+ * MsgPlaceBid places or outbids on a listed NFT, escrowing funds until
+ * acceptance or expiry.
+ *
+ * Behavior:
+ * - Places bid on listed NFT, refunding any previous bidder.
+ * - First bids must meet/exceed current valuation.
+ * - Subsequent bids must exceed current bid by minimum percentage increase.
+ * - Funds escrowed in module until bid accepted, rejected, or claimed after
+ * timeout.
+ *
+ * Validation:
+ * - Bid amount must be valid according to class rules.
+ * - NFT must be listed (directly or via class always_listed).
+ * - Cannot bid on authority-owned or module-owned NFTs.
+ * - Bid denomination must match valuation/current bid.
+ * - Bid must meet minimum increase requirements.
+ *
+ * Emits:
+ * - EventBidPlaced(class_id, nft_id, bidder, bid_amount) on successful bid.
+ *
+ * Returns:
+ * - Empty response on success.
+ *
  * @generated from message dysonprotocol.nameservice.v1.MsgPlaceBid
  */
 export class MsgPlaceBid extends Message<MsgPlaceBid> {
   /**
+   * Address placing the bid.
+   *
    * @generated from field: string bidder = 1;
    */
   bidder = "";
 
   /**
+   * NFT class identifier.
+   *
    * @generated from field: string nft_class_id = 2;
    */
   nftClassId = "";
 
   /**
+   * NFT identifier within the class.
+   *
    * @generated from field: string nft_id = 3;
    */
   nftId = "";
 
   /**
+   * Bid amount to offer for the NFT.
+   *
    * @generated from field: cosmos.base.v1beta1.Coin bid_amount = 4;
    */
   bidAmount?: Coin;
@@ -489,6 +651,9 @@ export class MsgPlaceBid extends Message<MsgPlaceBid> {
 }
 
 /**
+ *
+ * Empty response for successful bid placement.
+ *
  * @generated from message dysonprotocol.nameservice.v1.MsgPlaceBidResponse
  */
 export class MsgPlaceBidResponse extends Message<MsgPlaceBidResponse> {
@@ -520,20 +685,47 @@ export class MsgPlaceBidResponse extends Message<MsgPlaceBidResponse> {
 }
 
 /**
+ *
+ * MsgAcceptBid accepts current active bid, transferring NFT ownership and
+ * releasing escrowed funds.
+ *
+ * Behavior:
+ * - Accepts highest current bid on owned NFT.
+ * - Transfers escrowed bid amount to current NFT owner.
+ * - Transfers NFT ownership to bidder.
+ * - Updates NFT valuation to accepted bid amount.
+ * - Clears all bid-related state.
+ *
+ * Validation:
+ * - Sender must be current NFT owner.
+ * - NFT must have active bid (non-zero amount and bidder).
+ *
+ * Emits:
+ * - EventBidAccepted(class_id, nft_id, new_owner) on successful acceptance.
+ *
+ * Returns:
+ * - Empty response on success.
+ *
  * @generated from message dysonprotocol.nameservice.v1.MsgAcceptBid
  */
 export class MsgAcceptBid extends Message<MsgAcceptBid> {
   /**
+   * Current NFT owner accepting the bid.
+   *
    * @generated from field: string owner = 1;
    */
   owner = "";
 
   /**
+   * NFT class identifier.
+   *
    * @generated from field: string nft_class_id = 2;
    */
   nftClassId = "";
 
   /**
+   * NFT identifier within the class.
+   *
    * @generated from field: string nft_id = 3;
    */
   nftId = "";
@@ -569,6 +761,9 @@ export class MsgAcceptBid extends Message<MsgAcceptBid> {
 }
 
 /**
+ *
+ * Empty response for successful bid acceptance.
+ *
  * @generated from message dysonprotocol.nameservice.v1.MsgAcceptBidResponse
  */
 export class MsgAcceptBidResponse extends Message<MsgAcceptBidResponse> {
@@ -600,25 +795,57 @@ export class MsgAcceptBidResponse extends Message<MsgAcceptBidResponse> {
 }
 
 /**
+ *
+ * MsgRejectBid rejects current bid and sets new valuation, charging rejection
+ * fee.
+ *
+ * Behavior:
+ * - Rejects current active bid on owned NFT.
+ * - Sets new NFT valuation, charging rejection fee proportional to new
+ * valuation.
+ * - Rejection fee routing: to NFT class owner for user-controlled classes, to
+ * community pool for governance-controlled classes.
+ * - Refunds the rejected bidder's escrowed bid amount back to them.
+ * - Clears bid state from NFT.
+ *
+ * Validation:
+ * - Sender must be current NFT owner.
+ * - NFT must have active bid to reject.
+ * - New valuation must be valid and higher than current.
+ *
+ * Emits:
+ * - EventBidRejected(class_id, nft_id, rejection_fee) on successful rejection.
+ *
+ * Returns:
+ * - Rejection fee amount collected.
+ *
  * @generated from message dysonprotocol.nameservice.v1.MsgRejectBid
  */
 export class MsgRejectBid extends Message<MsgRejectBid> {
   /**
+   * Current NFT owner rejecting the bid.
+   *
    * @generated from field: string owner = 1;
    */
   owner = "";
 
   /**
+   * NFT class identifier.
+   *
    * @generated from field: string nft_class_id = 2;
    */
   nftClassId = "";
 
   /**
+   * NFT identifier within the class.
+   *
    * @generated from field: string nft_id = 3;
    */
   nftId = "";
 
   /**
+   * New valuation amount (must be higher than current valuation).
+   *
    * @generated from field: cosmos.base.v1beta1.Coin new_valuation = 4;
    */
   newValuation?: Coin;
@@ -659,7 +886,7 @@ export class MsgRejectBid extends Message<MsgRejectBid> {
  */
 export class MsgRejectBidResponse extends Message<MsgRejectBidResponse> {
   /**
-   * Fee collected by the community pool when a bid is rejected
+   * Fee collected by the NFT class owner when a bid is rejected.
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin rejection_fee = 1;
    */
@@ -694,20 +921,48 @@ export class MsgRejectBidResponse extends Message<MsgRejectBidResponse> {
 }
 
 /**
+ *
+ * MsgClaimBid allows bidder to claim NFT after bid timeout expires without
+ * acceptance.
+ *
+ * Behavior:
+ * - Allows bidder to claim NFT ownership after bid timeout.
+ * - Transfers escrowed bid amount to previous owner.
+ * - Transfers NFT ownership to bidder.
+ * - Updates NFT valuation to claimed bid amount.
+ * - Resets valuation expiry to bid timestamp.
+ *
+ * Validation:
+ * - NFT must have active bid.
+ * - Sender must be current bidder.
+ * - Bid timeout period must have elapsed since bid placement.
+ *
+ * Emits:
+ * - EventBidClaimed(class_id, nft_id, bidder) on successful claim.
+ *
+ * Returns:
+ * - Empty response on success.
+ *
  * @generated from message dysonprotocol.nameservice.v1.MsgClaimBid
  */
 export class MsgClaimBid extends Message<MsgClaimBid> {
   /**
+   * Bidder claiming the NFT after timeout.
+   *
    * @generated from field: string bidder = 1;
    */
   bidder = "";
 
   /**
+   * NFT class identifier.
+   *
    * @generated from field: string nft_class_id = 2;
    */
   nftClassId = "";
 
   /**
+   * NFT identifier within the class.
+   *
    * @generated from field: string nft_id = 3;
    */
   nftId = "";
@@ -743,6 +998,9 @@ export class MsgClaimBid extends Message<MsgClaimBid> {
 }
 
 /**
+ *
+ * Empty response for successful bid claim.
+ *
  * @generated from message dysonprotocol.nameservice.v1.MsgClaimBidResponse
  */
 export class MsgClaimBidResponse extends Message<MsgClaimBidResponse> {

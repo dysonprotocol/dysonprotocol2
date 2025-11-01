@@ -6,16 +6,18 @@
             "dysonprotocol.crontask.v1.MsgDeleteSubscription": {
                 "properties": {
                     "creator": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Account deleting the subscription; must be the subscription's creator."
                     },
                     "subscription_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier of the subscription to delete."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Delete Subscription",
-                "description": "DeleteSubscription"
+                "description": "MsgDeleteSubscription removes an existing subscription permanently. Behavior: - Permanently removes a subscription from storage. - Only the creator of the subscription can delete it. - No refunds are provided for remaining subscription time or fees. Validation: - Creator address must be valid. - Subscription must exist. - Creator must match the subscription's creator field. Emits: - EventSubscriptionDeleted(subscription_id, creator) on successful deletion. Returns: - Empty MsgDeleteSubscriptionResponse."
             }
         }
     },
@@ -26,7 +28,8 @@
             "dysonprotocol.crontask.v1.MsgDeleteSubscriptionResponse": {
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Delete Subscription Response"
+                "title": "Msg Delete Subscription Response",
+                "description": "MsgDeleteSubscriptionResponse contains the result of subscription deletion. Empty response indicates successful deletion."
             }
         }
     }

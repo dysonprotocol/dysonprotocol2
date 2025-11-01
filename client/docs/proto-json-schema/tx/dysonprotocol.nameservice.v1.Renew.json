@@ -6,18 +6,22 @@
             "dysonprotocol.nameservice.v1.MsgRenew": {
                 "properties": {
                     "payer": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Address paying for the renewal fee."
                     },
                     "nft_class_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "NFT class identifier."
                     },
                     "nft_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "NFT identifier within the class."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Renew"
+                "title": "Msg Renew",
+                "description": "MsgRenew extends NFT valuation expiry by charging proportional annual fee. Behavior: - Extends valuation expiry by one full valuation period. - Calculates fee as: current_valuation \u00d7 fee_percent \u00d7 (period / valuation_period). - Handles retroactive renewal if expiry has already passed. - Fee is paid to the NFT class owner. Validation: - Payer address must be valid. - NFT must exist with valid valuation. - Class must have valuation period and fee percentage configured. Emits: - EventNameRenewed(name, new_expiry) on successful renewal. Returns: - New expiry timestamp."
             }
         }
     },
@@ -29,6 +33,7 @@
                 "properties": {
                     "expiry": {
                         "type": "string",
+                        "description": "New valuation expiry timestamp after renewal.",
                         "format": "date-time"
                     }
                 },

@@ -7,21 +7,21 @@
                 "properties": {
                     "script_address": {
                         "type": "string",
-                        "description": "script_address is the bech32 account address of the script."
+                        "description": "Bech32 account address of the script to execute."
                     },
                     "script_name": {
                         "type": "string",
-                        "description": "script_name is the name of the script (e.g., \"example.dys\")."
+                        "description": "Nameservice name of the script to execute (e.g., \"example.dys\")."
                     },
                     "httprequest": {
                         "type": "string",
-                        "description": "httprequest is the http request."
+                        "description": "HTTP request string to pass to the script's WSGI application."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Web Request",
-                "description": "WebRequest is the Service/Web request type."
+                "description": "WebRequest requests execution of a script's WSGI web application. Either script_address or script_name must be provided. The script's WSGI application will be executed in read-only mode with no state modifications allowed."
             }
         }
     },
@@ -33,13 +33,13 @@
                 "properties": {
                     "httpresponse": {
                         "type": "string",
-                        "description": "httpresponse is the http response."
+                        "description": "HTTP response string returned by the script's WSGI application."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Web Response",
-                "description": "WebResponse is the Service/Web response type."
+                "description": "WebResponse contains the HTTP response from the script's WSGI application."
             }
         }
     }

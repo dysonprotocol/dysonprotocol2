@@ -38,13 +38,17 @@ var _ = time.Kitchen
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// WebRequest is the Service/Web request type.
+// WebRequest requests execution of a script's WSGI web application.
+//
+// Either script_address or script_name must be provided. The script's WSGI
+// application will be executed in read-only mode with no state modifications
+// allowed.
 type WebRequest struct {
-	// script_address is the bech32 account address of the script.
+	// Bech32 account address of the script to execute.
 	ScriptAddress string `protobuf:"bytes,1,opt,name=script_address,json=scriptAddress,proto3" json:"script_address,omitempty"`
-	// script_name is the name of the script (e.g., "example.dys").
+	// Nameservice name of the script to execute (e.g., "example.dys").
 	ScriptName string `protobuf:"bytes,2,opt,name=script_name,json=scriptName,proto3" json:"script_name,omitempty"`
-	// httprequest is the http request.
+	// HTTP request string to pass to the script's WSGI application.
 	Httprequest string `protobuf:"bytes,3,opt,name=httprequest,proto3" json:"httprequest,omitempty"`
 }
 
@@ -102,9 +106,9 @@ func (m *WebRequest) GetHttprequest() string {
 	return ""
 }
 
-// WebResponse is the Service/Web response type.
+// WebResponse contains the HTTP response from the script's WSGI application.
 type WebResponse struct {
-	// httpresponse is the http response.
+	// HTTP response string returned by the script's WSGI application.
 	Httpresponse string `protobuf:"bytes,1,opt,name=httpresponse,proto3" json:"httpresponse,omitempty"`
 }
 
@@ -148,9 +152,13 @@ func (m *WebResponse) GetHttpresponse() string {
 	return ""
 }
 
-// QueryScriptInfoRequest is the Query/ScriptInfo request type.
+// QueryScriptInfoRequest requests script information by address or name.
+//
+// The address field accepts both bech32 addresses and nameservice names.
+// Nameservice names will be resolved to addresses automatically.
 type QueryScriptInfoRequest struct {
-	// address is the account address of the script.
+	// Script address or nameservice name to query; supports both bech32 addresses
+	// and names.
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
 }
 
@@ -194,9 +202,9 @@ func (m *QueryScriptInfoRequest) GetAddress() string {
 	return ""
 }
 
-// QueryScriptInfoResponse is the Query/ScriptInfo response type.
+// QueryScriptInfoResponse contains the complete script information.
 type QueryScriptInfoResponse struct {
-	// info is the ScriptInfo of the script.
+	// Complete script information including code, version, and metadata.
 	Script *Script `protobuf:"bytes,1,opt,name=script,proto3" json:"script,omitempty"`
 }
 
@@ -240,9 +248,11 @@ func (m *QueryScriptInfoResponse) GetScript() *Script {
 	return nil
 }
 
-// QueryEncodeJsonRequest is the Query/EncodeJson request type.
+// QueryEncodeJsonRequest requests encoding of JSON to protobuf bytes.
+//
+// The JSON must represent a valid Cosmos SDK message that can be unmarshaled.
 type QueryEncodeJsonRequest struct {
-	// json is the json string to encode.
+	// JSON string representing a Cosmos SDK message to encode to protobuf bytes.
 	Json string `protobuf:"bytes,1,opt,name=json,proto3" json:"json,omitempty"`
 }
 
@@ -286,9 +296,9 @@ func (m *QueryEncodeJsonRequest) GetJson() string {
 	return ""
 }
 
-// QueryEncodeJsonResponse is the Query/EncodeJson response type.
+// QueryEncodeJsonResponse contains the protobuf-encoded bytes.
 type QueryEncodeJsonResponse struct {
-	// bytes is the encoded bytes.
+	// Protobuf-encoded bytes of the input JSON message.
 	Bytes []byte `protobuf:"bytes,1,opt,name=bytes,proto3" json:"bytes,omitempty"`
 }
 
@@ -332,10 +342,15 @@ func (m *QueryEncodeJsonResponse) GetBytes() []byte {
 	return nil
 }
 
-// QueryDecodeBytesRequest is the Query/DecodeBytes request type.
+// QueryDecodeBytesRequest requests decoding of protobuf bytes to JSON.
+//
+// The type_url specifies the message type to decode, and bytes contains the
+// protobuf-encoded data.
 type QueryDecodeBytesRequest struct {
+	// Type URL of the message type to decode (e.g.,
+	// "/cosmos.bank.v1beta1.MsgSend").
 	TypeUrl string `protobuf:"bytes,1,opt,name=type_url,json=typeUrl,proto3" json:"type_url,omitempty"`
-	// bytes is the encoded bytes.
+	// Protobuf-encoded bytes of the message to decode to JSON.
 	Bytes []byte `protobuf:"bytes,2,opt,name=bytes,proto3" json:"bytes,omitempty"`
 }
 
@@ -386,9 +401,9 @@ func (m *QueryDecodeBytesRequest) GetBytes() []byte {
 	return nil
 }
 
-// QueryDecodeBytesResponse is the Query/DecodeBytes response type.
+// QueryDecodeBytesResponse contains the decoded JSON string.
 type QueryDecodeBytesResponse struct {
-	// json is the decoded json string.
+	// JSON representation of the decoded protobuf message.
 	Json string `protobuf:"bytes,1,opt,name=json,proto3" json:"json,omitempty"`
 }
 
@@ -432,8 +447,16 @@ func (m *QueryDecodeBytesResponse) GetJson() string {
 	return ""
 }
 
+// QueryVerifyTxRequest requests verification of an arbitrary transaction
+// signature.
+//
+// The transaction JSON should contain a properly signed MsgArbitraryData
+// transaction. Verification follows ADR-036 rules with empty chain ID, account
+// number 0, and sequence 0. See the VerifyTx RPC method documentation for a
+// complete example transaction structure.
 type QueryVerifyTxRequest struct {
-	// The transaction as a JSON string
+	// JSON representation of the transaction to verify (must contain
+	// MsgArbitraryData).
 	TxJson string `protobuf:"bytes,1,opt,name=tx_json,json=txJson,proto3" json:"tx_json,omitempty"`
 }
 
@@ -477,10 +500,9 @@ func (m *QueryVerifyTxRequest) GetTxJson() string {
 	return ""
 }
 
-// QueryVerifyTxResponse will return the signer address of the MsgArbitraryData
-// or error if the signature is invalid
+// QueryVerifyTxResponse contains the verified signer address.
 type QueryVerifyTxResponse struct {
-	// The signer address of the MsgArbitraryData
+	// Bech32 address of the verified signer of the MsgArbitraryData transaction.
 	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
 }
 
@@ -524,7 +546,9 @@ func (m *QueryVerifyTxResponse) GetSigner() string {
 	return ""
 }
 
-// QueryParamsRequest is the request type for the Query/Params RPC method.
+// QueryParamsRequest requests the current script module parameters.
+//
+// This is an empty request message - no parameters needed.
 type QueryParamsRequest struct {
 }
 
@@ -561,9 +585,10 @@ func (m *QueryParamsRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryParamsRequest proto.InternalMessageInfo
 
-// QueryParamsResponse is the response type for the Query/Params RPC method.
+// QueryParamsResponse contains the current script module parameters.
 type QueryParamsResponse struct {
-	// params holds all the parameters of this module.
+	// Current script module parameters including execution limits and
+	// configuration.
 	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
 }
 
@@ -607,28 +632,29 @@ func (m *QueryParamsResponse) GetParams() Params {
 	return Params{}
 }
 
-// RunScript is the Query/Run request type.
+// RunScript requests execution of a script function in read-only mode.
+//
+// Similar to MsgExec but executed in a cached context with no persistent state
+// changes. All execution results are returned but any state modifications are
+// discarded.
 type RunScript struct {
-	// executor is the account address used to execute the script
+	// Account address used to execute the script; must be a valid bech32 address.
 	ExecutorAddress string `protobuf:"bytes,1,opt,name=executor_address,json=executorAddress,proto3" json:"executor_address,omitempty"`
-	// address is the script bech32 address to execute.
+	// Script bech32 address to execute; mutually exclusive with script_name.
 	ScriptAddress string `protobuf:"bytes,2,opt,name=script_address,json=scriptAddress,proto3" json:"script_address,omitempty"`
-	// script_name is the optional nameservice name of the script to execute
-	// (e.g., "example.dys")
+	// Optional nameservice name of the script to execute (e.g., "example.dys").
 	ScriptName string `protobuf:"bytes,3,opt,name=script_name,json=scriptName,proto3" json:"script_name,omitempty"`
-	// Only if the executor is the owner of the script will the optional
-	// extra_code be temporary appended to the script for this message before
-	// calling the function
+	// Optional extra code temporarily appended to the script for this execution.
+	// Only allowed if the executor is the script owner.
 	ExtraCode string `protobuf:"bytes,4,opt,name=extra_code,json=extraCode,proto3" json:"extra_code,omitempty"`
-	// The function name to run
+	// Name of the function to call within the script.
 	FunctionName string `protobuf:"bytes,5,opt,name=function_name,json=functionName,proto3" json:"function_name,omitempty"`
-	// The positional arguments to pass to the function (*args) encoded as a json
-	// list
+	// Positional arguments (*args) encoded as a JSON array.
 	Args string `protobuf:"bytes,6,opt,name=args,proto3" json:"args,omitempty"`
-	// The keyword arguments to pass to the function (**kwargs) encoded as a json
-	// dict
+	// Keyword arguments (**kwargs) encoded as a JSON object.
 	Kwargs string `protobuf:"bytes,7,opt,name=kwargs,proto3" json:"kwargs,omitempty"`
-	// The list of messages to run before the script.
+	// Messages executed before the script; results available but state changes
+	// discarded.
 	AttachedMessages []*any.Any `protobuf:"bytes,8,rep,name=attached_messages,json=attachedMessages,proto3" json:"attached_messages,omitempty"`
 }
 
@@ -721,11 +747,11 @@ func (m *RunScript) GetAttachedMessages() []*any.Any {
 	return nil
 }
 
-// ResponseRunScript is the Query/Run response type.
+// ResponseRunScript contains script execution results from read-only run.
 type ResponseRunScript struct {
-	// result is the execution result returned by the script function.
+	// Execution result returned by the script function.
 	Result string `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
-	// Results of the attached messages.
+	// Results of the attached messages executed before the script.
 	AttachedMessageResults []*any.Any `protobuf:"bytes,2,rep,name=attached_message_results,json=attachedMessageResults,proto3" json:"attached_message_results,omitempty"`
 }
 
@@ -776,7 +802,9 @@ func (m *ResponseRunScript) GetAttachedMessageResults() []*any.Any {
 	return nil
 }
 
-// QueryGetBlockRequest is the Query/GetBlock request type.
+// QueryGetBlockRequest requests current block information.
+//
+// This is an empty request message - no parameters needed.
 type QueryGetBlockRequest struct {
 }
 
@@ -813,19 +841,19 @@ func (m *QueryGetBlockRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryGetBlockRequest proto.InternalMessageInfo
 
-// QueryGetBlockResponse is the Query/GetBlock response type.
+// QueryGetBlockResponse contains current block information.
 type QueryGetBlockResponse struct {
-	// block_height is the height of the block.
+	// Height of the current block.
 	BlockHeight int64 `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	// block_time is the time of the block.
+	// Timestamp of the current block.
 	BlockTime time.Time `protobuf:"bytes,2,opt,name=block_time,json=blockTime,proto3,stdtime" json:"block_time"`
-	// chain_id is the chain ID.
+	// Chain ID of the blockchain.
 	ChainId string `protobuf:"bytes,3,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
-	// block_hash is the hash of the block.
+	// Hash of the current block (app hash from header).
 	BlockHash []byte `protobuf:"bytes,4,opt,name=block_hash,json=blockHash,proto3" json:"block_hash,omitempty"`
-	// app_hash is the application hash.
+	// Application hash of the current block.
 	AppHash []byte `protobuf:"bytes,5,opt,name=app_hash,json=appHash,proto3" json:"app_hash,omitempty"`
-	// proposer_address is the address of the block proposer.
+	// Bech32 address of the block proposer.
 	ProposerAddress string `protobuf:"bytes,6,opt,name=proposer_address,json=proposerAddress,proto3" json:"proposer_address,omitempty"`
 }
 
@@ -905,13 +933,16 @@ func (m *QueryGetBlockResponse) GetProposerAddress() string {
 }
 
 // QueryFunctionSchemaRequest requests function schemas for a script.
+//
+// Either script_address or script_name must be provided. The script will be
+// introspected to extract schemas for all public functions.
 type QueryFunctionSchemaRequest struct {
-	// executor is the account address used to evaluate the script
+	// Account address used to evaluate the script; must be a valid bech32
+	// address.
 	ExecutorAddress string `protobuf:"bytes,1,opt,name=executor_address,json=executorAddress,proto3" json:"executor_address,omitempty"`
-	// address is the script bech32 address to inspect.
+	// Script bech32 address to inspect; mutually exclusive with script_name.
 	ScriptAddress string `protobuf:"bytes,2,opt,name=script_address,json=scriptAddress,proto3" json:"script_address,omitempty"`
-	// script_name is the optional nameservice name of the script to inspect
-	// (e.g., "example.dys")
+	// Optional nameservice name of the script to inspect (e.g., "example.dys").
 	ScriptName string `protobuf:"bytes,3,opt,name=script_name,json=scriptName,proto3" json:"script_name,omitempty"`
 }
 
@@ -969,11 +1000,11 @@ func (m *QueryFunctionSchemaRequest) GetScriptName() string {
 	return ""
 }
 
-// QueryFunctionSchemaResponse contains a JSON object mapping function names to
-// schemas.
+// QueryFunctionSchemaResponse contains function schemas extracted from a
+// script.
 type QueryFunctionSchemaResponse struct {
-	// schema_json is a JSON object: [{"name": "func_name", "schema":
-	// {schema...}}, ...]
+	// JSON array of function schemas: [{"name": "func_name", "schema": {...}},
+	// ...]
 	SchemaJson string `protobuf:"bytes,1,opt,name=schema_json,json=schemaJson,proto3" json:"schema_json,omitempty"`
 }
 
@@ -1136,24 +1167,94 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// ScriptInfo queries script info based on script address
+	// ScriptInfo queries script information by address or nameservice name.
+	// Supports both direct bech32 addresses and nameservice resolution.
 	ScriptInfo(ctx context.Context, in *QueryScriptInfoRequest, opts ...grpc.CallOption) (*QueryScriptInfoResponse, error)
-	// EncodeJson encodes a JSON string to bytes.
+	// EncodeJson encodes a JSON string to protobuf bytes for message
+	// construction. Useful for converting human-readable JSON to binary protobuf
+	// format.
 	EncodeJson(ctx context.Context, in *QueryEncodeJsonRequest, opts ...grpc.CallOption) (*QueryEncodeJsonResponse, error)
-	// DecodeBytes decodes bytes to a JSON string.
+	// DecodeBytes decodes protobuf bytes to JSON string for message inspection.
+	// Useful for converting binary protobuf messages to human-readable JSON
+	// format.
 	DecodeBytes(ctx context.Context, in *QueryDecodeBytesRequest, opts ...grpc.CallOption) (*QueryDecodeBytesResponse, error)
-	// VerifyTx verifies a transaction.
+	// VerifyTx verifies the signatures of an arbitrary transaction for
+	// MsgArbitraryData. Implements ADR-036 arbitrary signature verification with
+	// empty chain ID and sequence.
+	//
+	// Example transaction JSON for verification:
+	// ```json
+	//
+	//	{
+	//	  "body": {
+	//	    "messages": [
+	//	      {
+	//	        "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
+	//	        "signer": "dys1example_address",
+	//	        "data": "arbitrary data to sign",
+	//	        "app_domain": "my_app/v1.0"
+	//	      }
+	//	    ],
+	//	    "memo": "",
+	//	    "timeout_height": "0"
+	//	  },
+	//	  "auth_info": {
+	//	    "signer_infos": [
+	//	      {
+	//	        "public_key": {
+	//	          "@type": "/cosmos.crypto.secp256k1.PubKey",
+	//	          "key": "base64_encoded_public_key"
+	//	        },
+	//	        "mode_info": {
+	//	          "single": {
+	//	            "mode": "SIGN_MODE_DIRECT"
+	//	          }
+	//	        },
+	//	        "sequence": "0"
+	//	      }
+	//	    ],
+	//	    "fee": {
+	//	      "amount": [],
+	//	      "gas_limit": "0"
+	//	    }
+	//	  },
+	//	  "signatures": [
+	//	    "base64_encoded_signature"
+	//	  ]
+	//	}
+	//
+	// ```
+	//
+	// CLI Example:
+	//
+	// # Create a signed MsgArbitraryData transaction for verification
+	// ```bash
+	// dysond tx script sign-arbitrary-data "your data to sign" --app-domain
+	// "my_app/v1.0" --from alice --chain-id "" --account-number 0 --sequence 0
+	// --offline --output-document signed_tx.json
+	// ```
+	//
+	// # Verify the signed transaction
+	// ```bash
+	// dysond query script verify-tx --tx-json "$(cat signed_tx.json)" -o json
+	// ```
 	VerifyTx(ctx context.Context, in *QueryVerifyTxRequest, opts ...grpc.CallOption) (*QueryVerifyTxResponse, error)
 	// Params queries the parameters of the script module.
+	// Returns current configuration parameters for script execution and limits.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	// Queries the WSGI web application function of a script.
+	// Web queries the WSGI web application function of a script.
+	// This is used in the REST API and not intended for direct use.
+	// Executes script's WSGI application in read-only mode for web requests.
 	Web(ctx context.Context, in *WebRequest, opts ...grpc.CallOption) (*WebResponse, error)
-	// Run executes a script function in read-only mode without modifying
-	// state.
+	// Run executes a script function in read-only mode without modifying state.
+	// Uses cached context to ensure execution has no persistent effects.
 	Run(ctx context.Context, in *RunScript, opts ...grpc.CallOption) (*ResponseRunScript, error)
 	// GetBlock returns the current block information.
+	// Provides block height, time, chain ID, hashes, and proposer for scripts.
 	GetBlock(ctx context.Context, in *QueryGetBlockRequest, opts ...grpc.CallOption) (*QueryGetBlockResponse, error)
 	// FunctionSchema returns JSON schemas for all public functions in a script.
+	// Extracts function signatures, parameter types, and return types for tooling
+	// and documentation.
 	FunctionSchema(ctx context.Context, in *QueryFunctionSchemaRequest, opts ...grpc.CallOption) (*QueryFunctionSchemaResponse, error)
 }
 
@@ -1248,24 +1349,94 @@ func (c *queryClient) FunctionSchema(ctx context.Context, in *QueryFunctionSchem
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// ScriptInfo queries script info based on script address
+	// ScriptInfo queries script information by address or nameservice name.
+	// Supports both direct bech32 addresses and nameservice resolution.
 	ScriptInfo(context.Context, *QueryScriptInfoRequest) (*QueryScriptInfoResponse, error)
-	// EncodeJson encodes a JSON string to bytes.
+	// EncodeJson encodes a JSON string to protobuf bytes for message
+	// construction. Useful for converting human-readable JSON to binary protobuf
+	// format.
 	EncodeJson(context.Context, *QueryEncodeJsonRequest) (*QueryEncodeJsonResponse, error)
-	// DecodeBytes decodes bytes to a JSON string.
+	// DecodeBytes decodes protobuf bytes to JSON string for message inspection.
+	// Useful for converting binary protobuf messages to human-readable JSON
+	// format.
 	DecodeBytes(context.Context, *QueryDecodeBytesRequest) (*QueryDecodeBytesResponse, error)
-	// VerifyTx verifies a transaction.
+	// VerifyTx verifies the signatures of an arbitrary transaction for
+	// MsgArbitraryData. Implements ADR-036 arbitrary signature verification with
+	// empty chain ID and sequence.
+	//
+	// Example transaction JSON for verification:
+	// ```json
+	//
+	//	{
+	//	  "body": {
+	//	    "messages": [
+	//	      {
+	//	        "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
+	//	        "signer": "dys1example_address",
+	//	        "data": "arbitrary data to sign",
+	//	        "app_domain": "my_app/v1.0"
+	//	      }
+	//	    ],
+	//	    "memo": "",
+	//	    "timeout_height": "0"
+	//	  },
+	//	  "auth_info": {
+	//	    "signer_infos": [
+	//	      {
+	//	        "public_key": {
+	//	          "@type": "/cosmos.crypto.secp256k1.PubKey",
+	//	          "key": "base64_encoded_public_key"
+	//	        },
+	//	        "mode_info": {
+	//	          "single": {
+	//	            "mode": "SIGN_MODE_DIRECT"
+	//	          }
+	//	        },
+	//	        "sequence": "0"
+	//	      }
+	//	    ],
+	//	    "fee": {
+	//	      "amount": [],
+	//	      "gas_limit": "0"
+	//	    }
+	//	  },
+	//	  "signatures": [
+	//	    "base64_encoded_signature"
+	//	  ]
+	//	}
+	//
+	// ```
+	//
+	// CLI Example:
+	//
+	// # Create a signed MsgArbitraryData transaction for verification
+	// ```bash
+	// dysond tx script sign-arbitrary-data "your data to sign" --app-domain
+	// "my_app/v1.0" --from alice --chain-id "" --account-number 0 --sequence 0
+	// --offline --output-document signed_tx.json
+	// ```
+	//
+	// # Verify the signed transaction
+	// ```bash
+	// dysond query script verify-tx --tx-json "$(cat signed_tx.json)" -o json
+	// ```
 	VerifyTx(context.Context, *QueryVerifyTxRequest) (*QueryVerifyTxResponse, error)
 	// Params queries the parameters of the script module.
+	// Returns current configuration parameters for script execution and limits.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	// Queries the WSGI web application function of a script.
+	// Web queries the WSGI web application function of a script.
+	// This is used in the REST API and not intended for direct use.
+	// Executes script's WSGI application in read-only mode for web requests.
 	Web(context.Context, *WebRequest) (*WebResponse, error)
-	// Run executes a script function in read-only mode without modifying
-	// state.
+	// Run executes a script function in read-only mode without modifying state.
+	// Uses cached context to ensure execution has no persistent effects.
 	Run(context.Context, *RunScript) (*ResponseRunScript, error)
 	// GetBlock returns the current block information.
+	// Provides block height, time, chain ID, hashes, and proposer for scripts.
 	GetBlock(context.Context, *QueryGetBlockRequest) (*QueryGetBlockResponse, error)
 	// FunctionSchema returns JSON schemas for all public functions in a script.
+	// Extracts function signatures, parameter types, and return types for tooling
+	// and documentation.
 	FunctionSchema(context.Context, *QueryFunctionSchemaRequest) (*QueryFunctionSchemaResponse, error)
 }
 

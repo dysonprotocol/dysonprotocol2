@@ -7,18 +7,18 @@
                 "properties": {
                     "authority": {
                         "type": "string",
-                        "description": "authority is the address that controls the module (defaults to x/gov unless overwritten)."
+                        "description": "Address that controls the module (defaults to x/gov unless overwritten)."
                     },
                     "params": {
                         "$ref": "#/definitions/dysonprotocol.script.v1.Params",
                         "additionalProperties": false,
-                        "description": "params defines the x/script parameters to update. NOTE: All parameters must be supplied."
+                        "description": "Script module parameters to update; all parameters must be supplied."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Update Params",
-                "description": "MsgUpdateParams is the Msg/UpdateParams request type."
+                "description": "MsgUpdateParams updates the module parameters via governance proposal. Behavior: - Validates that the signer has authority to update parameters (gov module). - Validates that all provided parameters are valid. - Updates all module parameters atomically. Validation: - Authority must match the configured authority (gov module account). - All parameters in the params message must pass individual validation. Returns: - empty response on successful parameter update."
             },
             "dysonprotocol.script.v1.Params": {
                 "additionalProperties": false,
@@ -36,7 +36,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Update Params Response",
-                "description": "MsgUpdateParamsResponse defines the response structure for executing a MsgUpdateParams message."
+                "description": "Empty response indicating successful parameter update."
             }
         }
     }

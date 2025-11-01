@@ -13,7 +13,7 @@
   "paths": {
     "dysonprotocol.script.v1.MsgCreateNewScript": {
       "post": {
-        "summary": "CreateNewScript | Create a new script with new address = hash(creator +\ncontent), a new authz updatescript permission will also be created for the\ncreator",
+        "summary": "CreateNewScript creates a new script with deterministic address and grants\nupdate permissions. Generates address from SHA256 hash of creator +\nformatted code, creates authz grant for updates.",
         "operationId": "dysonprotocol.script.v1.MsgCreateNewScript",
         "responses": {
           "200": {
@@ -46,7 +46,7 @@
     },
     "dysonprotocol.script.v1.MsgExecScript": {
       "post": {
-        "summary": "ExecScript executes a script by calling a function with arguments.",
+        "summary": "ExecScript executes a script function with arguments and handles attached\nmessages. Supports script resolution via address or nameservice name with\nvalidation.",
         "operationId": "dysonprotocol.script.v1.MsgExecScript",
         "responses": {
           "200": {
@@ -79,7 +79,7 @@
     },
     "dysonprotocol.script.v1.MsgSudo": {
       "post": {
-        "summary": "Sudo defines a governance operation for executing arbitrary messages\nwith authority override. The authority defaults to the x/gov module\naccount. Messages are executed without signer validation.",
+        "summary": "Sudo executes arbitrary messages with authority override and no signer\nvalidation. Governance operation that allows executing any messages\natomically without validation.",
         "operationId": "dysonprotocol.script.v1.MsgSudo",
         "responses": {
           "200": {
@@ -112,7 +112,7 @@
     },
     "dysonprotocol.script.v1.MsgUpdateParams": {
       "post": {
-        "summary": "UpdateParams defines a governance operation for updating the x/script\nmodule parameters. The authority defaults to the x/gov module account.",
+        "summary": "UpdateParams updates the module parameters via governance proposal.\nAuthority validation ensures only governance can modify parameters.",
         "operationId": "dysonprotocol.script.v1.MsgUpdateParams",
         "responses": {
           "200": {
@@ -145,7 +145,7 @@
     },
     "dysonprotocol.script.v1.MsgUpdateScript": {
       "post": {
-        "summary": "Update Script updates the script of the given address and increments the\nthe version.",
+        "summary": "UpdateScript updates the script code at the given address and increments\nits version. Automatically formats code using DysFormat and handles script\ncreation if address doesn't exist.",
         "operationId": "dysonprotocol.script.v1.MsgUpdateScript",
         "responses": {
           "200": {
@@ -183,104 +183,104 @@
       "properties": {
         "creator_address": {
           "type": "string",
-          "description": "creator is the account address creating the script."
+          "description": "Account address creating the script; must be a valid bech32 address."
         },
         "code": {
           "type": "string",
-          "description": "code is the script content."
+          "description": "Python script content; will be formatted and used to generate deterministic\naddress."
         }
       },
-      "description": "MsgCreateNewScript is the Msg/CreateNewScript request type."
+      "description": "MsgCreateNewScript creates a new script with deterministic address and grants\nupdate permissions.\n\nBehavior:\n- Generates deterministic script address using SHA256 hash of creator +\nformatted code.\n- Creates bech32 address from first 20 bytes of hash.\n- Formats code using DysFormat before address generation and storage.\n- Grants generic authorization for MsgUpdateScript to creator via authz.\n- Initializes script with version 1 and formatted code.\n\nValidation:\n- Creator address must be valid.\n- Code must be valid Python syntax that can be formatted by DysFormat.\n- Generated address must not already exist.\n\nEmits:\n- EventCreateNewScript(script_address, creator_address, version) on success.\n\nReturns:\n- generated script address and initial version."
     },
     "dysonprotocol.script.v1.MsgCreateNewScriptResponse": {
       "type": "object",
       "properties": {
         "script_address": {
           "type": "string",
-          "description": "script_address is the address of the newly created script."
+          "description": "Address of the newly created script, generated deterministically."
         },
         "version": {
           "type": "string",
           "format": "uint64",
-          "description": "version is the initial script version."
+          "description": "Initial script version (always 1 for new scripts)."
         }
       },
-      "description": "MsgCreateNewScriptResponse is the Msg/CreateNewScript response type."
+      "description": "Response containing the newly created script details."
     },
     "dysonprotocol.script.v1.MsgExec": {
       "type": "object",
       "properties": {
         "executor_address": {
           "type": "string",
-          "description": "executor is the account address used to execute the script."
+          "description": "Account address used to execute the script; must be a valid bech32 address."
         },
         "script_address": {
           "type": "string",
-          "description": "address is the script bech32 address to execute."
+          "description": "Script bech32 address to execute; mutually exclusive with script_name."
         },
         "script_name": {
           "type": "string",
-          "title": "script_name is the optional nameservice name of the script to execute\n(e.g., \"example.dys\")"
+          "description": "Optional nameservice name of the script to execute (e.g., \"example.dys\")."
         },
         "extra_code": {
           "type": "string",
-          "description": "Only if the executor is the owner of the script  will the optional\nextra_code be temporary appended to the script for this message before\ncalling the function."
+          "description": "Optional extra code temporarily appended to the script for this execution.\nOnly allowed if the executor is the script owner."
         },
         "function_name": {
           "type": "string",
-          "title": "The function name to run"
+          "description": "Name of the function to call within the script."
         },
         "args": {
           "type": "string",
-          "title": "The positional arguments to pass to the function (*args) encoded as a\njson list"
+          "description": "Positional arguments (*args) encoded as a JSON array."
         },
         "kwargs": {
           "type": "string",
-          "title": "The keyword argument to pass to the function (**kwargs) encoded as a\njson dict"
+          "description": "Keyword arguments (**kwargs) encoded as a JSON object."
         },
         "attached_messages": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/google.protobuf.Any"
           },
-          "description": "The list of messages to run before the script and the result will be\navailable in `dys.get_attached_messages()`. If any of the attached messages\nfails, the script execution will be aborted. The script can assume that the\nattached messages have been executed successfully by virtue of the fact\nthat the script execution will never occur if any of the attached messages\nhad failed. The attached messages are executed in the order they are\nprovided."
+          "description": "Messages executed before the script; results available via\ndys.get_attached_messages(). If any attached message fails, script\nexecution is aborted. Messages execute in order."
         }
       },
-      "description": "MsgExec executes a script by calling a function with arguments."
+      "description": "MsgExec executes a script function with arguments and handles attached\nmessages.\n\nBehavior:\n- Resolves script address via direct address or nameservice name resolution.\n- Validates that script exists or creates empty script if not found.\n- Executes attached messages first, collecting their results.\n- Runs the specified function with provided args/kwargs in isolated context.\n- Commits state changes only if execution succeeds.\n- Emits execution event with full context for monitoring.\n\nValidation:\n- Either script_address or script_name must be provided.\n- If both are provided, they must resolve to the same address.\n- Executor address must be valid.\n- Function name, args, kwargs must be valid JSON strings.\n- Attached messages must be valid and executable.\n\nEmits:\n- EventExecScript with execution details (executor, script, function,\nresult).\n\nReturns:\n- function execution result and attached message results."
     },
     "dysonprotocol.script.v1.MsgExecResponse": {
       "type": "object",
       "properties": {
         "result": {
           "type": "string",
-          "description": "result is the final result of the proposal execution."
+          "description": "Final result of the script function execution."
         },
         "attached_message_results": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/google.protobuf.Any"
           },
-          "description": "Results of the attached messages."
+          "description": "Results of the attached messages executed before the script."
         }
       },
-      "description": "MsgExecResponse is the Msg/Exec request type."
+      "description": "Response containing script execution results and attached message outcomes."
     },
     "dysonprotocol.script.v1.MsgSudo": {
       "type": "object",
       "properties": {
         "authority": {
           "type": "string",
-          "description": "authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+          "description": "Address that controls the module (defaults to x/gov unless overwritten)."
         },
         "messages": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/google.protobuf.Any"
           },
-          "description": "messages is the list of messages to execute without signer validation.\nAll messages will be executed in order, and if any fails, the entire\ntransaction is reverted."
+          "description": "Messages to execute without signer validation; executed atomically in\norder."
         }
       },
-      "description": "MsgSudo is the Msg/Sudo request type for governance-controlled message\nexecution."
+      "description": "MsgSudo executes arbitrary messages with authority override and no signer\nvalidation.\n\nBehavior:\n- Validates that the signer has governance authority.\n- Unpacks and executes all provided messages atomically using cached context.\n- Messages execute without signer validation (authority override).\n- If any message fails, all state changes are discarded.\n\nValidation:\n- Authority must match the configured authority (gov module account).\n- All messages must be valid and unpackable.\n\nReturns:\n- results from all executed messages."
     },
     "dysonprotocol.script.v1.MsgSudoResponse": {
       "type": "object",
@@ -290,42 +290,42 @@
           "items": {
             "$ref": "#/definitions/google.protobuf.Any"
           },
-          "description": "results contains the response messages from each executed message."
+          "description": "Response messages from each executed sudo message."
         }
       },
-      "description": "MsgSudoResponse is the Msg/Sudo response type."
+      "description": "Response containing results from all executed sudo messages."
     },
     "dysonprotocol.script.v1.MsgUpdateParams": {
       "type": "object",
       "properties": {
         "authority": {
           "type": "string",
-          "description": "authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+          "description": "Address that controls the module (defaults to x/gov unless overwritten)."
         },
         "params": {
           "$ref": "#/definitions/dysonprotocol.script.v1.Params",
-          "description": "params defines the x/script parameters to update.\n\nNOTE: All parameters must be supplied."
+          "description": "Script module parameters to update; all parameters must be supplied."
         }
       },
-      "description": "MsgUpdateParams is the Msg/UpdateParams request type."
+      "description": "MsgUpdateParams updates the module parameters via governance proposal.\n\nBehavior:\n- Validates that the signer has authority to update parameters (gov module).\n- Validates that all provided parameters are valid.\n- Updates all module parameters atomically.\n\nValidation:\n- Authority must match the configured authority (gov module account).\n- All parameters in the params message must pass individual validation.\n\nReturns:\n- empty response on successful parameter update."
     },
     "dysonprotocol.script.v1.MsgUpdateParamsResponse": {
       "type": "object",
-      "description": "MsgUpdateParamsResponse defines the response structure for executing a\nMsgUpdateParams message."
+      "description": "Empty response indicating successful parameter update."
     },
     "dysonprotocol.script.v1.MsgUpdateScript": {
       "type": "object",
       "properties": {
         "address": {
           "type": "string",
-          "description": "address is the account address of the script."
+          "description": "Account address of the script to update; must be a valid bech32 address."
         },
         "code": {
           "type": "string",
-          "description": "script is the updated script."
+          "description": "Python script code to store; will be automatically formatted before\nstorage."
         }
       },
-      "description": "MsgUpdateScript is the Msg/UpdateScript request type."
+      "description": "MsgUpdateScript updates the script code at the given address and increments\nits version.\n\nBehavior:\n- Updates or creates a script at the specified address with formatted code.\n- Automatically formats the provided code using DysFormat before storage.\n- Increments the script version on each update.\n- Sets update metadata including block height.\n- Creates new scripts with empty code if they don't exist.\n\nValidation:\n- Address must be a valid bech32 address.\n- Code must be valid Python syntax that can be formatted by DysFormat.\n\nEmits:\n- EventUpdateScript(version, script_address) on successful update.\n\nReturns:\n- updated script version."
     },
     "dysonprotocol.script.v1.MsgUpdateScriptResponse": {
       "type": "object",
@@ -333,10 +333,10 @@
         "version": {
           "type": "string",
           "format": "uint64",
-          "description": "version is the updated script version."
+          "description": "Updated script version after the update operation."
         }
       },
-      "description": "MsgUpdateScriptResponse is the Msg/UpdateScript response type."
+      "description": "Empty response. See EventUpdateScript for emitted details."
     },
     "dysonprotocol.script.v1.Params": {
       "type": "object",

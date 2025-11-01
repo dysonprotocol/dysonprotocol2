@@ -7,20 +7,20 @@
                 "properties": {
                     "owner": {
                         "type": "string",
-                        "description": "The owner of the storage entries to delete."
+                        "description": "Account address that owns the storage entries; must be a valid bech32 address."
                     },
                     "indexes": {
                         "items": {
                             "type": "string"
                         },
                         "type": "array",
-                        "description": "List of specific indexes to delete."
+                        "description": "List of specific indexes to delete; must contain at least one index."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Storage Delete",
-                "description": "MsgStorageDelete is the message for deleting storage entries."
+                "description": "MsgStorageDelete is the message for deleting storage entries. Behavior: - Deletes multiple storage entries by index for the specified owner. - Verifies ownership of each entry before deletion to prevent unauthorized removal. - Updates owner's storage metrics by subtracting deleted bytes from total. - Returns list of successfully deleted indexes for transparency. Validation: - Owner must be a valid bech32 address. - At least one index must be specified for deletion. - Each specified index must exist and be owned by the requesting account. Emits: - EventStorageDelete(owner, deleted_indexes) with list of successfully deleted indexes. Returns: - List of indexes that were successfully deleted."
             }
         }
     },
@@ -35,13 +35,13 @@
                             "type": "string"
                         },
                         "type": "array",
-                        "description": "List of indexes that were successfully deleted"
+                        "description": "List of indexes that were successfully deleted; may be fewer than requested if some didn't exist."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Storage Delete Response",
-                "description": "MsgStorageDeleteResponse is the response for deleting storage entries."
+                "description": "Response containing the list of indexes that were successfully deleted."
             }
         }
     }

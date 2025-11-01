@@ -2812,17 +2812,19 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// MsgStorageSet is the message for setting a storage entry.
+// MsgStorageSet
 type MsgStorageSet struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The owner of the storage entry to set.
+	// Account address that owns the storage entry; must be a valid bech32
+	// address.
 	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
-	// The index of the storage entry to set.
+	// Index key for the storage entry; must be non-empty and printable ASCII
+	// only.
 	Index string `protobuf:"bytes,2,opt,name=index,proto3" json:"index,omitempty"`
-	// The data to set for the storage entry.
+	// JSON data to store; size limited by MaxStorageSize parameter.
 	Data string `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
 }
 
@@ -2867,7 +2869,7 @@ func (x *MsgStorageSet) GetData() string {
 	return ""
 }
 
-// MsgStorageSetResponse is the response for setting a storage entry.
+// Empty response. See EventStorageUpdated for emitted details.
 type MsgStorageSetResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2895,14 +2897,34 @@ func (*MsgStorageSetResponse) Descriptor() ([]byte, []int) {
 }
 
 // MsgStorageDelete is the message for deleting storage entries.
+//
+// Behavior:
+// - Deletes multiple storage entries by index for the specified owner.
+// - Verifies ownership of each entry before deletion to prevent unauthorized
+// removal.
+// - Updates owner's storage metrics by subtracting deleted bytes from total.
+// - Returns list of successfully deleted indexes for transparency.
+//
+// Validation:
+// - Owner must be a valid bech32 address.
+// - At least one index must be specified for deletion.
+// - Each specified index must exist and be owned by the requesting account.
+//
+// Emits:
+// - EventStorageDelete(owner, deleted_indexes) with list of successfully
+// deleted indexes.
+//
+// Returns:
+// - List of indexes that were successfully deleted.
 type MsgStorageDelete struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The owner of the storage entries to delete.
+	// Account address that owns the storage entries; must be a valid bech32
+	// address.
 	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
-	// List of specific indexes to delete.
+	// List of specific indexes to delete; must contain at least one index.
 	Indexes []string `protobuf:"bytes,2,rep,name=indexes,proto3" json:"indexes,omitempty"`
 }
 
@@ -2940,13 +2962,14 @@ func (x *MsgStorageDelete) GetIndexes() []string {
 	return nil
 }
 
-// MsgStorageDeleteResponse is the response for deleting storage entries.
+// Response containing the list of indexes that were successfully deleted.
 type MsgStorageDeleteResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// List of indexes that were successfully deleted
+	// List of indexes that were successfully deleted; may be fewer than requested
+	// if some didn't exist.
 	DeletedIndexes []string `protobuf:"bytes,1,rep,name=deleted_indexes,json=deletedIndexes,proto3" json:"deleted_indexes,omitempty"`
 }
 
@@ -2978,16 +3001,34 @@ func (x *MsgStorageDeleteResponse) GetDeletedIndexes() []string {
 }
 
 // MsgUpdateParams is the Msg/UpdateParams request type.
+//
+// Behavior:
+// - Validates that the signer has authority to update module parameters
+// (typically governance module).
+// - Validates that all provided parameters are valid according to parameter
+// constraints.
+// - Updates the module's parameter state with the new values.
+//
+// Validation:
+// - Authority must match the module's configured authority address.
+// - All parameter values must pass individual validation (MaxStorageSize,
+// StorageStakeMultiple).
+//
+// Emits:
+// - No events emitted for parameter updates.
+//
+// Returns:
+// - Empty response body on success.
 type MsgUpdateParams struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// authority is the address that controls the module (defaults to x/gov unless
+	// Authority is the address that controls the module (defaults to x/gov unless
 	// overwritten).
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	// params defines the x/storage parameters to update.
-	// NOTE: All parameters must be supplied.
+	// Params defines the x/storage parameters to update; all parameters must be
+	// supplied.
 	Params *Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params,omitempty"`
 }
 
@@ -3025,8 +3066,7 @@ func (x *MsgUpdateParams) GetParams() *Params {
 	return nil
 }
 
-// MsgUpdateParamsResponse defines the response structure for executing a
-// MsgUpdateParams message.
+// Empty response. Parameter updates do not emit events.
 type MsgUpdateParamsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

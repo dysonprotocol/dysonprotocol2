@@ -5846,27 +5846,55 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// MsgCreateTask defines the message for creating a new task
+// MsgCreateTask creates a new scheduled task with specified execution time and
+// messages.
+//
+// Behavior:
+// - Creates a task scheduled for execution at a future timestamp.
+// - Parses flexible timestamp formats (Unix timestamps or duration offsets like
+// "+1h30m").
+// - Validates scheduling constraints and gas limits against module parameters.
+// - Calculates gas price from fee and limit, stores task with unpacked
+// messages.
+// - Tasks remain in SCHEDULED status until execution time.
+//
+// Validation:
+// - Creator address must be valid.
+// - Scheduled timestamp must be in the future and within MaxScheduledTime
+// limit.
+// - Expiry timestamp must be after scheduled time (defaults to scheduled +
+// ExpiryLimit if not provided).
+// - Gas limit must be positive and not exceed BlockGasLimit.
+// - Gas fee must be positive and denominated in "udys".
+// - At least one message must be provided in the task.
+//
+// Emits:
+// - EventTaskCreated(task_id, creator) on successful task creation.
+//
+// Returns:
+// - MsgCreateTaskResponse with allocated task ID.
 type MsgCreateTask struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Address of the creator of the task
+	// Account creating the scheduled task.
 	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
-	// Unix timestamp when the task is scheduled to execute
+	// Unix timestamp or duration offset when the task is scheduled to execute.
 	// Can be either a Unix timestamp or a time offset prefixed with "+" (e.g.
-	// "+1h30m") Offset is relative to the current block time
+	// "+1h30m"). Offset is relative to the current block time.
 	ScheduledTimestamp string `protobuf:"bytes,2,opt,name=scheduled_timestamp,json=scheduledTimestamp,proto3" json:"scheduled_timestamp,omitempty"`
-	// Unix timestamp after which the task will expire if not executed
-	// Can be either a Unix timestamp or a time offset prefixed with "+" (e.g.
-	// "+2h") When using an offset, it's relative to the scheduled_timestamp
+	// Unix timestamp or duration offset after which the task will expire if not
+	// executed. Can be either a Unix timestamp or a time offset prefixed with "+"
+	// (e.g. "+2h"). When using an offset, it's relative to the
+	// scheduled_timestamp. If empty, defaults to scheduled_timestamp +
+	// ExpiryLimit.
 	ExpiryTimestamp string `protobuf:"bytes,3,opt,name=expiry_timestamp,json=expiryTimestamp,proto3" json:"expiry_timestamp,omitempty"`
-	// Maximum gas limit for the task execution
+	// Maximum gas limit for the task execution.
 	TaskGasLimit uint64 `protobuf:"varint,4,opt,name=task_gas_limit,json=taskGasLimit,proto3" json:"task_gas_limit,omitempty"`
-	// Gas fee for the task execution
+	// Gas fee for the task execution, deducted at execution time.
 	TaskGasFee *v1beta1.Coin `protobuf:"bytes,5,opt,name=task_gas_fee,json=taskGasFee,proto3" json:"task_gas_fee,omitempty"`
-	// Messages to execute as part of the task
+	// Messages to execute as part of the task when triggered.
 	Msgs []*anypb.Any `protobuf:"bytes,7,rep,name=msgs,proto3" json:"msgs,omitempty"`
 }
 
@@ -5932,13 +5960,14 @@ func (x *MsgCreateTask) GetMsgs() []*anypb.Any {
 	return nil
 }
 
-// MsgCreateTaskResponse defines the response for creating a new task
+// MsgCreateTaskResponse contains the result of task creation.
+// Empty response indicates successful task creation with allocated task ID.
 type MsgCreateTaskResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The ID of the created task
+	// Unique identifier assigned to the newly created task.
 	TaskId uint64 `protobuf:"varint,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
 }
 
@@ -5969,15 +5998,30 @@ func (x *MsgCreateTaskResponse) GetTaskId() uint64 {
 	return 0
 }
 
-// MsgDeleteTask defines the message for deleting a task
+// MsgDeleteTask removes a scheduled task permanently.
+//
+// Behavior:
+// - Permanently removes a task from storage before execution.
+// - Only the creator of the task can delete it.
+// - No refunds are provided for task fees or gas.
+//
+// Validation:
+// - Task must exist with the provided ID.
+// - Creator must match the task's creator field.
+//
+// Emits:
+// - EventTaskDeleted(task_id, creator) on successful deletion.
+//
+// Returns:
+// - Empty MsgDeleteTaskResponse.
 type MsgDeleteTask struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Address of the creator of the task
+	// Account deleting the task; must be the task's creator.
 	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
-	// ID of the task to delete
+	// Unique identifier of the task to delete.
 	TaskId uint64 `protobuf:"varint,2,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
 }
 
@@ -6015,7 +6059,8 @@ func (x *MsgDeleteTask) GetTaskId() uint64 {
 	return 0
 }
 
-// MsgDeleteTaskResponse defines the response for deleting a task
+// MsgDeleteTaskResponse contains the result of task deletion.
+// Empty response indicates successful deletion.
 type MsgDeleteTaskResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -6042,20 +6087,33 @@ func (*MsgDeleteTaskResponse) Descriptor() ([]byte, []int) {
 	return file_dysonprotocol_crontask_v1_tx_proto_rawDescGZIP(), []int{3}
 }
 
-// ---------------------------------------------------------------------------
-// MsgUpdateParams
-// ---------------------------------------------------------------------------
-// UpdateParams defines a governance operation for updating the x/crontask
-// module parameters. The authority defaults to the x/gov module account.
+// MsgUpdateParams updates the parameters of the x/crontask module via
+// governance proposal.
+//
+// Behavior:
+// - Updates all module parameters in a single governance operation.
+// - Authority is typically the x/gov module account.
+// - Parameters control task scheduling limits, gas constraints, and
+// subscription rules.
+//
+// Validation:
+// - Authority must be valid (typically x/gov module account).
+// - All parameter values must pass individual validation (Validate method).
+//
+// Emits:
+// - No events are emitted for parameter updates.
+//
+// Returns:
+// - Empty MsgUpdateParamsResponse.
 type MsgUpdateParams struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// authority is the address that controls the module (defaults to x/gov unless
+	// Authority is the address that controls the module (defaults to x/gov unless
 	// overwritten).
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	// params defines the x/crontask parameters to update.
+	// Parameters defines the x/crontask parameters to update.
 	// NOTE: All parameters must be supplied.
 	Params *Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params,omitempty"`
 }
@@ -6094,8 +6152,8 @@ func (x *MsgUpdateParams) GetParams() *Params {
 	return nil
 }
 
-// MsgUpdateParamsResponse defines the response structure for executing a
-// MsgUpdateParams message.
+// MsgUpdateParamsResponse contains the result of parameter update.
+// Empty response indicates successful parameter update.
 type MsgUpdateParamsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -6122,20 +6180,59 @@ func (*MsgUpdateParamsResponse) Descriptor() ([]byte, []int) {
 	return file_dysonprotocol_crontask_v1_tx_proto_rawDescGZIP(), []int{5}
 }
 
-// CreateSubscription
+// MsgCreateSubscription creates a new event-triggered subscription with upfront
+// fee payment.
+//
+// Behavior:
+// - Creates a subscription that triggers script execution when events match the
+// filter.
+// - Enforces minimum stake requirements across all creator's subscriptions.
+// - Deducts anti-spam fee to fee_collector module account.
+// - Allocates unique subscription ID and sets expiry to current time +
+// max_subscription_duration.
+// - Minifies JSON args/kwargs for storage efficiency.
+// - Initializes subscription with "enabled" status and zero trigger count.
+//
+// Validation:
+// - Creator address must be valid.
+// - Script address must be valid and non-empty.
+// - Function name must be non-empty.
+// - Task gas limit must be positive.
+// - Task gas fee must be positive.
+// - Filter, script_address, function, args, kwargs must not exceed length
+// limits.
+// - Creator must have sufficient bonded stake if MinStakePerSubscription is
+// configured.
+// - Args/kwargs must be valid JSON (array for args, object for kwargs).
+//
+// Emits:
+// - EventSubscriptionCreated(subscription_id, creator) on successful creation.
+//
+// Returns:
+// - MsgCreateSubscriptionResponse with allocated subscription ID.
 type MsgCreateSubscription struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Creator       string        `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
-	Filter        string        `protobuf:"bytes,2,opt,name=filter,proto3" json:"filter,omitempty"`
-	ScriptAddress string        `protobuf:"bytes,3,opt,name=script_address,json=scriptAddress,proto3" json:"script_address,omitempty"`
-	Function      string        `protobuf:"bytes,4,opt,name=function,proto3" json:"function,omitempty"`
-	Args          string        `protobuf:"bytes,5,opt,name=args,proto3" json:"args,omitempty"`
-	Kwargs        string        `protobuf:"bytes,6,opt,name=kwargs,proto3" json:"kwargs,omitempty"`
-	TaskGasLimit  uint64        `protobuf:"varint,7,opt,name=task_gas_limit,json=taskGasLimit,proto3" json:"task_gas_limit,omitempty"`
-	TaskGasFee    *v1beta1.Coin `protobuf:"bytes,8,opt,name=task_gas_fee,json=taskGasFee,proto3" json:"task_gas_fee,omitempty"`
+	// Account creating the subscription; must have sufficient bonded stake if
+	// MinStakePerSubscription is set.
+	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	// Event filter string used to match blockchain events that trigger the
+	// subscription.
+	Filter string `protobuf:"bytes,2,opt,name=filter,proto3" json:"filter,omitempty"`
+	// Address of the script containing the function to execute on trigger.
+	ScriptAddress string `protobuf:"bytes,3,opt,name=script_address,json=scriptAddress,proto3" json:"script_address,omitempty"`
+	// Name of the function to call in the script when triggered.
+	Function string `protobuf:"bytes,4,opt,name=function,proto3" json:"function,omitempty"`
+	// JSON array of positional arguments to pass to the script function.
+	Args string `protobuf:"bytes,5,opt,name=args,proto3" json:"args,omitempty"`
+	// JSON object of keyword arguments to pass to the script function.
+	Kwargs string `protobuf:"bytes,6,opt,name=kwargs,proto3" json:"kwargs,omitempty"`
+	// Maximum gas limit for each script execution triggered by this subscription.
+	TaskGasLimit uint64 `protobuf:"varint,7,opt,name=task_gas_limit,json=taskGasLimit,proto3" json:"task_gas_limit,omitempty"`
+	// Gas fee charged upfront and deducted for each trigger execution.
+	TaskGasFee *v1beta1.Coin `protobuf:"bytes,8,opt,name=task_gas_fee,json=taskGasFee,proto3" json:"task_gas_fee,omitempty"`
 }
 
 func (x *MsgCreateSubscription) Reset() {
@@ -6214,11 +6311,15 @@ func (x *MsgCreateSubscription) GetTaskGasFee() *v1beta1.Coin {
 	return nil
 }
 
+// MsgCreateSubscriptionResponse contains the result of subscription creation.
+// Empty response indicates successful subscription creation with allocated
+// subscription ID.
 type MsgCreateSubscriptionResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Unique identifier assigned to the newly created subscription.
 	SubscriptionId uint64 `protobuf:"varint,1,opt,name=subscription_id,json=subscriptionId,proto3" json:"subscription_id,omitempty"`
 }
 
@@ -6249,13 +6350,31 @@ func (x *MsgCreateSubscriptionResponse) GetSubscriptionId() uint64 {
 	return 0
 }
 
-// DeleteSubscription
+// MsgDeleteSubscription removes an existing subscription permanently.
+//
+// Behavior:
+// - Permanently removes a subscription from storage.
+// - Only the creator of the subscription can delete it.
+// - No refunds are provided for remaining subscription time or fees.
+//
+// Validation:
+// - Creator address must be valid.
+// - Subscription must exist.
+// - Creator must match the subscription's creator field.
+//
+// Emits:
+// - EventSubscriptionDeleted(subscription_id, creator) on successful deletion.
+//
+// Returns:
+// - Empty MsgDeleteSubscriptionResponse.
 type MsgDeleteSubscription struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Creator        string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	// Account deleting the subscription; must be the subscription's creator.
+	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	// Unique identifier of the subscription to delete.
 	SubscriptionId uint64 `protobuf:"varint,2,opt,name=subscription_id,json=subscriptionId,proto3" json:"subscription_id,omitempty"`
 }
 
@@ -6293,6 +6412,8 @@ func (x *MsgDeleteSubscription) GetSubscriptionId() uint64 {
 	return 0
 }
 
+// MsgDeleteSubscriptionResponse contains the result of subscription deletion.
+// Empty response indicates successful deletion.
 type MsgDeleteSubscriptionResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -6319,13 +6440,34 @@ func (*MsgDeleteSubscriptionResponse) Descriptor() ([]byte, []int) {
 	return file_dysonprotocol_crontask_v1_tx_proto_rawDescGZIP(), []int{9}
 }
 
-// RenewSubscription
+// MsgRenewSubscription extends subscription expiry and recharges the fee.
+//
+// Behavior:
+// - Extends subscription expiry to current time + max_subscription_duration.
+// - Recharges the task gas fee from creator to fee_collector.
+// - Re-enables expired subscriptions if they were in "expired" status.
+// - Enforces minimum stake requirements before renewal.
+//
+// Validation:
+// - Creator address must be valid.
+// - Subscription must exist.
+// - Creator must match the subscription's creator field.
+// - Creator must have sufficient bonded stake if MinStakePerSubscription is
+// configured.
+//
+// Emits:
+// - No events are emitted for renewal (subscription remains active).
+//
+// Returns:
+// - Empty MsgRenewSubscriptionResponse.
 type MsgRenewSubscription struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Creator        string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	// Account renewing the subscription; must be the subscription's creator.
+	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	// Unique identifier of the subscription to renew.
 	SubscriptionId uint64 `protobuf:"varint,2,opt,name=subscription_id,json=subscriptionId,proto3" json:"subscription_id,omitempty"`
 }
 
@@ -6363,6 +6505,8 @@ func (x *MsgRenewSubscription) GetSubscriptionId() uint64 {
 	return 0
 }
 
+// MsgRenewSubscriptionResponse contains the result of subscription renewal.
+// Empty response indicates successful renewal.
 type MsgRenewSubscriptionResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

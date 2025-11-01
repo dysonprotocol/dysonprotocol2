@@ -39,9 +39,32 @@ var _ = time.Kitchen
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// MsgCommit creates a commitment for name registration using commit-reveal
+// scheme. Stores hash commitment that can be revealed later to prevent
+// front-running.
+//
+// Behavior:
+// - Stores commitment with hash, owner, timestamp, and proposed valuation.
+// - Commitment hash must be unique and computed as hash(name + committer +
+// salt).
+// - Valuation specifies the initial self-valuation for the name NFT.
+//
+// Validation:
+// - Committer address must be valid bech32.
+// - Hexhash cannot be empty and must be unique.
+// - Valuation must be valid according to nameservice class rules.
+//
+// Emits:
+// - EventCommitmentCreated(hexhash) on successful commitment.
+//
+// Returns:
+// - Empty response on success.
 type MsgCommit struct {
-	Committer string     `protobuf:"bytes,1,opt,name=committer,proto3" json:"committer,omitempty"`
-	Hexhash   string     `protobuf:"bytes,2,opt,name=hexhash,proto3" json:"hexhash,omitempty"`
+	// Address that will own the name after successful reveal.
+	Committer string `protobuf:"bytes,1,opt,name=committer,proto3" json:"committer,omitempty"`
+	// Hex-encoded hash of (name + committer + salt) computed by client.
+	Hexhash string `protobuf:"bytes,2,opt,name=hexhash,proto3" json:"hexhash,omitempty"`
+	// Proposed valuation for the name NFT (determines annual fee rate).
 	Valuation types.Coin `protobuf:"bytes,3,opt,name=valuation,proto3" json:"valuation"`
 }
 
@@ -99,6 +122,7 @@ func (m *MsgCommit) GetValuation() types.Coin {
 	return types.Coin{}
 }
 
+// Empty response for successful commitment creation.
 type MsgCommitResponse struct {
 }
 
@@ -135,10 +159,40 @@ func (m *MsgCommitResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgCommitResponse proto.InternalMessageInfo
 
+// MsgReveal completes name registration by revealing the committed name and
+// salt. Validates revealed data matches commitment hash and mints Name NFT.
+//
+// Behavior:
+// - Validates revealed name + salt produce the committed hash.
+// - Mints new Name NFT in nameservice.dys class with name as NFT ID.
+// - Charges annual valuation fee to community pool based on committed
+// valuation.
+// - Sets NFT data with valuation, expiry, and default listing status.
+// - Creates reverse mapping from owner address to name for resolution.
+// - Deletes the used commitment after successful registration.
+//
+// Validation:
+// - Committer address must be valid bech32.
+// - Name must match format regex (lowercase, alphanumeric+dashes, ends with
+// .dys).
+// - Name must not already be registered.
+// - Commitment must exist for computed hash (name + committer + salt).
+// - Revealed committer must match commitment owner.
+// - Valuation from commitment must be valid and non-zero.
+//
+// Emits:
+// - EventNameRegistered(name, fee) on successful registration.
+//
+// Returns:
+// - Empty response on success.
 type MsgReveal struct {
+	// Address that committed to this name registration (must match commitment
+	// owner).
 	Committer string `protobuf:"bytes,1,opt,name=committer,proto3" json:"committer,omitempty"`
-	Name      string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Salt      string `protobuf:"bytes,3,opt,name=salt,proto3" json:"salt,omitempty"`
+	// Name to register (must match commitment hash when combined with salt).
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Salt used in commitment hash calculation (revealed here).
+	Salt string `protobuf:"bytes,3,opt,name=salt,proto3" json:"salt,omitempty"`
 }
 
 func (m *MsgReveal) Reset()         { *m = MsgReveal{} }
@@ -195,6 +249,7 @@ func (m *MsgReveal) GetSalt() string {
 	return ""
 }
 
+// Empty response for successful name registration.
 type MsgRevealResponse struct {
 }
 
@@ -322,16 +377,40 @@ func (m *MsgCreateExternalNameResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgCreateExternalNameResponse proto.InternalMessageInfo
 
+// MsgSetValuation updates the self-valuation of an NFT, charging Harberger tax
+// on increases.
+//
+// Behavior:
+// - Updates NFT valuation, charging fee only on incremental increases.
+// - Fee is proportional to remaining time in current valuation period.
+// - Fee destination depends on NFT class ownership (community pool vs class
+// owner).
+// - Valuation expiry remains unchanged; use MsgRenew to extend expiry.
+//
+// Validation:
+// - Sender must be NFT owner.
+// - NFT valuation must not be expired.
+// - No active bids can exist (reject bids first).
+// - New valuation must be valid according to class rules.
+// - Max fee percent guard prevents unexpected fee increases.
+//
+// Emits:
+// - EventNameValuationUpdated(name, new_valuation) on successful update.
+//
+// Returns:
+// - Empty response on success.
 type MsgSetValuation struct {
-	Owner      string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
+	// NFT owner address performing the valuation update.
+	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
+	// NFT class identifier.
 	NftClassId string `protobuf:"bytes,2,opt,name=nft_class_id,json=nftClassId,proto3" json:"nft_class_id,omitempty"`
-	NftId      string `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
-	// valuation is the new valuation of the NFT
+	// NFT identifier within the class.
+	NftId string `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	// New valuation amount for the NFT.
 	Valuation types.Coin `protobuf:"bytes,4,opt,name=valuation,proto3" json:"valuation"`
-	// max_valuation_fee_pct (optional) is the maximum valuation fee percent the
-	// user is willing to pay for setting the new valuation (e.g. "0.025" for
-	// 2.5% per valuation period). This guards against unexpected fee amounts if
-	// the class updates valuation_fee_pct.
+	// Maximum valuation fee percentage the user is willing to pay (e.g. "0.025"
+	// for 2.5%). Guards against unexpected fee amounts if class parameters
+	// change.
 	MaxValuationFeePct string `protobuf:"bytes,5,opt,name=max_valuation_fee_pct,json=maxValuationFeePct,proto3" json:"max_valuation_fee_pct,omitempty"`
 }
 
@@ -403,6 +482,7 @@ func (m *MsgSetValuation) GetMaxValuationFeePct() string {
 	return ""
 }
 
+// Empty response for successful valuation update.
 type MsgSetValuationResponse struct {
 }
 
@@ -439,10 +519,32 @@ func (m *MsgSetValuationResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgSetValuationResponse proto.InternalMessageInfo
 
+// MsgRenew extends NFT valuation expiry by charging proportional annual fee.
+//
+// Behavior:
+// - Extends valuation expiry by one full valuation period.
+// - Calculates fee as: current_valuation × fee_percent × (period /
+// valuation_period).
+// - Handles retroactive renewal if expiry has already passed.
+// - Fee is paid to the NFT class owner.
+//
+// Validation:
+// - Payer address must be valid.
+// - NFT must exist with valid valuation.
+// - Class must have valuation period and fee percentage configured.
+//
+// Emits:
+// - EventNameRenewed(name, new_expiry) on successful renewal.
+//
+// Returns:
+// - New expiry timestamp.
 type MsgRenew struct {
-	Payer      string `protobuf:"bytes,1,opt,name=payer,proto3" json:"payer,omitempty"`
+	// Address paying for the renewal fee.
+	Payer string `protobuf:"bytes,1,opt,name=payer,proto3" json:"payer,omitempty"`
+	// NFT class identifier.
 	NftClassId string `protobuf:"bytes,2,opt,name=nft_class_id,json=nftClassId,proto3" json:"nft_class_id,omitempty"`
-	NftId      string `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	// NFT identifier within the class.
+	NftId string `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
 }
 
 func (m *MsgRenew) Reset()         { *m = MsgRenew{} }
@@ -500,6 +602,7 @@ func (m *MsgRenew) GetNftId() string {
 }
 
 type MsgRenewResponse struct {
+	// New valuation expiry timestamp after renewal.
 	Expiry time.Time `protobuf:"bytes,1,opt,name=expiry,proto3,stdtime" json:"expiry"`
 }
 
@@ -543,11 +646,37 @@ func (m *MsgRenewResponse) GetExpiry() time.Time {
 	return time.Time{}
 }
 
+// MsgPlaceBid places or outbids on a listed NFT, escrowing funds until
+// acceptance or expiry.
+//
+// Behavior:
+// - Places bid on listed NFT, refunding any previous bidder.
+// - First bids must meet/exceed current valuation.
+// - Subsequent bids must exceed current bid by minimum percentage increase.
+// - Funds escrowed in module until bid accepted, rejected, or claimed after
+// timeout.
+//
+// Validation:
+// - Bid amount must be valid according to class rules.
+// - NFT must be listed (directly or via class always_listed).
+// - Cannot bid on authority-owned or module-owned NFTs.
+// - Bid denomination must match valuation/current bid.
+// - Bid must meet minimum increase requirements.
+//
+// Emits:
+// - EventBidPlaced(class_id, nft_id, bidder, bid_amount) on successful bid.
+//
+// Returns:
+// - Empty response on success.
 type MsgPlaceBid struct {
-	Bidder     string     `protobuf:"bytes,1,opt,name=bidder,proto3" json:"bidder,omitempty"`
-	NftClassId string     `protobuf:"bytes,2,opt,name=nft_class_id,json=nftClassId,proto3" json:"nft_class_id,omitempty"`
-	NftId      string     `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
-	BidAmount  types.Coin `protobuf:"bytes,4,opt,name=bid_amount,json=bidAmount,proto3" json:"bid_amount"`
+	// Address placing the bid.
+	Bidder string `protobuf:"bytes,1,opt,name=bidder,proto3" json:"bidder,omitempty"`
+	// NFT class identifier.
+	NftClassId string `protobuf:"bytes,2,opt,name=nft_class_id,json=nftClassId,proto3" json:"nft_class_id,omitempty"`
+	// NFT identifier within the class.
+	NftId string `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	// Bid amount to offer for the NFT.
+	BidAmount types.Coin `protobuf:"bytes,4,opt,name=bid_amount,json=bidAmount,proto3" json:"bid_amount"`
 }
 
 func (m *MsgPlaceBid) Reset()         { *m = MsgPlaceBid{} }
@@ -611,6 +740,7 @@ func (m *MsgPlaceBid) GetBidAmount() types.Coin {
 	return types.Coin{}
 }
 
+// Empty response for successful bid placement.
 type MsgPlaceBidResponse struct {
 }
 
@@ -647,10 +777,32 @@ func (m *MsgPlaceBidResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgPlaceBidResponse proto.InternalMessageInfo
 
+// MsgAcceptBid accepts current active bid, transferring NFT ownership and
+// releasing escrowed funds.
+//
+// Behavior:
+// - Accepts highest current bid on owned NFT.
+// - Transfers escrowed bid amount to current NFT owner.
+// - Transfers NFT ownership to bidder.
+// - Updates NFT valuation to accepted bid amount.
+// - Clears all bid-related state.
+//
+// Validation:
+// - Sender must be current NFT owner.
+// - NFT must have active bid (non-zero amount and bidder).
+//
+// Emits:
+// - EventBidAccepted(class_id, nft_id, new_owner) on successful acceptance.
+//
+// Returns:
+// - Empty response on success.
 type MsgAcceptBid struct {
-	Owner      string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
+	// Current NFT owner accepting the bid.
+	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
+	// NFT class identifier.
 	NftClassId string `protobuf:"bytes,2,opt,name=nft_class_id,json=nftClassId,proto3" json:"nft_class_id,omitempty"`
-	NftId      string `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	// NFT identifier within the class.
+	NftId string `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
 }
 
 func (m *MsgAcceptBid) Reset()         { *m = MsgAcceptBid{} }
@@ -707,6 +859,7 @@ func (m *MsgAcceptBid) GetNftId() string {
 	return ""
 }
 
+// Empty response for successful bid acceptance.
 type MsgAcceptBidResponse struct {
 }
 
@@ -743,10 +896,36 @@ func (m *MsgAcceptBidResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgAcceptBidResponse proto.InternalMessageInfo
 
+// MsgRejectBid rejects current bid and sets new valuation, charging rejection
+// fee.
+//
+// Behavior:
+// - Rejects current active bid on owned NFT.
+// - Sets new NFT valuation, charging rejection fee proportional to new
+// valuation.
+// - Rejection fee routing: to NFT class owner for user-controlled classes, to
+// community pool for governance-controlled classes.
+// - Refunds the rejected bidder's escrowed bid amount back to them.
+// - Clears bid state from NFT.
+//
+// Validation:
+// - Sender must be current NFT owner.
+// - NFT must have active bid to reject.
+// - New valuation must be valid and higher than current.
+//
+// Emits:
+// - EventBidRejected(class_id, nft_id, rejection_fee) on successful rejection.
+//
+// Returns:
+// - Rejection fee amount collected.
 type MsgRejectBid struct {
-	Owner        string     `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
-	NftClassId   string     `protobuf:"bytes,2,opt,name=nft_class_id,json=nftClassId,proto3" json:"nft_class_id,omitempty"`
-	NftId        string     `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	// Current NFT owner rejecting the bid.
+	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
+	// NFT class identifier.
+	NftClassId string `protobuf:"bytes,2,opt,name=nft_class_id,json=nftClassId,proto3" json:"nft_class_id,omitempty"`
+	// NFT identifier within the class.
+	NftId string `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	// New valuation amount (must be higher than current valuation).
 	NewValuation types.Coin `protobuf:"bytes,4,opt,name=new_valuation,json=newValuation,proto3" json:"new_valuation"`
 }
 
@@ -812,7 +991,7 @@ func (m *MsgRejectBid) GetNewValuation() types.Coin {
 }
 
 type MsgRejectBidResponse struct {
-	// Fee collected by the community pool when a bid is rejected
+	// Fee collected by the NFT class owner when a bid is rejected.
 	RejectionFee []types.Coin `protobuf:"bytes,1,rep,name=rejection_fee,json=rejectionFee,proto3" json:"rejection_fee"`
 }
 
@@ -856,10 +1035,33 @@ func (m *MsgRejectBidResponse) GetRejectionFee() []types.Coin {
 	return nil
 }
 
+// MsgClaimBid allows bidder to claim NFT after bid timeout expires without
+// acceptance.
+//
+// Behavior:
+// - Allows bidder to claim NFT ownership after bid timeout.
+// - Transfers escrowed bid amount to previous owner.
+// - Transfers NFT ownership to bidder.
+// - Updates NFT valuation to claimed bid amount.
+// - Resets valuation expiry to bid timestamp.
+//
+// Validation:
+// - NFT must have active bid.
+// - Sender must be current bidder.
+// - Bid timeout period must have elapsed since bid placement.
+//
+// Emits:
+// - EventBidClaimed(class_id, nft_id, bidder) on successful claim.
+//
+// Returns:
+// - Empty response on success.
 type MsgClaimBid struct {
-	Bidder     string `protobuf:"bytes,1,opt,name=bidder,proto3" json:"bidder,omitempty"`
+	// Bidder claiming the NFT after timeout.
+	Bidder string `protobuf:"bytes,1,opt,name=bidder,proto3" json:"bidder,omitempty"`
+	// NFT class identifier.
 	NftClassId string `protobuf:"bytes,2,opt,name=nft_class_id,json=nftClassId,proto3" json:"nft_class_id,omitempty"`
-	NftId      string `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	// NFT identifier within the class.
+	NftId string `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
 }
 
 func (m *MsgClaimBid) Reset()         { *m = MsgClaimBid{} }
@@ -916,6 +1118,7 @@ func (m *MsgClaimBid) GetNftId() string {
 	return ""
 }
 
+// Empty response for successful bid claim.
 type MsgClaimBidResponse struct {
 }
 
@@ -3654,16 +3857,37 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
+	// Commit creates a commitment for name registration using commit-reveal
+	// scheme. Stores hash commitment that can be revealed later to prevent
+	// front-running.
 	Commit(ctx context.Context, in *MsgCommit, opts ...grpc.CallOption) (*MsgCommitResponse, error)
+	// Reveal completes name registration by validating revealed name matches
+	// commitment hash. Mints Name NFT, charges valuation fee, and creates reverse
+	// mapping for resolution.
 	Reveal(ctx context.Context, in *MsgReveal, opts ...grpc.CallOption) (*MsgRevealResponse, error)
+	// SetValuation updates the self-valuation of an NFT, charging Harberger tax
+	// on increases. Fee goes to community pool or class owner based on governance
+	// status.
 	SetValuation(ctx context.Context, in *MsgSetValuation, opts ...grpc.CallOption) (*MsgSetValuationResponse, error)
+	// Renew extends valuation expiry by charging proportional annual fee.
+	// Fee is paid to the NFT class owner.
 	Renew(ctx context.Context, in *MsgRenew, opts ...grpc.CallOption) (*MsgRenewResponse, error)
+	// PlaceBid places or outbids on a listed NFT, escrowing funds until
+	// acceptance or expiry. First bids must meet/exceed valuation; subsequent
+	// bids require minimum increase percentage.
 	PlaceBid(ctx context.Context, in *MsgPlaceBid, opts ...grpc.CallOption) (*MsgPlaceBidResponse, error)
+	// AcceptBid accepts current active bid, transferring NFT ownership and
+	// releasing escrowed funds. Updates NFT valuation to accepted bid amount and
+	// clears bid state.
 	AcceptBid(ctx context.Context, in *MsgAcceptBid, opts ...grpc.CallOption) (*MsgAcceptBidResponse, error)
-	// RejectBid is used to reject a bid and set a new valuation for the NFT, to
-	// prevent abuse a rejection fee as a percentage of the new valuation is paid
-	// to the community pool.
+	// RejectBid rejects current bid and sets new valuation, charging rejection
+	// fee. Fee routing: to NFT class owner for user-controlled classes, to
+	// community pool for governance-controlled classes. Refunds the rejected
+	// bidder's escrowed bid amount back to them.
 	RejectBid(ctx context.Context, in *MsgRejectBid, opts ...grpc.CallOption) (*MsgRejectBidResponse, error)
+	// ClaimBid allows bidder to claim NFT after bid timeout expires without
+	// acceptance. Transfers escrowed bid to previous owner and NFT ownership to
+	// bidder.
 	ClaimBid(ctx context.Context, in *MsgClaimBid, opts ...grpc.CallOption) (*MsgClaimBidResponse, error)
 	SetDestination(ctx context.Context, in *MsgSetDestination, opts ...grpc.CallOption) (*MsgSetDestinationResponse, error)
 	// SetNameMetadata allows the owner of a name (NFT in nameservice.dys) to set
@@ -4008,16 +4232,37 @@ func (c *msgClient) CreateExternalName(ctx context.Context, in *MsgCreateExterna
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
+	// Commit creates a commitment for name registration using commit-reveal
+	// scheme. Stores hash commitment that can be revealed later to prevent
+	// front-running.
 	Commit(context.Context, *MsgCommit) (*MsgCommitResponse, error)
+	// Reveal completes name registration by validating revealed name matches
+	// commitment hash. Mints Name NFT, charges valuation fee, and creates reverse
+	// mapping for resolution.
 	Reveal(context.Context, *MsgReveal) (*MsgRevealResponse, error)
+	// SetValuation updates the self-valuation of an NFT, charging Harberger tax
+	// on increases. Fee goes to community pool or class owner based on governance
+	// status.
 	SetValuation(context.Context, *MsgSetValuation) (*MsgSetValuationResponse, error)
+	// Renew extends valuation expiry by charging proportional annual fee.
+	// Fee is paid to the NFT class owner.
 	Renew(context.Context, *MsgRenew) (*MsgRenewResponse, error)
+	// PlaceBid places or outbids on a listed NFT, escrowing funds until
+	// acceptance or expiry. First bids must meet/exceed valuation; subsequent
+	// bids require minimum increase percentage.
 	PlaceBid(context.Context, *MsgPlaceBid) (*MsgPlaceBidResponse, error)
+	// AcceptBid accepts current active bid, transferring NFT ownership and
+	// releasing escrowed funds. Updates NFT valuation to accepted bid amount and
+	// clears bid state.
 	AcceptBid(context.Context, *MsgAcceptBid) (*MsgAcceptBidResponse, error)
-	// RejectBid is used to reject a bid and set a new valuation for the NFT, to
-	// prevent abuse a rejection fee as a percentage of the new valuation is paid
-	// to the community pool.
+	// RejectBid rejects current bid and sets new valuation, charging rejection
+	// fee. Fee routing: to NFT class owner for user-controlled classes, to
+	// community pool for governance-controlled classes. Refunds the rejected
+	// bidder's escrowed bid amount back to them.
 	RejectBid(context.Context, *MsgRejectBid) (*MsgRejectBidResponse, error)
+	// ClaimBid allows bidder to claim NFT after bid timeout expires without
+	// acceptance. Transfers escrowed bid to previous owner and NFT ownership to
+	// bidder.
 	ClaimBid(context.Context, *MsgClaimBid) (*MsgClaimBidResponse, error)
 	SetDestination(context.Context, *MsgSetDestination) (*MsgSetDestinationResponse, error)
 	// SetNameMetadata allows the owner of a name (NFT in nameservice.dys) to set

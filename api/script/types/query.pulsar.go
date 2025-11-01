@@ -8804,17 +8804,21 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// WebRequest is the Service/Web request type.
+// WebRequest requests execution of a script's WSGI web application.
+//
+// Either script_address or script_name must be provided. The script's WSGI
+// application will be executed in read-only mode with no state modifications
+// allowed.
 type WebRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// script_address is the bech32 account address of the script.
+	// Bech32 account address of the script to execute.
 	ScriptAddress string `protobuf:"bytes,1,opt,name=script_address,json=scriptAddress,proto3" json:"script_address,omitempty"`
-	// script_name is the name of the script (e.g., "example.dys").
+	// Nameservice name of the script to execute (e.g., "example.dys").
 	ScriptName string `protobuf:"bytes,2,opt,name=script_name,json=scriptName,proto3" json:"script_name,omitempty"`
-	// httprequest is the http request.
+	// HTTP request string to pass to the script's WSGI application.
 	Httprequest string `protobuf:"bytes,3,opt,name=httprequest,proto3" json:"httprequest,omitempty"`
 }
 
@@ -8859,13 +8863,13 @@ func (x *WebRequest) GetHttprequest() string {
 	return ""
 }
 
-// WebResponse is the Service/Web response type.
+// WebResponse contains the HTTP response from the script's WSGI application.
 type WebResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// httpresponse is the http response.
+	// HTTP response string returned by the script's WSGI application.
 	Httpresponse string `protobuf:"bytes,1,opt,name=httpresponse,proto3" json:"httpresponse,omitempty"`
 }
 
@@ -8896,13 +8900,17 @@ func (x *WebResponse) GetHttpresponse() string {
 	return ""
 }
 
-// QueryScriptInfoRequest is the Query/ScriptInfo request type.
+// QueryScriptInfoRequest requests script information by address or name.
+//
+// The address field accepts both bech32 addresses and nameservice names.
+// Nameservice names will be resolved to addresses automatically.
 type QueryScriptInfoRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// address is the account address of the script.
+	// Script address or nameservice name to query; supports both bech32 addresses
+	// and names.
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
 }
 
@@ -8933,13 +8941,13 @@ func (x *QueryScriptInfoRequest) GetAddress() string {
 	return ""
 }
 
-// QueryScriptInfoResponse is the Query/ScriptInfo response type.
+// QueryScriptInfoResponse contains the complete script information.
 type QueryScriptInfoResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// info is the ScriptInfo of the script.
+	// Complete script information including code, version, and metadata.
 	Script *Script `protobuf:"bytes,1,opt,name=script,proto3" json:"script,omitempty"`
 }
 
@@ -8970,13 +8978,15 @@ func (x *QueryScriptInfoResponse) GetScript() *Script {
 	return nil
 }
 
-// QueryEncodeJsonRequest is the Query/EncodeJson request type.
+// QueryEncodeJsonRequest requests encoding of JSON to protobuf bytes.
+//
+// The JSON must represent a valid Cosmos SDK message that can be unmarshaled.
 type QueryEncodeJsonRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// json is the json string to encode.
+	// JSON string representing a Cosmos SDK message to encode to protobuf bytes.
 	Json string `protobuf:"bytes,1,opt,name=json,proto3" json:"json,omitempty"`
 }
 
@@ -9007,13 +9017,13 @@ func (x *QueryEncodeJsonRequest) GetJson() string {
 	return ""
 }
 
-// QueryEncodeJsonResponse is the Query/EncodeJson response type.
+// QueryEncodeJsonResponse contains the protobuf-encoded bytes.
 type QueryEncodeJsonResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// bytes is the encoded bytes.
+	// Protobuf-encoded bytes of the input JSON message.
 	Bytes []byte `protobuf:"bytes,1,opt,name=bytes,proto3" json:"bytes,omitempty"`
 }
 
@@ -9044,14 +9054,19 @@ func (x *QueryEncodeJsonResponse) GetBytes() []byte {
 	return nil
 }
 
-// QueryDecodeBytesRequest is the Query/DecodeBytes request type.
+// QueryDecodeBytesRequest requests decoding of protobuf bytes to JSON.
+//
+// The type_url specifies the message type to decode, and bytes contains the
+// protobuf-encoded data.
 type QueryDecodeBytesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Type URL of the message type to decode (e.g.,
+	// "/cosmos.bank.v1beta1.MsgSend").
 	TypeUrl string `protobuf:"bytes,1,opt,name=type_url,json=typeUrl,proto3" json:"type_url,omitempty"`
-	// bytes is the encoded bytes.
+	// Protobuf-encoded bytes of the message to decode to JSON.
 	Bytes []byte `protobuf:"bytes,2,opt,name=bytes,proto3" json:"bytes,omitempty"`
 }
 
@@ -9089,13 +9104,13 @@ func (x *QueryDecodeBytesRequest) GetBytes() []byte {
 	return nil
 }
 
-// QueryDecodeBytesResponse is the Query/DecodeBytes response type.
+// QueryDecodeBytesResponse contains the decoded JSON string.
 type QueryDecodeBytesResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// json is the decoded json string.
+	// JSON representation of the decoded protobuf message.
 	Json string `protobuf:"bytes,1,opt,name=json,proto3" json:"json,omitempty"`
 }
 
@@ -9126,12 +9141,20 @@ func (x *QueryDecodeBytesResponse) GetJson() string {
 	return ""
 }
 
+// QueryVerifyTxRequest requests verification of an arbitrary transaction
+// signature.
+//
+// The transaction JSON should contain a properly signed MsgArbitraryData
+// transaction. Verification follows ADR-036 rules with empty chain ID, account
+// number 0, and sequence 0. See the VerifyTx RPC method documentation for a
+// complete example transaction structure.
 type QueryVerifyTxRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The transaction as a JSON string
+	// JSON representation of the transaction to verify (must contain
+	// MsgArbitraryData).
 	TxJson string `protobuf:"bytes,1,opt,name=tx_json,json=txJson,proto3" json:"tx_json,omitempty"`
 }
 
@@ -9162,14 +9185,13 @@ func (x *QueryVerifyTxRequest) GetTxJson() string {
 	return ""
 }
 
-// QueryVerifyTxResponse will return the signer address of the MsgArbitraryData
-// or error if the signature is invalid
+// QueryVerifyTxResponse contains the verified signer address.
 type QueryVerifyTxResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The signer address of the MsgArbitraryData
+	// Bech32 address of the verified signer of the MsgArbitraryData transaction.
 	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
 }
 
@@ -9200,7 +9222,9 @@ func (x *QueryVerifyTxResponse) GetSigner() string {
 	return ""
 }
 
-// QueryParamsRequest is the request type for the Query/Params RPC method.
+// QueryParamsRequest requests the current script module parameters.
+//
+// This is an empty request message - no parameters needed.
 type QueryParamsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -9227,13 +9251,14 @@ func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
 	return file_dysonprotocol_script_v1_query_proto_rawDescGZIP(), []int{10}
 }
 
-// QueryParamsResponse is the response type for the Query/Params RPC method.
+// QueryParamsResponse contains the current script module parameters.
 type QueryParamsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// params holds all the parameters of this module.
+	// Current script module parameters including execution limits and
+	// configuration.
 	Params *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
 }
 
@@ -9264,32 +9289,33 @@ func (x *QueryParamsResponse) GetParams() *Params {
 	return nil
 }
 
-// RunScript is the Query/Run request type.
+// RunScript requests execution of a script function in read-only mode.
+//
+// Similar to MsgExec but executed in a cached context with no persistent state
+// changes. All execution results are returned but any state modifications are
+// discarded.
 type RunScript struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// executor is the account address used to execute the script
+	// Account address used to execute the script; must be a valid bech32 address.
 	ExecutorAddress string `protobuf:"bytes,1,opt,name=executor_address,json=executorAddress,proto3" json:"executor_address,omitempty"`
-	// address is the script bech32 address to execute.
+	// Script bech32 address to execute; mutually exclusive with script_name.
 	ScriptAddress string `protobuf:"bytes,2,opt,name=script_address,json=scriptAddress,proto3" json:"script_address,omitempty"`
-	// script_name is the optional nameservice name of the script to execute
-	// (e.g., "example.dys")
+	// Optional nameservice name of the script to execute (e.g., "example.dys").
 	ScriptName string `protobuf:"bytes,3,opt,name=script_name,json=scriptName,proto3" json:"script_name,omitempty"`
-	// Only if the executor is the owner of the script will the optional
-	// extra_code be temporary appended to the script for this message before
-	// calling the function
+	// Optional extra code temporarily appended to the script for this execution.
+	// Only allowed if the executor is the script owner.
 	ExtraCode string `protobuf:"bytes,4,opt,name=extra_code,json=extraCode,proto3" json:"extra_code,omitempty"`
-	// The function name to run
+	// Name of the function to call within the script.
 	FunctionName string `protobuf:"bytes,5,opt,name=function_name,json=functionName,proto3" json:"function_name,omitempty"`
-	// The positional arguments to pass to the function (*args) encoded as a json
-	// list
+	// Positional arguments (*args) encoded as a JSON array.
 	Args string `protobuf:"bytes,6,opt,name=args,proto3" json:"args,omitempty"`
-	// The keyword arguments to pass to the function (**kwargs) encoded as a json
-	// dict
+	// Keyword arguments (**kwargs) encoded as a JSON object.
 	Kwargs string `protobuf:"bytes,7,opt,name=kwargs,proto3" json:"kwargs,omitempty"`
-	// The list of messages to run before the script.
+	// Messages executed before the script; results available but state changes
+	// discarded.
 	AttachedMessages []*anypb.Any `protobuf:"bytes,8,rep,name=attached_messages,json=attachedMessages,proto3" json:"attached_messages,omitempty"`
 }
 
@@ -9369,15 +9395,15 @@ func (x *RunScript) GetAttachedMessages() []*anypb.Any {
 	return nil
 }
 
-// ResponseRunScript is the Query/Run response type.
+// ResponseRunScript contains script execution results from read-only run.
 type ResponseRunScript struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// result is the execution result returned by the script function.
+	// Execution result returned by the script function.
 	Result string `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
-	// Results of the attached messages.
+	// Results of the attached messages executed before the script.
 	AttachedMessageResults []*anypb.Any `protobuf:"bytes,2,rep,name=attached_message_results,json=attachedMessageResults,proto3" json:"attached_message_results,omitempty"`
 }
 
@@ -9415,7 +9441,9 @@ func (x *ResponseRunScript) GetAttachedMessageResults() []*anypb.Any {
 	return nil
 }
 
-// QueryGetBlockRequest is the Query/GetBlock request type.
+// QueryGetBlockRequest requests current block information.
+//
+// This is an empty request message - no parameters needed.
 type QueryGetBlockRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -9442,23 +9470,23 @@ func (*QueryGetBlockRequest) Descriptor() ([]byte, []int) {
 	return file_dysonprotocol_script_v1_query_proto_rawDescGZIP(), []int{14}
 }
 
-// QueryGetBlockResponse is the Query/GetBlock response type.
+// QueryGetBlockResponse contains current block information.
 type QueryGetBlockResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// block_height is the height of the block.
+	// Height of the current block.
 	BlockHeight int64 `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	// block_time is the time of the block.
+	// Timestamp of the current block.
 	BlockTime *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=block_time,json=blockTime,proto3" json:"block_time,omitempty"`
-	// chain_id is the chain ID.
+	// Chain ID of the blockchain.
 	ChainId string `protobuf:"bytes,3,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
-	// block_hash is the hash of the block.
+	// Hash of the current block (app hash from header).
 	BlockHash []byte `protobuf:"bytes,4,opt,name=block_hash,json=blockHash,proto3" json:"block_hash,omitempty"`
-	// app_hash is the application hash.
+	// Application hash of the current block.
 	AppHash []byte `protobuf:"bytes,5,opt,name=app_hash,json=appHash,proto3" json:"app_hash,omitempty"`
-	// proposer_address is the address of the block proposer.
+	// Bech32 address of the block proposer.
 	ProposerAddress string `protobuf:"bytes,6,opt,name=proposer_address,json=proposerAddress,proto3" json:"proposer_address,omitempty"`
 }
 
@@ -9525,17 +9553,20 @@ func (x *QueryGetBlockResponse) GetProposerAddress() string {
 }
 
 // QueryFunctionSchemaRequest requests function schemas for a script.
+//
+// Either script_address or script_name must be provided. The script will be
+// introspected to extract schemas for all public functions.
 type QueryFunctionSchemaRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// executor is the account address used to evaluate the script
+	// Account address used to evaluate the script; must be a valid bech32
+	// address.
 	ExecutorAddress string `protobuf:"bytes,1,opt,name=executor_address,json=executorAddress,proto3" json:"executor_address,omitempty"`
-	// address is the script bech32 address to inspect.
+	// Script bech32 address to inspect; mutually exclusive with script_name.
 	ScriptAddress string `protobuf:"bytes,2,opt,name=script_address,json=scriptAddress,proto3" json:"script_address,omitempty"`
-	// script_name is the optional nameservice name of the script to inspect
-	// (e.g., "example.dys")
+	// Optional nameservice name of the script to inspect (e.g., "example.dys").
 	ScriptName string `protobuf:"bytes,3,opt,name=script_name,json=scriptName,proto3" json:"script_name,omitempty"`
 }
 
@@ -9580,15 +9611,15 @@ func (x *QueryFunctionSchemaRequest) GetScriptName() string {
 	return ""
 }
 
-// QueryFunctionSchemaResponse contains a JSON object mapping function names to
-// schemas.
+// QueryFunctionSchemaResponse contains function schemas extracted from a
+// script.
 type QueryFunctionSchemaResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// schema_json is a JSON object: [{"name": "func_name", "schema":
-	// {schema...}}, ...]
+	// JSON array of function schemas: [{"name": "func_name", "schema": {...}},
+	// ...]
 	SchemaJson string `protobuf:"bytes,1,opt,name=schema_json,json=schemaJson,proto3" json:"schema_json,omitempty"`
 }
 

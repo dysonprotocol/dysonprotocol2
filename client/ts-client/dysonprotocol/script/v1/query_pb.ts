@@ -11,27 +11,32 @@ import { Script } from "./script_pb.js";
 import { Params } from "./params_pb.js";
 
 /**
- * WebRequest is the Service/Web request type.
+ *
+ * WebRequest requests execution of a script's WSGI web application.
+ *
+ * Either script_address or script_name must be provided. The script's WSGI
+ * application will be executed in read-only mode with no state modifications
+ * allowed.
  *
  * @generated from message dysonprotocol.script.v1.WebRequest
  */
 export class WebRequest extends Message<WebRequest> {
   /**
-   * script_address is the bech32 account address of the script.
+   * Bech32 account address of the script to execute.
    *
    * @generated from field: string script_address = 1;
    */
   scriptAddress = "";
 
   /**
-   * script_name is the name of the script (e.g., "example.dys").
+   * Nameservice name of the script to execute (e.g., "example.dys").
    *
    * @generated from field: string script_name = 2;
    */
   scriptName = "";
 
   /**
-   * httprequest is the http request.
+   * HTTP request string to pass to the script's WSGI application.
    *
    * @generated from field: string httprequest = 3;
    */
@@ -68,13 +73,14 @@ export class WebRequest extends Message<WebRequest> {
 }
 
 /**
- * WebResponse is the Service/Web response type.
+ *
+ * WebResponse contains the HTTP response from the script's WSGI application.
  *
  * @generated from message dysonprotocol.script.v1.WebResponse
  */
 export class WebResponse extends Message<WebResponse> {
   /**
-   * httpresponse is the http response.
+   * HTTP response string returned by the script's WSGI application.
    *
    * @generated from field: string httpresponse = 1;
    */
@@ -109,13 +115,18 @@ export class WebResponse extends Message<WebResponse> {
 }
 
 /**
- * QueryScriptInfoRequest is the Query/ScriptInfo request type.
+ *
+ * QueryScriptInfoRequest requests script information by address or name.
+ *
+ * The address field accepts both bech32 addresses and nameservice names.
+ * Nameservice names will be resolved to addresses automatically.
  *
  * @generated from message dysonprotocol.script.v1.QueryScriptInfoRequest
  */
 export class QueryScriptInfoRequest extends Message<QueryScriptInfoRequest> {
   /**
-   * address is the account address of the script.
+   * Script address or nameservice name to query; supports both bech32 addresses
+   * and names.
    *
    * @generated from field: string address = 1;
    */
@@ -150,13 +161,14 @@ export class QueryScriptInfoRequest extends Message<QueryScriptInfoRequest> {
 }
 
 /**
- * QueryScriptInfoResponse is the Query/ScriptInfo response type.
+ *
+ * QueryScriptInfoResponse contains the complete script information.
  *
  * @generated from message dysonprotocol.script.v1.QueryScriptInfoResponse
  */
 export class QueryScriptInfoResponse extends Message<QueryScriptInfoResponse> {
   /**
-   * info is the ScriptInfo of the script.
+   * Complete script information including code, version, and metadata.
    *
    * @generated from field: dysonprotocol.script.v1.Script script = 1;
    */
@@ -191,13 +203,16 @@ export class QueryScriptInfoResponse extends Message<QueryScriptInfoResponse> {
 }
 
 /**
- * QueryEncodeJsonRequest is the Query/EncodeJson request type.
+ *
+ * QueryEncodeJsonRequest requests encoding of JSON to protobuf bytes.
+ *
+ * The JSON must represent a valid Cosmos SDK message that can be unmarshaled.
  *
  * @generated from message dysonprotocol.script.v1.QueryEncodeJsonRequest
  */
 export class QueryEncodeJsonRequest extends Message<QueryEncodeJsonRequest> {
   /**
-   * json is the json string to encode.
+   * JSON string representing a Cosmos SDK message to encode to protobuf bytes.
    *
    * @generated from field: string json = 1;
    */
@@ -232,13 +247,14 @@ export class QueryEncodeJsonRequest extends Message<QueryEncodeJsonRequest> {
 }
 
 /**
- * QueryEncodeJsonResponse is the Query/EncodeJson response type.
+ *
+ * QueryEncodeJsonResponse contains the protobuf-encoded bytes.
  *
  * @generated from message dysonprotocol.script.v1.QueryEncodeJsonResponse
  */
 export class QueryEncodeJsonResponse extends Message<QueryEncodeJsonResponse> {
   /**
-   * bytes is the encoded bytes.
+   * Protobuf-encoded bytes of the input JSON message.
    *
    * @generated from field: bytes bytes = 1;
    */
@@ -273,18 +289,25 @@ export class QueryEncodeJsonResponse extends Message<QueryEncodeJsonResponse> {
 }
 
 /**
- * QueryDecodeBytesRequest is the Query/DecodeBytes request type.
+ *
+ * QueryDecodeBytesRequest requests decoding of protobuf bytes to JSON.
+ *
+ * The type_url specifies the message type to decode, and bytes contains the
+ * protobuf-encoded data.
  *
  * @generated from message dysonprotocol.script.v1.QueryDecodeBytesRequest
  */
 export class QueryDecodeBytesRequest extends Message<QueryDecodeBytesRequest> {
   /**
+   * Type URL of the message type to decode (e.g.,
+   * "/cosmos.bank.v1beta1.MsgSend").
+   *
    * @generated from field: string type_url = 1;
    */
   typeUrl = "";
 
   /**
-   * bytes is the encoded bytes.
+   * Protobuf-encoded bytes of the message to decode to JSON.
    *
    * @generated from field: bytes bytes = 2;
    */
@@ -320,13 +343,14 @@ export class QueryDecodeBytesRequest extends Message<QueryDecodeBytesRequest> {
 }
 
 /**
- * QueryDecodeBytesResponse is the Query/DecodeBytes response type.
+ *
+ * QueryDecodeBytesResponse contains the decoded JSON string.
  *
  * @generated from message dysonprotocol.script.v1.QueryDecodeBytesResponse
  */
 export class QueryDecodeBytesResponse extends Message<QueryDecodeBytesResponse> {
   /**
-   * json is the decoded json string.
+   * JSON representation of the decoded protobuf message.
    *
    * @generated from field: string json = 1;
    */
@@ -361,11 +385,21 @@ export class QueryDecodeBytesResponse extends Message<QueryDecodeBytesResponse> 
 }
 
 /**
+ *
+ * QueryVerifyTxRequest requests verification of an arbitrary transaction
+ * signature.
+ *
+ * The transaction JSON should contain a properly signed MsgArbitraryData
+ * transaction. Verification follows ADR-036 rules with empty chain ID, account
+ * number 0, and sequence 0. See the VerifyTx RPC method documentation for a
+ * complete example transaction structure.
+ *
  * @generated from message dysonprotocol.script.v1.QueryVerifyTxRequest
  */
 export class QueryVerifyTxRequest extends Message<QueryVerifyTxRequest> {
   /**
-   * The transaction as a JSON string
+   * JSON representation of the transaction to verify (must contain
+   * MsgArbitraryData).
    *
    * @generated from field: string tx_json = 1;
    */
@@ -400,14 +434,14 @@ export class QueryVerifyTxRequest extends Message<QueryVerifyTxRequest> {
 }
 
 /**
- * QueryVerifyTxResponse will return the signer address of the MsgArbitraryData
- * or error if the signature is invalid
+ *
+ * QueryVerifyTxResponse contains the verified signer address.
  *
  * @generated from message dysonprotocol.script.v1.QueryVerifyTxResponse
  */
 export class QueryVerifyTxResponse extends Message<QueryVerifyTxResponse> {
   /**
-   * The signer address of the MsgArbitraryData
+   * Bech32 address of the verified signer of the MsgArbitraryData transaction.
    *
    * @generated from field: string signer = 1;
    */
@@ -442,7 +476,10 @@ export class QueryVerifyTxResponse extends Message<QueryVerifyTxResponse> {
 }
 
 /**
- * QueryParamsRequest is the request type for the Query/Params RPC method.
+ *
+ * QueryParamsRequest requests the current script module parameters.
+ *
+ * This is an empty request message - no parameters needed.
  *
  * @generated from message dysonprotocol.script.v1.QueryParamsRequest
  */
@@ -475,13 +512,15 @@ export class QueryParamsRequest extends Message<QueryParamsRequest> {
 }
 
 /**
- * QueryParamsResponse is the response type for the Query/Params RPC method.
+ *
+ * QueryParamsResponse contains the current script module parameters.
  *
  * @generated from message dysonprotocol.script.v1.QueryParamsResponse
  */
 export class QueryParamsResponse extends Message<QueryParamsResponse> {
   /**
-   * params holds all the parameters of this module.
+   * Current script module parameters including execution limits and
+   * configuration.
    *
    * @generated from field: dysonprotocol.script.v1.Params params = 1;
    */
@@ -516,67 +555,69 @@ export class QueryParamsResponse extends Message<QueryParamsResponse> {
 }
 
 /**
- * RunScript is the Query/Run request type.
+ *
+ * RunScript requests execution of a script function in read-only mode.
+ *
+ * Similar to MsgExec but executed in a cached context with no persistent state
+ * changes. All execution results are returned but any state modifications are
+ * discarded.
  *
  * @generated from message dysonprotocol.script.v1.RunScript
  */
 export class RunScript extends Message<RunScript> {
   /**
-   * executor is the account address used to execute the script
+   * Account address used to execute the script; must be a valid bech32 address.
    *
    * @generated from field: string executor_address = 1;
    */
   executorAddress = "";
 
   /**
-   * address is the script bech32 address to execute.
+   * Script bech32 address to execute; mutually exclusive with script_name.
    *
    * @generated from field: string script_address = 2;
    */
   scriptAddress = "";
 
   /**
-   * script_name is the optional nameservice name of the script to execute
-   * (e.g., "example.dys")
+   * Optional nameservice name of the script to execute (e.g., "example.dys").
    *
    * @generated from field: string script_name = 3;
    */
   scriptName = "";
 
   /**
-   * Only if the executor is the owner of the script will the optional
-   * extra_code be temporary appended to the script for this message before
-   * calling the function
+   * Optional extra code temporarily appended to the script for this execution.
+   * Only allowed if the executor is the script owner.
    *
    * @generated from field: string extra_code = 4;
    */
   extraCode = "";
 
   /**
-   * The function name to run
+   * Name of the function to call within the script.
    *
    * @generated from field: string function_name = 5;
    */
   functionName = "";
 
   /**
-   * The positional arguments to pass to the function (*args) encoded as a json
-   * list
+   * Positional arguments (*args) encoded as a JSON array.
    *
    * @generated from field: string args = 6;
    */
   args = "";
 
   /**
-   * The keyword arguments to pass to the function (**kwargs) encoded as a json
-   * dict
+   * Keyword arguments (**kwargs) encoded as a JSON object.
    *
    * @generated from field: string kwargs = 7;
    */
   kwargs = "";
 
   /**
-   * The list of messages to run before the script.
+   * Messages executed before the script; results available but state changes
+   * discarded.
    *
    * @generated from field: repeated google.protobuf.Any attached_messages = 8;
    */
@@ -618,20 +659,21 @@ export class RunScript extends Message<RunScript> {
 }
 
 /**
- * ResponseRunScript is the Query/Run response type.
+ *
+ * ResponseRunScript contains script execution results from read-only run.
  *
  * @generated from message dysonprotocol.script.v1.ResponseRunScript
  */
 export class ResponseRunScript extends Message<ResponseRunScript> {
   /**
-   * result is the execution result returned by the script function.
+   * Execution result returned by the script function.
    *
    * @generated from field: string result = 1;
    */
   result = "";
 
   /**
-   * Results of the attached messages.
+   * Results of the attached messages executed before the script.
    *
    * @generated from field: repeated google.protobuf.Any attached_message_results = 2;
    */
@@ -667,7 +709,10 @@ export class ResponseRunScript extends Message<ResponseRunScript> {
 }
 
 /**
- * QueryGetBlockRequest is the Query/GetBlock request type.
+ *
+ * QueryGetBlockRequest requests current block information.
+ *
+ * This is an empty request message - no parameters needed.
  *
  * @generated from message dysonprotocol.script.v1.QueryGetBlockRequest
  */
@@ -700,48 +745,49 @@ export class QueryGetBlockRequest extends Message<QueryGetBlockRequest> {
 }
 
 /**
- * QueryGetBlockResponse is the Query/GetBlock response type.
+ *
+ * QueryGetBlockResponse contains current block information.
  *
  * @generated from message dysonprotocol.script.v1.QueryGetBlockResponse
  */
 export class QueryGetBlockResponse extends Message<QueryGetBlockResponse> {
   /**
-   * block_height is the height of the block.
+   * Height of the current block.
    *
    * @generated from field: int64 block_height = 1;
    */
   blockHeight = protoInt64.zero;
 
   /**
-   * block_time is the time of the block.
+   * Timestamp of the current block.
    *
    * @generated from field: google.protobuf.Timestamp block_time = 2;
    */
   blockTime?: Timestamp;
 
   /**
-   * chain_id is the chain ID.
+   * Chain ID of the blockchain.
    *
    * @generated from field: string chain_id = 3;
    */
   chainId = "";
 
   /**
-   * block_hash is the hash of the block.
+   * Hash of the current block (app hash from header).
    *
    * @generated from field: bytes block_hash = 4;
    */
   blockHash = new Uint8Array(0);
 
   /**
-   * app_hash is the application hash.
+   * Application hash of the current block.
    *
    * @generated from field: bytes app_hash = 5;
    */
   appHash = new Uint8Array(0);
 
   /**
-   * proposer_address is the address of the block proposer.
+   * Bech32 address of the block proposer.
    *
    * @generated from field: string proposer_address = 6;
    */
@@ -781,28 +827,32 @@ export class QueryGetBlockResponse extends Message<QueryGetBlockResponse> {
 }
 
 /**
+ *
  * QueryFunctionSchemaRequest requests function schemas for a script.
+ *
+ * Either script_address or script_name must be provided. The script will be
+ * introspected to extract schemas for all public functions.
  *
  * @generated from message dysonprotocol.script.v1.QueryFunctionSchemaRequest
  */
 export class QueryFunctionSchemaRequest extends Message<QueryFunctionSchemaRequest> {
   /**
-   * executor is the account address used to evaluate the script
+   * Account address used to evaluate the script; must be a valid bech32
+   * address.
    *
    * @generated from field: string executor_address = 1;
    */
   executorAddress = "";
 
   /**
-   * address is the script bech32 address to inspect.
+   * Script bech32 address to inspect; mutually exclusive with script_name.
    *
    * @generated from field: string script_address = 2;
    */
   scriptAddress = "";
 
   /**
-   * script_name is the optional nameservice name of the script to inspect
-   * (e.g., "example.dys")
+   * Optional nameservice name of the script to inspect (e.g., "example.dys").
    *
    * @generated from field: string script_name = 3;
    */
@@ -839,15 +889,16 @@ export class QueryFunctionSchemaRequest extends Message<QueryFunctionSchemaReque
 }
 
 /**
- * QueryFunctionSchemaResponse contains a JSON object mapping function names to
- * schemas.
+ *
+ * QueryFunctionSchemaResponse contains function schemas extracted from a
+ * script.
  *
  * @generated from message dysonprotocol.script.v1.QueryFunctionSchemaResponse
  */
 export class QueryFunctionSchemaResponse extends Message<QueryFunctionSchemaResponse> {
   /**
-   * schema_json is a JSON object: [{"name": "func_name", "schema":
-   * {schema...}}, ...]
+   * JSON array of function schemas: [{"name": "func_name", "schema": {...}},
+   * ...]
    *
    * @generated from field: string schema_json = 1;
    */

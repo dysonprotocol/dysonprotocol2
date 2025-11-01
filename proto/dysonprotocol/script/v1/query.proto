@@ -31,8 +31,9 @@ service Query {
   };
 
   /*
-   * EncodeJson encodes a JSON string to protobuf bytes for message construction.
-   * Useful for converting human-readable JSON to binary protobuf format.
+   * EncodeJson encodes a JSON string to protobuf bytes for message
+   * construction. Useful for converting human-readable JSON to binary protobuf
+   * format.
    */
   rpc EncodeJson(QueryEncodeJsonRequest) returns (QueryEncodeJsonResponse) {
     option (google.api.http).get = "/dysonprotocol/script/v1/encode_json";
@@ -40,18 +41,20 @@ service Query {
 
   /*
    * DecodeBytes decodes protobuf bytes to JSON string for message inspection.
-   * Useful for converting binary protobuf messages to human-readable JSON format.
+   * Useful for converting binary protobuf messages to human-readable JSON
+   * format.
    */
   rpc DecodeBytes(QueryDecodeBytesRequest) returns (QueryDecodeBytesResponse) {
     option (google.api.http).get = "/dysonprotocol/script/v1/decode_bytes";
   }
 
   /*
-   * VerifyTx verifies the signatures of an arbitrary transaction for MsgArbitraryData.
-   * Implements ADR-036 arbitrary signature verification with empty chain ID and sequence.
+   * VerifyTx verifies the signatures of an arbitrary transaction for
+   * MsgArbitraryData. Implements ADR-036 arbitrary signature verification with
+   * empty chain ID and sequence.
    *
    * Example transaction JSON for verification:
-   *
+   * ```json
    * {
    *   "body": {
    *     "messages": [
@@ -89,14 +92,21 @@ service Query {
    *     "base64_encoded_signature"
    *   ]
    * }
-   *
+   * ```
+
    * CLI Example:
    *
    * # Create a signed MsgArbitraryData transaction for verification
-   * dysond tx script sign-arbitrary-data "your data to sign" --app-domain "my_app/v1.0" --from alice --chain-id "" --account-number 0 --sequence 0 --offline --output-document signed_tx.json
+   * ```bash
+   * dysond tx script sign-arbitrary-data "your data to sign" --app-domain
+   * "my_app/v1.0" --from alice --chain-id "" --account-number 0 --sequence 0
+   * --offline --output-document signed_tx.json
+   * ```
    *
    * # Verify the signed transaction
+   * ```bash
    * dysond query script verify-tx --tx-json "$(cat signed_tx.json)" -o json
+   * ```
    */
   rpc VerifyTx(QueryVerifyTxRequest) returns (QueryVerifyTxResponse) {
     option (google.api.http).get = "/dysonprotocol/script/v1/verify_tx";
@@ -143,7 +153,8 @@ service Query {
 
   /*
    * FunctionSchema returns JSON schemas for all public functions in a script.
-   * Extracts function signatures, parameter types, and return types for tooling and documentation.
+   * Extracts function signatures, parameter types, and return types for tooling
+   * and documentation.
    */
   rpc FunctionSchema(QueryFunctionSchemaRequest)
       returns (QueryFunctionSchemaResponse) {
@@ -157,8 +168,9 @@ service Query {
 /*
  * WebRequest requests execution of a script's WSGI web application.
  *
- * Either script_address or script_name must be provided. The script's WSGI application
- * will be executed in read-only mode with no state modifications allowed.
+ * Either script_address or script_name must be provided. The script's WSGI
+ * application will be executed in read-only mode with no state modifications
+ * allowed.
  */
 message WebRequest {
   // Bech32 account address of the script to execute.
@@ -184,7 +196,8 @@ message WebResponse {
  * Nameservice names will be resolved to addresses automatically.
  */
 message QueryScriptInfoRequest {
-  // Script address or nameservice name to query; supports both bech32 addresses and names.
+  // Script address or nameservice name to query; supports both bech32 addresses
+  // and names.
   string address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 }
 
@@ -217,10 +230,12 @@ message QueryEncodeJsonResponse {
 /*
  * QueryDecodeBytesRequest requests decoding of protobuf bytes to JSON.
  *
- * The type_url specifies the message type to decode, and bytes contains the protobuf-encoded data.
+ * The type_url specifies the message type to decode, and bytes contains the
+ * protobuf-encoded data.
  */
 message QueryDecodeBytesRequest {
-  // Type URL of the message type to decode (e.g., "/cosmos.bank.v1beta1.MsgSend").
+  // Type URL of the message type to decode (e.g.,
+  // "/cosmos.bank.v1beta1.MsgSend").
   string type_url = 1;
   // Protobuf-encoded bytes of the message to decode to JSON.
   bytes bytes = 2;
@@ -235,14 +250,17 @@ message QueryDecodeBytesResponse {
 }
 
 /*
- * QueryVerifyTxRequest requests verification of an arbitrary transaction signature.
+ * QueryVerifyTxRequest requests verification of an arbitrary transaction
+ * signature.
  *
- * The transaction JSON should contain a properly signed MsgArbitraryData transaction.
- * Verification follows ADR-036 rules with empty chain ID, account number 0, and sequence 0.
- * See the VerifyTx RPC method documentation for a complete example transaction structure.
+ * The transaction JSON should contain a properly signed MsgArbitraryData
+ * transaction. Verification follows ADR-036 rules with empty chain ID, account
+ * number 0, and sequence 0. See the VerifyTx RPC method documentation for a
+ * complete example transaction structure.
  */
 message QueryVerifyTxRequest {
-  // JSON representation of the transaction to verify (must contain MsgArbitraryData).
+  // JSON representation of the transaction to verify (must contain
+  // MsgArbitraryData).
   string tx_json = 1;
 }
 
@@ -265,15 +283,17 @@ message QueryParamsRequest {}
  * QueryParamsResponse contains the current script module parameters.
  */
 message QueryParamsResponse {
-  // Current script module parameters including execution limits and configuration.
+  // Current script module parameters including execution limits and
+  // configuration.
   Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
 /*
  * RunScript requests execution of a script function in read-only mode.
  *
- * Similar to MsgExec but executed in a cached context with no persistent state changes.
- * All execution results are returned but any state modifications are discarded.
+ * Similar to MsgExec but executed in a cached context with no persistent state
+ * changes. All execution results are returned but any state modifications are
+ * discarded.
  */
 message RunScript {
   // Account address used to execute the script; must be a valid bech32 address.
@@ -299,7 +319,8 @@ message RunScript {
   // Keyword arguments (**kwargs) encoded as a JSON object.
   string kwargs = 7;
 
-  // Messages executed before the script; results available but state changes discarded.
+  // Messages executed before the script; results available but state changes
+  // discarded.
   repeated google.protobuf.Any attached_messages = 8;
 }
 
@@ -352,7 +373,8 @@ message QueryGetBlockResponse {
  * introspected to extract schemas for all public functions.
  */
 message QueryFunctionSchemaRequest {
-  // Account address used to evaluate the script; must be a valid bech32 address.
+  // Account address used to evaluate the script; must be a valid bech32
+  // address.
   string executor_address = 1
       [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
@@ -364,9 +386,11 @@ message QueryFunctionSchemaRequest {
 }
 
 /*
- * QueryFunctionSchemaResponse contains function schemas extracted from a script.
+ * QueryFunctionSchemaResponse contains function schemas extracted from a
+ * script.
  */
 message QueryFunctionSchemaResponse {
-  // JSON array of function schemas: [{"name": "func_name", "schema": {...}}, ...]
+  // JSON array of function schemas: [{"name": "func_name", "schema": {...}},
+  // ...]
   string schema_json = 1;
 }

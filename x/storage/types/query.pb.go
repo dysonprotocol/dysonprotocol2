@@ -32,16 +32,21 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// QueryStorageGetRequest retrieves a single storage entry with optional field
+// extraction.
+//
+// Owner resolution supports both nameservice names and bech32 addresses.
+// Extract parameter enables GJSON path-based field retrieval from stored JSON
+// data.
 type QueryStorageGetRequest struct {
-	// Owner identifier to look up by. Accepts either:
-	// - a nameservice name (e.g. "alice.dys"), which will be resolved to an
-	// address, or
-	// - a bech32 address directly
-	// Resolution is performed server-side prior to querying the store.
+	// Owner identifier to look up by; accepts nameservice names (e.g.
+	// "alice.dys") or bech32 addresses. Resolution is performed server-side prior
+	// to querying the store.
 	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
-	// The index of the storage entry.
+	// Index of the storage entry to retrieve.
 	Index string `protobuf:"bytes,2,opt,name=index,proto3" json:"index,omitempty"`
-	// The gjson path to extract from the storage entry.
+	// Optional GJSON path to extract from the storage entry (e.g., "user.name");
+	// max 100 characters.
 	Extract string `protobuf:"bytes,3,opt,name=extract,proto3" json:"extract,omitempty"`
 }
 
@@ -99,7 +104,10 @@ func (m *QueryStorageGetRequest) GetExtract() string {
 	return ""
 }
 
+// Response containing the retrieved storage entry.
 type QueryStorageGetResponse struct {
+	// The storage entry matching the query; data field contains extracted data if
+	// extract path was provided.
 	Entry *Storage `protobuf:"bytes,1,opt,name=entry,proto3" json:"entry,omitempty"`
 }
 
@@ -143,28 +151,30 @@ func (m *QueryStorageGetResponse) GetEntry() *Storage {
 	return nil
 }
 
+// QueryStorageListRequest lists storage entries with prefix filtering, GJSON
+// filtering, and extraction.
+//
+// Supports complex queries through index_prefix for efficient range scans,
+// GJSON filter for content-based filtering, and GJSON extract for field-level
+// retrieval. Pagination enables efficient iteration over large result sets.
 type QueryStorageListRequest struct {
-	// Owner identifier to list under. Accepts either:
-	// - a nameservice name (e.g. "alice.dys"), which will be resolved to an
-	// address, or
-	// - a bech32 address directly
-	// Resolution is performed server-side prior to building the range iterator.
+	// Owner identifier to list under; accepts nameservice names (e.g.
+	// "alice.dys") or bech32 addresses. Resolution is performed server-side prior
+	// to building the range iterator.
 	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
-	// The index prefix of the storage entry to filter by.
+	// Index prefix to filter storage entries by; only entries with indexes
+	// starting with this prefix are returned.
 	IndexPrefix string `protobuf:"bytes,2,opt,name=index_prefix,json=indexPrefix,proto3" json:"index_prefix,omitempty"`
-	// The optional gjson filter to filter the storage entry.
-	// Supports GJSON query syntax with comparison operators:
-	// - Equality: status == "active", age == 18
-	// - Inequality: type != "test"
-	// - Comparison: age > 18, count <= 100, score >= 50
-	// - Pattern matching: name % "John*" (like), tag !% "*beta*" (not like)
-	// Only entries matching the filter will be included in results.
+	// Optional GJSON filter to further filter entries; supports comparison
+	// operators (==, !=, <, <=, >, >=) and pattern matching (% for like, !% for
+	// not like); only matching entries included in results; max 100 chars.
 	Filter string `protobuf:"bytes,3,opt,name=filter,proto3" json:"filter,omitempty"`
-	// The optional gjson path to extract from the storage entry. For example,
-	// Given data like {"user": {"name": "jeff"}}, the extract "user.name" will
-	// return "jeff".
+	// Optional GJSON path to extract from each entry (e.g., "user.name" extracts
+	// "jeff" from {"user": {"name": "jeff"}}); transforms data field in response;
+	// max 100 characters.
 	Extract string `protobuf:"bytes,4,opt,name=extract,proto3" json:"extract,omitempty"`
-	// The pagination request.
+	// Pagination parameters for result set navigation; supports offset, limit,
+	// and key-based pagination.
 	Pagination *query.PageRequest `protobuf:"bytes,5,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -236,8 +246,13 @@ func (m *QueryStorageListRequest) GetPagination() *query.PageRequest {
 	return nil
 }
 
+// Response containing list of storage entries matching the query criteria.
 type QueryStorageListResponse struct {
-	Entries    []*Storage          `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	// List of storage entries matching owner, index_prefix, and filter criteria;
+	// data may be transformed by extract parameter.
+	Entries []*Storage `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	// Pagination metadata including next key for continued iteration and total
+	// count if requested.
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -288,7 +303,7 @@ func (m *QueryStorageListResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryParamsRequest is request type for the Query/Params RPC method.
+// Empty request for retrieving current storage module parameters.
 type QueryParamsRequest struct {
 }
 
@@ -325,9 +340,10 @@ func (m *QueryParamsRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryParamsRequest proto.InternalMessageInfo
 
-// QueryParamsResponse is response type for the Query/Params RPC method.
+// Response containing the current storage module parameters.
 type QueryParamsResponse struct {
-	// params holds all the parameters of this module.
+	// Current module parameters including MaxStorageSize and
+	// StorageStakeMultiple.
 	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
 }
 
@@ -371,11 +387,14 @@ func (m *QueryParamsResponse) GetParams() Params {
 	return Params{}
 }
 
-// QueryMetricsRequest is request type for the Query/Metrics RPC method.
+// QueryMetricsRequest retrieves storage usage metrics for an owner.
+//
+// Metrics include total bytes stored, calculated stake requirements, and
+// current stake amount.
 type QueryMetricsRequest struct {
-	// Owner identifier to query metrics for. Accepts either a nameservice name
-	// (resolved to an address) or a bech32 address directly. Resolution occurs
-	// server-side before computing metrics.
+	// Owner identifier to query metrics for; accepts nameservice names (resolved
+	// to addresses) or bech32 addresses directly. Resolution occurs server-side
+	// before computing metrics.
 	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
 }
 
@@ -419,18 +438,16 @@ func (m *QueryMetricsRequest) GetOwner() string {
 	return ""
 }
 
-// QueryMetricsResponse is response type for the Query/Metrics RPC method.
+// Response containing storage metrics and stake information for an owner.
 type QueryMetricsResponse struct {
-	// owner is the resolved account address that owns storage entries.
+	// Resolved account address that owns the storage entries.
 	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
-	// total_bytes is the total number of bytes consumed by all storage entries
-	// for this owner address.
+	// Total number of bytes consumed by all storage entries for this owner.
 	TotalBytes uint64 `protobuf:"varint,2,opt,name=total_bytes,json=totalBytes,proto3" json:"total_bytes,omitempty"`
-	// min_stake_amount is the minimum stake required in udys for the current
-	// storage usage (total_bytes × storage_stake_multiple).
+	// Minimum stake required in udys for current storage usage (total_bytes ×
+	// storage_stake_multiple).
 	MinStakeAmount string `protobuf:"bytes,3,opt,name=min_stake_amount,json=minStakeAmount,proto3" json:"min_stake_amount,omitempty"`
-	// current_stake_amount is the owner's current total delegated stake in udys
-	// across all validators.
+	// Owner's current total delegated stake in udys across all validators.
 	CurrentStakeAmount string `protobuf:"bytes,4,opt,name=current_stake_amount,json=currentStakeAmount,proto3" json:"current_stake_amount,omitempty"`
 }
 
@@ -570,15 +587,82 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// Gets the stored data for the given owner and index.
+	// StorageGet retrieves a single storage entry by owner and index with
+	// optional GJSON extraction.
+	//
+	// Supports nameservice name resolution for owner field. Extract parameter
+	// enables field-level data retrieval.
+	//
+	// Behavior:
+	//   - Resolves owner identifier (supports both nameservice names and bech32
+	//     addresses)
+	//   - Retrieves storage entry using composite key of resolved_owner/index
+	//   - Applies optional GJSON path extraction to filter returned data
+	//   - Normalizes index in response by removing owner prefix for cleaner API
+	//
+	// Validation:
+	// - Owner must be resolvable to a valid account address
+	// - Extract path length limited to 100 characters if provided
+	//
+	// Returns:
+	// - Storage entry with extracted data if extract path was provided
 	StorageGet(ctx context.Context, in *QueryStorageGetRequest, opts ...grpc.CallOption) (*QueryStorageGetResponse, error)
-	// Lists all storage entries for the owner under a given index prefix. Use
-	// filter and extract to filter and extract the data and iterate over the data
-	// efficiently.
+	// StorageList lists storage entries for an owner under a given index prefix
+	// with optional filtering and extraction.
+	//
+	// Supports GJSON filtering for complex queries, field extraction, and full
+	// pagination with offset/key navigation. Results ordered by composite key for
+	// consistent pagination.
+	//
+	// Behavior:
+	//   - Resolves owner identifier (supports both nameservice names and bech32
+	//     addresses)
+	//   - Lists entries with composite keys starting with
+	//
+	// resolved_owner/index_prefix
+	//   - Applies optional GJSON filter to include only matching entries
+	//   - Applies optional GJSON extract to transform returned data
+	//   - Supports full pagination with offset/key-based navigation and reverse
+	//     iteration
+	//   - Normalizes index fields in response by removing owner prefix
+	//
+	// Validation:
+	// - Owner must be resolvable to a valid account address
+	// - Filter and extract path lengths limited to 100 characters if provided
+	// - Pagination parameters must be valid (no both offset and key specified)
+	//
+	// Returns:
+	// - List of storage entries matching owner, index_prefix, and filter criteria
 	StorageList(ctx context.Context, in *QueryStorageListRequest, opts ...grpc.CallOption) (*QueryStorageListResponse, error)
-	// Params queries the storage module parameters
+	// Params returns the current x/storage module parameters.
+	//
+	// Behavior:
+	// - Retrieves current parameter values from module state
+	// - Returns default parameters if none have been set (fresh chain state)
+	//
+	// Returns:
+	// - Current MaxStorageSize and StorageStakeMultiple parameter values
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	// Metrics queries the storage metrics for a given owner address
+	// Metrics returns storage usage statistics and stake requirements for an
+	// owner address.
+	//
+	// Includes total bytes stored, minimum stake required, and current stake
+	// amount for compliance checking.
+	//
+	// Behavior:
+	//   - Resolves owner identifier (supports both nameservice names and bech32
+	//     addresses)
+	//   - Retrieves total bytes stored by the owner across all entries
+	//   - Calculates minimum stake amount required based on StorageStakeMultiple
+	//     parameter
+	//   - Returns current stake amount from staking module for comparison
+	//   - Returns zero metrics if owner has no storage entries
+	//
+	// Validation:
+	// - Owner must be resolvable to a valid account address
+	//
+	// Returns:
+	// - Total bytes, minimum stake requirement, and current stake amount
 	Metrics(ctx context.Context, in *QueryMetricsRequest, opts ...grpc.CallOption) (*QueryMetricsResponse, error)
 }
 
@@ -628,15 +712,82 @@ func (c *queryClient) Metrics(ctx context.Context, in *QueryMetricsRequest, opts
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// Gets the stored data for the given owner and index.
+	// StorageGet retrieves a single storage entry by owner and index with
+	// optional GJSON extraction.
+	//
+	// Supports nameservice name resolution for owner field. Extract parameter
+	// enables field-level data retrieval.
+	//
+	// Behavior:
+	//   - Resolves owner identifier (supports both nameservice names and bech32
+	//     addresses)
+	//   - Retrieves storage entry using composite key of resolved_owner/index
+	//   - Applies optional GJSON path extraction to filter returned data
+	//   - Normalizes index in response by removing owner prefix for cleaner API
+	//
+	// Validation:
+	// - Owner must be resolvable to a valid account address
+	// - Extract path length limited to 100 characters if provided
+	//
+	// Returns:
+	// - Storage entry with extracted data if extract path was provided
 	StorageGet(context.Context, *QueryStorageGetRequest) (*QueryStorageGetResponse, error)
-	// Lists all storage entries for the owner under a given index prefix. Use
-	// filter and extract to filter and extract the data and iterate over the data
-	// efficiently.
+	// StorageList lists storage entries for an owner under a given index prefix
+	// with optional filtering and extraction.
+	//
+	// Supports GJSON filtering for complex queries, field extraction, and full
+	// pagination with offset/key navigation. Results ordered by composite key for
+	// consistent pagination.
+	//
+	// Behavior:
+	//   - Resolves owner identifier (supports both nameservice names and bech32
+	//     addresses)
+	//   - Lists entries with composite keys starting with
+	//
+	// resolved_owner/index_prefix
+	//   - Applies optional GJSON filter to include only matching entries
+	//   - Applies optional GJSON extract to transform returned data
+	//   - Supports full pagination with offset/key-based navigation and reverse
+	//     iteration
+	//   - Normalizes index fields in response by removing owner prefix
+	//
+	// Validation:
+	// - Owner must be resolvable to a valid account address
+	// - Filter and extract path lengths limited to 100 characters if provided
+	// - Pagination parameters must be valid (no both offset and key specified)
+	//
+	// Returns:
+	// - List of storage entries matching owner, index_prefix, and filter criteria
 	StorageList(context.Context, *QueryStorageListRequest) (*QueryStorageListResponse, error)
-	// Params queries the storage module parameters
+	// Params returns the current x/storage module parameters.
+	//
+	// Behavior:
+	// - Retrieves current parameter values from module state
+	// - Returns default parameters if none have been set (fresh chain state)
+	//
+	// Returns:
+	// - Current MaxStorageSize and StorageStakeMultiple parameter values
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	// Metrics queries the storage metrics for a given owner address
+	// Metrics returns storage usage statistics and stake requirements for an
+	// owner address.
+	//
+	// Includes total bytes stored, minimum stake required, and current stake
+	// amount for compliance checking.
+	//
+	// Behavior:
+	//   - Resolves owner identifier (supports both nameservice names and bech32
+	//     addresses)
+	//   - Retrieves total bytes stored by the owner across all entries
+	//   - Calculates minimum stake amount required based on StorageStakeMultiple
+	//     parameter
+	//   - Returns current stake amount from staking module for comparison
+	//   - Returns zero metrics if owner has no storage entries
+	//
+	// Validation:
+	// - Owner must be resolvable to a valid account address
+	//
+	// Returns:
+	// - Total bytes, minimum stake requirement, and current stake amount
 	Metrics(context.Context, *QueryMetricsRequest) (*QueryMetricsResponse, error)
 }
 

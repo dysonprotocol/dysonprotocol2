@@ -60,16 +60,37 @@ const (
 //
 // Msg defines the Msg service.
 type MsgClient interface {
+	// Commit creates a commitment for name registration using commit-reveal
+	// scheme. Stores hash commitment that can be revealed later to prevent
+	// front-running.
 	Commit(ctx context.Context, in *MsgCommit, opts ...grpc.CallOption) (*MsgCommitResponse, error)
+	// Reveal completes name registration by validating revealed name matches
+	// commitment hash. Mints Name NFT, charges valuation fee, and creates reverse
+	// mapping for resolution.
 	Reveal(ctx context.Context, in *MsgReveal, opts ...grpc.CallOption) (*MsgRevealResponse, error)
+	// SetValuation updates the self-valuation of an NFT, charging Harberger tax
+	// on increases. Fee goes to community pool or class owner based on governance
+	// status.
 	SetValuation(ctx context.Context, in *MsgSetValuation, opts ...grpc.CallOption) (*MsgSetValuationResponse, error)
+	// Renew extends valuation expiry by charging proportional annual fee.
+	// Fee is paid to the NFT class owner.
 	Renew(ctx context.Context, in *MsgRenew, opts ...grpc.CallOption) (*MsgRenewResponse, error)
+	// PlaceBid places or outbids on a listed NFT, escrowing funds until
+	// acceptance or expiry. First bids must meet/exceed valuation; subsequent
+	// bids require minimum increase percentage.
 	PlaceBid(ctx context.Context, in *MsgPlaceBid, opts ...grpc.CallOption) (*MsgPlaceBidResponse, error)
+	// AcceptBid accepts current active bid, transferring NFT ownership and
+	// releasing escrowed funds. Updates NFT valuation to accepted bid amount and
+	// clears bid state.
 	AcceptBid(ctx context.Context, in *MsgAcceptBid, opts ...grpc.CallOption) (*MsgAcceptBidResponse, error)
-	// RejectBid is used to reject a bid and set a new valuation for the NFT, to
-	// prevent abuse a rejection fee as a percentage of the new valuation is paid
-	// to the community pool.
+	// RejectBid rejects current bid and sets new valuation, charging rejection
+	// fee. Fee routing: to NFT class owner for user-controlled classes, to
+	// community pool for governance-controlled classes. Refunds the rejected
+	// bidder's escrowed bid amount back to them.
 	RejectBid(ctx context.Context, in *MsgRejectBid, opts ...grpc.CallOption) (*MsgRejectBidResponse, error)
+	// ClaimBid allows bidder to claim NFT after bid timeout expires without
+	// acceptance. Transfers escrowed bid to previous owner and NFT ownership to
+	// bidder.
 	ClaimBid(ctx context.Context, in *MsgClaimBid, opts ...grpc.CallOption) (*MsgClaimBidResponse, error)
 	SetDestination(ctx context.Context, in *MsgSetDestination, opts ...grpc.CallOption) (*MsgSetDestinationResponse, error)
 	// SetNameMetadata allows the owner of a name (NFT in nameservice.dys) to set
@@ -451,16 +472,37 @@ func (c *msgClient) CreateExternalName(ctx context.Context, in *MsgCreateExterna
 //
 // Msg defines the Msg service.
 type MsgServer interface {
+	// Commit creates a commitment for name registration using commit-reveal
+	// scheme. Stores hash commitment that can be revealed later to prevent
+	// front-running.
 	Commit(context.Context, *MsgCommit) (*MsgCommitResponse, error)
+	// Reveal completes name registration by validating revealed name matches
+	// commitment hash. Mints Name NFT, charges valuation fee, and creates reverse
+	// mapping for resolution.
 	Reveal(context.Context, *MsgReveal) (*MsgRevealResponse, error)
+	// SetValuation updates the self-valuation of an NFT, charging Harberger tax
+	// on increases. Fee goes to community pool or class owner based on governance
+	// status.
 	SetValuation(context.Context, *MsgSetValuation) (*MsgSetValuationResponse, error)
+	// Renew extends valuation expiry by charging proportional annual fee.
+	// Fee is paid to the NFT class owner.
 	Renew(context.Context, *MsgRenew) (*MsgRenewResponse, error)
+	// PlaceBid places or outbids on a listed NFT, escrowing funds until
+	// acceptance or expiry. First bids must meet/exceed valuation; subsequent
+	// bids require minimum increase percentage.
 	PlaceBid(context.Context, *MsgPlaceBid) (*MsgPlaceBidResponse, error)
+	// AcceptBid accepts current active bid, transferring NFT ownership and
+	// releasing escrowed funds. Updates NFT valuation to accepted bid amount and
+	// clears bid state.
 	AcceptBid(context.Context, *MsgAcceptBid) (*MsgAcceptBidResponse, error)
-	// RejectBid is used to reject a bid and set a new valuation for the NFT, to
-	// prevent abuse a rejection fee as a percentage of the new valuation is paid
-	// to the community pool.
+	// RejectBid rejects current bid and sets new valuation, charging rejection
+	// fee. Fee routing: to NFT class owner for user-controlled classes, to
+	// community pool for governance-controlled classes. Refunds the rejected
+	// bidder's escrowed bid amount back to them.
 	RejectBid(context.Context, *MsgRejectBid) (*MsgRejectBidResponse, error)
+	// ClaimBid allows bidder to claim NFT after bid timeout expires without
+	// acceptance. Transfers escrowed bid to previous owner and NFT ownership to
+	// bidder.
 	ClaimBid(context.Context, *MsgClaimBid) (*MsgClaimBidResponse, error)
 	SetDestination(context.Context, *MsgSetDestination) (*MsgSetDestinationResponse, error)
 	// SetNameMetadata allows the owner of a name (NFT in nameservice.dys) to set

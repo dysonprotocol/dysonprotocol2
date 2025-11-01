@@ -38,7 +38,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Make Offer",
-                "description": "Make an orderbook offer. Constraints and semantics: - have and want must be different denoms and strictly positive. - Any denom allowed (including PFAND); settlement behavior controlled by settlement_mode. - If settlement_mode == LIQUID, the transaction locks PFAND per module params. - The keeper computes GCD(have.amount, want.amount) to establish integral   units for partial fills: unit_have = have/gcd, unit_want = want/gcd. - RemainingUnits starts at gcd and decreases as fills occur."
+                "description": "* MakeOffer creates an orderbook offer. ESCROW: base \"have\" is escrowed. LIQUID: lock PFAND; settlement draws from maker balance at take. Units are derived via GCD for partial fills. Behavior: - Validates maker address, have/want coins (different denoms, positive amounts). - For ESCROW mode: escrows base have from maker to module. - For LIQUID mode: locks PFAND from maker to module (if configured). - Computes GCD of have/want amounts to establish unit_have/unit_want ratios. - Creates offer with remaining_units = GCD, status = open. - Persists offer and indexes it for queries. Validation: - Maker address must be valid. - Have/want denoms must be valid and different. - Have/want amounts must be positive. - Maker must hold sufficient have amount (for escrow check). - For LIQUID mode: maker must hold sufficient PFAND if configured. Emits: - EventOfferCreated with offer_id - EventPfandLocked with amount, offer_id (if PFAND locked) Returns: - offer_id of the newly created offer."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {

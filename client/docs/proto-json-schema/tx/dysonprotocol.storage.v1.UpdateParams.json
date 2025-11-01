@@ -7,18 +7,18 @@
                 "properties": {
                     "authority": {
                         "type": "string",
-                        "description": "authority is the address that controls the module (defaults to x/gov unless overwritten)."
+                        "description": "Authority is the address that controls the module (defaults to x/gov unless overwritten)."
                     },
                     "params": {
                         "$ref": "#/definitions/dysonprotocol.storage.v1.Params",
                         "additionalProperties": false,
-                        "description": "params defines the x/storage parameters to update. NOTE: All parameters must be supplied."
+                        "description": "Params defines the x/storage parameters to update; all parameters must be supplied."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Update Params",
-                "description": "MsgUpdateParams is the Msg/UpdateParams request type."
+                "description": "MsgUpdateParams is the Msg/UpdateParams request type. Behavior: - Validates that the signer has authority to update module parameters (typically governance module). - Validates that all provided parameters are valid according to parameter constraints. - Updates the module's parameter state with the new values. Validation: - Authority must match the module's configured authority address. - All parameter values must pass individual validation (MaxStorageSize, StorageStakeMultiple). Emits: - No events emitted for parameter updates. Returns: - Empty response body on success."
             },
             "dysonprotocol.storage.v1.Params": {
                 "properties": {
@@ -46,7 +46,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Update Params Response",
-                "description": "MsgUpdateParamsResponse defines the response structure for executing a MsgUpdateParams message."
+                "description": "Empty response. Parameter updates do not emit events."
             }
         }
     }

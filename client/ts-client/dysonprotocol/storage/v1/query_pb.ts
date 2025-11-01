@@ -10,29 +10,36 @@ import { PageRequest, PageResponse } from "../../../cosmos/base/query/v1beta1/pa
 import { Params } from "./params_pb.js";
 
 /**
+ *
+ * QueryStorageGetRequest retrieves a single storage entry with optional field
+ * extraction.
+ *
+ * Owner resolution supports both nameservice names and bech32 addresses.
+ * Extract parameter enables GJSON path-based field retrieval from stored JSON
+ * data.
+ *
  * @generated from message dysonprotocol.storage.v1.QueryStorageGetRequest
  */
 export class QueryStorageGetRequest extends Message<QueryStorageGetRequest> {
   /**
-   * Owner identifier to look up by. Accepts either:
-   * - a nameservice name (e.g. "alice.dys"), which will be resolved to an
-   * address, or
-   * - a bech32 address directly
-   * Resolution is performed server-side prior to querying the store.
+   * Owner identifier to look up by; accepts nameservice names (e.g.
+   * "alice.dys") or bech32 addresses. Resolution is performed server-side prior
+   * to querying the store.
    *
    * @generated from field: string owner = 1;
    */
   owner = "";
 
   /**
-   * The index of the storage entry.
+   * Index of the storage entry to retrieve.
    *
    * @generated from field: string index = 2;
    */
   index = "";
 
   /**
-   * The gjson path to extract from the storage entry.
+   * Optional GJSON path to extract from the storage entry (e.g., "user.name");
+   * max 100 characters.
    *
    * @generated from field: string extract = 3;
    */
@@ -69,10 +76,16 @@ export class QueryStorageGetRequest extends Message<QueryStorageGetRequest> {
 }
 
 /**
+ *
+ * Response containing the retrieved storage entry.
+ *
  * @generated from message dysonprotocol.storage.v1.QueryStorageGetResponse
  */
 export class QueryStorageGetResponse extends Message<QueryStorageGetResponse> {
   /**
+   * The storage entry matching the query; data field contains extracted data if
+   * extract path was provided.
+   *
    * @generated from field: dysonprotocol.storage.v1.Storage entry = 1;
    */
   entry?: Storage;
@@ -106,51 +119,55 @@ export class QueryStorageGetResponse extends Message<QueryStorageGetResponse> {
 }
 
 /**
+ *
+ * QueryStorageListRequest lists storage entries with prefix filtering, GJSON
+ * filtering, and extraction.
+ *
+ * Supports complex queries through index_prefix for efficient range scans,
+ * GJSON filter for content-based filtering, and GJSON extract for field-level
+ * retrieval. Pagination enables efficient iteration over large result sets.
+ *
  * @generated from message dysonprotocol.storage.v1.QueryStorageListRequest
  */
 export class QueryStorageListRequest extends Message<QueryStorageListRequest> {
   /**
-   * Owner identifier to list under. Accepts either:
-   * - a nameservice name (e.g. "alice.dys"), which will be resolved to an
-   * address, or
-   * - a bech32 address directly
-   * Resolution is performed server-side prior to building the range iterator.
+   * Owner identifier to list under; accepts nameservice names (e.g.
+   * "alice.dys") or bech32 addresses. Resolution is performed server-side prior
+   * to building the range iterator.
    *
    * @generated from field: string owner = 1;
    */
   owner = "";
 
   /**
-   * The index prefix of the storage entry to filter by.
+   * Index prefix to filter storage entries by; only entries with indexes
+   * starting with this prefix are returned.
    *
    * @generated from field: string index_prefix = 2;
    */
   indexPrefix = "";
 
   /**
-   * The optional gjson filter to filter the storage entry.
-   * Supports GJSON query syntax with comparison operators:
-   * - Equality: status == "active", age == 18
-   * - Inequality: type != "test"
-   * - Comparison: age > 18, count <= 100, score >= 50
-   * - Pattern matching: name % "John*" (like), tag !% "*beta*" (not like)
-   * Only entries matching the filter will be included in results.
+   * Optional GJSON filter to further filter entries; supports comparison
+   * operators (==, !=, <, <=, >, >=) and pattern matching (% for like, !% for
+   * not like); only matching entries included in results; max 100 chars.
    *
    * @generated from field: string filter = 3;
    */
   filter = "";
 
   /**
-   * The optional gjson path to extract from the storage entry. For example,
-   * Given data like {"user": {"name": "jeff"}}, the extract "user.name" will
-   * return "jeff".
+   * Optional GJSON path to extract from each entry (e.g., "user.name" extracts
+   * "jeff" from {"user": {"name": "jeff"}}); transforms data field in response;
+   * max 100 characters.
    *
    * @generated from field: string extract = 4;
    */
   extract = "";
 
   /**
-   * The pagination request.
+   * Pagination parameters for result set navigation; supports offset, limit,
+   * and key-based pagination.
    *
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 5;
    */
@@ -189,15 +206,24 @@ export class QueryStorageListRequest extends Message<QueryStorageListRequest> {
 }
 
 /**
+ *
+ * Response containing list of storage entries matching the query criteria.
+ *
  * @generated from message dysonprotocol.storage.v1.QueryStorageListResponse
  */
 export class QueryStorageListResponse extends Message<QueryStorageListResponse> {
   /**
+   * List of storage entries matching owner, index_prefix, and filter criteria;
+   * data may be transformed by extract parameter.
+   *
    * @generated from field: repeated dysonprotocol.storage.v1.Storage entries = 1;
    */
   entries: Storage[] = [];
 
   /**
+   * Pagination metadata including next key for continued iteration and total
+   * count if requested.
+   *
    * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
    */
   pagination?: PageResponse;
@@ -232,7 +258,8 @@ export class QueryStorageListResponse extends Message<QueryStorageListResponse> 
 }
 
 /**
- * QueryParamsRequest is request type for the Query/Params RPC method.
+ *
+ * Empty request for retrieving current storage module parameters.
  *
  * @generated from message dysonprotocol.storage.v1.QueryParamsRequest
  */
@@ -265,13 +292,15 @@ export class QueryParamsRequest extends Message<QueryParamsRequest> {
 }
 
 /**
- * QueryParamsResponse is response type for the Query/Params RPC method.
+ *
+ * Response containing the current storage module parameters.
  *
  * @generated from message dysonprotocol.storage.v1.QueryParamsResponse
  */
 export class QueryParamsResponse extends Message<QueryParamsResponse> {
   /**
-   * params holds all the parameters of this module.
+   * Current module parameters including MaxStorageSize and
+   * StorageStakeMultiple.
    *
    * @generated from field: dysonprotocol.storage.v1.Params params = 1;
    */
@@ -306,15 +335,19 @@ export class QueryParamsResponse extends Message<QueryParamsResponse> {
 }
 
 /**
- * QueryMetricsRequest is request type for the Query/Metrics RPC method.
+ *
+ * QueryMetricsRequest retrieves storage usage metrics for an owner.
+ *
+ * Metrics include total bytes stored, calculated stake requirements, and
+ * current stake amount.
  *
  * @generated from message dysonprotocol.storage.v1.QueryMetricsRequest
  */
 export class QueryMetricsRequest extends Message<QueryMetricsRequest> {
   /**
-   * Owner identifier to query metrics for. Accepts either a nameservice name
-   * (resolved to an address) or a bech32 address directly. Resolution occurs
-   * server-side before computing metrics.
+   * Owner identifier to query metrics for; accepts nameservice names (resolved
+   * to addresses) or bech32 addresses directly. Resolution occurs server-side
+   * before computing metrics.
    *
    * @generated from field: string owner = 1;
    */
@@ -349,37 +382,36 @@ export class QueryMetricsRequest extends Message<QueryMetricsRequest> {
 }
 
 /**
- * QueryMetricsResponse is response type for the Query/Metrics RPC method.
+ *
+ * Response containing storage metrics and stake information for an owner.
  *
  * @generated from message dysonprotocol.storage.v1.QueryMetricsResponse
  */
 export class QueryMetricsResponse extends Message<QueryMetricsResponse> {
   /**
-   * owner is the resolved account address that owns storage entries.
+   * Resolved account address that owns the storage entries.
    *
    * @generated from field: string owner = 1;
    */
   owner = "";
 
   /**
-   * total_bytes is the total number of bytes consumed by all storage entries
-   * for this owner address.
+   * Total number of bytes consumed by all storage entries for this owner.
    *
    * @generated from field: uint64 total_bytes = 2;
    */
   totalBytes = protoInt64.zero;
 
   /**
-   * min_stake_amount is the minimum stake required in udys for the current
-   * storage usage (total_bytes × storage_stake_multiple).
+   * Minimum stake required in udys for current storage usage (total_bytes ×
+   * storage_stake_multiple).
    *
    * @generated from field: string min_stake_amount = 3;
    */
   minStakeAmount = "";
 
   /**
-   * current_stake_amount is the owner's current total delegated stake in udys
-   * across all validators.
+   * Owner's current total delegated stake in udys across all validators.
    *
    * @generated from field: string current_stake_amount = 4;
    */

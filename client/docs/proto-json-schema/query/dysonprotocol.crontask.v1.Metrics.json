@@ -7,7 +7,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Metrics Request",
-                "description": "QueryMetricsRequest is the request type for Metrics"
+                "description": "QueryMetricsRequest is the request type for the Query/Metrics RPC method. Empty request body as metrics are retrieved from the latest block state."
             }
         }
     },
@@ -19,13 +19,14 @@
                 "properties": {
                     "metrics": {
                         "$ref": "#/definitions/dysonprotocol.crontask.v1.Metrics",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Operational metrics from the most recent block including execution counts, gas usage, subscription activity, and performance indicators."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Metrics Response",
-                "description": "QueryMetricsResponse carries last-block metrics"
+                "description": "QueryMetricsResponse carries last-block metrics."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {

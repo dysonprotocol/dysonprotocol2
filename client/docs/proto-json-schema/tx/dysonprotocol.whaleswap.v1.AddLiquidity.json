@@ -24,8 +24,8 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Add Liquidity",
-                "description": "* Add liquidity (owner-only). Behavior: - Escrows the full provided amounts, then refunds any unused surplus. - Concentrated pools: compute \u0394L from the inputs at the current price within   [min_price, max_price]; refund the side that exceeds the limiting \u0394L; mint   shares as floor(\u0394L * total_shares / L_current). - Non-concentrated pools: minted shares are derived from the limiting side   min(add1/R1, add2/R2) * total_shares; refund the difference. - Updates reserves, enforces the price band (if set), persists the pool,   emits events, and asserts AMM invariants. Validation: - Pool must exist and signer must hold a majority of shares. - `amounts` must contain exactly two positive coins whose denoms match the   pool reserves (canonical order). Emits: - EventPoolUpdate (after persisting pool state) - EventPoolLiquidityAdded (on successful add)"
+                "title": "*\n Add liquidity (owner-only).\n\n Behavior:\n - Loads pool; validates signer majority ownership.\n - Escrows full provided amounts first, then refunds unused surplus.\n - Computes shares as floor(min(add1/R1, add2/R2) \u00d7 totalShares).\n - Updates pool reserves with used amounts.\n - Mints computed shares via nameservice and transfers to signer.\n - Persists pool with updated reserves/timestamp; emits events; asserts AMM\n   and module invariants.\n\n Validation:\n - Pool must exist and have exactly two positive reserves.\n - Signer must be valid address and hold majority of pool shares.\n - Amounts must contain exactly two positive coins matching pool denoms in\n   canonical order.\n\n Emits:\n - EventPoolUpdate (after persisting pool state)\n - EventPoolLiquidityAdded (on successful add)",
+                "description": "* Add liquidity (owner-only). Behavior: - Loads pool; validates signer majority ownership. - Escrows full provided amounts first, then refunds unused surplus. - Computes shares as floor(min(add1/R1, add2/R2) \u00d7 totalShares). - Updates pool reserves with used amounts. - Mints computed shares via nameservice and transfers to signer. - Persists pool with updated reserves/timestamp; emits events; asserts AMM   and module invariants. Validation: - Pool must exist and have exactly two positive reserves. - Signer must be valid address and hold majority of pool shares. - Amounts must contain exactly two positive coins matching pool denoms in   canonical order. Emits: - EventPoolUpdate (after persisting pool state) - EventPoolLiquidityAdded (on successful add)  MsgAddLiquidity"
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {
@@ -56,7 +56,8 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Msg Add Liquidity Response"
+                "title": "Msg Add Liquidity Response",
+                "description": "Empty response. See EventPoolLiquidityAdded for emitted details."
             }
         }
     }

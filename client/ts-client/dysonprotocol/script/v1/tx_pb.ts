@@ -10,20 +10,40 @@ import { Any, Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 import { Params } from "./params_pb.js";
 
 /**
- * MsgUpdateScript is the Msg/UpdateScript request type.
+ *
+ * MsgUpdateScript updates the script code at the given address and increments
+ * its version.
+ *
+ * Behavior:
+ * - Updates or creates a script at the specified address with formatted code.
+ * - Automatically formats the provided code using DysFormat before storage.
+ * - Increments the script version on each update.
+ * - Sets update metadata including block height.
+ * - Creates new scripts with empty code if they don't exist.
+ *
+ * Validation:
+ * - Address must be a valid bech32 address.
+ * - Code must be valid Python syntax that can be formatted by DysFormat.
+ *
+ * Emits:
+ * - EventUpdateScript(version, script_address) on successful update.
+ *
+ * Returns:
+ * - updated script version.
  *
  * @generated from message dysonprotocol.script.v1.MsgUpdateScript
  */
 export class MsgUpdateScript extends Message<MsgUpdateScript> {
   /**
-   * address is the account address of the script.
+   * Account address of the script to update; must be a valid bech32 address.
    *
    * @generated from field: string address = 1;
    */
   address = "";
 
   /**
-   * script is the updated script.
+   * Python script code to store; will be automatically formatted before
+   * storage.
    *
    * @generated from field: string code = 2;
    */
@@ -59,13 +79,14 @@ export class MsgUpdateScript extends Message<MsgUpdateScript> {
 }
 
 /**
- * MsgUpdateScriptResponse is the Msg/UpdateScript response type.
+ *
+ * Empty response. See EventUpdateScript for emitted details.
  *
  * @generated from message dysonprotocol.script.v1.MsgUpdateScriptResponse
  */
 export class MsgUpdateScriptResponse extends Message<MsgUpdateScriptResponse> {
   /**
-   * version is the updated script version.
+   * Updated script version after the update operation.
    *
    * @generated from field: uint64 version = 1;
    */
@@ -100,73 +121,89 @@ export class MsgUpdateScriptResponse extends Message<MsgUpdateScriptResponse> {
 }
 
 /**
- * MsgExec executes a script by calling a function with arguments.
+ *
+ * MsgExec executes a script function with arguments and handles attached
+ * messages.
+ *
+ * Behavior:
+ * - Resolves script address via direct address or nameservice name resolution.
+ * - Validates that script exists or creates empty script if not found.
+ * - Executes attached messages first, collecting their results.
+ * - Runs the specified function with provided args/kwargs in isolated context.
+ * - Commits state changes only if execution succeeds.
+ * - Emits execution event with full context for monitoring.
+ *
+ * Validation:
+ * - Either script_address or script_name must be provided.
+ * - If both are provided, they must resolve to the same address.
+ * - Executor address must be valid.
+ * - Function name, args, kwargs must be valid JSON strings.
+ * - Attached messages must be valid and executable.
+ *
+ * Emits:
+ * - EventExecScript with execution details (executor, script, function,
+ * result).
+ *
+ * Returns:
+ * - function execution result and attached message results.
  *
  * @generated from message dysonprotocol.script.v1.MsgExec
  */
 export class MsgExec extends Message<MsgExec> {
   /**
-   * executor is the account address used to execute the script.
+   * Account address used to execute the script; must be a valid bech32 address.
    *
    * @generated from field: string executor_address = 1;
    */
   executorAddress = "";
 
   /**
-   * address is the script bech32 address to execute.
+   * Script bech32 address to execute; mutually exclusive with script_name.
    *
    * @generated from field: string script_address = 2;
    */
   scriptAddress = "";
 
   /**
-   * script_name is the optional nameservice name of the script to execute
-   * (e.g., "example.dys")
+   * Optional nameservice name of the script to execute (e.g., "example.dys").
    *
    * @generated from field: string script_name = 3;
    */
   scriptName = "";
 
   /**
-   * Only if the executor is the owner of the script  will the optional
-   * extra_code be temporary appended to the script for this message before
-   * calling the function.
+   * Optional extra code temporarily appended to the script for this execution.
+   * Only allowed if the executor is the script owner.
    *
    * @generated from field: string extra_code = 4;
    */
   extraCode = "";
 
   /**
-   * The function name to run
+   * Name of the function to call within the script.
    *
    * @generated from field: string function_name = 5;
    */
   functionName = "";
 
   /**
-   * The positional arguments to pass to the function (*args) encoded as a
-   * json list
+   * Positional arguments (*args) encoded as a JSON array.
    *
    * @generated from field: string args = 6;
    */
   args = "";
 
   /**
-   * The keyword argument to pass to the function (**kwargs) encoded as a
-   * json dict
+   * Keyword arguments (**kwargs) encoded as a JSON object.
    *
    * @generated from field: string kwargs = 7;
    */
   kwargs = "";
 
   /**
-   * The list of messages to run before the script and the result will be
-   * available in `dys.get_attached_messages()`. If any of the attached messages
-   * fails, the script execution will be aborted. The script can assume that the
-   * attached messages have been executed successfully by virtue of the fact
-   * that the script execution will never occur if any of the attached messages
-   * had failed. The attached messages are executed in the order they are
-   * provided.
+   * Messages executed before the script; results available via
+   * dys.get_attached_messages(). If any attached message fails, script
+   * execution is aborted. Messages execute in order.
    *
    * @generated from field: repeated google.protobuf.Any attached_messages = 8;
    */
@@ -208,20 +245,21 @@ export class MsgExec extends Message<MsgExec> {
 }
 
 /**
- * MsgExecResponse is the Msg/Exec request type.
+ *
+ * Response containing script execution results and attached message outcomes.
  *
  * @generated from message dysonprotocol.script.v1.MsgExecResponse
  */
 export class MsgExecResponse extends Message<MsgExecResponse> {
   /**
-   * result is the final result of the proposal execution.
+   * Final result of the script function execution.
    *
    * @generated from field: string result = 1;
    */
   result = "";
 
   /**
-   * Results of the attached messages.
+   * Results of the attached messages executed before the script.
    *
    * @generated from field: repeated google.protobuf.Any attached_message_results = 2;
    */
@@ -257,20 +295,42 @@ export class MsgExecResponse extends Message<MsgExecResponse> {
 }
 
 /**
- * MsgCreateNewScript is the Msg/CreateNewScript request type.
+ *
+ * MsgCreateNewScript creates a new script with deterministic address and grants
+ * update permissions.
+ *
+ * Behavior:
+ * - Generates deterministic script address using SHA256 hash of creator +
+ * formatted code.
+ * - Creates bech32 address from first 20 bytes of hash.
+ * - Formats code using DysFormat before address generation and storage.
+ * - Grants generic authorization for MsgUpdateScript to creator via authz.
+ * - Initializes script with version 1 and formatted code.
+ *
+ * Validation:
+ * - Creator address must be valid.
+ * - Code must be valid Python syntax that can be formatted by DysFormat.
+ * - Generated address must not already exist.
+ *
+ * Emits:
+ * - EventCreateNewScript(script_address, creator_address, version) on success.
+ *
+ * Returns:
+ * - generated script address and initial version.
  *
  * @generated from message dysonprotocol.script.v1.MsgCreateNewScript
  */
 export class MsgCreateNewScript extends Message<MsgCreateNewScript> {
   /**
-   * creator is the account address creating the script.
+   * Account address creating the script; must be a valid bech32 address.
    *
    * @generated from field: string creator_address = 1;
    */
   creatorAddress = "";
 
   /**
-   * code is the script content.
+   * Python script content; will be formatted and used to generate deterministic
+   * address.
    *
    * @generated from field: string code = 2;
    */
@@ -306,20 +366,21 @@ export class MsgCreateNewScript extends Message<MsgCreateNewScript> {
 }
 
 /**
- * MsgCreateNewScriptResponse is the Msg/CreateNewScript response type.
+ *
+ * Response containing the newly created script details.
  *
  * @generated from message dysonprotocol.script.v1.MsgCreateNewScriptResponse
  */
 export class MsgCreateNewScriptResponse extends Message<MsgCreateNewScriptResponse> {
   /**
-   * script_address is the address of the newly created script.
+   * Address of the newly created script, generated deterministically.
    *
    * @generated from field: string script_address = 1;
    */
   scriptAddress = "";
 
   /**
-   * version is the initial script version.
+   * Initial script version (always 1 for new scripts).
    *
    * @generated from field: uint64 version = 2;
    */
@@ -355,23 +416,33 @@ export class MsgCreateNewScriptResponse extends Message<MsgCreateNewScriptRespon
 }
 
 /**
- * MsgUpdateParams is the Msg/UpdateParams request type.
+ *
+ * MsgUpdateParams updates the module parameters via governance proposal.
+ *
+ * Behavior:
+ * - Validates that the signer has authority to update parameters (gov module).
+ * - Validates that all provided parameters are valid.
+ * - Updates all module parameters atomically.
+ *
+ * Validation:
+ * - Authority must match the configured authority (gov module account).
+ * - All parameters in the params message must pass individual validation.
+ *
+ * Returns:
+ * - empty response on successful parameter update.
  *
  * @generated from message dysonprotocol.script.v1.MsgUpdateParams
  */
 export class MsgUpdateParams extends Message<MsgUpdateParams> {
   /**
-   * authority is the address that controls the module (defaults to x/gov unless
-   * overwritten).
+   * Address that controls the module (defaults to x/gov unless overwritten).
    *
    * @generated from field: string authority = 1;
    */
   authority = "";
 
   /**
-   * params defines the x/script parameters to update.
-   *
-   * NOTE: All parameters must be supplied.
+   * Script module parameters to update; all parameters must be supplied.
    *
    * @generated from field: dysonprotocol.script.v1.Params params = 2;
    */
@@ -407,8 +478,8 @@ export class MsgUpdateParams extends Message<MsgUpdateParams> {
 }
 
 /**
- * MsgUpdateParamsResponse defines the response structure for executing a
- * MsgUpdateParams message.
+ *
+ * Empty response indicating successful parameter update.
  *
  * @generated from message dysonprotocol.script.v1.MsgUpdateParamsResponse
  */
@@ -531,24 +602,36 @@ export class MsgArbitraryDataResponse extends Message<MsgArbitraryDataResponse> 
 }
 
 /**
- * MsgSudo is the Msg/Sudo request type for governance-controlled message
- * execution.
+ *
+ * MsgSudo executes arbitrary messages with authority override and no signer
+ * validation.
+ *
+ * Behavior:
+ * - Validates that the signer has governance authority.
+ * - Unpacks and executes all provided messages atomically using cached context.
+ * - Messages execute without signer validation (authority override).
+ * - If any message fails, all state changes are discarded.
+ *
+ * Validation:
+ * - Authority must match the configured authority (gov module account).
+ * - All messages must be valid and unpackable.
+ *
+ * Returns:
+ * - results from all executed messages.
  *
  * @generated from message dysonprotocol.script.v1.MsgSudo
  */
 export class MsgSudo extends Message<MsgSudo> {
   /**
-   * authority is the address that controls the module (defaults to x/gov unless
-   * overwritten).
+   * Address that controls the module (defaults to x/gov unless overwritten).
    *
    * @generated from field: string authority = 1;
    */
   authority = "";
 
   /**
-   * messages is the list of messages to execute without signer validation.
-   * All messages will be executed in order, and if any fails, the entire
-   * transaction is reverted.
+   * Messages to execute without signer validation; executed atomically in
+   * order.
    *
    * @generated from field: repeated google.protobuf.Any messages = 2;
    */
@@ -584,13 +667,14 @@ export class MsgSudo extends Message<MsgSudo> {
 }
 
 /**
- * MsgSudoResponse is the Msg/Sudo response type.
+ *
+ * Response containing results from all executed sudo messages.
  *
  * @generated from message dysonprotocol.script.v1.MsgSudoResponse
  */
 export class MsgSudoResponse extends Message<MsgSudoResponse> {
   /**
-   * results contains the response messages from each executed message.
+   * Response messages from each executed sudo message.
    *
    * @generated from field: repeated google.protobuf.Any results = 1;
    */

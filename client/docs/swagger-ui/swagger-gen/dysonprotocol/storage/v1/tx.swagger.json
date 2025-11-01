@@ -13,7 +13,8 @@
   "paths": {
     "dysonprotocol.storage.v1.MsgStorageDelete": {
       "post": {
-        "summary": "Deletes storage entries. Only the owner can delete.",
+        "summary": "StorageDelete removes specified storage entries owned by the requesting\naccount.",
+        "description": "Behavior:\n- Deletes multiple storage entries by index for the specified owner\n- Verifies ownership of each entry before deletion to prevent unauthorized\n  removal\n- Updates owner's storage metrics by subtracting deleted bytes from total\n- Returns list of successfully deleted indexes for transparency\n\nValidation:\n- Owner must be a valid bech32 address\n- At least one index must be specified for deletion\n- Each specified index must exist and be owned by the requesting account\n\nEmits:\n- EventStorageDelete(owner, deleted_indexes) with list of successfully\n  deleted indexes\n\nReturns:\n- List of indexes that were successfully deleted",
         "operationId": "dysonprotocol.storage.v1.MsgStorageDelete",
         "responses": {
           "200": {
@@ -46,7 +47,8 @@
     },
     "dysonprotocol.storage.v1.MsgStorageSet": {
       "post": {
-        "summary": "Sets a storage entry. Only the owner can set.",
+        "summary": "StorageSet sets a storage entry for the specified owner and index.",
+        "description": "Sets a storage entry for the specified owner and index with stake\nvalidation, size limits, and automatic metadata tracking including data\nhashing and timestamp recording.\n\nBehavior:\n- Stores JSON data under a composite key of owner/index, creating or\n  updating the entry\n- Validates data size against module's MaxStorageSize parameter\n- Enforces stake requirements when StorageStakeMultiple > 0: requires owner\n  to have sufficient delegated stake\n- Calculates data hash using SHA256 and stores metadata including block\n  height and timestamp\n- Updates owner's storage metrics (total bytes) for stake validation and\n  monitoring\n\nValidation:\n- Owner must be a valid bech32 address\n- Index must be non-empty and contain only printable ASCII characters\n- Data size must not exceed MaxStorageSize parameter\n- When stake validation is enabled, owner's delegated stake must meet\n  minimum requirement\n\nEmits:\n- EventStorageUpdated(address, index) upon successful storage operation\n\nReturns:\n- Empty response body on success",
         "operationId": "dysonprotocol.storage.v1.MsgStorageSet",
         "responses": {
           "200": {
@@ -79,7 +81,8 @@
     },
     "dysonprotocol.storage.v1.MsgUpdateParams": {
       "post": {
-        "summary": "UpdateParams defines a governance operation for updating the x/storage\nmodule parameters. The authority defaults to the x/gov module account.",
+        "summary": "UpdateParams updates the x/storage module parameters via governance\nproposal.",
+        "description": "Behavior:\n- Validates that the signer has authority to update module parameters\n  (typically governance module)\n- Validates that all provided parameters are valid according to parameter\n  constraints\n- Updates the module's parameter state with the new values\n\nValidation:\n- Authority must match the module's configured authority address\n- All parameter values must pass individual validation (MaxStorageSize,\n  StorageStakeMultiple)\n\nEmits:\n- No events emitted for parameter updates\n\nReturns:\n- Empty response body on success",
         "operationId": "dysonprotocol.storage.v1.MsgUpdateParams",
         "responses": {
           "200": {
@@ -117,17 +120,17 @@
       "properties": {
         "owner": {
           "type": "string",
-          "description": "The owner of the storage entries to delete."
+          "description": "Account address that owns the storage entries; must be a valid bech32\naddress."
         },
         "indexes": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "List of specific indexes to delete."
+          "description": "List of specific indexes to delete; must contain at least one index."
         }
       },
-      "description": "MsgStorageDelete is the message for deleting storage entries."
+      "description": "MsgStorageDelete is the message for deleting storage entries.\n\nBehavior:\n- Deletes multiple storage entries by index for the specified owner.\n- Verifies ownership of each entry before deletion to prevent unauthorized\nremoval.\n- Updates owner's storage metrics by subtracting deleted bytes from total.\n- Returns list of successfully deleted indexes for transparency.\n\nValidation:\n- Owner must be a valid bech32 address.\n- At least one index must be specified for deletion.\n- Each specified index must exist and be owned by the requesting account.\n\nEmits:\n- EventStorageDelete(owner, deleted_indexes) with list of successfully\ndeleted indexes.\n\nReturns:\n- List of indexes that were successfully deleted."
     },
     "dysonprotocol.storage.v1.MsgStorageDeleteResponse": {
       "type": "object",
@@ -137,50 +140,50 @@
           "items": {
             "type": "string"
           },
-          "title": "List of indexes that were successfully deleted"
+          "description": "List of indexes that were successfully deleted; may be fewer than requested\nif some didn't exist."
         }
       },
-      "description": "MsgStorageDeleteResponse is the response for deleting storage entries."
+      "description": "Response containing the list of indexes that were successfully deleted."
     },
     "dysonprotocol.storage.v1.MsgStorageSet": {
       "type": "object",
       "properties": {
         "owner": {
           "type": "string",
-          "description": "The owner of the storage entry to set."
+          "description": "Account address that owns the storage entry; must be a valid bech32\naddress."
         },
         "index": {
           "type": "string",
-          "description": "The index of the storage entry to set."
+          "description": "Index key for the storage entry; must be non-empty and printable ASCII\nonly."
         },
         "data": {
           "type": "string",
-          "description": "The data to set for the storage entry."
+          "description": "JSON data to store; size limited by MaxStorageSize parameter."
         }
       },
-      "description": "MsgStorageSet is the message for setting a storage entry."
+      "title": "MsgStorageSet"
     },
     "dysonprotocol.storage.v1.MsgStorageSetResponse": {
       "type": "object",
-      "description": "MsgStorageSetResponse is the response for setting a storage entry."
+      "description": "Empty response. See EventStorageUpdated for emitted details."
     },
     "dysonprotocol.storage.v1.MsgUpdateParams": {
       "type": "object",
       "properties": {
         "authority": {
           "type": "string",
-          "description": "authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+          "description": "Authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
         },
         "params": {
           "$ref": "#/definitions/dysonprotocol.storage.v1.Params",
-          "description": "params defines the x/storage parameters to update.\nNOTE: All parameters must be supplied."
+          "description": "Params defines the x/storage parameters to update; all parameters must be\nsupplied."
         }
       },
-      "description": "MsgUpdateParams is the Msg/UpdateParams request type."
+      "description": "MsgUpdateParams is the Msg/UpdateParams request type.\n\nBehavior:\n- Validates that the signer has authority to update module parameters\n(typically governance module).\n- Validates that all provided parameters are valid according to parameter\nconstraints.\n- Updates the module's parameter state with the new values.\n\nValidation:\n- Authority must match the module's configured authority address.\n- All parameter values must pass individual validation (MaxStorageSize,\nStorageStakeMultiple).\n\nEmits:\n- No events emitted for parameter updates.\n\nReturns:\n- Empty response body on success."
     },
     "dysonprotocol.storage.v1.MsgUpdateParamsResponse": {
       "type": "object",
-      "description": "MsgUpdateParamsResponse defines the response structure for executing a\nMsgUpdateParams message."
+      "description": "Empty response. Parameter updates do not emit events."
     },
     "dysonprotocol.storage.v1.Params": {
       "type": "object",

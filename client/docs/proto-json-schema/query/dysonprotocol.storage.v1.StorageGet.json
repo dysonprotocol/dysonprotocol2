@@ -7,20 +7,21 @@
                 "properties": {
                     "owner": {
                         "type": "string",
-                        "description": "Owner identifier to look up by. Accepts either: - a nameservice name (e.g. \"alice.dys\"), which will be resolved to an address, or - a bech32 address directly Resolution is performed server-side prior to querying the store."
+                        "description": "Owner identifier to look up by; accepts nameservice names (e.g. \"alice.dys\") or bech32 addresses. Resolution is performed server-side prior to querying the store."
                     },
                     "index": {
                         "type": "string",
-                        "description": "The index of the storage entry."
+                        "description": "Index of the storage entry to retrieve."
                     },
                     "extract": {
                         "type": "string",
-                        "description": "The gjson path to extract from the storage entry."
+                        "description": "Optional GJSON path to extract from the storage entry (e.g., \"user.name\"); max 100 characters."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Storage Get Request"
+                "title": "Query Storage Get Request",
+                "description": "QueryStorageGetRequest retrieves a single storage entry with optional field extraction. Owner resolution supports both nameservice names and bech32 addresses. Extract parameter enables GJSON path-based field retrieval from stored JSON data."
             }
         }
     },
@@ -32,12 +33,14 @@
                 "properties": {
                     "entry": {
                         "$ref": "#/definitions/dysonprotocol.storage.v1.Storage",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "The storage entry matching the query; data field contains extracted data if extract path was provided."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Storage Get Response"
+                "title": "Query Storage Get Response",
+                "description": "Response containing the retrieved storage entry."
             },
             "dysonprotocol.storage.v1.Storage": {
                 "properties": {

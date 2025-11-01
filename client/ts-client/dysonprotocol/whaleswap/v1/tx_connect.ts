@@ -40,8 +40,49 @@ export const Msg = {
   methods: {
     /**
      * *
-     * CreatePool creates a two-asset pool; moves initial reserves, mints initial
-     * shares, and asserts invariants.
+     * CreatePool creates a two-asset pool with per-denom fee/interest/leverage
+     * parameters and optional directional bound_percent limits.
+     *
+     * Behavior:
+     * - Input normalization: canonicalizes `coins` (exactly two positive coins)
+     * to the pool's denom order.
+     * - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two
+     *   DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
+     *   interest_rate >= 0 per denom.
+     * - Leverage configuration (required): `min_collateral_ratio` and
+     *   `max_leverage_ratio` must have exactly two entries (> 1) matching pool
+     *   denoms; `liquidation_threshold` must have exactly two entries (> 1);
+     *   `max_borrow_percent` must have exactly two entries with amounts in [0,1).
+     * - Bound percent (optional): when omitted defaults to 1 (unbounded) for both
+     *   denoms. When provided, must contain exactly two DecCoins matching pool
+     *   denoms with amounts in (0,1]; 1 disables the bound for that denom.
+     * - Funds and shares: sends initial reserves from `creator` → module;
+     * allocates a new pool_id; persists the pool; computes initial shares as
+     *   floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends
+     *   them to the creator.
+     * - Invariants: asserts AMM and module invariants before returning.
+     *
+     * Validation:
+     * - coins must contain exactly two positive coins with valid denoms.
+     * - fee_rate amounts must satisfy 0 <= x < 1 for both denoms when provided.
+     * - interest_rate amounts must be >= 0 for both denoms when provided.
+     * - min_collateral_ratio must have exactly two entries (> 1) matching pool
+     *   denoms in canonical order.
+     * - max_leverage_ratio must have exactly two entries (> 1) matching pool
+     * denoms in canonical order.
+     * - liquidation_threshold must have exactly two entries (> 1) matching pool
+     *   denoms in canonical order.
+     * - max_borrow_percent must have exactly two entries with amounts in [0,1)
+     *   matching pool denoms in canonical order.
+     * - bound_percent when provided must contain at most two entries with amounts
+     *   in (0,1] matching pool denoms.
+     *
+     * Emits:
+     * - EventPoolCreated(pool_id)
+     * - EventPoolUpdate(pool_id)
+     *
+     * Returns:
+     * - pool_id of the newly created pool (see response).
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.CreatePool
      */
@@ -56,6 +97,41 @@ export const Msg = {
      * UpdatePoolConfig updates pool fees, leverage/threshold params, interest,
      * optional max_borrow_percent, and bound_percent; majority-owner only.
      *
+     * Behavior:
+     * - Loads pool; validates signer and majority-ownership.
+     * - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1.
+     * - Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`
+     *   with exactly two entries matching pool denoms; each > 1.
+     * - Liquidation threshold: required with exactly two entries; each > 1.
+     * - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.
+     * - Max borrow percent: optional; if provided exactly two entries; 0 <= x
+     * < 1.
+     * - Bound percent: optional; when provided must contain exactly two DecCoins
+     *   matching pool denoms with amounts in (0,1]; 1 disables the bound. Omit to
+     *   leave existing bounds unchanged.
+     * - Persists pool with `updated` timestamp; emits EventPoolUpdate; asserts
+     * AMM and module invariants.
+     *
+     * Validation:
+     * - Pool must exist.
+     * - Signer must be valid address and hold majority of pool shares.
+     * - Fee rates when provided must satisfy 0 <= x < 1 for both denoms.
+     * - Leverage config (min_collateral_ratio, max_leverage_ratio) must have
+     *   exactly two entries (> 1) matching pool denoms in canonical order.
+     * - Liquidation threshold must have exactly two entries (> 1) matching pool
+     *   denoms in canonical order.
+     * - Interest rates when provided must be >= 0 for both denoms.
+     * - Max borrow percent when provided must have exactly two entries with
+     * amounts in [0,1) matching pool denoms in canonical order.
+     * - Bound percent when provided must contain at most two entries with amounts
+     *   in (0,1] matching pool denoms.
+     *
+     * Emits:
+     * - EventPoolUpdate(pool_id)
+     *
+     * Returns:
+     * - Empty response.
+     *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.UpdatePoolConfig
      */
     updatePoolConfig: {
@@ -67,8 +143,26 @@ export const Msg = {
     /**
      * *
      * AddLiquidity (owner-only) escrows provided amounts, refunds any unused
-     * amounts in band mode, mints shares, enforces the price band, and asserts
-     * AMM invariants.
+     * amounts, mints shares, and asserts AMM invariants.
+     *
+     * Behavior:
+     * - Loads pool; validates signer majority ownership.
+     * - Escrows full provided amounts first, then refunds unused surplus.
+     * - Computes shares as floor(min(add1/R1, add2/R2) × totalShares).
+     * - Updates pool reserves with used amounts.
+     * - Mints computed shares via nameservice and transfers to signer.
+     * - Persists pool with updated reserves/timestamp; emits events; asserts AMM
+     *   and module invariants.
+     *
+     * Validation:
+     * - Pool must exist and have exactly two positive reserves.
+     * - Signer must be valid address and hold majority of pool shares.
+     * - Amounts must contain exactly two positive coins matching pool denoms in
+     *   canonical order.
+     *
+     * Emits:
+     * - EventPoolUpdate (after persisting pool state)
+     * - EventPoolLiquidityAdded (pool_id, shares_minted)
      *
      * @generated from rpc dysonprotocol.whaleswap.v1.Msg.AddLiquidity
      */

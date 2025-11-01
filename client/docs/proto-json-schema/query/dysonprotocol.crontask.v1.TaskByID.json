@@ -6,13 +6,14 @@
             "dysonprotocol.crontask.v1.QueryTaskByIDRequest": {
                 "properties": {
                     "task_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier of the task to retrieve; must exist in storage."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Task By ID Request",
-                "description": "QueryTaskByIDRequest is the request type for the Query/TaskByID RPC method"
+                "description": "QueryTaskByIDRequest is the request type for the Query/TaskByID RPC method."
             }
         }
     },
@@ -24,13 +25,14 @@
                 "properties": {
                     "task": {
                         "$ref": "#/definitions/dysonprotocol.crontask.v1.Task",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Complete task record including scheduling, messages, and execution status."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Task By ID Response",
-                "description": "QueryTaskByIDResponse is the response type for the Query/TaskByID RPC method"
+                "description": "QueryTaskByIDResponse is the response type for the Query/TaskByID RPC method."
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {

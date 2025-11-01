@@ -7,21 +7,21 @@
                 "properties": {
                     "owner": {
                         "type": "string",
-                        "description": "The owner of the storage entry to set."
+                        "description": "Account address that owns the storage entry; must be a valid bech32 address."
                     },
                     "index": {
                         "type": "string",
-                        "description": "The index of the storage entry to set."
+                        "description": "Index key for the storage entry; must be non-empty and printable ASCII only."
                     },
                     "data": {
                         "type": "string",
-                        "description": "The data to set for the storage entry."
+                        "description": "JSON data to store; size limited by MaxStorageSize parameter."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Storage Set",
-                "description": "MsgStorageSet is the message for setting a storage entry."
+                "description": "MsgStorageSet"
             }
         }
     },
@@ -33,7 +33,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Storage Set Response",
-                "description": "MsgStorageSetResponse is the response for setting a storage entry."
+                "description": "Empty response. See EventStorageUpdated for emitted details."
             }
         }
     }

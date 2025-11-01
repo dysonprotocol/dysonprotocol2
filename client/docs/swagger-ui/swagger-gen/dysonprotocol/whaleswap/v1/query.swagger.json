@@ -13,7 +13,8 @@
   "paths": {
     "/dysonprotocol/whaleswap/v1/auctions": {
       "get": {
-        "summary": "*\nAuctions provides unified auction listing with optional denom filters and\npagination. Supports multiple query patterns based on provided filters for\noptimal performance.",
+        "summary": "Auctions provides unified auction listing with optional denom filters and\npagination.",
+        "description": "Supports multiple query patterns based on provided filters for optimal\nperformance: both denoms (pair index), single sell_denom, single bid_denom,\nor no filters. Applies appropriate prefix filtering to optimize index\nusage. Supports pagination with consistent ordering by auction ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryAuctionsRequest",
         "responses": {
           "200": {
@@ -85,7 +86,8 @@
     },
     "/dysonprotocol/whaleswap/v1/auctions/by_nft": {
       "get": {
-        "summary": "*\nAuctionByNFT queries the auction associated with specific NFT escrow\nmarkers.",
+        "summary": "AuctionByNFT queries the auction associated with specific NFT escrow\nmarkers.",
+        "description": "Returns the auction where the specified class_id and nft_id appear as\nescrow markers. Scans auctions to find matching NFT identifiers (expected\nto be unique). Uses unpaginated scan since NFT markers should be unique per\nauction.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryAuctionByNFTRequest",
         "responses": {
           "200": {
@@ -124,7 +126,8 @@
     },
     "/dysonprotocol/whaleswap/v1/auctions/by_pair_price": {
       "get": {
-        "summary": "*\nAuctionsByPairPriceRange queries auctions for a pair whose effective price\nfalls within bounds. Filters auctions by sell/bid denom pair; price\nfiltering is placeholder. Results ordered by auction ID ascending.",
+        "summary": "AuctionsByPairPriceRange queries auctions for a pair whose effective price\nfalls within bounds.",
+        "description": "Filters auctions by sell/bid denom pair using AuctionsBySellBid index.\nApplies prefix filtering to iterate only auctions for the specified pair.\nPrice filtering is placeholder (marked as TODO in implementation).\nSupports pagination with consistent ordering by auction ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryAuctionsByPairPriceRangeRequest",
         "responses": {
           "200": {
@@ -210,7 +213,8 @@
     },
     "/dysonprotocol/whaleswap/v1/auctions/seller/{seller}": {
       "get": {
-        "summary": "*\nAuctionsBySeller queries auctions created by a specific seller address.",
+        "summary": "AuctionsBySeller queries auctions created by a specific seller address.",
+        "description": "Returns auctions where the specified address appears as the seller.\nUses filtered pagination over primary AuctionsMap (no dedicated index\nassumed). Results ordered by auction ID ascending.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryAuctionsBySellerRequest",
         "responses": {
           "200": {
@@ -275,7 +279,8 @@
     },
     "/dysonprotocol/whaleswap/v1/auctions/{auction_id}": {
       "get": {
-        "summary": "*\nAuction queries a single auction by ID.",
+        "summary": "Auction queries a single auction by ID.",
+        "description": "Returns complete auction data including escrow details, bids, and NFT\nmarkers. Direct lookup by auction_id for fast retrieval.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryAuctionRequest",
         "responses": {
           "200": {
@@ -308,7 +313,8 @@
     },
     "/dysonprotocol/whaleswap/v1/metrics": {
       "get": {
-        "summary": "*\nMetrics computes comprehensive module metrics including escrow balances and\ntrade statistics.",
+        "summary": "Metrics computes comprehensive module metrics including escrow balances and\ntrade statistics.",
+        "description": "Aggregates escrow balances: AMM pool reserves, offer-locked coins, PFAND\nrequirements. Counts auctions across all records by summing sell amounts.\nCalculates total fees earned across all pools. Counts total trades by\niterating the trades map. Returns consolidated TradeMetrics for monitoring\nand invariants checking.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryMetricsRequest",
         "responses": {
           "200": {
@@ -331,7 +337,8 @@
     },
     "/dysonprotocol/whaleswap/v1/offers": {
       "get": {
-        "summary": "*\nOffers provides unified offer listing with optional denom filters and\npagination. Supports multiple query patterns based on provided filters for\noptimal performance. Canonicalizes pairs for consistent indexing and\nordering.",
+        "summary": "Offers provides unified offer listing with optional denom filters and\npagination.",
+        "description": "Supports multiple query patterns based on provided filters for optimal\nperformance: both denoms (pair+price index), single have_denom, single\nwant_denom, or no filters. Canonicalizes pairs for consistent indexing and\nordering. Supports pagination with consistent ordering by offer ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryOffersRequest",
         "responses": {
           "200": {
@@ -403,7 +410,8 @@
     },
     "/dysonprotocol/whaleswap/v1/offers/best": {
       "get": {
-        "summary": "*\nOffersBest returns up to limit best-priced offers for a pair (convenience\nendpoint). Returns top offers for a pair sorted by price (want-per-have,\nascending = best for takers). Canonicalizes pair for indexing; applies\nlimit (defaulting to 10) via pagination.",
+        "summary": "OffersBest returns up to limit best-priced offers for a pair (convenience\nendpoint).",
+        "description": "Returns top offers for a pair sorted by price (want-per-have, ascending =\nbest for takers). Canonicalizes pair for indexing; applies limit\n(defaulting to 10) via pagination. Uses OffersByPairPrice index for\nefficient ordered retrieval.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryOffersBestRequest",
         "responses": {
           "200": {
@@ -450,7 +458,8 @@
     },
     "/dysonprotocol/whaleswap/v1/offers/by_denom": {
       "get": {
-        "summary": "*\nOffersByDenom queries offers that reference a specific denom either as have\nor want side. Uses role filter to restrict to \"have\" side, \"want\" side, or\nboth (when empty). Leverages appropriate indices when role is specified for\nefficiency.",
+        "summary": "OffersByDenom queries offers that reference a specific denom either as have\nor want side.",
+        "description": "Returns offers where the specified denom appears in either have_denom or\nwant_denom. Uses role filter to restrict to \"have\" side, \"want\" side, or\nboth (when empty). Leverages OffersByHave and OffersByWant indices when\nrole specified for efficiency. Falls back to filtered scan over primary\nOffersMap when role unspecified. Supports pagination with consistent\nordering by offer ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryOffersByDenomRequest",
         "responses": {
           "200": {
@@ -522,7 +531,8 @@
     },
     "/dysonprotocol/whaleswap/v1/offers/by_pair_price": {
       "get": {
-        "summary": "*\nOffersByPairPriceRange queries offers for a pair whose price lies within\noptional bounds. Filters offers by denom pair and price range\n(want-per-have ratio). Canonicalizes pair for consistent indexing; bounds\nare inclusive and optional. Uses OffersByPairPrice index for efficient\nordered scanning.",
+        "summary": "OffersByPairPriceRange queries offers for a pair whose price lies within\noptional bounds.",
+        "description": "Filters offers by denom pair and price range (want-per-have ratio).\nCanonicalizes pair for consistent indexing; bounds are inclusive and\noptional. Uses OffersByPairPrice index for efficient ordered scanning.\nSupports pagination with ordering by price ascending.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryOffersByPairPriceRangeRequest",
         "responses": {
           "200": {
@@ -608,7 +618,8 @@
     },
     "/dysonprotocol/whaleswap/v1/offers/owner/{owner}": {
       "get": {
-        "summary": "*\nOffersByOwner queries offers by owner address with optional status filter.\nUses indexed queries for owner+status combinations for optimal performance.\nFalls back to filtered scans when only partial filters are provided.",
+        "summary": "OffersByOwner queries offers by owner address with optional status filter.",
+        "description": "Returns offers owned by the specified address, optionally filtered by\nstatus. Uses indexed queries when both owner and status provided for\noptimal performance. Falls back to filtered scans for partial filters to\navoid nil entries. Supports pagination with consistent ordering by offer\nID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryOffersByOwnerRequest",
         "responses": {
           "200": {
@@ -680,7 +691,8 @@
     },
     "/dysonprotocol/whaleswap/v1/offers/{offer_id}": {
       "get": {
-        "summary": "*\nOffer queries a single offer by ID.",
+        "summary": "Offer queries a single offer by ID.",
+        "description": "Returns offer data including maker, amounts, status, and timestamps.\nDirect lookup by offer_id for fast retrieval.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryOfferRequest",
         "responses": {
           "200": {
@@ -713,7 +725,8 @@
     },
     "/dysonprotocol/whaleswap/v1/params": {
       "get": {
-        "summary": "*\nParams queries the current whaleswap module parameters.",
+        "summary": "Params queries the current whaleswap module parameters.",
+        "description": "Returns all module configuration values including fees, limits, and module\nsettings. No filtering or pagination supported (empty request accepted).",
         "operationId": "dysonprotocol.whaleswap.v1.QueryParamsRequest",
         "responses": {
           "200": {
@@ -736,7 +749,8 @@
     },
     "/dysonprotocol/whaleswap/v1/pools": {
       "get": {
-        "summary": "*\nPools lists all AMM pools with pagination.",
+        "summary": "Pools lists all AMM pools with pagination.",
+        "description": "Returns all pools in the system with no filtering. Uses direct pagination\nover the primary PoolsMap. Results ordered by pool ID ascending.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolsRequest",
         "responses": {
           "200": {
@@ -794,7 +808,8 @@
     },
     "/dysonprotocol/whaleswap/v1/pools/by_denom": {
       "get": {
-        "summary": "*\nPoolsByDenom queries all pools that include a specific denom on either\nside. Returns pools where the specified denom appears in either coin\nposition. Results ordered by pool ID ascending.",
+        "summary": "PoolsByDenom queries all pools that include a specific denom on either\nside.",
+        "description": "Returns pools where the specified denom appears in either coin position.\nUses filtered pagination over the primary PoolsMap. Results ordered by pool\nID ascending.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolsByDenomRequest",
         "responses": {
           "200": {
@@ -859,7 +874,8 @@
     },
     "/dysonprotocol/whaleswap/v1/pools/by_pair": {
       "get": {
-        "summary": "*\nPoolsByPair queries all pools matching a denom pair with pagination.\nDenom order in the request is irrelevant as pairs are canonicalized\ninternally. Results ordered by pool ID for consistent pagination.",
+        "summary": "PoolsByPair queries all pools matching a denom pair with pagination.",
+        "description": "Returns pools containing exactly the specified denom pair, regardless of\norder. Canonicalizes the pair internally for consistent lookup. Uses\nfiltered pagination over the primary PoolsMap. Results ordered by pool ID\nascending.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolsByPairRequest",
         "responses": {
           "200": {
@@ -931,7 +947,8 @@
     },
     "/dysonprotocol/whaleswap/v1/pools/by_pair_price": {
       "get": {
-        "summary": "*\nPoolsByPairPriceRange queries pools for a pair whose instantaneous price\nfalls within optional bounds. Filters pools by denom pair and price range\n(quote/base ratio from reserves). Bounds are inclusive and optional;\nomitting both returns all matching pairs. Results ordered by pool ID\nascending.",
+        "summary": "PoolsByPairPriceRange queries pools for a pair whose instantaneous price\nfalls within optional bounds.",
+        "description": "Filters pools by denom pair and price range (quote/base ratio from\nreserves). Bounds are inclusive and optional; omitting both returns all\nmatching pairs. Uses filtered pagination over the primary PoolsMap. Results\nordered by pool ID ascending.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolsByPairPriceRangeRequest",
         "responses": {
           "200": {
@@ -1017,7 +1034,8 @@
     },
     "/dysonprotocol/whaleswap/v1/pools/by_shares": {
       "get": {
-        "summary": "*\nPoolBySharesDenom queries the pool that mints a specific shares denom.\nReturns the pool with matching shares_denom (expected to be unique).",
+        "summary": "PoolBySharesDenom queries the pool that mints a specific shares denom.",
+        "description": "Returns the pool with matching shares_denom (expected to be unique).\nScans pools to find the matching one; uses unpaginated scan since shares\ndenoms are expected to be unique.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolBySharesDenomRequest",
         "responses": {
           "200": {
@@ -1049,7 +1067,8 @@
     },
     "/dysonprotocol/whaleswap/v1/pools/owner/{owner}": {
       "get": {
-        "summary": "*\nPoolsByOwner queries pools where the owner holds non-zero shares balance.\nReturns pools where the specified owner has a positive balance of pool\nshares. Uses bank module balance checks; results ordered by pool ID\nascending.",
+        "summary": "PoolsByOwner queries pools where the owner holds non-zero shares balance.",
+        "description": "Returns pools where the specified owner has a positive balance of pool\nshares. Uses bank module balance checks for each pool's shares denom. Falls\nback to filtered scan when no dedicated index exists. Results ordered by\npool ID ascending.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolsByOwnerRequest",
         "responses": {
           "200": {
@@ -1114,7 +1133,8 @@
     },
     "/dysonprotocol/whaleswap/v1/pools/{pool_id}": {
       "get": {
-        "summary": "*\nPool queries a single AMM pool by ID.",
+        "summary": "Pool queries a single AMM pool by ID.",
+        "description": "Returns complete pool data including reserves, shares denom, and\nconfiguration. Direct lookup by pool_id for fast retrieval.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPoolRequest",
         "responses": {
           "200": {
@@ -1147,7 +1167,8 @@
     },
     "/dysonprotocol/whaleswap/v1/positions/pool/{pool_id}": {
       "get": {
-        "summary": "*\nPositionsByPool lists all leverage positions in a specific pool with\noptional status filter.",
+        "summary": "PositionsByPool lists all leverage positions in a specific pool with\noptional status filter.",
+        "description": "Uses indexed queries on PositionsByPoolIndex with\n(pool_id,status,position_id) keys. Defaults to OPEN positions when status\nunspecified. Filters positions by the specified pool_id. Supports\npagination with consistent ordering by position ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPositionsByPoolRequest",
         "responses": {
           "200": {
@@ -1228,7 +1249,8 @@
     },
     "/dysonprotocol/whaleswap/v1/positions/user/{user}": {
       "get": {
-        "summary": "*\nPositionsByUser lists all leverage positions for a user with optional\nfilters.",
+        "summary": "PositionsByUser lists all leverage positions for a user with optional\nfilters.",
+        "description": "Uses indexed queries on PositionsByUserIndex with (user,status,position_id)\nkeys. Defaults to OPEN positions when status unspecified. Applies\nadditional filters for pool_id, borrowed_denom, collateral_denom as\nspecified. Supports pagination with consistent ordering by position ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest",
         "responses": {
           "200": {
@@ -1330,7 +1352,8 @@
     },
     "/dysonprotocol/whaleswap/v1/positions/{position_id}": {
       "get": {
-        "summary": "*\nPosition queries a leverage position by ID and includes comprehensive\nhealth and interest information.",
+        "summary": "Position queries a leverage position by ID and includes comprehensive\nhealth and interest information.",
+        "description": "Retrieves complete position data including collateral, debt, and status.\nComputes real-time interest accrual based on elapsed time and rates.\nCalculates current collateral ratio and liquidation health status.\nDetermines action permissions: close by owner, initialize/finalize\nliquidation. Returns enriched position data with computed fields for UI\nconsumption.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryPositionRequest",
         "responses": {
           "200": {
@@ -1363,7 +1386,8 @@
     },
     "/dysonprotocol/whaleswap/v1/trades": {
       "get": {
-        "summary": "*\nTrades lists trades with optional denom filters and pagination.",
+        "summary": "Trades lists trades with optional denom filters and pagination.",
+        "description": "Returns trades filtered by sent_denom and/or received_denom if specified.\nUses filtered pagination over primary TradesMap for flexibility. Checks\nTotalSent and TotalReceived coin arrays for denom presence.\nSupports pagination with consistent ordering by trade ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryTradesRequest",
         "responses": {
           "200": {
@@ -1435,7 +1459,8 @@
     },
     "/dysonprotocol/whaleswap/v1/trades/auction/{auction_id}": {
       "get": {
-        "summary": "*\nTradesByAuction queries all trades involving auction redemptions for a\nspecific auction.",
+        "summary": "TradesByAuction queries all trades involving auction redemptions for a\nspecific auction.",
+        "description": "Returns all trades where the specified auction_id appears as a participant.\nUses TradesByAuctionIndex with (auction_id, trade_id) keys for efficient\nlookup. Applies prefix filtering to iterate only trades for the specified\nauction. Supports pagination with consistent ordering by trade ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryTradesByAuctionRequest",
         "responses": {
           "200": {
@@ -1501,7 +1526,8 @@
     },
     "/dysonprotocol/whaleswap/v1/trades/offer/{offer_id}": {
       "get": {
-        "summary": "*\nTradesByOffer queries all trades involving a specific offer.",
+        "summary": "TradesByOffer queries all trades involving a specific offer.",
+        "description": "Returns all trades where the specified offer_id appears as a participant.\nUses TradesByOfferIndex with (offer_id, trade_id) keys for efficient\nlookup. Applies prefix filtering to iterate only trades for the specified\noffer. Supports pagination with consistent ordering by trade ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryTradesByOfferRequest",
         "responses": {
           "200": {
@@ -1567,7 +1593,8 @@
     },
     "/dysonprotocol/whaleswap/v1/trades/pool/{pool_id}": {
       "get": {
-        "summary": "*\nTradesByPool queries all trades involving a specific AMM pool.",
+        "summary": "TradesByPool queries all trades involving a specific AMM pool.",
+        "description": "Returns all trades where the specified pool_id appears as a participant.\nUses TradesByPoolIndex with (pool_id, trade_id) keys for efficient lookup.\nApplies prefix filtering to iterate only trades for the specified pool.\nSupports pagination with consistent ordering by trade ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryTradesByPoolRequest",
         "responses": {
           "200": {
@@ -1633,7 +1660,8 @@
     },
     "/dysonprotocol/whaleswap/v1/trades/taker/{taker}": {
       "get": {
-        "summary": "*\nTradesByTaker queries all trades executed by a specific taker address.",
+        "summary": "TradesByTaker queries all trades executed by a specific taker address.",
+        "description": "Returns all trades where the specified address appears as the taker\n(trader). Uses TradesByTraderIndex with (trader_address, trade_id) keys for\nefficient lookup. Applies prefix filtering to iterate only trades for the\nspecified trader. Supports pagination with consistent ordering by trade ID.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryTradesByTakerRequest",
         "responses": {
           "200": {
@@ -1698,7 +1726,8 @@
     },
     "/dysonprotocol/whaleswap/v1/trades/{trade_id}": {
       "get": {
-        "summary": "*\nTrade queries a single trade by ID.",
+        "summary": "Trade queries a single trade by ID.",
+        "description": "Returns complete trade data including participants, amounts, and\noperations. Direct lookup by trade_id for fast retrieval.",
         "operationId": "dysonprotocol.whaleswap.v1.QueryTradeRequest",
         "responses": {
           "200": {

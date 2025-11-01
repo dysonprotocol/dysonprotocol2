@@ -7,12 +7,13 @@
                 "properties": {
                     "tx_json": {
                         "type": "string",
-                        "description": "The transaction as a JSON string"
+                        "description": "JSON representation of the transaction to verify (must contain MsgArbitraryData)."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Verify Tx Request"
+                "title": "Query Verify Tx Request",
+                "description": "QueryVerifyTxRequest requests verification of an arbitrary transaction signature. The transaction JSON should contain a properly signed MsgArbitraryData transaction. Verification follows ADR-036 rules with empty chain ID, account number 0, and sequence 0. See the VerifyTx RPC method documentation for a complete example transaction structure."
             }
         }
     },
@@ -24,13 +25,13 @@
                 "properties": {
                     "signer": {
                         "type": "string",
-                        "description": "The signer address of the MsgArbitraryData"
+                        "description": "Bech32 address of the verified signer of the MsgArbitraryData transaction."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Verify Tx Response",
-                "description": "QueryVerifyTxResponse will return the signer address of the MsgArbitraryData or error if the signature is invalid"
+                "description": "QueryVerifyTxResponse contains the verified signer address."
             }
         }
     }

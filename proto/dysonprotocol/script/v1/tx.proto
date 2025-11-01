@@ -17,20 +17,23 @@ service Msg {
   option (cosmos.msg.v1.service) = true;
 
   /*
-   * UpdateScript updates the script code at the given address and increments its version.
-   * Automatically formats code using DysFormat and handles script creation if address doesn't exist.
+   * UpdateScript updates the script code at the given address and increments
+   * its version. Automatically formats code using DysFormat and handles script
+   * creation if address doesn't exist.
    */
   rpc UpdateScript(MsgUpdateScript) returns (MsgUpdateScriptResponse);
 
   /*
-   * ExecScript executes a script function with arguments and handles attached messages.
-   * Supports script resolution via address or nameservice name with validation.
+   * ExecScript executes a script function with arguments and handles attached
+   * messages. Supports script resolution via address or nameservice name with
+   * validation.
    */
   rpc ExecScript(MsgExec) returns (MsgExecResponse);
 
   /*
-   * CreateNewScript creates a new script with deterministic address and grants update permissions.
-   * Generates address from SHA256 hash of creator + formatted code, creates authz grant for updates.
+   * CreateNewScript creates a new script with deterministic address and grants
+   * update permissions. Generates address from SHA256 hash of creator +
+   * formatted code, creates authz grant for updates.
    */
   rpc CreateNewScript(MsgCreateNewScript) returns (MsgCreateNewScriptResponse);
 
@@ -41,14 +44,16 @@ service Msg {
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 
   /*
-   * Sudo executes arbitrary messages with authority override and no signer validation.
-   * Governance operation that allows executing any messages atomically without validation.
+   * Sudo executes arbitrary messages with authority override and no signer
+   * validation. Governance operation that allows executing any messages
+   * atomically without validation.
    */
   rpc Sudo(MsgSudo) returns (MsgSudoResponse);
 }
 
 /*
- * MsgUpdateScript updates the script code at the given address and increments its version.
+ * MsgUpdateScript updates the script code at the given address and increments
+ * its version.
  *
  * Behavior:
  * - Updates or creates a script at the specified address with formatted code.
@@ -74,7 +79,8 @@ message MsgUpdateScript {
   // Account address of the script to update; must be a valid bech32 address.
   string address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
-  // Python script code to store; will be automatically formatted before storage.
+  // Python script code to store; will be automatically formatted before
+  // storage.
   string code = 2;
 }
 
@@ -87,7 +93,8 @@ message MsgUpdateScriptResponse {
 }
 
 /*
- * MsgExec executes a script function with arguments and handles attached messages.
+ * MsgExec executes a script function with arguments and handles attached
+ * messages.
  *
  * Behavior:
  * - Resolves script address via direct address or nameservice name resolution.
@@ -105,7 +112,8 @@ message MsgUpdateScriptResponse {
  * - Attached messages must be valid and executable.
  *
  * Emits:
- * - EventExecScript with execution details (executor, script, function, result).
+ * - EventExecScript with execution details (executor, script, function,
+ * result).
  *
  * Returns:
  * - function execution result and attached message results.
@@ -137,8 +145,9 @@ message MsgExec {
   // Keyword arguments (**kwargs) encoded as a JSON object.
   string kwargs = 7;
 
-  // Messages executed before the script; results available via dys.get_attached_messages().
-  // If any attached message fails, script execution is aborted. Messages execute in order.
+  // Messages executed before the script; results available via
+  // dys.get_attached_messages(). If any attached message fails, script
+  // execution is aborted. Messages execute in order.
   repeated google.protobuf.Any attached_messages = 8;
 }
 
@@ -154,10 +163,12 @@ message MsgExecResponse {
 }
 
 /*
- * MsgCreateNewScript creates a new script with deterministic address and grants update permissions.
+ * MsgCreateNewScript creates a new script with deterministic address and grants
+ * update permissions.
  *
  * Behavior:
- * - Generates deterministic script address using SHA256 hash of creator + formatted code.
+ * - Generates deterministic script address using SHA256 hash of creator +
+ * formatted code.
  * - Creates bech32 address from first 20 bytes of hash.
  * - Formats code using DysFormat before address generation and storage.
  * - Grants generic authorization for MsgUpdateScript to creator via authz.
@@ -181,7 +192,8 @@ message MsgCreateNewScript {
   // Account address creating the script; must be a valid bech32 address.
   string creator_address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
-  // Python script content; will be formatted and used to generate deterministic address.
+  // Python script content; will be formatted and used to generate deterministic
+  // address.
   string code = 2;
 }
 
@@ -246,7 +258,8 @@ message MsgArbitraryData {
 message MsgArbitraryDataResponse {}
 
 /*
- * MsgSudo executes arbitrary messages with authority override and no signer validation.
+ * MsgSudo executes arbitrary messages with authority override and no signer
+ * validation.
  *
  * Behavior:
  * - Validates that the signer has governance authority.
@@ -268,7 +281,8 @@ message MsgSudo {
   // Address that controls the module (defaults to x/gov unless overwritten).
   string authority = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
-  // Messages to execute without signer validation; executed atomically in order.
+  // Messages to execute without signer validation; executed atomically in
+  // order.
   repeated google.protobuf.Any messages = 2;
 }
 

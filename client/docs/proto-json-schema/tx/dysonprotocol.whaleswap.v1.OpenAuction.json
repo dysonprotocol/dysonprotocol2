@@ -22,7 +22,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Open Auction",
-                "description": "* OpenAuction escrows the sell coin from the seller and mints an NFT under a class keyed by `bid_denom`. Class policy (always_listed, valuation fee/period, bid timeout, minimum bid percent increase, allowed denoms) is set from module params. The NFT is sent to the seller and the auction record with reverse indexes is persisted. Emits: EventAuctionCreated on success."
+                "description": "* OpenAuction escrows the sell coin from the seller and mints an NFT under a class keyed by `bid_denom`. Class policy (always_listed, valuation fee/period, bid timeout, minimum bid percent increase, allowed denoms) is set from module params. The NFT is sent to the seller and the auction record with reverse indexes is persisted. Emits: EventAuctionCreated on success"
             },
             "cosmos.base.v1beta1.Coin": {
                 "properties": {

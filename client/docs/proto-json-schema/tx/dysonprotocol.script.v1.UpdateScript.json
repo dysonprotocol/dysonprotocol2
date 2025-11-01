@@ -7,17 +7,17 @@
                 "properties": {
                     "address": {
                         "type": "string",
-                        "description": "address is the account address of the script."
+                        "description": "Account address of the script to update; must be a valid bech32 address."
                     },
                     "code": {
                         "type": "string",
-                        "description": "script is the updated script."
+                        "description": "Python script code to store; will be automatically formatted before storage."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Update Script",
-                "description": "MsgUpdateScript is the Msg/UpdateScript request type."
+                "description": "MsgUpdateScript updates the script code at the given address and increments its version. Behavior: - Updates or creates a script at the specified address with formatted code. - Automatically formats the provided code using DysFormat before storage. - Increments the script version on each update. - Sets update metadata including block height. - Creates new scripts with empty code if they don't exist. Validation: - Address must be a valid bech32 address. - Code must be valid Python syntax that can be formatted by DysFormat. Emits: - EventUpdateScript(version, script_address) on successful update. Returns: - updated script version."
             }
         }
     },
@@ -29,13 +29,13 @@
                 "properties": {
                     "version": {
                         "type": "string",
-                        "description": "version is the updated script version."
+                        "description": "Updated script version after the update operation."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Update Script Response",
-                "description": "MsgUpdateScriptResponse is the Msg/UpdateScript response type."
+                "description": "Empty response. See EventUpdateScript for emitted details."
             }
         }
     }

@@ -7,7 +7,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Get Block Request",
-                "description": "QueryGetBlockRequest is the Query/GetBlock request type."
+                "description": "QueryGetBlockRequest requests current block information. This is an empty request message - no parameters needed."
             }
         }
     },
@@ -19,38 +19,38 @@
                 "properties": {
                     "block_height": {
                         "type": "string",
-                        "description": "block_height is the height of the block."
+                        "description": "Height of the current block."
                     },
                     "block_time": {
                         "type": "string",
-                        "description": "block_time is the time of the block.",
+                        "description": "Timestamp of the current block.",
                         "format": "date-time"
                     },
                     "chain_id": {
                         "type": "string",
-                        "description": "chain_id is the chain ID."
+                        "description": "Chain ID of the blockchain."
                     },
                     "block_hash": {
                         "type": "string",
-                        "description": "block_hash is the hash of the block.",
+                        "description": "Hash of the current block (app hash from header).",
                         "format": "binary",
                         "binaryEncoding": "base64"
                     },
                     "app_hash": {
                         "type": "string",
-                        "description": "app_hash is the application hash.",
+                        "description": "Application hash of the current block.",
                         "format": "binary",
                         "binaryEncoding": "base64"
                     },
                     "proposer_address": {
                         "type": "string",
-                        "description": "proposer_address is the address of the block proposer."
+                        "description": "Bech32 address of the block proposer."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Get Block Response",
-                "description": "QueryGetBlockResponse is the Query/GetBlock response type."
+                "description": "QueryGetBlockResponse contains current block information."
             }
         }
     }

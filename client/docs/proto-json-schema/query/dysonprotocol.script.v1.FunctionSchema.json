@@ -7,21 +7,21 @@
                 "properties": {
                     "executor_address": {
                         "type": "string",
-                        "description": "executor is the account address used to evaluate the script"
+                        "description": "Account address used to evaluate the script; must be a valid bech32 address."
                     },
                     "script_address": {
                         "type": "string",
-                        "description": "address is the script bech32 address to inspect."
+                        "description": "Script bech32 address to inspect; mutually exclusive with script_name."
                     },
                     "script_name": {
                         "type": "string",
-                        "description": "script_name is the optional nameservice name of the script to inspect (e.g., \"example.dys\")"
+                        "description": "Optional nameservice name of the script to inspect (e.g., \"example.dys\")."
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Function Schema Request",
-                "description": "QueryFunctionSchemaRequest requests function schemas for a script."
+                "description": "QueryFunctionSchemaRequest requests function schemas for a script. Either script_address or script_name must be provided. The script will be introspected to extract schemas for all public functions."
             }
         }
     },
@@ -33,13 +33,13 @@
                 "properties": {
                     "schema_json": {
                         "type": "string",
-                        "description": "schema_json is a JSON object: [{\"name\": \"func_name\", \"schema\": {schema...}}, ...]"
+                        "description": "JSON array of function schemas: [{\"name\": \"func_name\", \"schema\": {...}}, ...]"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Query Function Schema Response",
-                "description": "QueryFunctionSchemaResponse contains a JSON object mapping function names to schemas."
+                "description": "QueryFunctionSchemaResponse contains function schemas extracted from a script."
             }
         }
     }

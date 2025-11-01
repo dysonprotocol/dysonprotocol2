@@ -13,7 +13,8 @@
   "paths": {
     "dysonprotocol.crontask.v1.MsgCreateSubscription": {
       "post": {
-        "summary": "CreateSubscription registers a new event-triggered action",
+        "summary": "CreateSubscription creates a new event-triggered subscription with upfront\nfee payment.",
+        "description": "Behavior:\n- Creates a subscription that triggers script execution when events match\nthe filter.\n- Enforces minimum stake requirements across all creator's subscriptions.\n- Deducts anti-spam fee to fee_collector module account.\n- Allocates unique subscription ID and sets expiry to current time +\nmax_subscription_duration.\n- Minifies JSON args/kwargs for storage efficiency.\n- Initializes subscription with \"enabled\" status and zero trigger count.\n\nValidation:\n- Creator address must be valid.\n- Script address must be valid and non-empty.\n- Function name must be non-empty.\n- Task gas limit must be positive.\n- Task gas fee must be positive.\n- Filter, script_address, function, args, kwargs must not exceed length\nlimits.\n- Creator must have sufficient bonded stake if MinStakePerSubscription is\nconfigured.\n- Args/kwargs must be valid JSON (array for args, object for kwargs).\n\nEmits:\n- EventSubscriptionCreated(subscription_id, creator) on successful\ncreation.\n\nReturns:\n- MsgCreateSubscriptionResponse with allocated subscription ID.",
         "operationId": "dysonprotocol.crontask.v1.MsgCreateSubscription",
         "responses": {
           "200": {
@@ -46,7 +47,8 @@
     },
     "dysonprotocol.crontask.v1.MsgCreateTask": {
       "post": {
-        "summary": "CreateTask creates a new scheduled task",
+        "summary": "CreateTask creates a new scheduled task with specified execution time and\nmessages.",
+        "description": "Behavior:\n- Creates a task scheduled for execution at a future timestamp.\n- Parses flexible timestamp formats (Unix timestamps or duration offsets\nlike\n\"+1h30m\").\n- Validates scheduling constraints and gas limits against module\nparameters.\n- Calculates gas price from fee and limit, stores task with unpacked\nmessages.\n- Tasks remain in SCHEDULED status until execution time.\n\nValidation:\n- Creator address must be valid.\n- Scheduled timestamp must be in the future and within MaxScheduledTime\nlimit.\n- Expiry timestamp must be after scheduled time (defaults to scheduled +\nExpiryLimit if not provided).\n- Gas limit must be positive and not exceed BlockGasLimit.\n- Gas fee must be positive and denominated in \"udys\".\n- At least one message must be provided in the task.\n\nEmits:\n- EventTaskCreated(task_id, creator) on successful task creation.\n\nReturns:\n- MsgCreateTaskResponse with allocated task ID.",
         "operationId": "dysonprotocol.crontask.v1.MsgCreateTask",
         "responses": {
           "200": {
@@ -79,7 +81,8 @@
     },
     "dysonprotocol.crontask.v1.MsgDeleteSubscription": {
       "post": {
-        "summary": "DeleteSubscription removes an existing subscription",
+        "summary": "DeleteSubscription permanently removes an existing subscription.",
+        "description": "Behavior:\n- Permanently removes a subscription from storage.\n- Only the creator of the subscription can delete it.\n- No refunds are provided for remaining subscription time or fees.\n\nValidation:\n- Creator address must be valid.\n- Subscription must exist.\n- Creator must match the subscription's creator field.\n\nEmits:\n- EventSubscriptionDeleted(subscription_id, creator) on successful\ndeletion.\n\nReturns:\n- Empty MsgDeleteSubscriptionResponse.",
         "operationId": "dysonprotocol.crontask.v1.MsgDeleteSubscription",
         "responses": {
           "200": {
@@ -112,7 +115,8 @@
     },
     "dysonprotocol.crontask.v1.MsgDeleteTask": {
       "post": {
-        "summary": "DeleteTask deletes a scheduled task",
+        "summary": "DeleteTask permanently removes a scheduled task.",
+        "description": "Behavior:\n- Permanently removes a task from storage before execution.\n- Only the creator of the task can delete it.\n- No refunds are provided for task fees or gas.\n\nValidation:\n- Task must exist with the provided ID.\n- Creator must match the task's creator field.\n\nEmits:\n- EventTaskDeleted(task_id, creator) on successful deletion.\n\nReturns:\n- Empty MsgDeleteTaskResponse.",
         "operationId": "dysonprotocol.crontask.v1.MsgDeleteTask",
         "responses": {
           "200": {
@@ -145,7 +149,8 @@
     },
     "dysonprotocol.crontask.v1.MsgRenewSubscription": {
       "post": {
-        "summary": "RenewSubscription extends the subscription expiry and recharges the fee",
+        "summary": "RenewSubscription extends subscription expiry and recharges the fee.",
+        "description": "Behavior:\n- Extends subscription expiry to current time + max_subscription_duration.\n- Recharges the task gas fee from creator to fee_collector.\n- Re-enables expired subscriptions if they were in \"expired\" status.\n- Enforces minimum stake requirements before renewal.\n\nValidation:\n- Creator address must be valid.\n- Subscription must exist.\n- Creator must match the subscription's creator field.\n- Creator must have sufficient bonded stake if MinStakePerSubscription is\nconfigured.\n\nEmits:\n- No events are emitted for renewal (subscription remains active).\n\nReturns:\n- Empty MsgRenewSubscriptionResponse.",
         "operationId": "dysonprotocol.crontask.v1.MsgRenewSubscription",
         "responses": {
           "200": {
@@ -178,7 +183,8 @@
     },
     "dysonprotocol.crontask.v1.MsgUpdateParams": {
       "post": {
-        "summary": "UpdateParams updates the parameters of the x/crontask module",
+        "summary": "UpdateParams updates the parameters of the x/crontask module via\ngovernance proposal.",
+        "description": "Behavior:\n- Updates all module parameters in a single governance operation.\n- Authority is typically the x/gov module account.\n- Parameters control task scheduling limits, gas constraints, and\nsubscription rules.\n\nValidation:\n- Authority must be valid (typically x/gov module account).\n- All parameter values must pass individual validation (Validate method).\n\nEmits:\n- No events are emitted for parameter updates.\n\nReturns:\n- Empty MsgUpdateParamsResponse.",
         "operationId": "dysonprotocol.crontask.v1.MsgUpdateParams",
         "responses": {
           "200": {
@@ -227,75 +233,85 @@
       "type": "object",
       "properties": {
         "creator": {
-          "type": "string"
+          "type": "string",
+          "description": "Account creating the subscription; must have sufficient bonded stake if\nMinStakePerSubscription is set."
         },
         "filter": {
-          "type": "string"
+          "type": "string",
+          "description": "Event filter string used to match blockchain events that trigger the\nsubscription."
         },
         "script_address": {
-          "type": "string"
+          "type": "string",
+          "description": "Address of the script containing the function to execute on trigger."
         },
         "function": {
-          "type": "string"
+          "type": "string",
+          "description": "Name of the function to call in the script when triggered."
         },
         "args": {
-          "type": "string"
+          "type": "string",
+          "description": "JSON array of positional arguments to pass to the script function."
         },
         "kwargs": {
-          "type": "string"
+          "type": "string",
+          "description": "JSON object of keyword arguments to pass to the script function."
         },
         "task_gas_limit": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Maximum gas limit for each script execution triggered by this subscription."
         },
         "task_gas_fee": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Gas fee charged upfront and deducted for each trigger execution."
         }
       },
-      "title": "CreateSubscription"
+      "description": "MsgCreateSubscription creates a new event-triggered subscription with upfront\nfee payment.\n\nBehavior:\n- Creates a subscription that triggers script execution when events match the\nfilter.\n- Enforces minimum stake requirements across all creator's subscriptions.\n- Deducts anti-spam fee to fee_collector module account.\n- Allocates unique subscription ID and sets expiry to current time +\nmax_subscription_duration.\n- Minifies JSON args/kwargs for storage efficiency.\n- Initializes subscription with \"enabled\" status and zero trigger count.\n\nValidation:\n- Creator address must be valid.\n- Script address must be valid and non-empty.\n- Function name must be non-empty.\n- Task gas limit must be positive.\n- Task gas fee must be positive.\n- Filter, script_address, function, args, kwargs must not exceed length\nlimits.\n- Creator must have sufficient bonded stake if MinStakePerSubscription is\nconfigured.\n- Args/kwargs must be valid JSON (array for args, object for kwargs).\n\nEmits:\n- EventSubscriptionCreated(subscription_id, creator) on successful creation.\n\nReturns:\n- MsgCreateSubscriptionResponse with allocated subscription ID."
     },
     "dysonprotocol.crontask.v1.MsgCreateSubscriptionResponse": {
       "type": "object",
       "properties": {
         "subscription_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Unique identifier assigned to the newly created subscription."
         }
-      }
+      },
+      "description": "MsgCreateSubscriptionResponse contains the result of subscription creation.\nEmpty response indicates successful subscription creation with allocated\nsubscription ID."
     },
     "dysonprotocol.crontask.v1.MsgCreateTask": {
       "type": "object",
       "properties": {
         "creator": {
           "type": "string",
-          "title": "Address of the creator of the task"
+          "description": "Account creating the scheduled task."
         },
         "scheduled_timestamp": {
           "type": "string",
-          "title": "Unix timestamp when the task is scheduled to execute\nCan be either a Unix timestamp or a time offset prefixed with \"+\" (e.g.\n\"+1h30m\") Offset is relative to the current block time"
+          "description": "Unix timestamp or duration offset when the task is scheduled to execute.\nCan be either a Unix timestamp or a time offset prefixed with \"+\" (e.g.\n\"+1h30m\"). Offset is relative to the current block time."
         },
         "expiry_timestamp": {
           "type": "string",
-          "title": "Unix timestamp after which the task will expire if not executed\nCan be either a Unix timestamp or a time offset prefixed with \"+\" (e.g.\n\"+2h\") When using an offset, it's relative to the scheduled_timestamp"
+          "description": "Unix timestamp or duration offset after which the task will expire if not\nexecuted. Can be either a Unix timestamp or a time offset prefixed with \"+\"\n(e.g. \"+2h\"). When using an offset, it's relative to the\nscheduled_timestamp. If empty, defaults to scheduled_timestamp +\nExpiryLimit."
         },
         "task_gas_limit": {
           "type": "string",
           "format": "uint64",
-          "title": "Maximum gas limit for the task execution"
+          "description": "Maximum gas limit for the task execution."
         },
         "task_gas_fee": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "title": "Gas fee for the task execution"
+          "description": "Gas fee for the task execution, deducted at execution time."
         },
         "msgs": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/google.protobuf.Any"
           },
-          "title": "Messages to execute as part of the task"
+          "description": "Messages to execute as part of the task when triggered."
         }
       },
-      "title": "MsgCreateTask defines the message for creating a new task"
+      "description": "MsgCreateTask creates a new scheduled task with specified execution time and\nmessages.\n\nBehavior:\n- Creates a task scheduled for execution at a future timestamp.\n- Parses flexible timestamp formats (Unix timestamps or duration offsets like\n\"+1h30m\").\n- Validates scheduling constraints and gas limits against module parameters.\n- Calculates gas price from fee and limit, stores task with unpacked\nmessages.\n- Tasks remain in SCHEDULED status until execution time.\n\nValidation:\n- Creator address must be valid.\n- Scheduled timestamp must be in the future and within MaxScheduledTime\nlimit.\n- Expiry timestamp must be after scheduled time (defaults to scheduled +\nExpiryLimit if not provided).\n- Gas limit must be positive and not exceed BlockGasLimit.\n- Gas fee must be positive and denominated in \"udys\".\n- At least one message must be provided in the task.\n\nEmits:\n- EventTaskCreated(task_id, creator) on successful task creation.\n\nReturns:\n- MsgCreateTaskResponse with allocated task ID."
     },
     "dysonprotocol.crontask.v1.MsgCreateTaskResponse": {
       "type": "object",
@@ -303,79 +319,85 @@
         "task_id": {
           "type": "string",
           "format": "uint64",
-          "title": "The ID of the created task"
+          "description": "Unique identifier assigned to the newly created task."
         }
       },
-      "title": "MsgCreateTaskResponse defines the response for creating a new task"
+      "description": "MsgCreateTaskResponse contains the result of task creation.\nEmpty response indicates successful task creation with allocated task ID."
     },
     "dysonprotocol.crontask.v1.MsgDeleteSubscription": {
       "type": "object",
       "properties": {
         "creator": {
-          "type": "string"
+          "type": "string",
+          "description": "Account deleting the subscription; must be the subscription's creator."
         },
         "subscription_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Unique identifier of the subscription to delete."
         }
       },
-      "title": "DeleteSubscription"
+      "description": "MsgDeleteSubscription removes an existing subscription permanently.\n\nBehavior:\n- Permanently removes a subscription from storage.\n- Only the creator of the subscription can delete it.\n- No refunds are provided for remaining subscription time or fees.\n\nValidation:\n- Creator address must be valid.\n- Subscription must exist.\n- Creator must match the subscription's creator field.\n\nEmits:\n- EventSubscriptionDeleted(subscription_id, creator) on successful deletion.\n\nReturns:\n- Empty MsgDeleteSubscriptionResponse."
     },
     "dysonprotocol.crontask.v1.MsgDeleteSubscriptionResponse": {
-      "type": "object"
+      "type": "object",
+      "description": "MsgDeleteSubscriptionResponse contains the result of subscription deletion.\nEmpty response indicates successful deletion."
     },
     "dysonprotocol.crontask.v1.MsgDeleteTask": {
       "type": "object",
       "properties": {
         "creator": {
           "type": "string",
-          "title": "Address of the creator of the task"
+          "description": "Account deleting the task; must be the task's creator."
         },
         "task_id": {
           "type": "string",
           "format": "uint64",
-          "title": "ID of the task to delete"
+          "description": "Unique identifier of the task to delete."
         }
       },
-      "title": "MsgDeleteTask defines the message for deleting a task"
+      "description": "MsgDeleteTask removes a scheduled task permanently.\n\nBehavior:\n- Permanently removes a task from storage before execution.\n- Only the creator of the task can delete it.\n- No refunds are provided for task fees or gas.\n\nValidation:\n- Task must exist with the provided ID.\n- Creator must match the task's creator field.\n\nEmits:\n- EventTaskDeleted(task_id, creator) on successful deletion.\n\nReturns:\n- Empty MsgDeleteTaskResponse."
     },
     "dysonprotocol.crontask.v1.MsgDeleteTaskResponse": {
       "type": "object",
-      "title": "MsgDeleteTaskResponse defines the response for deleting a task"
+      "description": "MsgDeleteTaskResponse contains the result of task deletion.\nEmpty response indicates successful deletion."
     },
     "dysonprotocol.crontask.v1.MsgRenewSubscription": {
       "type": "object",
       "properties": {
         "creator": {
-          "type": "string"
+          "type": "string",
+          "description": "Account renewing the subscription; must be the subscription's creator."
         },
         "subscription_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Unique identifier of the subscription to renew."
         }
       },
-      "title": "RenewSubscription"
+      "description": "MsgRenewSubscription extends subscription expiry and recharges the fee.\n\nBehavior:\n- Extends subscription expiry to current time + max_subscription_duration.\n- Recharges the task gas fee from creator to fee_collector.\n- Re-enables expired subscriptions if they were in \"expired\" status.\n- Enforces minimum stake requirements before renewal.\n\nValidation:\n- Creator address must be valid.\n- Subscription must exist.\n- Creator must match the subscription's creator field.\n- Creator must have sufficient bonded stake if MinStakePerSubscription is\nconfigured.\n\nEmits:\n- No events are emitted for renewal (subscription remains active).\n\nReturns:\n- Empty MsgRenewSubscriptionResponse."
     },
     "dysonprotocol.crontask.v1.MsgRenewSubscriptionResponse": {
-      "type": "object"
+      "type": "object",
+      "description": "MsgRenewSubscriptionResponse contains the result of subscription renewal.\nEmpty response indicates successful renewal."
     },
     "dysonprotocol.crontask.v1.MsgUpdateParams": {
       "type": "object",
       "properties": {
         "authority": {
           "type": "string",
-          "description": "authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+          "description": "Authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
         },
         "params": {
           "$ref": "#/definitions/dysonprotocol.crontask.v1.Params",
-          "description": "params defines the x/crontask parameters to update.\nNOTE: All parameters must be supplied."
+          "description": "Parameters defines the x/crontask parameters to update.\nNOTE: All parameters must be supplied."
         }
       },
-      "description": "---------------------------------------------------------------------------\nMsgUpdateParams\n---------------------------------------------------------------------------\nUpdateParams defines a governance operation for updating the x/crontask\nmodule parameters. The authority defaults to the x/gov module account."
+      "description": "MsgUpdateParams updates the parameters of the x/crontask module via\ngovernance proposal.\n\nBehavior:\n- Updates all module parameters in a single governance operation.\n- Authority is typically the x/gov module account.\n- Parameters control task scheduling limits, gas constraints, and\nsubscription rules.\n\nValidation:\n- Authority must be valid (typically x/gov module account).\n- All parameter values must pass individual validation (Validate method).\n\nEmits:\n- No events are emitted for parameter updates.\n\nReturns:\n- Empty MsgUpdateParamsResponse."
     },
     "dysonprotocol.crontask.v1.MsgUpdateParamsResponse": {
       "type": "object",
-      "description": "MsgUpdateParamsResponse defines the response structure for executing a\nMsgUpdateParams message."
+      "description": "MsgUpdateParamsResponse contains the result of parameter update.\nEmpty response indicates successful parameter update."
     },
     "dysonprotocol.crontask.v1.Params": {
       "type": "object",
