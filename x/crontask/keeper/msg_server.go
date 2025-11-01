@@ -18,7 +18,38 @@ import (
 // Ensure Keeper implements the MsgServer interface
 var _ crontasktypes.MsgServer = Keeper{}
 
-// CreateSubscription creates a new subscription, charging the task fee upfront
+// CreateSubscription creates a new event-triggered subscription with upfront fee payment.
+//
+// Semantics:
+//   - Creates a subscription that triggers script execution when events match the filter.
+//   - Enforces minimum stake requirements across all creator's subscriptions.
+//   - Deducts anti-spam fee to fee_collector module account.
+//   - Allocates unique subscription ID and sets expiry to current time + max_subscription_duration.
+//   - Minifies JSON args/kwargs for storage efficiency.
+//   - Initializes subscription with "enabled" status and zero trigger count.
+//
+// Validation:
+//   - Creator address must be valid.
+//   - Script address must be valid and non-empty.
+//   - Function name must be non-empty.
+//   - Task gas limit must be positive.
+//   - Task gas fee must be positive.
+//   - Filter, script_address, function, args, kwargs must not exceed length limits.
+//   - Creator must have sufficient bonded stake if MinStakePerSubscription is configured.
+//   - Args/kwargs must be valid JSON (array for args, object for kwargs).
+//
+// State Updates:
+//   - Persists new subscription to storage with indexed fields.
+//   - Deducts gas fee from creator to fee_collector.
+//
+// Emits:
+//   - EventSubscriptionCreated(subscription_id, creator) on successful creation.
+//
+// Returns:
+//   - *crontasktypes.MsgCreateSubscriptionResponse with allocated subscription ID.
+//
+// Errors are returned on validation failures, insufficient stake, fee deduction failures,
+// JSON parsing errors, storage errors, or event emission failures; no panics.
 func (k Keeper) CreateSubscription(ctx context.Context, msg *crontasktypes.MsgCreateSubscription) (*crontasktypes.MsgCreateSubscriptionResponse, error) {
 	if err := msg.ValidateBasic(); err != nil {
 		return nil, err
@@ -112,7 +143,29 @@ func (k Keeper) CreateSubscription(ctx context.Context, msg *crontasktypes.MsgCr
 	return &crontasktypes.MsgCreateSubscriptionResponse{SubscriptionId: id}, nil
 }
 
-// DeleteSubscription deletes a subscription
+// DeleteSubscription removes an existing subscription, allowing only the creator to delete.
+//
+// Semantics:
+//   - Permanently removes a subscription from storage.
+//   - Only the creator of the subscription can delete it.
+//   - No refunds are provided for remaining subscription time or fees.
+//
+// Validation:
+//   - Creator address must be valid.
+//   - Subscription must exist.
+//   - Creator must match the subscription's creator field.
+//
+// State Updates:
+//   - Removes subscription from storage (indexes are maintained automatically).
+//
+// Emits:
+//   - EventSubscriptionDeleted(subscription_id, creator) on successful deletion.
+//
+// Returns:
+//   - *crontasktypes.MsgDeleteSubscriptionResponse (empty response).
+//
+// Errors are returned on validation failures, subscription not found, unauthorized deletion,
+// storage errors, or event emission failures; no panics.
 func (k Keeper) DeleteSubscription(ctx context.Context, msg *crontasktypes.MsgDeleteSubscription) (*crontasktypes.MsgDeleteSubscriptionResponse, error) {
 	if err := msg.ValidateBasic(); err != nil {
 		return nil, err
@@ -135,7 +188,33 @@ func (k Keeper) DeleteSubscription(ctx context.Context, msg *crontasktypes.MsgDe
 	return &crontasktypes.MsgDeleteSubscriptionResponse{}, nil
 }
 
-// RenewSubscription extends expiry and recharges fee
+// RenewSubscription extends subscription expiry and recharges the fee, allowing only the creator.
+//
+// Semantics:
+//   - Extends subscription expiry to current time + max_subscription_duration.
+//   - Recharges the task gas fee from creator to fee_collector.
+//   - Re-enables expired subscriptions if they were in "expired" status.
+//   - Enforces minimum stake requirements before renewal.
+//
+// Validation:
+//   - Creator address must be valid.
+//   - Subscription must exist.
+//   - Creator must match the subscription's creator field.
+//   - Creator must have sufficient bonded stake if MinStakePerSubscription is configured.
+//
+// State Updates:
+//   - Updates subscription expiry timestamp.
+//   - Recharges gas fee from creator to fee_collector.
+//   - Changes status from "expired" to "enabled" if previously expired.
+//
+// Emits:
+//   - No events are emitted for renewal (subscription remains active).
+//
+// Returns:
+//   - *crontasktypes.MsgRenewSubscriptionResponse (empty response).
+//
+// Errors are returned on validation failures, subscription not found, unauthorized renewal,
+// insufficient stake, fee deduction failures, or storage errors; no panics.
 func (k Keeper) RenewSubscription(ctx context.Context, msg *crontasktypes.MsgRenewSubscription) (*crontasktypes.MsgRenewSubscriptionResponse, error) {
 	if err := msg.ValidateBasic(); err != nil {
 		return nil, err
@@ -224,7 +303,35 @@ func parseTimestamp(timestampStr string, baseTime time.Time) (time.Time, error) 
 	return time.Unix(timestamp, 0).UTC(), nil
 }
 
-// CreateTask creates a new scheduled task
+// CreateTask creates a new scheduled task with specified execution time and messages.
+//
+// Semantics:
+//   - Creates a task scheduled for execution at a future timestamp.
+//   - Parses flexible timestamp formats (Unix timestamps or duration offsets like "+1h30m").
+//   - Validates scheduling constraints and gas limits against module parameters.
+//   - Calculates gas price from fee and limit, stores task with unpacked messages.
+//   - Tasks remain in SCHEDULED status until execution time.
+//
+// Validation:
+//   - Creator address must be valid.
+//   - Scheduled timestamp must be in the future and within MaxScheduledTime limit.
+//   - Expiry timestamp must be after scheduled time (defaults to scheduled + ExpiryLimit if not provided).
+//   - Gas limit must be positive and not exceed BlockGasLimit.
+//   - Gas fee must be positive and denominated in "udys".
+//   - At least one message must be provided in the task.
+//
+// State Updates:
+//   - Allocates new task ID and persists task to storage.
+//   - Records creation time, block height, and calculated gas price.
+//
+// Emits:
+//   - EventTaskCreated(task_id, creator) on successful task creation.
+//
+// Returns:
+//   - *crontasktypes.MsgCreateTaskResponse with allocated task ID.
+//
+// Errors are returned on invalid addresses, timestamp parsing failures, constraint violations,
+// gas validation failures, message validation failures, storage errors, or event emission failures; no panics.
 func (k Keeper) CreateTask(ctx context.Context, msg *crontasktypes.MsgCreateTask) (*crontasktypes.MsgCreateTaskResponse, error) {
 	// Get module parameters
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -372,7 +479,27 @@ func (k Keeper) CreateTask(ctx context.Context, msg *crontasktypes.MsgCreateTask
 	}, nil
 }
 
-// DeleteTask deletes a scheduled task
+// DeleteTask removes a scheduled task permanently, allowing only the creator to delete.
+//
+// Semantics:
+//   - Permanently removes a task from storage before execution.
+//   - Only the creator of the task can delete it.
+//   - No refunds are provided for task fees or gas.
+//
+// Validation:
+//   - Task must exist with the provided ID.
+//   - Creator must match the task's creator field.
+//
+// State Updates:
+//   - Removes task from storage (including any associated indexes).
+//
+// Emits:
+//   - EventTaskDeleted(task_id, creator) on successful deletion.
+//
+// Returns:
+//   - *crontasktypes.MsgDeleteTaskResponse (empty response).
+//
+// Errors are returned on task not found, unauthorized deletion, or storage errors; no panics.
 func (k Keeper) DeleteTask(ctx context.Context, msg *crontasktypes.MsgDeleteTask) (*crontasktypes.MsgDeleteTaskResponse, error) {
 	// Get the task
 	task, err := k.GetTask(ctx, msg.TaskId)
@@ -411,6 +538,28 @@ func (k Keeper) DeleteTask(ctx context.Context, msg *crontasktypes.MsgDeleteTask
 	return &crontasktypes.MsgDeleteTaskResponse{}, nil
 }
 
+// UpdateParams updates the parameters of the x/crontask module via governance proposal.
+//
+// Semantics:
+//   - Updates all module parameters in a single governance operation.
+//   - Authority is typically the x/gov module account.
+//   - Parameters control task scheduling limits, gas constraints, and subscription rules.
+//
+// Validation:
+//   - Authority must be valid (typically x/gov module account).
+//   - All parameter values must pass individual validation (Validate method).
+//
+// State Updates:
+//   - Persists updated parameters to module state.
+//
+// Emits:
+//   - No events are emitted for parameter updates.
+//
+// Returns:
+//   - *crontasktypes.MsgUpdateParamsResponse (empty response).
+//
+// Errors are returned on invalid authority, parameter validation failures,
+// or storage errors; no panics.
 func (k Keeper) UpdateParams(ctx context.Context, msg *crontasktypes.MsgUpdateParams) (*crontasktypes.MsgUpdateParamsResponse, error) {
 	// NOTE: For the lightweight test network we accept any signer; in production
 	// you would enforce the authority check below.

@@ -12,7 +12,37 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// Reveal implements the MsgServer.Reveal method
+// Reveal completes name registration by revealing the committed name and salt.
+//
+// Semantics:
+//   - Completes commit-reveal scheme by validating the revealed name matches the commitment hash.
+//   - Mints a new Name NFT with the revealed name as NFT ID.
+//   - Charges annual valuation fee based on committed valuation and class parameters.
+//   - Sets up NFT data with valuation, expiry, and default listing status.
+//   - Creates reverse mapping from owner address to name for resolution.
+//
+// Validation:
+//   - Committer address must be valid bech32.
+//   - Name cannot be empty and must match name format regex (lowercase, alphanumeric+dashes, ends with .dys).
+//   - Name must not already be registered.
+//   - Commitment must exist for the computed hash (name + committer + salt).
+//   - Revealed committer must match commitment owner.
+//   - Valuation from commitment must be valid and non-zero.
+//
+// State Updates:
+//   - Mints new NFT in nameservice.dys class with revealed name as ID.
+//   - Sets NFT data with valuation, expiry (based on class valuation period), and metadata.
+//   - Creates reverse name-to-address mapping for resolution.
+//   - Deletes the used commitment.
+//   - Charges annual valuation fee to community pool.
+//
+// Emits:
+//   - EventNameRegistered(name, fee) on successful name registration.
+//
+// Returns:
+//   - *nameservicev1.MsgRevealResponse (empty response indicating success).
+//
+// Errors are returned on invalid parameters, name format issues, duplicate names, missing commitments, or fee calculation failures; no panics.
 func (k Keeper) Reveal(ctx context.Context, msg *nameservicev1.MsgReveal) (*nameservicev1.MsgRevealResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 

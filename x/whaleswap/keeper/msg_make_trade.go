@@ -12,42 +12,52 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
-// MakeTrade combines AMM pool swaps and orderbook takes into a single transaction with end-of-tx settlement.
+// MakeTrade combines AMM pool swaps and orderbook takes into a single
+// transaction with end-of-tx settlement.
 //
 // Semantics:
-//   - Aggregates inputs/outputs from multiple SwapLeg (AMM) and TakeItem (orderbook) operations.
-//   - Performs orderbook-style netting: trader credits offset maker wants, with deficit coverage from trader base.
-//   - Applies PFAND releases (module -> trader) pre-netting when offers close.
-//   - Enforces per-denom debit caps (max_input) and minimum outputs (min_output) after netting.
-//   - Executes final settlement via multisend; no partial success - all operations succeed or transaction fails.
-//   - Enables circular trade dependencies through self-netting: trader debit/credit pairs by denom are netted out,
-//     allowing complex arbitrage chains where intermediate results cancel (e.g., A→B→C→A becomes net B+C profit).
+//   - Processes SwapLeg (AMM pool swaps) and TakeItem (orderbook takes)
+//     operations in order.
+//   - Aggregates all inputs/outputs across operations, then performs
+//     orderbook-style netting.
+//   - Trader credits offset maker wants; deficits covered from trader base
+//     balance.
+//   - PFAND released to trader when offers close, applied pre-netting.
+//   - Enforces per-denom debit caps (max_input) and minimum outputs (min_output)
+//     after netting.
+//   - Executes final settlement via multisend; all operations succeed or
+//     transaction fails.
+//   - Enables circular trade dependencies through self-netting: trader
+//     debit/credit pairs by denom are netted out, allowing complex arbitrage
+//     chains where intermediate results cancel (e.g., A→B→C→A becomes net B+C
+//     profit).
 //
 // Validation:
 //   - Trader address must be valid.
 //   - Operations must be non-empty.
 //   - Note length capped by module params.
-//   - Swap operations: pool must exist, denoms must match pool, no duplicate pool_ids.
+//   - Swap operations: pool must exist, denoms match pool, no duplicate pool_ids.
 //   - Take operations: offer must exist and be open, no duplicate offer_ids.
 //   - Auction operations currently rejected.
 //
-// State updates:
+// State Updates:
 //   - AMM pools: reserves updated, fees accrued, trade counters incremented.
-//   - Offers: remaining units/wants/haves updated; status set to closed when fully taken.
+//   - Offers: remaining units/wants/haves updated; closed when fully taken.
 //   - Trade recorded with all operations, indexed by trader/pool/offer/auction.
 //
 // Emits:
-//   - EventPfandReleased: for each closed offer (amount, offer_id, trade_id).
-//   - EventPoolSwap: for each swap operation (pool_id, trade_id, operation_index).
-//   - EventOfferTaken: for each take operation (offer_id, trade_id, units_taken).
-//   - EventTradeRecorded: summary (trade_id, trader, num_operations, note).
+//   - EventPfandReleased for each closed offer (amount, offer_id, trade_id)
+//   - EventPoolSwap for each swap (pool_id, trade_id, operation_index)
+//   - EventOfferTaken for each take (offer_id, trade_id, units_taken)
+//   - EventTradeRecorded summary (trade_id, trader, num_operations, note)
 //
 // Returns:
-//   - trade_id: unique identifier for the recorded trade.
-//   - trader_inputs: final net debits by denom after netting/coverage/self-net.
-//   - trader_outputs: final net credits by denom after netting/coverage/self-net.
+//   - trade_id and final net trader_inputs/outputs after
+//     netting/coverage/self-net.
 //
-// Errors are returned on validation failures (invalid addresses, operations, caps exceeded) or execution failures (pool/offer updates, settlement, event emission); no panics.
+// Errors are returned on validation failures (invalid trader, empty operations,
+// malformed operations, caps exceeded) or execution failures (pool/offer updates,
+// settlement, event emission); no panics.
 func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*whaleswapv1.MsgMakeTradeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)

@@ -14,6 +14,34 @@ const (
 	SecondsInYear = 31536000
 )
 
+// SetValuation updates the self-valuation of an NFT owned by the sender.
+//
+// Semantics:
+//   - Updates the valuation of an owned NFT, triggering Harberger tax payments.
+//   - Only charges fee on incremental valuation increases (not decreases).
+//   - Calculates pro-rated fee based on remaining time in current valuation period.
+//   - Fee goes to class owner or community pool for governance-owned classes.
+//   - Valuation expiry remains unchanged (only extended via MsgRenew).
+//
+// Validation:
+//   - NFT must exist and not be expired.
+//   - Sender must be the current NFT owner.
+//   - No active bids can exist (must reject bids first).
+//   - New valuation must be valid according to class rules.
+//   - Max valuation fee percent guard (if provided) must not be exceeded.
+//
+// State Updates:
+//   - Updates NFT valuation data with new valuation amount.
+//   - If valuation was previously unset, sets initial expiry to 1 year.
+//   - Transfers pro-rated fee from NFT owner to appropriate recipient.
+//
+// Emits:
+//   - EventNameValuationUpdated(name, new_valuation) on successful update.
+//
+// Returns:
+//   - *nameservicev1.MsgSetValuationResponse (empty response indicating success).
+//
+// Errors are returned on NFT not found, expired valuation, unauthorized sender, active bids, invalid valuation, or fee calculation/transfer failures; no panics.
 func (k Keeper) SetValuation(ctx context.Context, msg *nameservicev1.MsgSetValuation) (*nameservicev1.MsgSetValuationResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 

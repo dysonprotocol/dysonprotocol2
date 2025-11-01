@@ -9,7 +9,30 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// Commit implements the MsgServer.Commit method
+// Commit creates a commitment for name registration using commit-reveal scheme.
+//
+// Semantics:
+//   - Stores a hash commitment for a name registration that can be revealed later.
+//   - Commitment includes the hash, owner address, timestamp, and proposed valuation.
+//   - Uses commit-reveal to prevent front-running while allowing valuation specification.
+//
+// Validation:
+//   - Committer address must be valid bech32.
+//   - Hexhash cannot be empty.
+//   - Commitment hash must be unique (not already exist).
+//   - Valuation must be valid according to nameservice class rules.
+//
+// State Updates:
+//   - Creates new Commitment record stored by hash.
+//   - Sets ownership, timestamp, and valuation for the commitment.
+//
+// Emits:
+//   - EventCommitmentCreated(hexhash) on successful commitment creation.
+//
+// Returns:
+//   - *nameservicev1.MsgCommitResponse (empty response indicating success).
+//
+// Errors are returned on invalid addresses, empty hash, duplicate commitments, or valuation validation failures; no panics.
 func (k Keeper) Commit(ctx context.Context, msg *nameservicev1.MsgCommit) (*nameservicev1.MsgCommitResponse, error) {
 	// Validate addresses
 	_, err := sdk.AccAddressFromBech32(msg.Committer)

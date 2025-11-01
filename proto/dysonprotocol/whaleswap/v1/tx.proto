@@ -40,10 +40,10 @@ option go_package = "dysonprotocol.com/x/whaleswap/types";
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
-  /**
-   * CreatePool creates a two-asset pool; moves initial reserves, mints initial
-   * shares, and asserts invariants.
-   */
+/**
+ * CreatePool creates a two-asset pool with per-denom fee/interest/leverage
+ * parameters and optional directional bound_percent limits.
+ */
   rpc CreatePool(MsgCreatePool) returns (MsgCreatePoolResponse);
 
   /**
@@ -190,12 +190,27 @@ enum SettlementMode {
  * them to the creator.
  * - Invariants: asserts AMM and module invariants before returning.
  *
+ * Validation:
+ * - coins must contain exactly two positive coins with valid denoms.
+ * - fee_rate amounts must satisfy 0 <= x < 1 for both denoms when provided.
+ * - interest_rate amounts must be >= 0 for both denoms when provided.
+ * - min_collateral_ratio must have exactly two entries (> 1) matching pool
+ *   denoms in canonical order.
+ * - max_leverage_ratio must have exactly two entries (> 1) matching pool denoms
+ *   in canonical order.
+ * - liquidation_threshold must have exactly two entries (> 1) matching pool
+ *   denoms in canonical order.
+ * - max_borrow_percent must have exactly two entries with amounts in [0,1)
+ *   matching pool denoms in canonical order.
+ * - bound_percent when provided must contain at most two entries with amounts
+ *   in (0,1] matching pool denoms.
+ *
  * Emits:
  * - EventPoolCreated(pool_id)
  * - EventPoolUpdate(pool_id)
  *
  * Returns:
- * - `pool_id` of the newly created pool (see response).
+ * - pool_id of the newly created pool (see response).
  */
 message MsgCreatePool {
   option (cosmos.msg.v1.signer) = "creator";
@@ -290,8 +305,22 @@ message MsgCreatePoolResponse {
  * - Persists pool with `updated` timestamp; emits EventPoolUpdate; asserts AMM
  *   and module invariants.
  *
+ * Validation:
+ * - Pool must exist.
+ * - Signer must be valid address and hold majority of pool shares.
+ * - Fee rates when provided must satisfy 0 <= x < 1 for both denoms.
+ * - Leverage config (min_collateral_ratio, max_leverage_ratio) must have
+ *   exactly two entries (> 1) matching pool denoms in canonical order.
+ * - Liquidation threshold must have exactly two entries (> 1) matching pool
+ *   denoms in canonical order.
+ * - Interest rates when provided must be >= 0 for both denoms.
+ * - Max borrow percent when provided must have exactly two entries with amounts
+ *   in [0,1) matching pool denoms in canonical order.
+ * - Bound percent when provided must contain at most two entries with amounts
+ *   in (0,1] matching pool denoms.
+ *
  * Emits:
- * - EventPoolUpdate(pool_id).
+ * - EventPoolUpdate(pool_id)
  *
  * Returns:
  * - Empty response.
@@ -368,19 +397,19 @@ message MsgUpdatePoolConfigResponse {}
  * Add liquidity (owner-only).
  *
  * Behavior:
- * - Escrows the full provided amounts, then refunds any unused surplus.
- * - Concentrated pools: compute ΔL from the inputs at the current price within
- *   [min_price, max_price]; refund the side that exceeds the limiting ΔL; mint
- *   shares as floor(ΔL * total_shares / L_current).
- * - Non-concentrated pools: minted shares are derived from the limiting side
- *   min(add1/R1, add2/R2) * total_shares; refund the difference.
- * - Updates reserves, enforces the price band (if set), persists the pool,
- *   emits events, and asserts AMM invariants.
+ * - Loads pool; validates signer majority ownership.
+ * - Escrows full provided amounts first, then refunds unused surplus.
+ * - Computes shares as floor(min(add1/R1, add2/R2) × totalShares).
+ * - Updates pool reserves with used amounts.
+ * - Mints computed shares via nameservice and transfers to signer.
+ * - Persists pool with updated reserves/timestamp; emits events; asserts AMM
+ *   and module invariants.
  *
  * Validation:
- * - Pool must exist and signer must hold a majority of shares.
- * - `amounts` must contain exactly two positive coins whose denoms match the
- *   pool reserves (canonical order).
+ * - Pool must exist and have exactly two positive reserves.
+ * - Signer must be valid address and hold majority of pool shares.
+ * - Amounts must contain exactly two positive coins matching pool denoms in
+ *   canonical order.
  *
  * Emits:
  * - EventPoolUpdate (after persisting pool state)
@@ -416,24 +445,22 @@ message MsgAddLiquidityResponse {
  * reserves.
  *
  * Behavior:
- * - Supports two modes: full exit and partial exit.
- * - Full exit: when burning all outstanding shares, the pool is deleted and
- *   the full reserves are paid out to the caller.
- * - Partial exit: burns a subset of shares and receives a payout proportional
- *   to that share using pro-rata DecCoins math; pool remains active with
- *   reduced reserves.
- * - Ensures partial exits cannot deplete any reserve below zero; full exit
- *   required to withdraw the last liquidity.
+ * - Supports full exit (burning all shares, deletes pool, returns all reserves)
+ *   and partial exit (burns subset, returns proportional reserves, pool remains).
+ * - Full exit: when shares = total_supply, deletes pool, pays out full reserves.
+ * - Partial exit: computes pro-rata payout using DecCoins math, ensures reserves
+ *   don't go to zero (requires full exit for last liquidity).
+ * - Burns shares from signer, sends proportional reserves from module to signer.
+ * - For partial exits: updates pool reserves, persists pool; asserts AMM invariants.
  *
  * Validation:
  * - Pool must exist.
- * - Signer must hold at least shares.
- * - Shares must be a positive integer string.
- * - Partial exits cannot deplete any reserve; withdrawing the last liquidity
- *   requires a full exit (burning all shares).
+ * - Shares must be positive integer string.
+ * - Signer must hold at least shares amount.
+ * - Partial exits cannot deplete any reserve to zero.
  *
  * Emits:
- * - EventPoolLiquidityRemoved with pool_id and shares.
+ * - EventPoolLiquidityRemoved with pool_id and shares
  *
  * Returns:
  * - coins returned to the caller in the amount field.
@@ -460,7 +487,9 @@ message MsgRemoveLiquidityResponse {
 }
 
 /**
- * Execute one or more pool swap legs with a single settlement.
+ * PoolSwap executes one or more exact-in or exact-out pool swap legs with a
+ * single end-of-tx settlement. Applies output-side fees per leg and enforces
+ * aggregate max_input caps and min_output guarantees.
  *
  * Behavior:
  * - Per-leg execution: for each leg, validates the pool/denoms and computes
@@ -487,8 +516,8 @@ message MsgRemoveLiquidityResponse {
  *
  * Emits:
  * - EventPoolSwap per executed leg (with pool_id, trade_id, operation_index)
- *   via recordTradeWithOperations.
- * - EventTradeRecorded once after all legs are recorded.
+ *   via recordTradeWithOperations
+ * - EventTradeRecorded once after all legs are recorded
  *
  * Returns:
  * - amount_out: total coins credited to the trader across all legs.
@@ -587,10 +616,10 @@ message AuctionRedeem { uint64 auction_id = 1; }
  * - Trade recorded with all operations, indexed by trader/pool/offer/auction.
  *
  * Emits:
- * - EventPfandReleased for each closed offer (amount, offer_id, trade_id).
- * - EventPoolSwap for each swap (pool_id, trade_id, operation_index).
- * - EventOfferTaken for each take (offer_id, trade_id, units_taken).
- * - EventTradeRecorded summary (trade_id, trader, num_operations, note).
+ * - EventPfandReleased for each closed offer (amount, offer_id, trade_id)
+ * - EventPoolSwap for each swap (pool_id, trade_id, operation_index)
+ * - EventOfferTaken for each take (offer_id, trade_id, units_taken)
+ * - EventTradeRecorded summary (trade_id, trader, num_operations, note)
  *
  * Returns:
  * - trade_id and final net trader_inputs/outputs after
@@ -645,17 +674,33 @@ message MsgMakeTradeResponse {
   ];
 }
 
-// Make an orderbook offer.
-//
-// Constraints and semantics:
-// - have and want must be different denoms and strictly positive.
-// - Any denom allowed (including PFAND); settlement behavior controlled by
-// settlement_mode.
-// - If settlement_mode == LIQUID, the transaction locks PFAND per module
-// params.
-// - The keeper computes GCD(have.amount, want.amount) to establish integral
-//   units for partial fills: unit_have = have/gcd, unit_want = want/gcd.
-// - RemainingUnits starts at gcd and decreases as fills occur.
+/**
+ * MakeOffer creates an orderbook offer. ESCROW: base "have" is escrowed.
+ * LIQUID: lock PFAND; settlement draws from maker balance at take. Units are
+ * derived via GCD for partial fills.
+ *
+ * Behavior:
+ * - Validates maker address, have/want coins (different denoms, positive amounts).
+ * - For ESCROW mode: escrows base have from maker to module.
+ * - For LIQUID mode: locks PFAND from maker to module (if configured).
+ * - Computes GCD of have/want amounts to establish unit_have/unit_want ratios.
+ * - Creates offer with remaining_units = GCD, status = open.
+ * - Persists offer and indexes it for queries.
+ *
+ * Validation:
+ * - Maker address must be valid.
+ * - Have/want denoms must be valid and different.
+ * - Have/want amounts must be positive.
+ * - Maker must hold sufficient have amount (for escrow check).
+ * - For LIQUID mode: maker must hold sufficient PFAND if configured.
+ *
+ * Emits:
+ * - EventOfferCreated with offer_id
+ * - EventPfandLocked with amount, offer_id (if PFAND locked)
+ *
+ * Returns:
+ * - offer_id of the newly created offer.
+ */
 message MsgMakeOffer {
   option (cosmos.msg.v1.signer) = "maker";
   string maker = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
@@ -698,9 +743,9 @@ message MsgMakeOfferResponse { uint64 offer_id = 1; }
  * - Module must have sufficient backing for any uncovered solid deficits.
  *
  * Emits:
- * - EventOfferTaken for each take (offer_id, trade_id, units_taken).
- * - EventTradeRecorded for the batch (trade_id, trader, num_operations).
- * - EventPfandReleased for each closed offer (amount, offer_id, trade_id).
+ * - EventOfferTaken for each take (offer_id, trade_id, units_taken)
+ * - EventTradeRecorded for the batch (trade_id, trader, num_operations)
+ * - EventPfandReleased for each closed offer (amount, offer_id, trade_id)
  *
  * Returns:
  * - aggregated sent/received totals across all executed takes.
@@ -759,8 +804,8 @@ message MsgTakeOfferResponse {
  *   must be insufficient.
  *
  * Emits:
- * - EventOfferCancelled with offer_id.
- * - EventPfandReleased with amount, offer_id, trade_id=0 if PFAND was locked.
+ * - EventOfferCancelled with offer_id
+ * - EventPfandReleased with amount, offer_id, trade_id=0 if PFAND was locked
  *
  * Returns:
  * - MsgCancelOfferResponse (empty).
@@ -782,7 +827,7 @@ message MsgCancelOfferResponse {}
  * set from module params. The NFT is sent to the seller and the auction record
  * with reverse indexes is persisted.
  *
- * Emits: EventAuctionCreated on success.
+ * Emits: EventAuctionCreated on success
  */
 message MsgOpenAuction {
   option (cosmos.msg.v1.signer) = "seller";
@@ -811,7 +856,7 @@ message MsgOpenAuctionResponse { uint64 auction_id = 1; }
  * - No current bidder may exist.
  * - Module escrow must contain at least the sell amount.
  *
- * Emits: EventAuctionRedeemed (trade_id = 0 when seller redeems without trade).
+ * Emits: EventAuctionRedeemed (trade_id = 0 when seller redeems without trade)
  */
 message MsgRedeemAuction {
   option (cosmos.msg.v1.signer) = "caller";
@@ -928,7 +973,7 @@ message MsgOpenPositionResponse {
  *   repayment, returns remaining collateral and any profit to the user,
  *   updates pool accounting, and deletes the position.
  *
- * Emits: EventLeveragePositionClosed on success.
+ * Emits: EventLeveragePositionClosed on success
  */
 message MsgClosePosition {
   option (cosmos.msg.v1.signer) = "user";
@@ -1022,8 +1067,8 @@ message MsgAddCollateralResponse {
  *   to produce borrowed output.
  *
  * Emits:
- * - EventLeveragePositionCovered (always; closed = true when fully repaid).
- * - EventLeveragePositionClosed (auto-close only).
+ * - EventLeveragePositionCovered (always; closed = true when fully repaid)
+ * - EventLeveragePositionClosed (auto-close only)
  *
  * Returns:
  * - Auto-close: interest_paid, principal_paid = full borrowed, new_borrowed =

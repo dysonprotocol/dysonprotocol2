@@ -12,6 +12,43 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+// MakeOffer creates an orderbook offer of a given amount of "have" for a given amount of "want".
+// ESCROW: base "have" is escrowed in the module.
+// LIQUID: lock PFAND in the module; settlement draws from maker balance at take. Units are
+// derived via GCD for partial fills.
+//
+// Semantics:
+//   - Validates maker address, have/want coins (different denoms, positive amounts).
+//   - For ESCROW mode: escrows base have from maker to module.
+//   - For LIQUID mode: locks PFAND from maker to module (if configured).
+//   - Computes GCD of have/want amounts to establish unit_have/unit_want ratios.
+//   - Creates offer with remaining_units = GCD, status = open.
+//   - Persists offer and indexes it for queries.
+//
+// Validation:
+//   - Maker address must be valid.
+//   - Have/want denoms must be valid and different.
+//   - Have/want amounts must be positive.
+//   - Maker must hold sufficient have amount (for escrow check).
+//   - For LIQUID mode: maker must hold sufficient PFAND if configured.
+//
+// State Updates:
+//   - For ESCROW: transfers have from maker to module.
+//   - For LIQUID: transfers PFAND from maker to module.
+//   - Allocates new offer ID from sequence.
+//   - Persists offer to OffersMap.
+//   - Indexes offer for open status queries.
+//
+// Emits:
+//   - EventOfferCreated with offer_id
+//   - EventPfandLocked with amount, offer_id (if PFAND locked)
+//
+// Returns:
+//   - *whaleswapv1.MsgMakeOfferResponse with offer_id.
+//
+// Errors are returned on validation failures (invalid maker, denoms/amounts,
+// insufficient balance) or execution failures (transfers, persistence, indexing,
+// invariant violations); no panics.
 func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*whaleswapv1.MsgMakeOfferResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)

@@ -12,44 +12,48 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
-// PoolSwap executes one or more pool swap legs with a single end-of-tx
-// settlement. Each leg is either exact-in (swap_in) or exact-out (swap_out),
-// never both. Output-side fees are applied per leg based on the output denom.
+// PoolSwap executes one or more exact-in or exact-out pool swap legs with a
+// single end-of-tx settlement. Applies output-side fees per leg and enforces
+// aggregate max_input caps and min_output guarantees.
 //
 // Semantics:
-//   - Per-leg execution: for each SwapLeg, validates the pool and denoms,
-//     computes the out amount using either the concentrated-liquidity band
-//     formulas (when a band is configured) or constant-product math, applies
-//     output-side fee, and updates pool reserves in-memory.
-//   - Aggregate caps/guarantees: after all legs, enforces per-denom debit caps
-//     (max_input) and minimum outputs (min_output) on the net settlement.
-//   - Settlement: performs a single bank move between trader and module using
-//     the net debits/credits across all legs.
-//   - Invariants: asserts AMM invariants and general module invariants.
-//   - Recording: records one Trade containing all operations.
+//   - Per-leg execution: for each leg, validates the pool/denoms and computes
+//     the out amount using concentrated-liquidity band math (when configured) or
+//     constant-product math, applies output-side fee based on the output denom,
+//     and updates pool reserves.
+//   - Aggregate constraints: after all legs, enforces per-denom debit caps
+//     (max_input) and minimum outputs (min_output), then performs a single bank
+//     move between trader and module for the net debits/credits.
+//   - Invariants and recording: asserts AMM and module invariants and records a
+//     single Trade containing all operations.
 //
 // Validation:
-//   - msg.Legs must be non-empty; each leg must specify exactly one of
-//     swap_in or swap_out with a positive amount.
-//   - Pool must exist and have exactly two reserves; input/output denoms must
-//     belong to the pool.
-//   - Concentrated-liquidity: resulting price must remain within the configured
-//     [min_price, max_price] band; exact-out must not exceed band capacity.
+//   - legs must be non-empty; each leg must specify exactly one of swap_in or
+//     swap_out with a positive amount.
+//   - Pool must exist and have exactly two reserves; input/output denoms must be
+//     present in the pool.
+//   - Concentrated-liquidity: resulting price must remain within [min_price,
+//     max_price]; exact-out must not exceed band capacity.
 //   - Constant-product: swaps must not deplete any reserve; exact-out must not
 //     exceed capacity.
-//   - Aggregate constraints: required debits must not exceed max_input caps;
-//     final credits must satisfy min_output per denom.
+//   - Aggregate: required debits must not exceed max_input caps; final credits
+//     must satisfy min_output per denom.
+//
+// State Updates:
+//   - Updates pool reserves and fees earned for each leg.
+//   - Persists pool changes with updated timestamp.
+//   - Records single Trade with all operations.
 //
 // Emits:
 //   - EventPoolSwap per executed leg (with pool_id, trade_id, operation_index)
-//     emitted by recordTradeWithOperations.
-//   - EventTradeRecorded once after all legs are recorded.
+//     via recordTradeWithOperations
+//   - EventTradeRecorded once after all legs are recorded
 //
 // Returns:
-//   - *whaleswapv1.MsgPoolSwapResponse with AmountOut set to the net coins
-//     credited to the trader across all legs (cosmos-sdk Coins).
+//   - *whaleswapv1.MsgPoolSwapResponse with amount_out: total coins credited to
+//     the trader across all legs.
 //
-// Errors are returned for any validation failure, capacity/band violations,
+// Errors are returned on validation failures, capacity/band violations,
 // invariant breaches, failed bank moves, or event emission failures; no panics.
 func (k Keeper) PoolSwap(ctx context.Context, msg *whaleswapv1.MsgPoolSwap) (*whaleswapv1.MsgPoolSwapResponse, error) {
 	accCodec := k.accKeeper.AddressCodec()

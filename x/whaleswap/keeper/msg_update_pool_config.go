@@ -10,34 +10,50 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// UpdatePoolConfig updates a pool's dynamic configuration: price bands, per-denom
-// swap fee rates, leverage limits (min_collateral_ratio and max_leverage_ratio),
-// liquidation_threshold, interest_rate, and optional max_borrow_percent.
-// Requires the signer to hold a majority of pool shares.
+// UpdatePoolConfig updates a pool's dynamic configuration (fees, leverage/threshold
+// params, interest, optional max_borrow_percent, and bound_percent); majority-owner only.
 //
-// Behavior:
-//   - Loads the pool; validates signer address and checks majority ownership.
-//   - Fee rates: optional input; normalizes to exactly two DecCoins (pool order);
-//     amounts must satisfy 0 <= x < 1.
-//   - Leverage config: min_collateral_ratio and max_leverage_ratio are required
-//     with exactly two entries matching pool denoms; each amount must be > 1.
-//   - Liquidation threshold: required with exactly two entries; each amount > 1.
-//   - Interest rate: allows 0/1/2 entries; normalizes to exactly two; each
-//     amount must be >= 0.
-//   - Max borrow percent: optional; if provided, exactly two entries; amounts
-//     must satisfy 0 <= x < 1.
-//   - Persists the pool with Updated timestamp, emits EventPoolUpdate, and asserts
-//     AMM and module invariants.
+// Semantics:
+//   - Loads pool; validates signer and majority-ownership.
+//   - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1.
+//   - Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`
+//     with exactly two entries matching pool denoms; each > 1.
+//   - Liquidation threshold: required with exactly two entries; each > 1.
+//   - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.
+//   - Max borrow percent: optional; if provided exactly two entries; 0 <= x < 1.
+//   - Bound percent: optional; when provided must contain exactly two DecCoins
+//     matching pool denoms with amounts in (0,1]; 1 disables the bound. Omit to
+//     leave existing bounds unchanged.
+//   - Persists pool with `updated` timestamp; emits EventPoolUpdate; asserts AMM
+//     and module invariants.
+//
+// Validation:
+//   - Pool must exist.
+//   - Signer must be valid address and hold majority of pool shares.
+//   - Fee rates when provided must satisfy 0 <= x < 1 for both denoms.
+//   - Leverage config (min_collateral_ratio, max_leverage_ratio) must have
+//     exactly two entries (> 1) matching pool denoms in canonical order.
+//   - Liquidation threshold must have exactly two entries (> 1) matching pool
+//     denoms in canonical order.
+//   - Interest rates when provided must be >= 0 for both denoms.
+//   - Max borrow percent when provided must have exactly two entries with amounts
+//     in [0,1) matching pool denoms in canonical order.
+//   - Bound percent when provided must contain at most two entries with amounts
+//     in (0,1] matching pool denoms.
+//
+// State Updates:
+//   - Updates pool configuration fields in PoolsMap.
+//   - Sets pool.Updated timestamp to current block time.
 //
 // Emits:
-//   - EventPoolUpdate (pool_id)
+//   - EventPoolUpdate(pool_id)
 //
 // Returns:
-//   - *whaleswapv1.MsgUpdatePoolConfigResponse (empty)
+//   - *whaleswapv1.MsgUpdatePoolConfigResponse (empty).
 //
-// Errors are returned on missing pool, invalid signer/ownership, malformed or
-// out-of-range inputs (denom/order mismatches, invalid ratios, band checks),
-// persistence or event emission failures, or invariant violations; no panics.
+// Errors are returned on missing pool, invalid signer/ownership, malformed
+// inputs (denom/order mismatches, invalid ratios), persistence or event emission
+// failures, or invariant violations; no panics.
 func (k Keeper) UpdatePoolConfig(ctx context.Context, msg *whaleswapv1.MsgUpdatePoolConfig) (*whaleswapv1.MsgUpdatePoolConfigResponse, error) {
 	// Load pool
 	pool, err := k.PoolsMap.Get(ctx, msg.PoolId)

@@ -27,9 +27,9 @@ import (
 //   - Trade recording: creates single Trade with all operations, indexed by trader/offer.
 //
 // Emits:
-//   - EventOfferTaken for each take (offer_id, trade_id, units_taken).
-//   - EventTradeRecorded for the batch (trade_id, trader, num_operations).
-//   - EventPfandReleased for each closed offer (amount, offer_id, trade_id).
+//   - EventOfferTaken for each take (offer_id, trade_id, units_taken)
+//   - EventTradeRecorded for the batch (trade_id, trader, num_operations)
+//   - EventPfandReleased for each closed offer (amount, offer_id, trade_id)
 //
 // Returns:
 //   - *whaleswapv1.MsgTakeOfferResponse with aggregated sent/received totals across all takes.

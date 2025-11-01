@@ -14,9 +14,34 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// RejectBid rejects the current bid and optionally increases the name valuation.
-// The difference (newValue - oldValue) is used to calculate a proportional fee
-// that the owner must pay to the community pool.
+// RejectBid rejects the current active bid and sets a new valuation, charging a rejection fee.
+//
+// Semantics:
+//   - Rejects the current bid on an NFT owned by the sender.
+//   - Sets new NFT valuation, charging a rejection fee proportional to the new valuation.
+//   - Rejection fee routing: to NFT class owner for user-controlled classes, to community pool for governance-controlled classes.
+//   - Refunds the rejected bidder their escrowed funds.
+//   - Clears bid data from NFT state.
+//
+// Validation:
+//   - Sender must be the current NFT owner.
+//   - NFT must have an active bid to reject.
+//   - New valuation must be valid and higher than current valuation.
+//
+// State Updates:
+//   - Refunds escrowed bid amount from module to rejected bidder.
+//   - Updates NFT valuation to new amount if provided.
+//   - Charges rejection fee to the NFT class owner (or community pool for governance-controlled classes).
+//   - Clears current bid data (bidder, amount, timestamp, height).
+//   - Marks active bid record as rejected.
+//
+// Emits:
+//   - EventBidRejected(class_id, nft_id, rejection_fee) on successful bid rejection.
+//
+// Returns:
+//   - *nameservicev1.MsgRejectBidResponse with the rejection fee amount.
+//
+// Errors are returned on NFT not found, unauthorized sender, no active bid, invalid valuation, or transfer failures; no panics.
 func (k Keeper) RejectBid(ctx context.Context, msg *nameservicev1.MsgRejectBid) (*nameservicev1.MsgRejectBidResponse, error) {
 	k.Logger.Info("RejectBid: Processing", "nft_class_id", msg.NftClassId, "nft_id", msg.NftId, "owner", msg.Owner, "new_value", msg.NewValuation)
 
@@ -145,6 +170,11 @@ func (k Keeper) RejectBid(ctx context.Context, msg *nameservicev1.MsgRejectBid) 
 	// --------------------------------
 	// Calculate and charge reject bid fee on full new valuation
 	// --------------------------------
+	//
+	// Rejection fee is configured per NFT class via SetNFTClassRejectBidValuationFeePercent.
+	// Fee percentage is stored in NFTClassData.RejectBidValuationFeePercent and must be
+	// within module parameter bounds (MinRejectBidValuationFeePercent to MaxRejectBidValuationFeePercent).
+	// Only the NFT class owner can set this percentage. Defaults to 0% if not set.
 
 	// Get the reject bid fee percentage
 	rejectFeePercent, err := math.LegacyNewDecFromStr(classDataForBids.RejectBidValuationFeePercent)
@@ -180,9 +210,34 @@ func (k Keeper) RejectBid(ctx context.Context, msg *nameservicev1.MsgRejectBid) 
 				"reject_fee_percent", rejectFeePercent.String(),
 				"reject_fee", totalFeeCoins.String())
 
-			// Send to community pool
-			if err := k.communityPoolKeeper.FundCommunityPool(ctx, totalFeeCoins, senderAddr); err != nil {
-				return nil, cosmossdkerrors.Wrap(err, "failed to fund community pool with reject fee")
+			// Route fee to NFT class owner or community pool based on ownership
+			// - User-controlled NFT classes: fee goes to the class owner
+			// - Governance-controlled NFT classes (authority-owned): fee goes to community pool
+			classOwner, _, err := k.GetDenomOwner(sdkCtx, msg.NftClassId)
+			if err != nil {
+				k.Logger.Error("RejectBid: Failed to get NFT class owner", "class_id", msg.NftClassId, "error", err)
+				return nil, cosmossdkerrors.Wrap(err, "failed to get NFT class owner")
+			}
+
+			// Check if the owner is the authority (governance module)
+			if classOwner == k.GetAuthority() {
+				// Send fee to community pool (for governance-controlled classes)
+				k.Logger.Info("RejectBid: Sending fee to community pool", "fee", totalFeeCoins.String())
+				err = k.communityPoolKeeper.FundCommunityPool(ctx, totalFeeCoins, senderAddr)
+				if err != nil {
+					return nil, cosmossdkerrors.Wrap(err, "failed to fund community pool with reject fee")
+				}
+			} else {
+				// Send fee to the owner of the NFT class (for user-controlled classes)
+				k.Logger.Info("RejectBid: Sending fee to NFT class owner", "owner", classOwner, "fee", totalFeeCoins.String())
+				classOwnerAddr, err := sdk.AccAddressFromBech32(classOwner)
+				if err != nil {
+					return nil, cosmossdkerrors.Wrap(err, "failed to parse NFT class owner address")
+				}
+				err = k.bankKeeper.SendCoins(ctx, senderAddr, classOwnerAddr, totalFeeCoins)
+				if err != nil {
+					return nil, cosmossdkerrors.Wrap(err, "failed to send reject fee to NFT class owner")
+				}
 			}
 		}
 	}
@@ -218,7 +273,7 @@ func (k Keeper) RejectBid(ctx context.Context, msg *nameservicev1.MsgRejectBid) 
 		&nameservicev1.EventBidRejected{
 			ClassId:      msg.NftClassId, // Class ID of the NFT
 			NftId:        msg.NftId,      // NFT ID
-			RejectionFee: totalFeeCoins,  // Fee paid to the community pool
+			RejectionFee: totalFeeCoins,  // Fee paid to the NFT class owner
 		},
 	); evErr != nil {
 		k.Logger.Error("failed to emit bid rejected event", "error", evErr)

@@ -13,7 +13,35 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// ClaimBid implements the MsgServer.ClaimBid method
+// ClaimBid allows a bidder to claim an NFT after the bid timeout has expired without acceptance.
+//
+// Semantics:
+//   - Allows a bidder to claim NFT ownership after bid timeout expires.
+//   - Transfers escrowed bid amount to previous owner as payment.
+//   - Transfers NFT ownership to bidder.
+//   - Updates NFT valuation to the claimed bid amount.
+//   - Resets valuation expiry to bid timestamp.
+//
+// Validation:
+//   - NFT must have an active bid.
+//   - Sender must be the current bidder.
+//   - Bid timeout period (from class config) must have elapsed since bid placement.
+//
+// State Updates:
+//   - Transfers escrowed bid amount from module to previous NFT owner.
+//   - Transfers NFT ownership to bidder.
+//   - Updates NFT valuation to claimed bid amount.
+//   - Resets valuation expiry to bid timestamp.
+//   - Clears current bid data (bidder, amount, timestamp, height).
+//   - Marks active bid record as claimed.
+//
+// Emits:
+//   - EventBidClaimed(class_id, nft_id, bidder) on successful bid claim.
+//
+// Returns:
+//   - *nameservicev1.MsgClaimBidResponse (empty response indicating success).
+//
+// Errors are returned on no active bid, unauthorized bidder, timeout not elapsed, or transfer failures; no panics.
 func (k Keeper) ClaimBid(ctx context.Context, msg *nameservicev1.MsgClaimBid) (*nameservicev1.MsgClaimBidResponse, error) {
 	k.Logger.Info("ClaimBid: Processing claim request", "nft_class_id", msg.NftClassId, "nft_id", msg.NftId, "bidder", msg.Bidder)
 

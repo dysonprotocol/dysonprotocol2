@@ -10,37 +10,38 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-/**
- * RemoveLiquidity removes liquidity from a pool by burning the caller's shares
- * and returning the underlying reserves proportional to the share burned.
- *
- * Behavior:
- * - Supports two modes: full exit and partial exit.
- * - Full exit: when burning all outstanding shares, the pool is deleted and
- *   the full reserves are paid out to the caller.
- * - Partial exit: burns a subset of shares and receives a payout proportional
- *   to that share using pro-rata DecCoins math; pool remains active with
- *   reduced reserves.
- * - Ensures partial exits cannot deplete any reserve below zero; full exit
- *   required to withdraw the last liquidity.
- *
- * Validation:
- * - Pool must exist.
- * - Signer must hold at least msg.Shares.
- * - Shares must be a positive integer string.
- * - Partial exits cannot deplete any reserve; withdrawing the last liquidity
- *   requires a full exit (burning all shares).
- *
- * Emits:
- * - EventPoolLiquidityRemoved (pool_id, shares)
- *
- * Returns:
- * - *whaleswapv1.MsgRemoveLiquidityResponse with Amount (coins returned to
- *   the caller).
- *
- * Errors are returned on validation failures, insufficient balance, reserve
- * depletion attempts, or state update failures; no panics.
- */
+// RemoveLiquidity burns the caller's shares and returns the underlying
+// reserves proportional to the share burned.
+//
+// Semantics:
+//   - Supports full exit (burning all shares, deletes pool, returns all reserves)
+//     and partial exit (burns subset, returns proportional reserves, pool remains).
+//   - Full exit: when shares = total_supply, deletes pool, pays out full reserves.
+//   - Partial exit: computes pro-rata payout using DecCoins math, ensures reserves
+//     don't go to zero (requires full exit for last liquidity).
+//   - Burns shares from signer, sends proportional reserves from module to signer.
+//   - For partial exits: updates pool reserves, persists pool; asserts AMM invariants.
+//
+// Validation:
+//   - Pool must exist.
+//   - Shares must be positive integer string.
+//   - Signer must hold at least shares amount.
+//   - Partial exits cannot deplete any reserve to zero.
+//
+// State Updates:
+//   - Burns shares from signer balance.
+//   - For full exit: deletes pool from PoolsMap, transfers all reserves to signer.
+//   - For partial exit: updates pool reserves in PoolsMap, sets pool.Updated timestamp.
+//
+// Emits:
+//   - EventPoolLiquidityRemoved (pool_id, shares_burned)
+//
+// Returns:
+//   - *whaleswapv1.MsgRemoveLiquidityResponse with amount (coins returned to caller).
+//
+// Errors are returned on pool not found, invalid shares, insufficient balance,
+// reserve depletion attempts, burning/transfer failures, or invariant violations;
+// no panics.
 func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveLiquidity) (*whaleswapv1.MsgRemoveLiquidityResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)

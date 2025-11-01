@@ -13,7 +13,36 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// PlaceBid implements the MsgServer.PlaceBid method
+// PlaceBid places or outbids on an NFT, escrowing funds and updating bid state.
+//
+// Semantics:
+//   - Places a bid on a listed NFT, refunding any previous bidder.
+//   - For first bids: amount must be >= current valuation (if active).
+//   - For subsequent bids: amount must exceed current bid by minimum percentage increase.
+//   - Bids expire based on class bid timeout or NFT valuation expiry.
+//   - Bid funds are escrowed in module account until bid is accepted, rejected, or expires.
+//
+// Validation:
+//   - Bid amount must be valid according to class rules.
+//   - NFT must be listed for sale (directly or via class always_listed).
+//   - Cannot bid on authority-owned or module-owned NFTs.
+//   - Bid denomination must match valuation/current bid denomination.
+//   - First bids must meet or exceed valuation; subsequent bids must meet minimum increase.
+//
+// State Updates:
+//   - Escrows bid amount from bidder to module account.
+//   - Refunds previous bidder if outbid.
+//   - Creates new active bid record, marks previous bid as outbid.
+//   - Updates NFT data with current bid info, timestamp, and height.
+//   - Updates bid indexes (by bidder, by NFT, active bid mapping).
+//
+// Emits:
+//   - EventBidPlaced(class_id, nft_id, bidder, bid_amount) on successful bid placement.
+//
+// Returns:
+//   - *nameservicev1.MsgPlaceBidResponse (empty response indicating success).
+//
+// Errors are returned on invalid bid amounts, unlisted NFTs, invalid bidders, insufficient increases, or escrow failures; no panics.
 func (k Keeper) PlaceBid(ctx context.Context, msg *nameservicev1.MsgPlaceBid) (*nameservicev1.MsgPlaceBidResponse, error) {
 	k.Logger.Info("PlaceBid: Processing bid", "nft_class_id", msg.NftClassId, "nft_id", msg.NftId, "bidder", msg.Bidder, "bid_amount", msg.BidAmount)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)

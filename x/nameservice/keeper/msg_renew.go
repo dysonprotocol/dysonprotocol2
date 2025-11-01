@@ -11,7 +11,31 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// Renew implements the MsgServer.Renew method
+// Renew extends the valuation expiry period for an NFT by charging proportional fees.
+//
+// Semantics:
+//   - Extends NFT valuation expiry by one full valuation period.
+//   - Charges annual valuation fee proportionally based on the renewal duration.
+//   - Fee is calculated as: valuation × fee_percent × (renewal_period / valuation_period).
+//   - Handles retroactive renewal if expiry has already passed.
+//   - Fee is paid to the NFT class owner.
+//
+// Validation:
+//   - Payer address must be valid bech32.
+//   - NFT must exist and have valid valuation.
+//   - Class must have valuation period and fee percentage configured.
+//
+// State Updates:
+//   - Extends NFT valuation expiry by class valuation period.
+//   - Charges proportional fee from payer to NFT class owner.
+//
+// Emits:
+//   - EventNameRenewed(name, new_expiry) on successful renewal.
+//
+// Returns:
+//   - *nameservicev1.MsgRenewResponse with the new expiry timestamp.
+//
+// Errors are returned on invalid addresses, NFT not found, invalid valuation, missing class config, or fee transfer failures; no panics.
 func (k Keeper) Renew(ctx context.Context, msg *nameservicev1.MsgRenew) (*nameservicev1.MsgRenewResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
@@ -86,9 +110,32 @@ func (k Keeper) Renew(ctx context.Context, msg *nameservicev1.MsgRenew) (*namese
 
 	// Charge the fee
 	if !fee.IsZero() {
-		err = k.communityPoolKeeper.FundCommunityPool(ctx, fee, payerAddr)
+		// Get the owner of the NFT class using GetDenomOwner
+		classOwner, _, err := k.GetDenomOwner(sdkCtx, msg.NftClassId)
 		if err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to send fee to community pool")
+			k.Logger.Error("Renew: Failed to get NFT class owner", "class_id", msg.NftClassId, "error", err)
+			return nil, cosmossdkerrors.Wrap(err, "failed to get NFT class owner")
+		}
+
+		// Check if the owner is the authority (governance module)
+		if classOwner == k.GetAuthority() {
+			// Send fee to community pool
+			k.Logger.Info("Renew: Sending fee to community pool", "fee", fee.String())
+			err = k.communityPoolKeeper.FundCommunityPool(ctx, fee, payerAddr)
+			if err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "failed to send fee to community pool")
+			}
+		} else {
+			// Send fee to the owner of the NFT class
+			k.Logger.Info("Renew: Sending fee to NFT class owner", "owner", classOwner, "fee", fee.String())
+			classOwnerAddr, err := sdk.AccAddressFromBech32(classOwner)
+			if err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "failed to parse NFT class owner address")
+			}
+			err = k.bankKeeper.SendCoins(ctx, payerAddr, classOwnerAddr, fee)
+			if err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "failed to send fee to NFT class owner")
+			}
 		}
 	}
 

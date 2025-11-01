@@ -27,7 +27,7 @@ import (
 //     PrincipalPaid reflect the repayment and Profit is any excess returned to the user.
 //
 // Emits:
-//   - EventLeveragePositionClosed on successful close.
+//   - EventLeveragePositionClosed on successful close
 //
 // Errors are returned on validation or invariant violations; no panics.
 func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosition) (*whaleswapv1.MsgClosePositionResponse, error) {

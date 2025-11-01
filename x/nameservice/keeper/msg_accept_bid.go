@@ -11,7 +11,33 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// AcceptBid implements the MsgServer.AcceptBid method
+// AcceptBid accepts the current active bid, transferring NFT ownership and releasing escrowed funds.
+//
+// Semantics:
+//   - Accepts the highest current bid on an NFT owned by the sender.
+//   - Transfers escrowed bid amount from module to current NFT owner.
+//   - Transfers NFT ownership from current owner to bidder.
+//   - Updates NFT valuation to the accepted bid amount.
+//   - Clears all bid-related data from NFT state.
+//
+// Validation:
+//   - Sender must be the current NFT owner.
+//   - NFT must have an active bid (non-zero amount and bidder).
+//
+// State Updates:
+//   - Transfers bid amount from module escrow to previous NFT owner.
+//   - Transfers NFT ownership to bidder.
+//   - Updates NFT valuation to accepted bid amount.
+//   - Clears current bid data (bidder, amount, timestamp, height).
+//   - Marks active bid record as accepted and removes from active index.
+//
+// Emits:
+//   - EventBidAccepted(class_id, nft_id, new_owner) on successful bid acceptance.
+//
+// Returns:
+//   - *nameservicev1.MsgAcceptBidResponse (empty response indicating success).
+//
+// Errors are returned on NFT not found, unauthorized sender, no active bid, or transfer failures; no panics.
 func (k Keeper) AcceptBid(ctx context.Context, msg *nameservicev1.MsgAcceptBid) (*nameservicev1.MsgAcceptBidResponse, error) {
 	k.Logger.Info("AcceptBid: Processing", "nft_class_id", msg.NftClassId, "nft_id", msg.NftId, "owner", msg.Owner)
 

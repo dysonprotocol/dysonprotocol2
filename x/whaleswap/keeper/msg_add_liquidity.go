@@ -12,32 +12,42 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// AddLiquidity mints pool shares to the signer in exchange for adding two
-// reserve coins to a two-asset pool.
+// AddLiquidity (owner-only) escrows provided amounts, refunds any unused
+// amounts in band mode, mints shares, enforces the price band, and asserts
+// AMM invariants.
 //
 // Semantics:
-//   - Ownership: the signer must be a majority owner of the pool shares.
-//   - Inputs: exactly two positive coin amounts whose denoms match the pool
-//     reserves (order is canonicalized to the pool's denom order).
-//   - Escrow/Refund: the full provided amounts are escrowed first; any unused
-//     surplus is refunded after the precise amounts used are derived.
-//   - Minting: compute shares from the limiting side min(add1/existingR1,
-//     add2/existingR2) * totalShares; refund the difference required to exactly
-//     fund the minted shares.
-//   - State updates: pool reserves are updated, the pool is persisted, shares
-//     are minted via the nameservice module and transferred to the signer, an
-//     EventPoolLiquidityAdded is emitted, and AMM/intra-module invariants are
-//     asserted.
+//   - Loads pool; validates signer majority ownership.
+//   - Escrows full provided amounts first, then refunds unused surplus.
+//   - Computes shares as floor(min(add1/R1, add2/R2) × totalShares).
+//   - Updates pool reserves with used amounts.
+//   - Mints computed shares via nameservice and transfers to signer.
+//   - Persists pool with updated reserves/timestamp; emits events; asserts AMM
+//     and module invariants.
+//
+// Validation:
+//   - Pool must exist and have exactly two positive reserves.
+//   - Signer must be valid address and hold majority of pool shares.
+//   - Amounts must contain exactly two positive coins matching pool denoms in
+//     canonical order.
+//
+// State Updates:
+//   - Transfers provided amounts from signer to module (then refunds surplus).
+//   - Updates pool reserves in PoolsMap.
+//   - Sets pool.Updated timestamp to current block time.
+//   - Mints new shares via nameservice and transfers to signer.
 //
 // Emits:
 //   - EventPoolUpdate (after persisting pool state)
-//   - EventPoolLiquidityAdded (on successful add)
+//   - EventPoolLiquidityAdded (pool_id, shares_minted)
 //
 // Returns:
-//   - *whaleswapv1.MsgAddLiquidityResponse with minted shares encoded as a
-//     decimal string in Shares.
+//   - *whaleswapv1.MsgAddLiquidityResponse with shares minted as decimal string.
 //
-// Errors are returned on validation or invariant violations; no panics.
+// Errors are returned on pool not found, invalid signer/ownership, malformed
+// amounts (wrong denoms/order, non-positive), insufficient provided amounts for
+// share calculation, minting/transfer failures, event emission, or invariant
+// violations; no panics.
 func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidity) (*whaleswapv1.MsgAddLiquidityResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)
