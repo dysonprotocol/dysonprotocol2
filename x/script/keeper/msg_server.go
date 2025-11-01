@@ -19,6 +19,30 @@ import (
 
 var _ scripttypes.MsgServer = Keeper{}
 
+// UpdateScript updates the script code at the given address and increments its version.
+//
+// Semantics:
+//   - Updates or creates a script at the specified address with formatted code.
+//   - Automatically formats the provided code using DysFormat before storage.
+//   - Increments the script version on each update.
+//   - Sets update metadata including block height.
+//   - Creates new scripts with empty code if they don't exist.
+//
+// Validation:
+//   - Address must be a valid bech32 address.
+//   - Code must be valid Python syntax with some restrictions.
+//
+// State Updates:
+//   - Stores/updates script in ScriptMap with incremented version.
+//   - Sets UpdateHeight to current block height.
+//
+// Emits:
+//   - EventUpdateScript(version, script_address) on successful update.
+//
+// Returns:
+//   - *scripttypes.MsgUpdateScriptResponse with the updated script version.
+//
+// Errors are returned on invalid address, formatting failures, storage errors, or event emission failures; no panics.
 func (k Keeper) UpdateScript(ctx context.Context, msg *scripttypes.MsgUpdateScript) (*scripttypes.MsgUpdateScriptResponse, error) {
 
 	var script scripttypes.Script
@@ -79,6 +103,35 @@ func (k Keeper) UpdateScript(ctx context.Context, msg *scripttypes.MsgUpdateScri
 	return &resp, nil
 }
 
+// ExecScript executes a script function with arguments and handles attached messages.
+//
+// Semantics:
+//   - Resolves script address via direct address or nameservice name resolution.
+//   - Validates that script exists or creates empty script if not found.
+//   - Executes attached messages first, collecting their results.
+//   - Runs the specified function with provided args/kwargs in isolated context.
+//   - Commits state changes only if execution succeeds.
+//   - Emits execution event with full context for monitoring.
+//
+// Validation:
+//   - Either script_address or script_name must be provided.
+//   - If both are provided, they must resolve to the same address.
+//   - Executor address must be valid.
+//   - Function name, args, kwargs must be valid JSON strings.
+//   - Attached messages must be valid and executable.
+//
+// State Updates:
+//   - Executes attached messages and collects their results.
+//   - Commits script execution results if successful.
+//   - Creates empty script if address doesn't exist.
+//
+// Emits:
+//   - EventExecScript with execution details (executor, script, function, result).
+//
+// Returns:
+//   - *scripttypes.MsgExecResponse with function result and attached message results.
+//
+// Errors are returned on invalid parameters, resolution failures, execution errors, or message failures; no panics.
 func (k Keeper) ExecScript(ctx context.Context, msg *scripttypes.MsgExec) (*scripttypes.MsgExecResponse, error) {
 	resp := &scripttypes.MsgExecResponse{}
 	var scriptObj scripttypes.Script
@@ -205,6 +258,31 @@ func (k Keeper) ExecScript(ctx context.Context, msg *scripttypes.MsgExec) (*scri
 	return resp, execErr
 }
 
+// CreateNewScript creates a new script with a deterministic address and grants update permissions.
+//
+// Semantics:
+//   - Generates deterministic script address using SHA256 hash of creator + formatted code.
+//   - Creates bech32 address from first 20 bytes of hash.
+//   - Formats code using DysFormat before address generation and storage.
+//   - Grants generic authorization for MsgUpdateScript to creator via authz.
+//   - Initializes script with version 1 and formatted code.
+//
+// Validation:
+//   - Creator address must be valid.
+//   - Code must be valid Python syntax that can be formatted by DysFormat.
+//   - Generated address must not already exist. Essentially this means that each script must be unique for each creator.
+//
+// State Updates:
+//   - Stores new script in ScriptMap with version 1.
+//   - Creates authz grant allowing creator to update the script. To be fully autonomus the script can revoke the grant.
+//
+// Emits:
+//   - EventCreateNewScript(script_address, creator_address, version) on success.
+//
+// Returns:
+//   - *scripttypes.MsgCreateNewScriptResponse with generated script address and version.
+//
+// Errors are returned on invalid creator address, formatting failures, address conflicts, or grant creation failures; no panics.
 func (k Keeper) CreateNewScript(ctx context.Context, msg *scripttypes.MsgCreateNewScript) (*scripttypes.MsgCreateNewScriptResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.GasMeter().ConsumeGas(1_000_000, "script create new script base cost")
@@ -293,7 +371,24 @@ func (k Keeper) CreateNewScript(ctx context.Context, msg *scripttypes.MsgCreateN
 	}, nil
 }
 
-// UpdateParams updates the module parameters
+// UpdateParams updates the module parameters via governance proposal.
+//
+// Semantics:
+//   - Validates that the signer has authority to update parameters (gov module).
+//   - Validates that all provided parameters are valid.
+//   - Updates all module parameters atomically.
+//
+// Validation:
+//   - Authority must match the configured authority (gov module account).
+//   - All parameters in the params message must pass individual validation.
+//
+// State Updates:
+//   - Updates all script module parameters in the parameter store.
+//
+// Returns:
+//   - *scripttypes.MsgUpdateParamsResponse (empty response on success).
+//
+// Errors are returned on invalid authority, parameter validation failures, or storage errors; no panics.
 func (k Keeper) UpdateParams(ctx context.Context, msg *scripttypes.MsgUpdateParams) (*scripttypes.MsgUpdateParamsResponse, error) {
 	// Validate authority
 	if k.authority != msg.Authority {
@@ -313,7 +408,26 @@ func (k Keeper) UpdateParams(ctx context.Context, msg *scripttypes.MsgUpdatePara
 	return &scripttypes.MsgUpdateParamsResponse{}, nil
 }
 
-// Sudo executes arbitrary messages with authority override (no signer validation)
+// Sudo executes arbitrary messages with authority override and no signer validation.
+//
+// Semantics:
+//   - Validates that the signer has governance authority.
+//   - Unpacks and executes all provided messages atomically using cached context.
+//   - Messages execute without signer validation (authority override).
+//   - If any message fails, all state changes are discarded.
+//
+// Validation:
+//   - Authority must match the configured authority (gov module account).
+//   - All messages must be valid and unpackable.
+//
+// State Updates:
+//   - Executes all messages and commits their state changes atomically.
+//   - Only commits if all messages succeed.
+//
+// Returns:
+//   - *scripttypes.MsgSudoResponse with results from all executed messages.
+//
+// Errors are returned on invalid authority, message unpacking failures, or any message execution failure; no panics.
 func (k Keeper) Sudo(ctx context.Context, msg *scripttypes.MsgSudo) (*scripttypes.MsgSudoResponse, error) {
 	// Validate authority
 	if k.authority != msg.Authority {

@@ -30,11 +30,37 @@ import (
 
 var _ scripttypes.QueryServer = Keeper{}
 
+// Params queries the parameters of the script module.
+//
+// Semantics:
+//   - Retrieves current script module parameters from the parameter store.
+//   - No validation or complex logic required.
+//
+// Returns:
+//   - *scripttypes.QueryParamsResponse with current module parameters.
+//
+// Errors are returned on parameter retrieval failures; no panics.
 func (k Keeper) Params(ctx context.Context, req *scripttypes.QueryParamsRequest) (*scripttypes.QueryParamsResponse, error) {
 	params := k.GetParams(ctx)
 	return &scripttypes.QueryParamsResponse{Params: params}, nil
 }
 
+// ScriptInfo queries script information by address or nameservice name.
+//
+// Semantics:
+//   - Resolves the provided address/name using nameservice if needed.
+//   - Retrieves script data including code, version, and update metadata.
+//   - Returns NotFound error if script doesn't exist.
+//
+// Validation:
+//   - Address/name parameter must be non-empty.
+//   - Resolved address must be a valid bech32 address.
+//
+// Returns:
+//   - *scripttypes.QueryScriptInfoResponse with complete script information.
+//   - NotFound error if script doesn't exist at resolved address.
+//
+// Errors are returned on empty parameters, resolution failures, or storage errors; no panics.
 func (k Keeper) ScriptInfo(ctx context.Context, req *scripttypes.QueryScriptInfoRequest) (*scripttypes.QueryScriptInfoResponse, error) {
 	// Validate that an address was provided
 	if req.Address == "" {
@@ -64,6 +90,24 @@ func (k Keeper) ScriptInfo(ctx context.Context, req *scripttypes.QueryScriptInfo
 	return nil, status.Error(codes.Internal, err.Error())
 }
 
+// Web queries the WSGI web application function of a script. This is used in the REST API and
+// is not likely needed to use directly.
+//
+// Semantics:
+//   - Delegates to RunWeb which handles script resolution and execution.
+//   - Executes script's WSGI application in read-only mode.
+//   - Returns HTTP response from the script's web application.
+//   - No state changes are allowed in web requests.
+//
+// Validation:
+//   - Either script_address or script_name must be provided.
+//   - Script must exist and have a valid WSGI application.
+//   - HTTP request must be valid.
+//
+// Returns:
+//   - *scripttypes.WebResponse with HTTP response from the script.
+//
+// Errors are returned on script resolution failures, execution errors, or invalid requests; no panics.
 func (k Keeper) Web(ctx context.Context, req *scripttypes.WebRequest) (*scripttypes.WebResponse, error) {
 	// Calls RunWeb which handles name resolution via nameservice keeper
 	out, err := k.RunWeb(ctx, req.ScriptAddress, req.ScriptName, req.Httprequest)
@@ -76,6 +120,21 @@ func (k Keeper) Web(ctx context.Context, req *scripttypes.WebRequest) (*scriptty
 	}, nil
 }
 
+// EncodeJson encodes a JSON string to protobuf bytes for message construction.
+//
+// Semantics:
+//   - Parses the provided JSON string into a Cosmos SDK message.
+//   - Marshals the parsed message to protobuf bytes.
+//   - Enforces size limits to prevent abuse.
+//
+// Validation:
+//   - JSON string must be valid and parseable into a known message type.
+//   - JSON length must not exceed 10,000 characters.
+//
+// Returns:
+//   - *scripttypes.QueryEncodeJsonResponse with the protobuf-encoded bytes.
+//
+// Errors are returned on invalid JSON, unknown message types, or size limit violations; no panics.
 func (k Keeper) EncodeJson(ctx context.Context, req *scripttypes.QueryEncodeJsonRequest) (*scripttypes.QueryEncodeJsonResponse, error) {
 
 	// too long return err
@@ -100,6 +159,23 @@ func (k Keeper) EncodeJson(ctx context.Context, req *scripttypes.QueryEncodeJson
 	}, nil
 }
 
+// DecodeBytes decodes protobuf bytes to JSON string for message inspection.
+//
+// Semantics:
+//   - Creates a message instance from the provided type URL.
+//   - Unmarshals the protobuf bytes into the message.
+//   - Marshals the message back to JSON for human-readable inspection.
+//   - Enforces size limits to prevent abuse.
+//
+// Validation:
+//   - Type URL must be a known message type.
+//   - Bytes must be valid protobuf encoding for the specified type.
+//   - Bytes length must not exceed 10,000 bytes.
+//
+// Returns:
+//   - *scripttypes.QueryDecodeBytesResponse with the JSON representation.
+//
+// Errors are returned on unknown types, invalid protobuf, or size limit violations; no panics.
 func (k Keeper) DecodeBytes(ctx context.Context, req *scripttypes.QueryDecodeBytesRequest) (*scripttypes.QueryDecodeBytesResponse, error) {
 
 	if len(req.Bytes) > 10_000 {
@@ -126,7 +202,75 @@ func (k Keeper) DecodeBytes(ctx context.Context, req *scripttypes.QueryDecodeByt
 	}, nil
 }
 
-// VerifyTx verifies the signatures of a transaction.
+// VerifyTx verifies the signatures of an arbitrary transaction for MsgArbitraryData.
+//
+// Semantics:
+//   - Parses transaction JSON into a signable transaction.
+//   - Validates transaction structure (single signature, proper signers).
+//   - Verifies signature using ADR-036 arbitrary signature rules.
+//   - Returns the signer address if verification succeeds.
+//
+// Validation:
+//   - Transaction JSON must be non-empty and valid.
+//   - JSON size must not exceed 50,000 characters.
+//   - Transaction must be properly formed with signatures.
+//   - Must have exactly one signature.
+//   - Signer addresses must match signature public keys.
+//
+// Returns:
+//   - *scripttypes.QueryVerifyTxResponse with the verified signer address.
+//
+// Errors are returned on invalid JSON, malformed transactions, signature failures, or validation errors; no panics.
+//
+// Example:
+//
+//	A valid MsgArbitraryData transaction for verification:
+//
+//	{
+//	  "body": {
+//	    "messages": [
+//	      {
+//	        "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
+//	        "signer": "dys1example_address",
+//	        "data": "arbitrary data to sign",
+//	        "app_domain": "my_app/v1.0"
+//	      }
+//	    ],
+//	    "memo": "",
+//	    "timeout_height": "0"
+//	  },
+//	  "auth_info": {
+//	    "signer_infos": [
+//	      {
+//	        "public_key": {
+//	          "@type": "/cosmos.crypto.secp256k1.PubKey",
+//	          "key": "base64_encoded_public_key"
+//	        },
+//	        "mode_info": {
+//	          "single": {
+//	            "mode": "SIGN_MODE_DIRECT"
+//	          }
+//	        },
+//	        "sequence": "0"
+//	      }
+//	    ],
+//	    "fee": {
+//	      "amount": [],
+//	      "gas_limit": "0"
+//	    }
+//	  },
+//	  "signatures": [
+//	    "base64_encoded_signature"
+//	  ]
+//	}
+//
+// CLI Example:
+//
+//	# Create a signed MsgArbitraryData transaction for verification
+//	dysond tx script sign-arbitrary-data "your data to sign" --app-domain "my_app/v1.0" --from alice --chain-id "" --account-number 0 --sequence 0 --offline --output-document signed_tx.json
+//
+//	# Verify the signed transaction
+//	dysond query script verify-tx --tx-json "$(cat signed_tx.json)" -o json
 func (k Keeper) VerifyTx(ctx context.Context, req *scripttypes.QueryVerifyTxRequest) (*scripttypes.QueryVerifyTxResponse, error) {
 	if req.TxJson == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty transaction JSON")
@@ -251,6 +395,24 @@ func (k Keeper) VerifyTx(ctx context.Context, req *scripttypes.QueryVerifyTxRequ
 }
 
 // Run executes a script function in read-only mode without modifying state.
+//
+// Semantics:
+//   - Creates a cached context to prevent any state modifications.
+//   - Converts RunScript request to MsgExec and delegates execution.
+//   - Executes script with provided arguments in isolated context.
+//   - Automatically discards all state changes after execution.
+//   - Useful for testing, simulation, and read-only operations.
+//
+// Validation:
+//   - Executor address must be provided and valid.
+//   - Either script_address or script_name must be provided.
+//   - Function name, args, kwargs must be valid JSON strings.
+//
+// Returns:
+//   - *scripttypes.ResponseRunScript with execution result and attached message results.
+//   - All state changes are discarded - execution has no persistent effects.
+//
+// Errors are returned on invalid parameters, script resolution failures, or execution errors; no panics.
 func (k Keeper) Run(ctx context.Context, req *scripttypes.RunScript) (*scripttypes.ResponseRunScript, error) {
 	// Validate request
 	if req.ExecutorAddress == "" {
@@ -291,6 +453,20 @@ func (k Keeper) Run(ctx context.Context, req *scripttypes.RunScript) (*scripttyp
 }
 
 // GetBlock returns the current block information.
+//
+// Semantics:
+//   - Extracts block metadata from the current SDK context.
+//   - Returns block height, time, chain ID, hashes, and proposer.
+//   - Provides essential blockchain state information for scripts.
+//   - Useful for time-sensitive operations and block-aware logic.
+//
+// Validation:
+//   - No validation required - reads from current context.
+//
+// Returns:
+//   - *scripttypes.QueryGetBlockResponse with complete block information.
+//
+// Errors are returned on context extraction failures; no panics.
 func (k Keeper) GetBlock(ctx context.Context, req *scripttypes.QueryGetBlockRequest) (*scripttypes.QueryGetBlockResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
@@ -313,6 +489,25 @@ func (k Keeper) GetBlock(ctx context.Context, req *scripttypes.QueryGetBlockRequ
 }
 
 // FunctionSchema returns JSON schemas for all public functions in a script.
+//
+// Semantics:
+//   - Resolves script address via direct address or nameservice name.
+//   - Loads script code (or empty script if not found).
+//   - Starts ephemeral RPC server for script execution environment.
+//   - Extracts function schemas by introspecting script with DysVM.
+//   - Returns JSON object mapping function names to their schemas.
+//   - Useful for tooling, documentation, and client integration.
+//
+// Validation:
+//   - Executor address must be provided and valid.
+//   - Either script_address or script_name must be provided.
+//   - If both are provided, they must resolve to the same address.
+//
+// Returns:
+//   - *scripttypes.QueryFunctionSchemaResponse with JSON schema object.
+//   - Schema includes function signatures, parameter types, and return types.
+//
+// Errors are returned on invalid parameters, script resolution failures, or schema extraction errors; no panics.
 func (k Keeper) FunctionSchema(ctx context.Context, req *scripttypes.QueryFunctionSchemaRequest) (*scripttypes.QueryFunctionSchemaResponse, error) {
 	if req.ExecutorAddress == "" {
 		return nil, status.Error(codes.InvalidArgument, "executor address is required")

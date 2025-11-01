@@ -21,33 +21,100 @@ option go_package = "dysonprotocol.com/x/script/types";
 // Query is the dysonprotocol.script.v1 Query service.
 service Query {
 
-  // ScriptInfo queries script info based on script address
+  /*
+   * ScriptInfo queries script information by address or nameservice name.
+   * Supports both direct bech32 addresses and nameservice resolution.
+   */
   rpc ScriptInfo(QueryScriptInfoRequest) returns (QueryScriptInfoResponse) {
     option (google.api.http).get =
         "/dysonprotocol/script/v1/script_info/{address}";
   };
 
-  // EncodeJson encodes a JSON string to bytes.
+  /*
+   * EncodeJson encodes a JSON string to protobuf bytes for message construction.
+   * Useful for converting human-readable JSON to binary protobuf format.
+   */
   rpc EncodeJson(QueryEncodeJsonRequest) returns (QueryEncodeJsonResponse) {
     option (google.api.http).get = "/dysonprotocol/script/v1/encode_json";
   }
 
-  // DecodeBytes decodes bytes to a JSON string.
+  /*
+   * DecodeBytes decodes protobuf bytes to JSON string for message inspection.
+   * Useful for converting binary protobuf messages to human-readable JSON format.
+   */
   rpc DecodeBytes(QueryDecodeBytesRequest) returns (QueryDecodeBytesResponse) {
     option (google.api.http).get = "/dysonprotocol/script/v1/decode_bytes";
   }
 
-  // VerifyTx verifies a transaction.
+  /*
+   * VerifyTx verifies the signatures of an arbitrary transaction for MsgArbitraryData.
+   * Implements ADR-036 arbitrary signature verification with empty chain ID and sequence.
+   *
+   * Example transaction JSON for verification:
+   *
+   * {
+   *   "body": {
+   *     "messages": [
+   *       {
+   *         "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
+   *         "signer": "dys1example_address",
+   *         "data": "arbitrary data to sign",
+   *         "app_domain": "my_app/v1.0"
+   *       }
+   *     ],
+   *     "memo": "",
+   *     "timeout_height": "0"
+   *   },
+   *   "auth_info": {
+   *     "signer_infos": [
+   *       {
+   *         "public_key": {
+   *           "@type": "/cosmos.crypto.secp256k1.PubKey",
+   *           "key": "base64_encoded_public_key"
+   *         },
+   *         "mode_info": {
+   *           "single": {
+   *             "mode": "SIGN_MODE_DIRECT"
+   *           }
+   *         },
+   *         "sequence": "0"
+   *       }
+   *     ],
+   *     "fee": {
+   *       "amount": [],
+   *       "gas_limit": "0"
+   *     }
+   *   },
+   *   "signatures": [
+   *     "base64_encoded_signature"
+   *   ]
+   * }
+   *
+   * CLI Example:
+   *
+   * # Create a signed MsgArbitraryData transaction for verification
+   * dysond tx script sign-arbitrary-data "your data to sign" --app-domain "my_app/v1.0" --from alice --chain-id "" --account-number 0 --sequence 0 --offline --output-document signed_tx.json
+   *
+   * # Verify the signed transaction
+   * dysond query script verify-tx --tx-json "$(cat signed_tx.json)" -o json
+   */
   rpc VerifyTx(QueryVerifyTxRequest) returns (QueryVerifyTxResponse) {
     option (google.api.http).get = "/dysonprotocol/script/v1/verify_tx";
   }
 
-  // Params queries the parameters of the script module.
+  /*
+   * Params queries the parameters of the script module.
+   * Returns current configuration parameters for script execution and limits.
+   */
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/dysonprotocol/script/v1/params";
   }
 
-  // Queries the WSGI web application function of a script.
+  /*
+   * Web queries the WSGI web application function of a script.
+   * This is used in the REST API and not intended for direct use.
+   * Executes script's WSGI application in read-only mode for web requests.
+   */
   rpc Web(WebRequest) returns (WebResponse) {
     option (google.api.http) = {
       post : "/dysonprotocol/script/v1/web_request"
@@ -55,8 +122,10 @@ service Query {
     };
   }
 
-  // Run executes a script function in read-only mode without modifying
-  // state.
+  /*
+   * Run executes a script function in read-only mode without modifying state.
+   * Uses cached context to ensure execution has no persistent effects.
+   */
   rpc Run(RunScript) returns (ResponseRunScript) {
     option (google.api.http) = {
       post : "/dysonprotocol/script/v1/run"
@@ -64,12 +133,18 @@ service Query {
     };
   }
 
-  // GetBlock returns the current block information.
+  /*
+   * GetBlock returns the current block information.
+   * Provides block height, time, chain ID, hashes, and proposer for scripts.
+   */
   rpc GetBlock(QueryGetBlockRequest) returns (QueryGetBlockResponse) {
     option (google.api.http).get = "/dysonprotocol/script/v1/block";
   }
 
-  // FunctionSchema returns JSON schemas for all public functions in a script.
+  /*
+   * FunctionSchema returns JSON schemas for all public functions in a script.
+   * Extracts function signatures, parameter types, and return types for tooling and documentation.
+   */
   rpc FunctionSchema(QueryFunctionSchemaRequest)
       returns (QueryFunctionSchemaResponse) {
     option (google.api.http) = {
@@ -79,165 +154,219 @@ service Query {
   }
 }
 
-// WebRequest is the Service/Web request type.
+/*
+ * WebRequest requests execution of a script's WSGI web application.
+ *
+ * Either script_address or script_name must be provided. The script's WSGI application
+ * will be executed in read-only mode with no state modifications allowed.
+ */
 message WebRequest {
-  // script_address is the bech32 account address of the script.
+  // Bech32 account address of the script to execute.
   string script_address = 1;
-  // script_name is the name of the script (e.g., "example.dys").
+  // Nameservice name of the script to execute (e.g., "example.dys").
   string script_name = 2;
-  // httprequest is the http request.
+  // HTTP request string to pass to the script's WSGI application.
   string httprequest = 3;
 }
 
-// WebResponse is the Service/Web response type.
+/*
+ * WebResponse contains the HTTP response from the script's WSGI application.
+ */
 message WebResponse {
-  // httpresponse is the http response.
+  // HTTP response string returned by the script's WSGI application.
   string httpresponse = 1;
 }
 
-// QueryScriptInfoRequest is the Query/ScriptInfo request type.
+/*
+ * QueryScriptInfoRequest requests script information by address or name.
+ *
+ * The address field accepts both bech32 addresses and nameservice names.
+ * Nameservice names will be resolved to addresses automatically.
+ */
 message QueryScriptInfoRequest {
-  // address is the account address of the script.
+  // Script address or nameservice name to query; supports both bech32 addresses and names.
   string address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 }
 
-// QueryScriptInfoResponse is the Query/ScriptInfo response type.
+/*
+ * QueryScriptInfoResponse contains the complete script information.
+ */
 message QueryScriptInfoResponse {
-  // info is the ScriptInfo of the script.
+  // Complete script information including code, version, and metadata.
   Script script = 1;
 }
 
-// QueryEncodeJsonRequest is the Query/EncodeJson request type.
+/*
+ * QueryEncodeJsonRequest requests encoding of JSON to protobuf bytes.
+ *
+ * The JSON must represent a valid Cosmos SDK message that can be unmarshaled.
+ */
 message QueryEncodeJsonRequest {
-  // json is the json string to encode.
+  // JSON string representing a Cosmos SDK message to encode to protobuf bytes.
   string json = 1;
 }
 
-// QueryEncodeJsonResponse is the Query/EncodeJson response type.
+/*
+ * QueryEncodeJsonResponse contains the protobuf-encoded bytes.
+ */
 message QueryEncodeJsonResponse {
-  // bytes is the encoded bytes.
+  // Protobuf-encoded bytes of the input JSON message.
   bytes bytes = 1;
 }
 
-// QueryDecodeBytesRequest is the Query/DecodeBytes request type.
+/*
+ * QueryDecodeBytesRequest requests decoding of protobuf bytes to JSON.
+ *
+ * The type_url specifies the message type to decode, and bytes contains the protobuf-encoded data.
+ */
 message QueryDecodeBytesRequest {
+  // Type URL of the message type to decode (e.g., "/cosmos.bank.v1beta1.MsgSend").
   string type_url = 1;
-  // bytes is the encoded bytes.
+  // Protobuf-encoded bytes of the message to decode to JSON.
   bytes bytes = 2;
 }
 
-// QueryDecodeBytesResponse is the Query/DecodeBytes response type.
+/*
+ * QueryDecodeBytesResponse contains the decoded JSON string.
+ */
 message QueryDecodeBytesResponse {
-  // json is the decoded json string.
+  // JSON representation of the decoded protobuf message.
   string json = 1;
 }
 
+/*
+ * QueryVerifyTxRequest requests verification of an arbitrary transaction signature.
+ *
+ * The transaction JSON should contain a properly signed MsgArbitraryData transaction.
+ * Verification follows ADR-036 rules with empty chain ID, account number 0, and sequence 0.
+ * See the VerifyTx RPC method documentation for a complete example transaction structure.
+ */
 message QueryVerifyTxRequest {
-  // The transaction as a JSON string
+  // JSON representation of the transaction to verify (must contain MsgArbitraryData).
   string tx_json = 1;
 }
 
-// QueryVerifyTxResponse will return the signer address of the MsgArbitraryData
-// or error if the signature is invalid
+/*
+ * QueryVerifyTxResponse contains the verified signer address.
+ */
 message QueryVerifyTxResponse {
-  // The signer address of the MsgArbitraryData
+  // Bech32 address of the verified signer of the MsgArbitraryData transaction.
   string signer = 1;
 }
 
-// QueryParamsRequest is the request type for the Query/Params RPC method.
+/*
+ * QueryParamsRequest requests the current script module parameters.
+ *
+ * This is an empty request message - no parameters needed.
+ */
 message QueryParamsRequest {}
 
-// QueryParamsResponse is the response type for the Query/Params RPC method.
+/*
+ * QueryParamsResponse contains the current script module parameters.
+ */
 message QueryParamsResponse {
-  // params holds all the parameters of this module.
+  // Current script module parameters including execution limits and configuration.
   Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
-// RunScript is the Query/Run request type.
+/*
+ * RunScript requests execution of a script function in read-only mode.
+ *
+ * Similar to MsgExec but executed in a cached context with no persistent state changes.
+ * All execution results are returned but any state modifications are discarded.
+ */
 message RunScript {
-  // executor is the account address used to execute the script
+  // Account address used to execute the script; must be a valid bech32 address.
   string executor_address = 1
       [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
-  // address is the script bech32 address to execute.
+  // Script bech32 address to execute; mutually exclusive with script_name.
   string script_address = 2;
 
-  // script_name is the optional nameservice name of the script to execute
-  // (e.g., "example.dys")
+  // Optional nameservice name of the script to execute (e.g., "example.dys").
   string script_name = 3;
 
-  // Only if the executor is the owner of the script will the optional
-  // extra_code be temporary appended to the script for this message before
-  // calling the function
+  // Optional extra code temporarily appended to the script for this execution.
+  // Only allowed if the executor is the script owner.
   string extra_code = 4;
 
-  // The function name to run
+  // Name of the function to call within the script.
   string function_name = 5;
 
-  // The positional arguments to pass to the function (*args) encoded as a json
-  // list
+  // Positional arguments (*args) encoded as a JSON array.
   string args = 6;
 
-  // The keyword arguments to pass to the function (**kwargs) encoded as a json
-  // dict
+  // Keyword arguments (**kwargs) encoded as a JSON object.
   string kwargs = 7;
 
-  // The list of messages to run before the script.
+  // Messages executed before the script; results available but state changes discarded.
   repeated google.protobuf.Any attached_messages = 8;
 }
 
-// ResponseRunScript is the Query/Run response type.
+/*
+ * ResponseRunScript contains script execution results from read-only run.
+ */
 message ResponseRunScript {
-  // result is the execution result returned by the script function.
+  // Execution result returned by the script function.
   string result = 1;
 
-  // Results of the attached messages.
+  // Results of the attached messages executed before the script.
   repeated google.protobuf.Any attached_message_results = 2;
 }
 
-// QueryGetBlockRequest is the Query/GetBlock request type.
+/*
+ * QueryGetBlockRequest requests current block information.
+ *
+ * This is an empty request message - no parameters needed.
+ */
 message QueryGetBlockRequest {}
 
-// QueryGetBlockResponse is the Query/GetBlock response type.
+/*
+ * QueryGetBlockResponse contains current block information.
+ */
 message QueryGetBlockResponse {
-  // block_height is the height of the block.
+  // Height of the current block.
   int64 block_height = 1;
 
-  // block_time is the time of the block.
+  // Timestamp of the current block.
   google.protobuf.Timestamp block_time = 2
       [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true ];
 
-  // chain_id is the chain ID.
+  // Chain ID of the blockchain.
   string chain_id = 3;
 
-  // block_hash is the hash of the block.
+  // Hash of the current block (app hash from header).
   bytes block_hash = 4;
 
-  // app_hash is the application hash.
+  // Application hash of the current block.
   bytes app_hash = 5;
 
-  // proposer_address is the address of the block proposer.
+  // Bech32 address of the block proposer.
   string proposer_address = 6;
 }
 
-// QueryFunctionSchemaRequest requests function schemas for a script.
+/*
+ * QueryFunctionSchemaRequest requests function schemas for a script.
+ *
+ * Either script_address or script_name must be provided. The script will be
+ * introspected to extract schemas for all public functions.
+ */
 message QueryFunctionSchemaRequest {
-  // executor is the account address used to evaluate the script
+  // Account address used to evaluate the script; must be a valid bech32 address.
   string executor_address = 1
       [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
-  // address is the script bech32 address to inspect.
+  // Script bech32 address to inspect; mutually exclusive with script_name.
   string script_address = 2;
 
-  // script_name is the optional nameservice name of the script to inspect
-  // (e.g., "example.dys")
+  // Optional nameservice name of the script to inspect (e.g., "example.dys").
   string script_name = 3;
 }
 
-// QueryFunctionSchemaResponse contains a JSON object mapping function names to
-// schemas.
+/*
+ * QueryFunctionSchemaResponse contains function schemas extracted from a script.
+ */
 message QueryFunctionSchemaResponse {
-  // schema_json is a JSON object: [{"name": "func_name", "schema":
-  // {schema...}}, ...]
+  // JSON array of function schemas: [{"name": "func_name", "schema": {...}}, ...]
   string schema_json = 1;
 }
