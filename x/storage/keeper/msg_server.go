@@ -30,6 +30,34 @@ func isPrintableASCII(s string) bool {
 	return true
 }
 
+// StorageSet sets a storage entry for the specified owner and index.
+//
+// Semantics:
+//   - Stores JSON data under a composite key of owner/index, creating or updating the entry.
+//   - Validates data size against module's MaxStorageSize parameter.
+//   - Enforces stake requirements when StorageStakeMultiple > 0: requires owner to have sufficient delegated stake.
+//   - Calculates data hash using SHA256 and stores metadata including block height and timestamp.
+//   - Updates owner's storage metrics (total bytes) for stake validation and monitoring.
+//
+// Validation:
+//   - Owner must be a valid bech32 address.
+//   - Index must be non-empty and contain only printable ASCII characters.
+//   - Data size must not exceed MaxStorageSize parameter.
+//   - When stake validation is enabled, owner's delegated stake must meet minimum requirement.
+//
+// State Updates:
+//   - Creates or updates StorageMap entry with owner/index key containing data, hash, and metadata.
+//   - Updates StorageMetricsMap for the owner with new total byte count.
+//   - Recalculates and updates minimum stake requirement based on new total bytes.
+//
+// Emits:
+//   - EventStorageUpdated(address, index) upon successful storage operation.
+//
+// Returns:
+//   - *storagetypes.MsgStorageSetResponse with empty body on success.
+//
+// Errors are returned on invalid owner address, empty/malformed index, data size limits,
+// insufficient stake for storage requirements, or internal storage failures; no panics.
 func (k Keeper) StorageSet(ctx context.Context, msg *storagetypes.MsgStorageSet) (*storagetypes.MsgStorageSetResponse, error) {
 	// Validate the owner address is properly formatted
 	if _, err := sdk.AccAddressFromBech32(msg.Owner); err != nil {
@@ -139,6 +167,31 @@ func (k Keeper) StorageSet(ctx context.Context, msg *storagetypes.MsgStorageSet)
 	return &storagetypes.MsgStorageSetResponse{}, nil
 }
 
+// StorageDelete removes specified storage entries owned by the requesting account.
+//
+// Semantics:
+//   - Deletes multiple storage entries by index for the specified owner.
+//   - Verifies ownership of each entry before deletion to prevent unauthorized removal.
+//   - Updates owner's storage metrics by subtracting deleted bytes from total.
+//   - Returns list of successfully deleted indexes for transparency.
+//
+// Validation:
+//   - Owner must be a valid bech32 address.
+//   - At least one index must be specified for deletion.
+//   - Each specified index must exist and be owned by the requesting account.
+//
+// State Updates:
+//   - Removes entries from StorageMap for each successfully deleted index.
+//   - Updates StorageMetricsMap for the owner by reducing total byte count.
+//
+// Emits:
+//   - EventStorageDelete(owner, deleted_indexes) with list of successfully deleted indexes.
+//
+// Returns:
+//   - *storagetypes.MsgStorageDeleteResponse containing list of deleted_indexes.
+//
+// Errors are returned on invalid owner address, empty index list, non-existent entries,
+// ownership mismatches, or internal storage failures; no panics.
 func (k Keeper) StorageDelete(ctx context.Context, msg *storagetypes.MsgStorageDelete) (*storagetypes.MsgStorageDeleteResponse, error) {
 	// Validate the owner address is properly formatted
 	if _, err := sdk.AccAddressFromBech32(msg.Owner); err != nil {
@@ -215,7 +268,27 @@ func (k Keeper) StorageDelete(ctx context.Context, msg *storagetypes.MsgStorageD
 	}, nil
 }
 
-// UpdateParams updates the module parameters
+// UpdateParams updates the x/storage module parameters via governance proposal.
+//
+// Semantics:
+//   - Validates that the signer has authority to update module parameters (typically governance module).
+//   - Validates that all provided parameters are valid according to parameter constraints.
+//   - Updates the module's parameter state with the new values.
+//
+// Validation:
+//   - Authority must match the module's configured authority address.
+//   - All parameter values must pass individual validation (MaxStorageSize, StorageStakeMultiple).
+//
+// State Updates:
+//   - Updates the module's Params in state with the new parameter values.
+//
+// Emits:
+//   - No events emitted for parameter updates.
+//
+// Returns:
+//   - *storagetypes.MsgUpdateParamsResponse with empty body on success.
+//
+// Errors are returned on invalid authority, parameter validation failures, or state update failures; no panics.
 func (k Keeper) UpdateParams(ctx context.Context, msg *storagetypes.MsgUpdateParams) (*storagetypes.MsgUpdateParamsResponse, error) {
 	// Check authority - this should be the governance module account or a dedicated module admin
 	if msg.Authority != k.GetAuthority() {

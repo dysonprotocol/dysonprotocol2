@@ -19,6 +19,22 @@ import (
 // Ensure Keeper implements the gRPC interface
 var _ storagetypes.QueryServer = Keeper{}
 
+// StorageGet retrieves a single storage entry by owner and index with optional GJSON extraction.
+//
+// Semantics:
+//   - Resolves owner identifier (supports both nameservice names and bech32 addresses).
+//   - Retrieves storage entry using composite key of resolved_owner/index.
+//   - Applies optional GJSON path extraction to filter returned data.
+//   - Normalizes index in response by removing owner prefix for cleaner API.
+//
+// Validation:
+//   - Owner must be resolvable to a valid account address.
+//   - Extract path length limited to 100 characters if provided.
+//
+// Returns:
+//   - *storagetypes.QueryStorageGetResponse containing the storage entry with extracted data if applicable.
+//
+// Errors are returned on unresolvable owner, non-existent entry, invalid extract path, or internal failures; no panics.
 func (k Keeper) StorageGet(ctx context.Context, req *storagetypes.QueryStorageGetRequest) (*storagetypes.QueryStorageGetResponse, error) {
 	// Resolve owner which can be a dys name or address
 	resolvedOwner, err := k.namesvcKeeper.ResolveNameOrAddress(ctx, req.Owner)
@@ -77,7 +93,25 @@ func incrementLastByte(s string) string {
 	return ""
 }
 
-// StorageList implements the storage list query method.
+// StorageList lists storage entries for an owner under a given index prefix with optional filtering and extraction.
+//
+// Semantics:
+//   - Resolves owner identifier (supports both nameservice names and bech32 addresses).
+//   - Lists entries with composite keys starting with resolved_owner/index_prefix.
+//   - Applies optional GJSON filter to include only matching entries.
+//   - Applies optional GJSON extract to transform returned data.
+//   - Supports full pagination with offset/key-based navigation and reverse iteration.
+//   - Normalizes index fields in response by removing owner prefix.
+//
+// Validation:
+//   - Owner must be resolvable to a valid account address.
+//   - Filter and extract path lengths limited to 100 characters if provided.
+//   - Pagination parameters must be valid (no both offset and key specified).
+//
+// Returns:
+//   - *storagetypes.QueryStorageListResponse containing matching entries and pagination metadata.
+//
+// Errors are returned on unresolvable owner, invalid pagination, malformed filter/extract paths, or internal failures; no panics.
 func (k Keeper) StorageList(ctx context.Context, req *storagetypes.QueryStorageListRequest) (*storagetypes.QueryStorageListResponse, error) {
 	// Create response structure
 	resp := &storagetypes.QueryStorageListResponse{
@@ -308,7 +342,16 @@ func (k Keeper) StorageList(ctx context.Context, req *storagetypes.QueryStorageL
 	return resp, nil
 }
 
-// Params returns the current module parameters
+// Params returns the current x/storage module parameters.
+//
+// Semantics:
+//   - Retrieves current parameter values from module state.
+//   - Returns default parameters if none have been set (fresh chain state).
+//
+// Returns:
+//   - *storagetypes.QueryParamsResponse containing current MaxStorageSize and StorageStakeMultiple values.
+//
+// Errors are returned on invalid request or state retrieval failures; no panics.
 func (k Keeper) Params(ctx context.Context, req *storagetypes.QueryParamsRequest) (*storagetypes.QueryParamsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
@@ -318,7 +361,22 @@ func (k Keeper) Params(ctx context.Context, req *storagetypes.QueryParamsRequest
 	return &storagetypes.QueryParamsResponse{Params: params}, nil
 }
 
-// Metrics returns the storage metrics for a given owner address
+// Metrics returns storage usage metrics and stake requirements for a given owner.
+//
+// Semantics:
+//   - Resolves owner identifier (supports both nameservice names and bech32 addresses).
+//   - Retrieves total bytes stored by the owner across all entries.
+//   - Calculates minimum stake amount required based on StorageStakeMultiple parameter.
+//   - Returns current stake amount from staking module for comparison.
+//   - Returns zero metrics if owner has no storage entries.
+//
+// Validation:
+//   - Owner must be resolvable to a valid account address.
+//
+// Returns:
+//   - *storagetypes.QueryMetricsResponse containing total bytes, minimum stake requirement, and current stake.
+//
+// Errors are returned on unresolvable owner or internal failures; no panics.
 func (k Keeper) Metrics(ctx context.Context, req *storagetypes.QueryMetricsRequest) (*storagetypes.QueryMetricsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
