@@ -37,15 +37,16 @@ message LeveragePosition {
   cosmos.base.v1beta1.Coin borrowed = 5 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin held = 6 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin collateral = 7 [ (gogoproto.nullable) = false ];
-
-  google.protobuf.Timestamp borrow_time = 8 [ (gogoproto.stdtime) = true ];
-
-  uint64 created_block_height = 9;
+  uint64 created_height = 8;
+  google.protobuf.Timestamp created_time = 9 [ (gogoproto.stdtime) = true ];
   uint64 liquidation_initialized_block_height = 10;
   LiquidationStatus liquidation_status = 11;
 
   cosmos.base.v1beta1.Coin accrued_interest = 12
       [ (gogoproto.nullable) = false ];
+
+  uint64 updated_height = 13;
+  google.protobuf.Timestamp updated_time = 14 [ (gogoproto.stdtime) = true ];
 
   // ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
   // Annual interest rates per reserve denom (exactly two, canonical order).

@@ -39,8 +39,8 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		return nil, cosmossdkerrors.Wrapf(err, "position %d not found", msg.PositionId)
 	}
 	// Check for invalid position data before ownership to avoid panics
-	if pos.BorrowTime == nil {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid position: missing borrow_time")
+	if pos.UpdatedTime == nil {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid position: missing updated_time")
 	}
 	// Ownership check must return before any further logic to avoid side effects or nil derefs
 	if pos.User != msg.User {
@@ -67,7 +67,7 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	}
 	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	elapsed := sdkCtx.BlockTime().Sub(*pos.BorrowTime).Seconds()
+	elapsed := sdkCtx.BlockTime().Sub(*pos.UpdatedTime).Seconds()
 	interest, err := k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))
 	if err != nil {
 		return nil, err

@@ -49,7 +49,7 @@ func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequ
 	// Calculate elapsed time
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockTime := sdkCtx.BlockTime()
-	elapsed := blockTime.Sub(*pos.BorrowTime).Seconds()
+	elapsed := blockTime.Sub(*pos.UpdatedTime).Seconds()
 	isActive := status == whaleswapv1.PositionStatus_POSITION_STATUS_OPEN || status == whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATING
 
 	var interest math.LegacyDec

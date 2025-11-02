@@ -190,12 +190,12 @@
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false
                     },
-                    "borrow_time": {
+                    "created_height": {
+                        "type": "string"
+                    },
+                    "created_time": {
                         "type": "string",
                         "format": "date-time"
-                    },
-                    "created_block_height": {
-                        "type": "string"
                     },
                     "liquidation_initialized_block_height": {
                         "type": "string"
@@ -223,6 +223,13 @@
                     "accrued_interest": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false
+                    },
+                    "updated_height": {
+                        "type": "string"
+                    },
+                    "updated_time": {
+                        "type": "string",
+                        "format": "date-time"
                     },
                     "interest_rate": {
                         "items": {

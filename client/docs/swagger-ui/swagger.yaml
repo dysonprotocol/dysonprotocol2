@@ -10042,12 +10042,12 @@ paths:
                         custom method
 
                         signatures required by gogoproto.
-                    borrow_time:
-                      type: string
-                      format: date-time
-                    created_block_height:
+                    created_height:
                       type: string
                       format: uint64
+                    created_time:
+                      type: string
+                      format: date-time
                     liquidation_initialized_block_height:
                       type: string
                       format: uint64
@@ -10073,6 +10073,12 @@ paths:
                         custom method
 
                         signatures required by gogoproto.
+                    updated_height:
+                      type: string
+                      format: uint64
+                    updated_time:
+                      type: string
+                      format: date-time
                     interest_rate:
                       type: array
                       items:
@@ -10299,12 +10305,12 @@ paths:
                         custom method
 
                         signatures required by gogoproto.
-                    borrow_time:
-                      type: string
-                      format: date-time
-                    created_block_height:
+                    created_height:
                       type: string
                       format: uint64
+                    created_time:
+                      type: string
+                      format: date-time
                     liquidation_initialized_block_height:
                       type: string
                       format: uint64
@@ -10330,6 +10336,12 @@ paths:
                         custom method
 
                         signatures required by gogoproto.
+                    updated_height:
+                      type: string
+                      format: uint64
+                    updated_time:
+                      type: string
+                      format: date-time
                     interest_rate:
                       type: array
                       items:
@@ -10573,12 +10585,12 @@ paths:
                       custom method
 
                       signatures required by gogoproto.
-                  borrow_time:
-                    type: string
-                    format: date-time
-                  created_block_height:
+                  created_height:
                     type: string
                     format: uint64
+                  created_time:
+                    type: string
+                    format: date-time
                   liquidation_initialized_block_height:
                     type: string
                     format: uint64
@@ -10604,6 +10616,12 @@ paths:
                       custom method
 
                       signatures required by gogoproto.
+                  updated_height:
+                    type: string
+                    format: uint64
+                  updated_time:
+                    type: string
+                    format: date-time
                   interest_rate:
                     type: array
                     items:
@@ -50025,12 +50043,12 @@ definitions:
 
           NOTE: The amount field is an Int which implements the custom method
           signatures required by gogoproto.
-      borrow_time:
-        type: string
-        format: date-time
-      created_block_height:
+      created_height:
         type: string
         format: uint64
+      created_time:
+        type: string
+        format: date-time
       liquidation_initialized_block_height:
         type: string
         format: uint64
@@ -50053,6 +50071,12 @@ definitions:
 
           NOTE: The amount field is an Int which implements the custom method
           signatures required by gogoproto.
+      updated_height:
+        type: string
+        format: uint64
+      updated_time:
+        type: string
+        format: date-time
       interest_rate:
         type: array
         items:
@@ -54568,12 +54592,12 @@ definitions:
               method
 
               signatures required by gogoproto.
-          borrow_time:
-            type: string
-            format: date-time
-          created_block_height:
+          created_height:
             type: string
             format: uint64
+          created_time:
+            type: string
+            format: date-time
           liquidation_initialized_block_height:
             type: string
             format: uint64
@@ -54599,6 +54623,12 @@ definitions:
               method
 
               signatures required by gogoproto.
+          updated_height:
+            type: string
+            format: uint64
+          updated_time:
+            type: string
+            format: date-time
           interest_rate:
             type: array
             items:
@@ -54766,12 +54796,12 @@ definitions:
                 method
 
                 signatures required by gogoproto.
-            borrow_time:
-              type: string
-              format: date-time
-            created_block_height:
+            created_height:
               type: string
               format: uint64
+            created_time:
+              type: string
+              format: date-time
             liquidation_initialized_block_height:
               type: string
               format: uint64
@@ -54797,6 +54827,12 @@ definitions:
                 method
 
                 signatures required by gogoproto.
+            updated_height:
+              type: string
+              format: uint64
+            updated_time:
+              type: string
+              format: date-time
             interest_rate:
               type: array
               items:
@@ -54936,12 +54972,12 @@ definitions:
                 method
 
                 signatures required by gogoproto.
-            borrow_time:
-              type: string
-              format: date-time
-            created_block_height:
+            created_height:
               type: string
               format: uint64
+            created_time:
+              type: string
+              format: date-time
             liquidation_initialized_block_height:
               type: string
               format: uint64
@@ -54967,6 +55003,12 @@ definitions:
                 method
 
                 signatures required by gogoproto.
+            updated_height:
+              type: string
+              format: uint64
+            updated_time:
+              type: string
+              format: date-time
             interest_rate:
               type: array
               items:

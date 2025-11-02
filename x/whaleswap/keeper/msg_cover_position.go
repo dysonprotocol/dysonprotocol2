@@ -70,8 +70,8 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "position %d not found", msg.PositionId)
 	}
-	if pos.BorrowTime == nil {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid position: missing borrow_time")
+	if pos.UpdatedTime == nil {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid position: missing updated_time")
 	}
 	if pos.User != msg.User {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrUnauthorized, "not position owner")
@@ -100,7 +100,7 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)
 	logger.Info("CoverPosition starting", "position_id", msg.PositionId, "user", msg.User, "payment", msg.Payment.String(), "pool_id", pos.PoolId, "borrowed", pos.Borrowed.String(), "held", pos.Held.String(), "collateral", pos.Collateral.String())
-	elapsed := sdkCtx.BlockTime().Sub(*pos.BorrowTime).Seconds()
+	elapsed := sdkCtx.BlockTime().Sub(*pos.UpdatedTime).Seconds()
 	interestDec, ierr := k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))
 	if ierr != nil {
 		return nil, ierr
@@ -232,6 +232,10 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 		pos.LiquidationStatus = whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE
 		pos.LiquidationInitializedBlockHeight = 0
 		pos.AccruedInterest = interestCoin
+		// Stamp update time/height on close
+		closeNow := sdkCtx.BlockTime()
+		pos.UpdatedTime = &closeNow
+		pos.UpdatedHeight = uint64(sdkCtx.BlockHeight())
 		if err := k.savePosition(ctx, pos, originalStatus); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to persist closed position")
 		}
@@ -308,13 +312,14 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 	newPrincipal := pos.Borrowed.Amount.Sub(principalPaid)
 	pos.Borrowed = sdk.NewCoin(pos.Borrowed.Denom, newPrincipal)
 	now := sdkCtx.BlockTime()
-	pos.BorrowTime = &now
+	pos.UpdatedTime = &now
+	pos.UpdatedHeight = uint64(sdkCtx.BlockHeight())
 	prevStatus := pos.Status
 	k.ClearLiquidationPending(&pos)
 	if err := k.savePosition(ctx, pos, prevStatus); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to update position")
 	}
-	logger.Info("CoverPosition updated position after partial cover", "new_borrowed", pos.Borrowed.String(), "borrow_time", now)
+	logger.Info("CoverPosition updated position after partial cover", "new_borrowed", pos.Borrowed.String(), "updated_time", now)
 
 	// Compute new collateral ratio based on current pool price
 	borrowDenom := pos.Borrowed.Denom

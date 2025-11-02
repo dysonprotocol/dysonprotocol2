@@ -66,7 +66,7 @@ func (k Keeper) ClearLiquidationPending(pos *whaleswapv1.LeveragePosition) {
 // CanCloseBefore checks if 1 block has passed since creation.
 func (k Keeper) CanCloseBefore(ctx context.Context, pos *whaleswapv1.LeveragePosition) bool {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	return uint64(sdkCtx.BlockHeight()) > pos.CreatedBlockHeight
+	return uint64(sdkCtx.BlockHeight()) > pos.CreatedHeight
 }
 
 // CanFinalizeLiquidationBefore checks if 1 block has passed since initialize.
@@ -79,8 +79,8 @@ func (k Keeper) CanFinalizeLiquidationBefore(ctx context.Context, pos *whaleswap
 func (k Keeper) BlocksUntilCloseable(ctx context.Context, pos *whaleswapv1.LeveragePosition) uint64 {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	currentHeight := uint64(sdkCtx.BlockHeight())
-	if currentHeight > pos.CreatedBlockHeight {
+	if currentHeight > pos.CreatedHeight {
 		return 0
 	}
-	return pos.CreatedBlockHeight + 1 - currentHeight
+	return pos.CreatedHeight + 1 - currentHeight
 }

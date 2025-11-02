@@ -1891,13 +1891,13 @@
         "collateral": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
         },
-        "borrow_time": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "created_block_height": {
+        "created_height": {
           "type": "string",
           "format": "uint64"
+        },
+        "created_time": {
+          "type": "string",
+          "format": "date-time"
         },
         "liquidation_initialized_block_height": {
           "type": "string",
@@ -1908,6 +1908,14 @@
         },
         "accrued_interest": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "updated_height": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "updated_time": {
+          "type": "string",
+          "format": "date-time"
         },
         "interest_rate": {
           "type": "array",

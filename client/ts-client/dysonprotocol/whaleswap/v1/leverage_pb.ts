@@ -113,14 +113,14 @@ export class LeveragePosition extends Message<LeveragePosition> {
   collateral?: Coin;
 
   /**
-   * @generated from field: google.protobuf.Timestamp borrow_time = 8;
+   * @generated from field: uint64 created_height = 8;
    */
-  borrowTime?: Timestamp;
+  createdHeight = protoInt64.zero;
 
   /**
-   * @generated from field: uint64 created_block_height = 9;
+   * @generated from field: google.protobuf.Timestamp created_time = 9;
    */
-  createdBlockHeight = protoInt64.zero;
+  createdTime?: Timestamp;
 
   /**
    * @generated from field: uint64 liquidation_initialized_block_height = 10;
@@ -136,6 +136,16 @@ export class LeveragePosition extends Message<LeveragePosition> {
    * @generated from field: cosmos.base.v1beta1.Coin accrued_interest = 12;
    */
   accruedInterest?: Coin;
+
+  /**
+   * @generated from field: uint64 updated_height = 13;
+   */
+  updatedHeight = protoInt64.zero;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp updated_time = 14;
+   */
+  updatedTime?: Timestamp;
 
   /**
    * ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
@@ -176,11 +186,13 @@ export class LeveragePosition extends Message<LeveragePosition> {
     { no: 5, name: "borrowed", kind: "message", T: Coin },
     { no: 6, name: "held", kind: "message", T: Coin },
     { no: 7, name: "collateral", kind: "message", T: Coin },
-    { no: 8, name: "borrow_time", kind: "message", T: Timestamp },
-    { no: 9, name: "created_block_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 8, name: "created_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 9, name: "created_time", kind: "message", T: Timestamp },
     { no: 10, name: "liquidation_initialized_block_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 11, name: "liquidation_status", kind: "enum", T: proto3.getEnumType(LiquidationStatus) },
     { no: 12, name: "accrued_interest", kind: "message", T: Coin },
+    { no: 13, name: "updated_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 14, name: "updated_time", kind: "message", T: Timestamp },
     { no: 22, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 23, name: "min_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 24, name: "liquidation_threshold", kind: "scalar", T: 9 /* ScalarType.STRING */ },

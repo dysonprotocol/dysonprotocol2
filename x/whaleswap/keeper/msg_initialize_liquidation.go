@@ -55,7 +55,7 @@ func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgI
 		"borrowed", pos.Borrowed.String(),
 		"collateral", pos.Collateral.String(),
 		"interest_rate", pos.InterestRate.String(),
-		"borrow_time", pos.BorrowTime,
+		"updated_time", pos.UpdatedTime,
 		"liquidation_status", pos.LiquidationStatus.String(),
 	)
 
@@ -64,7 +64,7 @@ func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgI
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "position interest_rate must have exactly 2 entries")
 	}
 	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
-	elapsed := sdkCtx.BlockTime().Sub(*pos.BorrowTime).Seconds()
+	elapsed := sdkCtx.BlockTime().Sub(*pos.UpdatedTime).Seconds()
 	interest, _ := k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))
 
 	collateralValue := math.LegacyNewDecFromInt(pos.Collateral.Amount)
