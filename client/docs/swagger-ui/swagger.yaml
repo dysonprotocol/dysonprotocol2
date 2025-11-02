@@ -5389,6 +5389,19 @@ paths:
                     updated_timestamp:
                       type: string
                       format: date-time
+                      title: >-
+                        Deprecated for backward-compatible JSON decoding of old
+                        genesis
+                    created_height:
+                      type: string
+                      format: uint64
+                      title: New normalized timestamps
+                    created_time:
+                      type: string
+                      format: date-time
+                    updated_time:
+                      type: string
+                      format: date-time
                     initial_have:
                       type: object
                       properties:
@@ -5616,6 +5629,19 @@ paths:
                     updated_timestamp:
                       type: string
                       format: date-time
+                      title: >-
+                        Deprecated for backward-compatible JSON decoding of old
+                        genesis
+                    created_height:
+                      type: string
+                      format: uint64
+                      title: New normalized timestamps
+                    created_time:
+                      type: string
+                      format: date-time
+                    updated_time:
+                      type: string
+                      format: date-time
                     initial_have:
                       type: object
                       properties:
@@ -5791,6 +5817,19 @@ paths:
                       type: string
                       format: uint64
                     updated_timestamp:
+                      type: string
+                      format: date-time
+                      title: >-
+                        Deprecated for backward-compatible JSON decoding of old
+                        genesis
+                    created_height:
+                      type: string
+                      format: uint64
+                      title: New normalized timestamps
+                    created_time:
+                      type: string
+                      format: date-time
+                    updated_time:
                       type: string
                       format: date-time
                     initial_have:
@@ -6010,6 +6049,19 @@ paths:
                       type: string
                       format: uint64
                     updated_timestamp:
+                      type: string
+                      format: date-time
+                      title: >-
+                        Deprecated for backward-compatible JSON decoding of old
+                        genesis
+                    created_height:
+                      type: string
+                      format: uint64
+                      title: New normalized timestamps
+                    created_time:
+                      type: string
+                      format: date-time
+                    updated_time:
                       type: string
                       format: date-time
                     initial_have:
@@ -6250,6 +6302,19 @@ paths:
                     updated_timestamp:
                       type: string
                       format: date-time
+                      title: >-
+                        Deprecated for backward-compatible JSON decoding of old
+                        genesis
+                    created_height:
+                      type: string
+                      format: uint64
+                      title: New normalized timestamps
+                    created_time:
+                      type: string
+                      format: date-time
+                    updated_time:
+                      type: string
+                      format: date-time
                     initial_have:
                       type: object
                       properties:
@@ -6468,6 +6533,19 @@ paths:
                     type: string
                     format: uint64
                   updated_timestamp:
+                    type: string
+                    format: date-time
+                    title: >-
+                      Deprecated for backward-compatible JSON decoding of old
+                      genesis
+                  created_height:
+                    type: string
+                    format: uint64
+                    title: New normalized timestamps
+                  created_time:
+                    type: string
+                    format: date-time
+                  updated_time:
                     type: string
                     format: date-time
                   initial_have:
@@ -6802,12 +6880,30 @@ paths:
                     block_height:
                       type: string
                       format: uint64
+                      title: >-
+                        Deprecated legacy fields for backward-compatible JSON
+                        decoding of old
+
+                        genesis
                     created:
                       type: string
                       format: date-time
                     updated:
                       type: string
                       format: date-time
+                    created_height:
+                      type: string
+                      format: uint64
+                      title: New normalized fields
+                    created_time:
+                      type: string
+                      format: date-time
+                    updated_time:
+                      type: string
+                      format: date-time
+                    updated_height:
+                      type: string
+                      format: uint64
                     num_trades:
                       type: string
                       format: uint64
@@ -7277,12 +7373,30 @@ paths:
                     block_height:
                       type: string
                       format: uint64
+                      title: >-
+                        Deprecated legacy fields for backward-compatible JSON
+                        decoding of old
+
+                        genesis
                     created:
                       type: string
                       format: date-time
                     updated:
                       type: string
                       format: date-time
+                    created_height:
+                      type: string
+                      format: uint64
+                      title: New normalized fields
+                    created_time:
+                      type: string
+                      format: date-time
+                    updated_time:
+                      type: string
+                      format: date-time
+                    updated_height:
+                      type: string
+                      format: uint64
                     num_trades:
                       type: string
                       format: uint64
@@ -7761,12 +7875,30 @@ paths:
                     block_height:
                       type: string
                       format: uint64
+                      title: >-
+                        Deprecated legacy fields for backward-compatible JSON
+                        decoding of old
+
+                        genesis
                     created:
                       type: string
                       format: date-time
                     updated:
                       type: string
                       format: date-time
+                    created_height:
+                      type: string
+                      format: uint64
+                      title: New normalized fields
+                    created_time:
+                      type: string
+                      format: date-time
+                    updated_time:
+                      type: string
+                      format: date-time
+                    updated_height:
+                      type: string
+                      format: uint64
                     num_trades:
                       type: string
                       format: uint64
@@ -8256,12 +8388,30 @@ paths:
                     block_height:
                       type: string
                       format: uint64
+                      title: >-
+                        Deprecated legacy fields for backward-compatible JSON
+                        decoding of old
+
+                        genesis
                     created:
                       type: string
                       format: date-time
                     updated:
                       type: string
                       format: date-time
+                    created_height:
+                      type: string
+                      format: uint64
+                      title: New normalized fields
+                    created_time:
+                      type: string
+                      format: date-time
+                    updated_time:
+                      type: string
+                      format: date-time
+                    updated_height:
+                      type: string
+                      format: uint64
                     num_trades:
                       type: string
                       format: uint64
@@ -8749,12 +8899,30 @@ paths:
                   block_height:
                     type: string
                     format: uint64
+                    title: >-
+                      Deprecated legacy fields for backward-compatible JSON
+                      decoding of old
+
+                      genesis
                   created:
                     type: string
                     format: date-time
                   updated:
                     type: string
                     format: date-time
+                  created_height:
+                    type: string
+                    format: uint64
+                    title: New normalized fields
+                  created_time:
+                    type: string
+                    format: date-time
+                  updated_time:
+                    type: string
+                    format: date-time
+                  updated_height:
+                    type: string
+                    format: uint64
                   num_trades:
                     type: string
                     format: uint64
@@ -9173,12 +9341,30 @@ paths:
                     block_height:
                       type: string
                       format: uint64
+                      title: >-
+                        Deprecated legacy fields for backward-compatible JSON
+                        decoding of old
+
+                        genesis
                     created:
                       type: string
                       format: date-time
                     updated:
                       type: string
                       format: date-time
+                    created_height:
+                      type: string
+                      format: uint64
+                      title: New normalized fields
+                    created_time:
+                      type: string
+                      format: date-time
+                    updated_time:
+                      type: string
+                      format: date-time
+                    updated_height:
+                      type: string
+                      format: uint64
                     num_trades:
                       type: string
                       format: uint64
@@ -9642,12 +9828,30 @@ paths:
                   block_height:
                     type: string
                     format: uint64
+                    title: >-
+                      Deprecated legacy fields for backward-compatible JSON
+                      decoding of old
+
+                      genesis
                   created:
                     type: string
                     format: date-time
                   updated:
                     type: string
                     format: date-time
+                  created_height:
+                    type: string
+                    format: uint64
+                    title: New normalized fields
+                  created_time:
+                    type: string
+                    format: date-time
+                  updated_time:
+                    type: string
+                    format: date-time
+                  updated_height:
+                    type: string
+                    format: uint64
                   num_trades:
                     type: string
                     format: uint64
@@ -50132,6 +50336,17 @@ definitions:
       updated_timestamp:
         type: string
         format: date-time
+        title: Deprecated for backward-compatible JSON decoding of old genesis
+      created_height:
+        type: string
+        format: uint64
+        title: New normalized timestamps
+      created_time:
+        type: string
+        format: date-time
+      updated_time:
+        type: string
+        format: date-time
       initial_have:
         type: object
         properties:
@@ -50330,12 +50545,28 @@ definitions:
       block_height:
         type: string
         format: uint64
+        title: |-
+          Deprecated legacy fields for backward-compatible JSON decoding of old
+          genesis
       created:
         type: string
         format: date-time
       updated:
         type: string
         format: date-time
+      created_height:
+        type: string
+        format: uint64
+        title: New normalized fields
+      created_time:
+        type: string
+        format: date-time
+      updated_time:
+        type: string
+        format: date-time
+      updated_height:
+        type: string
+        format: uint64
       num_trades:
         type: string
         format: uint64
@@ -50963,6 +51194,17 @@ definitions:
           updated_timestamp:
             type: string
             format: date-time
+            title: Deprecated for backward-compatible JSON decoding of old genesis
+          created_height:
+            type: string
+            format: uint64
+            title: New normalized timestamps
+          created_time:
+            type: string
+            format: date-time
+          updated_time:
+            type: string
+            format: date-time
           initial_have:
             type: object
             properties:
@@ -51077,6 +51319,17 @@ definitions:
               type: string
               format: uint64
             updated_timestamp:
+              type: string
+              format: date-time
+              title: Deprecated for backward-compatible JSON decoding of old genesis
+            created_height:
+              type: string
+              format: uint64
+              title: New normalized timestamps
+            created_time:
+              type: string
+              format: date-time
+            updated_time:
               type: string
               format: date-time
             initial_have:
@@ -51195,6 +51448,17 @@ definitions:
               type: string
               format: uint64
             updated_timestamp:
+              type: string
+              format: date-time
+              title: Deprecated for backward-compatible JSON decoding of old genesis
+            created_height:
+              type: string
+              format: uint64
+              title: New normalized timestamps
+            created_time:
+              type: string
+              format: date-time
+            updated_time:
               type: string
               format: date-time
             initial_have:
@@ -51338,6 +51602,17 @@ definitions:
               type: string
               format: uint64
             updated_timestamp:
+              type: string
+              format: date-time
+              title: Deprecated for backward-compatible JSON decoding of old genesis
+            created_height:
+              type: string
+              format: uint64
+              title: New normalized timestamps
+            created_time:
+              type: string
+              format: date-time
+            updated_time:
               type: string
               format: date-time
             initial_have:
@@ -51485,6 +51760,17 @@ definitions:
             updated_timestamp:
               type: string
               format: date-time
+              title: Deprecated for backward-compatible JSON decoding of old genesis
+            created_height:
+              type: string
+              format: uint64
+              title: New normalized timestamps
+            created_time:
+              type: string
+              format: date-time
+            updated_time:
+              type: string
+              format: date-time
             initial_have:
               type: object
               properties:
@@ -51626,6 +51912,17 @@ definitions:
               type: string
               format: uint64
             updated_timestamp:
+              type: string
+              format: date-time
+              title: Deprecated for backward-compatible JSON decoding of old genesis
+            created_height:
+              type: string
+              format: uint64
+              title: New normalized timestamps
+            created_time:
+              type: string
+              format: date-time
+            updated_time:
               type: string
               format: date-time
             initial_have:
@@ -51898,12 +52195,30 @@ definitions:
           block_height:
             type: string
             format: uint64
+            title: >-
+              Deprecated legacy fields for backward-compatible JSON decoding of
+              old
+
+              genesis
           created:
             type: string
             format: date-time
           updated:
             type: string
             format: date-time
+          created_height:
+            type: string
+            format: uint64
+            title: New normalized fields
+          created_time:
+            type: string
+            format: date-time
+          updated_time:
+            type: string
+            format: date-time
+          updated_height:
+            type: string
+            format: uint64
           num_trades:
             type: string
             format: uint64
@@ -52260,12 +52575,30 @@ definitions:
           block_height:
             type: string
             format: uint64
+            title: >-
+              Deprecated legacy fields for backward-compatible JSON decoding of
+              old
+
+              genesis
           created:
             type: string
             format: date-time
           updated:
             type: string
             format: date-time
+          created_height:
+            type: string
+            format: uint64
+            title: New normalized fields
+          created_time:
+            type: string
+            format: date-time
+          updated_time:
+            type: string
+            format: date-time
+          updated_height:
+            type: string
+            format: uint64
           num_trades:
             type: string
             format: uint64
@@ -52625,12 +52958,30 @@ definitions:
             block_height:
               type: string
               format: uint64
+              title: >-
+                Deprecated legacy fields for backward-compatible JSON decoding
+                of old
+
+                genesis
             created:
               type: string
               format: date-time
             updated:
               type: string
               format: date-time
+            created_height:
+              type: string
+              format: uint64
+              title: New normalized fields
+            created_time:
+              type: string
+              format: date-time
+            updated_time:
+              type: string
+              format: date-time
+            updated_height:
+              type: string
+              format: uint64
             num_trades:
               type: string
               format: uint64
@@ -53023,12 +53374,30 @@ definitions:
             block_height:
               type: string
               format: uint64
+              title: >-
+                Deprecated legacy fields for backward-compatible JSON decoding
+                of old
+
+                genesis
             created:
               type: string
               format: date-time
             updated:
               type: string
               format: date-time
+            created_height:
+              type: string
+              format: uint64
+              title: New normalized fields
+            created_time:
+              type: string
+              format: date-time
+            updated_time:
+              type: string
+              format: date-time
+            updated_height:
+              type: string
+              format: uint64
             num_trades:
               type: string
               format: uint64
@@ -53421,12 +53790,30 @@ definitions:
             block_height:
               type: string
               format: uint64
+              title: >-
+                Deprecated legacy fields for backward-compatible JSON decoding
+                of old
+
+                genesis
             created:
               type: string
               format: date-time
             updated:
               type: string
               format: date-time
+            created_height:
+              type: string
+              format: uint64
+              title: New normalized fields
+            created_time:
+              type: string
+              format: date-time
+            updated_time:
+              type: string
+              format: date-time
+            updated_height:
+              type: string
+              format: uint64
             num_trades:
               type: string
               format: uint64
@@ -53819,12 +54206,30 @@ definitions:
             block_height:
               type: string
               format: uint64
+              title: >-
+                Deprecated legacy fields for backward-compatible JSON decoding
+                of old
+
+                genesis
             created:
               type: string
               format: date-time
             updated:
               type: string
               format: date-time
+            created_height:
+              type: string
+              format: uint64
+              title: New normalized fields
+            created_time:
+              type: string
+              format: date-time
+            updated_time:
+              type: string
+              format: date-time
+            updated_height:
+              type: string
+              format: uint64
             num_trades:
               type: string
               format: uint64
@@ -54217,12 +54622,30 @@ definitions:
             block_height:
               type: string
               format: uint64
+              title: >-
+                Deprecated legacy fields for backward-compatible JSON decoding
+                of old
+
+                genesis
             created:
               type: string
               format: date-time
             updated:
               type: string
               format: date-time
+            created_height:
+              type: string
+              format: uint64
+              title: New normalized fields
+            created_time:
+              type: string
+              format: date-time
+            updated_time:
+              type: string
+              format: date-time
+            updated_height:
+              type: string
+              format: uint64
             num_trades:
               type: string
               format: uint64

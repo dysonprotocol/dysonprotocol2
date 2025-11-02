@@ -199,7 +199,8 @@ func (k Keeper) UpdatePoolConfig(ctx context.Context, msg *whaleswapv1.MsgUpdate
 	// Save and emit
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	t := sdkCtx.BlockTime()
-	pool.Updated = &t
+	pool.UpdatedTime = &t
+	pool.UpdatedHeight = uint64(sdkCtx.BlockHeight())
 	if err := k.PoolsMap.Set(ctx, pool.PoolId, pool); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to set pool: %d", pool.PoolId)
 	}

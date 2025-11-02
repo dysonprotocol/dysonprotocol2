@@ -111,7 +111,7 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 		// Update offer state; include pfand release as output to taker
 		newUnits := remainingUnits.Sub(takeUnits)
 		offer.UpdatedHeight = uint64(sdkCtx.BlockHeight())
-		offer.UpdatedTimestamp = &t
+		offer.UpdatedTime = &t
 		if newUnits.IsZero() {
 			offer.Status = whaleswapv1.OfferStatusClosed
 			offer.RemainingUnits = newUnits.String()

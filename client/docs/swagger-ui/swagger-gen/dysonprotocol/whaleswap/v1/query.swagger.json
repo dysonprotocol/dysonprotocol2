@@ -1963,6 +1963,20 @@
         },
         "updated_timestamp": {
           "type": "string",
+          "format": "date-time",
+          "title": "Deprecated for backward-compatible JSON decoding of old genesis"
+        },
+        "created_height": {
+          "type": "string",
+          "format": "uint64",
+          "title": "New normalized timestamps"
+        },
+        "created_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_time": {
+          "type": "string",
           "format": "date-time"
         },
         "initial_have": {
@@ -2072,7 +2086,8 @@
         },
         "block_height": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "title": "Deprecated legacy fields for backward-compatible JSON decoding of old\ngenesis"
         },
         "created": {
           "type": "string",
@@ -2081,6 +2096,23 @@
         "updated": {
           "type": "string",
           "format": "date-time"
+        },
+        "created_height": {
+          "type": "string",
+          "format": "uint64",
+          "title": "New normalized fields"
+        },
+        "created_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_height": {
+          "type": "string",
+          "format": "uint64"
         },
         "num_trades": {
           "type": "string",

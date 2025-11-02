@@ -66,19 +66,47 @@ export class Pool extends Message<Pool> {
   maxPrice: Coin[] = [];
 
   /**
-   * @generated from field: uint64 block_height = 10;
+   * Deprecated legacy fields for backward-compatible JSON decoding of old
+   * genesis
+   *
+   * @generated from field: uint64 block_height = 10 [deprecated = true];
+   * @deprecated
    */
   blockHeight = protoInt64.zero;
 
   /**
-   * @generated from field: google.protobuf.Timestamp created = 11;
+   * @generated from field: google.protobuf.Timestamp created = 11 [deprecated = true];
+   * @deprecated
    */
   created?: Timestamp;
 
   /**
-   * @generated from field: google.protobuf.Timestamp updated = 12;
+   * @generated from field: google.protobuf.Timestamp updated = 12 [deprecated = true];
+   * @deprecated
    */
   updated?: Timestamp;
+
+  /**
+   * New normalized fields
+   *
+   * @generated from field: uint64 created_height = 28;
+   */
+  createdHeight = protoInt64.zero;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_time = 29;
+   */
+  createdTime?: Timestamp;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp updated_time = 30;
+   */
+  updatedTime?: Timestamp;
+
+  /**
+   * @generated from field: uint64 updated_height = 27;
+   */
+  updatedHeight = protoInt64.zero;
 
   /**
    * @generated from field: uint64 num_trades = 13;
@@ -193,6 +221,10 @@ export class Pool extends Message<Pool> {
     { no: 10, name: "block_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 11, name: "created", kind: "message", T: Timestamp },
     { no: 12, name: "updated", kind: "message", T: Timestamp },
+    { no: 28, name: "created_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 29, name: "created_time", kind: "message", T: Timestamp },
+    { no: 30, name: "updated_time", kind: "message", T: Timestamp },
+    { no: 27, name: "updated_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 13, name: "num_trades", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 14, name: "fees_earned", kind: "message", T: Coin, repeated: true },
     { no: 15, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
@@ -254,9 +286,29 @@ export class OfferData extends Message<OfferData> {
   updatedHeight = protoInt64.zero;
 
   /**
-   * @generated from field: google.protobuf.Timestamp updated_timestamp = 5;
+   * Deprecated for backward-compatible JSON decoding of old genesis
+   *
+   * @generated from field: google.protobuf.Timestamp updated_timestamp = 5 [deprecated = true];
+   * @deprecated
    */
   updatedTimestamp?: Timestamp;
+
+  /**
+   * New normalized timestamps
+   *
+   * @generated from field: uint64 created_height = 15;
+   */
+  createdHeight = protoInt64.zero;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_time = 16;
+   */
+  createdTime?: Timestamp;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp updated_time = 17;
+   */
+  updatedTime?: Timestamp;
 
   /**
    * @generated from field: cosmos.base.v1beta1.Coin initial_have = 6;
@@ -326,6 +378,9 @@ export class OfferData extends Message<OfferData> {
     { no: 3, name: "maker", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "updated_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 5, name: "updated_timestamp", kind: "message", T: Timestamp },
+    { no: 15, name: "created_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 16, name: "created_time", kind: "message", T: Timestamp },
+    { no: 17, name: "updated_time", kind: "message", T: Timestamp },
     { no: 6, name: "initial_have", kind: "message", T: Coin },
     { no: 7, name: "initial_want", kind: "message", T: Coin },
     { no: 8, name: "remaining_have", kind: "message", T: Coin },

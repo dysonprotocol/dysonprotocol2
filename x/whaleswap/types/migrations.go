@@ -76,6 +76,23 @@ func MigratePool(pool *Pool) {
 		pool.MaxPrice = sdk.NewCoins()
 	}
 
+	// Map deprecated timestamps/heights to new normalized fields if missing
+	if pool.CreatedTime == nil && pool.Created != nil {
+		pool.CreatedTime = pool.Created
+	}
+	if pool.UpdatedTime == nil && pool.Updated != nil {
+		pool.UpdatedTime = pool.Updated
+	}
+	if pool.CreatedHeight == 0 && pool.BlockHeight > 0 {
+		pool.CreatedHeight = pool.BlockHeight
+	}
+	if pool.UpdatedHeight == 0 {
+		// Best-effort default: use created_height if updated_time exists but height missing
+		if pool.UpdatedTime != nil {
+			pool.UpdatedHeight = pool.CreatedHeight
+		}
+	}
+
 	pool.MinCollateralRatio = ensurePerDenomDecCoins(
 		pool.MinCollateralRatio,
 		denomA, denomB,
@@ -106,6 +123,24 @@ func MigratePool(pool *Pool) {
 		zeroDec, zeroDec,
 		func(d cosmossdkmath.LegacyDec) bool { return !d.IsNegative() },
 	)
+}
+
+// MigrateOffer normalizes OfferData timestamps to the new created/updated time/height fields.
+func MigrateOffer(offer *OfferData) {
+	if offer == nil {
+		return
+	}
+	// Backfill updated_time from deprecated updated_timestamp
+	if offer.UpdatedTime == nil && offer.UpdatedTimestamp != nil {
+		offer.UpdatedTime = offer.UpdatedTimestamp
+	}
+	// If created fields are unset, derive best-effort defaults from updated
+	if offer.CreatedTime == nil && offer.UpdatedTime != nil {
+		offer.CreatedTime = offer.UpdatedTime
+	}
+	if offer.CreatedHeight == 0 && offer.UpdatedHeight > 0 {
+		offer.CreatedHeight = offer.UpdatedHeight
+	}
 }
 
 func ensurePerDenomDecCoins(

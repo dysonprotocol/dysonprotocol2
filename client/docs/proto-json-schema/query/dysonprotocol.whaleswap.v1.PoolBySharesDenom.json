@@ -96,7 +96,8 @@
                         "type": "array"
                     },
                     "block_height": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Deprecated legacy fields for backward-compatible JSON decoding of old genesis"
                     },
                     "created": {
                         "type": "string",
@@ -105,6 +106,21 @@
                     "updated": {
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "created_height": {
+                        "type": "string",
+                        "description": "New normalized fields"
+                    },
+                    "created_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_height": {
+                        "type": "string"
                     },
                     "num_trades": {
                         "type": "string"

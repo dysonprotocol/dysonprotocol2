@@ -236,7 +236,7 @@ func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whal
 	t := sdkCtx.BlockTime()
 	newUnits := remainingUnits.Sub(takeUnits)
 	offer.UpdatedHeight = uint64(sdkCtx.BlockHeight())
-	offer.UpdatedTimestamp = &t
+	offer.UpdatedTime = &t
 	var pfandReleased sdk.Coin
 	if newUnits.IsZero() {
 		offer.Status = whaleswapv1.OfferStatusClosed

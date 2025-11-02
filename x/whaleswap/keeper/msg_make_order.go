@@ -134,20 +134,22 @@ func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*
 	t := sdkCtx.BlockTime()
 	logger.Info("MakeOffer creating offer", "offer_id", id, "unit_have", unitHave, "unit_want", unitWant, "remaining_units", remainingUnits, "pfand_locked", pfandCoin)
 	offer := whaleswapv1.OfferData{
-		OfferId:          id,
-		Status:           whaleswapv1.OfferStatusOpen,
-		Maker:            msg.Maker,
-		UpdatedHeight:    uint64(sdkCtx.BlockHeight()),
-		UpdatedTimestamp: &t,
-		InitialHave:      have,
-		InitialWant:      want,
-		RemainingHave:    have,
-		RemainingWant:    want,
-		UnitHaveInt:      unitHave.String(),
-		UnitWantInt:      unitWant.String(),
-		RemainingUnits:   remainingUnits.String(),
-		PfandLocked:      pfandCoin,
-		SettlementMode:   mode,
+		OfferId:        id,
+		Status:         whaleswapv1.OfferStatusOpen,
+		Maker:          msg.Maker,
+		CreatedHeight:  uint64(sdkCtx.BlockHeight()),
+		CreatedTime:    &t,
+		UpdatedHeight:  uint64(sdkCtx.BlockHeight()),
+		UpdatedTime:    &t,
+		InitialHave:    have,
+		InitialWant:    want,
+		RemainingHave:  have,
+		RemainingWant:  want,
+		UnitHaveInt:    unitHave.String(),
+		UnitWantInt:    unitWant.String(),
+		RemainingUnits: remainingUnits.String(),
+		PfandLocked:    pfandCoin,
+		SettlementMode: mode,
 	}
 	if err := k.OffersMap.Set(ctx, id, offer); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to save offer %d", id)

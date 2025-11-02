@@ -44,9 +44,19 @@ message Pool {
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
-  uint64 block_height = 10;
-  google.protobuf.Timestamp created = 11 [ (gogoproto.stdtime) = true ];
-  google.protobuf.Timestamp updated = 12 [ (gogoproto.stdtime) = true ];
+  // Deprecated legacy fields for backward-compatible JSON decoding of old
+  // genesis
+  uint64 block_height = 10 [ deprecated = true ];
+  google.protobuf.Timestamp created = 11
+      [ deprecated = true, (gogoproto.stdtime) = true ];
+  google.protobuf.Timestamp updated = 12
+      [ deprecated = true, (gogoproto.stdtime) = true ];
+
+  // New normalized fields
+  uint64 created_height = 28;
+  google.protobuf.Timestamp created_time = 29 [ (gogoproto.stdtime) = true ];
+  google.protobuf.Timestamp updated_time = 30 [ (gogoproto.stdtime) = true ];
+  uint64 updated_height = 27;
   uint64 num_trades = 13;
   // cumulative swap fees retained by the pool (accrue to LPs)
   repeated cosmos.base.v1beta1.Coin fees_earned = 14 [
@@ -138,8 +148,13 @@ message OfferData {
   string status = 2; // "open" | "closed" | "cancelled"
   string maker = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   uint64 updated_height = 4;
+  // Deprecated for backward-compatible JSON decoding of old genesis
   google.protobuf.Timestamp updated_timestamp = 5
-      [ (gogoproto.stdtime) = true ];
+      [ deprecated = true, (gogoproto.stdtime) = true ];
+  // New normalized timestamps
+  uint64 created_height = 15;
+  google.protobuf.Timestamp created_time = 16 [ (gogoproto.stdtime) = true ];
+  google.protobuf.Timestamp updated_time = 17 [ (gogoproto.stdtime) = true ];
   cosmos.base.v1beta1.Coin initial_have = 6 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin initial_want = 7 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin remaining_have = 8 [ (gogoproto.nullable) = false ];

@@ -82,6 +82,8 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 	pfandRequired := map[string]cosmossdk_math.Int{}
 	var maxOfferID uint64
 	for _, o := range gs.Offers {
+		// Normalize legacy fields to new created/updated
+		types.MigrateOffer(o)
 		if o.OfferId > maxOfferID {
 			maxOfferID = o.OfferId
 		}
