@@ -142,6 +142,7 @@
       {"type":"file","name":"dysonprotocol.storage.v1.Params.json"},
       {"type":"file","name":"dysonprotocol.storage.v1.StorageGet.json"},
       {"type":"file","name":"dysonprotocol.storage.v1.StorageList.json"},
+      {"type":"file","name":"dysonprotocol.whaleswap.v1.AddressMetrics.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.Auction.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.AuctionByNFT.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.Auctions.json"},
@@ -386,5 +387,5 @@
     ]}
   ]}
 ,
-  {"type":"report","directories":3,"files":380}
+  {"type":"report","directories":3,"files":381}
 ]

@@ -186,6 +186,12 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 	if err := k.AssertInvariants(ctx); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "invariant after AddLiquidity")
 	}
+
+	// Update address metrics
+	if err := k.incrementLiquidityOp(ctx, msg.Signer, true); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update liquidity metrics")
+	}
+
 	logger.Info("AddLiquidity completed successfully", "pool_id", pool.PoolId, "minted_shares", minted.String())
 	return &whaleswapv1.MsgAddLiquidityResponse{Shares: minted.String()}, nil
 }

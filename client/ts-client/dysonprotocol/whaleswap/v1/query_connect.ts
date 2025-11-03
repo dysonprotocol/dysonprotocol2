@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { QueryAuctionByNFTRequest, QueryAuctionByNFTResponse, QueryAuctionRequest, QueryAuctionResponse, QueryAuctionsByPairPriceRangeRequest, QueryAuctionsByPairPriceRangeResponse, QueryAuctionsBySellerRequest, QueryAuctionsBySellerResponse, QueryAuctionsRequest, QueryAuctionsResponse, QueryMetricsRequest, QueryMetricsResponse, QueryOfferRequest, QueryOfferResponse, QueryOffersBestRequest, QueryOffersBestResponse, QueryOffersByDenomRequest, QueryOffersByDenomResponse, QueryOffersByOwnerRequest, QueryOffersByOwnerResponse, QueryOffersByPairPriceRangeRequest, QueryOffersByPairPriceRangeResponse, QueryOffersRequest, QueryOffersResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolBySharesDenomRequest, QueryPoolBySharesDenomResponse, QueryPoolRequest, QueryPoolResponse, QueryPoolsByDenomRequest, QueryPoolsByDenomResponse, QueryPoolsByOwnerRequest, QueryPoolsByOwnerResponse, QueryPoolsByPairPriceRangeRequest, QueryPoolsByPairPriceRangeResponse, QueryPoolsByPairRequest, QueryPoolsByPairResponse, QueryPoolsRequest, QueryPoolsResponse, QueryPositionRequest, QueryPositionResponse, QueryPositionsByPoolRequest, QueryPositionsByPoolResponse, QueryPositionsByUserRequest, QueryPositionsByUserResponse, QueryTradeRequest, QueryTradeResponse, QueryTradesByAuctionRequest, QueryTradesByAuctionResponse, QueryTradesByOfferRequest, QueryTradesByOfferResponse, QueryTradesByPoolRequest, QueryTradesByPoolResponse, QueryTradesByTakerRequest, QueryTradesByTakerResponse, QueryTradesRequest, QueryTradesResponse } from "./query_pb.js";
+import { QueryAddressMetricsRequest, QueryAddressMetricsResponse, QueryAuctionByNFTRequest, QueryAuctionByNFTResponse, QueryAuctionRequest, QueryAuctionResponse, QueryAuctionsByPairPriceRangeRequest, QueryAuctionsByPairPriceRangeResponse, QueryAuctionsBySellerRequest, QueryAuctionsBySellerResponse, QueryAuctionsRequest, QueryAuctionsResponse, QueryMetricsRequest, QueryMetricsResponse, QueryOfferRequest, QueryOfferResponse, QueryOffersBestRequest, QueryOffersBestResponse, QueryOffersByDenomRequest, QueryOffersByDenomResponse, QueryOffersByOwnerRequest, QueryOffersByOwnerResponse, QueryOffersByPairPriceRangeRequest, QueryOffersByPairPriceRangeResponse, QueryOffersRequest, QueryOffersResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolBySharesDenomRequest, QueryPoolBySharesDenomResponse, QueryPoolRequest, QueryPoolResponse, QueryPoolsByDenomRequest, QueryPoolsByDenomResponse, QueryPoolsByOwnerRequest, QueryPoolsByOwnerResponse, QueryPoolsByPairPriceRangeRequest, QueryPoolsByPairPriceRangeResponse, QueryPoolsByPairRequest, QueryPoolsByPairResponse, QueryPoolsRequest, QueryPoolsResponse, QueryPositionRequest, QueryPositionResponse, QueryPositionsByPoolRequest, QueryPositionsByPoolResponse, QueryPositionsByUserRequest, QueryPositionsByUserResponse, QueryTradeRequest, QueryTradeResponse, QueryTradesByAuctionRequest, QueryTradesByAuctionResponse, QueryTradesByOfferRequest, QueryTradesByOfferResponse, QueryTradesByPoolRequest, QueryTradesByPoolResponse, QueryTradesByTakerRequest, QueryTradesByTakerResponse, QueryTradesRequest, QueryTradesResponse } from "./query_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -510,6 +510,24 @@ export const Query = {
       name: "Metrics",
       I: QueryMetricsRequest,
       O: QueryMetricsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     *
+     * AddressMetrics computes lifetime activity metrics for a specific address.
+     *
+     * Aggregates all whaleswap activity for the address across trading, LP
+     * operations, leverage positions, orderbook offers, and auctions. Only tracks
+     * coins with registered denom metadata to prevent spam. All metrics are
+     * cumulative lifetime totals computed at query time. Returns zero values for
+     * addresses with no activity.
+     *
+     * @generated from rpc dysonprotocol.whaleswap.v1.Query.AddressMetrics
+     */
+    addressMetrics: {
+      name: "AddressMetrics",
+      I: QueryAddressMetricsRequest,
+      O: QueryAddressMetricsResponse,
       kind: MethodKind.Unary,
     },
   }

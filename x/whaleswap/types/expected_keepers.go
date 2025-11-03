@@ -8,6 +8,7 @@ import (
 
 	nameservicev1 "dysonprotocol.com/x/nameservice/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 type AccountKeeper interface {
@@ -25,6 +26,7 @@ type BankKeeper interface {
 	GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin
 	SpendableCoins(ctx context.Context, addr sdk.AccAddress) sdk.Coins
 	GetSupply(ctx context.Context, denom string) sdk.Coin
+	GetDenomMetaData(ctx context.Context, denom string) (banktypes.Metadata, bool)
 }
 
 type NameserviceKeeper interface {

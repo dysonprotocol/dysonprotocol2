@@ -180,6 +180,12 @@ func (k Keeper) MakeOffer(ctx context.Context, msg *whaleswapv1.MsgMakeOffer) (*
 		logger.Error("MakeOffer invariant check failed", "error", err)
 		return nil, cosmossdkerrors.Wrap(err, "invariant failed after MakeOffer")
 	}
+
+	// Update address metrics
+	if err := k.incrementOfferCreated(ctx, msg.Maker); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update offer metrics")
+	}
+
 	logger.Info("MakeOffer completed successfully", "offer_id", id)
 	return &whaleswapv1.MsgMakeOfferResponse{OfferId: id}, nil
 }

@@ -308,6 +308,11 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		return nil, cosmossdkerrors.Wrap(err, "invariant after ClosePosition")
 	}
 
+	// Update address metrics
+	if err := k.incrementPositionClosed(ctx, msg.User, interestCoin, profit); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update position metrics")
+	}
+
 	return &whaleswapv1.MsgClosePositionResponse{
 		InterestPaid:  interestCoin,
 		PrincipalPaid: principalCoin,

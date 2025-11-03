@@ -252,6 +252,7 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		&upgradetypes.QueryAuthorityRequest{}, &upgradetypes.QueryAuthorityResponse{},
 
 		// whaleswap (register both Msg responses and Query requests/responses for dyslang)
+		&whaleswapv1.QueryAddressMetricsRequest{}, &whaleswapv1.QueryAddressMetricsResponse{},
 
 		&whaleswapv1.QueryOfferRequest{}, &whaleswapv1.QueryOfferResponse{},
 		&whaleswapv1.QueryOffersRequest{}, &whaleswapv1.QueryOffersResponse{},

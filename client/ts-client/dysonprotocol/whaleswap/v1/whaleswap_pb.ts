@@ -743,3 +743,221 @@ export class TradeMetrics extends Message<TradeMetrics> {
   }
 }
 
+/**
+ * AddressMetrics aggregates lifetime whaleswap activity for a specific address.
+ * All metrics are cumulative totals, not current state snapshots.
+ *
+ * NOTE: Only coins with existing denom metadata are tracked to prevent spam
+ * and focus on relevant assets. Coins without metadata are excluded from all
+ * volume and balance aggregations.
+ *
+ * @generated from message dysonprotocol.whaleswap.v1.AddressMetrics
+ */
+export class AddressMetrics extends Message<AddressMetrics> {
+  /**
+   * Core identity
+   *
+   * @generated from field: string address = 1;
+   */
+  address = "";
+
+  /**
+   * @generated from field: uint64 block_height = 2;
+   */
+  blockHeight = protoInt64.zero;
+
+  /**
+   * ═════ TRADING ═════
+   * Total unique trades executed as trader
+   *
+   * @generated from field: uint64 total_trades = 10;
+   */
+  totalTrades = protoInt64.zero;
+
+  /**
+   * Total operations across all trades (swap legs + takes + auction redeems)
+   *
+   * @generated from field: uint64 total_trade_ops = 11;
+   */
+  totalTradeOps = protoInt64.zero;
+
+  /**
+   * Lifetime aggregate coins sent (denoms with metadata only)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin total_volume_sent = 12;
+   */
+  totalVolumeSent: Coin[] = [];
+
+  /**
+   * Lifetime aggregate coins received (denoms with metadata only)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin total_volume_received = 13;
+   */
+  totalVolumeReceived: Coin[] = [];
+
+  /**
+   * ═════ LP ACTIVITY ═════
+   * Total pools created by this address
+   *
+   * @generated from field: uint64 pools_created = 20;
+   */
+  poolsCreated = protoInt64.zero;
+
+  /**
+   * Cumulative swap fees earned (denoms with metadata only)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin lp_fees_earned = 21;
+   */
+  lpFeesEarned: Coin[] = [];
+
+  /**
+   * Cumulative interest earned from leverage borrowers (denoms with metadata
+   * only)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin lp_interest_earned = 22;
+   */
+  lpInterestEarned: Coin[] = [];
+
+  /**
+   * Count of liquidity add operations
+   *
+   * @generated from field: uint64 liquidity_adds = 23;
+   */
+  liquidityAdds = protoInt64.zero;
+
+  /**
+   * Count of liquidity remove operations
+   *
+   * @generated from field: uint64 liquidity_removes = 24;
+   */
+  liquidityRemoves = protoInt64.zero;
+
+  /**
+   * ═════ LEVERAGE (BORROWER) ═════
+   * Total leverage positions opened (lifetime)
+   *
+   * @generated from field: uint64 positions_opened = 30;
+   */
+  positionsOpened = protoInt64.zero;
+
+  /**
+   * Total leverage positions closed (lifetime)
+   *
+   * @generated from field: uint64 positions_closed = 31;
+   */
+  positionsClosed = protoInt64.zero;
+
+  /**
+   * Total interest paid (denoms with metadata only)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin interest_paid = 32;
+   */
+  interestPaid: Coin[] = [];
+
+  /**
+   * Net PnL from closed leverage positions (denoms with metadata only)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin leverage_pnl = 33;
+   */
+  leveragePnl: Coin[] = [];
+
+  /**
+   * Count of positions liquidated (lifetime)
+   *
+   * @generated from field: uint64 liquidations = 34;
+   */
+  liquidations = protoInt64.zero;
+
+  /**
+   * ═════ ORDERBOOK ═════
+   * Total offers created (lifetime)
+   *
+   * @generated from field: uint64 offers_created = 40;
+   */
+  offersCreated = protoInt64.zero;
+
+  /**
+   * Total offers closed via full execution (lifetime)
+   *
+   * @generated from field: uint64 offers_closed = 41;
+   */
+  offersClosed = protoInt64.zero;
+
+  /**
+   * Total offers cancelled before completion (lifetime)
+   *
+   * @generated from field: uint64 offers_cancelled = 42;
+   */
+  offersCancelled = protoInt64.zero;
+
+  /**
+   * Cumulative volume traded as maker (denoms with metadata only)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin maker_volume = 43;
+   */
+  makerVolume: Coin[] = [];
+
+  /**
+   * ═════ AUCTIONS ═════
+   * Total auctions created as seller (lifetime)
+   *
+   * @generated from field: uint64 auctions_created = 50;
+   */
+  auctionsCreated = protoInt64.zero;
+
+  /**
+   * Total auction volume sold (denoms with metadata only)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin auction_volume = 51;
+   */
+  auctionVolume: Coin[] = [];
+
+  constructor(data?: PartialMessage<AddressMetrics>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.AddressMetrics";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "address", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "block_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 10, name: "total_trades", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 11, name: "total_trade_ops", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 12, name: "total_volume_sent", kind: "message", T: Coin, repeated: true },
+    { no: 13, name: "total_volume_received", kind: "message", T: Coin, repeated: true },
+    { no: 20, name: "pools_created", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 21, name: "lp_fees_earned", kind: "message", T: Coin, repeated: true },
+    { no: 22, name: "lp_interest_earned", kind: "message", T: Coin, repeated: true },
+    { no: 23, name: "liquidity_adds", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 24, name: "liquidity_removes", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 30, name: "positions_opened", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 31, name: "positions_closed", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 32, name: "interest_paid", kind: "message", T: Coin, repeated: true },
+    { no: 33, name: "leverage_pnl", kind: "message", T: Coin, repeated: true },
+    { no: 34, name: "liquidations", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 40, name: "offers_created", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 41, name: "offers_closed", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 42, name: "offers_cancelled", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 43, name: "maker_volume", kind: "message", T: Coin, repeated: true },
+    { no: 50, name: "auctions_created", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 51, name: "auction_volume", kind: "message", T: Coin, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AddressMetrics {
+    return new AddressMetrics().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AddressMetrics {
+    return new AddressMetrics().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AddressMetrics {
+    return new AddressMetrics().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AddressMetrics | PlainMessage<AddressMetrics> | undefined, b: AddressMetrics | PlainMessage<AddressMetrics> | undefined): boolean {
+    return proto3.util.equals(AddressMetrics, a, b);
+  }
+}
+

@@ -299,6 +299,11 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		return nil, cosmossdkerrors.Wrapf(err, "invariant after CreatePool")
 	}
 
+	// Update address metrics
+	if err := k.incrementPoolCreated(ctx, msg.Creator); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update pool creator metrics")
+	}
+
 	logger.Info("CreatePool completed successfully", "pool_id", id)
 	return &whaleswapv1.MsgCreatePoolResponse{PoolId: id}, nil
 }

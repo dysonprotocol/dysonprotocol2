@@ -6,7 +6,7 @@
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3 } from "@bufbuild/protobuf";
 import { Params } from "./params_pb.js";
-import { AuctionRecord, OfferData, Pool, Trade } from "./whaleswap_pb.js";
+import { AddressMetrics, AuctionRecord, OfferData, Pool, Trade } from "./whaleswap_pb.js";
 import { LeveragePosition } from "./leverage_pb.js";
 
 /**
@@ -49,6 +49,11 @@ export class GenesisState extends Message<GenesisState> {
    */
   positions: LeveragePosition[] = [];
 
+  /**
+   * @generated from field: repeated dysonprotocol.whaleswap.v1.AddressMetrics address_metrics = 7;
+   */
+  addressMetrics: AddressMetrics[] = [];
+
   constructor(data?: PartialMessage<GenesisState>) {
     super();
     proto3.util.initPartial(data, this);
@@ -63,6 +68,7 @@ export class GenesisState extends Message<GenesisState> {
     { no: 4, name: "trades", kind: "message", T: Trade, repeated: true },
     { no: 5, name: "auctions", kind: "message", T: AuctionRecord, repeated: true },
     { no: 6, name: "positions", kind: "message", T: LeveragePosition, repeated: true },
+    { no: 7, name: "address_metrics", kind: "message", T: AddressMetrics, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GenesisState {

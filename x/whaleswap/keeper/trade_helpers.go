@@ -260,6 +260,15 @@ func (k Keeper) tradeApplyTakeItem(ctx context.Context, taker string, item *whal
 	if err := k.reindexOfferOnStatusChange(ctx, prev, offer); err != nil {
 		return whaleswapv1.TradeOperation{}, "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, err
 	}
+
+	// Update metrics if offer status changed to closed
+	if prev.Status != offer.Status && offer.Status == whaleswapv1.OfferStatusClosed {
+		volumeTaken := offer.InitialHave.Amount.Sub(offer.RemainingHave.Amount)
+		takenCoin := sdk.NewCoin(offer.InitialHave.Denom, volumeTaken)
+		if err := k.incrementOfferStatusChange(ctx, offer.Maker, offer.Status, takenCoin); err != nil {
+			return whaleswapv1.TradeOperation{}, "", sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(err, "failed to update offer metrics")
+		}
+	}
 	// EventOfferTaken and EventPfandReleased emitted by recordTradeWithOperations (with proper IDs)
 
 	// Received denom is base have denom

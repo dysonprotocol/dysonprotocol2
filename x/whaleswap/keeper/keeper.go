@@ -49,6 +49,8 @@ var (
 	LeveragePositionsPrefix   = collections.NewPrefix(20)
 	PositionsByUserPrefix     = collections.NewPrefix(21)
 	PositionsByPoolPrefix     = collections.NewPrefix(22)
+	// Metrics
+	AddressMetricsPrefix = collections.NewPrefix(23)
 )
 
 type Keeper struct {
@@ -92,6 +94,8 @@ type Keeper struct {
 	LeveragePositions    collections.Map[uint64, whaleswapv1.LeveragePosition]
 	PositionsByUserIndex collections.Map[collections.Triple[string, uint32, uint64], uint64]
 	PositionsByPoolIndex collections.Map[collections.Triple[uint64, uint32, uint64], uint64]
+	// Metrics
+	AddressMetricsMap collections.Map[string, whaleswapv1.AddressMetrics]
 }
 
 func NewKeeper(
@@ -247,6 +251,13 @@ func NewKeeper(
 		"positions_by_pool",
 		collections.TripleKeyCodec(collections.Uint64Key, collections.Uint32Key, collections.Uint64Key),
 		collections.Uint64Value,
+	)
+	k.AddressMetricsMap = collections.NewMap(
+		sb,
+		AddressMetricsPrefix,
+		"address_metrics",
+		collections.StringKey,
+		codec.CollValue[whaleswapv1.AddressMetrics](cdc),
 	)
 	schema, err := sb.Build()
 	if err != nil {

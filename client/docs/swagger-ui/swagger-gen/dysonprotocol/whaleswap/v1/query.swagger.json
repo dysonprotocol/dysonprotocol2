@@ -335,6 +335,39 @@
         ]
       }
     },
+    "/dysonprotocol/whaleswap/v1/metrics/address/{address}": {
+      "get": {
+        "summary": "AddressMetrics computes lifetime activity metrics for a specific address.",
+        "description": "Aggregates all whaleswap activity for the address across trading, LP\noperations, leverage positions, orderbook offers, and auctions. Only tracks\ncoins with registered denom metadata to prevent spam. All metrics are\ncumulative lifetime totals computed at query time. Returns zero values for\naddresses with no activity.",
+        "operationId": "dysonprotocol.whaleswap.v1.QueryAddressMetricsRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAddressMetricsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "description": "Address to compute metrics for; must be a valid bech32 address",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
     "/dysonprotocol/whaleswap/v1/offers": {
       "get": {
         "summary": "Offers provides unified offer listing with optional denom filters and\npagination.",
@@ -1830,6 +1863,136 @@
       },
       "description": "DecCoin defines a token with a denomination and a decimal amount.\n\nNOTE: The amount field is an Dec which implements the custom method\nsignatures required by gogoproto."
     },
+    "dysonprotocol.whaleswap.v1.AddressMetrics": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string",
+          "title": "Core identity"
+        },
+        "block_height": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "total_trades": {
+          "type": "string",
+          "format": "uint64",
+          "title": "\u2550\u2550\u2550\u2550\u2550 TRADING \u2550\u2550\u2550\u2550\u2550\nTotal unique trades executed as trader"
+        },
+        "total_trade_ops": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Total operations across all trades (swap legs + takes + auction redeems)"
+        },
+        "total_volume_sent": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Lifetime aggregate coins sent (denoms with metadata only)"
+        },
+        "total_volume_received": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Lifetime aggregate coins received (denoms with metadata only)"
+        },
+        "pools_created": {
+          "type": "string",
+          "format": "uint64",
+          "title": "\u2550\u2550\u2550\u2550\u2550 LP ACTIVITY \u2550\u2550\u2550\u2550\u2550\nTotal pools created by this address"
+        },
+        "lp_fees_earned": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Cumulative swap fees earned (denoms with metadata only)"
+        },
+        "lp_interest_earned": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Cumulative interest earned from leverage borrowers (denoms with metadata\nonly)"
+        },
+        "liquidity_adds": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Count of liquidity add operations"
+        },
+        "liquidity_removes": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Count of liquidity remove operations"
+        },
+        "positions_opened": {
+          "type": "string",
+          "format": "uint64",
+          "title": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE (BORROWER) \u2550\u2550\u2550\u2550\u2550\nTotal leverage positions opened (lifetime)"
+        },
+        "positions_closed": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Total leverage positions closed (lifetime)"
+        },
+        "interest_paid": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Total interest paid (denoms with metadata only)"
+        },
+        "leverage_pnl": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Net PnL from closed leverage positions (denoms with metadata only)"
+        },
+        "liquidations": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Count of positions liquidated (lifetime)"
+        },
+        "offers_created": {
+          "type": "string",
+          "format": "uint64",
+          "title": "\u2550\u2550\u2550\u2550\u2550 ORDERBOOK \u2550\u2550\u2550\u2550\u2550\nTotal offers created (lifetime)"
+        },
+        "offers_closed": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Total offers closed via full execution (lifetime)"
+        },
+        "offers_cancelled": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Total offers cancelled before completion (lifetime)"
+        },
+        "maker_volume": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Cumulative volume traded as maker (denoms with metadata only)"
+        },
+        "auctions_created": {
+          "type": "string",
+          "format": "uint64",
+          "title": "\u2550\u2550\u2550\u2550\u2550 AUCTIONS \u2550\u2550\u2550\u2550\u2550\nTotal auctions created as seller (lifetime)"
+        },
+        "auction_volume": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "Total auction volume sold (denoms with metadata only)"
+        }
+      },
+      "description": "AddressMetrics aggregates lifetime whaleswap activity for a specific address.\nAll metrics are cumulative totals, not current state snapshots.\n\nNOTE: Only coins with existing denom metadata are tracked to prevent spam\nand focus on relevant assets. Coins without metadata are excluded from all\nvolume and balance aggregations."
+    },
     "dysonprotocol.whaleswap.v1.AuctionRecord": {
       "type": "object",
       "properties": {
@@ -2212,6 +2375,15 @@
         "POSITION_STATUS_LIQUIDATED"
       ],
       "default": "POSITION_STATUS_UNSPECIFIED"
+    },
+    "dysonprotocol.whaleswap.v1.QueryAddressMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AddressMetrics",
+          "title": "Comprehensive lifetime metrics for the specified address"
+        }
+      }
     },
     "dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse": {
       "type": "object",

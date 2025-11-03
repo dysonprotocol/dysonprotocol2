@@ -6,7 +6,7 @@
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 import { Params } from "./params_pb.js";
-import { AuctionRecord, OfferData, Pool, Trade, TradeMetrics } from "./whaleswap_pb.js";
+import { AddressMetrics, AuctionRecord, OfferData, Pool, Trade, TradeMetrics } from "./whaleswap_pb.js";
 import { PageRequest, PageResponse } from "../../../cosmos/base/query/v1beta1/pagination_pb.js";
 import { LeveragePosition, PositionStatus } from "./leverage_pb.js";
 import { Coin } from "../../../cosmos/base/v1beta1/coin_pb.js";
@@ -2866,6 +2866,84 @@ export class QueryPositionsByPoolResponse extends Message<QueryPositionsByPoolRe
 
   static equals(a: QueryPositionsByPoolResponse | PlainMessage<QueryPositionsByPoolResponse> | undefined, b: QueryPositionsByPoolResponse | PlainMessage<QueryPositionsByPoolResponse> | undefined): boolean {
     return proto3.util.equals(QueryPositionsByPoolResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryAddressMetricsRequest
+ */
+export class QueryAddressMetricsRequest extends Message<QueryAddressMetricsRequest> {
+  /**
+   * Address to compute metrics for; must be a valid bech32 address
+   *
+   * @generated from field: string address = 1;
+   */
+  address = "";
+
+  constructor(data?: PartialMessage<QueryAddressMetricsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryAddressMetricsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "address", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryAddressMetricsRequest {
+    return new QueryAddressMetricsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryAddressMetricsRequest {
+    return new QueryAddressMetricsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryAddressMetricsRequest {
+    return new QueryAddressMetricsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryAddressMetricsRequest | PlainMessage<QueryAddressMetricsRequest> | undefined, b: QueryAddressMetricsRequest | PlainMessage<QueryAddressMetricsRequest> | undefined): boolean {
+    return proto3.util.equals(QueryAddressMetricsRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryAddressMetricsResponse
+ */
+export class QueryAddressMetricsResponse extends Message<QueryAddressMetricsResponse> {
+  /**
+   * Comprehensive lifetime metrics for the specified address
+   *
+   * @generated from field: dysonprotocol.whaleswap.v1.AddressMetrics metrics = 1;
+   */
+  metrics?: AddressMetrics;
+
+  constructor(data?: PartialMessage<QueryAddressMetricsResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryAddressMetricsResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "metrics", kind: "message", T: AddressMetrics },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryAddressMetricsResponse {
+    return new QueryAddressMetricsResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryAddressMetricsResponse {
+    return new QueryAddressMetricsResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryAddressMetricsResponse {
+    return new QueryAddressMetricsResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryAddressMetricsResponse | PlainMessage<QueryAddressMetricsResponse> | undefined, b: QueryAddressMetricsResponse | PlainMessage<QueryAddressMetricsResponse> | undefined): boolean {
+    return proto3.util.equals(QueryAddressMetricsResponse, a, b);
   }
 }
 

@@ -120,6 +120,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Long:      "List auctions. Optionally filter by sell_denom and/or bid_denom. Use pagination flags for paging.",
 					Example:   "dysond query whaleswap auctions --sell-denom=udys --bid-denom=ufoo",
 				},
+				{
+					RpcMethod: "AddressMetrics",
+					Use:       "address-metrics --address=<addr>",
+					Short:     "Get lifetime activity metrics for an address",
+					Long:      "Aggregate all whaleswap activity for an address across trading, LP operations, leverage positions, orderbook, and auctions. Only tracks coins with registered denom metadata.",
+					Example:   "dysond query whaleswap address-metrics --address=$(dysond keys show alice -a)",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"address": {Name: "address", Usage: "Address to compute metrics for"},
+					},
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{

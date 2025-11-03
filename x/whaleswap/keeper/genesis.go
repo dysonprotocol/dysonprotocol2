@@ -416,6 +416,13 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 		}
 	}
 
+	// Address Metrics
+	for _, m := range gs.AddressMetrics {
+		if err := k.AddressMetricsMap.Set(ctx, m.Address, *m); err != nil {
+			panic(err)
+		}
+	}
+
 	// Final AMM sanity (shares/liquidity/coverage) after import
 	if err := k.AssertAMMInvariants(ctx); err != nil {
 		panic(err)
@@ -460,6 +467,21 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		positions = append(positions, &v)
 		return false, nil
 	})
+	// Collect address metrics
+	var addressMetrics []*types.AddressMetrics
+	_ = k.AddressMetricsMap.Walk(ctx, nil, func(key string, value types.AddressMetrics) (bool, error) {
+		v := value
+		addressMetrics = append(addressMetrics, &v)
+		return false, nil
+	})
 
-	return &types.GenesisState{Params: p, Pools: pools, Offers: offers, Trades: trades, Auctions: auctions, Positions: positions}
+	return &types.GenesisState{
+		Params:         p,
+		Pools:          pools,
+		Offers:         offers,
+		Trades:         trades,
+		Auctions:       auctions,
+		Positions:      positions,
+		AddressMetrics: addressMetrics,
+	}
 }

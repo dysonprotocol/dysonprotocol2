@@ -170,6 +170,12 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 	if err := k.AssertInvariants(ctx); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "invariant after RemoveLiquidity")
 	}
+
+	// Update address metrics
+	if err := k.incrementLiquidityOp(ctx, msg.Signer, false); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update liquidity metrics")
+	}
+
 	logger.Info("RemoveLiquidity completed successfully", "pool_id", pool.PoolId, "burned_shares", sharesAmt.String(), "outs", outs)
 	return &whaleswapv1.MsgRemoveLiquidityResponse{Amount: outs}, nil
 }

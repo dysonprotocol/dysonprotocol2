@@ -269,14 +269,66 @@ func (x *_GenesisState_6_list) IsValid() bool {
 	return x.list != nil
 }
 
+var _ protoreflect.List = (*_GenesisState_7_list)(nil)
+
+type _GenesisState_7_list struct {
+	list *[]*AddressMetrics
+}
+
+func (x *_GenesisState_7_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_GenesisState_7_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_GenesisState_7_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*AddressMetrics)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_GenesisState_7_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*AddressMetrics)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_GenesisState_7_list) AppendMutable() protoreflect.Value {
+	v := new(AddressMetrics)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_GenesisState_7_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_GenesisState_7_list) NewElement() protoreflect.Value {
+	v := new(AddressMetrics)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_GenesisState_7_list) IsValid() bool {
+	return x.list != nil
+}
+
 var (
-	md_GenesisState           protoreflect.MessageDescriptor
-	fd_GenesisState_params    protoreflect.FieldDescriptor
-	fd_GenesisState_pools     protoreflect.FieldDescriptor
-	fd_GenesisState_offers    protoreflect.FieldDescriptor
-	fd_GenesisState_trades    protoreflect.FieldDescriptor
-	fd_GenesisState_auctions  protoreflect.FieldDescriptor
-	fd_GenesisState_positions protoreflect.FieldDescriptor
+	md_GenesisState                 protoreflect.MessageDescriptor
+	fd_GenesisState_params          protoreflect.FieldDescriptor
+	fd_GenesisState_pools           protoreflect.FieldDescriptor
+	fd_GenesisState_offers          protoreflect.FieldDescriptor
+	fd_GenesisState_trades          protoreflect.FieldDescriptor
+	fd_GenesisState_auctions        protoreflect.FieldDescriptor
+	fd_GenesisState_positions       protoreflect.FieldDescriptor
+	fd_GenesisState_address_metrics protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -288,6 +340,7 @@ func init() {
 	fd_GenesisState_trades = md_GenesisState.Fields().ByName("trades")
 	fd_GenesisState_auctions = md_GenesisState.Fields().ByName("auctions")
 	fd_GenesisState_positions = md_GenesisState.Fields().ByName("positions")
+	fd_GenesisState_address_metrics = md_GenesisState.Fields().ByName("address_metrics")
 }
 
 var _ protoreflect.Message = (*fastReflection_GenesisState)(nil)
@@ -391,6 +444,12 @@ func (x *fastReflection_GenesisState) Range(f func(protoreflect.FieldDescriptor,
 			return
 		}
 	}
+	if len(x.AddressMetrics) != 0 {
+		value := protoreflect.ValueOfList(&_GenesisState_7_list{list: &x.AddressMetrics})
+		if !f(fd_GenesisState_address_metrics, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -418,6 +477,8 @@ func (x *fastReflection_GenesisState) Has(fd protoreflect.FieldDescriptor) bool 
 		return len(x.Auctions) != 0
 	case "dysonprotocol.whaleswap.v1.GenesisState.positions":
 		return len(x.Positions) != 0
+	case "dysonprotocol.whaleswap.v1.GenesisState.address_metrics":
+		return len(x.AddressMetrics) != 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.GenesisState"))
@@ -446,6 +507,8 @@ func (x *fastReflection_GenesisState) Clear(fd protoreflect.FieldDescriptor) {
 		x.Auctions = nil
 	case "dysonprotocol.whaleswap.v1.GenesisState.positions":
 		x.Positions = nil
+	case "dysonprotocol.whaleswap.v1.GenesisState.address_metrics":
+		x.AddressMetrics = nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.GenesisState"))
@@ -495,6 +558,12 @@ func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescripto
 		}
 		listValue := &_GenesisState_6_list{list: &x.Positions}
 		return protoreflect.ValueOfList(listValue)
+	case "dysonprotocol.whaleswap.v1.GenesisState.address_metrics":
+		if len(x.AddressMetrics) == 0 {
+			return protoreflect.ValueOfList(&_GenesisState_7_list{})
+		}
+		listValue := &_GenesisState_7_list{list: &x.AddressMetrics}
+		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.GenesisState"))
@@ -537,6 +606,10 @@ func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value
 		lv := value.List()
 		clv := lv.(*_GenesisState_6_list)
 		x.Positions = *clv.list
+	case "dysonprotocol.whaleswap.v1.GenesisState.address_metrics":
+		lv := value.List()
+		clv := lv.(*_GenesisState_7_list)
+		x.AddressMetrics = *clv.list
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.GenesisState"))
@@ -592,6 +665,12 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 		}
 		value := &_GenesisState_6_list{list: &x.Positions}
 		return protoreflect.ValueOfList(value)
+	case "dysonprotocol.whaleswap.v1.GenesisState.address_metrics":
+		if x.AddressMetrics == nil {
+			x.AddressMetrics = []*AddressMetrics{}
+		}
+		value := &_GenesisState_7_list{list: &x.AddressMetrics}
+		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.GenesisState"))
@@ -623,6 +702,9 @@ func (x *fastReflection_GenesisState) NewField(fd protoreflect.FieldDescriptor) 
 	case "dysonprotocol.whaleswap.v1.GenesisState.positions":
 		list := []*LeveragePosition{}
 		return protoreflect.ValueOfList(&_GenesisState_6_list{list: &list})
+	case "dysonprotocol.whaleswap.v1.GenesisState.address_metrics":
+		list := []*AddressMetrics{}
+		return protoreflect.ValueOfList(&_GenesisState_7_list{list: &list})
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.GenesisState"))
@@ -726,6 +808,12 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				n += 1 + l + runtime.Sov(uint64(l))
 			}
 		}
+		if len(x.AddressMetrics) > 0 {
+			for _, e := range x.AddressMetrics {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -754,6 +842,22 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.AddressMetrics) > 0 {
+			for iNdEx := len(x.AddressMetrics) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.AddressMetrics[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x3a
+			}
 		}
 		if len(x.Positions) > 0 {
 			for iNdEx := len(x.Positions) - 1; iNdEx >= 0; iNdEx-- {
@@ -1104,6 +1208,40 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
 				iNdEx = postIndex
+			case 7:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AddressMetrics", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.AddressMetrics = append(x.AddressMetrics, &AddressMetrics{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.AddressMetrics[len(x.AddressMetrics)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -1161,11 +1299,12 @@ type GenesisState struct {
 	// params defines all the parameters of the module.
 	Params *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
 	// initial pools/offers/trades/auctions/positions
-	Pools     []*Pool             `protobuf:"bytes,2,rep,name=pools,proto3" json:"pools,omitempty"`
-	Offers    []*OfferData        `protobuf:"bytes,3,rep,name=offers,proto3" json:"offers,omitempty"`
-	Trades    []*Trade            `protobuf:"bytes,4,rep,name=trades,proto3" json:"trades,omitempty"`
-	Auctions  []*AuctionRecord    `protobuf:"bytes,5,rep,name=auctions,proto3" json:"auctions,omitempty"`
-	Positions []*LeveragePosition `protobuf:"bytes,6,rep,name=positions,proto3" json:"positions,omitempty"`
+	Pools          []*Pool             `protobuf:"bytes,2,rep,name=pools,proto3" json:"pools,omitempty"`
+	Offers         []*OfferData        `protobuf:"bytes,3,rep,name=offers,proto3" json:"offers,omitempty"`
+	Trades         []*Trade            `protobuf:"bytes,4,rep,name=trades,proto3" json:"trades,omitempty"`
+	Auctions       []*AuctionRecord    `protobuf:"bytes,5,rep,name=auctions,proto3" json:"auctions,omitempty"`
+	Positions      []*LeveragePosition `protobuf:"bytes,6,rep,name=positions,proto3" json:"positions,omitempty"`
+	AddressMetrics []*AddressMetrics   `protobuf:"bytes,7,rep,name=address_metrics,json=addressMetrics,proto3" json:"address_metrics,omitempty"`
 }
 
 func (x *GenesisState) Reset() {
@@ -1230,6 +1369,13 @@ func (x *GenesisState) GetPositions() []*LeveragePosition {
 	return nil
 }
 
+func (x *GenesisState) GetAddressMetrics() []*AddressMetrics {
+	if x != nil {
+		return x.AddressMetrics
+	}
+	return nil
+}
+
 var File_dysonprotocol_whaleswap_v1_genesis_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_whaleswap_v1_genesis_proto_rawDesc = []byte{
@@ -1248,7 +1394,7 @@ var file_dysonprotocol_whaleswap_v1_genesis_proto_rawDesc = []byte{
 	0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x29, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x63, 0x6f, 0x6c, 0x2f, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x76, 0x31,
 	0x2f, 0x6c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22,
-	0x95, 0x03, 0x0a, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65,
+	0xea, 0x03, 0x0a, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65,
 	0x12, 0x40, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
 	0x32, 0x22, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
 	0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x61,
@@ -1273,10 +1419,15 @@ var file_dysonprotocol_whaleswap_v1_genesis_proto_rawDesc = []byte{
 	0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77,
 	0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x65, 0x76, 0x65,
 	0x72, 0x61, 0x67, 0x65, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x09, 0x70, 0x6f,
-	0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x42, 0x25, 0x5a, 0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77,
-	0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x53, 0x0a, 0x0f, 0x61, 0x64, 0x64, 0x72, 0x65,
+	0x73, 0x73, 0x5f, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x18, 0x07, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x2a, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
+	0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x64,
+	0x64, 0x72, 0x65, 0x73, 0x73, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x52, 0x0e, 0x61, 0x64,
+	0x64, 0x72, 0x65, 0x73, 0x73, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x42, 0x25, 0x5a, 0x23,
+	0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f,
+	0x6d, 0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79,
+	0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1300,6 +1451,7 @@ var file_dysonprotocol_whaleswap_v1_genesis_proto_goTypes = []interface{}{
 	(*Trade)(nil),            // 4: dysonprotocol.whaleswap.v1.Trade
 	(*AuctionRecord)(nil),    // 5: dysonprotocol.whaleswap.v1.AuctionRecord
 	(*LeveragePosition)(nil), // 6: dysonprotocol.whaleswap.v1.LeveragePosition
+	(*AddressMetrics)(nil),   // 7: dysonprotocol.whaleswap.v1.AddressMetrics
 }
 var file_dysonprotocol_whaleswap_v1_genesis_proto_depIdxs = []int32{
 	1, // 0: dysonprotocol.whaleswap.v1.GenesisState.params:type_name -> dysonprotocol.whaleswap.v1.Params
@@ -1308,11 +1460,12 @@ var file_dysonprotocol_whaleswap_v1_genesis_proto_depIdxs = []int32{
 	4, // 3: dysonprotocol.whaleswap.v1.GenesisState.trades:type_name -> dysonprotocol.whaleswap.v1.Trade
 	5, // 4: dysonprotocol.whaleswap.v1.GenesisState.auctions:type_name -> dysonprotocol.whaleswap.v1.AuctionRecord
 	6, // 5: dysonprotocol.whaleswap.v1.GenesisState.positions:type_name -> dysonprotocol.whaleswap.v1.LeveragePosition
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	7, // 6: dysonprotocol.whaleswap.v1.GenesisState.address_metrics:type_name -> dysonprotocol.whaleswap.v1.AddressMetrics
+	7, // [7:7] is the sub-list for method output_type
+	7, // [7:7] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_dysonprotocol_whaleswap_v1_genesis_proto_init() }

@@ -48,6 +48,7 @@ const (
 	Query_PositionsByUser_FullMethodName          = "/dysonprotocol.whaleswap.v1.Query/PositionsByUser"
 	Query_PositionsByPool_FullMethodName          = "/dysonprotocol.whaleswap.v1.Query/PositionsByPool"
 	Query_Metrics_FullMethodName                  = "/dysonprotocol.whaleswap.v1.Query/Metrics"
+	Query_AddressMetrics_FullMethodName           = "/dysonprotocol.whaleswap.v1.Query/AddressMetrics"
 )
 
 // QueryClient is the client API for Query service.
@@ -264,6 +265,14 @@ type QueryClient interface {
 	// iterating the trades map. Returns consolidated TradeMetrics for monitoring
 	// and invariants checking.
 	Metrics(ctx context.Context, in *QueryMetricsRequest, opts ...grpc.CallOption) (*QueryMetricsResponse, error)
+	// AddressMetrics computes lifetime activity metrics for a specific address.
+	//
+	// Aggregates all whaleswap activity for the address across trading, LP
+	// operations, leverage positions, orderbook offers, and auctions. Only tracks
+	// coins with registered denom metadata to prevent spam. All metrics are
+	// cumulative lifetime totals computed at query time. Returns zero values for
+	// addresses with no activity.
+	AddressMetrics(ctx context.Context, in *QueryAddressMetricsRequest, opts ...grpc.CallOption) (*QueryAddressMetricsResponse, error)
 }
 
 type queryClient struct {
@@ -564,6 +573,16 @@ func (c *queryClient) Metrics(ctx context.Context, in *QueryMetricsRequest, opts
 	return out, nil
 }
 
+func (c *queryClient) AddressMetrics(ctx context.Context, in *QueryAddressMetricsRequest, opts ...grpc.CallOption) (*QueryAddressMetricsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryAddressMetricsResponse)
+	err := c.cc.Invoke(ctx, Query_AddressMetrics_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility.
@@ -778,6 +797,14 @@ type QueryServer interface {
 	// iterating the trades map. Returns consolidated TradeMetrics for monitoring
 	// and invariants checking.
 	Metrics(context.Context, *QueryMetricsRequest) (*QueryMetricsResponse, error)
+	// AddressMetrics computes lifetime activity metrics for a specific address.
+	//
+	// Aggregates all whaleswap activity for the address across trading, LP
+	// operations, leverage positions, orderbook offers, and auctions. Only tracks
+	// coins with registered denom metadata to prevent spam. All metrics are
+	// cumulative lifetime totals computed at query time. Returns zero values for
+	// addresses with no activity.
+	AddressMetrics(context.Context, *QueryAddressMetricsRequest) (*QueryAddressMetricsResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -874,6 +901,9 @@ func (UnimplementedQueryServer) PositionsByPool(context.Context, *QueryPositions
 }
 func (UnimplementedQueryServer) Metrics(context.Context, *QueryMetricsRequest) (*QueryMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Metrics not implemented")
+}
+func (UnimplementedQueryServer) AddressMetrics(context.Context, *QueryAddressMetricsRequest) (*QueryAddressMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddressMetrics not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 func (UnimplementedQueryServer) testEmbeddedByValue()               {}
@@ -1418,6 +1448,24 @@ func _Query_Metrics_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_AddressMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryAddressMetricsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).AddressMetrics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_AddressMetrics_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).AddressMetrics(ctx, req.(*QueryAddressMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1540,6 +1588,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Metrics",
 			Handler:    _Query_Metrics_Handler,
+		},
+		{
+			MethodName: "AddressMetrics",
+			Handler:    _Query_AddressMetrics_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

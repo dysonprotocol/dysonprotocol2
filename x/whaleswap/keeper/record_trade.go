@@ -109,5 +109,10 @@ func (k Keeper) recordTradeWithOperations(
 		return 0, cosmossdkerrors.Wrap(err, "failed to emit EventTradeRecorded")
 	}
 
+	// Update address metrics
+	if err := k.incrementTradeMetrics(ctx, trader, totalSent, totalReceived, uint64(len(ops))); err != nil {
+		return 0, cosmossdkerrors.Wrap(err, "failed to update trader metrics")
+	}
+
 	return tradeId, nil
 }

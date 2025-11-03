@@ -20,4 +20,5 @@ message GenesisState {
   repeated Trade trades = 4;
   repeated AuctionRecord auctions = 5;
   repeated LeveragePosition positions = 6;
+  repeated AddressMetrics address_metrics = 7;
 }

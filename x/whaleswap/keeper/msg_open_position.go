@@ -312,6 +312,11 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		return nil, cosmossdkerrors.Wrap(err, "invariant after OpenPosition")
 	}
 
+	// Update address metrics
+	if err := k.incrementPositionOpened(ctx, msg.Trader); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update position metrics")
+	}
+
 	return &whaleswapv1.MsgOpenPositionResponse{
 		PositionId: posID,
 		Held:       heldCoin,

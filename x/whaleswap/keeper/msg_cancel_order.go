@@ -97,6 +97,13 @@ func (k Keeper) CancelOffer(ctx context.Context, msg *whaleswapv1.MsgCancelOffer
 	if err := k.reindexOfferOnStatusChange(ctx, prev, offer); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to reindex offer after cancel")
 	}
+
+	// Update address metrics
+	volumeTaken := offer.InitialHave.Amount.Sub(offer.RemainingHave.Amount)
+	takenCoin := sdk.NewCoin(offer.InitialHave.Denom, volumeTaken)
+	if err := k.incrementOfferStatusChange(ctx, offer.Maker, offer.Status, takenCoin); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update offer metrics")
+	}
 	// Refund escrowed base have for escrow-mode offers
 	if offer.SettlementMode == whaleswapv1.SettlementMode_SETTLEMENT_ESCROW && offer.RemainingHave.Amount.IsPositive() {
 		if err := k.bank.SendCoinsFromModuleToAccount(ctx, whaleswap.ModuleName, maker, sdk.NewCoins(offer.RemainingHave)); err != nil {

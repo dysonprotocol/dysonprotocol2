@@ -132,6 +132,12 @@ func (k Keeper) OpenAuction(ctx context.Context, msg *whaleswapv1.MsgOpenAuction
 	if err := sdk.UnwrapSDKContext(ctx).EventManager().EmitTypedEvent(&whaleswapv1.EventAuctionCreated{AuctionId: id}); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventAuctionCreated")
 	}
+
+	// Update address metrics
+	if err := k.incrementAuctionCreated(ctx, msg.Seller, msg.Sell); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update auction metrics")
+	}
+
 	return &whaleswapv1.MsgOpenAuctionResponse{AuctionId: id}, nil
 }
 

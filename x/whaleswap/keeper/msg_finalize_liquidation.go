@@ -187,6 +187,11 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 		"interest", interestCoin.String(),
 	)
 
+	// Update address metrics
+	if err := k.incrementLiquidation(ctx, pos.User, interestCoin); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update liquidation metrics")
+	}
+
 	resp := &whaleswapv1.MsgFinalizeLiquidationResponse{
 		CollateralReceived: collateralSent,
 		RepaymentAmount:    repaymentCoin,
