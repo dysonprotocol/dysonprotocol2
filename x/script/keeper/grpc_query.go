@@ -339,6 +339,9 @@ func (k Keeper) VerifyTx(ctx context.Context, req *scripttypes.QueryVerifyTxRequ
 
 	signerAddress := ""
 
+	fmt.Printf("[VerifyTx] verifying %d signatures with chainID=%q accountNumber=%d sequence=%d\n",
+		len(sigs), chainID, accountNumber, accountSequence)
+
 	for i, sig := range sigs {
 		pubKey := sig.PubKey
 		if pubKey == nil {
@@ -350,11 +353,7 @@ func (k Keeper) VerifyTx(ctx context.Context, req *scripttypes.QueryVerifyTxRequ
 			return nil, status.Errorf(codes.InvalidArgument, "signature does not match its respective signer; expected: %s, got: %s", sdk.AccAddress(signers[i]), signerAddr)
 		}
 
-		// Get account info from AccountKeeper
-		acc := k.AccountKeeper.GetAccount(ctx, signerAddr)
-		if acc == nil {
-			return nil, status.Errorf(codes.NotFound, "account not found for address %s", signerAddr)
-		}
+		// ADR-36 does not require the account to exist on-chain; we verify against the pubkey in the TX
 
 		// Setup signer data
 		anyPk, err := codectypes.NewAnyWithValue(pubKey)
@@ -380,11 +379,14 @@ func (k Keeper) VerifyTx(ctx context.Context, req *scripttypes.QueryVerifyTxRequ
 		txData := adaptableTx.GetSigningTxData()
 
 		// Verify the signature
+		fmt.Printf("[VerifyTx] verifying signature %d: signerAddr=%s pubkey=%x\n", i, signerAddr.String(), pubKey.Bytes())
 		err = authsigning.VerifySignature(ctx, pubKey, signerData, sig.Data, signModeHandler, txData)
 		if err != nil {
+			fmt.Printf("[VerifyTx] signature verification FAILED: %v\n", err)
 			return nil, status.Errorf(codes.Unauthenticated, "signature [%d] verification failed (make sure the --chain-id=\"\", --account-number=0, and --sequence=0): %s", i, err.Error())
 		}
 
+		fmt.Printf("[VerifyTx] signature %d VALID\n", i)
 		signerAddress = signerAddr.String()
 	}
 

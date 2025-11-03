@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
@@ -77,6 +78,13 @@ type DefaultHandler struct {
 	publicHostTemplate    string
 	// RPC reverse proxy
 	rpcProxy *httputil.ReverseProxy
+	// Optional p2p host (when embedded); affects bootstrap peerId/addrs only
+	p2pHost *P2PHost
+}
+
+// SetP2PHost attaches a P2P host info provider to the handler for bootstrap responses.
+func (h *DefaultHandler) SetP2PHost(host *P2PHost) {
+	h.p2pHost = host
 }
 
 func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -89,6 +97,59 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		h.rpcProxy.ServeHTTP(w, req)
 		return
 	}
+
+	// Bootstrap endpoint for libp2p connectivity (same-origin, no CORS required)
+	if req.Method == http.MethodGet && req.URL.Path == "/libp2p/bootstrap" {
+		// Start GossipSub early so the raw tracer can observe peer subscriptions
+		// and auto-join topics. Panic on error to surface misconfiguration early.
+		if err := ensurePubSub(req.Context(), h.clientCtx); err != nil {
+			panic(fmt.Errorf("[DWApp] failed to init libp2p pubsub: %w", err))
+		}
+		fmt.Printf("[DWApp] /libp2p/bootstrap: pubsub ready; chainId=%s\n", strings.TrimSpace(h.clientCtx.ChainID))
+		peerID := ""
+		addrs := []string{}
+		if h.p2pHost != nil {
+			peerID = h.p2pHost.PeerID()
+			addrs = h.p2pHost.Addrs()
+			fmt.Printf("[DWApp] /libp2p/bootstrap: peerId=%s addrs=%d\n", peerID, len(addrs))
+		}
+		resp := map[string]any{
+			"peerId":      peerID,
+			"addrs":       addrs,
+			"rendezvous":  strings.TrimSpace(h.clientCtx.ChainID),
+			"ice":         map[string]any{"servers": []any{}},
+			"topicPrefix": "/" + strings.TrimSpace(h.clientCtx.ChainID) + "/v1/",
+			"version":     "1",
+		}
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			http.Error(w, fmt.Sprintf("bootstrap encode error: %v", err), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// POST /libp2p/verify: validate a single ADR-36 frame against a topic (utility)
+	if req.Method == http.MethodPost && req.URL.Path == "/libp2p/verify" {
+		type body struct {
+			Topic  string `json:"topic"`
+			TxJSON string `json:"adr36_tx_json"`
+		}
+		var b body
+		if err := json.NewDecoder(req.Body).Decode(&b); err != nil {
+			http.Error(w, fmt.Sprintf("invalid json: %v", err), http.StatusBadRequest)
+			return
+		}
+		signer, payload, err := VerifyAndExtract(req.Context(), h.clientCtx, strings.TrimSpace(b.Topic), b.TxJSON)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		_ = json.NewEncoder(w).Encode(map[string]any{"signer": signer, "payload_b64": payload})
+		return
+	}
+
+	// Auto-join via GossipSub tracer; no HTTP subscribe/unsubscribe endpoints
 
 	// New endpoint: /redirect-to-dwapp/{address_or_name} -> redirect or return public host
 	if strings.HasPrefix(req.URL.Path, "/redirect-to-dwapp/") {

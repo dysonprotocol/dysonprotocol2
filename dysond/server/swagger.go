@@ -48,9 +48,19 @@ func RegisterDysonServer(clientCtx client.Context, rtr *mux.Router, config confi
 		if publicHostTemplate == "" {
 			publicHostTemplate = dwapp.DefaultConfig().PublicHostTemplate
 		}
+
+		// Start embedded P2P host once before middleware
+		var p2pHost *dwapp.P2PHost
+		if embedded, err := dwapp.StartEmbeddedP2PHost(clientCtx.HomeDir); err == nil && embedded != nil {
+			p2pHost = embedded
+		}
+
 		// Middleware to check path condition explicitly
 		rtr.Use(func(next http.Handler) http.Handler {
 			dwappHandler := dwapp.NewDefaultHandler(clientCtx, patternString, publicHostTemplate)
+			if h, ok := dwappHandler.(*dwapp.DefaultHandler); ok && p2pHost != nil {
+				h.SetP2PHost(p2pHost)
+			}
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if !(strings.HasPrefix(r.URL.Path, "/dysonprotocol/") ||
 					strings.HasPrefix(r.URL.Path, "/cosmos/") ||

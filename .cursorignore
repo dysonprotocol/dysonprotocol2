@@ -10,3 +10,4 @@ proto_vendor
 node_modules
 !delivery
 !cosoms-sdk
+!universal-connectivity
