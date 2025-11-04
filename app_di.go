@@ -368,6 +368,7 @@ func (app *DysApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APICon
 	libp2pListenAddrs := dwapp.DefaultConfig().Libp2pListenAddrs
 
 	// Read from viper if available
+	libp2pBootstrapPeers := []string{}
 	if apiSvr.ClientCtx.Viper != nil {
 		if apiSvr.ClientCtx.Viper.IsSet("dwapp.libp2p-port") {
 			libp2pPort = apiSvr.ClientCtx.Viper.GetInt("dwapp.libp2p-port")
@@ -375,9 +376,12 @@ func (app *DysApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APICon
 		if apiSvr.ClientCtx.Viper.IsSet("dwapp.libp2p-listen-addrs") {
 			libp2pListenAddrs = apiSvr.ClientCtx.Viper.GetStringSlice("dwapp.libp2p-listen-addrs")
 		}
+		if apiSvr.ClientCtx.Viper.IsSet("dwapp.libp2p-bootstrap-peers") {
+			libp2pBootstrapPeers = apiSvr.ClientCtx.Viper.GetStringSlice("dwapp.libp2p-bootstrap-peers")
+		}
 	}
 
-	if err := dysondserver.RegisterDysonServer(apiSvr.ClientCtx, apiSvr.Router, apiConfig, scriptPattern, publicHostTemplate, libp2pPort, libp2pListenAddrs); err != nil {
+	if err := dysondserver.RegisterDysonServer(apiSvr.ClientCtx, apiSvr.Router, apiConfig, scriptPattern, publicHostTemplate, libp2pPort, libp2pListenAddrs, libp2pBootstrapPeers); err != nil {
 		panic(err)
 	}
 }

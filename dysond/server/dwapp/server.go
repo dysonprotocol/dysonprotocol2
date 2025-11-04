@@ -34,6 +34,7 @@ type DwAppConfig struct {
 	PublicHostTemplate         string   `mapstructure:"public-host-template"`
 	Libp2pPort                 int      `mapstructure:"libp2p-port"`
 	Libp2pListenAddrs          []string `mapstructure:"libp2p-listen-addrs"`
+	Libp2pBootstrapPeers       []string `mapstructure:"libp2p-bootstrap-peers"`
 }
 
 // Combined explicit server configuration
@@ -50,6 +51,7 @@ func DefaultConfig() *DwAppConfig {
 		PublicHostTemplate:         DefaultPublicHostTemplate,
 		Libp2pPort:                 9095,
 		Libp2pListenAddrs:          []string{},
+		Libp2pBootstrapPeers:       []string{},
 	}
 }
 
@@ -177,6 +179,10 @@ func New(
 		srv.config.Libp2pListenAddrs = viperConfig.GetStringSlice("dwapp.libp2p-listen-addrs")
 		srv.logger.Info("Overriding default libp2p listen addresses with config value", "libp2p_listen_addrs", srv.config.Libp2pListenAddrs)
 	}
+	if viperConfig.IsSet("dwapp.libp2p-bootstrap-peers") {
+		srv.config.Libp2pBootstrapPeers = viperConfig.GetStringSlice("dwapp.libp2p-bootstrap-peers")
+		srv.logger.Info("Overriding default libp2p bootstrap peers with config value", "libp2p_bootstrap_peers", srv.config.Libp2pBootstrapPeers)
+	}
 
 	srv.httpServer = &http.Server{
 
@@ -188,7 +194,7 @@ func New(
 		"pattern", srv.config.ScriptAddressOrNamePattern,
 	)
 
-	srv.router.Handle("/", NewDefaultHandler(clientCtx, srv.config.ScriptAddressOrNamePattern, srv.config.PublicHostTemplate))
+	srv.router.Handle("/", NewDefaultHandler(clientCtx, srv.config.ScriptAddressOrNamePattern, srv.config.PublicHostTemplate, srv.config.Libp2pBootstrapPeers))
 	// Pass the server to APIHandler
 	APIHandler(srv.router, srv)
 

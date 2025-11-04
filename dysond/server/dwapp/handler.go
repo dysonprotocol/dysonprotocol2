@@ -31,12 +31,13 @@ type DysonTxtRecords struct {
 	ScriptAddress string
 }
 
-func NewDefaultHandler(clientCtx client.Context, ScriptAddressOrNamePattern string, publicHostTemplate string) http.Handler {
+func NewDefaultHandler(clientCtx client.Context, ScriptAddressOrNamePattern string, publicHostTemplate string, bootstrapPeers []string) http.Handler {
 	scriptAddressOrNameRe := regexp.MustCompile(ScriptAddressOrNamePattern)
 	h := &DefaultHandler{
 		clientCtx:             clientCtx,
 		scriptAddressOrNameRe: scriptAddressOrNameRe,
 		publicHostTemplate:    publicHostTemplate,
+		bootstrapPeers:        bootstrapPeers,
 	}
 
 	// Initialize RPC reverse proxy from client context NodeURI
@@ -80,6 +81,8 @@ type DefaultHandler struct {
 	rpcProxy *httputil.ReverseProxy
 	// Optional p2p host (when embedded); affects bootstrap peerId/addrs only
 	p2pHost *P2PHost
+	// Bootstrap peers for mesh networking
+	bootstrapPeers []string
 }
 
 // SetP2PHost attaches a P2P host info provider to the handler for bootstrap responses.
@@ -135,6 +138,7 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			"relayListenAddrs": relayListenAddrs,
 			"rendezvous":       chainID,
 			"rendezvousAddrs":  addrs, // Same as addrs - browsers dial for rendezvous
+			"bootstrapPeers":   h.bootstrapPeers, // Known peers to connect to
 			"ice": map[string]any{
 				"servers": []map[string]any{
 					{

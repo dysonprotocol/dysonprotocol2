@@ -1,6 +1,7 @@
 package dwapp
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 	crypto "github.com/libp2p/go-libp2p/core/crypto"
 	libhost "github.com/libp2p/go-libp2p/core/host"
 	network "github.com/libp2p/go-libp2p/core/network"
+	"github.com/libp2p/go-libp2p/core/peer"
 	rcmgr "github.com/libp2p/go-libp2p/p2p/host/resource-manager"
 	relayv2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
 	quic "github.com/libp2p/go-libp2p/p2p/transport/quic"
@@ -25,10 +27,10 @@ var (
 	embeddedHost libhost.Host
 )
 
-// StartEmbeddedP2PHost initialises the libp2p host using the provided homeDir, chainID, and listen addresses.
+// StartEmbeddedP2PHost initialises the libp2p host using the provided homeDir, chainID, listen addresses, and bootstrap peers.
 // If homeDir is empty it defaults to ~/.dysond. The host identity is persisted
-// in <homeDir>/p2p/identity.key. Enables circuit relay v2 for browser mesh networking.
-func StartEmbeddedP2PHost(homeDir, chainID string, listenAddrs []string) (*P2PHost, error) {
+// in <homeDir>/p2p/identity.key. Enables circuit relay v2 for browser mesh networking and connects to bootstrap peers.
+func StartEmbeddedP2PHost(homeDir, chainID string, listenAddrs []string, bootstrapPeers []string) (*P2PHost, error) {
 	if embeddedHost != nil {
 		return NewP2PHost(embeddedHost.ID().String(), formatAddrs(embeddedHost)), nil
 	}
@@ -92,6 +94,14 @@ func StartEmbeddedP2PHost(homeDir, chainID string, listenAddrs []string) (*P2PHo
 	fmt.Printf("[DWApp] Circuit relay v2 server enabled (reservations=%d, circuits=%d)\n",
 		resources.MaxReservations, resources.MaxCircuits)
 	fmt.Printf("[DWApp] Browser mesh discovery via pubsubPeerDiscovery + circuit relay (chainID=%s)\n", chainID)
+
+	// Connect to bootstrap peers for peer mesh
+	if len(bootstrapPeers) > 0 {
+		fmt.Printf("[DWApp] Connecting to %d bootstrap peers...\n", len(bootstrapPeers))
+		go connectToBootstrapPeers(h, bootstrapPeers)
+	} else {
+		fmt.Printf("[DWApp] No bootstrap peers configured\n")
+	}
 
 	// Log peer connections
 	h.Network().Notify(&networkNotifiee{})
@@ -170,4 +180,104 @@ func newResourceManager() (network.ResourceManager, error) {
 // GetEmbeddedHost returns the embedded libp2p host
 func GetEmbeddedHost() libhost.Host {
 	return embeddedHost
+}
+
+// validateBootstrapPeer validates a bootstrap peer multiaddr
+func validateBootstrapPeer(peerAddr string) error {
+	if peerAddr == "" {
+		return fmt.Errorf("empty peer address")
+	}
+
+	// Parse the multiaddr
+	maddr, err := multiaddr.NewMultiaddr(peerAddr)
+	if err != nil {
+		return fmt.Errorf("invalid multiaddr format: %w", err)
+	}
+
+	// Extract peer ID and addresses
+	_, err = peer.AddrInfoFromP2pAddr(maddr)
+	if err != nil {
+		return fmt.Errorf("invalid peer info: %w", err)
+	}
+
+	return nil
+}
+
+// connectToBootstrapPeers connects to the configured bootstrap peers with retry logic
+func connectToBootstrapPeers(host libhost.Host, bootstrapPeers []string) {
+	const (
+		maxRetries       = 5
+		baseRetryDelay   = 2 * time.Second
+		maxRetryDelay    = 30 * time.Second
+		connectionTimeout = 10 * time.Second
+	)
+
+	ctx := context.Background()
+	validPeers := 0
+
+	for _, peerAddr := range bootstrapPeers {
+		if peerAddr == "" {
+			continue
+		}
+
+		// Validate the peer address
+		if err := validateBootstrapPeer(peerAddr); err != nil {
+			fmt.Printf("[DWApp] Invalid bootstrap peer '%s': %v\n", peerAddr, err)
+			continue
+		}
+		validPeers++
+
+		go func(addr string) {
+			var lastErr error
+			for attempt := 0; attempt < maxRetries; attempt++ {
+				// Parse the multiaddr
+				maddr, err := multiaddr.NewMultiaddr(addr)
+				if err != nil {
+					fmt.Printf("[DWApp] Invalid bootstrap peer address '%s': %v\n", addr, err)
+					return
+				}
+
+				// Extract peer ID and addresses
+				peerInfo, err := peer.AddrInfoFromP2pAddr(maddr)
+				if err != nil {
+					fmt.Printf("[DWApp] Failed to parse peer info from '%s': %v\n", addr, err)
+					return
+				}
+
+				// Check if already connected
+				if host.Network().Connectedness(peerInfo.ID) == network.Connected {
+					fmt.Printf("[DWApp] Already connected to bootstrap peer %s\n", peerInfo.ID.String())
+					return
+				}
+
+				// Attempt connection with timeout
+				connCtx, cancel := context.WithTimeout(ctx, connectionTimeout)
+				err = host.Connect(connCtx, *peerInfo)
+				cancel()
+
+				if err == nil {
+					fmt.Printf("[DWApp] Successfully connected to bootstrap peer %s\n", peerInfo.ID.String())
+					return
+				}
+
+				lastErr = err
+				fmt.Printf("[DWApp] Failed to connect to bootstrap peer %s (attempt %d/%d): %v\n",
+					peerInfo.ID.String(), attempt+1, maxRetries, err)
+
+				// Exponential backoff
+				if attempt < maxRetries-1 {
+					delay := time.Duration(attempt+1) * baseRetryDelay
+					if delay > maxRetryDelay {
+						delay = maxRetryDelay
+					}
+					fmt.Printf("[DWApp] Retrying connection to %s in %v...\n", peerInfo.ID.String(), delay)
+					time.Sleep(delay)
+				}
+			}
+
+			fmt.Printf("[DWApp] Failed to connect to bootstrap peer after %d attempts: %v\n", maxRetries, lastErr)
+		}(peerAddr)
+	}
+
+	fmt.Printf("[DWApp] Bootstrap peer connection initiated for %d valid peers\n", validPeers)
 }

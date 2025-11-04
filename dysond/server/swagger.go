@@ -16,7 +16,7 @@ import (
 
 // RegisterDysonServer provides a common function which registers APIs with API Server
 // This includes both Swagger API (if enabled) and the dwapp handler for DysonScript web applications
-func RegisterDysonServer(clientCtx client.Context, rtr *mux.Router, config config.APIConfig, scriptPattern string, publicHostTemplate string, libp2pPort int, libp2pListenAddrs []string) error {
+func RegisterDysonServer(clientCtx client.Context, rtr *mux.Router, config config.APIConfig, scriptPattern string, publicHostTemplate string, libp2pPort int, libp2pListenAddrs []string, libp2pBootstrapPeers []string) error {
 
 	// Register the DysonScript app handler
 	// Use provided pattern or default if empty
@@ -74,13 +74,13 @@ func RegisterDysonServer(clientCtx client.Context, rtr *mux.Router, config confi
 
 		// Start embedded P2P host once before middleware
 		var p2pHost *dwapp.P2PHost
-		if embedded, err := dwapp.StartEmbeddedP2PHost(clientCtx.HomeDir, clientCtx.ChainID, listenAddrs); err == nil && embedded != nil {
+		if embedded, err := dwapp.StartEmbeddedP2PHost(clientCtx.HomeDir, clientCtx.ChainID, listenAddrs, libp2pBootstrapPeers); err == nil && embedded != nil {
 			p2pHost = embedded
 		}
 
 		// Middleware to check path condition explicitly
 		rtr.Use(func(next http.Handler) http.Handler {
-			dwappHandler := dwapp.NewDefaultHandler(clientCtx, patternString, publicHostTemplate)
+			dwappHandler := dwapp.NewDefaultHandler(clientCtx, patternString, publicHostTemplate, libp2pBootstrapPeers)
 			if h, ok := dwappHandler.(*dwapp.DefaultHandler); ok && p2pHost != nil {
 				h.SetP2PHost(p2pHost)
 			}

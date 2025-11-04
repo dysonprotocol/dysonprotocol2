@@ -7,6 +7,7 @@ export interface BootstrapInfo {
     relayListenAddrs?: string[]
     rendezvous: string
     rendezvousAddrs?: string[]
+    bootstrapPeers?: string[] // Known peers in the network
     topicPrefix: string
     version: string
     ice?: {

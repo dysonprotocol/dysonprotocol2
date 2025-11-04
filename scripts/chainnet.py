@@ -428,6 +428,19 @@ def generate_chain_structure(
                 },
             }
         )
+
+    # Add other nodes information to each node
+    for i, node in enumerate(nodes):
+        node["other_nodes"] = [
+            {
+                "moniker": other_node["moniker"],
+                "home": other_node["home"],
+                "ports": other_node["ports"],
+            }
+            for j, other_node in enumerate(nodes)
+            if i != j  # Exclude self
+        ]
+
     return {"chain_id": chain_id, "nodes": nodes}
 
 
