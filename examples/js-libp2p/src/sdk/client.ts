@@ -34,62 +34,81 @@ interface TopicRegistryEntry {
     handlers: Set<DysonMessageHandler>
 }
 
+const MIN_BROWSER_BACKOFF_MS = 5_000
+const MAX_BROWSER_BACKOFF_MS = 120_000
+const BROWSER_PEER_TAG = 'browser-mesh'
+
+interface PeerConnectionState {
+    timer?: ReturnType<typeof setTimeout>
+    backoffMs: number
+}
+
 class DysonClientImpl implements DysonClient {
     readonly libp2p: Libp2p
     readonly bootstrap: BootstrapInfo
     readonly chainId: string
     readonly topicPrefix: string
     readonly peerId: string
+    readonly discoveryTopic: string
 
     private readonly pubsub: any
     private readonly topics = new Map<string, TopicRegistryEntry>()
+    private readonly peerState = new Map<string, PeerConnectionState>()
+    private readonly onPeerDiscovery: (evt: CustomEvent<any>) => void
+    private readonly onPeerConnect: (evt: CustomEvent<any>) => void
+    private readonly onPeerDisconnect: (evt: CustomEvent<any>) => void
+    private discoveryInterval?: ReturnType<typeof setInterval>
 
-    constructor(libp2p: Libp2p, bootstrap: BootstrapInfo) {
+    constructor(libp2p: Libp2p, bootstrap: BootstrapInfo, discoveryTopic: string) {
         this.libp2p = libp2p
         this.bootstrap = bootstrap
         this.chainId = bootstrap.rendezvous
         this.topicPrefix = bootstrap.topicPrefix.endsWith('/') ? bootstrap.topicPrefix : `${bootstrap.topicPrefix}/`
         this.peerId = libp2p.peerId.toString()
+        this.discoveryTopic = discoveryTopic
         this.pubsub = libp2p.services.pubsub
 
-        // Handle peer discovery - dial WebRTC addresses explicitly
-        libp2p.addEventListener('peer:discovery', async (evt: any) => {
+        this.onPeerDiscovery = (evt: CustomEvent<any>) => {
             const info = evt?.detail
             if (!info?.id) return
 
-            // Check if already connected
-            if (this.libp2p.getConnections(info.id).length > 0) {
-                console.log(`[dyson-sdk] already connected to ${info.id}`)
-                return
+            const peerId = info.id as PeerId
+            const multiaddrs: Multiaddr[] = info.multiaddrs ?? []
+
+            this.storeKnownAddrs(peerId, multiaddrs)
+            void this.dialPeer(peerId, 'discovery', multiaddrs)
+        }
+
+        this.onPeerConnect = (evt: CustomEvent<any>) => {
+            const detail = evt?.detail
+            const peerId: PeerId | undefined = detail?.remotePeer
+            if (!peerId) return
+
+            this.clearPeerTimer(peerId.toString())
+            this.peerState.set(peerId.toString(), { backoffMs: MIN_BROWSER_BACKOFF_MS })
+
+            const cm = this.libp2p.connectionManager
+            if (cm?.protect) {
+                cm.protect(peerId, BROWSER_PEER_TAG)
             }
 
-            // Filter WebRTC multiaddrs (browser-to-browser)
-            const webrtcAddrs = (info.multiaddrs ?? []).filter((ma: Multiaddr) =>
-                ma.protoNames().includes('webrtc') &&
-                ma.protoNames().includes('p2p-circuit')
-            )
+            this.storeKnownAddrs(peerId, detail?.remoteAddr ? [detail.remoteAddr] : [])
+        }
 
-            if (webrtcAddrs.length > 0) {
-                // Dial WebRTC addresses explicitly
-                for (const addr of webrtcAddrs) {
-                    try {
-                        console.log(`[dyson-sdk] dialing WebRTC addr: ${addr.toString()}`)
-                        const conn = await this.libp2p.dial(addr)
-                        console.log(`[dyson-sdk] WebRTC connection established to ${conn.remotePeer}`)
-                        return  // Success, stop trying
-                    } catch (err) {
-                        console.warn(`[dyson-sdk] WebRTC dial failed:`, err)
-                    }
-                }
-            } else {
-                // Fall back to dialing by peer ID
-                try {
-                    await this.libp2p.dial(info.id)
-                } catch (err) {
-                    console.warn('Dyson discovery dial failed', err)
-                }
-            }
-        })
+        this.onPeerDisconnect = (evt: CustomEvent<any>) => {
+            const detail = evt?.detail
+            const peerId: PeerId | undefined = detail?.remotePeer
+            if (!peerId) return
+
+            this.scheduleRedial(peerId, 'disconnect')
+        }
+
+        libp2p.addEventListener('peer:discovery', this.onPeerDiscovery)
+        libp2p.addEventListener('peer:connect', this.onPeerConnect)
+        libp2p.addEventListener('peer:disconnect', this.onPeerDisconnect)
+
+        this.discoveryInterval = setInterval(() => this.publishPresence('heartbeat'), 30_000)
+        this.publishPresence('startup')
     }
 
     buildTopic(root: string, suffix = ''): string {
@@ -185,7 +204,138 @@ class DysonClientImpl implements DysonClient {
             }
         }
         this.topics.clear()
+
+        this.libp2p.removeEventListener('peer:discovery', this.onPeerDiscovery)
+        this.libp2p.removeEventListener('peer:connect', this.onPeerConnect)
+        this.libp2p.removeEventListener('peer:disconnect', this.onPeerDisconnect)
+
+        if (this.discoveryInterval) {
+            clearInterval(this.discoveryInterval)
+            this.discoveryInterval = undefined
+        }
+
+        for (const state of this.peerState.values()) {
+            if (state.timer) {
+                clearTimeout(state.timer)
+            }
+        }
+        this.peerState.clear()
+
         await this.libp2p.stop()
+    }
+
+    private storeKnownAddrs(peerId: PeerId, addrs: Multiaddr[]): void {
+        if (!addrs || addrs.length === 0) {
+            return
+        }
+
+        const addressBook = this.libp2p.peerStore?.addressBook
+        if (!addressBook) {
+            return
+        }
+
+        try {
+            if (typeof addressBook.add === 'function') {
+                addressBook.add(peerId, addrs)
+            } else if (typeof addressBook.set === 'function') {
+                addressBook.set(peerId, addrs)
+            }
+        } catch (err) {
+            console.warn('[dyson-sdk] failed to store peer addrs', err)
+        }
+    }
+
+    private async dialPeer(peerId: PeerId, reason: string, discoveredAddrs: Multiaddr[] = []): Promise<void> {
+        if (this.libp2p.getConnections(peerId).length > 0) {
+            return
+        }
+
+        let storedAddrs: Multiaddr[] = []
+        try {
+            storedAddrs = (this.libp2p.peerStore?.addressBook?.get?.(peerId) ?? []) as Multiaddr[]
+        } catch (err) {
+            console.warn('[dyson-sdk] failed to read peer addrs', err)
+        }
+        const candidateAddrs = [...discoveredAddrs, ...storedAddrs]
+
+        const preferred = candidateAddrs.filter((addr) => addr.protoNames().includes('webrtc') && addr.protoNames().includes('p2p-circuit'))
+        const fallbacks = candidateAddrs.filter((addr) => !preferred.includes(addr))
+        const targets = preferred.length > 0 ? preferred : fallbacks
+
+        for (const addr of targets) {
+            try {
+                console.log(`[dyson-sdk] dialing ${addr.toString()} (${reason})`)
+                const conn = await this.libp2p.dial(addr)
+                console.log(`[dyson-sdk] browser mesh connected ${conn.remotePeer}`)
+                this.peerState.set(peerId.toString(), { backoffMs: MIN_BROWSER_BACKOFF_MS })
+                const cm = this.libp2p.connectionManager
+                if (cm?.protect) {
+                    cm.protect(peerId, BROWSER_PEER_TAG)
+                }
+                return
+            } catch (err) {
+                console.warn('[dyson-sdk] dial failed', addr.toString(), err)
+            }
+        }
+
+        try {
+            await this.libp2p.dial(peerId)
+            this.peerState.set(peerId.toString(), { backoffMs: MIN_BROWSER_BACKOFF_MS })
+            const cm = this.libp2p.connectionManager
+            if (cm?.protect) {
+                cm.protect(peerId, BROWSER_PEER_TAG)
+            }
+            return
+        } catch (err) {
+            console.warn('[dyson-sdk] peer dial failed', peerId.toString(), err)
+        }
+
+        this.scheduleRedial(peerId, `dial-failed:${reason}`)
+    }
+
+    private scheduleRedial(peerId: PeerId, reason: string): void {
+        const id = peerId.toString()
+        let state = this.peerState.get(id)
+        if (!state) {
+            state = { backoffMs: MIN_BROWSER_BACKOFF_MS }
+            this.peerState.set(id, state)
+        }
+
+        this.clearPeerTimer(id)
+
+        const jitter = Math.max(state.backoffMs * 0.5, 1_000)
+        const delay = state.backoffMs + Math.floor(Math.random() * jitter)
+
+        state.timer = setTimeout(() => {
+            state!.timer = undefined
+            void this.dialPeer(peerId, reason)
+        }, delay)
+
+        state.backoffMs = Math.min(state.backoffMs * 2, MAX_BROWSER_BACKOFF_MS)
+        console.log(`[dyson-sdk] scheduled reconnect to ${id} in ~${delay}ms (${reason})`)
+    }
+
+    private clearPeerTimer(id: string): void {
+        const state = this.peerState.get(id)
+        if (!state?.timer) {
+            return
+        }
+        clearTimeout(state.timer)
+        state.timer = undefined
+    }
+
+    private publishPresence(reason: string): void {
+        const addrs = this.libp2p.getMultiaddrs().map((addr) => addr.toString())
+        const payload = {
+            peer: this.peerId,
+            addrs,
+            reason,
+            ts: Date.now(),
+        }
+
+        void this.pubsub.publish(this.discoveryTopic, uint8FromString(JSON.stringify(payload))).catch((err: unknown) => {
+            console.warn('[dyson-sdk] discovery publish failed', err)
+        })
     }
 }
 
@@ -296,7 +446,7 @@ export async function createDysonClient(options: CreateDysonClientOptions = {}):
     )
     console.log('[dyson-sdk] my relay addresses:', relayAddrs.map(a => a.toString()))
 
-    return new DysonClientImpl(node, bootstrap)
+    return new DysonClientImpl(node, bootstrap, discoveryTopic)
 }
 
 async function waitForIdentify(node: Libp2p, peerId: PeerId): Promise<void> {

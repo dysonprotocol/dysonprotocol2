@@ -244,8 +244,8 @@ func connectToBootstrapPeers(host libhost.Host, bootstrapPeers []string) {
 
 func manageBootstrapPeer(ctx context.Context, host libhost.Host, peerInfo peer.AddrInfo) {
 	const (
-		minBackoff       = 5 * time.Second
-		maxBackoff       = 5 * time.Minute
+		minBackoff       = 10 * time.Second
+		maxBackoff       = 30 * time.Second
 		dialTimeout      = 10 * time.Second
 		protectTagPrefix = "bootstrap"
 	)

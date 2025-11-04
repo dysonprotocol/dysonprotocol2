@@ -109,15 +109,15 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			panic(fmt.Errorf("[DWApp] failed to init libp2p pubsub: %w", err))
 		}
 		fmt.Printf("[DWApp] /libp2p/bootstrap: pubsub ready; chainId=%s\n", strings.TrimSpace(h.clientCtx.ChainID))
-		
+
 		peerID := ""
 		addrs := []string{}
 		relayListenAddrs := []string{}
-		
+
 		if h.p2pHost != nil {
 			peerID = h.p2pHost.PeerID()
 			addrs = h.p2pHost.Addrs()
-			
+
 			// Construct relay listen addresses for browsers
 			for _, addr := range addrs {
 				if isBrowserDialable(addr) {
@@ -126,18 +126,18 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 					relayListenAddrs = append(relayListenAddrs, relayAddr)
 				}
 			}
-			
-			fmt.Printf("[DWApp] /libp2p/bootstrap: peerId=%s addrs=%d relayAddrs=%d\n", 
+
+			fmt.Printf("[DWApp] /libp2p/bootstrap: peerId=%s addrs=%d relayAddrs=%d\n",
 				peerID, len(addrs), len(relayListenAddrs))
 		}
-		
+
 		chainID := strings.TrimSpace(h.clientCtx.ChainID)
 		resp := map[string]any{
 			"peerId":           peerID,
 			"addrs":            addrs,
 			"relayListenAddrs": relayListenAddrs,
 			"rendezvous":       chainID,
-			"rendezvousAddrs":  addrs, // Same as addrs - browsers dial for rendezvous
+			"rendezvousAddrs":  addrs,            // Same as addrs - browsers dial for rendezvous
 			"bootstrapPeers":   h.bootstrapPeers, // Known peers to connect to
 			"ice": map[string]any{
 				"servers": []map[string]any{
