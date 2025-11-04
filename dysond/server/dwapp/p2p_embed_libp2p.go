@@ -3,6 +3,7 @@ package dwapp
 import (
 	"context"
 	"fmt"
+	mrand "math/rand"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,9 +11,11 @@ import (
 
 	libp2p "github.com/libp2p/go-libp2p"
 	crypto "github.com/libp2p/go-libp2p/core/crypto"
+	"github.com/libp2p/go-libp2p/core/event"
 	libhost "github.com/libp2p/go-libp2p/core/host"
 	network "github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
+	peerstore "github.com/libp2p/go-libp2p/core/peerstore"
 	rcmgr "github.com/libp2p/go-libp2p/p2p/host/resource-manager"
 	relayv2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
 	quic "github.com/libp2p/go-libp2p/p2p/transport/quic"
@@ -205,79 +208,147 @@ func validateBootstrapPeer(peerAddr string) error {
 
 // connectToBootstrapPeers connects to the configured bootstrap peers with retry logic
 func connectToBootstrapPeers(host libhost.Host, bootstrapPeers []string) {
-	const (
-		maxRetries        = 5
-		baseRetryDelay    = 2 * time.Second
-		maxRetryDelay     = 30 * time.Second
-		connectionTimeout = 10 * time.Second
-	)
-
 	ctx := context.Background()
-	validPeers := 0
+	managedPeers := 0
 
 	for _, peerAddr := range bootstrapPeers {
 		if peerAddr == "" {
 			continue
 		}
 
-		// Validate the peer address
 		if err := validateBootstrapPeer(peerAddr); err != nil {
 			fmt.Printf("[DWApp] Invalid bootstrap peer '%s': %v\n", peerAddr, err)
 			continue
 		}
-		validPeers++
 
-		go func(addr string) {
-			var lastErr error
-			for attempt := 0; attempt < maxRetries; attempt++ {
-				// Parse the multiaddr
-				maddr, err := multiaddr.NewMultiaddr(addr)
-				if err != nil {
-					fmt.Printf("[DWApp] Invalid bootstrap peer address '%s': %v\n", addr, err)
-					return
-				}
+		maddr, err := multiaddr.NewMultiaddr(peerAddr)
+		if err != nil {
+			fmt.Printf("[DWApp] Invalid bootstrap peer address '%s': %v\n", peerAddr, err)
+			continue
+		}
 
-				// Extract peer ID and addresses
-				peerInfo, err := peer.AddrInfoFromP2pAddr(maddr)
-				if err != nil {
-					fmt.Printf("[DWApp] Failed to parse peer info from '%s': %v\n", addr, err)
-					return
-				}
+		peerInfo, err := peer.AddrInfoFromP2pAddr(maddr)
+		if err != nil {
+			fmt.Printf("[DWApp] Failed to parse peer info from '%s': %v\n", peerAddr, err)
+			continue
+		}
 
-				// Check if already connected
-				if host.Network().Connectedness(peerInfo.ID) == network.Connected {
-					fmt.Printf("[DWApp] Already connected to bootstrap peer %s\n", peerInfo.ID.String())
-					return
-				}
+		host.Peerstore().AddAddrs(peerInfo.ID, peerInfo.Addrs, peerstore.PermanentAddrTTL)
 
-				// Attempt connection with timeout
-				connCtx, cancel := context.WithTimeout(ctx, connectionTimeout)
-				err = host.Connect(connCtx, *peerInfo)
-				cancel()
-
-				if err == nil {
-					fmt.Printf("[DWApp] Successfully connected to bootstrap peer %s\n", peerInfo.ID.String())
-					return
-				}
-
-				lastErr = err
-				fmt.Printf("[DWApp] Failed to connect to bootstrap peer %s (attempt %d/%d): %v\n",
-					peerInfo.ID.String(), attempt+1, maxRetries, err)
-
-				// Exponential backoff
-				if attempt < maxRetries-1 {
-					delay := time.Duration(attempt+1) * baseRetryDelay
-					if delay > maxRetryDelay {
-						delay = maxRetryDelay
-					}
-					fmt.Printf("[DWApp] Retrying connection to %s in %v...\n", peerInfo.ID.String(), delay)
-					time.Sleep(delay)
-				}
-			}
-
-			fmt.Printf("[DWApp] Failed to connect to bootstrap peer after %d attempts: %v\n", maxRetries, lastErr)
-		}(peerAddr)
+		go manageBootstrapPeer(ctx, host, *peerInfo)
+		managedPeers++
 	}
 
-	fmt.Printf("[DWApp] Bootstrap peer connection initiated for %d valid peers\n", validPeers)
+	fmt.Printf("[DWApp] Bootstrap peer reconnect manager active for %d peers\n", managedPeers)
+}
+
+func manageBootstrapPeer(ctx context.Context, host libhost.Host, peerInfo peer.AddrInfo) {
+	const (
+		minBackoff       = 5 * time.Second
+		maxBackoff       = 5 * time.Minute
+		dialTimeout      = 10 * time.Second
+		protectTagPrefix = "bootstrap"
+	)
+
+	protectTag := fmt.Sprintf("%s:%s", protectTagPrefix, peerInfo.ID.String())
+
+	sub, err := host.EventBus().Subscribe(new(event.EvtPeerConnectednessChanged))
+	if err != nil {
+		fmt.Printf("[DWApp] Failed to subscribe for bootstrap peer events %s: %v\n", peerInfo.ID.String(), err)
+		return
+	}
+	defer sub.Close()
+
+	rng := mrand.New(mrand.NewSource(time.Now().UnixNano()))
+	backoff := minBackoff
+
+	attemptConnect := func(reason string) {
+		state := host.Network().Connectedness(peerInfo.ID)
+		if state == network.Connected || state == network.Limited {
+			if cm := host.ConnManager(); cm != nil {
+				cm.Protect(peerInfo.ID, protectTag)
+			}
+			backoff = minBackoff
+			return
+		}
+
+		connCtx, cancel := context.WithTimeout(ctx, dialTimeout)
+		err := host.Connect(connCtx, peerInfo)
+		cancel()
+
+		if err == nil {
+			fmt.Printf("[DWApp] Connected to bootstrap peer %s (%s)\n", peerInfo.ID.String(), reason)
+			if cm := host.ConnManager(); cm != nil {
+				cm.Protect(peerInfo.ID, protectTag)
+			}
+			backoff = minBackoff
+			return
+		}
+
+		fmt.Printf("[DWApp] Bootstrap peer %s dial failed (%s): %v\n", peerInfo.ID.String(), reason, err)
+		if backoff < maxBackoff {
+			backoff *= 2
+			if backoff > maxBackoff {
+				backoff = maxBackoff
+			}
+		}
+	}
+
+	attemptConnect("initial")
+
+	timer := time.NewTimer(backoff + jitterDuration(backoff, rng))
+	defer timer.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-timer.C:
+			attemptConnect("timer")
+			resetTimer(timer, backoff+jitterDuration(backoff, rng))
+		case evt, ok := <-sub.Out():
+			if !ok {
+				return
+			}
+
+			change, ok := evt.(event.EvtPeerConnectednessChanged)
+			if !ok || change.Peer != peerInfo.ID {
+				continue
+			}
+
+			switch change.Connectedness {
+			case network.Connected, network.Limited:
+				if cm := host.ConnManager(); cm != nil {
+					cm.Protect(peerInfo.ID, protectTag)
+				}
+				backoff = minBackoff
+				resetTimer(timer, backoff+jitterDuration(backoff, rng))
+			case network.NotConnected, network.CanConnect, network.CannotConnect:
+				fmt.Printf("[DWApp] Bootstrap peer %s changed connectedness to %s\n", peerInfo.ID.String(), change.Connectedness)
+				attemptConnect("event")
+				resetTimer(timer, backoff+jitterDuration(backoff, rng))
+			}
+		}
+	}
+}
+
+func resetTimer(t *time.Timer, d time.Duration) {
+	if !t.Stop() {
+		select {
+		case <-t.C:
+		default:
+		}
+	}
+	t.Reset(d)
+}
+
+func jitterDuration(base time.Duration, rng *mrand.Rand) time.Duration {
+	if base <= 0 {
+		return 0
+	}
+	maxJitter := base / 2
+	if maxJitter < time.Second {
+		maxJitter = time.Second
+	}
+	return time.Duration(rng.Int63n(int64(maxJitter)))
 }
