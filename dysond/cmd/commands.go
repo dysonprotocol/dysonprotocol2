@@ -69,6 +69,7 @@ func initAppConfig() (string, interface{}) {
 			PublicHostTemplate         string   `mapstructure:"public-host-template"`
 			Libp2pPort                 int      `mapstructure:"libp2p-port"`
 			Libp2pListenAddrs          []string `mapstructure:"libp2p-listen-addrs"`
+			Libp2pBootstrapPeers       []string `mapstructure:"libp2p-bootstrap-peers"`
 		} `mapstructure:"dwapp"`
 	}
 
@@ -115,11 +116,13 @@ func initAppConfig() (string, interface{}) {
 				PublicHostTemplate         string   `mapstructure:"public-host-template"`
 				Libp2pPort                 int      `mapstructure:"libp2p-port"`
 				Libp2pListenAddrs          []string `mapstructure:"libp2p-listen-addrs"`
+				Libp2pBootstrapPeers       []string `mapstructure:"libp2p-bootstrap-peers"`
 			}{
 				ScriptAddressOrNamePattern: dwapp.DefaultDwAppPattern,
 				PublicHostTemplate:         dwapp.DefaultPublicHostTemplate,
 				Libp2pPort:                 dwapp.DefaultConfig().Libp2pPort,
 				Libp2pListenAddrs:          dwapp.DefaultConfig().Libp2pListenAddrs,
+				Libp2pBootstrapPeers:       dwapp.DefaultConfig().Libp2pBootstrapPeers,
 			},
 		},
 	}
@@ -167,6 +170,16 @@ libp2p-port = {{ .Custom.DwApp.Libp2pPort }}
 #   libp2p-listen-addrs = ["/ip4/0.0.0.0/tcp/9095", "/ip4/0.0.0.0/tcp/9095/ws"]
 # Default: [] (empty, uses default addresses with libp2p-port)
 libp2p-listen-addrs = {{ .Custom.DwApp.Libp2pListenAddrs }}
+
+# Bootstrap peers for libp2p peer discovery. These are well-known peers that help nodes discover each other.
+# Format: array of full multiaddr strings including peer ID.
+# Examples:
+#   libp2p-bootstrap-peers = [
+#     "/ip4/127.0.0.1/tcp/9095/p2p/12D3KooWAbc123...",
+#     "/ip4/127.0.0.1/tcp/9096/p2p/12D3KooWDef456..."
+#   ]
+# Default: [] (no bootstrap peers)
+libp2p-bootstrap-peers = {{ .Custom.DwApp.Libp2pBootstrapPeers }}
 `
 
 	return customAppTemplate, customAppConfig

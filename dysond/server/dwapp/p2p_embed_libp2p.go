@@ -206,9 +206,9 @@ func validateBootstrapPeer(peerAddr string) error {
 // connectToBootstrapPeers connects to the configured bootstrap peers with retry logic
 func connectToBootstrapPeers(host libhost.Host, bootstrapPeers []string) {
 	const (
-		maxRetries       = 5
-		baseRetryDelay   = 2 * time.Second
-		maxRetryDelay    = 30 * time.Second
+		maxRetries        = 5
+		baseRetryDelay    = 2 * time.Second
+		maxRetryDelay     = 30 * time.Second
 		connectionTimeout = 10 * time.Second
 	)
 
