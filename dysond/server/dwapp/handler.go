@@ -170,13 +170,17 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, fmt.Sprintf("invalid json: %v", err), http.StatusBadRequest)
 			return
 		}
-		signer, payload, err := VerifyAndExtract(req.Context(), h.clientCtx, strings.TrimSpace(b.Topic), b.TxJSON)
+		signer, payload, err := VerifyAndExtract(req.Context(), h.clientCtx, strings.TrimSpace(b.Topic), "", b.TxJSON)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
+		var payloadObj any
+		if err := json.Unmarshal([]byte(payload), &payloadObj); err != nil {
+			payloadObj = json.RawMessage(payload)
+		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		_ = json.NewEncoder(w).Encode(map[string]any{"signer": signer, "payload_b64": payload})
+		_ = json.NewEncoder(w).Encode(map[string]any{"signer": signer, "payload": payloadObj})
 		return
 	}
 

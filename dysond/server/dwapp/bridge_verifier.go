@@ -2,11 +2,9 @@ package dwapp
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/cosmos/cosmos-sdk/client"
 
@@ -15,7 +13,7 @@ import (
 
 // VerifyAndExtract validates an ADR-36 (DIRECT) Tx JSON against topic rules and
 // returns the recovered signer and payload_b64 if valid.
-func VerifyAndExtract(ctx context.Context, clientCtx client.Context, topic string, adr36TxJSON string) (string, string, error) {
+func VerifyAndExtract(ctx context.Context, clientCtx client.Context, topic string, expectedPeerID string, adr36TxJSON string) (string, string, error) {
 	fmt.Printf("[DWApp] VerifyAndExtract: topic=%s\n", topic)
 	// Expect topic format with at least three segments: /{chainId}/v1/{address_or_name}/...
 	// Node does not enforce chainId or version values; it only ensures an address/name segment exists.
@@ -58,62 +56,39 @@ func VerifyAndExtract(ctx context.Context, clientCtx client.Context, topic strin
 		return "", "", err
 	}
 
-	var data struct {
-		PayloadB64 string `json:"payload_b64"`
-		Ts         int64  `json:"ts"`
-		NonceB64   string `json:"nonce_b64"`
-		PeerID     string `json:"peerId"`
-	}
-	if err := json.Unmarshal([]byte(dataJSON), &data); err != nil {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal([]byte(dataJSON), &raw); err != nil {
 		fmt.Printf("[DWApp] VerifyAndExtract REJECT: invalid data json: %v\n", err)
 		return "", "", fmt.Errorf("invalid data json: %w", err)
 	}
-	if data.PayloadB64 == "" {
-		fmt.Printf("[DWApp] VerifyAndExtract REJECT: missing payload_b64\n")
-		return "", "", fmt.Errorf("missing payload_b64")
-	}
-	if data.NonceB64 == "" {
-		fmt.Printf("[DWApp] VerifyAndExtract REJECT: missing nonce_b64\n")
-		return "", "", fmt.Errorf("missing nonce_b64")
-	}
-	if data.Ts == 0 {
-		fmt.Printf("[DWApp] VerifyAndExtract REJECT: missing ts\n")
-		return "", "", fmt.Errorf("missing ts")
-	}
 
-	payloadBytes, err := base64.StdEncoding.DecodeString(data.PayloadB64)
-	if err != nil {
-		fmt.Printf("[DWApp] VerifyAndExtract REJECT: payload base64 decode: %v\n", err)
-		return "", "", fmt.Errorf("payload base64 decode: %w", err)
+	peerRaw, ok := raw["peerId"]
+	if !ok {
+		fmt.Printf("[DWApp] VerifyAndExtract REJECT: missing peerId\n")
+		return "", "", fmt.Errorf("missing peerId")
 	}
-	if len(payloadBytes) > maxPayloadSize {
-		err := fmt.Errorf("payload too large: %d bytes", len(payloadBytes))
+	var peerID string
+	if err := json.Unmarshal(peerRaw, &peerID); err != nil {
+		fmt.Printf("[DWApp] VerifyAndExtract REJECT: invalid peerId field: %v\n", err)
+		return "", "", fmt.Errorf("invalid peerId field: %w", err)
+	}
+	peerID = strings.TrimSpace(peerID)
+	if peerID == "" {
+		fmt.Printf("[DWApp] VerifyAndExtract REJECT: missing peerId\n")
+		return "", "", fmt.Errorf("missing peerId")
+	}
+	if trimmedExpected := strings.TrimSpace(expectedPeerID); trimmedExpected != "" && peerID != trimmedExpected {
+		err := fmt.Errorf("peerId mismatch: payload=%s sender=%s", peerID, trimmedExpected)
 		fmt.Printf("[DWApp] VerifyAndExtract REJECT: %v\n", err)
 		return "", "", err
 	}
 
-	nonceBytes, err := base64.StdEncoding.DecodeString(data.NonceB64)
-	if err != nil {
-		fmt.Printf("[DWApp] VerifyAndExtract REJECT: nonce base64 decode: %v\n", err)
-		return "", "", fmt.Errorf("nonce base64 decode: %w", err)
-	}
-	if len(nonceBytes) == 0 {
-		fmt.Printf("[DWApp] VerifyAndExtract REJECT: nonce cannot be empty\n")
-		return "", "", fmt.Errorf("nonce cannot be empty")
-	}
-
-	now := time.Now()
-	msgTime := time.Unix(data.Ts, 0)
-	if msgTime.Before(now.Add(-maxClockSkew)) || msgTime.After(now.Add(maxClockSkew)) {
-		err := fmt.Errorf("timestamp out of range: %d", data.Ts)
+	if len(dataJSON) > maxPayloadSize {
+		err := fmt.Errorf("payload too large: %d bytes", len(dataJSON))
 		fmt.Printf("[DWApp] VerifyAndExtract REJECT: %v\n", err)
 		return "", "", err
-	}
-	if !rememberNonce(topic, signer, data.NonceB64, now) {
-		fmt.Printf("[DWApp] VerifyAndExtract REJECT: duplicate nonce\n")
-		return "", "", fmt.Errorf("duplicate nonce")
 	}
 
 	fmt.Printf("[DWApp] VerifyAndExtract ACCEPT: topic=%s signer=%s\n", topic, signer)
-	return signer, data.PayloadB64, nil
+	return signer, dataJSON, nil
 }

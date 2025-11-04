@@ -8,10 +8,11 @@ import { webSockets } from '@libp2p/websockets'
 import { webTransport } from '@libp2p/webtransport'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
+import { GossipLog as IndexedDBGossipLog } from '@canvas-js/gossiplog/idb'
+import { gossipLogService } from '@canvas-js/gossiplog/libp2p'
 import { multiaddr, Multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8FromString } from 'uint8arrays/from-string'
 import { toString as uint8ToString } from 'uint8arrays/to-string'
-import { fromBase64 } from '@cosmjs/encoding'
 import type { PeerId } from '@libp2p/interface'
 
 import { createAdr36Envelope } from './adr36'
@@ -30,11 +31,28 @@ import type {
 const textDecoder = new TextDecoder()
 
 interface TopicRegistryEntry {
-    listener: (evt: CustomEvent<any>) => void
     handlers: Set<DysonMessageHandler>
 }
 
-const MIN_BROWSER_BACKOFF_MS = 5_000
+interface DysonLogPayload {
+    topic: string
+    data: string
+    from?: string
+}
+
+function isDysonLogPayload(payload: unknown): payload is DysonLogPayload {
+    if (typeof payload !== 'object' || payload === null) {
+        return false
+    }
+    const record = payload as Record<string, unknown>
+    return (
+        typeof record.topic === 'string' &&
+        typeof record.data === 'string' &&
+        (record.from === undefined || typeof record.from === 'string')
+    )
+}
+
+const MIN_BROWSER_BACKOFF_MS = 1000
 const MAX_BROWSER_BACKOFF_MS = 120_000
 const BROWSER_PEER_TAG = 'browser-mesh'
 
@@ -50,6 +68,7 @@ class DysonClientImpl implements DysonClient {
     readonly topicPrefix: string
     readonly peerId: string
     readonly discoveryTopic: string
+    readonly gossipLog: IndexedDBGossipLog<DysonLogPayload>
 
     private readonly pubsub: any
     private readonly topics = new Map<string, TopicRegistryEntry>()
@@ -59,13 +78,14 @@ class DysonClientImpl implements DysonClient {
     private readonly onPeerDisconnect: (evt: CustomEvent<any>) => void
     private discoveryInterval?: ReturnType<typeof setInterval>
 
-    constructor(libp2p: Libp2p, bootstrap: BootstrapInfo, discoveryTopic: string) {
+    constructor(libp2p: Libp2p, bootstrap: BootstrapInfo, discoveryTopic: string, gossipLog: IndexedDBGossipLog<DysonLogPayload>) {
         this.libp2p = libp2p
         this.bootstrap = bootstrap
         this.chainId = bootstrap.rendezvous
         this.topicPrefix = bootstrap.topicPrefix.endsWith('/') ? bootstrap.topicPrefix : `${bootstrap.topicPrefix}/`
         this.peerId = libp2p.peerId.toString()
         this.discoveryTopic = discoveryTopic
+        this.gossipLog = gossipLog
         this.pubsub = libp2p.services.pubsub
 
         this.onPeerDiscovery = (evt: CustomEvent<any>) => {
@@ -87,7 +107,7 @@ class DysonClientImpl implements DysonClient {
             this.clearPeerTimer(peerId.toString())
             this.peerState.set(peerId.toString(), { backoffMs: MIN_BROWSER_BACKOFF_MS })
 
-            const cm = this.libp2p.connectionManager
+            const cm = this.getConnectionManager()
             if (cm?.protect) {
                 cm.protect(peerId, BROWSER_PEER_TAG)
             }
@@ -106,6 +126,14 @@ class DysonClientImpl implements DysonClient {
         libp2p.addEventListener('peer:discovery', this.onPeerDiscovery)
         libp2p.addEventListener('peer:connect', this.onPeerConnect)
         libp2p.addEventListener('peer:disconnect', this.onPeerDisconnect)
+
+        this.gossipLog.setConsumer(async (signedMessage) => {
+            const payload = signedMessage.message.payload
+            if (isDysonLogPayload(payload)) {
+                this.dispatchLogPayload(payload)
+            }
+            return undefined
+        })
 
         this.discoveryInterval = setInterval(() => this.publishPresence('heartbeat'), 30_000)
         this.publishPresence('startup')
@@ -133,23 +161,11 @@ class DysonClientImpl implements DysonClient {
             console.log(`[dyson-sdk] pubsub topic peers:`, this.pubsub.getSubscribers(normalisedTopic))
             entry = {
                 handlers: new Set(),
-                listener: (evt: CustomEvent<any>) => {
-                    const detail = evt.detail
-                    if (!detail || detail.topic !== normalisedTopic) return
-                    const message = decodeMessage(detail, normalisedTopic)
-                    for (const fn of entry!.handlers) {
-                        try {
-                            fn(message)
-                        } catch (err) {
-                            console.error('Dyson handler error', err)
-                        }
-                    }
-                },
             }
-            this.pubsub.addEventListener('message', entry.listener)
             this.topics.set(normalisedTopic, entry)
         }
         entry.handlers.add(handler)
+        await this.replayForHandler(normalisedTopic, handler)
     }
 
     async subscribeSuffix(root: string, suffix: string, handler: DysonMessageHandler): Promise<string> {
@@ -165,7 +181,6 @@ class DysonClientImpl implements DysonClient {
             entry.handlers.delete(handler)
         }
         if (!handler || entry.handlers.size === 0) {
-            this.pubsub.removeEventListener('message', entry.listener)
             try {
                 await this.pubsub.unsubscribe(topic)
             } catch (err) {
@@ -184,7 +199,14 @@ class DysonClientImpl implements DysonClient {
             signer,
             peerId: peerId ?? this.peerId,
         })
-        await this.pubsub.publish(topic, uint8FromString(JSON.stringify(envelope)))
+        const envelopeJson = JSON.stringify(envelope)
+        const payloadBytes = uint8FromString(envelopeJson)
+        const logPayload: DysonLogPayload = {
+            topic,
+            data: envelopeJson,
+            from: this.peerId,
+        }
+        await this.gossipLog.append(logPayload)
     }
 
     async publishJson(params: PublishJsonParams): Promise<void> {
@@ -196,7 +218,6 @@ class DysonClientImpl implements DysonClient {
 
     async stop(): Promise<void> {
         for (const [topic, entry] of this.topics.entries()) {
-            this.pubsub.removeEventListener('message', entry.listener)
             try {
                 await this.pubsub.unsubscribe(topic)
             } catch (err) {
@@ -222,6 +243,16 @@ class DysonClientImpl implements DysonClient {
         this.peerState.clear()
 
         await this.libp2p.stop()
+        await this.gossipLog.close()
+    }
+
+    private getConnectionManager(): any {
+        return (this.libp2p as any).connectionManager
+    }
+
+    private getAddressBook(): any {
+        const peerStore = (this.libp2p as any).peerStore
+        return peerStore?.addressBook
     }
 
     private storeKnownAddrs(peerId: PeerId, addrs: Multiaddr[]): void {
@@ -229,7 +260,7 @@ class DysonClientImpl implements DysonClient {
             return
         }
 
-        const addressBook = this.libp2p.peerStore?.addressBook
+        const addressBook = this.getAddressBook()
         if (!addressBook) {
             return
         }
@@ -252,7 +283,8 @@ class DysonClientImpl implements DysonClient {
 
         let storedAddrs: Multiaddr[] = []
         try {
-            storedAddrs = (this.libp2p.peerStore?.addressBook?.get?.(peerId) ?? []) as Multiaddr[]
+            const addressBook = this.getAddressBook()
+            storedAddrs = (addressBook?.get?.(peerId) ?? []) as Multiaddr[]
         } catch (err) {
             console.warn('[dyson-sdk] failed to read peer addrs', err)
         }
@@ -268,7 +300,7 @@ class DysonClientImpl implements DysonClient {
                 const conn = await this.libp2p.dial(addr)
                 console.log(`[dyson-sdk] browser mesh connected ${conn.remotePeer}`)
                 this.peerState.set(peerId.toString(), { backoffMs: MIN_BROWSER_BACKOFF_MS })
-                const cm = this.libp2p.connectionManager
+                const cm = this.getConnectionManager()
                 if (cm?.protect) {
                     cm.protect(peerId, BROWSER_PEER_TAG)
                 }
@@ -281,7 +313,7 @@ class DysonClientImpl implements DysonClient {
         try {
             await this.libp2p.dial(peerId)
             this.peerState.set(peerId.toString(), { backoffMs: MIN_BROWSER_BACKOFF_MS })
-            const cm = this.libp2p.connectionManager
+            const cm = this.getConnectionManager()
             if (cm?.protect) {
                 cm.protect(peerId, BROWSER_PEER_TAG)
             }
@@ -303,7 +335,7 @@ class DysonClientImpl implements DysonClient {
 
         this.clearPeerTimer(id)
 
-        const jitter = Math.max(state.backoffMs * 0.5, 1_000)
+        const jitter = Math.max(state.backoffMs * 0.5, 1000)
         const delay = state.backoffMs + Math.floor(Math.random() * jitter)
 
         state.timer = setTimeout(() => {
@@ -322,6 +354,61 @@ class DysonClientImpl implements DysonClient {
         }
         clearTimeout(state.timer)
         state.timer = undefined
+    }
+
+    private dispatchLogPayload(payload: DysonLogPayload): void {
+        const entry = this.topics.get(payload.topic)
+        if (!entry) {
+            return
+        }
+
+        const message = this.buildMessageFromPayload(payload)
+        if (!message) {
+            return
+        }
+
+        for (const handler of entry.handlers) {
+            try {
+                handler(message)
+            } catch (err) {
+                console.error('Dyson handler error', err)
+            }
+        }
+    }
+
+    private buildMessageFromPayload(payload: DysonLogPayload): DysonMessage | null {
+        try {
+            const envelope = JSON.parse(payload.data)
+            const bytes = uint8FromString(JSON.stringify(envelope))
+            return decodeMessage({
+                data: bytes,
+                topic: payload.topic,
+                from: payload.from ?? this.peerId,
+            }, payload.topic)
+        } catch (err) {
+            console.warn('[dyson-sdk] failed to decode message from gossiplog payload', err)
+            return null
+        }
+    }
+
+    private async replayForHandler(topic: string, handler: DysonMessageHandler): Promise<void> {
+        for await (const signedMessage of this.gossipLog.iterate()) {
+            const payload = signedMessage.message.payload
+            if (!isDysonLogPayload(payload) || payload.topic !== topic) {
+                continue
+            }
+
+            const message = this.buildMessageFromPayload(payload)
+            if (!message) {
+                continue
+            }
+
+            try {
+                handler(message)
+            } catch (err) {
+                console.error('Dyson handler error during replay', err)
+            }
+        }
     }
 
     private publishPresence(reason: string): void {
@@ -355,6 +442,13 @@ export async function createDysonClient(options: CreateDysonClientOptions = {}):
     const topicPrefix = bootstrap.topicPrefix.endsWith('/') ? bootstrap.topicPrefix : `${bootstrap.topicPrefix}/`
     const discoveryTopic = `${topicPrefix}discovery`
     const relayListenAddrs = bootstrap.relayListenAddrs ?? []
+    const gossipLogTopic = `${bootstrap.rendezvous}-gossiplog`
+
+    const gossipLog = await IndexedDBGossipLog.open<DysonLogPayload>({
+        topic: gossipLogTopic,
+        apply: async () => undefined,
+        validatePayload: isDysonLogPayload,
+    })
 
     console.log(`[dyson-sdk] chainID: ${bootstrap.rendezvous}`)
     console.log(`[dyson-sdk] relay listen addrs: ${relayListenAddrs.length}`)
@@ -379,7 +473,7 @@ export async function createDysonClient(options: CreateDysonClientOptions = {}):
             webRTCDirect(),
             circuitRelayTransport({
                 discoverRelays: 1,  // Discover at least 1 relay
-            })
+            } as any)
         ],
         connectionEncrypters: [noise()],
         streamMuxers: [yamux()],
@@ -401,6 +495,7 @@ export async function createDysonClient(options: CreateDysonClientOptions = {}):
                 emitSelf: true,
                 allowPublishToZeroTopicPeers: true
             }),
+            gossipLog: gossipLogService<DysonLogPayload>({ gossipLog }),
         },
     })
 
@@ -427,7 +522,7 @@ export async function createDysonClient(options: CreateDysonClientOptions = {}):
             await waitForIdentify(node, conn.remotePeer)
 
             // Wait for relay reservation
-            await waitForRelayReservation(node, 5000)
+            await waitForRelayReservation(node)
 
             connected = true
         } catch (err) {
@@ -446,52 +541,101 @@ export async function createDysonClient(options: CreateDysonClientOptions = {}):
     )
     console.log('[dyson-sdk] my relay addresses:', relayAddrs.map(a => a.toString()))
 
-    return new DysonClientImpl(node, bootstrap, discoveryTopic)
+    return new DysonClientImpl(node, bootstrap, discoveryTopic, gossipLog)
 }
 
-async function waitForIdentify(node: Libp2p, peerId: PeerId): Promise<void> {
-    return new Promise((resolve) => {
+async function waitForIdentify(node: Libp2p, peerId: PeerId, timeoutMs = 1000): Promise<void> {
+    const identifyService = (node.services as any)?.identify
+    if (identifyService?.identifyPeer) {
+        try {
+            await identifyService.identifyPeer(peerId)
+            console.log(`[dyson-sdk] identified peer ${peerId}`)
+            return
+        } catch (err) {
+            console.warn(`[dyson-sdk] identifyPeer call failed for ${peerId}:`, err)
+        }
+    }
+
+    const signal = createTimeoutSignal(timeoutMs)
+
+    await new Promise<void>((resolve) => {
+        let settled = false
+        const cleanup = () => {
+            if (settled) return
+            settled = true
+            node.removeEventListener('peer:identify', onIdentify)
+            signal?.removeEventListener('abort', onAbort)
+            resolve()
+        }
         const onIdentify = (evt: any) => {
             if (evt?.detail?.peerId?.toString() === peerId.toString()) {
                 console.log(`[dyson-sdk] identified peer ${peerId}`)
-                node.removeEventListener('peer:identify', onIdentify)
-                resolve()
+                cleanup()
             }
         }
+        const onAbort = () => {
+            console.warn(`[dyson-sdk] identify wait timed out for ${peerId}`)
+            cleanup()
+        }
+
         node.addEventListener('peer:identify', onIdentify)
-        setTimeout(() => {
-            node.removeEventListener('peer:identify', onIdentify)
-            resolve()
-        }, 3000)
+        if (signal) {
+            signal.addEventListener('abort', onAbort, { once: true })
+        }
     })
 }
 
-async function waitForRelayReservation(node: Libp2p, timeoutMs: number): Promise<void> {
-    return new Promise((resolve) => {
-        const checkReservation = () => {
-            const addrs = node.getMultiaddrs()
-            const hasRelay = addrs.some(ma => ma.protoNames().includes('p2p-circuit'))
-            if (hasRelay) {
+async function waitForRelayReservation(node: Libp2p, timeoutMs = 5000): Promise<void> {
+    const hasReservation = () => node.getMultiaddrs().some(ma => ma.protoNames().includes('p2p-circuit'))
+    if (hasReservation()) {
+        return
+    }
+
+    const signal = createTimeoutSignal(timeoutMs)
+
+    await new Promise<void>((resolve) => {
+        let settled = false
+        const cleanup = () => {
+            if (settled) return
+            settled = true
+            node.removeEventListener('self:peer:update', onSelfPeerUpdate)
+            signal?.removeEventListener('abort', onAbort)
+            resolve()
+        }
+        const onSelfPeerUpdate = () => {
+            if (hasReservation()) {
                 console.log('[dyson-sdk] relay reservation created')
-                resolve()
+                cleanup()
             }
         }
+        const onAbort = () => {
+            console.warn('[dyson-sdk] relay reservation wait timed out')
+            cleanup()
+        }
 
-        const onSelfPeerUpdate = () => checkReservation()
         node.addEventListener('self:peer:update', onSelfPeerUpdate)
+        if (signal) {
+            signal.addEventListener('abort', onAbort, { once: true })
+        }
 
-        checkReservation()
-
-        setTimeout(() => {
-            node.removeEventListener('self:peer:update', onSelfPeerUpdate)
-            console.warn('[dyson-sdk] relay reservation timeout')
-            resolve()
-        }, timeoutMs)
+        // In case the reservation was created between our initial check and listener registration
+        onSelfPeerUpdate()
     })
+}
+
+function createTimeoutSignal(timeoutMs: number) {
+    if (typeof timeoutMs !== 'number' || timeoutMs <= 0) {
+        return undefined
+    }
+    if (typeof AbortSignal !== 'undefined' && typeof (AbortSignal as any).timeout === 'function') {
+        return (AbortSignal as any).timeout(timeoutMs) as AbortSignal
+    }
+    return undefined
 }
 
 function decodeMessage(detail: any, topic: string): DysonMessage {
     const raw: Uint8Array = detail.data instanceof Uint8Array ? detail.data : new Uint8Array(detail.data ?? [])
+
     let envelope: Adr36Envelope | null = null
     let payload = new Uint8Array()
     let payloadJson: unknown
@@ -501,16 +645,20 @@ function decodeMessage(detail: any, topic: string): DysonMessage {
         const tx = JSON.parse(envelope.adr36_tx_json)
         const msg = tx?.body?.messages?.[0]
         const dataStr = msg?.data
-        if (typeof dataStr === 'string') {
-            const dataObj = JSON.parse(dataStr)
-            if (dataObj?.payload_b64) {
-                payload = fromBase64(dataObj.payload_b64)
-                const maybeJson = textDecoder.decode(payload)
-                try {
-                    payloadJson = JSON.parse(maybeJson)
-                } catch {
-                    // not json, ignore
+        if (typeof dataStr === 'string' && dataStr.length > 0) {
+            try {
+                const parsed = JSON.parse(dataStr)
+                if (parsed && typeof parsed === 'object') {
+                    const cloned: Record<string, unknown> = { ...parsed }
+                    delete cloned.peerId
+                    payloadJson = cloned
+                    payload = Uint8Array.from(uint8FromString(JSON.stringify(cloned)))
+                } else {
+                    payloadJson = parsed
+                    payload = Uint8Array.from(uint8FromString(JSON.stringify(parsed)))
                 }
+            } catch {
+                payload = Uint8Array.from(uint8FromString(dataStr))
             }
         }
     } catch (err) {
@@ -526,4 +674,5 @@ function decodeMessage(detail: any, topic: string): DysonMessage {
         raw,
     }
 }
+
 

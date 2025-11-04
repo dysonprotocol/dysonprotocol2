@@ -66,7 +66,7 @@ func P2PSubscribeTopic(ctx context.Context, clientCtx client.Context, topic stri
 	// Install validator once per topic (skip for discovery topic which uses pubsub-peer-discovery format)
 	if !strings.HasSuffix(topic, "/discovery") {
 		if err := ps.RegisterTopicValidator(topic, func(ctx context.Context, p peer.ID, m *pubsub.Message) pubsub.ValidationResult {
-			if _, _, err := ValidatePubSubPayload(ctx, clientCtx, topic, m.Data); err != nil {
+			if _, _, err := ValidatePubSubPayload(ctx, clientCtx, topic, m.Data, p.String()); err != nil {
 				fmt.Printf("[DWApp] validator reject: topic=%s peer=%s err=%v\n", topic, p.String(), err)
 				telemetry.IncrCounter(1, "libp2p", "validator", "reject")
 				recordPeerFailure(p)

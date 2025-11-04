@@ -34,10 +34,22 @@ function encodeMsgArbitraryData(message: MsgArbitraryData): Uint8Array {
 export async function createAdr36Envelope(params: EnvelopeParams): Promise<Adr36Envelope> {
     const { chainId, topic, payload, signer, peerId } = params
 
+    let decodedPayload: unknown = {}
+    const text = new TextDecoder().decode(payload)
+    if (text.trim().length > 0) {
+        try {
+            decodedPayload = JSON.parse(text)
+        } catch (err) {
+            throw new Error(`Payload must be JSON-serialisable: ${String(err)}`)
+        }
+    }
+
+    if (decodedPayload === null || typeof decodedPayload !== 'object' || Array.isArray(decodedPayload)) {
+        throw new Error('Payload must be a JSON object')
+    }
+
     const dataObj = {
-        payload_b64: toBase64(payload),
-        ts: Math.floor(Date.now() / 1000),
-        nonce_b64: toBase64(crypto.getRandomValues(new Uint8Array(16))),
+        ...decodedPayload as Record<string, unknown>,
         peerId: peerId ?? '',
     }
 
