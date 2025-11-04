@@ -81,7 +81,7 @@ class DysonClientImpl implements DysonClient {
     constructor(libp2p: Libp2p, bootstrap: BootstrapInfo, discoveryTopic: string, gossipLog: IndexedDBGossipLog<DysonLogPayload>) {
         this.libp2p = libp2p
         this.bootstrap = bootstrap
-        this.chainId = bootstrap.rendezvous
+        this.chainId = bootstrap.chainId
         this.topicPrefix = bootstrap.topicPrefix.endsWith('/') ? bootstrap.topicPrefix : `${bootstrap.topicPrefix}/`
         this.peerId = libp2p.peerId.toString()
         this.discoveryTopic = discoveryTopic
@@ -442,7 +442,7 @@ export async function createDysonClient(options: CreateDysonClientOptions = {}):
     const topicPrefix = bootstrap.topicPrefix.endsWith('/') ? bootstrap.topicPrefix : `${bootstrap.topicPrefix}/`
     const discoveryTopic = `${topicPrefix}discovery`
     const relayListenAddrs = bootstrap.relayListenAddrs ?? []
-    const gossipLogTopic = `${bootstrap.rendezvous}-gossiplog`
+    const gossipLogTopic = `${bootstrap.chainId}-gossiplog`
 
     const gossipLog = await IndexedDBGossipLog.open<DysonLogPayload>({
         topic: gossipLogTopic,
@@ -450,7 +450,7 @@ export async function createDysonClient(options: CreateDysonClientOptions = {}):
         validatePayload: isDysonLogPayload,
     })
 
-    console.log(`[dyson-sdk] chainID: ${bootstrap.rendezvous}`)
+    console.log(`[dyson-sdk] chainID: ${bootstrap.chainId}`)
     console.log(`[dyson-sdk] relay listen addrs: ${relayListenAddrs.length}`)
 
     const node = await createLibp2p({

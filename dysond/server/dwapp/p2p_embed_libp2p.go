@@ -2,14 +2,18 @@ package dwapp
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	mrand "math/rand"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
+	"cosmossdk.io/log"
 	libp2p "github.com/libp2p/go-libp2p"
+	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	crypto "github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/event"
 	libhost "github.com/libp2p/go-libp2p/core/host"
@@ -26,28 +30,55 @@ import (
 	multiaddr "github.com/multiformats/go-multiaddr"
 )
 
-var (
-	embeddedHost libhost.Host
+const (
+	defaultMaxEnvelopeBytes = 64 * 1024
+	defaultMaxPayloadBytes  = 48 * 1024
+	defaultReservationTTL   = time.Hour
 )
 
-// StartEmbeddedP2PHost initialises the libp2p host using the provided homeDir, chainID, listen addresses, and bootstrap peers.
-// If homeDir is empty it defaults to ~/.dysond. The host identity is persisted
-// in <homeDir>/p2p/identity.key. Enables circuit relay v2 for browser mesh networking and connects to bootstrap peers.
-func StartEmbeddedP2PHost(homeDir, chainID string, listenAddrs []string, bootstrapPeers []string) (*P2PHost, error) {
-	if embeddedHost != nil {
-		return NewP2PHost(embeddedHost.ID().String(), formatAddrs(embeddedHost)), nil
+// P2PConfig collects the knobs required to build an embedded libp2p host.
+type P2PConfig struct {
+	HomeDir        string
+	ChainID        string
+	ListenAddrs    []string
+	BootstrapPeers []string
+	MaxEnvelope    int
+	MaxPayload     int
+	RelayResources relayv2.Resources
+	Logger         log.Logger
+}
+
+// P2PInfo exposes the pieces of host identity needed by HTTP handlers.
+type P2PInfo struct {
+	PeerID string
+	Addrs  []string
+}
+
+// P2PService owns the embedded libp2p host and related GossipSub state.
+type P2PService struct {
+	cfg           P2PConfig
+	host          libhost.Host
+	ctx           context.Context
+	cancel        context.CancelFunc
+	pubsub        *pubsub.PubSub
+	topicsMu      sync.Mutex
+	topics        map[string]*topicState
+	peerRejects   map[peer.ID]int
+	peerRejectsMu sync.Mutex
+	pubsubMu      sync.Mutex
+	pubsubErr     error
+	logger        log.Logger
+}
+
+// NewP2PService constructs a libp2p host, enables the relay server, and starts
+// bootstrap management. Call Close to release background resources.
+func NewP2PService(cfg P2PConfig) (*P2PService, error) {
+	normalized, err := normalizeConfig(cfg)
+	if err != nil {
+		return nil, err
 	}
 
-	baseDir := strings.TrimSpace(homeDir)
-	if baseDir == "" {
-		userHome, err := os.UserHomeDir()
-		if err != nil {
-			return nil, fmt.Errorf("determine home dir: %w", err)
-		}
-		baseDir = filepath.Join(userHome, ".dysond")
-	}
-
-	idPath := filepath.Join(baseDir, "p2p", "identity.key")
+	idPath := filepath.Join(normalized.HomeDir, "p2p", "identity.key")
 	if err := os.MkdirAll(filepath.Dir(idPath), 0o700); err != nil {
 		return nil, fmt.Errorf("create identity dir: %w", err)
 	}
@@ -59,70 +90,258 @@ func StartEmbeddedP2PHost(homeDir, chainID string, listenAddrs []string, bootstr
 	opts := []libp2p.Option{
 		libp2p.Identity(priv),
 		libp2p.NATPortMap(),
-		libp2p.ListenAddrStrings(listenAddrs...),
+		libp2p.ListenAddrStrings(normalized.ListenAddrs...),
 		libp2p.Transport(webtransport.New),
 		libp2p.Transport(quic.NewTransport),
 		libp2p.Transport(tcp.NewTCPTransport),
 		libp2p.Transport(webrtc.New),
 		libp2p.ShareTCPListener(),
-	}
-
-	rm, err := newResourceManager()
-	if err == nil {
-		opts = append(opts, libp2p.ResourceManager(rm))
-	}
-
-	opts = append(opts,
 		libp2p.Transport(ws.New),
 		libp2p.UserAgent("dysond/libp2p"),
-	)
+	}
+
+	if rm, err := newResourceManager(); err == nil {
+		opts = append(opts, libp2p.ResourceManager(rm))
+	}
 
 	h, err := libp2p.New(opts...)
 	if err != nil {
 		return nil, fmt.Errorf("create libp2p host: %w", err)
 	}
-	embeddedHost = h
 
-	// Enable circuit relay v2 server for browser-to-browser WebRTC signaling
-	resources := relayv2.DefaultResources()
-	resources.MaxReservations = 256      // Support 256 browser relay reservations
-	resources.MaxCircuits = 16           // Max 16 concurrent relayed connections
-	resources.BufferSize = 4096          // 4KB buffer for signaling
-	resources.ReservationTTL = time.Hour // Reservations last 1 hour
-
-	_, err = relayv2.New(h, relayv2.WithResources(resources))
-	if err != nil {
-		return nil, fmt.Errorf("create relay: %w", err)
-	}
-	fmt.Printf("[DWApp] Circuit relay v2 server enabled (reservations=%d, circuits=%d)\n",
-		resources.MaxReservations, resources.MaxCircuits)
-	fmt.Printf("[DWApp] Browser mesh discovery via pubsubPeerDiscovery + circuit relay (chainID=%s)\n", chainID)
-
-	// Connect to bootstrap peers for peer mesh
-	if len(bootstrapPeers) > 0 {
-		fmt.Printf("[DWApp] Connecting to %d bootstrap peers...\n", len(bootstrapPeers))
-		go connectToBootstrapPeers(h, bootstrapPeers)
-	} else {
-		fmt.Printf("[DWApp] No bootstrap peers configured\n")
+	ctx, cancel := context.WithCancel(context.Background())
+	service := &P2PService{
+		cfg:         normalized,
+		host:        h,
+		ctx:         ctx,
+		cancel:      cancel,
+		topics:      make(map[string]*topicState),
+		peerRejects: make(map[peer.ID]int),
+		logger:      normalized.Logger.With("component", "dwapp_p2p"),
 	}
 
-	// Log peer connections
-	h.Network().Notify(&networkNotifiee{})
+	if err := service.enableRelay(); err != nil {
+		cancel()
+		return nil, err
+	}
 
-	fmt.Printf("[DWApp] libp2p host started: peerId=%s\n", h.ID().String())
-	return NewP2PHost(h.ID().String(), formatAddrs(h)), nil
+	h.Network().Notify(&networkNotifiee{logger: service.logger})
+	service.startBootstrapManager()
+
+	service.logger.Info("libp2p host started", "peer_id", h.ID().String())
+	return service, nil
 }
 
-type networkNotifiee struct{}
+// Close stops background routines and closes the underlying host.
+func (s *P2PService) Close() error {
+	if s == nil {
+		return nil
+	}
+	s.cancel()
+	return s.host.Close()
+}
+
+// HostInfo exposes the current peer ID and formatted addresses.
+func (s *P2PService) HostInfo() *P2PInfo {
+	if s == nil || s.host == nil {
+		return nil
+	}
+	return &P2PInfo{PeerID: s.host.ID().String(), Addrs: formatAddrs(s.host)}
+}
+
+func (s *P2PService) enableRelay() error {
+	resources := s.cfg.RelayResources
+	if resources.MaxReservations == 0 {
+		resources = relayv2.DefaultResources()
+		resources.MaxReservations = 256
+		resources.MaxCircuits = 16
+		resources.BufferSize = 4096
+		resources.ReservationTTL = defaultReservationTTL
+	}
+
+	if _, err := relayv2.New(s.host, relayv2.WithResources(resources)); err != nil {
+		return fmt.Errorf("create relay: %w", err)
+	}
+
+	s.logger.Info("circuit relay enabled",
+		"reservations", resources.MaxReservations,
+		"circuits", resources.MaxCircuits,
+		"chain_id", s.cfg.ChainID,
+	)
+	return nil
+}
+
+func (s *P2PService) startBootstrapManager() {
+	peers := s.cfg.BootstrapPeers
+	if len(peers) == 0 {
+		s.logger.Info("no bootstrap peers configured")
+		return
+	}
+
+	s.logger.Info("connecting to bootstrap peers", "count", len(peers))
+	go func() {
+		managed := 0
+		for _, addr := range peers {
+			info, err := parseBootstrapPeer(addr)
+			if err != nil {
+				s.logger.Error("invalid bootstrap peer", "addr", addr, "err", err)
+				continue
+			}
+			s.host.Peerstore().AddAddrs(info.ID, info.Addrs, peerstore.PermanentAddrTTL)
+			go s.manageBootstrapPeer(*info)
+			managed++
+		}
+		s.logger.Info("bootstrap peer reconnect manager active", "count", managed)
+	}()
+}
+
+func (s *P2PService) manageBootstrapPeer(peerInfo peer.AddrInfo) {
+	const (
+		minBackoff       = 10 * time.Second
+		maxBackoff       = 30 * time.Second
+		dialTimeout      = 10 * time.Second
+		protectTagPrefix = "bootstrap"
+	)
+
+	protectTag := fmt.Sprintf("%s:%s", protectTagPrefix, peerInfo.ID.String())
+	sub, err := s.host.EventBus().Subscribe(new(event.EvtPeerConnectednessChanged))
+	if err != nil {
+		s.logger.Error("bootstrap event subscribe failed", "peer", peerInfo.ID.String(), "err", err)
+		return
+	}
+	defer sub.Close()
+
+	rng := mrand.New(mrand.NewSource(time.Now().UnixNano()))
+	backoff := minBackoff
+
+	attempt := func(reason string) {
+		state := s.host.Network().Connectedness(peerInfo.ID)
+		if state == network.Connected || state == network.Limited {
+			if cm := s.host.ConnManager(); cm != nil {
+				cm.Protect(peerInfo.ID, protectTag)
+			}
+			backoff = minBackoff
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(s.ctx, dialTimeout)
+		err := s.host.Connect(ctx, peerInfo)
+		cancel()
+		if err == nil {
+			s.logger.Info("connected to bootstrap peer", "peer", peerInfo.ID.String(), "reason", reason)
+			if cm := s.host.ConnManager(); cm != nil {
+				cm.Protect(peerInfo.ID, protectTag)
+			}
+			backoff = minBackoff
+			return
+		}
+
+		s.logger.Error("bootstrap dial failed", "peer", peerInfo.ID.String(), "reason", reason, "err", err)
+		if backoff < maxBackoff {
+			backoff *= 2
+			if backoff > maxBackoff {
+				backoff = maxBackoff
+			}
+		}
+	}
+
+	attempt("initial")
+	timer := time.NewTimer(backoff + jitterDuration(backoff, rng))
+	defer timer.Stop()
+
+	for {
+		select {
+		case <-s.ctx.Done():
+			return
+		case <-timer.C:
+			attempt("timer")
+			resetTimer(timer, backoff+jitterDuration(backoff, rng))
+		case evt, ok := <-sub.Out():
+			if !ok {
+				return
+			}
+			change, ok := evt.(event.EvtPeerConnectednessChanged)
+			if !ok || change.Peer != peerInfo.ID {
+				continue
+			}
+			switch change.Connectedness {
+			case network.Connected, network.Limited:
+				if cm := s.host.ConnManager(); cm != nil {
+					cm.Protect(peerInfo.ID, protectTag)
+				}
+				backoff = minBackoff
+				resetTimer(timer, backoff+jitterDuration(backoff, rng))
+			case network.NotConnected, network.CanConnect, network.CannotConnect:
+				s.logger.Info("bootstrap peer connectedness changed", "peer", peerInfo.ID.String(), "state", change.Connectedness.String())
+				attempt("event")
+				resetTimer(timer, backoff+jitterDuration(backoff, rng))
+			}
+		}
+	}
+}
+
+func normalizeConfig(cfg P2PConfig) (P2PConfig, error) {
+	result := cfg
+	result.ChainID = strings.TrimSpace(cfg.ChainID)
+	result.HomeDir = strings.TrimSpace(cfg.HomeDir)
+	if result.HomeDir == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return P2PConfig{}, fmt.Errorf("determine home dir: %w", err)
+		}
+		result.HomeDir = filepath.Join(home, ".dysond")
+	}
+	if len(result.ListenAddrs) == 0 {
+		return P2PConfig{}, errors.New("listen addrs required")
+	}
+	if result.MaxEnvelope == 0 {
+		result.MaxEnvelope = defaultMaxEnvelopeBytes
+	}
+	if result.MaxPayload == 0 {
+		result.MaxPayload = defaultMaxPayloadBytes
+	}
+	if result.Logger == nil {
+		result.Logger = log.NewNopLogger()
+	}
+	return result, nil
+}
+
+func parseBootstrapPeer(addr string) (*peer.AddrInfo, error) {
+	if strings.TrimSpace(addr) == "" {
+		return nil, fmt.Errorf("empty peer address")
+	}
+	maddr, err := multiaddr.NewMultiaddr(addr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid multiaddr format: %w", err)
+	}
+	info, err := peer.AddrInfoFromP2pAddr(maddr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid peer info: %w", err)
+	}
+	return info, nil
+}
+
+type networkNotifiee struct {
+	logger log.Logger
+}
 
 func (n *networkNotifiee) Listen(network.Network, multiaddr.Multiaddr)      {}
 func (n *networkNotifiee) ListenClose(network.Network, multiaddr.Multiaddr) {}
 func (n *networkNotifiee) Connected(net network.Network, conn network.Conn) {
-	fmt.Printf("[DWApp] network Connected: peer=%s local=%s remote=%s\n",
-		conn.RemotePeer().String(), conn.LocalMultiaddr().String(), conn.RemoteMultiaddr().String())
+	if n.logger == nil {
+		return
+	}
+	n.logger.Debug("network connected",
+		"peer", conn.RemotePeer().String(),
+		"local", conn.LocalMultiaddr().String(),
+		"remote", conn.RemoteMultiaddr().String(),
+	)
 }
 func (n *networkNotifiee) Disconnected(net network.Network, conn network.Conn) {
-	fmt.Printf("[DWApp] network Disconnected: peer=%s\n", conn.RemotePeer().String())
+	if n.logger == nil {
+		return
+	}
+	n.logger.Debug("network disconnected", "peer", conn.RemotePeer().String())
 }
 
 func loadOrCreateIdentity(path string) (crypto.PrivKey, error) {
@@ -144,10 +363,10 @@ func loadOrCreateIdentity(path string) (crypto.PrivKey, error) {
 }
 
 func formatAddrs(h libhost.Host) []string {
-	pid := h.ID().String()
+	id := h.ID().String()
 	addrs := make([]string, 0, len(h.Addrs()))
 	for _, a := range h.Addrs() {
-		addrs = append(addrs, fmt.Sprintf("%s/p2p/%s", a.String(), pid))
+		addrs = append(addrs, fmt.Sprintf("%s/p2p/%s", a.String(), id))
 	}
 	return addrs
 }
@@ -161,7 +380,7 @@ func newResourceManager() (network.ResourceManager, error) {
 		ConnsInbound:    512,
 		ConnsOutbound:   512,
 		FD:              2048,
-		Memory:          1 << 30, // 1GiB budget per process
+		Memory:          1 << 30,
 	}
 
 	scaling := rcmgr.ScalingLimitConfig{
@@ -178,158 +397,6 @@ func newResourceManager() (network.ResourceManager, error) {
 
 	limits := scaling.Scale(0, 0)
 	return rcmgr.NewResourceManager(rcmgr.NewFixedLimiter(limits))
-}
-
-// GetEmbeddedHost returns the embedded libp2p host
-func GetEmbeddedHost() libhost.Host {
-	return embeddedHost
-}
-
-// validateBootstrapPeer validates a bootstrap peer multiaddr
-func validateBootstrapPeer(peerAddr string) error {
-	if peerAddr == "" {
-		return fmt.Errorf("empty peer address")
-	}
-
-	// Parse the multiaddr
-	maddr, err := multiaddr.NewMultiaddr(peerAddr)
-	if err != nil {
-		return fmt.Errorf("invalid multiaddr format: %w", err)
-	}
-
-	// Extract peer ID and addresses
-	_, err = peer.AddrInfoFromP2pAddr(maddr)
-	if err != nil {
-		return fmt.Errorf("invalid peer info: %w", err)
-	}
-
-	return nil
-}
-
-// connectToBootstrapPeers connects to the configured bootstrap peers with retry logic
-func connectToBootstrapPeers(host libhost.Host, bootstrapPeers []string) {
-	ctx := context.Background()
-	managedPeers := 0
-
-	for _, peerAddr := range bootstrapPeers {
-		if peerAddr == "" {
-			continue
-		}
-
-		if err := validateBootstrapPeer(peerAddr); err != nil {
-			fmt.Printf("[DWApp] Invalid bootstrap peer '%s': %v\n", peerAddr, err)
-			continue
-		}
-
-		maddr, err := multiaddr.NewMultiaddr(peerAddr)
-		if err != nil {
-			fmt.Printf("[DWApp] Invalid bootstrap peer address '%s': %v\n", peerAddr, err)
-			continue
-		}
-
-		peerInfo, err := peer.AddrInfoFromP2pAddr(maddr)
-		if err != nil {
-			fmt.Printf("[DWApp] Failed to parse peer info from '%s': %v\n", peerAddr, err)
-			continue
-		}
-
-		host.Peerstore().AddAddrs(peerInfo.ID, peerInfo.Addrs, peerstore.PermanentAddrTTL)
-
-		go manageBootstrapPeer(ctx, host, *peerInfo)
-		managedPeers++
-	}
-
-	fmt.Printf("[DWApp] Bootstrap peer reconnect manager active for %d peers\n", managedPeers)
-}
-
-func manageBootstrapPeer(ctx context.Context, host libhost.Host, peerInfo peer.AddrInfo) {
-	const (
-		minBackoff       = 10 * time.Second
-		maxBackoff       = 30 * time.Second
-		dialTimeout      = 10 * time.Second
-		protectTagPrefix = "bootstrap"
-	)
-
-	protectTag := fmt.Sprintf("%s:%s", protectTagPrefix, peerInfo.ID.String())
-
-	sub, err := host.EventBus().Subscribe(new(event.EvtPeerConnectednessChanged))
-	if err != nil {
-		fmt.Printf("[DWApp] Failed to subscribe for bootstrap peer events %s: %v\n", peerInfo.ID.String(), err)
-		return
-	}
-	defer sub.Close()
-
-	rng := mrand.New(mrand.NewSource(time.Now().UnixNano()))
-	backoff := minBackoff
-
-	attemptConnect := func(reason string) {
-		state := host.Network().Connectedness(peerInfo.ID)
-		if state == network.Connected || state == network.Limited {
-			if cm := host.ConnManager(); cm != nil {
-				cm.Protect(peerInfo.ID, protectTag)
-			}
-			backoff = minBackoff
-			return
-		}
-
-		connCtx, cancel := context.WithTimeout(ctx, dialTimeout)
-		err := host.Connect(connCtx, peerInfo)
-		cancel()
-
-		if err == nil {
-			fmt.Printf("[DWApp] Connected to bootstrap peer %s (%s)\n", peerInfo.ID.String(), reason)
-			if cm := host.ConnManager(); cm != nil {
-				cm.Protect(peerInfo.ID, protectTag)
-			}
-			backoff = minBackoff
-			return
-		}
-
-		fmt.Printf("[DWApp] Bootstrap peer %s dial failed (%s): %v\n", peerInfo.ID.String(), reason, err)
-		if backoff < maxBackoff {
-			backoff *= 2
-			if backoff > maxBackoff {
-				backoff = maxBackoff
-			}
-		}
-	}
-
-	attemptConnect("initial")
-
-	timer := time.NewTimer(backoff + jitterDuration(backoff, rng))
-	defer timer.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-timer.C:
-			attemptConnect("timer")
-			resetTimer(timer, backoff+jitterDuration(backoff, rng))
-		case evt, ok := <-sub.Out():
-			if !ok {
-				return
-			}
-
-			change, ok := evt.(event.EvtPeerConnectednessChanged)
-			if !ok || change.Peer != peerInfo.ID {
-				continue
-			}
-
-			switch change.Connectedness {
-			case network.Connected, network.Limited:
-				if cm := host.ConnManager(); cm != nil {
-					cm.Protect(peerInfo.ID, protectTag)
-				}
-				backoff = minBackoff
-				resetTimer(timer, backoff+jitterDuration(backoff, rng))
-			case network.NotConnected, network.CanConnect, network.CannotConnect:
-				fmt.Printf("[DWApp] Bootstrap peer %s changed connectedness to %s\n", peerInfo.ID.String(), change.Connectedness)
-				attemptConnect("event")
-				resetTimer(timer, backoff+jitterDuration(backoff, rng))
-			}
-		}
-	}
 }
 
 func resetTimer(t *time.Timer, d time.Duration) {

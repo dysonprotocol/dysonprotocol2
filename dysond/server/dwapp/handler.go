@@ -79,15 +79,15 @@ type DefaultHandler struct {
 	publicHostTemplate    string
 	// RPC reverse proxy
 	rpcProxy *httputil.ReverseProxy
-	// Optional p2p host (when embedded); affects bootstrap peerId/addrs only
-	p2pHost *P2PHost
+	// Optional embedded libp2p service
+	p2p *P2PService
 	// Bootstrap peers for mesh networking
 	bootstrapPeers []string
 }
 
-// SetP2PHost attaches a P2P host info provider to the handler for bootstrap responses.
-func (h *DefaultHandler) SetP2PHost(host *P2PHost) {
-	h.p2pHost = host
+// SetP2PService attaches the libp2p service so HTTP handlers can expose bootstrap info.
+func (h *DefaultHandler) SetP2PService(svc *P2PService) {
+	h.p2p = svc
 }
 
 func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -103,32 +103,26 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	// Bootstrap endpoint for libp2p connectivity (same-origin, no CORS required)
 	if req.Method == http.MethodGet && req.URL.Path == "/libp2p/bootstrap" {
-		// Start GossipSub early so the raw tracer can observe peer subscriptions
-		// and auto-join topics. Panic on error to surface misconfiguration early.
-		if err := ensurePubSub(req.Context(), h.clientCtx); err != nil {
-			panic(fmt.Errorf("[DWApp] failed to init libp2p pubsub: %w", err))
+		if h.p2p == nil {
+			http.Error(w, "libp2p disabled", http.StatusServiceUnavailable)
+			return
 		}
-		fmt.Printf("[DWApp] /libp2p/bootstrap: pubsub ready; chainId=%s\n", strings.TrimSpace(h.clientCtx.ChainID))
+		if err := h.p2p.EnsurePubSub(req.Context(), h.clientCtx); err != nil {
+			http.Error(w, fmt.Sprintf("libp2p pubsub init failed: %v", err), http.StatusInternalServerError)
+			return
+		}
 
 		peerID := ""
 		addrs := []string{}
 		relayListenAddrs := []string{}
-
-		if h.p2pHost != nil {
-			peerID = h.p2pHost.PeerID()
-			addrs = h.p2pHost.Addrs()
-
-			// Construct relay listen addresses for browsers
+		if info := h.p2p.HostInfo(); info != nil {
+			peerID = info.PeerID
+			addrs = info.Addrs
 			for _, addr := range addrs {
 				if isBrowserDialable(addr) {
-					// Append /p2p-circuit for relay reservation
-					relayAddr := fmt.Sprintf("%s/p2p-circuit", addr)
-					relayListenAddrs = append(relayListenAddrs, relayAddr)
+					relayListenAddrs = append(relayListenAddrs, fmt.Sprintf("%s/p2p-circuit", addr))
 				}
 			}
-
-			fmt.Printf("[DWApp] /libp2p/bootstrap: peerId=%s addrs=%d relayAddrs=%d\n",
-				peerID, len(addrs), len(relayListenAddrs))
 		}
 
 		chainID := strings.TrimSpace(h.clientCtx.ChainID)
@@ -136,17 +130,12 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			"peerId":           peerID,
 			"addrs":            addrs,
 			"relayListenAddrs": relayListenAddrs,
-			"rendezvous":       chainID,
-			"rendezvousAddrs":  addrs,            // Same as addrs - browsers dial for rendezvous
-			"bootstrapPeers":   h.bootstrapPeers, // Known peers to connect to
+			"chainId":          chainID,
+			"bootstrapPeers":   h.bootstrapPeers,
 			"ice": map[string]any{
 				"servers": []map[string]any{
-					{
-						"urls": []string{"stun:stun.l.google.com:19302"},
-					},
-					{
-						"urls": []string{"stun:stun1.l.google.com:19302"},
-					},
+					{"urls": []string{"stun:stun.l.google.com:19302"}},
+					{"urls": []string{"stun:stun1.l.google.com:19302"}},
 				},
 			},
 			"topicPrefix": "/" + chainID + "/v1/",
@@ -170,7 +159,11 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, fmt.Sprintf("invalid json: %v", err), http.StatusBadRequest)
 			return
 		}
-		signer, payload, err := VerifyAndExtract(req.Context(), h.clientCtx, strings.TrimSpace(b.Topic), "", b.TxJSON)
+		if h.p2p == nil {
+			http.Error(w, "libp2p disabled", http.StatusServiceUnavailable)
+			return
+		}
+		signer, payload, err := h.p2p.VerifyAndExtract(req.Context(), h.clientCtx, strings.TrimSpace(b.Topic), "", b.TxJSON)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return

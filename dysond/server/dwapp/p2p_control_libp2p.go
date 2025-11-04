@@ -2,9 +2,9 @@ package dwapp
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -25,119 +25,108 @@ type topicState struct {
 	timer *time.Timer
 }
 
-var (
-	ps            *pubsub.PubSub
-	topics        = map[string]*topicState{}
-	topicsMu      sync.Mutex
-	peerRejects   = make(map[peer.ID]int)
-	peerRejectsMu sync.Mutex
-)
+// EnsurePubSub creates the GossipSub instance once and reuses it.
+func (s *P2PService) EnsurePubSub(ctx context.Context, clientCtx client.Context) error {
+	if s == nil {
+		return errors.New("p2p service unavailable")
+	}
+	if s.host == nil {
+		return errors.New("libp2p host not initialized")
+	}
 
-func ensurePubSub(ctx context.Context, clientCtx client.Context) error {
-	if ps != nil {
-		fmt.Printf("[DWApp] GossipSub already initialized\n")
+	s.pubsubMu.Lock()
+	defer s.pubsubMu.Unlock()
+
+	if s.pubsub != nil {
 		return nil
 	}
-	if embeddedHost == nil {
-		panic("[DWApp] FATAL: embeddedHost is nil when initializing pubsub")
+	if s.pubsubErr != nil {
+		return s.pubsubErr
 	}
-	var err error
-	// Install a raw tracer to auto-join topics when peers subscribe
-	tracer := &autoJoinTracer{clientCtx: clientCtx}
-	fmt.Printf("[DWApp] Creating GossipSub with raw tracer (host=%s)...\n", embeddedHost.ID().String())
-	// Use context.Background() not request ctx so GossipSub stays alive
-	ps, err = pubsub.NewGossipSub(context.Background(), embeddedHost, pubsub.WithRawTracer(tracer))
+
+	tracer := &autoJoinTracer{svc: s, clientCtx: clientCtx}
+	s.logger.Info("initializing GossipSub", "peer_id", s.host.ID().String())
+	ps, err := pubsub.NewGossipSub(context.Background(), s.host, pubsub.WithRawTracer(tracer))
 	if err != nil {
-		panic(fmt.Errorf("[DWApp] FATAL: failed to create GossipSub: %w", err))
+		s.pubsubErr = fmt.Errorf("create gossip-sub: %w", err)
+		return s.pubsubErr
 	}
-	fmt.Printf("[DWApp] GossipSub initialized successfully\n")
+
+	s.pubsub = ps
+	s.pubsubErr = nil
+	s.logger.Info("GossipSub initialized")
 	return nil
 }
 
-// P2PSubscribeTopic subscribes the embedded host to a topic and installs a validator
-// that enforces ADR-36 checks via ValidatePubSubPayload.
-func P2PSubscribeTopic(ctx context.Context, clientCtx client.Context, topic string) error {
-	fmt.Printf("[DWApp] P2PSubscribeTopic called: topic=%s\n", topic)
-	if err := ensurePubSub(ctx, clientCtx); err != nil {
-		fmt.Printf("[DWApp] P2PSubscribeTopic: ensurePubSub failed: %v\n", err)
+// SubscribeTopic ensures we are part of the GossipSub mesh for the given topic.
+func (s *P2PService) SubscribeTopic(ctx context.Context, clientCtx client.Context, topic string) error {
+	if err := s.EnsurePubSub(ctx, clientCtx); err != nil {
+		s.logger.Error("ensure pubsub failed", "topic", topic, "err", err)
 		return err
 	}
-	fmt.Printf("[DWApp] P2PSubscribeTopic: ensurePubSub succeeded, registering validator...\n")
-	// Install validator once per topic (skip for discovery topic which uses pubsub-peer-discovery format)
+
+	ps := s.pubsub
+	if ps == nil {
+		return errors.New("pubsub not initialized")
+	}
+
 	if !strings.HasSuffix(topic, "/discovery") {
-		if err := ps.RegisterTopicValidator(topic, func(ctx context.Context, p peer.ID, m *pubsub.Message) pubsub.ValidationResult {
-			if _, _, err := ValidatePubSubPayload(ctx, clientCtx, topic, m.Data, p.String()); err != nil {
-				fmt.Printf("[DWApp] validator reject: topic=%s peer=%s err=%v\n", topic, p.String(), err)
+		validator := func(ctx context.Context, p peer.ID, m *pubsub.Message) pubsub.ValidationResult {
+			if _, _, err := s.ValidatePubSubPayload(ctx, clientCtx, topic, m.Data, p.String()); err != nil {
 				telemetry.IncrCounter(1, "libp2p", "validator", "reject")
-				recordPeerFailure(p)
+				s.recordPeerFailure(p)
 				return pubsub.ValidationReject
 			}
-			fmt.Printf("[DWApp] validator accept: topic=%s peer=%s\n", topic, p.String())
 			telemetry.IncrCounter(1, "libp2p", "validator", "accept")
-			resetPeerFailures(p)
+			s.resetPeerFailures(p)
 			return pubsub.ValidationAccept
-		}); err != nil {
-			fmt.Printf("[DWApp] RegisterTopicValidator failed: topic=%s err=%v\n", topic, err)
+		}
+		if err := ps.RegisterTopicValidator(topic, validator); err != nil {
+			s.logger.Error("register topic validator failed", "topic", topic, "err", err)
 			return err
 		}
-	} else {
-		fmt.Printf("[DWApp] P2PSubscribeTopic: skipping validator for discovery topic\n")
 	}
-	fmt.Printf("[DWApp] P2PSubscribeTopic: validator registered, checking if already subscribed...\n")
-	topicsMu.Lock()
-	fmt.Printf("[DWApp] P2PSubscribeTopic: acquired topicsMu lock\n")
-	if st, ok := topics[topic]; ok {
-		fmt.Printf("[DWApp] P2PSubscribeTopic: topic already exists in map\n")
+
+	s.topicsMu.Lock()
+	if st, ok := s.topics[topic]; ok {
 		if st.timer != nil {
 			st.timer.Stop()
 			st.timer = nil
 		}
-		topicsMu.Unlock()
-		fmt.Printf("[DWApp] subscribe: already tracking topic=%s\n", topic)
+		s.topicsMu.Unlock()
 		return nil
 	}
-	if len(topics) >= topicMax {
-		topicsMu.Unlock()
-		fmt.Printf("[DWApp] subscribe: topic cap reached (cap=%d)\n", topicMax)
-		return nil
+	if len(s.topics) >= topicMax {
+		s.topicsMu.Unlock()
+		return fmt.Errorf("topic limit reached: %d", topicMax)
 	}
-	fmt.Printf("[DWApp] P2PSubscribeTopic: releasing lock before ps.Join\n")
-	topicsMu.Unlock()
+	s.topicsMu.Unlock()
 
-	// Join the topic first (announces to peers and sets up mesh)
-	fmt.Printf("[DWApp] P2PSubscribeTopic: calling ps.Join(%s)...\n", topic)
 	t, err := ps.Join(topic)
 	if err != nil {
-		fmt.Printf("[DWApp] join failed: topic=%s err=%v\n", topic, err)
 		return err
 	}
-	fmt.Printf("[DWApp] joined topic: %s\n", topic)
-
-	// Then subscribe to receive messages
-	fmt.Printf("[DWApp] P2PSubscribeTopic: calling topic.Subscribe()...\n")
-	s, err := t.Subscribe()
+	sub, err := t.Subscribe()
 	if err != nil {
-		fmt.Printf("[DWApp] subscribe failed: topic=%s err=%v\n", topic, err)
 		return err
 	}
 
-	fmt.Printf("[DWApp] P2PSubscribeTopic: reacquiring lock to store subscription\n")
-	topicsMu.Lock()
-	topics[topic] = &topicState{topic: t, sub: s}
-	count := len(topics)
-	topicsMu.Unlock()
+	s.topicsMu.Lock()
+	s.topics[topic] = &topicState{topic: t, sub: sub}
+	count := len(s.topics)
+	s.topicsMu.Unlock()
 	telemetry.SetGauge(float32(count), "libp2p", "topics", "active")
-	fmt.Printf("[DWApp] subscribed: topic=%s (total=%d)\n", topic, count)
 	return nil
 }
 
-func P2PUnsubscribeTopic(topic string) error {
-	topicsMu.Lock()
-	st, ok := topics[topic]
+// UnsubscribeTopic removes the validator/subscription for a topic.
+func (s *P2PService) UnsubscribeTopic(topic string) error {
+	s.topicsMu.Lock()
+	st, ok := s.topics[topic]
 	if ok {
-		delete(topics, topic)
+		delete(s.topics, topic)
 	}
-	topicsMu.Unlock()
+	s.topicsMu.Unlock()
 	if !ok {
 		return nil
 	}
@@ -148,91 +137,53 @@ func P2PUnsubscribeTopic(topic string) error {
 	if st.topic != nil {
 		_ = st.topic.Close()
 	}
-	if ps != nil {
-		_ = ps.UnregisterTopicValidator(topic)
+	if s.pubsub != nil {
+		_ = s.pubsub.UnregisterTopicValidator(topic)
 	}
-	topicsMu.Lock()
-	count := len(topics)
-	topicsMu.Unlock()
+	s.topicsMu.Lock()
+	count := len(s.topics)
+	s.topicsMu.Unlock()
 	telemetry.SetGauge(float32(count), "libp2p", "topics", "active")
-	fmt.Printf("[DWApp] unsubscribed: topic=%s (remaining=%d)\n", topic, count)
 	return nil
 }
 
 // autoJoinTracer observes incoming RPCs and joins topics when peers subscribe.
 type autoJoinTracer struct {
+	svc       *P2PService
 	clientCtx client.Context
 }
 
 func (t *autoJoinTracer) AddPeer(p peer.ID, proto protocol.ID) {
-	fmt.Printf("[DWApp] tracer AddPeer: peer=%s proto=%s\n", p.String(), proto)
 }
-func (t *autoJoinTracer) RemovePeer(p peer.ID) {
-	fmt.Printf("[DWApp] tracer RemovePeer: peer=%s\n", p.String())
-}
-func (t *autoJoinTracer) Join(topic string) {
-	fmt.Printf("[DWApp] tracer Join: topic=%s\n", topic)
-}
-func (t *autoJoinTracer) Leave(topic string) {
-	fmt.Printf("[DWApp] tracer Leave: topic=%s\n", topic)
-}
+func (t *autoJoinTracer) RemovePeer(p peer.ID) {}
+func (t *autoJoinTracer) Join(topic string)    {}
+func (t *autoJoinTracer) Leave(topic string)   {}
 func (t *autoJoinTracer) Graft(p peer.ID, topic string) {
-	fmt.Printf("[DWApp] tracer Graft: peer=%s topic=%s\n", p.String(), topic)
 	chainID := strings.TrimSpace(t.clientCtx.ChainID)
 	prefix := "/" + chainID + "/v1/"
 	if strings.HasPrefix(topic, prefix) {
-		fmt.Printf("[DWApp] tracer Graft auto-join: topic=%s\n", topic)
-		go func(topicStr string, cCtx client.Context) {
-			if err := P2PSubscribeTopic(context.Background(), cCtx, topicStr); err != nil {
-				fmt.Printf("[DWApp] tracer Graft auto-join FAILED: topic=%s err=%v\n", topicStr, err)
+		go func(tp string, c client.Context) {
+			if err := t.svc.SubscribeTopic(context.Background(), c, tp); err != nil {
+				t.svc.logger.Error("tracer auto-join failed", "topic", tp, "err", err)
 			}
-			disableTopicTimer(topicStr)
+			t.svc.disableTopicTimer(tp)
 		}(topic, t.clientCtx)
 	}
 }
-func (t *autoJoinTracer) Prune(p peer.ID, topic string) {
-	fmt.Printf("[DWApp] tracer Prune: peer=%s topic=%s\n", p.String(), topic)
-}
-func (t *autoJoinTracer) ValidateMessage(m *pubsub.Message) {
-	if m != nil {
-		fmt.Printf("[DWApp] tracer ValidateMessage: topic=%s from=%s\n", m.GetTopic(), m.ReceivedFrom.String())
-	}
-}
+func (t *autoJoinTracer) Prune(p peer.ID, topic string)     {}
+func (t *autoJoinTracer) ValidateMessage(m *pubsub.Message) {}
 func (t *autoJoinTracer) DeliverMessage(m *pubsub.Message) {
 	if m == nil {
 		return
 	}
-	fmt.Printf("[DWApp] tracer DeliverMessage: topic=%s from=%s\n", m.GetTopic(), m.ReceivedFrom.String())
-	disableTopicTimer(m.GetTopic())
+	t.svc.disableTopicTimer(m.GetTopic())
 }
-func (t *autoJoinTracer) RejectMessage(m *pubsub.Message, reason string) {
-	if m != nil {
-		fmt.Printf("[DWApp] tracer RejectMessage: topic=%s from=%s reason=%s\n", m.GetTopic(), m.ReceivedFrom.String(), reason)
-	}
-}
-func (t *autoJoinTracer) DuplicateMessage(m *pubsub.Message) {
-	if m != nil {
-		fmt.Printf("[DWApp] tracer DuplicateMessage: topic=%s from=%s\n", m.GetTopic(), m.ReceivedFrom.String())
-	}
-}
-func (t *autoJoinTracer) ThrottlePeer(p peer.ID) {
-	fmt.Printf("[DWApp] tracer ThrottlePeer: peer=%s\n", p.String())
-}
-func (t *autoJoinTracer) SendRPC(rpc *pubsub.RPC, p peer.ID) {
-	if rpc != nil {
-		fmt.Printf("[DWApp] tracer SendRPC: peer=%s subs=%d\n", p.String(), len(rpc.GetSubscriptions()))
-	}
-}
-func (t *autoJoinTracer) DropRPC(rpc *pubsub.RPC, p peer.ID) {
-	if rpc != nil {
-		fmt.Printf("[DWApp] tracer DropRPC: peer=%s\n", p.String())
-	}
-}
-func (t *autoJoinTracer) UndeliverableMessage(m *pubsub.Message) {
-	if m != nil {
-		fmt.Printf("[DWApp] tracer UndeliverableMessage: topic=%s\n", m.GetTopic())
-	}
-}
+func (t *autoJoinTracer) RejectMessage(m *pubsub.Message, reason string) {}
+func (t *autoJoinTracer) DuplicateMessage(m *pubsub.Message)             {}
+func (t *autoJoinTracer) ThrottlePeer(p peer.ID)                         {}
+func (t *autoJoinTracer) SendRPC(rpc *pubsub.RPC, p peer.ID)             {}
+func (t *autoJoinTracer) DropRPC(rpc *pubsub.RPC, p peer.ID)             {}
+func (t *autoJoinTracer) UndeliverableMessage(m *pubsub.Message)         {}
 
 func (t *autoJoinTracer) RecvRPC(rpc *pubsub.RPC) {
 	if rpc == nil || rpc.Subscriptions == nil {
@@ -240,29 +191,20 @@ func (t *autoJoinTracer) RecvRPC(rpc *pubsub.RPC) {
 	}
 	chainID := strings.TrimSpace(t.clientCtx.ChainID)
 	prefix := "/" + chainID + "/v1/"
-	fmt.Printf("[DWApp] tracer RecvRPC: %d subs prefix=%s\n", len(rpc.Subscriptions), prefix)
 	for _, sub := range rpc.Subscriptions {
 		if sub == nil {
 			continue
 		}
 		topic := sub.GetTopicid()
 		subscribe := sub.GetSubscribe()
-		fmt.Printf("[DWApp] tracer RecvRPC sub: topic=%s subscribe=%v\n", topic, subscribe)
-		if !subscribe {
-			continue
+		if subscribe && strings.HasPrefix(topic, prefix) {
+			go func(tp string, c client.Context) {
+				if err := t.svc.SubscribeTopic(context.Background(), c, tp); err != nil {
+					t.svc.logger.Error("tracer auto-join failed", "topic", tp, "err", err)
+				}
+				t.svc.disableTopicTimer(tp)
+			}(topic, t.clientCtx)
 		}
-		if !strings.HasPrefix(topic, prefix) {
-			fmt.Printf("[DWApp] tracer RecvRPC: topic %s does not match prefix %s, skipping\n", topic, prefix)
-			continue
-		}
-		// Join and install validator if not already present (async to avoid deadlock)
-		fmt.Printf("[DWApp] tracer auto-joining: %s\n", topic)
-		go func(topicStr string, cCtx client.Context) {
-			if err := P2PSubscribeTopic(context.Background(), cCtx, topicStr); err != nil {
-				fmt.Printf("[DWApp] tracer auto-join FAILED: topic=%s err=%v\n", topicStr, err)
-			}
-			disableTopicTimer(topicStr)
-		}(topic, t.clientCtx)
 	}
 	for _, sub := range rpc.Subscriptions {
 		if sub == nil || sub.GetSubscribe() {
@@ -270,68 +212,60 @@ func (t *autoJoinTracer) RecvRPC(rpc *pubsub.RPC) {
 		}
 		topic := sub.GetTopicid()
 		if strings.HasPrefix(topic, prefix) {
-			scheduleTopicCheck(topic)
-			fmt.Printf("[DWApp] tracer observed unsubscribe: %s\n", topic)
+			t.svc.scheduleTopicCheck(topic)
 		}
 	}
 }
 
-func disableTopicTimer(topic string) {
-	topicsMu.Lock()
-	if st, ok := topics[topic]; ok {
+func (s *P2PService) disableTopicTimer(topic string) {
+	s.topicsMu.Lock()
+	if st, ok := s.topics[topic]; ok {
 		if st.timer != nil {
 			st.timer.Stop()
 			st.timer = nil
 		}
 	}
-	topicsMu.Unlock()
+	s.topicsMu.Unlock()
 }
 
-func scheduleTopicCheck(topic string) {
-	topicsMu.Lock()
-	st, ok := topics[topic]
+func (s *P2PService) scheduleTopicCheck(topic string) {
+	s.topicsMu.Lock()
+	st, ok := s.topics[topic]
 	if !ok {
-		topicsMu.Unlock()
+		s.topicsMu.Unlock()
 		return
 	}
 	if st.timer != nil {
 		st.timer.Stop()
 	}
 	st.timer = time.AfterFunc(topicIdleTTL, func() {
-		if ps == nil {
+		if s.pubsub == nil {
 			return
 		}
-		if len(ps.ListPeers(topic)) == 0 {
-			_ = P2PUnsubscribeTopic(topic)
+		if len(s.pubsub.ListPeers(topic)) == 0 {
+			_ = s.UnsubscribeTopic(topic)
 		} else {
-			scheduleTopicCheck(topic)
+			s.scheduleTopicCheck(topic)
 		}
 	})
-	topicsMu.Unlock()
+	s.topicsMu.Unlock()
 }
 
-func recordPeerFailure(p peer.ID) {
-	peerRejectsMu.Lock()
-	defer peerRejectsMu.Unlock()
+func (s *P2PService) recordPeerFailure(p peer.ID) {
+	s.peerRejectsMu.Lock()
+	defer s.peerRejectsMu.Unlock()
 
-	peerRejects[p]++
-	if peerRejects[p] >= 5 {
-		if ps != nil {
-			ps.BlacklistPeer(p)
+	s.peerRejects[p]++
+	if s.peerRejects[p] >= 5 {
+		if s.pubsub != nil {
+			s.pubsub.BlacklistPeer(p)
 		}
-		delete(peerRejects, p)
+		delete(s.peerRejects, p)
 	}
 }
 
-func resetPeerFailures(p peer.ID) {
-	peerRejectsMu.Lock()
-	delete(peerRejects, p)
-	peerRejectsMu.Unlock()
-}
-
-func setTopicGauge() {
-	topicsMu.Lock()
-	count := len(topics)
-	topicsMu.Unlock()
-	telemetry.SetGauge(float32(count), "libp2p", "topics", "active")
+func (s *P2PService) resetPeerFailures(p peer.ID) {
+	s.peerRejectsMu.Lock()
+	delete(s.peerRejects, p)
+	s.peerRejectsMu.Unlock()
 }

@@ -1,11 +1,13 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"net/http"
 	"strings"
 
+	"cosmossdk.io/log"
 	"github.com/gorilla/mux"
 
 	docs "dysonprotocol.com/client/docs"
@@ -16,7 +18,10 @@ import (
 
 // RegisterDysonServer provides a common function which registers APIs with API Server
 // This includes both Swagger API (if enabled) and the dwapp handler for DysonScript web applications
-func RegisterDysonServer(clientCtx client.Context, rtr *mux.Router, config config.APIConfig, scriptPattern string, publicHostTemplate string, libp2pPort int, libp2pListenAddrs []string, libp2pBootstrapPeers []string) error {
+func RegisterDysonServer(clientCtx client.Context, logger log.Logger, rtr *mux.Router, config config.APIConfig, scriptPattern string, publicHostTemplate string, libp2pPort int, libp2pListenAddrs []string, libp2pBootstrapPeers []string) error {
+	if logger == nil {
+		logger = log.NewNopLogger()
+	}
 
 	// Register the DysonScript app handler
 	// Use provided pattern or default if empty
@@ -72,17 +77,33 @@ func RegisterDysonServer(clientCtx client.Context, rtr *mux.Router, config confi
 			}
 		}
 
-		// Start embedded P2P host once before middleware
-		var p2pHost *dwapp.P2PHost
-		if embedded, err := dwapp.StartEmbeddedP2PHost(clientCtx.HomeDir, clientCtx.ChainID, listenAddrs, libp2pBootstrapPeers); err == nil && embedded != nil {
-			p2pHost = embedded
+		// Start embedded P2P service once before middleware
+		var p2pService *dwapp.P2PService
+		if svc, err := dwapp.NewP2PService(dwapp.P2PConfig{
+			HomeDir:        clientCtx.HomeDir,
+			ChainID:        clientCtx.ChainID,
+			ListenAddrs:    listenAddrs,
+			BootstrapPeers: libp2pBootstrapPeers,
+			Logger:         logger,
+		}); err == nil {
+			p2pService = svc
+			if ctx := clientCtx.CmdContext; ctx != nil {
+				go func(c context.Context) {
+					<-c.Done()
+					if err := svc.Close(); err != nil {
+						logger.Error("failed to close libp2p service", "err", err)
+					}
+				}(ctx)
+			}
+		} else {
+			logger.Error("failed to start embedded libp2p", "err", err)
 		}
 
 		// Middleware to check path condition explicitly
 		rtr.Use(func(next http.Handler) http.Handler {
 			dwappHandler := dwapp.NewDefaultHandler(clientCtx, patternString, publicHostTemplate, libp2pBootstrapPeers)
-			if h, ok := dwappHandler.(*dwapp.DefaultHandler); ok && p2pHost != nil {
-				h.SetP2PHost(p2pHost)
+			if h, ok := dwappHandler.(*dwapp.DefaultHandler); ok && p2pService != nil {
+				h.SetP2PService(p2pService)
 			}
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if !(strings.HasPrefix(r.URL.Path, "/dysonprotocol/") ||

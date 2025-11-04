@@ -234,7 +234,6 @@ func NewDysApp(
 	// }
 	// baseAppOptions = append(baseAppOptions, prepareOpt)
 
-
 	app.App = appBuilder.Build(db, traceStore, baseAppOptions...)
 
 	// register streaming services
@@ -381,7 +380,7 @@ func (app *DysApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APICon
 		}
 	}
 
-	if err := dysondserver.RegisterDysonServer(apiSvr.ClientCtx, apiSvr.Router, apiConfig, scriptPattern, publicHostTemplate, libp2pPort, libp2pListenAddrs, libp2pBootstrapPeers); err != nil {
+	if err := dysondserver.RegisterDysonServer(apiSvr.ClientCtx, app.Logger(), apiSvr.Router, apiConfig, scriptPattern, publicHostTemplate, libp2pPort, libp2pListenAddrs, libp2pBootstrapPeers); err != nil {
 		panic(err)
 	}
 }

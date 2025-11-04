@@ -1139,7 +1139,7 @@ func (app *DysApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APICon
 	libp2pListenAddrs := cast.ToStringSlice(app.appOpts.Get("dwapp.libp2p-listen-addrs"))
 	libp2pBootstrapPeers := cast.ToStringSlice(app.appOpts.Get("dwapp.libp2p-bootstrap-peers"))
 
-	if err := dysondserver.RegisterDysonServer(apiSvr.ClientCtx, apiSvr.Router, apiConfig, scriptPattern, publicHostTemplate, libp2pPort, libp2pListenAddrs, libp2pBootstrapPeers); err != nil {
+	if err := dysondserver.RegisterDysonServer(apiSvr.ClientCtx, app.Logger(), apiSvr.Router, apiConfig, scriptPattern, publicHostTemplate, libp2pPort, libp2pListenAddrs, libp2pBootstrapPeers); err != nil {
 		panic(err)
 	}
 }
