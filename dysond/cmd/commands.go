@@ -65,8 +65,10 @@ func initAppConfig() (string, interface{}) {
 	// this custom config can as well help.
 	type CustomConfig struct {
 		DwApp struct {
-			ScriptAddressOrNamePattern string `mapstructure:"script-address-or-name-pattern"`
-			PublicHostTemplate         string `mapstructure:"public-host-template"`
+			ScriptAddressOrNamePattern string   `mapstructure:"script-address-or-name-pattern"`
+			PublicHostTemplate         string   `mapstructure:"public-host-template"`
+			Libp2pPort                 int      `mapstructure:"libp2p-port"`
+			Libp2pListenAddrs          []string `mapstructure:"libp2p-listen-addrs"`
 		} `mapstructure:"dwapp"`
 	}
 
@@ -109,11 +111,15 @@ func initAppConfig() (string, interface{}) {
 		Config: *srvCfg,
 		Custom: CustomConfig{
 			DwApp: struct {
-				ScriptAddressOrNamePattern string `mapstructure:"script-address-or-name-pattern"`
-				PublicHostTemplate         string `mapstructure:"public-host-template"`
+				ScriptAddressOrNamePattern string   `mapstructure:"script-address-or-name-pattern"`
+				PublicHostTemplate         string   `mapstructure:"public-host-template"`
+				Libp2pPort                 int      `mapstructure:"libp2p-port"`
+				Libp2pListenAddrs          []string `mapstructure:"libp2p-listen-addrs"`
 			}{
 				ScriptAddressOrNamePattern: dwapp.DefaultDwAppPattern,
 				PublicHostTemplate:         dwapp.DefaultPublicHostTemplate,
+				Libp2pPort:                 dwapp.DefaultConfig().Libp2pPort,
+				Libp2pListenAddrs:          dwapp.DefaultConfig().Libp2pListenAddrs,
 			},
 		},
 	}
@@ -150,6 +156,17 @@ script-address-or-name-pattern = '{{ .Custom.DwApp.ScriptAddressOrNamePattern }}
 #   - "{address_or_name}.dys.example.com" -> dys21abc1234567890.dys.example.com or myname.dys.example.com
 #   - "{address_or_name}.localhost" -> dys21abc1234567890.localhost or myname.localhost
 public-host-template = '{{ .Custom.DwApp.PublicHostTemplate }}'
+
+# Port for the libp2p P2P networking. This port is used for TCP, WebSocket, QUIC, WebTransport, and WebRTC connections.
+# Default: 9095
+libp2p-port = {{ .Custom.DwApp.Libp2pPort }}
+
+# Custom libp2p listen addresses. If provided, these addresses will be used instead of the default ones.
+# When this is set, libp2p-port is ignored. Format: array of multiaddr strings.
+# Examples:
+#   libp2p-listen-addrs = ["/ip4/0.0.0.0/tcp/9095", "/ip4/0.0.0.0/tcp/9095/ws"]
+# Default: [] (empty, uses default addresses with libp2p-port)
+libp2p-listen-addrs = {{ .Custom.DwApp.Libp2pListenAddrs }}
 `
 
 	return customAppTemplate, customAppConfig

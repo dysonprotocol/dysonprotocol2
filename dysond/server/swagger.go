@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"io/fs"
 	"net/http"
 	"strings"
@@ -15,7 +16,7 @@ import (
 
 // RegisterDysonServer provides a common function which registers APIs with API Server
 // This includes both Swagger API (if enabled) and the dwapp handler for DysonScript web applications
-func RegisterDysonServer(clientCtx client.Context, rtr *mux.Router, config config.APIConfig, scriptPattern string, publicHostTemplate string) error {
+func RegisterDysonServer(clientCtx client.Context, rtr *mux.Router, config config.APIConfig, scriptPattern string, publicHostTemplate string, libp2pPort int, libp2pListenAddrs []string) error {
 
 	// Register the DysonScript app handler
 	// Use provided pattern or default if empty
@@ -49,9 +50,31 @@ func RegisterDysonServer(clientCtx client.Context, rtr *mux.Router, config confi
 			publicHostTemplate = dwapp.DefaultConfig().PublicHostTemplate
 		}
 
+		// Determine libp2p listen addresses
+		var listenAddrs []string
+		if len(libp2pListenAddrs) > 0 {
+			// Use custom listen addresses if provided
+			listenAddrs = libp2pListenAddrs
+		} else {
+			// Use default addresses with configurable port
+			// Generate default listen addresses
+			listenAddrs = []string{
+				fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", libp2pPort),
+				fmt.Sprintf("/ip4/0.0.0.0/tcp/%d/ws", libp2pPort),
+				fmt.Sprintf("/ip4/0.0.0.0/udp/%d/quic-v1", libp2pPort),
+				fmt.Sprintf("/ip4/0.0.0.0/udp/%d/quic-v1/webtransport", libp2pPort),
+				fmt.Sprintf("/ip4/0.0.0.0/udp/%d/webrtc-direct", libp2pPort),
+				fmt.Sprintf("/ip6/::/tcp/%d", libp2pPort),
+				fmt.Sprintf("/ip6/::/tcp/%d/ws", libp2pPort),
+				fmt.Sprintf("/ip6/::/udp/%d/quic-v1", libp2pPort),
+				fmt.Sprintf("/ip6/::/udp/%d/quic-v1/webtransport", libp2pPort),
+				fmt.Sprintf("/ip6/::/udp/%d/webrtc-direct", libp2pPort),
+			}
+		}
+
 		// Start embedded P2P host once before middleware
 		var p2pHost *dwapp.P2PHost
-		if embedded, err := dwapp.StartEmbeddedP2PHost(clientCtx.HomeDir); err == nil && embedded != nil {
+		if embedded, err := dwapp.StartEmbeddedP2PHost(clientCtx.HomeDir, clientCtx.ChainID, listenAddrs); err == nil && embedded != nil {
 			p2pHost = embedded
 		}
 

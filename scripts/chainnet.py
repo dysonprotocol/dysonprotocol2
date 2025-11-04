@@ -394,6 +394,7 @@ def generate_ports(port_offset: int, chainnet_offset: int) -> dict:
         "abci": 26658,
         "grpc": 9090,
         "api": 1317,
+        "libp2p": 9095,
     }
 
     return {
@@ -852,6 +853,10 @@ def setup(config_file, force):
                 cast(dict, app_toml.setdefault("grpc-web", tomlkit.table()))[
                     "enable"
                 ] = True
+                # Configure dwapp libp2p port
+                cast(dict, app_toml.setdefault("dwapp", tomlkit.table()))[
+                    "libp2p-port"
+                ] = node_ports["libp2p"]
                 # Configure state-sync snapshots
                 cast(dict, app_toml.setdefault("state-sync", tomlkit.table()))[
                     "snapshot-interval"
@@ -1074,7 +1079,7 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs, log_mod
 
     # Check all ports are available before starting any nodes
     # Services that bind to all interfaces (0.0.0.0) vs localhost (127.0.0.1)
-    all_interfaces_services = {"p2p"}
+    all_interfaces_services = {"p2p", "libp2p"}
 
     occupied_ports = []
     for chain in cfg["chains"]:
@@ -1153,7 +1158,14 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs, log_mod
                 click.echo(
                     f"Starting {chain['chain_id']}/{node['moniker']} (logs will appear below)"
                 )
-                cmd = [bin_path, "start", "--home", node["home"], *log_level_args, *extra_args]
+                cmd = [
+                    bin_path,
+                    "start",
+                    "--home",
+                    node["home"],
+                    *log_level_args,
+                    *extra_args,
+                ]
                 p = subprocess.Popen(cmd, preexec_fn=os.setsid)
                 click.echo(
                     f"[chainnet] started node {chain['chain_id']}/{node['moniker']} pid={p.pid} home={node['home']}"
@@ -1163,7 +1175,14 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs, log_mod
                 log_path = os.path.join(node["home"], "node.log")
                 log_file = open(log_path, "w")
                 log_files.append(log_file)
-                cmd = [bin_path, "start", "--home", node["home"], *log_level_args, *extra_args]
+                cmd = [
+                    bin_path,
+                    "start",
+                    "--home",
+                    node["home"],
+                    *log_level_args,
+                    *extra_args,
+                ]
                 p = subprocess.Popen(
                     cmd,
                     preexec_fn=os.setsid,

@@ -49,6 +49,7 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
 	dysondserver "dysonprotocol.com/dysond/server"
+	"dysonprotocol.com/dysond/server/dwapp"
 
 	// params for subspaces
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -360,10 +361,23 @@ func (app *DysApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APICon
 	app.App.RegisterAPIRoutes(apiSvr, apiConfig)
 	// register swagger API in app.go so that other applications can override easily
 
-	// Get the dwapp script pattern from configuration (default to empty string for DI)
+	// Get the dwapp configuration values
 	scriptPattern := ""
 	publicHostTemplate := ""
-	if err := dysondserver.RegisterDysonServer(apiSvr.ClientCtx, apiSvr.Router, apiConfig, scriptPattern, publicHostTemplate); err != nil {
+	libp2pPort := dwapp.DefaultConfig().Libp2pPort
+	libp2pListenAddrs := dwapp.DefaultConfig().Libp2pListenAddrs
+
+	// Read from viper if available
+	if apiSvr.ClientCtx.Viper != nil {
+		if apiSvr.ClientCtx.Viper.IsSet("dwapp.libp2p-port") {
+			libp2pPort = apiSvr.ClientCtx.Viper.GetInt("dwapp.libp2p-port")
+		}
+		if apiSvr.ClientCtx.Viper.IsSet("dwapp.libp2p-listen-addrs") {
+			libp2pListenAddrs = apiSvr.ClientCtx.Viper.GetStringSlice("dwapp.libp2p-listen-addrs")
+		}
+	}
+
+	if err := dysondserver.RegisterDysonServer(apiSvr.ClientCtx, apiSvr.Router, apiConfig, scriptPattern, publicHostTemplate, libp2pPort, libp2pListenAddrs); err != nil {
 		panic(err)
 	}
 }

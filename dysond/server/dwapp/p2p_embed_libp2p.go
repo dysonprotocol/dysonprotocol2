@@ -5,12 +5,14 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	libp2p "github.com/libp2p/go-libp2p"
 	crypto "github.com/libp2p/go-libp2p/core/crypto"
 	libhost "github.com/libp2p/go-libp2p/core/host"
 	network "github.com/libp2p/go-libp2p/core/network"
 	rcmgr "github.com/libp2p/go-libp2p/p2p/host/resource-manager"
+	relayv2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
 	quic "github.com/libp2p/go-libp2p/p2p/transport/quic"
 	tcp "github.com/libp2p/go-libp2p/p2p/transport/tcp"
 	webrtc "github.com/libp2p/go-libp2p/p2p/transport/webrtc"
@@ -23,10 +25,10 @@ var (
 	embeddedHost libhost.Host
 )
 
-// StartEmbeddedP2PHost initialises the libp2p host using the provided homeDir.
+// StartEmbeddedP2PHost initialises the libp2p host using the provided homeDir, chainID, and listen addresses.
 // If homeDir is empty it defaults to ~/.dysond. The host identity is persisted
-// in <homeDir>/p2p/identity.key.
-func StartEmbeddedP2PHost(homeDir string) (*P2PHost, error) {
+// in <homeDir>/p2p/identity.key. Enables circuit relay v2 for browser mesh networking.
+func StartEmbeddedP2PHost(homeDir, chainID string, listenAddrs []string) (*P2PHost, error) {
 	if embeddedHost != nil {
 		return NewP2PHost(embeddedHost.ID().String(), formatAddrs(embeddedHost)), nil
 	}
@@ -52,18 +54,7 @@ func StartEmbeddedP2PHost(homeDir string) (*P2PHost, error) {
 	opts := []libp2p.Option{
 		libp2p.Identity(priv),
 		libp2p.NATPortMap(),
-		libp2p.ListenAddrStrings(
-			"/ip4/0.0.0.0/tcp/9095",
-			"/ip4/0.0.0.0/tcp/9095/ws",
-			"/ip4/0.0.0.0/udp/9095/quic-v1",
-			"/ip4/0.0.0.0/udp/9095/quic-v1/webtransport",
-			"/ip4/0.0.0.0/udp/9095/webrtc-direct",
-			"/ip6/::/tcp/9095",
-			"/ip6/::/tcp/9095/ws",
-			"/ip6/::/udp/9095/quic-v1",
-			"/ip6/::/udp/9095/quic-v1/webtransport",
-			"/ip6/::/udp/9095/webrtc-direct",
-		),
+		libp2p.ListenAddrStrings(listenAddrs...),
 		libp2p.Transport(webtransport.New),
 		libp2p.Transport(quic.NewTransport),
 		libp2p.Transport(tcp.NewTCPTransport),
@@ -86,6 +77,21 @@ func StartEmbeddedP2PHost(homeDir string) (*P2PHost, error) {
 		return nil, fmt.Errorf("create libp2p host: %w", err)
 	}
 	embeddedHost = h
+
+	// Enable circuit relay v2 server for browser-to-browser WebRTC signaling
+	resources := relayv2.DefaultResources()
+	resources.MaxReservations = 256      // Support 256 browser relay reservations
+	resources.MaxCircuits = 16           // Max 16 concurrent relayed connections
+	resources.BufferSize = 4096          // 4KB buffer for signaling
+	resources.ReservationTTL = time.Hour // Reservations last 1 hour
+
+	_, err = relayv2.New(h, relayv2.WithResources(resources))
+	if err != nil {
+		return nil, fmt.Errorf("create relay: %w", err)
+	}
+	fmt.Printf("[DWApp] Circuit relay v2 server enabled (reservations=%d, circuits=%d)\n",
+		resources.MaxReservations, resources.MaxCircuits)
+	fmt.Printf("[DWApp] Browser mesh discovery via pubsubPeerDiscovery + circuit relay (chainID=%s)\n", chainID)
 
 	// Log peer connections
 	h.Network().Notify(&networkNotifiee{})
@@ -159,4 +165,9 @@ func newResourceManager() (network.ResourceManager, error) {
 
 	limits := scaling.Scale(0, 0)
 	return rcmgr.NewResourceManager(rcmgr.NewFixedLimiter(limits))
+}
+
+// GetEmbeddedHost returns the embedded libp2p host
+func GetEmbeddedHost() libhost.Host {
+	return embeddedHost
 }

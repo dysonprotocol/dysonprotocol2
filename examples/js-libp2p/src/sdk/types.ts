@@ -4,12 +4,18 @@ import type { SignDoc } from '@cosmjs/proto-signing'
 export interface BootstrapInfo {
     peerId: string
     addrs: string[]
+    relayListenAddrs?: string[]
     rendezvous: string
+    rendezvousAddrs?: string[]
     topicPrefix: string
     version: string
-    ice?: Record<string, unknown>
-    rendezvousPeer?: string
-    rendezvousAddrs?: string[]
+    ice?: {
+        servers?: Array<{
+            urls: string[]
+            username?: string
+            credential?: string
+        }>
+    }
 }
 
 export interface SignResult {

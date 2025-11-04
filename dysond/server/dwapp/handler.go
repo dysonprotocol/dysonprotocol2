@@ -106,19 +106,46 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			panic(fmt.Errorf("[DWApp] failed to init libp2p pubsub: %w", err))
 		}
 		fmt.Printf("[DWApp] /libp2p/bootstrap: pubsub ready; chainId=%s\n", strings.TrimSpace(h.clientCtx.ChainID))
+		
 		peerID := ""
 		addrs := []string{}
+		relayListenAddrs := []string{}
+		
 		if h.p2pHost != nil {
 			peerID = h.p2pHost.PeerID()
 			addrs = h.p2pHost.Addrs()
-			fmt.Printf("[DWApp] /libp2p/bootstrap: peerId=%s addrs=%d\n", peerID, len(addrs))
+			
+			// Construct relay listen addresses for browsers
+			for _, addr := range addrs {
+				if isBrowserDialable(addr) {
+					// Append /p2p-circuit for relay reservation
+					relayAddr := fmt.Sprintf("%s/p2p-circuit", addr)
+					relayListenAddrs = append(relayListenAddrs, relayAddr)
+				}
+			}
+			
+			fmt.Printf("[DWApp] /libp2p/bootstrap: peerId=%s addrs=%d relayAddrs=%d\n", 
+				peerID, len(addrs), len(relayListenAddrs))
 		}
+		
+		chainID := strings.TrimSpace(h.clientCtx.ChainID)
 		resp := map[string]any{
-			"peerId":      peerID,
-			"addrs":       addrs,
-			"rendezvous":  strings.TrimSpace(h.clientCtx.ChainID),
-			"ice":         map[string]any{"servers": []any{}},
-			"topicPrefix": "/" + strings.TrimSpace(h.clientCtx.ChainID) + "/v1/",
+			"peerId":           peerID,
+			"addrs":            addrs,
+			"relayListenAddrs": relayListenAddrs,
+			"rendezvous":       chainID,
+			"rendezvousAddrs":  addrs, // Same as addrs - browsers dial for rendezvous
+			"ice": map[string]any{
+				"servers": []map[string]any{
+					{
+						"urls": []string{"stun:stun.l.google.com:19302"},
+					},
+					{
+						"urls": []string{"stun:stun1.l.google.com:19302"},
+					},
+				},
+			},
+			"topicPrefix": "/" + chainID + "/v1/",
 			"version":     "1",
 		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -457,4 +484,11 @@ func getTXTRecords(host string) (DysonTxtRecords, error) {
 	}
 
 	return result, nil
+}
+
+// isBrowserDialable checks if a multiaddr is dialable from a browser
+func isBrowserDialable(addr string) bool {
+	return strings.Contains(addr, "/ws") ||
+		strings.Contains(addr, "/wss") ||
+		strings.Contains(addr, "/webtransport")
 }

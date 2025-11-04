@@ -1132,11 +1132,13 @@ func (app *DysApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APICon
 	// Register IBC routes
 	ibcclienttypes.RegisterQueryHandlerClient(context.Background(), apiSvr.GRPCGatewayRouter, ibcclienttypes.NewQueryClient(clientCtx))
 
-	// Get the dwapp script pattern from configuration
+	// Get the dwapp configuration from app options
 	scriptPattern := cast.ToString(app.appOpts.Get("dwapp.script-address-or-name-pattern"))
 	publicHostTemplate := cast.ToString(app.appOpts.Get("dwapp.public-host-template"))
+	libp2pPort := cast.ToInt(app.appOpts.Get("dwapp.libp2p-port"))
+	libp2pListenAddrs := cast.ToStringSlice(app.appOpts.Get("dwapp.libp2p-listen-addrs"))
 
-	if err := dysondserver.RegisterDysonServer(apiSvr.ClientCtx, apiSvr.Router, apiConfig, scriptPattern, publicHostTemplate); err != nil {
+	if err := dysondserver.RegisterDysonServer(apiSvr.ClientCtx, apiSvr.Router, apiConfig, scriptPattern, publicHostTemplate, libp2pPort, libp2pListenAddrs); err != nil {
 		panic(err)
 	}
 }

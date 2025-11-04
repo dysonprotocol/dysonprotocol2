@@ -11,10 +11,10 @@ export default defineConfig(({ mode }) => {
         env.DYSONPROTOCOL_API ||
         env.VITE_DYSONPROTOCOL_API ||
         nodeEnv.DYSONPROTOCOL_API ||
-        "http://localhost:1317";
+        "http://localhost:1417";
     const wsProxyTarget = proxyTarget.replace(/^http/, "ws");
 
-    console.log("vite1 proxyTarget", proxyTarget);
+    console.log("vite2 proxyTarget", proxyTarget);
     return {
         resolve: {
             alias: {

@@ -7,13 +7,16 @@ ADR-36 signed messages that pass the node's pubsub validator. It adapts the
 
 ## Features
 
-- Uses `libp2p@2` with WebSockets, WebTransport, WebRTC, and circuit-relay v2 transports (browser friendly)
-- Auto-dials the bootstrap multiaddrs returned by `/libp2p/bootstrap` and uses a pubsub discovery topic to find peers (`/{chainId}/v1/discovery`)
-- Publishes `{ "adr36_tx_json": "…", "v": 1 }` envelopes to the chosen topic
-- Two signing flows:
+- **Browser-to-Browser Mesh Networking:** Uses libp2p WebRTC for direct peer-to-peer connections between browsers
+- **Circuit Relay v2:** Creates relay reservations on Dyson nodes for WebRTC signaling
+- **GossipSub Discovery:** Cross-domain peer discovery via GossipSub mesh propagation
+- **PubSub Peer Discovery:** Automatic peer discovery and dialing via discovery topics
+- **Multiple Transports:** WebSockets, WebTransport, WebRTC, WebRTC-direct, and circuit-relay v2
+- **STUN/ICE:** NAT traversal using Google STUN servers (configurable)
+- **ADR-36 Signing:** Two signing flows:
   - **CosmJS seed wallet** (mnemonic stored in-page via `DirectSecp256k1HdWallet`)
   - **Keplr** (SIGN_MODE_DIRECT, fee/gas zero, account/sequence zero)
-- Subscribes locally so incoming messages appear in the UI for quick testing
+- **Real-time Messaging:** Subscribes locally so incoming messages appear in the UI for quick testing
 
 ## Prerequisites
 
@@ -50,10 +53,40 @@ mnemonic wallet or Keplr), and publishes the envelope through libp2p GossipSub. 
   `createKeplrSigner`, or `createOfflineSignerSigner` in your own apps.
 - `DysonClient.publishJson` automatically wraps payloads; switch to `publish` for binary data or custom encoding.
 
+## Browser Mesh Architecture
+
+This implementation enables browsers to form a decentralized mesh network:
+
+1. **Browser connects to Dyson node** (any domain)
+   - Fetches bootstrap info from `/libp2p/bootstrap`
+   - Connects to server's multiaddr
+   - Creates circuit relay reservation
+   - Subscribes to discovery topic
+
+2. **Discovery across domains**
+   - **pubsubPeerDiscovery**: Announces presence on `/{chainId}/v1/discovery`
+   - **GossipSub mesh**: Discovery messages propagate across all nodes
+   - Browsers discover each other even on different servers
+   - No centralized rendezvous server needed
+
+3. **Direct WebRTC connections**
+   - Initial signaling through circuit relay
+   - ICE candidates exchanged via STUN servers
+   - Direct P2P data channel established
+   - Relay connection closed
+
+4. **Mesh resilience**
+   - Browser mesh survives server failures
+   - Messages propagate via GossipSub
+   - Multiple relay servers for redundancy
+
 ## Notes
 
 - If Keplr is unavailable, its publish button stays disabled; the CosmJS flow still works with the in-page seed wallet.
 - To verify signatures without publishing, call `/libp2p/verify` on the Dyson REST server with the generated envelope.
-- Pubsub peer discovery is enabled by default; the client listens on `/{chainId}/v1/discovery` and dials peers announced by the node or other browsers. For custom logic, consume the `peer:discovery` event emitted by the SDK.
+- Pubsub peer discovery announces presence every 10 seconds on `/{chainId}/v1/discovery`.
+- Discovery messages propagate via GossipSub mesh - browsers on different servers discover each other through the mesh.
+- Relay reservations last 1 hour and are automatically renewed.
 - For production, consider adding retries for bootstrap dialing and persisting mnemonics securely (the demo keeps them in-memory only).
+- Multiple Dyson nodes can run on different domains; browsers form a single unified mesh across all nodes.
 

@@ -29,9 +29,11 @@ type DwAppConfig struct {
 	serverconfig.Config `mapstructure:",squash"`
 
 	// Additional fields specific to dwapp
-	Enable                     bool   `mapstructure:"enable"`
-	ScriptAddressOrNamePattern string `mapstructure:"script-address-or-name-pattern"`
-	PublicHostTemplate         string `mapstructure:"public-host-template"`
+	Enable                     bool     `mapstructure:"enable"`
+	ScriptAddressOrNamePattern string   `mapstructure:"script-address-or-name-pattern"`
+	PublicHostTemplate         string   `mapstructure:"public-host-template"`
+	Libp2pPort                 int      `mapstructure:"libp2p-port"`
+	Libp2pListenAddrs          []string `mapstructure:"libp2p-listen-addrs"`
 }
 
 // Combined explicit server configuration
@@ -46,6 +48,8 @@ func DefaultConfig() *DwAppConfig {
 		Enable:                     true,
 		ScriptAddressOrNamePattern: DefaultDwAppPattern,
 		PublicHostTemplate:         DefaultPublicHostTemplate,
+		Libp2pPort:                 9095,
+		Libp2pListenAddrs:          []string{},
 	}
 }
 
@@ -164,6 +168,14 @@ func New(
 	if viperConfig.IsSet("dwapp.public-host-template") {
 		srv.config.PublicHostTemplate = viperConfig.GetString("dwapp.public-host-template")
 		srv.logger.Info("Overriding default public host template with config value", "public_host_template", srv.config.PublicHostTemplate)
+	}
+	if viperConfig.IsSet("dwapp.libp2p-port") {
+		srv.config.Libp2pPort = viperConfig.GetInt("dwapp.libp2p-port")
+		srv.logger.Info("Overriding default libp2p port with config value", "libp2p_port", srv.config.Libp2pPort)
+	}
+	if viperConfig.IsSet("dwapp.libp2p-listen-addrs") {
+		srv.config.Libp2pListenAddrs = viperConfig.GetStringSlice("dwapp.libp2p-listen-addrs")
+		srv.logger.Info("Overriding default libp2p listen addresses with config value", "libp2p_listen_addrs", srv.config.Libp2pListenAddrs)
 	}
 
 	srv.httpServer = &http.Server{
