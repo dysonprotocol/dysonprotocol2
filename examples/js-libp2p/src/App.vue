@@ -1,21 +1,21 @@
 <template>
-  <div class="app">
+  <div>
     <h1>Dyson JS libp2p Demo</h1>
-    <p class="intro">
+    <p>
       Demo connecting to Dyson peer via libp2p, using GossipSub for messaging, ADR-36 signing, and subscription management.
     </p>
 
     <!-- Connection Status -->
-    <section class="section">
+    <section>
       <h2>Connection Status</h2>
-      <div class="status-row">
-        <button @click="handleConnect" :disabled="connecting || connected">
+      <div>
+        <button @click="handleConnect" :disabled="connecting">
           {{ connected ? 'Disconnect' : 'Connect' }}
-        </button>
-        <span class="status" :class="statusClass">{{ connectionStatus }}</span>
-        <span v-if="connected" class="peer-id">Peer ID: {{ peerId }}</span>
+        </button> | 
+        <span>{{ connectionStatus }}</span>
+        <div v-if="connected">Peer ID: {{ peerId }}</div>
       </div>
-      <div v-if="connected && bootstrap" class="bootstrap-info">
+      <div v-if="connected">
         <details>
           <summary>Bootstrap Info</summary>
           <pre>{{ JSON.stringify(bootstrap, null, 2) }}</pre>
@@ -24,31 +24,36 @@
     </section>
 
     <!-- Peer Connections -->
-    <section v-if="connected" class="section">
+    <section v-if="connected">
       <h2>Peer Connections</h2>
-      <div class="stats-row">
-        <span>Connected: <strong>{{ connectedPeers.length }}</strong></span>
-        <span>Total Known: <strong>{{ allPeers.length }}</strong></span>
+      <div>
+        <span>Connected: <strong>{{ connectedPeers.length }}</strong></span> |
+        <span>Total Known: <strong>{{ allPeers.length }}</strong></span> |
         <span>Mesh Peers: <strong>{{ meshPeersCount }}</strong></span>
       </div>
-      <div class="peers-list">
-        <div v-for="peer in connectedPeers" :key="peer.id" class="peer-item">
-          <span class="peer-id-small">{{ peer.id.slice(0, 12) }}...</span>
-          <span class="peer-status connected">●</span>
-          <span class="peer-addrs">{{ peer.addrs.length }} addr(s)</span>
-        </div>
-      </div>
+      <ul>
+        <li v-for="p in allPeers" :key="p.id">
+          <div>
+            <code>{{ p.id }}</code> |
+            <small>
+              {{ connectedById[p.id] ? 'connected' : 'discovered' }}
+              <template v-if="connectedById[p.id]"> · {{ connectedById[p.id].direction || '—' }} · {{ connectedById[p.id].status || '—' }}</template>
+            </small>
+          </div>
+          <div><code>{{ connectedById[p.id]?.remoteAddr || (p.addrs[0] || '—') }}</code></div>
+        </li>
+      </ul>
     </section>
 
     <!-- GossipSub Mesh State -->
-    <section v-if="connected" class="section">
+    <section v-if="connected">
       <h2>GossipSub Mesh State</h2>
-      <div class="mesh-stats">
+      <div>
         <div>Total Pubsub Peers: <strong>{{ pubsubPeersCount }}</strong></div>
         <div>Active Topics: <strong>{{ subscriptions.length }}</strong></div>
       </div>
-      <div v-if="meshDetails.length > 0" class="mesh-details">
-        <div v-for="detail in meshDetails" :key="detail.topic" class="mesh-item">
+      <div v-if="meshDetails.length > 0">
+        <div v-for="detail in meshDetails" :key="detail.topic">
           <strong>{{ detail.topic }}</strong>
           <span>Mesh: {{ detail.meshCount }}</span>
           <span>Subscribers: {{ detail.subscribersCount }}</span>
@@ -57,18 +62,18 @@
     </section>
 
     <!-- Wallet Management -->
-    <section class="section">
+    <section>
       <h2>Wallet</h2>
-      <div class="wallet-section">
+      <div>
         <label>
           Mnemonic seed (12 or 24 words)
           <textarea v-model="mnemonic" rows="3"></textarea>
         </label>
-        <div class="button-row">
+        <div>
           <button @click="generateMnemonic">Generate Seed</button>
           <button @click="useMnemonic">Use Seed</button>
         </div>
-        <div class="addresses">
+        <div>
           <p>CosmJS address: <code>{{ cosmjsAddress || '—' }}</code></p>
           <p>Keplr address: <code>{{ keplrAddress || (keplrAvailable ? '—' : 'Keplr not detected') }}</code></p>
         </div>
@@ -76,41 +81,30 @@
     </section>
 
     <!-- Subscriptions -->
-    <section v-if="connected" class="section">
+    <section v-if="connected">
       <h2>Subscriptions</h2>
-      <div class="subscriptions-section">
-        <div v-if="subscriptions.length === 0" class="empty">No active subscriptions</div>
-        <div v-for="sub in subscriptions" :key="sub.topic" class="subscription-item">
-          <div class="sub-header">
+      <div>
+        <div v-if="subscriptions.length === 0">No active subscriptions</div>
+        <div v-for="sub in subscriptions" :key="sub.topic">
+          <div>
             <code>{{ sub.topic }}</code>
-            <button @click="unsubscribe(sub.topic)" class="btn-small">Unsubscribe</button>
+            <button @click="unsubscribe(sub.topic)">Unsubscribe</button>
           </div>
-          <div class="sub-info">Handlers: {{ sub.handlers }}, Messages: {{ sub.messageCount }}</div>
+          <div>Handlers: {{ sub.handlers }}, Messages: {{ sub.messageCount }}</div>
 
-          <!-- Per-topic form and message log -->
-          <div class="topic-form">
-            <div class="topic-send">
-              <input v-model="topicDrafts[sub.topic]" type="text" placeholder="Payload JSON or text" />
-              <button @click="sendToTopic(sub.topic)" class="btn-small">Send</button>
-            </div>
-            <div class="messages-list">
-              <div v-for="msg in (topicMessages[sub.topic] || [])" :key="msg.id" class="message-item" :class="msg.type">
-                <div class="message-header">
-                  <span class="message-type">{{ msg.type === 'sent' ? 'Sent' : 'Received' }}</span>
-                  <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
-                  <span class="message-signer">Signer: {{ msg.signer }}</span>
-                </div>
-                <div class="message-topic"><code>{{ msg.topic }}</code></div>
-                <div class="message-payload">{{ msg.payload }}</div>
-                <div class="message-meta">
-                  <span>PeerId: {{ msg.from }}</span>
-                  <span>Size: {{ msg.size }} bytes</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- Per-topic message log (GossipLog-backed, RX only) -->
+          <ul>
+            <li v-for="msg in (topicMessages[sub.topic] || [])" :key="msg.id">
+              <details>
+                <summary>
+                  {{ msg.payload }}
+                </summary>
+                <pre>{{ msg.raw }}</pre>
+              </details>
+            </li>
+          </ul>
         </div>
-        <div class="subscribe-form">
+        <div>
           <label>
             Subscribe to topic:
             <input v-model="newTopic" type="text" placeholder="/chainId/v1/address/suffix" />
@@ -121,9 +115,9 @@
     </section>
 
     <!-- Publish Message -->
-    <section class="section">
+    <section>
       <h2>Publish Message</h2>
-      <div class="publish-section">
+      <div>
         <label>
           Topic suffix (appended to <code>/CHAIN_ID/v1/&lt;address&gt;/</code>)
           <input v-model="topicSuffix" type="text" />
@@ -132,7 +126,7 @@
           Message payload (JSON or any text)
           <textarea v-model="payload" rows="4"></textarea>
         </label>
-        <div class="button-row">
+        <div>
           <button @click="publishWithCosmjs" :disabled="!canPublishCosmjs" :title="publishCosmjsTitle">
             Sign & Publish (CosmJS)
           </button>
@@ -140,7 +134,7 @@
             Sign & Publish (Keplr)
           </button>
         </div>
-        <div v-if="publishing" class="publishing-status">
+        <div v-if="publishing">
           <span v-if="signingStatus">Signing...</span>
           <span v-if="publishingStatus">Publishing...</span>
         </div>
@@ -148,12 +142,12 @@
     </section>
 
     <!-- ADR36 Signing Info -->
-    <section v-if="lastSignature" class="section">
+    <section v-if="lastSignature">
       <h2>Last ADR36 Signature</h2>
-      <div class="signature-info">
+      <div>
         <div><strong>Signer:</strong> {{ lastSignature.signer }}</div>
         <div><strong>Method:</strong> {{ lastSignature.method }}</div>
-        <div><strong>Status:</strong> <span class="status-valid">Valid</span></div>
+        <div><strong>Status:</strong> <span>Valid</span></div>
         <details>
           <summary>Envelope JSON</summary>
           <pre>{{ lastSignature.envelope }}</pre>
@@ -162,9 +156,9 @@
     </section>
 
     <!-- Messages -->
-    <section class="section">
+    <section>
       <h2>Messages</h2>
-      <div class="messages-controls">
+      <div>
         <button @click="clearMessages">Clear</button>
         <input v-model="messageFilter" type="text" placeholder="Filter by topic or signer..." />
         <select v-model="messageFilterType">
@@ -173,58 +167,55 @@
           <option value="received">Received</option>
         </select>
       </div>
-      <div class="messages-list">
-        <div v-for="msg in filteredMessages" :key="msg.id" class="message-item" :class="msg.type">
-          <div class="message-header">
-            <span class="message-type">{{ msg.type === 'sent' ? 'Sent' : 'Received' }}</span>
-            <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
-            <span class="message-signer">Signer: {{ msg.signer }}</span>
-          </div>
-          <div class="message-topic"><code>{{ msg.topic }}</code></div>
-          <div class="message-payload">{{ msg.payload }}</div>
-          <div class="message-meta">
-            <span>PeerId: {{ msg.from }}</span>
-            <span>Size: {{ msg.size }} bytes</span>
-          </div>
-        </div>
-      </div>
+      <ul>
+        <li v-for="msg in filteredMessages" :key="msg.id">
+          <details>
+            <summary>
+              <strong>{{ msg.type === 'sent' ? 'Sent' : 'Received' }}</strong>
+              · {{ formatTime(msg.timestamp) }} · <code>{{ msg.topic }}</code>
+              · signer {{ msg.signer }} · {{ msg.size }} bytes
+            </summary>
+            <pre>{{ msg.raw || msg.payload }}</pre>
+          </details>
+        </li>
+      </ul>
     </section>
 
     <!-- Statistics -->
-    <section v-if="connected" class="section">
+    <section v-if="connected">
       <h2>Statistics</h2>
-      <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-label">Messages Sent</div>
-          <div class="stat-value">{{ stats.messagesSent }}</div>
+      <div>
+        <div>
+          <div>Messages Sent</div>
+          <div>{{ stats.messagesSent }}</div>
         </div>
-        <div class="stat-item">
-          <div class="stat-label">Messages Received</div>
-          <div class="stat-value">{{ stats.messagesReceived }}</div>
+        <div>
+          <div>Messages Received</div>
+          <div>{{ stats.messagesReceived }}</div>
         </div>
-        <div class="stat-item">
-          <div class="stat-label">Bytes Sent</div>
-          <div class="stat-value">{{ formatBytes(stats.bytesSent) }}</div>
+        <div>
+          <div>Bytes Sent</div>
+          <div>{{ formatBytes(stats.bytesSent) }}</div>
         </div>
-        <div class="stat-item">
-          <div class="stat-label">Bytes Received</div>
-          <div class="stat-value">{{ formatBytes(stats.bytesReceived) }}</div>
+        <div>
+          <div>Bytes Received</div>
+          <div>{{ formatBytes(stats.bytesReceived) }}</div>
         </div>
-        <div class="stat-item">
-          <div class="stat-label">Uptime</div>
-          <div class="stat-value">{{ formatUptime(stats.uptime) }}</div>
+        <div>
+          <div>Uptime</div>
+          <div>{{ formatUptime(stats.uptime) }}</div>
         </div>
       </div>
     </section>
 
     <!-- Debug Log -->
-    <section class="section">
+    <section>
       <h2>Debug Log</h2>
-      <div class="log-controls">
+      <div>
         <button @click="clearLog">Clear Log</button>
         <button @click="exportLog">Export Log</button>
       </div>
-      <pre class="debug-log" ref="logRef">{{ logOutput }}</pre>
+      <pre ref="logRef">{{ logOutput }}</pre>
     </section>
   </div>
 </template>
@@ -254,7 +245,7 @@ const bootstrap = ref<any>(null)
 const connectionStartTime = ref<number>(0)
 
 // Peer state
-const connectedPeers = ref<Array<{ id: string; addrs: string[] }>>([])
+const connectedPeers = ref<Array<{ id: string; addrs: string[]; protocols: string[]; connCount: number; direction: string; status: string; remoteAddr: string; streams: number; openedMs: number }>>([])
 const allPeers = ref<Array<{ id: string; addrs: string[] }>>([])
 const pubsubPeersCount = ref(0)
 const meshPeersCount = ref(0)
@@ -291,6 +282,7 @@ interface MessageItem {
   signer: string
   from: string
   payload: string
+  raw?: string
   timestamp: number
   size: number
 }
@@ -321,11 +313,6 @@ const connectionStatus = computed(() => {
   return 'Disconnected'
 })
 
-const statusClass = computed(() => {
-  if (connected.value) return 'status-connected'
-  if (connecting.value) return 'status-connecting'
-  return 'status-disconnected'
-})
 
 const canPublishCosmjs = computed(() => connected.value && !!cosmjsWallet.value && !!cosmjsAddress.value)
 const canPublishKeplr = computed(() => connected.value && keplrAvailable.value)
@@ -374,6 +361,12 @@ const meshDetails = computed(() => {
   })
 })
 
+const connectedById = computed<Record<string, any>>(() => {
+  const obj: Record<string, any> = {}
+  for (const p of connectedPeers.value) obj[p.id] = p
+  return obj
+})
+
 // Logging
 function log(message: string, data?: any) {
   const ts = new Date().toISOString()
@@ -410,25 +403,83 @@ function updatePeers() {
     meshPeersCount.value = meshPeers.size
   }
 
-  const peerStore = (client.value.libp2p as any).peerStore
-  if (peerStore?.peers) {
-    const all: Array<{ id: string; addrs: string[] }> = []
-    const connected: Array<{ id: string; addrs: string[] }> = []
-    
-    for (const peer of peerStore.peers.values()) {
-      const addrs = peer.addresses?.map((a: any) => a.multiaddr.toString()) ?? []
-      const peerInfo = { id: peer.id.toString(), addrs }
-      all.push(peerInfo)
-      
-      const conns = client.value.libp2p.getPeers()
-      if (conns.includes(peer.id)) {
-        connected.push(peerInfo)
-      }
-    }
-    
-    allPeers.value = all
-    connectedPeers.value = connected
+  const libp2p: any = client.value.libp2p as any
+  const peerStore = libp2p?.peerStore
+  const addressBook = peerStore?.addressBook
+
+  // Build connection summaries by remotePeer
+  const connections: any[] = libp2p.getConnections?.() || []
+  const byPeer = new Map<string, any[]>()
+  for (const c of connections) {
+    const id = c?.remotePeer?.toString?.() || ''
+    if (!id) continue
+    const list = byPeer.get(id) || []
+    list.push(c)
+    byPeer.set(id, list)
   }
+
+  const connected: Array<{ id: string; addrs: string[]; protocols: string[]; connCount: number; direction: string; status: string; remoteAddr: string; streams: number; openedMs: number }> = []
+  for (const [id, conns] of byPeer.entries()) {
+    const primary: any = conns[0]
+    const status: string = String(primary?.status ?? '')
+    const direction: string = String(primary?.direction ?? '')
+    const remoteAddr: string = primary?.remoteAddr?.toString?.() ?? ''
+    const streams: number = Array.isArray(primary?.streams) ? primary.streams.length : 0
+    const opened: number = Number(primary?.timeline?.open ?? 0)
+    const openedMs: number = opened ? Math.max(0, Date.now() - opened) : 0
+
+    // Protocols best-effort
+    let protocols: string[] = []
+
+      const protoBook = peerStore?.protoBook
+      if (protoBook?.get) {
+        const p = protoBook.get(primary?.remotePeer)
+        if (Array.isArray(p)) protocols = p
+      }
+
+
+    // Addresses best-effort: from addressBook or remoteAddr
+    let addrs: string[] = []
+    
+      const abAddrs = addressBook?.get?.(primary?.remotePeer) || []
+      addrs = Array.isArray(abAddrs) ? abAddrs.map((a: any) => a.toString?.() || a.multiaddr?.toString?.() || String(a)) : []
+
+    if (addrs.length === 0 && remoteAddr) addrs = [remoteAddr]
+
+    connected.push({
+      id,
+      addrs,
+      protocols,
+      connCount: conns.length,
+      direction,
+      status,
+      remoteAddr,
+      streams,
+      openedMs,
+    })
+  }
+  connectedPeers.value = connected
+
+  // Derive total known peers from pubsub peers and connection peers
+  const knownIds = new Set<string>()
+  try {
+    const psPeers: any[] = (client.value.libp2p.services as any)?.pubsub?.getPeers?.() || []
+    for (const p of psPeers) knownIds.add(p?.toString?.() || String(p))
+  } catch {}
+  for (const id of byPeer.keys()) knownIds.add(id)
+
+  const all: Array<{ id: string; addrs: string[] }> = []
+  for (const id of knownIds) {
+    let addrs: string[] = []
+    try {
+      // use addressBook if available by matching any connection's remotePeer
+      const conn = byPeer.get(id)?.[0]
+      const abAddrs = addressBook?.get?.(conn?.remotePeer) || []
+      addrs = Array.isArray(abAddrs) ? abAddrs.map((a: any) => a.toString?.() || a.multiaddr?.toString?.() || String(a)) : []
+    } catch {}
+    all.push({ id, addrs })
+  }
+  allPeers.value = all
 }
 
 // Update subscriptions list
@@ -515,6 +566,18 @@ function setupEventListeners() {
   client.value.libp2p.addEventListener('peer:disconnect', (e: any) => {
     const peerId = e?.detail?.remotePeer?.toString?.()
     log('peer:disconnect', { id: peerId })
+    updatePeers()
+  })
+  
+  client.value.libp2p.addEventListener('connection:open', (e: any) => {
+    const peerId = e?.detail?.remotePeer?.toString?.()
+    log('connection:open', { id: peerId })
+    updatePeers()
+  })
+  
+  client.value.libp2p.addEventListener('connection:close', (e: any) => {
+    const peerId = e?.detail?.remotePeer?.toString?.()
+    log('connection:close', { id: peerId })
     updatePeers()
   })
   
@@ -606,12 +669,15 @@ async function ensureSubscription(topic: string) {
     
     log('Received message', { topic: msg.topic, from: msg.from, signer: signerAddress, payload: payloadText })
     
+    const rawText = msg.envelope ? JSON.stringify(msg.envelope, null, 2) : uint8ToString(msg.raw)
+    
     addMessage({
       type: 'received',
       topic: msg.topic,
       signer: signerAddress,
       from: msg.from,
       payload: payloadText,
+      raw: rawText,
       size: msg.payload.length,
     })
     
@@ -621,6 +687,7 @@ async function ensureSubscription(topic: string) {
       signer: signerAddress,
       from: msg.from,
       payload: payloadText,
+      raw: rawText,
       size: msg.payload.length,
     })
     
@@ -699,10 +766,11 @@ async function publishWithCosmjs() {
     peerId: client.value!.peerId,
   })
   
+  const envelopeStr = JSON.stringify(envelope, null, 2)
   lastSignature.value = {
     signer: signer.address,
     method: 'CosmJS',
-    envelope: JSON.stringify(envelope, null, 2),
+    envelope: envelopeStr,
   }
   
   addMessage({
@@ -711,6 +779,7 @@ async function publishWithCosmjs() {
     signer: signer.address,
     from: client.value.peerId,
     payload: payloadJson,
+    raw: envelopeStr,
     size: payloadBytes.length,
   })
   
@@ -758,10 +827,11 @@ async function publishWithKeplr() {
     peerId: client.value!.peerId,
   })
   
+  const envelopeKeplrStr = JSON.stringify(envelopeKeplr, null, 2)
   lastSignature.value = {
     signer: signer.address,
     method: 'Keplr',
-    envelope: JSON.stringify(envelopeKeplr, null, 2),
+    envelope: envelopeKeplrStr,
   }
   
   addMessage({
@@ -770,6 +840,7 @@ async function publishWithKeplr() {
     signer: signer.address,
     from: client.value.peerId,
     payload: payloadJson,
+    raw: envelopeKeplrStr,
     size: payloadBytes.length,
   })
   
@@ -810,16 +881,28 @@ async function sendToTopic(topic: string) {
   
   await client.value.publish({ topic, payload: payloadBytes, signer })
   
+  // Recreate envelope for raw display
+  const { createAdr36Envelope } = await import('./sdk/adr36')
+  const env = await createAdr36Envelope({
+    chainId: client.value!.chainId,
+    topic,
+    payload: payloadBytes,
+    signer,
+    peerId: client.value!.peerId,
+  })
+  const envStr = JSON.stringify(env, null, 2)
+  
   const msgItem = {
     type: 'sent' as const,
     topic,
     signer: signer.address,
     from: client.value.peerId,
     payload: payloadText,
+    raw: envStr,
     size: payloadBytes.length,
   }
   addMessage(msgItem)
-  addTopicMessage(msgItem)
+  // Do not add to per-topic log; we want RX-only (GossipLog-backed) entries
   
   stats.value.messagesSent++
   stats.value.bytesSent += payloadBytes.length
@@ -907,429 +990,5 @@ onUnmounted(async () => {
 })
 </script>
 
-<style scoped>
-.app {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-family: system-ui, sans-serif;
-}
 
-.intro {
-  color: #666;
-  margin-bottom: 2rem;
-}
-
-.section {
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #fafafa;
-}
-
-.section h2 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  font-size: 1.25rem;
-}
-
-.status-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.status {
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-  font-weight: 500;
-}
-
-.status-connected {
-  background: #d4edda;
-  color: #155724;
-}
-
-.status-connecting {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.status-disconnected {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.peer-id {
-  font-family: monospace;
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.bootstrap-info {
-  margin-top: 1rem;
-}
-
-.bootstrap-info pre {
-  background: #f5f5f5;
-  padding: 1rem;
-  border-radius: 4px;
-  overflow: auto;
-  max-height: 300px;
-}
-
-.stats-row {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 1rem;
-}
-
-.peers-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.peer-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem;
-  background: white;
-  border-radius: 4px;
-}
-
-.peer-id-small {
-  font-family: monospace;
-  font-size: 0.85rem;
-}
-
-.peer-status {
-  font-size: 1.2rem;
-}
-
-.peer-status.connected {
-  color: #28a745;
-}
-
-.peer-addrs {
-  font-size: 0.85rem;
-  color: #666;
-}
-
-.mesh-stats {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 1rem;
-}
-
-.mesh-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.mesh-item {
-  display: flex;
-  gap: 1rem;
-  padding: 0.5rem;
-  background: white;
-  border-radius: 4px;
-}
-
-.wallet-section label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.wallet-section textarea {
-  width: 100%;
-  min-height: 80px;
-  font-family: monospace;
-  font-size: 0.9rem;
-}
-
-.button-row {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-  flex-wrap: wrap;
-}
-
-button {
-  padding: 0.5rem 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-}
-
-button:hover:not(:disabled) {
-  background: #f0f0f0;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-small {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.85rem;
-}
-
-.addresses {
-  margin-top: 1rem;
-}
-
-.addresses code {
-  font-family: monospace;
-  background: #f5f5f5;
-  padding: 0.25rem 0.5rem;
-  border-radius: 2px;
-}
-
-.subscriptions-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.subscription-item {
-  padding: 1rem;
-  background: white;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-}
-
-.sub-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.sub-header code {
-  font-family: monospace;
-  font-size: 0.9rem;
-}
-
-.sub-info {
-  font-size: 0.85rem;
-  color: #666;
-}
-
-.subscribe-form {
-  display: flex;
-  gap: 0.5rem;
-  align-items: flex-end;
-  margin-top: 1rem;
-}
-
-.subscribe-form label {
-  flex: 1;
-}
-
-.subscribe-form input {
-  width: 100%;
-  padding: 0.5rem;
-  font-family: monospace;
-  font-size: 0.9rem;
-}
-
-.publish-section label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.publish-section textarea {
-  width: 100%;
-  min-height: 100px;
-  font-family: monospace;
-  font-size: 0.9rem;
-}
-
-.publishing-status {
-  margin-top: 0.5rem;
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.signature-info {
-  background: white;
-  padding: 1rem;
-  border-radius: 4px;
-}
-
-.signature-info > div {
-  margin-bottom: 0.5rem;
-}
-
-.status-valid {
-  color: #28a745;
-  font-weight: 500;
-}
-
-.signature-info pre {
-  background: #f5f5f5;
-  padding: 1rem;
-  border-radius: 4px;
-  overflow: auto;
-  max-height: 400px;
-  margin-top: 1rem;
-}
-
-.messages-controls {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  align-items: center;
-}
-
-.messages-controls input {
-  flex: 1;
-  padding: 0.5rem;
-}
-
-.messages-controls select {
-  padding: 0.5rem;
-}
-
-.messages-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-.message-item {
-  padding: 1rem;
-  background: white;
-  border-radius: 4px;
-  border-left: 4px solid #ddd;
-}
-
-.message-item.sent {
-  border-left-color: #007bff;
-}
-
-.message-item.received {
-  border-left-color: #28a745;
-}
-
-.message-header {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.message-type {
-  font-weight: bold;
-  padding: 0.25rem 0.5rem;
-  border-radius: 3px;
-  background: #f0f0f0;
-}
-
-.message-time {
-  color: #666;
-}
-
-.message-signer {
-  font-family: monospace;
-  font-size: 0.85rem;
-  color: #007bff;
-}
-
-.message-topic {
-  margin-bottom: 0.5rem;
-}
-
-.message-topic code {
-  font-family: monospace;
-  font-size: 0.85rem;
-  background: #f5f5f5;
-  padding: 0.25rem 0.5rem;
-  border-radius: 2px;
-}
-
-.message-payload {
-  font-family: monospace;
-  font-size: 0.9rem;
-  background: #f9f9f9;
-  padding: 0.5rem;
-  border-radius: 3px;
-  margin-bottom: 0.5rem;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-.message-meta {
-  display: flex;
-  gap: 1rem;
-  font-size: 0.85rem;
-  color: #666;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-}
-
-.stat-item {
-  background: white;
-  padding: 1rem;
-  border-radius: 4px;
-  text-align: center;
-}
-
-.stat-label {
-  font-size: 0.85rem;
-  color: #666;
-  margin-bottom: 0.5rem;
-}
-
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #007bff;
-}
-
-.log-controls {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.debug-log {
-  background: #1e1e1e;
-  color: #0f0;
-  padding: 1rem;
-  border-radius: 4px;
-  overflow: auto;
-  max-height: 400px;
-  font-family: 'Courier New', monospace;
-  font-size: 0.85rem;
-  line-height: 1.4;
-}
-
-.empty {
-  color: #666;
-  font-style: italic;
-  padding: 1rem;
-}
-
-code {
-  font-family: 'Courier New', monospace;
-}
-
-pre {
-  margin: 0;
-}
-</style>
 

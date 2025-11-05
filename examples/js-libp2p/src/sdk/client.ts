@@ -15,8 +15,8 @@ import { fromString as uint8FromString } from 'uint8arrays/from-string'
 import { toString as uint8ToString } from 'uint8arrays/to-string'
 import type { PeerId } from '@libp2p/interface'
 
-import { fromBase64 } from '@cosmjs/encoding'
-import { createAdr36Envelope } from './adr36'
+// no base64 for payload data; treat as UTF-8 text
+import { createAdr36Envelope, verifyAdr36Envelope } from './adr36'
 import type {
     Adr36Signer,
     MsgArbitraryData,
@@ -30,6 +30,9 @@ import type {
 } from './types'
 
 const textDecoder = new TextDecoder()
+
+const DEFAULT_MAX_ENVELOPE_BYTES = 64 * 1024
+const DEFAULT_MAX_PAYLOAD_BYTES = 48 * 1024
 
 interface TopicRegistryEntry {
     handlers: Set<DysonMessageHandler>
@@ -80,8 +83,11 @@ class DysonClientImpl implements DysonClient {
     private readonly onPeerDisconnect: (evt: CustomEvent<any>) => void
     private readonly onPubsubMessage: (evt: CustomEvent<any>) => void
     private discoveryInterval?: ReturnType<typeof setInterval>
+    private bootstrapRefreshInterval?: ReturnType<typeof setInterval>
+    private readonly bootstrapUrl: string
 
-    constructor(libp2p: Libp2p, bootstrap: BootstrapInfo, discoveryTopic: string, gossipLog: IndexedDBGossipLog<DysonLogPayload>) {
+
+    constructor(libp2p: Libp2p, bootstrap: BootstrapInfo, discoveryTopic: string, gossipLog: IndexedDBGossipLog<DysonLogPayload>, bootstrapUrl: string) {
         this.libp2p = libp2p
         this.bootstrap = bootstrap
         this.chainId = bootstrap.chainId
@@ -89,6 +95,8 @@ class DysonClientImpl implements DysonClient {
         this.peerId = libp2p.peerId.toString()
         this.discoveryTopic = discoveryTopic
         this.gossipLog = gossipLog
+        this.bootstrapUrl = bootstrapUrl
+
         this.pubsub = libp2p.services.pubsub
 
         this.onPeerDiscovery = (evt: CustomEvent<any>) => {
@@ -153,25 +161,31 @@ class DysonClientImpl implements DysonClient {
                 return
             }
 
-            console.log(`[dyson-sdk] decoding message for topic: ${topic}, handlers: ${entry.handlers.size}`)
-            const message = decodeMessage(detail, topic)
+            // Validate ADR-36 envelope like the server; reject frames that fail
+            try {
+                const { envelope } = validateEnvelope(detail.data, topic, from, {
+                    maxEnvelopeBytes: DEFAULT_MAX_ENVELOPE_BYTES,
+                    maxPayloadBytes: DEFAULT_MAX_PAYLOAD_BYTES,
+                })
 
-            // Store received message in GossipLog for replay (only if we have a valid envelope)
-            // GossipLog is the source of truth - it will dispatch to handlers via consumer
-            // Skip storing self-messages since they're already stored when published
-            const isFromSelf = message.from === this.peerId
-            if (message.envelope && !isFromSelf) {
-                const envelopeJson = JSON.stringify(message.envelope)
-                const logPayload: DysonLogPayload = {
-                    topic,
-                    data: envelopeJson,
-                    from: message.from,
-                }
-                void this.gossipLog.append(logPayload)
-            } else if (isFromSelf) {
-                console.log(`[dyson-sdk] skipping GossipLog storage for self-message (already stored on publish)`)
+                // Verify ADR-36 signature locally, then append
+                const isFromSelf = from === this.peerId
+                void verifyAdr36Envelope(envelope).then(() => {
+                    if (!isFromSelf) {
+                        const envelopeJson = JSON.stringify(envelope)
+                        const logPayload: DysonLogPayload = { topic, data: envelopeJson, from }
+                        void this.gossipLog.append(logPayload)
+                    } else {
+                        console.log(`[dyson-sdk] skipping GossipLog storage for self-message (already stored on publish)`)
+                    }
+                }).catch((err) => {
+                    console.warn('[dyson-sdk] signature verification failed, dropping frame:', err)
+                })
+                // Don't dispatch here - GossipLog consumer will handle all dispatches
+            } catch (err) {
+                console.warn('[dyson-sdk] envelope validation failed, dropping frame:', err)
+                // Drop invalid frame silently (server would reject at validator)
             }
-            // Don't dispatch here - GossipLog consumer will handle all dispatches
         }
 
         libp2p.addEventListener('peer:discovery', this.onPeerDiscovery)
@@ -190,6 +204,10 @@ class DysonClientImpl implements DysonClient {
         })
 
         this.discoveryInterval = setInterval(() => this.publishPresence('heartbeat'), 30_000)
+        // Periodically refresh bootstrap info and (re)connect to ensure relay reservations survive restarts
+        this.bootstrapRefreshInterval = setInterval(() => {
+            void this.refreshBootstrapInfo()
+        }, 60_000)
         this.publishPresence('startup')
     }
 
@@ -301,6 +319,10 @@ class DysonClientImpl implements DysonClient {
             clearInterval(this.discoveryInterval)
             this.discoveryInterval = undefined
         }
+        if (this.bootstrapRefreshInterval) {
+            clearInterval(this.bootstrapRefreshInterval)
+            this.bootstrapRefreshInterval = undefined
+        }
 
         for (const state of this.peerState.values()) {
             if (state.timer) {
@@ -364,9 +386,13 @@ class DysonClientImpl implements DysonClient {
         const targets = preferred.length > 0 ? preferred : fallbacks
 
         for (const addr of targets) {
+            // Ensure /p2p/<peerId> suffix for transports like webrtc that require a target peer id
+            const base = addr.toString()
+            const hasPeerSuffix = /\/p2p\/[^/]+$/.test(base)
+            const dialAddr = hasPeerSuffix ? addr : multiaddr(`${base}/p2p/${peerId.toString()}`)
             try {
-                console.log(`[dyson-sdk] dialing ${addr.toString()} (${reason})`)
-                const conn = await this.libp2p.dial(addr)
+                console.log(`[dyson-sdk] dialing ${dialAddr.toString()} (${reason})`)
+                const conn = await this.libp2p.dial(dialAddr)
                 console.log(`[dyson-sdk] browser mesh connected ${conn.remotePeer}`)
                 this.peerState.set(peerId.toString(), { backoffMs: MIN_BROWSER_BACKOFF_MS })
                 const cm = this.getConnectionManager()
@@ -377,7 +403,7 @@ class DysonClientImpl implements DysonClient {
             } catch (err) {
                 // Expected: some addresses may not be dialable (e.g., circuit relay paths)
                 // Try next address
-                console.warn(`[dyson-sdk] dial failed for ${addr.toString()}:`, err)
+                console.warn(`[dyson-sdk] dial failed for ${dialAddr.toString()}:`, err)
             }
         }
 
@@ -476,16 +502,52 @@ class DysonClientImpl implements DysonClient {
 
         void this.pubsub.publish(this.discoveryTopic, uint8FromString(JSON.stringify(payload)))
     }
+
+    private async refreshBootstrapInfo(): Promise<void> {
+        try {
+            const res = await fetch(this.bootstrapUrl)
+            if (!res?.ok) {
+                console.warn('[dyson-sdk] bootstrap refresh failed', res?.status)
+                return
+            }
+            const updated = (await res.json()) as BootstrapInfo
+            const changed = JSON.stringify(updated) !== JSON.stringify(this.bootstrap)
+            if (changed) {
+                console.log('[dyson-sdk] bootstrap info updated')
+                    ; (this as any).bootstrap = updated
+            }
+
+            // Try to (re)connect to the server addrs to renew relay reservations
+            let connected = false
+            for (const addr of updated.addrs ?? []) {
+                try {
+                    const conn = await this.libp2p.dial(multiaddr(addr))
+                    await waitForIdentify(this.libp2p, conn.remotePeer)
+                    await waitForRelayReservation(this.libp2p)
+                    connected = true
+                    break
+                } catch (err) {
+                    console.warn('[dyson-sdk] refresh dial failed', addr, err)
+                }
+            }
+            if (!connected) {
+                // As a fallback, prefer dialing any discovery-learned peers to keep mesh alive
+                console.warn('[dyson-sdk] refresh did not connect to bootstrap peers')
+            }
+
+            // Announce updated presence periodically
+            this.publishPresence('bootstrap-refresh')
+        } catch (err) {
+            console.warn('[dyson-sdk] bootstrap refresh error', err)
+        }
+    }
 }
 
 export async function createDysonClient(options: CreateDysonClientOptions = {}): Promise<DysonClient> {
     const bootstrapUrl = options.bootstrapUrl ?? '/libp2p/bootstrap'
-    const fetchFn = options.fetchFn ?? globalThis.fetch
-    if (!fetchFn) {
-        throw new Error('No fetch implementation available')
-    }
 
-    const res = await fetchFn(bootstrapUrl)
+
+    const res = await fetch(bootstrapUrl)
     if (!res.ok) {
         throw new Error(`Bootstrap request failed: ${res.status}`)
     }
@@ -595,7 +657,7 @@ export async function createDysonClient(options: CreateDysonClientOptions = {}):
     )
     console.log('[dyson-sdk] my relay addresses:', relayAddrs.map(a => a.toString()))
 
-    return new DysonClientImpl(node, bootstrap, discoveryTopic, gossipLog)
+    return new DysonClientImpl(node, bootstrap, discoveryTopic, gossipLog, bootstrapUrl)
 }
 
 async function waitForIdentify(node: Libp2p, peerId: PeerId, timeoutMs = 1000): Promise<void> {
@@ -700,18 +762,13 @@ function decodeMessage(detail: any, topic: string): DysonMessage {
         const msg = envelope?.body?.messages?.[0]
         const dataStr = msg?.data
         if (typeof dataStr === 'string' && dataStr.length > 0) {
-            // Data is base64-encoded bytes, decode it
+            // Data is raw UTF-8 text
+            payload = new TextEncoder().encode(dataStr)
+            // Try to parse as JSON for payloadJson (optional)
             try {
-                const decoded = fromBase64(dataStr)
-                payload = new Uint8Array(decoded)
-                // Try to parse as JSON for payloadJson (optional)
-                try {
-                    payloadJson = JSON.parse(uint8ToString(payload))
-                } catch {
-                    // Not JSON, payloadJson remains undefined
-                }
-            } catch (err) {
-                console.warn('[dyson-sdk] payload base64 decode failed:', err)
+                payloadJson = JSON.parse(dataStr)
+            } catch {
+                // Not JSON, payloadJson remains undefined
             }
         }
     } catch (err) {
@@ -727,6 +784,73 @@ function decodeMessage(detail: any, topic: string): DysonMessage {
         payloadJson,
         raw,
     }
+}
+
+
+interface ValidationLimits {
+    maxEnvelopeBytes: number
+    maxPayloadBytes: number
+}
+
+function validateEnvelope(rawInput: Uint8Array, topic: string, fromPeerId: string, limits: ValidationLimits): { envelope: MsgArbitraryData } {
+    const raw: Uint8Array = rawInput instanceof Uint8Array ? rawInput : new Uint8Array(rawInput ?? [])
+    if (raw.length > limits.maxEnvelopeBytes) {
+        throw new Error(`envelope too large: ${raw.length} bytes`)
+    }
+
+    let envelope: MsgArbitraryData
+    try {
+        envelope = JSON.parse(uint8ToString(raw)) as MsgArbitraryData
+    } catch (err) {
+        throw new Error('invalid payload json')
+    }
+
+    if (!envelope || typeof envelope !== 'object') {
+        throw new Error('invalid envelope type')
+    }
+    if (!envelope.body || !envelope.auth_info || !Array.isArray(envelope.signatures) || envelope.signatures.length === 0) {
+        throw new Error('missing required fields: body, auth_info, or signatures')
+    }
+
+    const messages = (envelope.body as any)?.messages
+    if (!Array.isArray(messages) || messages.length !== 1) {
+        throw new Error('tx must contain exactly one message')
+    }
+    const msg = messages[0] as any
+    if (msg['@type'] !== '/dysonprotocol.script.v1.MsgArbitraryData') {
+        throw new Error(`unexpected message type: ${msg['@type']}`)
+    }
+    if (typeof msg.app_domain !== 'string' || msg.app_domain.trim() !== topic.trim()) {
+        throw new Error(`app_domain mismatch: ${msg.app_domain} != ${topic}`)
+    }
+    if (typeof msg.data !== 'string' || msg.data.length === 0) {
+        throw new Error('missing data field')
+    }
+    // Validate metadata.peerId
+    if (typeof msg.metadata !== 'string' || msg.metadata.length === 0) {
+        throw new Error('missing metadata field')
+    }
+    let metadataObj: any
+    try {
+        metadataObj = JSON.parse(msg.metadata)
+    } catch {
+        throw new Error('invalid metadata json')
+    }
+    const peerId = String(metadataObj?.peerId ?? '').trim()
+    if (!peerId) {
+        throw new Error('missing peerId in metadata')
+    }
+    if (fromPeerId && peerId !== String(fromPeerId).trim()) {
+        throw new Error(`peerId mismatch: payload=${peerId} sender=${fromPeerId}`)
+    }
+
+    // Interpret data as UTF-8 text and enforce payload size
+    const payloadBytes = new TextEncoder().encode(msg.data)
+    if (payloadBytes.length > limits.maxPayloadBytes) {
+        throw new Error(`payload too large: ${payloadBytes.length} bytes`)
+    }
+
+    return { envelope }
 }
 
 

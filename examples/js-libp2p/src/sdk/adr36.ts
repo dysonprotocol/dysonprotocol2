@@ -1,5 +1,6 @@
 import { fromBase64, toBase64 } from '@cosmjs/encoding'
-import { makeSignDoc } from '@cosmjs/proto-signing'
+import { makeSignDoc, makeSignBytes } from '@cosmjs/proto-signing'
+import { Secp256k1, Secp256k1Signature, sha256 } from '@cosmjs/crypto'
 import { AuthInfo, Fee, SignerInfo, TxBody } from 'cosmjs-types/cosmos/tx/v1beta1/tx'
 import { ModeInfo } from 'cosmjs-types/cosmos/tx/v1beta1/tx'
 import { Any } from 'cosmjs-types/google/protobuf/any'
@@ -36,9 +37,8 @@ function encodeMsgArbitraryData(message: ArbitraryDataMessage): Uint8Array {
 export async function createAdr36Envelope(params: EnvelopeParams): Promise<MsgArbitraryData> {
     const { chainId, topic, payload, signer, peerId } = params
 
-    // Treat payload as raw bytes, encode as base64
-    const binaryString = Array.from(payload).map(byte => String.fromCharCode(byte)).join('')
-    const dataStr = btoa(binaryString)
+    // Treat payload as UTF-8 text (no base64)
+    const dataStr = new TextDecoder().decode(payload)
 
     // Create metadata JSON with peerId
     const metadataStr = JSON.stringify({ peerId: peerId ?? '' })
@@ -121,5 +121,60 @@ export async function createAdr36Envelope(params: EnvelopeParams): Promise<MsgAr
         auth_info: txJson.auth_info,
         signatures: txJson.signatures,
     }
+}
+
+export async function verifyAdr36Envelope(envelope: MsgArbitraryData): Promise<void> {
+    const msg = envelope?.body?.messages?.[0] as any
+    if (!msg) throw new Error('missing message')
+
+    // Re-encode MsgArbitraryData message
+    const msgBytes = encodeMsgArbitraryData({
+        signer: String(msg.signer ?? ''),
+        data: String(msg.data ?? ''),
+        app_domain: String(msg.app_domain ?? ''),
+        metadata: String(msg.metadata ?? ''),
+    })
+
+    const body = TxBody.fromPartial({
+        messages: [Any.fromPartial({ typeUrl: '/dysonprotocol.script.v1.MsgArbitraryData', value: msgBytes })],
+        memo: '',
+        timeoutHeight: BigInt(0),
+    })
+    const bodyBytes = TxBody.encode(body).finish()
+
+    const signerInfo0 = (envelope.auth_info?.signer_infos?.[0] ?? {}) as any
+    const pubkeyBase64 = signerInfo0?.public_key?.key
+    if (typeof pubkeyBase64 !== 'string' || pubkeyBase64.length === 0) {
+        throw new Error('missing public key')
+    }
+    const pubkeyAny = Any.fromPartial({
+        typeUrl: '/cosmos.crypto.secp256k1.PubKey',
+        value: PubKey.encode(PubKey.fromPartial({ key: fromBase64(pubkeyBase64) })).finish(),
+    })
+    const signerInfo = SignerInfo.fromPartial({
+        publicKey: pubkeyAny,
+        modeInfo: ModeInfo.fromPartial({ single: { mode: SignMode.SIGN_MODE_DIRECT } }),
+        sequence: BigInt(String(signerInfo0.sequence ?? '0')),
+    })
+    const authInfo = AuthInfo.fromPartial({
+        signerInfos: [signerInfo],
+        fee: Fee.fromPartial({ gasLimit: BigInt(String(envelope.auth_info?.fee?.gas_limit ?? '0')), amount: [] }),
+    })
+    const authInfoBytes = AuthInfo.encode(authInfo).finish()
+
+    // Rebuild sign doc and bytes
+    const signDoc = makeSignDoc(bodyBytes, authInfoBytes, '', 0)
+    const signBytes = makeSignBytes(signDoc)
+    const messageHash = sha256(signBytes)
+
+    // Verify signature
+    const sig0 = envelope.signatures?.[0]
+    if (typeof sig0 !== 'string' || sig0.length === 0) {
+        throw new Error('missing signature')
+    }
+    const signature = Secp256k1Signature.fromFixedLength(fromBase64(sig0))
+    const pubkey = fromBase64(pubkeyBase64)
+    const ok = await Secp256k1.verifySignature(signature, messageHash, pubkey)
+    if (!ok) throw new Error('invalid signature')
 }
 
