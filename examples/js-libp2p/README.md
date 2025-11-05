@@ -32,19 +32,32 @@ npm install
 npm run dev
 ```
 
-Open <http://localhost:5173>. The page must be served from the same origin as the Dyson REST endpoint for CORS-free
+Open <http://localhost:5173>. The API will be proxied so that it simulates the same-origin condition for CORS-free
 access to `/libp2p/bootstrap`.
 
 1. Click **Connect**. The app fetches bootstrap info and starts libp2p. If Keplr is available the address is shown and
 the Keplr button is enabled; otherwise the Keplr button remains disabled.
 2. (Optional) Enter an existing mnemonic or click **Generate Seed** to create a CosmJS wallet. The derived address is
    displayed and the CosmJS button becomes active.
-3. Choose a topic suffix (appended to `/{chainId}/v1/{address}/`).
+3. Choose a topic suffix (appended to `/{chainId}/v1/{address}/`). The UI shows the fully-qualified topic that will be
+   signed.
 4. Edit the JSON payload, then click either **Sign & Publish (CosmJS)** or **Sign & Publish (Keplr)**.
 
 Each publish wraps the payload in an ADR-36 `MsgArbitraryData` with `app_domain == topic`, signs it (either via the
-mnemonic wallet or Keplr), and publishes the envelope through libp2p GossipSub. Incoming frames are logged in the
-**Received messages** panel. Messages failing ADR-36 validation are dropped by the node and will not appear.
+mnemonic wallet or Keplr), and publishes the envelope through libp2p GossipSub. The **Mesh state** panel captures the
+payload signer, transport peer, and byte size so you can audit who sent what. Messages failing ADR-36 validation are
+dropped by the node and will not appear.
+
+## Inspecting Mesh State
+
+The demo now surfaces the data plane explicitly so you can debug without digging through logs:
+
+1. **Connection** fieldset shows bootstrap JSON, relay addresses, and the most recent discovery heartbeat emitted by your
+   browser.
+2. **Peers** section lists the known libp2p peers, their last-seen timestamp, and the addresses learned from discovery.
+3. **Subscriptions** shows the topics the browser has joined and how many handlers are attached in the app.
+4. **Messages** splits recent traffic into sent vs. received with signer bech32, transport peer ID, payload length, and
+   a JSON preview. After publishing from each wallet, confirm a matching RX entry arrives with your signer.
 
 ## Customising
 

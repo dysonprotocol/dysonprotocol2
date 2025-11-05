@@ -76,6 +76,7 @@ class DysonClientImpl implements DysonClient {
     private readonly onPeerDiscovery: (evt: CustomEvent<any>) => void
     private readonly onPeerConnect: (evt: CustomEvent<any>) => void
     private readonly onPeerDisconnect: (evt: CustomEvent<any>) => void
+    private readonly onPubsubMessage: (evt: CustomEvent<any>) => void
     private discoveryInterval?: ReturnType<typeof setInterval>
 
     constructor(libp2p: Libp2p, bootstrap: BootstrapInfo, discoveryTopic: string, gossipLog: IndexedDBGossipLog<DysonLogPayload>) {
@@ -123,9 +124,66 @@ class DysonClientImpl implements DysonClient {
             this.scheduleRedial(peerId, 'disconnect')
         }
 
+        this.onPubsubMessage = (evt: CustomEvent<any>) => {
+            const detail = evt?.detail
+            if (!detail?.data || !detail?.topic) {
+                console.log('[dyson-sdk] pubsub message missing data or topic', { data: !!detail?.data, topic: !!detail?.topic })
+                return
+            }
+
+            const topic = detail.topic
+            const from = detail.from
+            console.log(`[dyson-sdk] pubsub message received: topic=${topic}, from=${from}, dataLen=${detail.data?.length || 0}`)
+
+            // Skip discovery topic messages (they're handled by pubsubPeerDiscovery)
+            if (topic === this.discoveryTopic) {
+                console.log('[dyson-sdk] skipping discovery topic message')
+                return
+            }
+
+            const entry = this.topics.get(topic)
+            if (!entry) {
+                console.log(`[dyson-sdk] no subscription for topic: ${topic}`)
+                return
+            }
+            if (entry.handlers.size === 0) {
+                console.log(`[dyson-sdk] no handlers for topic: ${topic}`)
+                return
+            }
+
+            console.log(`[dyson-sdk] decoding message for topic: ${topic}, handlers: ${entry.handlers.size}`)
+            const message = decodeMessage(detail, topic)
+
+            // Store received message in GossipLog for replay (only if we have a valid envelope)
+            if (message.envelope) {
+                const envelopeJson = JSON.stringify(message.envelope)
+                const logPayload: DysonLogPayload = {
+                    topic,
+                    data: envelopeJson,
+                    from: message.from,
+                }
+                this.gossipLog.append(logPayload).catch((err) => {
+                    console.warn('[dyson-sdk] failed to store received message in gossip log', err)
+                })
+            }
+
+            // Dispatch to all handlers
+            console.log(`[dyson-sdk] dispatching message to ${entry.handlers.size} handlers`)
+            for (const handler of entry.handlers) {
+                try {
+                    handler(message)
+                } catch (err) {
+                    console.error('[dyson-sdk] handler error', err)
+                }
+            }
+        }
+
         libp2p.addEventListener('peer:discovery', this.onPeerDiscovery)
         libp2p.addEventListener('peer:connect', this.onPeerConnect)
         libp2p.addEventListener('peer:disconnect', this.onPeerDisconnect)
+
+        // Listen to pubsub messages and dispatch to handlers
+        this.pubsub.addEventListener('message', this.onPubsubMessage)
 
         this.gossipLog.setConsumer(async (signedMessage) => {
             const payload = signedMessage.message.payload
@@ -192,6 +250,8 @@ class DysonClientImpl implements DysonClient {
 
     async publish(params: PublishParams): Promise<void> {
         const { topic, payload, signer, peerId } = params
+        console.log(`[dyson-sdk] publish() called: topic=${topic}, payloadLen=${payload.length}`)
+
         const envelope = await createAdr36Envelope({
             chainId: this.chainId,
             topic,
@@ -201,6 +261,27 @@ class DysonClientImpl implements DysonClient {
         })
         const envelopeJson = JSON.stringify(envelope)
         const payloadBytes = uint8FromString(envelopeJson)
+
+        const peers = this.pubsub.getPeers()
+        const topicPeers = this.pubsub.getSubscribers(topic)
+        console.log(`[dyson-sdk] publishing to pubsub: topic=${topic}, envelopeLen=${payloadBytes.length}, peers=${peers.length}, topicPeers=${topicPeers.length}`)
+        if (peers.length > 0) {
+            console.log(`[dyson-sdk] peer IDs:`, peers.map(p => p.toString()))
+        }
+        if (topicPeers.length > 0) {
+            console.log(`[dyson-sdk] topic peer IDs:`, topicPeers.map(p => p.toString()))
+        }
+
+        // Publish to pubsub mesh
+        try {
+            await this.pubsub.publish(topic, payloadBytes)
+            console.log(`[dyson-sdk] publish() succeeded`)
+        } catch (err) {
+            console.error(`[dyson-sdk] publish() failed:`, err)
+            throw err
+        }
+
+        // Store in GossipLog for replay
         const logPayload: DysonLogPayload = {
             topic,
             data: envelopeJson,
@@ -229,6 +310,9 @@ class DysonClientImpl implements DysonClient {
         this.libp2p.removeEventListener('peer:discovery', this.onPeerDiscovery)
         this.libp2p.removeEventListener('peer:connect', this.onPeerConnect)
         this.libp2p.removeEventListener('peer:disconnect', this.onPeerDisconnect)
+
+        // Remove pubsub message listener
+        this.pubsub.removeEventListener('message', this.onPubsubMessage as any)
 
         if (this.discoveryInterval) {
             clearInterval(this.discoveryInterval)

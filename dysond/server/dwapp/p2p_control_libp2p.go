@@ -72,11 +72,22 @@ func (s *P2PService) SubscribeTopic(ctx context.Context, clientCtx client.Contex
 
 	if !strings.HasSuffix(topic, "/discovery") {
 		validator := func(ctx context.Context, p peer.ID, m *pubsub.Message) pubsub.ValidationResult {
+			s.logger.Info("pubsub message received for validation",
+				"topic", topic,
+				"from_peer", p.String(),
+				"data_len", len(m.Data))
 			if _, _, err := s.ValidatePubSubPayload(ctx, clientCtx, topic, m.Data, p.String()); err != nil {
+				s.logger.Warn("pubsub message validation failed",
+					"topic", topic,
+					"from_peer", p.String(),
+					"err", err)
 				telemetry.IncrCounter(1, "libp2p", "validator", "reject")
 				s.recordPeerFailure(p)
 				return pubsub.ValidationReject
 			}
+			s.logger.Info("pubsub message validation succeeded, forwarding to mesh",
+				"topic", topic,
+				"from_peer", p.String())
 			telemetry.IncrCounter(1, "libp2p", "validator", "accept")
 			s.resetPeerFailures(p)
 			return pubsub.ValidationAccept
@@ -104,11 +115,27 @@ func (s *P2PService) SubscribeTopic(ctx context.Context, clientCtx client.Contex
 
 	t, err := ps.Join(topic)
 	if err != nil {
+		s.logger.Error("failed to join topic", "topic", topic, "err", err)
 		return err
 	}
 	sub, err := t.Subscribe()
 	if err != nil {
+		s.logger.Error("failed to subscribe to topic", "topic", topic, "err", err)
 		return err
+	}
+
+	// Log topic peers after joining
+	topicPeers := ps.ListPeers(topic)
+	s.logger.Info("subscribed to topic",
+		"topic", topic,
+		"topic_peers", len(topicPeers),
+		"total_topics", len(s.topics)+1)
+	if len(topicPeers) > 0 {
+		peerIDs := make([]string, 0, len(topicPeers))
+		for _, p := range topicPeers {
+			peerIDs = append(peerIDs, p.String())
+		}
+		s.logger.Debug("topic peers", "topic", topic, "peers", peerIDs)
 	}
 
 	s.topicsMu.Lock()
@@ -162,9 +189,14 @@ func (t *autoJoinTracer) Graft(p peer.ID, topic string) {
 	chainID := strings.TrimSpace(t.clientCtx.ChainID)
 	prefix := "/" + chainID + "/v1/"
 	if strings.HasPrefix(topic, prefix) {
+		t.svc.logger.Info("auto-join triggered via Graft",
+			"topic", topic,
+			"from_peer", p.String())
 		go func(tp string, c client.Context) {
 			if err := t.svc.SubscribeTopic(context.Background(), c, tp); err != nil {
 				t.svc.logger.Error("tracer auto-join failed", "topic", tp, "err", err)
+			} else {
+				t.svc.logger.Info("auto-join succeeded", "topic", tp)
 			}
 			t.svc.disableTopicTimer(tp)
 		}(topic, t.clientCtx)
@@ -176,7 +208,12 @@ func (t *autoJoinTracer) DeliverMessage(m *pubsub.Message) {
 	if m == nil {
 		return
 	}
-	t.svc.disableTopicTimer(m.GetTopic())
+	topic := m.GetTopic()
+	t.svc.logger.Debug("pubsub message delivered",
+		"topic", topic,
+		"from", m.GetFrom().String(),
+		"data_len", len(m.Data))
+	t.svc.disableTopicTimer(topic)
 }
 func (t *autoJoinTracer) RejectMessage(m *pubsub.Message, reason string) {}
 func (t *autoJoinTracer) DuplicateMessage(m *pubsub.Message)             {}
@@ -198,9 +235,14 @@ func (t *autoJoinTracer) RecvRPC(rpc *pubsub.RPC) {
 		topic := sub.GetTopicid()
 		subscribe := sub.GetSubscribe()
 		if subscribe && strings.HasPrefix(topic, prefix) {
+			t.svc.logger.Info("auto-join triggered via RecvRPC subscription",
+				"topic", topic,
+				"is_discovery", strings.HasSuffix(topic, "/discovery"))
 			go func(tp string, c client.Context) {
 				if err := t.svc.SubscribeTopic(context.Background(), c, tp); err != nil {
 					t.svc.logger.Error("tracer auto-join failed", "topic", tp, "err", err)
+				} else {
+					t.svc.logger.Info("auto-join succeeded via RecvRPC", "topic", tp)
 				}
 				t.svc.disableTopicTimer(tp)
 			}(topic, t.clientCtx)
@@ -212,6 +254,7 @@ func (t *autoJoinTracer) RecvRPC(rpc *pubsub.RPC) {
 		}
 		topic := sub.GetTopicid()
 		if strings.HasPrefix(topic, prefix) {
+			t.svc.logger.Debug("peer unsubscribed from topic", "topic", topic)
 			t.svc.scheduleTopicCheck(topic)
 		}
 	}

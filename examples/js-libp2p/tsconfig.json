@@ -8,6 +8,12 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "skipLibCheck": true,
+        "baseUrl": "./",
+        "paths": {
+            "@dyson/libp2p": ["src/sdk/index.ts"],
+            "@dyson/libp2p/*": ["src/sdk/*"],
+            "@/*": ["src/*"]
+        },
         "types": [
             "vite/client"
         ]
