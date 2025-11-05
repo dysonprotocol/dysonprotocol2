@@ -239,7 +239,10 @@ message MsgUpdateParams {
  */
 message MsgUpdateParamsResponse {}
 
-// MsgArbitraryData is used for signing arbitrary data for verification purposes
+// MsgArbitraryData is used for signing arbitrary data and metadata for
+// verification purposes It is based on
+// https://github.com/cosmos/cosmos-sdk/blob/main/docs/architecture/adr-036-arbitrary-signature.md
+// and extended to include application-specific metadata.
 message MsgArbitraryData {
   option (cosmos.msg.v1.signer) = "signer";
   option (amino.name) = "dys/script/MsgArbitraryData";
@@ -252,6 +255,9 @@ message MsgArbitraryData {
 
   // app_domain is an optional application domain for the data
   string app_domain = 3;
+
+  // metadata is optional metadata about the data
+  string metadata = 4;
 }
 
 // MsgArbitraryDataResponse is the response for MsgArbitraryData

@@ -1,6 +1,6 @@
 import { toBase64 } from '@cosmjs/encoding'
 import type { OfflineDirectSigner } from '@cosmjs/proto-signing'
-import type { SignDoc } from '@cosmjs/proto-signing'
+import type { SignDoc } from 'cosmjs-types/cosmos/tx/v1beta1/tx'
 
 import type { Adr36Signer, SignResult } from './types'
 

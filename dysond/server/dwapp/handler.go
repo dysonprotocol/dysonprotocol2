@@ -148,11 +148,13 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// POST /libp2p/verify: validate a single ADR-36 frame against a topic (utility)
+	// POST /libp2p/verify: validate a single MsgArbitraryData envelope against a topic (utility)
 	if req.Method == http.MethodPost && req.URL.Path == "/libp2p/verify" {
 		type body struct {
-			Topic  string `json:"topic"`
-			TxJSON string `json:"adr36_tx_json"`
+			Topic      string          `json:"topic"`
+			Body       json.RawMessage `json:"body"`
+			AuthInfo   json.RawMessage `json:"auth_info"`
+			Signatures []string        `json:"signatures"`
 		}
 		var b body
 		if err := json.NewDecoder(req.Body).Decode(&b); err != nil {
@@ -163,7 +165,18 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "libp2p disabled", http.StatusServiceUnavailable)
 			return
 		}
-		signer, payload, err := h.p2p.VerifyAndExtract(req.Context(), h.clientCtx, strings.TrimSpace(b.Topic), "", b.TxJSON)
+		// Reconstruct tx JSON for verification
+		txJSON := map[string]interface{}{
+			"body":       b.Body,
+			"auth_info":  b.AuthInfo,
+			"signatures": b.Signatures,
+		}
+		txJSONBytes, err := json.Marshal(txJSON)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to marshal tx json: %v", err), http.StatusBadRequest)
+			return
+		}
+		signer, payload, err := h.p2p.VerifyAndExtract(req.Context(), h.clientCtx, strings.TrimSpace(b.Topic), "", string(txJSONBytes))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return

@@ -1,5 +1,5 @@
 import type { Libp2p } from 'libp2p'
-import type { SignDoc } from '@cosmjs/proto-signing'
+import type { SignDoc } from 'cosmjs-types/cosmos/tx/v1beta1/tx'
 
 export interface BootstrapInfo {
     peerId: string
@@ -29,15 +29,41 @@ export interface Adr36Signer {
     sign(signDoc: SignDoc): Promise<SignResult>
 }
 
-export interface Adr36Envelope {
-    adr36_tx_json: string
-    v: number
+export interface MsgArbitraryData {
+    body: {
+        messages: Array<{
+            '@type': string
+            signer: string
+            data: string
+            app_domain: string
+            metadata: string
+        }>
+        memo: string
+        timeout_height: string
+    }
+    auth_info: {
+        signer_infos: Array<{
+            public_key: {
+                '@type': string
+                key: string
+            }
+            mode_info: {
+                single: { mode: string }
+            }
+            sequence: string
+        }>
+        fee: {
+            amount: any[]
+            gas_limit: string
+        }
+    }
+    signatures: string[]
 }
 
 export interface DysonMessage {
     topic: string
     from: string
-    envelope: Adr36Envelope | null
+    envelope: MsgArbitraryData | null
     payload: Uint8Array
     payloadJson?: unknown
     raw: Uint8Array

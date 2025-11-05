@@ -15,10 +15,11 @@ import { fromString as uint8FromString } from 'uint8arrays/from-string'
 import { toString as uint8ToString } from 'uint8arrays/to-string'
 import type { PeerId } from '@libp2p/interface'
 
+import { fromBase64 } from '@cosmjs/encoding'
 import { createAdr36Envelope } from './adr36'
 import type {
     Adr36Signer,
-    Adr36Envelope,
+    MsgArbitraryData,
     BootstrapInfo,
     CreateDysonClientOptions,
     DysonClient,
@@ -42,6 +43,7 @@ interface DysonLogPayload {
 
 function isDysonLogPayload(payload: unknown): payload is DysonLogPayload {
     if (typeof payload !== 'object' || payload === null) {
+        console.log('[dyson-sdk] payload is not an object or null ', payload)
         return false
     }
     const record = payload as Record<string, unknown>
@@ -155,27 +157,21 @@ class DysonClientImpl implements DysonClient {
             const message = decodeMessage(detail, topic)
 
             // Store received message in GossipLog for replay (only if we have a valid envelope)
-            if (message.envelope) {
+            // GossipLog is the source of truth - it will dispatch to handlers via consumer
+            // Skip storing self-messages since they're already stored when published
+            const isFromSelf = message.from === this.peerId
+            if (message.envelope && !isFromSelf) {
                 const envelopeJson = JSON.stringify(message.envelope)
                 const logPayload: DysonLogPayload = {
                     topic,
                     data: envelopeJson,
                     from: message.from,
                 }
-                this.gossipLog.append(logPayload).catch((err) => {
-                    console.warn('[dyson-sdk] failed to store received message in gossip log', err)
-                })
+                void this.gossipLog.append(logPayload)
+            } else if (isFromSelf) {
+                console.log(`[dyson-sdk] skipping GossipLog storage for self-message (already stored on publish)`)
             }
-
-            // Dispatch to all handlers
-            console.log(`[dyson-sdk] dispatching message to ${entry.handlers.size} handlers`)
-            for (const handler of entry.handlers) {
-                try {
-                    handler(message)
-                } catch (err) {
-                    console.error('[dyson-sdk] handler error', err)
-                }
-            }
+            // Don't dispatch here - GossipLog consumer will handle all dispatches
         }
 
         libp2p.addEventListener('peer:discovery', this.onPeerDiscovery)
@@ -239,11 +235,7 @@ class DysonClientImpl implements DysonClient {
             entry.handlers.delete(handler)
         }
         if (!handler || entry.handlers.size === 0) {
-            try {
-                await this.pubsub.unsubscribe(topic)
-            } catch (err) {
-                console.warn('Dyson unsubscribe error', err)
-            }
+            await this.pubsub.unsubscribe(topic)
             this.topics.delete(topic)
         }
     }
@@ -266,20 +258,15 @@ class DysonClientImpl implements DysonClient {
         const topicPeers = this.pubsub.getSubscribers(topic)
         console.log(`[dyson-sdk] publishing to pubsub: topic=${topic}, envelopeLen=${payloadBytes.length}, peers=${peers.length}, topicPeers=${topicPeers.length}`)
         if (peers.length > 0) {
-            console.log(`[dyson-sdk] peer IDs:`, peers.map(p => p.toString()))
+            console.log(`[dyson-sdk] peer IDs:`, peers.map((p: PeerId) => p.toString()))
         }
         if (topicPeers.length > 0) {
-            console.log(`[dyson-sdk] topic peer IDs:`, topicPeers.map(p => p.toString()))
+            console.log(`[dyson-sdk] topic peer IDs:`, topicPeers.map((p: PeerId) => p.toString()))
         }
 
         // Publish to pubsub mesh
-        try {
-            await this.pubsub.publish(topic, payloadBytes)
-            console.log(`[dyson-sdk] publish() succeeded`)
-        } catch (err) {
-            console.error(`[dyson-sdk] publish() failed:`, err)
-            throw err
-        }
+        await this.pubsub.publish(topic, payloadBytes)
+        console.log(`[dyson-sdk] publish() succeeded`)
 
         // Store in GossipLog for replay
         const logPayload: DysonLogPayload = {
@@ -299,11 +286,7 @@ class DysonClientImpl implements DysonClient {
 
     async stop(): Promise<void> {
         for (const [topic, entry] of this.topics.entries()) {
-            try {
-                await this.pubsub.unsubscribe(topic)
-            } catch (err) {
-                console.warn('Dyson unsubscribe error on stop', err)
-            }
+            await this.pubsub.unsubscribe(topic)
         }
         this.topics.clear()
 
@@ -356,6 +339,7 @@ class DysonClientImpl implements DysonClient {
                 addressBook.set(peerId, addrs)
             }
         } catch (err) {
+            // Expected: address book operations may fail, not critical
             console.warn('[dyson-sdk] failed to store peer addrs', err)
         }
     }
@@ -370,6 +354,7 @@ class DysonClientImpl implements DysonClient {
             const addressBook = this.getAddressBook()
             storedAddrs = (addressBook?.get?.(peerId) ?? []) as Multiaddr[]
         } catch (err) {
+            // Expected: address book may not be available
             console.warn('[dyson-sdk] failed to read peer addrs', err)
         }
         const candidateAddrs = [...discoveredAddrs, ...storedAddrs]
@@ -390,7 +375,9 @@ class DysonClientImpl implements DysonClient {
                 }
                 return
             } catch (err) {
-                console.warn('[dyson-sdk] dial failed', addr.toString(), err)
+                // Expected: some addresses may not be dialable (e.g., circuit relay paths)
+                // Try next address
+                console.warn(`[dyson-sdk] dial failed for ${addr.toString()}:`, err)
             }
         }
 
@@ -403,7 +390,8 @@ class DysonClientImpl implements DysonClient {
             }
             return
         } catch (err) {
-            console.warn('[dyson-sdk] peer dial failed', peerId.toString(), err)
+            // Expected: all dial attempts failed, schedule redial
+            console.warn(`[dyson-sdk] peer dial failed for ${peerId.toString()}:`, err)
         }
 
         this.scheduleRedial(peerId, `dial-failed:${reason}`)
@@ -447,32 +435,22 @@ class DysonClientImpl implements DysonClient {
         }
 
         const message = this.buildMessageFromPayload(payload)
-        if (!message) {
-            return
-        }
 
+        // GossipLog is the source of truth - dispatch all messages from here
+        console.log(`[dyson-sdk] dispatching message from GossipLog to ${entry.handlers.size} handlers`)
         for (const handler of entry.handlers) {
-            try {
-                handler(message)
-            } catch (err) {
-                console.error('Dyson handler error', err)
-            }
+            handler(message)
         }
     }
 
-    private buildMessageFromPayload(payload: DysonLogPayload): DysonMessage | null {
-        try {
-            const envelope = JSON.parse(payload.data)
-            const bytes = uint8FromString(JSON.stringify(envelope))
-            return decodeMessage({
-                data: bytes,
-                topic: payload.topic,
-                from: payload.from ?? this.peerId,
-            }, payload.topic)
-        } catch (err) {
-            console.warn('[dyson-sdk] failed to decode message from gossiplog payload', err)
-            return null
-        }
+    private buildMessageFromPayload(payload: DysonLogPayload): DysonMessage {
+        const envelope = JSON.parse(payload.data)
+        const bytes = uint8FromString(JSON.stringify(envelope))
+        return decodeMessage({
+            data: bytes,
+            topic: payload.topic,
+            from: payload.from ?? this.peerId,
+        }, payload.topic)
     }
 
     private async replayForHandler(topic: string, handler: DysonMessageHandler): Promise<void> {
@@ -483,15 +461,7 @@ class DysonClientImpl implements DysonClient {
             }
 
             const message = this.buildMessageFromPayload(payload)
-            if (!message) {
-                continue
-            }
-
-            try {
-                handler(message)
-            } catch (err) {
-                console.error('Dyson handler error during replay', err)
-            }
+            handler(message)
         }
     }
 
@@ -504,9 +474,7 @@ class DysonClientImpl implements DysonClient {
             ts: Date.now(),
         }
 
-        void this.pubsub.publish(this.discoveryTopic, uint8FromString(JSON.stringify(payload))).catch((err: unknown) => {
-            console.warn('[dyson-sdk] discovery publish failed', err)
-        })
+        void this.pubsub.publish(this.discoveryTopic, uint8FromString(JSON.stringify(payload)))
     }
 }
 
@@ -609,8 +577,10 @@ export async function createDysonClient(options: CreateDysonClientOptions = {}):
             await waitForRelayReservation(node)
 
             connected = true
+            break
         } catch (err) {
-            console.warn('[dyson-sdk] dial failed', addr, err)
+            // Expected: bootstrap peer may be unavailable, try next one
+            console.warn('[dyson-sdk] bootstrap dial failed', addr, err)
         }
     }
 
@@ -636,6 +606,7 @@ async function waitForIdentify(node: Libp2p, peerId: PeerId, timeoutMs = 1000): 
             console.log(`[dyson-sdk] identified peer ${peerId}`)
             return
         } catch (err) {
+            // Expected: identify may fail or timeout, continue with fallback
             console.warn(`[dyson-sdk] identifyPeer call failed for ${peerId}:`, err)
         }
     }
@@ -720,33 +691,32 @@ function createTimeoutSignal(timeoutMs: number) {
 function decodeMessage(detail: any, topic: string): DysonMessage {
     const raw: Uint8Array = detail.data instanceof Uint8Array ? detail.data : new Uint8Array(detail.data ?? [])
 
-    let envelope: Adr36Envelope | null = null
+    let envelope: MsgArbitraryData | null = null
     let payload = new Uint8Array()
     let payloadJson: unknown
 
     try {
-        envelope = JSON.parse(uint8ToString(raw)) as Adr36Envelope
-        const tx = JSON.parse(envelope.adr36_tx_json)
-        const msg = tx?.body?.messages?.[0]
+        envelope = JSON.parse(uint8ToString(raw)) as MsgArbitraryData
+        const msg = envelope?.body?.messages?.[0]
         const dataStr = msg?.data
         if (typeof dataStr === 'string' && dataStr.length > 0) {
+            // Data is base64-encoded bytes, decode it
             try {
-                const parsed = JSON.parse(dataStr)
-                if (parsed && typeof parsed === 'object') {
-                    const cloned: Record<string, unknown> = { ...parsed }
-                    delete cloned.peerId
-                    payloadJson = cloned
-                    payload = Uint8Array.from(uint8FromString(JSON.stringify(cloned)))
-                } else {
-                    payloadJson = parsed
-                    payload = Uint8Array.from(uint8FromString(JSON.stringify(parsed)))
+                const decoded = fromBase64(dataStr)
+                payload = new Uint8Array(decoded)
+                // Try to parse as JSON for payloadJson (optional)
+                try {
+                    payloadJson = JSON.parse(uint8ToString(payload))
+                } catch {
+                    // Not JSON, payloadJson remains undefined
                 }
-            } catch {
-                payload = Uint8Array.from(uint8FromString(dataStr))
+            } catch (err) {
+                console.warn('[dyson-sdk] payload base64 decode failed:', err)
             }
         }
     } catch (err) {
-        console.warn('Dyson decode error', err)
+        // Expected: malformed messages may fail to decode, return what we have
+        console.warn('[dyson-sdk] decode error:', err)
     }
 
     return {

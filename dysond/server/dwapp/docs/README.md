@@ -26,25 +26,38 @@ High-level flow:
 | Publish | Browser ➜ GossipSub `/{chainID}/v1/<root>[/suffix]` | ADR-36 envelope (see below) with signed payload | Deliver authenticated application data. Non-discovery topics are rejected without valid ADR-36 signatures. |
 | Delivery | Dyson node ➜ Browser subscribers | Raw GossipSub message (payload = ADR-36 envelope bytes) | Browsers decode the envelope, extract signer + payload JSON, and dispatch handlers. The demo also journals every envelope into IndexedDB for replay. |
 
-### ADR-36 Envelope Anatomy
+### MsgArbitraryData Envelope Anatomy
 
-`ValidatePubSubPayload` enforces that non-discovery publishes carry an ADR-36 frame. In TypeScript that shape is:
+`ValidatePubSubPayload` enforces that non-discovery publishes carry a signed transaction envelope. In TypeScript that shape is:
 
-```32:36:/Users/user/dysonprotocol2/examples/js-libp2p/src/sdk/types.ts
-export interface Adr36Envelope {
-  adr36_tx_json: string
-  v: number
+```32:60:/Users/user/dysonprotocol2/examples/js-libp2p/src/sdk/types.ts
+export interface MsgArbitraryData {
+  body: {
+    messages: Array<{
+      '@type': string
+      signer: string
+      data: string
+      app_domain: string
+    }>
+    memo: string
+    timeout_height: string
+  }
+  auth_info: {
+    signer_infos: Array<{...}>
+    fee: {...}
+  }
+  signatures: string[]
 }
 ```
 
-`adr36_tx_json` holds the entire Cosmos ADR-36 sign document, including the arbitrary data message, signer bech32 address, public key, and signature. The browser SDK’s `decodeMessage()` helper extracts:
+The envelope is fully unnested with transaction fields at the top level. The browser SDK's `decodeMessage()` helper extracts:
 
-- `signer`: bech32 address that signed the frame (authoritative identity)
+- `signer`: bech32 address that signed the frame (authoritative identity) from `envelope.body.messages[0].signer`
 - `payloadJson`: the JSON application payload with helper fields (e.g. `peerId`) stripped out for handlers
 - `payloadPeerId`: the peer ID embedded in the payload (if supplied by the publisher)
 - `from`: the libp2p peer that transported the frame (helps differentiate relay hops)
 
-When you need a second opinion, POST the envelope to `/libp2p/verify`; the server returns `{ signer, payload }`. Trust the signer for ACL decisions and treat `from` as a transport hint.
+Versioning is handled by the topic path (`/{chainID}/v1/...`), not the envelope. When you need a second opinion, POST the envelope to `/libp2p/verify`; the server returns `{ signer, payload }`. Trust the signer for ACL decisions and treat `from` as a transport hint.
 
  Cross-domain propagation relies solely on GossipSub—no rendezvous service is used or required.
  
@@ -147,9 +160,9 @@ When you need a second opinion, POST the envelope to `/libp2p/verify`; the serve
  
  Peered validators track rejection counts and blacklist abusive peers after five failed envelopes.
  
- ### Payload verification
- 
- `ValidatePubSubPayload` limits envelopes to 64 KiB, requires an `adr36_tx_json` body, and delegates to the ADR-36 verifier. The verifier returns the signer address and payload JSON, which gives higher layers access to authenticated payloads.
+### Payload verification
+
+`ValidatePubSubPayload` limits envelopes to 64 KiB, requires `body`, `auth_info`, and `signatures` fields, reconstructs the transaction JSON for verification, and delegates to the ADR-36 verifier. The verifier returns the signer address and payload JSON, which gives higher layers access to authenticated payloads.
  
  ```14:39:dysond/server/dwapp/p2p_validate_payload.go
  if len(payload) > s.cfg.MaxEnvelope {

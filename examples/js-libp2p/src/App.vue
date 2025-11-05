@@ -86,6 +86,29 @@
             <button @click="unsubscribe(sub.topic)" class="btn-small">Unsubscribe</button>
           </div>
           <div class="sub-info">Handlers: {{ sub.handlers }}, Messages: {{ sub.messageCount }}</div>
+
+          <!-- Per-topic form and message log -->
+          <div class="topic-form">
+            <div class="topic-send">
+              <input v-model="topicDrafts[sub.topic]" type="text" placeholder="Payload JSON or text" />
+              <button @click="sendToTopic(sub.topic)" class="btn-small">Send</button>
+            </div>
+            <div class="messages-list">
+              <div v-for="msg in (topicMessages[sub.topic] || [])" :key="msg.id" class="message-item" :class="msg.type">
+                <div class="message-header">
+                  <span class="message-type">{{ msg.type === 'sent' ? 'Sent' : 'Received' }}</span>
+                  <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
+                  <span class="message-signer">Signer: {{ msg.signer }}</span>
+                </div>
+                <div class="message-topic"><code>{{ msg.topic }}</code></div>
+                <div class="message-payload">{{ msg.payload }}</div>
+                <div class="message-meta">
+                  <span>PeerId: {{ msg.from }}</span>
+                  <span>Size: {{ msg.size }} bytes</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="subscribe-form">
           <label>
@@ -106,7 +129,7 @@
           <input v-model="topicSuffix" type="text" />
         </label>
         <label>
-          Message JSON payload
+          Message payload (JSON or any text)
           <textarea v-model="payload" rows="4"></textarea>
         </label>
         <div class="button-row">
@@ -153,14 +176,14 @@
       <div class="messages-list">
         <div v-for="msg in filteredMessages" :key="msg.id" class="message-item" :class="msg.type">
           <div class="message-header">
-            <span class="message-type">{{ msg.type === 'sent' ? 'TX' : 'RX' }}</span>
+            <span class="message-type">{{ msg.type === 'sent' ? 'Sent' : 'Received' }}</span>
             <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
-            <span class="message-signer">{{ msg.signer }}</span>
+            <span class="message-signer">Signer: {{ msg.signer }}</span>
           </div>
           <div class="message-topic"><code>{{ msg.topic }}</code></div>
           <div class="message-payload">{{ msg.payload }}</div>
           <div class="message-meta">
-            <span>From: {{ msg.from }}</span>
+            <span>PeerId: {{ msg.from }}</span>
             <span>Size: {{ msg.size }} bytes</span>
           </div>
         </div>
@@ -256,6 +279,10 @@ const subscriptions = ref<Array<{ topic: string; handlers: number; messageCount:
 const subscribedTopics = new Map<string, { handler: (msg: DysonMessage) => void; messageCount: number }>()
 const newTopic = ref('')
 
+// Per-topic UI state
+const topicDrafts = ref<Record<string, string>>({})
+const topicMessages = ref<Record<string, MessageItem[]>>({})
+
 // Messages
 interface MessageItem {
   id: string
@@ -336,18 +363,13 @@ const meshDetails = computed(() => {
     if (!client.value) return { topic: sub.topic, meshCount: 0, subscribersCount: 0 }
     const pubsub = (client.value.libp2p.services as any).pubsub
     if (!pubsub) return { topic: sub.topic, meshCount: 0, subscribersCount: 0 }
-    try {
-      const subscribers = pubsub.getSubscribers(sub.topic) || []
-      // Try to get mesh peers if available (GossipSub specific)
-      const mesh = (pubsub.getMeshPeers && typeof pubsub.getMeshPeers === 'function' && pubsub.getMeshPeers(sub.topic)) || []
-      return {
-        topic: sub.topic,
-        meshCount: mesh.length,
-        subscribersCount: subscribers.length,
-      }
-    } catch (err) {
-      console.warn('Failed to get mesh details', err)
-      return { topic: sub.topic, meshCount: 0, subscribersCount: 0 }
+    const subscribers = pubsub.getSubscribers(sub.topic) || []
+    // Try to get mesh peers if available (GossipSub specific)
+    const mesh = (pubsub.getMeshPeers && typeof pubsub.getMeshPeers === 'function' && pubsub.getMeshPeers(sub.topic)) || []
+    return {
+      topic: sub.topic,
+      meshCount: mesh.length,
+      subscribersCount: subscribers.length,
     }
   })
 })
@@ -375,41 +397,37 @@ function logError(message: string, error: any) {
 function updatePeers() {
   if (!client.value) return
   
-  try {
-    const pubsub = (client.value.libp2p.services as any).pubsub
-    if (pubsub) {
-      const peers = pubsub.getPeers() || []
-      pubsubPeersCount.value = peers.length
-      
-      const meshPeers = new Set<string>()
-      subscriptions.value.forEach(sub => {
-        const mesh = pubsub.getMeshPeers?.(sub.topic) || []
-        mesh.forEach((p: any) => meshPeers.add(p.toString()))
-      })
-      meshPeersCount.value = meshPeers.size
-    }
+  const pubsub = (client.value.libp2p.services as any).pubsub
+  if (pubsub) {
+    const peers = pubsub.getPeers() || []
+    pubsubPeersCount.value = peers.length
+    
+    const meshPeers = new Set<string>()
+    subscriptions.value.forEach(sub => {
+      const mesh = pubsub.getMeshPeers?.(sub.topic) || []
+      mesh.forEach((p: any) => meshPeers.add(p.toString()))
+    })
+    meshPeersCount.value = meshPeers.size
+  }
 
-    const peerStore = (client.value.libp2p as any).peerStore
-    if (peerStore) {
-      const all: Array<{ id: string; addrs: string[] }> = []
-      const connected: Array<{ id: string; addrs: string[] }> = []
+  const peerStore = (client.value.libp2p as any).peerStore
+  if (peerStore?.peers) {
+    const all: Array<{ id: string; addrs: string[] }> = []
+    const connected: Array<{ id: string; addrs: string[] }> = []
+    
+    for (const peer of peerStore.peers.values()) {
+      const addrs = peer.addresses?.map((a: any) => a.multiaddr.toString()) ?? []
+      const peerInfo = { id: peer.id.toString(), addrs }
+      all.push(peerInfo)
       
-      for (const peer of peerStore.peers.values()) {
-        const addrs = peer.addresses.map((a: any) => a.multiaddr.toString())
-        const peerInfo = { id: peer.id.toString(), addrs }
-        all.push(peerInfo)
-        
-        const conns = client.value.libp2p.getPeers()
-        if (conns.includes(peer.id)) {
-          connected.push(peerInfo)
-        }
+      const conns = client.value.libp2p.getPeers()
+      if (conns.includes(peer.id)) {
+        connected.push(peerInfo)
       }
-      
-      allPeers.value = all
-      connectedPeers.value = connected
     }
-  } catch (err) {
-    logError('Failed to update peers', err)
+    
+    allPeers.value = all
+    connectedPeers.value = connected
   }
 }
 
@@ -434,41 +452,34 @@ async function handleConnect() {
   connecting.value = true
   log('Connecting to Dyson...')
   
-  try {
-    client.value = await createDysonClient()
-    peerId.value = client.value.peerId
-    bootstrap.value = client.value.bootstrap
-    connectionStartTime.value = Date.now()
-    
-    log('Connected', { peerId: client.value.peerId, chainId: client.value.chainId })
-    log('Bootstrap info', client.value.bootstrap)
-    
-    connected.value = true
-    connecting.value = false
-    
-    setupEventListeners()
-    updatePeers()
-    
-    // Auto-subscribe if we have an address
-    if (cosmjsAddress.value) {
-      const topic = buildTopic(cosmjsAddress.value)
-      await ensureSubscription(topic)
-    }
-    
-    // Start update interval
-    updateInterval = setInterval(() => {
-      updatePeers()
-      updateSubscriptions()
-      if (connected.value) {
-        stats.value.uptime = Date.now() - connectionStartTime.value
-      }
-    }, 2000)
-    
-  } catch (err) {
-    logError('Connection failed', err)
-    connecting.value = false
-    connected.value = false
+  client.value = await createDysonClient()
+  peerId.value = client.value.peerId
+  bootstrap.value = client.value.bootstrap
+  connectionStartTime.value = Date.now()
+  
+  log('Connected', { peerId: client.value.peerId, chainId: client.value.chainId })
+  log('Bootstrap info', client.value.bootstrap)
+  
+  connected.value = true
+  connecting.value = false
+  
+  setupEventListeners()
+  updatePeers()
+  
+  // Auto-subscribe if we have an address
+  if (cosmjsAddress.value) {
+    const topic = buildTopic(cosmjsAddress.value)
+    await ensureSubscription(topic)
   }
+  
+  // Start update interval
+  updateInterval = setInterval(() => {
+    updatePeers()
+    updateSubscriptions()
+    if (connected.value) {
+      stats.value.uptime = Date.now() - connectionStartTime.value
+    }
+  }, 2000)
 }
 
 async function disconnect() {
@@ -495,57 +506,49 @@ async function disconnect() {
 function setupEventListeners() {
   if (!client.value) return
   
-  try {
-    client.value.libp2p.addEventListener('peer:connect', (e: any) => {
-      const peerId = e?.detail?.remotePeer?.toString?.()
-      log('peer:connect', { id: peerId })
-      updatePeers()
+  client.value.libp2p.addEventListener('peer:connect', (e: any) => {
+    const peerId = e?.detail?.remotePeer?.toString?.()
+    log('peer:connect', { id: peerId })
+    updatePeers()
+  })
+  
+  client.value.libp2p.addEventListener('peer:disconnect', (e: any) => {
+    const peerId = e?.detail?.remotePeer?.toString?.()
+    log('peer:disconnect', { id: peerId })
+    updatePeers()
+  })
+  
+  client.value.libp2p.addEventListener('peer:discovery', (e: any) => {
+    const info = e?.detail
+    log('peer:discovery', { 
+      id: info?.id?.toString?.(), 
+      addrs: info?.multiaddrs?.map?.((m: any) => m?.toString?.()) 
     })
-    
-    client.value.libp2p.addEventListener('peer:disconnect', (e: any) => {
-      const peerId = e?.detail?.remotePeer?.toString?.()
-      log('peer:disconnect', { id: peerId })
-      updatePeers()
+    updatePeers()
+  })
+  
+  const pubsub = (client.value!.libp2p.services as any).pubsub
+  if (pubsub?.addEventListener) {
+    pubsub.addEventListener('message', (evt: any) => {
+      const d = evt?.detail
+      log('pubsub:message', { topic: d?.topic, from: d?.from })
     })
-    
-    client.value.libp2p.addEventListener('peer:discovery', (e: any) => {
-      const info = e?.detail
-      log('peer:discovery', { 
-        id: info?.id?.toString?.(), 
-        addrs: info?.multiaddrs?.map?.((m: any) => m?.toString?.()) 
-      })
-      updatePeers()
-    })
-    
-    const pubsub = (client.value!.libp2p.services as any).pubsub
-    if (pubsub?.addEventListener) {
-      pubsub.addEventListener('message', (evt: any) => {
-        const d = evt?.detail
-        log('pubsub:message', { topic: d?.topic, from: d?.from })
-      })
-    }
-  } catch (err) {
-    logError('Failed to setup event listeners', err)
   }
 }
 
 // Wallet
 async function generateMnemonic() {
   log('Generating mnemonic...')
-  try {
-    const wallet = await DirectSecp256k1HdWallet.generate(12, { prefix: DEFAULT_PREFIX })
-    mnemonic.value = wallet.mnemonic
-    cosmjsWallet.value = wallet
-    const [account] = await wallet.getAccounts()
-    cosmjsAddress.value = account.address
-    log('Generated mnemonic', { address: cosmjsAddress.value })
-    
-    if (connected.value && cosmjsAddress.value) {
-      const topic = buildTopic(cosmjsAddress.value)
-      await ensureSubscription(topic)
-    }
-  } catch (err) {
-    logError('Failed to generate mnemonic', err)
+  const wallet = await DirectSecp256k1HdWallet.generate(12, { prefix: DEFAULT_PREFIX })
+  mnemonic.value = wallet.mnemonic
+  cosmjsWallet.value = wallet
+  const [account] = await wallet.getAccounts()
+  cosmjsAddress.value = account.address
+  log('Generated mnemonic', { address: cosmjsAddress.value })
+  
+  if (connected.value && cosmjsAddress.value) {
+    const topic = buildTopic(cosmjsAddress.value)
+    await ensureSubscription(topic)
   }
 }
 
@@ -558,20 +561,14 @@ async function useMnemonic() {
     return
   }
   
-  try {
-    cosmjsWallet.value = await DirectSecp256k1HdWallet.fromMnemonic(trimmed, { prefix: DEFAULT_PREFIX })
-    const [account] = await cosmjsWallet.value.getAccounts()
-    cosmjsAddress.value = account.address
-    log('Loaded mnemonic', { address: cosmjsAddress.value })
-    
-    if (connected.value && cosmjsAddress.value) {
-      const topic = buildTopic(cosmjsAddress.value)
-      await ensureSubscription(topic)
-    }
-  } catch (err) {
-    logError('Failed to load mnemonic', err)
-    cosmjsWallet.value = undefined
-    cosmjsAddress.value = ''
+  cosmjsWallet.value = await DirectSecp256k1HdWallet.fromMnemonic(trimmed, { prefix: DEFAULT_PREFIX })
+  const [account] = await cosmjsWallet.value.getAccounts()
+  cosmjsAddress.value = account.address
+  log('Loaded mnemonic', { address: cosmjsAddress.value })
+  
+  if (connected.value && cosmjsAddress.value) {
+    const topic = buildTopic(cosmjsAddress.value)
+    await ensureSubscription(topic)
   }
 }
 
@@ -588,6 +585,10 @@ async function ensureSubscription(topic: string) {
   
   log('Subscribing to topic', { topic })
   
+  // Initialize per-topic UI state
+  if (topicDrafts.value[topic] === undefined) topicDrafts.value[topic] = ''
+  if (!topicMessages.value[topic]) topicMessages.value[topic] = []
+  
   const messageCount = 0
   const handler = (msg: DysonMessage) => {
     const info = subscribedTopics.get(topic)
@@ -597,12 +598,27 @@ async function ensureSubscription(topic: string) {
       ? JSON.stringify(msg.payloadJson) 
       : uint8ToString(msg.payload)
     
-    log('RX message', { topic: msg.topic, from: msg.from, payload: payloadText })
+    // Extract signer address from envelope
+    let signerAddress = msg.from
+    if (msg.envelope) {
+      signerAddress = msg.envelope.body?.messages?.[0]?.signer || msg.from
+    }
+    
+    log('Received message', { topic: msg.topic, from: msg.from, signer: signerAddress, payload: payloadText })
     
     addMessage({
       type: 'received',
       topic: msg.topic,
-      signer: msg.from,
+      signer: signerAddress,
+      from: msg.from,
+      payload: payloadText,
+      size: msg.payload.length,
+    })
+    
+    addTopicMessage({
+      type: 'received',
+      topic: msg.topic,
+      signer: signerAddress,
       from: msg.from,
       payload: payloadText,
       size: msg.payload.length,
@@ -638,6 +654,8 @@ async function unsubscribe(topic: string) {
   log('Unsubscribing from topic', { topic })
   await client.value.unsubscribe(topic, info.handler)
   subscribedTopics.delete(topic)
+  delete topicDrafts.value[topic]
+  delete topicMessages.value[topic]
   updateSubscriptions()
   log('Unsubscribed from topic', { topic })
 }
@@ -650,66 +668,60 @@ async function publishWithCosmjs() {
   publishing.value = true
   signingStatus.value = true
   
-  try {
-    log('Publishing with CosmJS...', { address: cosmjsAddress.value })
-    
-    const signer = await createOfflineSignerSigner({ 
-      wallet: cosmjsWallet.value, 
-      address: cosmjsAddress.value || undefined 
-    })
-    cosmjsAddress.value = signer.address
-    
-    const topic = buildTopic(cosmjsAddress.value)
-    await ensureSubscription(topic)
-    
-    const payloadJson = payload.value.trim() || '{}'
-    const payloadBytes = uint8FromString(payloadJson)
-    
-    signingStatus.value = false
-    publishingStatus.value = true
-    
-    log('Publishing message', { topic, bytes: payloadBytes.length })
-    
-    await client.value.publish({ topic, payload: payloadBytes, signer })
-    
-    // Get envelope for display - recreate for demo purposes
-    const { createAdr36Envelope } = await import('./sdk/adr36')
-    const envelope = await createAdr36Envelope({
-      chainId: client.value!.chainId,
-      topic,
-      payload: payloadBytes,
-      signer,
-      peerId: client.value!.peerId,
-    })
-    
-    lastSignature.value = {
-      signer: signer.address,
-      method: 'CosmJS',
-      envelope: JSON.stringify(envelope, null, 2),
-    }
-    
-    addMessage({
-      type: 'sent',
-      topic,
-      signer: signer.address,
-      from: client.value.peerId,
-      payload: payloadJson,
-      size: payloadBytes.length,
-    })
-    
-    stats.value.messagesSent++
-    stats.value.bytesSent += payloadBytes.length
-    
-    log('Published successfully', { topic })
-    
-  } catch (err) {
-    logError('Publish failed', err)
-    throw err
-  } finally {
-    publishing.value = false
-    signingStatus.value = false
-    publishingStatus.value = false
+  log('Publishing with CosmJS...', { address: cosmjsAddress.value })
+  
+  const signer = await createOfflineSignerSigner({ 
+    wallet: cosmjsWallet.value, 
+    address: cosmjsAddress.value || undefined 
+  })
+  cosmjsAddress.value = signer.address
+  
+  const topic = buildTopic(cosmjsAddress.value)
+  await ensureSubscription(topic)
+  
+  const payloadJson = payload.value.trim() || '{}'
+  const payloadBytes = uint8FromString(payloadJson)
+  
+  signingStatus.value = false
+  publishingStatus.value = true
+  
+  log('Publishing message', { topic, bytes: payloadBytes.length })
+  
+  await client.value.publish({ topic, payload: payloadBytes, signer })
+  
+  // Get envelope for display - recreate for demo purposes
+  const { createAdr36Envelope } = await import('./sdk/adr36')
+  const envelope = await createAdr36Envelope({
+    chainId: client.value!.chainId,
+    topic,
+    payload: payloadBytes,
+    signer,
+    peerId: client.value!.peerId,
+  })
+  
+  lastSignature.value = {
+    signer: signer.address,
+    method: 'CosmJS',
+    envelope: JSON.stringify(envelope, null, 2),
   }
+  
+  addMessage({
+    type: 'sent',
+    topic,
+    signer: signer.address,
+    from: client.value.peerId,
+    payload: payloadJson,
+    size: payloadBytes.length,
+  })
+  
+  stats.value.messagesSent++
+  stats.value.bytesSent += payloadBytes.length
+  
+  log('Published successfully', { topic, signer: signer.address })
+  
+  publishing.value = false
+  signingStatus.value = false
+  publishingStatus.value = false
 }
 
 async function publishWithKeplr() {
@@ -718,68 +730,114 @@ async function publishWithKeplr() {
   publishing.value = true
   signingStatus.value = true
   
-  try {
-    log('Publishing with Keplr...')
-    
-    const signer = await createKeplrSigner(client.value.chainId)
-    keplrAddress.value = signer.address
-    
-    const topic = buildTopic(keplrAddress.value)
-    await ensureSubscription(topic)
-    
-    const payloadJson = payload.value.trim() || '{}'
-    const payloadBytes = uint8FromString(payloadJson)
-    
-    signingStatus.value = false
-    publishingStatus.value = true
-    
-    log('Publishing message', { topic, bytes: payloadBytes.length })
-    
-    await client.value.publish({ topic, payload: payloadBytes, signer })
-    
-    // Get envelope for display - we already have it from publish, but recreate for display
-    const { createAdr36Envelope: createAdr36EnvelopeKeplr } = await import('./sdk/adr36')
-    const envelopeKeplr = await createAdr36EnvelopeKeplr({
-      chainId: client.value!.chainId,
-      topic,
-      payload: payloadBytes,
-      signer,
-      peerId: client.value!.peerId,
-    })
-    
-    lastSignature.value = {
-      signer: signer.address,
-      method: 'Keplr',
-      envelope: JSON.stringify(envelopeKeplr, null, 2),
-    }
-    
-    addMessage({
-      type: 'sent',
-      topic,
-      signer: signer.address,
-      from: client.value.peerId,
-      payload: payloadJson,
-      size: payloadBytes.length,
-    })
-    
-    stats.value.messagesSent++
-    stats.value.bytesSent += payloadBytes.length
-    
-    log('Published successfully', { topic })
-    
-  } catch (err) {
-    logError('Publish failed', err)
-    throw err
-  } finally {
-    publishing.value = false
-    signingStatus.value = false
-    publishingStatus.value = false
+  log('Publishing with Keplr...')
+  
+  const signer = await createKeplrSigner(client.value.chainId)
+  keplrAddress.value = signer.address
+  
+  const topic = buildTopic(keplrAddress.value)
+  await ensureSubscription(topic)
+  
+  const payloadJson = payload.value.trim() || '{}'
+  const payloadBytes = uint8FromString(payloadJson)
+  
+  signingStatus.value = false
+  publishingStatus.value = true
+  
+  log('Publishing message', { topic, bytes: payloadBytes.length })
+  
+  await client.value.publish({ topic, payload: payloadBytes, signer })
+  
+  // Get envelope for display - we already have it from publish, but recreate for display
+  const { createAdr36Envelope: createAdr36EnvelopeKeplr } = await import('./sdk/adr36')
+  const envelopeKeplr = await createAdr36EnvelopeKeplr({
+    chainId: client.value!.chainId,
+    topic,
+    payload: payloadBytes,
+    signer,
+    peerId: client.value!.peerId,
+  })
+  
+  lastSignature.value = {
+    signer: signer.address,
+    method: 'Keplr',
+    envelope: JSON.stringify(envelopeKeplr, null, 2),
   }
+  
+  addMessage({
+    type: 'sent',
+    topic,
+    signer: signer.address,
+    from: client.value.peerId,
+    payload: payloadJson,
+    size: payloadBytes.length,
+  })
+  
+  stats.value.messagesSent++
+  stats.value.bytesSent += payloadBytes.length
+  
+  log('Published successfully', { topic, signer: signer.address })
+  
+  publishing.value = false
+  signingStatus.value = false
+  publishingStatus.value = false
+}
+
+// Publish to a specific topic using the available signer (CosmJS preferred, else Keplr)
+async function sendToTopic(topic: string) {
+  if (!client.value) throw new Error('Not connected')
+  
+  log('Publishing to topic...', { topic })
+  
+  // Choose signer
+  let signer: Awaited<ReturnType<typeof createOfflineSignerSigner>> | Awaited<ReturnType<typeof createKeplrSigner>>
+  if (cosmjsWallet.value) {
+    const s = await createOfflineSignerSigner({ wallet: cosmjsWallet.value, address: cosmjsAddress.value || undefined })
+    cosmjsAddress.value = s.address
+    signer = s
+  } else if (keplrAvailable.value) {
+    const s = await createKeplrSigner(client.value.chainId)
+    keplrAddress.value = s.address
+    signer = s
+  } else {
+    throw new Error('No signer available (set a CosmJS seed or enable Keplr)')
+  }
+  
+  await ensureSubscription(topic)
+  
+  const payloadText = (topicDrafts.value[topic] || '').trim() || '{}'
+  const payloadBytes = uint8FromString(payloadText)
+  
+  await client.value.publish({ topic, payload: payloadBytes, signer })
+  
+  const msgItem = {
+    type: 'sent' as const,
+    topic,
+    signer: signer.address,
+    from: client.value.peerId,
+    payload: payloadText,
+    size: payloadBytes.length,
+  }
+  addMessage(msgItem)
+  addTopicMessage(msgItem)
+  
+  stats.value.messagesSent++
+  stats.value.bytesSent += payloadBytes.length
+  log('Published successfully', { topic, signer: signer.address })
 }
 
 // Messages
 function addMessage(msg: Omit<MessageItem, 'id' | 'timestamp'>) {
   messages.value.unshift({
+    ...msg,
+    id: `${Date.now()}-${Math.random()}`,
+    timestamp: Date.now(),
+  })
+}
+
+function addTopicMessage(msg: Omit<MessageItem, 'id' | 'timestamp'>) {
+  if (!topicMessages.value[msg.topic]) topicMessages.value[msg.topic] = []
+  topicMessages.value[msg.topic].unshift({
     ...msg,
     id: `${Date.now()}-${Math.random()}`,
     timestamp: Date.now(),
@@ -835,13 +893,9 @@ onMounted(async () => {
   keplrAvailable.value = typeof window.keplr !== 'undefined'
   
   // Auto-connect
-  try {
-    await handleConnect()
-    if (mnemonic.value.trim()) {
-      await useMnemonic()
-    }
-  } catch (err) {
-    logError('Auto-connect failed', err)
+  await handleConnect()
+  if (mnemonic.value.trim()) {
+    await useMnemonic()
   }
 })
 

@@ -512,7 +512,10 @@ export class MsgUpdateParamsResponse extends Message<MsgUpdateParamsResponse> {
 }
 
 /**
- * MsgArbitraryData is used for signing arbitrary data for verification purposes
+ * MsgArbitraryData is used for signing arbitrary data and metadata for
+ * verification purposes It is based on
+ * https://github.com/cosmos/cosmos-sdk/blob/main/docs/architecture/adr-036-arbitrary-signature.md
+ * and extended to include application-specific metadata.
  *
  * @generated from message dysonprotocol.script.v1.MsgArbitraryData
  */
@@ -538,6 +541,13 @@ export class MsgArbitraryData extends Message<MsgArbitraryData> {
    */
   appDomain = "";
 
+  /**
+   * metadata is optional metadata about the data
+   *
+   * @generated from field: string metadata = 4;
+   */
+  metadata = "";
+
   constructor(data?: PartialMessage<MsgArbitraryData>) {
     super();
     proto3.util.initPartial(data, this);
@@ -549,6 +559,7 @@ export class MsgArbitraryData extends Message<MsgArbitraryData> {
     { no: 1, name: "signer", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "data", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "app_domain", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "metadata", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgArbitraryData {

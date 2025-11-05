@@ -7,12 +7,13 @@ import { SignMode } from 'cosmjs-types/cosmos/tx/signing/v1beta1/signing'
 import { PubKey } from 'cosmjs-types/cosmos/crypto/secp256k1/keys'
 import { Writer } from 'protobufjs/minimal'
 
-import type { Adr36Envelope, Adr36Signer } from './types'
+import type { MsgArbitraryData, Adr36Signer } from './types'
 
-interface MsgArbitraryData {
+interface ArbitraryDataMessage {
     signer: string
     data: string
     app_domain: string
+    metadata: string
 }
 
 interface EnvelopeParams {
@@ -23,40 +24,30 @@ interface EnvelopeParams {
     peerId?: string
 }
 
-function encodeMsgArbitraryData(message: MsgArbitraryData): Uint8Array {
+function encodeMsgArbitraryData(message: ArbitraryDataMessage): Uint8Array {
     const writer = Writer.create()
     if (message.signer) writer.uint32(10).string(message.signer)
     if (message.data) writer.uint32(18).string(message.data)
     if (message.app_domain) writer.uint32(26).string(message.app_domain)
+    if (message.metadata) writer.uint32(34).string(message.metadata)
     return writer.finish()
 }
 
-export async function createAdr36Envelope(params: EnvelopeParams): Promise<Adr36Envelope> {
+export async function createAdr36Envelope(params: EnvelopeParams): Promise<MsgArbitraryData> {
     const { chainId, topic, payload, signer, peerId } = params
 
-    let decodedPayload: unknown = {}
-    const text = new TextDecoder().decode(payload)
-    if (text.trim().length > 0) {
-        try {
-            decodedPayload = JSON.parse(text)
-        } catch (err) {
-            throw new Error(`Payload must be JSON-serialisable: ${String(err)}`)
-        }
-    }
+    // Treat payload as raw bytes, encode as base64
+    const binaryString = Array.from(payload).map(byte => String.fromCharCode(byte)).join('')
+    const dataStr = btoa(binaryString)
 
-    if (decodedPayload === null || typeof decodedPayload !== 'object' || Array.isArray(decodedPayload)) {
-        throw new Error('Payload must be a JSON object')
-    }
+    // Create metadata JSON with peerId
+    const metadataStr = JSON.stringify({ peerId: peerId ?? '' })
 
-    const dataObj = {
-        ...decodedPayload as Record<string, unknown>,
-        peerId: peerId ?? '',
-    }
-
-    const msg: MsgArbitraryData = {
+    const msg: ArbitraryDataMessage = {
         signer: signer.address,
-        data: JSON.stringify(dataObj),
+        data: dataStr,
         app_domain: topic,
+        metadata: metadataStr,
     }
 
     const msgBytes = encodeMsgArbitraryData(msg)
@@ -94,6 +85,7 @@ export async function createAdr36Envelope(params: EnvelopeParams): Promise<Adr36
                     signer: signer.address,
                     data: msg.data,
                     app_domain: topic,
+                    metadata: msg.metadata,
                 },
             ],
             memo: '',
@@ -125,8 +117,9 @@ export async function createAdr36Envelope(params: EnvelopeParams): Promise<Adr36
     }
 
     return {
-        adr36_tx_json: JSON.stringify(txJson),
-        v: 1,
+        body: txJson.body,
+        auth_info: txJson.auth_info,
+        signatures: txJson.signatures,
     }
 }
 
