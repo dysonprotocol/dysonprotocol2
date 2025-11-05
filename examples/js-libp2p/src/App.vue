@@ -1,140 +1,193 @@
 <template>
-  <div>
-    <h1>Dyson JS libp2p Demo</h1>
-    <p>
+  <div class="container mx-auto p-4 space-y-6">
+    <h1 class="text-4xl font-bold mb-2">Dyson JS libp2p Demo</h1>
+    <p class="text-base-content/70 mb-6">
       Demo connecting to Dyson peer via libp2p, using GossipSub for messaging, ADR-36 signing, and subscription management.
     </p>
 
     <!-- Connection Status -->
-    <section>
-      <h2>Connection Status</h2>
-      <div>
-        <button @click="handleConnect" :disabled="connecting">
-          {{ connected ? 'Disconnect' : 'Connect' }}
-        </button> | 
-        <span>{{ connectionStatus }}</span>
-        <div v-if="connected">Peer ID: {{ peerId }}</div>
-      </div>
-      <div v-if="connected">
-        <details>
-          <summary>Bootstrap Info</summary>
-          <pre>{{ JSON.stringify(bootstrap, null, 2) }}</pre>
-        </details>
+    <section class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Connection Status</h2>
+        <div class="flex flex-wrap items-center gap-2">
+          <button @click="handleConnect" :disabled="connecting" :class="connected ? 'btn btn-error' : 'btn btn-primary'">
+            {{ connected ? 'Disconnect' : 'Connect' }}
+          </button>
+          <span :class="connected ? 'badge badge-success' : 'badge badge-error'">{{ connectionStatus }}</span>
+          <div v-if="connected" class="badge badge-info">Peer ID: <code class="ml-1">{{ peerId }}</code></div>
+        </div>
+        <div v-if="connected" class="mt-4">
+          <details class="collapse collapse-arrow bg-base-200">
+            <summary class="collapse-title">Bootstrap Info</summary>
+            <div class="collapse-content">
+              <pre class="bg-base-300 p-4 rounded overflow-x-auto">{{ JSON.stringify(bootstrap, null, 2) }}</pre>
+            </div>
+          </details>
+        </div>
       </div>
     </section>
 
     <!-- Peer Connections -->
-    <section v-if="connected">
-      <h2>Peer Connections</h2>
-      <div>
-        <span>Connected: <strong>{{ connectedPeers.length }}</strong></span> |
-        <span>Total Known: <strong>{{ allPeers.length }}</strong></span> |
-        <span>Mesh Peers: <strong>{{ meshPeersCount }}</strong></span>
-      </div>
-      <ul>
-        <li v-for="p in allPeers" :key="p.id">
-          <div>
-            <code>{{ p.id }}</code> |
-            <small>
-              {{ connectedById[p.id] ? 'connected' : 'discovered' }}
-              <template v-if="connectedById[p.id]"> · {{ connectedById[p.id].direction || '—' }} · {{ connectedById[p.id].status || '—' }}</template>
-            </small>
+    <section v-if="connected" class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Peer Connections</h2>
+        <div class="stats stats-vertical sm:stats-horizontal shadow">
+          <div class="stat">
+            <div class="stat-title">Connected</div>
+            <div class="stat-value text-primary">{{ connectedPeers.length }}</div>
           </div>
-          <div><code>{{ connectedById[p.id]?.remoteAddr || (p.addrs[0] || '—') }}</code></div>
-        </li>
-      </ul>
+          <div class="stat">
+            <div class="stat-title">Total Known</div>
+            <div class="stat-value text-info">{{ allPeers.length }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Mesh Peers</div>
+            <div class="stat-value text-secondary">{{ meshPeersCount }}</div>
+          </div>
+        </div>
+        <ul class="space-y-2 mt-4">
+          <li v-for="p in allPeers" :key="p.id" class="card card-compact bg-base-200">
+            <div class="card-body p-3">
+              <div class="flex flex-wrap items-center gap-2">
+                <code class="badge badge-neutral">{{ p.id }}</code>
+                <span :class="connectedById[p.id] ? 'badge badge-success' : 'badge badge-ghost'">
+                  {{ connectedById[p.id] ? 'connected' : 'discovered' }}
+                </span>
+                <template v-if="connectedById[p.id]">
+                  <span class="badge badge-outline">{{ connectedById[p.id].direction || '—' }}</span>
+                  <span class="badge badge-outline">{{ connectedById[p.id].status || '—' }}</span>
+                </template>
+              </div>
+              <div class="text-sm"><code class="text-xs">{{ connectedById[p.id]?.remoteAddr || (p.addrs[0] || '—') }}</code></div>
+            </div>
+          </li>
+        </ul>
+      </div>
     </section>
 
     <!-- GossipSub Mesh State -->
-    <section v-if="connected">
-      <h2>GossipSub Mesh State</h2>
-      <div>
-        <div>Total Pubsub Peers: <strong>{{ pubsubPeersCount }}</strong></div>
-        <div>Active Topics: <strong>{{ subscriptions.length }}</strong></div>
-      </div>
-      <div v-if="meshDetails.length > 0">
-        <div v-for="detail in meshDetails" :key="detail.topic">
-          <strong>{{ detail.topic }}</strong>
-          <span>Mesh: {{ detail.meshCount }}</span>
-          <span>Subscribers: {{ detail.subscribersCount }}</span>
+    <section v-if="connected" class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">GossipSub Mesh State</h2>
+        <div class="stats stats-vertical sm:stats-horizontal shadow">
+          <div class="stat">
+            <div class="stat-title">Total Pubsub Peers</div>
+            <div class="stat-value text-info">{{ pubsubPeersCount }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Active Topics</div>
+            <div class="stat-value text-secondary">{{ subscriptions.length }}</div>
+          </div>
+        </div>
+        <div v-if="meshDetails.length > 0" class="mt-4 space-y-2">
+          <div v-for="detail in meshDetails" :key="detail.topic" class="card card-compact bg-base-200">
+            <div class="card-body p-3">
+              <code class="text-sm">{{ detail.topic }}</code>
+              <div class="flex gap-2 mt-2">
+                <span class="badge badge-primary">Mesh: {{ detail.meshCount }}</span>
+                <span class="badge badge-secondary">Subscribers: {{ detail.subscribersCount }}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- Wallet Management -->
-    <section>
-      <h2>Wallet</h2>
-      <div>
-        <label>
-          Mnemonic seed (12 or 24 words)
-          <textarea v-model="mnemonic" rows="3"></textarea>
-        </label>
-        <div>
-          <button @click="generateMnemonic">Generate Seed</button>
-          <button @click="useMnemonic">Use Seed</button>
+    <section class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Wallet</h2>
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Mnemonic seed (12 or 24 words)</span>
+          </label>
+          <textarea v-model="mnemonic" rows="3" class="textarea textarea-bordered"></textarea>
         </div>
-        <div>
-          <p>CosmJS address: <code>{{ cosmjsAddress || '—' }}</code></p>
-          <p>Keplr address: <code>{{ keplrAddress || (keplrAvailable ? '—' : 'Keplr not detected') }}</code></p>
+        <div class="flex gap-2 mt-4">
+          <button @click="generateMnemonic" class="btn btn-secondary">Generate Seed</button>
+          <button @click="useMnemonic" class="btn btn-primary">Use Seed</button>
+        </div>
+        <div class="mt-4 space-y-2">
+          <p>CosmJS address: <code class="badge badge-outline">{{ cosmjsAddress || '—' }}</code></p>
+          <p>Keplr address: <code class="badge badge-outline">{{ keplrAddress || (keplrAvailable ? '—' : 'Keplr not detected') }}</code></p>
         </div>
       </div>
     </section>
 
     <!-- Subscriptions -->
-    <section v-if="connected">
-      <h2>Subscriptions</h2>
-      <div>
-        <div v-if="subscriptions.length === 0">No active subscriptions</div>
-        <div v-for="sub in subscriptions" :key="sub.topic">
-          <div>
-            <code>{{ sub.topic }}</code>
-            <button @click="unsubscribe(sub.topic)">Unsubscribe</button>
-          </div>
-          <div>Handlers: {{ sub.handlers }}, Messages: {{ sub.messageCount }}</div>
-
-          <!-- Per-topic message log (GossipLog-backed, RX only) -->
-          <ul>
-            <li v-for="msg in (topicMessages[sub.topic] || [])" :key="msg.id">
-              <details>
-                <summary>
-                  {{ msg.payload }}
-                </summary>
-                <pre>{{ msg.raw }}</pre>
-              </details>
-            </li>
-          </ul>
+    <section v-if="connected" class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Subscriptions</h2>
+        <div v-if="subscriptions.length === 0" class="alert alert-info">
+          <span>No active subscriptions</span>
         </div>
-        <div>
-          <label>
-            Subscribe to topic:
-            <input v-model="newTopic" type="text" placeholder="/chainId/v1/address/suffix" />
-          </label>
-          <button @click="subscribeToTopic" :disabled="!newTopic.trim()">Subscribe</button>
+        <div v-for="sub in subscriptions" :key="sub.topic" class="card bg-base-200 mt-4">
+          <div class="card-body p-4">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <code class="badge badge-neutral">{{ sub.topic }}</code>
+              <button @click="unsubscribe(sub.topic)" class="btn btn-sm btn-error">Unsubscribe</button>
+            </div>
+            <div class="text-sm">
+              Handlers: <span class="badge badge-ghost">{{ sub.handlers }}</span>, 
+              Messages: <span class="badge badge-ghost">{{ sub.messageCount }}</span>
+            </div>
+
+            <!-- Per-topic message log (GossipLog-backed, RX only) -->
+            <ul class="space-y-2 mt-4">
+              <li v-for="msg in (topicMessages[sub.topic] || [])" :key="msg.id" class="card card-compact bg-base-100">
+                <div class="card-body p-3">
+                  <details class="collapse collapse-arrow">
+                    <summary class="collapse-title text-sm">
+                      {{ msg.payload }}
+                    </summary>
+                    <div class="collapse-content">
+                      <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto">{{ msg.raw }}</pre>
+                    </div>
+                  </details>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Subscribe to topic</span>
+            </label>
+            <div class="join w-full">
+              <input v-model="newTopic" type="text" placeholder="/chainId/v1/address/suffix" class="input input-bordered join-item flex-1" />
+              <button @click="subscribeToTopic" :disabled="!newTopic.trim()" class="btn btn-primary join-item">Subscribe</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- Publish Message -->
-    <section>
-      <h2>Publish Message</h2>
-      <div>
-        <label>
-          Topic suffix (appended to <code>/CHAIN_ID/v1/&lt;address&gt;/</code>)
-          <input v-model="topicSuffix" type="text" />
-        </label>
-        <label>
-          Message payload (JSON or any text)
-          <textarea v-model="payload" rows="4"></textarea>
-        </label>
-        <div>
-          <button @click="publishWithCosmjs" :disabled="!canPublishCosmjs" :title="publishCosmjsTitle">
+    <section class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Publish Message</h2>
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Topic suffix (appended to <code>/CHAIN_ID/v1/&lt;address&gt;/</code>)</span>
+          </label>
+          <input v-model="topicSuffix" type="text" class="input input-bordered" />
+        </div>
+        <div class="form-control mt-4">
+          <label class="label">
+            <span class="label-text">Message payload (JSON or any text)</span>
+          </label>
+          <textarea v-model="payload" rows="4" class="textarea textarea-bordered"></textarea>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <button @click="publishWithCosmjs" :disabled="!canPublishCosmjs" :title="publishCosmjsTitle" class="btn btn-primary">
             Sign & Publish (CosmJS)
           </button>
-          <button @click="publishWithKeplr" :disabled="!canPublishKeplr" :title="publishKeplrTitle">
+          <button @click="publishWithKeplr" :disabled="!canPublishKeplr" :title="publishKeplrTitle" class="btn btn-secondary">
             Sign & Publish (Keplr)
           </button>
         </div>
-        <div v-if="publishing">
+        <div v-if="publishing" class="alert alert-info mt-4">
           <span v-if="signingStatus">Signing...</span>
           <span v-if="publishingStatus">Publishing...</span>
         </div>
@@ -142,80 +195,98 @@
     </section>
 
     <!-- ADR36 Signing Info -->
-    <section v-if="lastSignature">
-      <h2>Last ADR36 Signature</h2>
-      <div>
-        <div><strong>Signer:</strong> {{ lastSignature.signer }}</div>
-        <div><strong>Method:</strong> {{ lastSignature.method }}</div>
-        <div><strong>Status:</strong> <span>Valid</span></div>
-        <details>
-          <summary>Envelope JSON</summary>
-          <pre>{{ lastSignature.envelope }}</pre>
+    <section v-if="lastSignature" class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Last ADR36 Signature</h2>
+        <div class="space-y-2">
+          <div><strong>Signer:</strong> <code class="badge badge-outline">{{ lastSignature.signer }}</code></div>
+          <div><strong>Method:</strong> <span class="badge badge-info">{{ lastSignature.method }}</span></div>
+          <div><strong>Status:</strong> <span class="badge badge-success">Valid</span></div>
+        </div>
+        <details class="collapse collapse-arrow bg-base-200 mt-4">
+          <summary class="collapse-title">Envelope JSON</summary>
+          <div class="collapse-content">
+            <pre class="bg-base-300 p-4 rounded overflow-x-auto">{{ lastSignature.envelope }}</pre>
+          </div>
         </details>
       </div>
     </section>
 
     <!-- Messages -->
-    <section>
-      <h2>Messages</h2>
-      <div>
-        <button @click="clearMessages">Clear</button>
-        <input v-model="messageFilter" type="text" placeholder="Filter by topic or signer..." />
-        <select v-model="messageFilterType">
-          <option value="all">All</option>
-          <option value="sent">Sent</option>
-          <option value="received">Received</option>
-        </select>
+    <section class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Messages</h2>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button @click="clearMessages" class="btn btn-sm btn-error">Clear</button>
+          <input v-model="messageFilter" type="text" placeholder="Filter by topic or signer..." class="input input-bordered input-sm flex-1 min-w-48" />
+          <select v-model="messageFilterType" class="select select-bordered select-sm">
+            <option value="all">All</option>
+            <option value="sent">Sent</option>
+            <option value="received">Received</option>
+          </select>
+        </div>
+        <ul class="space-y-2">
+          <li v-for="msg in filteredMessages" :key="msg.id" class="card bg-base-200">
+            <div class="card-body p-3">
+              <details class="collapse collapse-arrow">
+                <summary class="collapse-title text-sm p-0">
+                  <span :class="msg.type === 'sent' ? 'badge badge-success' : 'badge badge-info'">
+                    {{ msg.type === 'sent' ? 'Sent' : 'Received' }}
+                  </span>
+                  <span class="ml-2">{{ formatTime(msg.timestamp) }}</span>
+                  <code class="badge badge-outline ml-2">{{ msg.topic }}</code>
+                  <span class="ml-2 text-xs">signer {{ msg.signer }}</span>
+                  <span class="badge badge-ghost ml-2">{{ msg.size }} bytes</span>
+                </summary>
+                <div class="collapse-content p-0 pt-2">
+                  <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto">{{ msg.raw || msg.payload }}</pre>
+                </div>
+              </details>
+            </div>
+          </li>
+        </ul>
       </div>
-      <ul>
-        <li v-for="msg in filteredMessages" :key="msg.id">
-          <details>
-            <summary>
-              <strong>{{ msg.type === 'sent' ? 'Sent' : 'Received' }}</strong>
-              · {{ formatTime(msg.timestamp) }} · <code>{{ msg.topic }}</code>
-              · signer {{ msg.signer }} · {{ msg.size }} bytes
-            </summary>
-            <pre>{{ msg.raw || msg.payload }}</pre>
-          </details>
-        </li>
-      </ul>
     </section>
 
     <!-- Statistics -->
-    <section v-if="connected">
-      <h2>Statistics</h2>
-      <div>
-        <div>
-          <div>Messages Sent</div>
-          <div>{{ stats.messagesSent }}</div>
-        </div>
-        <div>
-          <div>Messages Received</div>
-          <div>{{ stats.messagesReceived }}</div>
-        </div>
-        <div>
-          <div>Bytes Sent</div>
-          <div>{{ formatBytes(stats.bytesSent) }}</div>
-        </div>
-        <div>
-          <div>Bytes Received</div>
-          <div>{{ formatBytes(stats.bytesReceived) }}</div>
-        </div>
-        <div>
-          <div>Uptime</div>
-          <div>{{ formatUptime(stats.uptime) }}</div>
+    <section v-if="connected" class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Statistics</h2>
+        <div class="stats stats-vertical sm:stats-horizontal shadow w-full">
+          <div class="stat">
+            <div class="stat-title">Messages Sent</div>
+            <div class="stat-value text-primary">{{ stats.messagesSent }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Messages Received</div>
+            <div class="stat-value text-info">{{ stats.messagesReceived }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Bytes Sent</div>
+            <div class="stat-value text-secondary">{{ formatBytes(stats.bytesSent) }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Bytes Received</div>
+            <div class="stat-value text-accent">{{ formatBytes(stats.bytesReceived) }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Uptime</div>
+            <div class="stat-value">{{ formatUptime(stats.uptime) }}</div>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- Debug Log -->
-    <section>
-      <h2>Debug Log</h2>
-      <div>
-        <button @click="clearLog">Clear Log</button>
-        <button @click="exportLog">Export Log</button>
+    <section class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Debug Log</h2>
+        <div class="flex gap-2 mb-4">
+          <button @click="clearLog" class="btn btn-sm btn-error">Clear Log</button>
+          <button @click="exportLog" class="btn btn-sm btn-secondary">Export Log</button>
+        </div>
+        <pre ref="logRef" class="bg-base-300 p-4 rounded overflow-x-auto text-xs max-h-96 overflow-y-auto">{{ logOutput }}</pre>
       </div>
-      <pre ref="logRef">{{ logOutput }}</pre>
     </section>
   </div>
 </template>
