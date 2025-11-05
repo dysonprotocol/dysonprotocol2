@@ -1,6 +1,7 @@
 import { ConfigEnv, defineConfig, loadEnv } from "vite";
 import { cwd, env as nodeEnv } from "node:process";
 import { resolve, dirname } from "path";
+import vue from "@vitejs/plugin-vue";
 
 
 
@@ -16,11 +17,13 @@ export default defineConfig(({ mode }) => {
 
     console.log("vite1 proxyTarget", proxyTarget);
     return {
+        plugins: [vue()],
         resolve: {
             alias: {
                 "@": resolve(__dirname, "src"),
                 "@dyson/libp2p": resolve(__dirname, "src/sdk"),
             },
+            conditions: ["import", "module", "browser", "default"],
         },
         define: {
             "process.env.NODE_ENV": '"production"',

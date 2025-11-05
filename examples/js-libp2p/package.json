@@ -8,6 +8,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@canvas-js/gossiplog": "^0.16.1",
         "@chainsafe/libp2p-gossipsub": "^14.1.1",
         "@chainsafe/libp2p-noise": "^16.0.3",
         "@chainsafe/libp2p-yamux": "^7.0.1",
@@ -26,7 +27,9 @@
         "uint8arrays": "^5.1.0"
     },
     "devDependencies": {
+        "@vitejs/plugin-vue": "^5.0.4",
         "typescript": "^5.4.5",
-        "vite": "^5.4.3"
+        "vite": "^5.4.3",
+        "vue": "^3.5.13"
     }
 }

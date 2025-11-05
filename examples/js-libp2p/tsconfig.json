@@ -15,7 +15,8 @@
             "@/*": ["src/*"]
         },
         "types": [
-            "vite/client"
+            "vite/client",
+            "./src/vue-shims"
         ]
     },
     "include": [
