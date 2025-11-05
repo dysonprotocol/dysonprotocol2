@@ -586,7 +586,7 @@ export async function createDysonClient(options: CreateDysonClientOptions = {}):
             }),
             webRTCDirect(),
             circuitRelayTransport({
-                discoverRelays: 1,  // Discover at least 1 relay
+                discoverRelays: 3,  // Discover at least 3 relays
             } as any)
         ],
         connectionEncrypters: [noise()],
@@ -598,7 +598,7 @@ export async function createDysonClient(options: CreateDysonClientOptions = {}):
             // PubSub peer discovery for local and cross-domain discovery
             // Works via GossipSub mesh - peers propagate discovery messages
             pubsubPeerDiscovery({
-                interval: 10_000,
+                interval: 2_000,
                 topics: [discoveryTopic],
                 listenOnly: false,
             }),

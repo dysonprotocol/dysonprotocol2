@@ -70,6 +70,22 @@ func (s *P2PService) SubscribeTopic(ctx context.Context, clientCtx client.Contex
 		return errors.New("pubsub not initialized")
 	}
 
+	// Check if topic already exists before registering validator
+	s.topicsMu.Lock()
+	topicExists := false
+	if st, ok := s.topics[topic]; ok {
+		topicExists = true
+		if st.timer != nil {
+			st.timer.Stop()
+			st.timer = nil
+		}
+	}
+	s.topicsMu.Unlock()
+
+	if topicExists {
+		return nil
+	}
+
 	if !strings.HasSuffix(topic, "/discovery") {
 		validator := func(ctx context.Context, p peer.ID, m *pubsub.Message) pubsub.ValidationResult {
 			s.logger.Info("pubsub message received for validation",
@@ -99,14 +115,6 @@ func (s *P2PService) SubscribeTopic(ctx context.Context, clientCtx client.Contex
 	}
 
 	s.topicsMu.Lock()
-	if st, ok := s.topics[topic]; ok {
-		if st.timer != nil {
-			st.timer.Stop()
-			st.timer = nil
-		}
-		s.topicsMu.Unlock()
-		return nil
-	}
 	if len(s.topics) >= topicMax {
 		s.topicsMu.Unlock()
 		return fmt.Errorf("topic limit reached: %d", topicMax)

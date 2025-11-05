@@ -1,298 +1,215 @@
 <template>
-  <div class="container mx-auto p-4 space-y-6">
-    <h1 class="text-4xl font-bold mb-2">Dyson JS libp2p Demo</h1>
-    <p class="text-base-content/70 mb-6">
-      Demo connecting to Dyson peer via libp2p, using GossipSub for messaging, ADR-36 signing, and subscription management.
-    </p>
-
-    <!-- Connection Status -->
-    <section class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title">Connection Status</h2>
-        <div class="flex flex-wrap items-center gap-2">
-          <button @click="handleConnect" :disabled="connecting" :class="connected ? 'btn btn-error' : 'btn btn-primary'">
+  <div class="min-h-screen bg-base-200">
+    <!-- Header Bar -->
+    <header class="bg-base-100 border-b border-base-300 p-4">
+      <div class="container mx-auto flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <h1 class="text-2xl font-bold">Dyson libp2p Demo</h1>
+          <button @click="handleConnect" :disabled="connecting" :class="connected ? 'btn btn-error btn-sm' : 'btn btn-primary btn-sm'">
             {{ connected ? 'Disconnect' : 'Connect' }}
           </button>
           <span :class="connected ? 'badge badge-success' : 'badge badge-error'">{{ connectionStatus }}</span>
-          <div v-if="connected" class="badge badge-info">Peer ID: <code class="ml-1">{{ peerId }}</code></div>
+          <span v-if="connected && peerId" class="badge badge-outline text-xs">Peer: <code class="break-all">{{ peerId }}</code></span>
         </div>
-        <div v-if="connected" class="mt-4">
-          <details class="collapse collapse-arrow bg-base-200">
-            <summary class="collapse-title">Bootstrap Info</summary>
-            <div class="collapse-content">
-              <pre class="bg-base-300 p-4 rounded overflow-x-auto">{{ JSON.stringify(bootstrap, null, 2) }}</pre>
+        <div class="flex items-center gap-4">
+          <div v-if="cosmjsAddress" class="badge badge-info">CosmJS: <code class="ml-1 text-xs break-all">{{ cosmjsAddress }}</code></div>
+          <div v-if="keplrAvailable && keplrAddress" class="badge badge-secondary">Keplr: <code class="ml-1 text-xs break-all">{{ keplrAddress }}</code></div>
+          <details class="dropdown dropdown-end">
+            <summary class="btn btn-sm btn-ghost">Wallet</summary>
+            <div class="dropdown-content menu bg-base-100 shadow-xl rounded-box w-96 p-4 z-50">
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text">Mnemonic</span>
+                </label>
+                <textarea v-model="mnemonic" rows="3" class="textarea textarea-bordered textarea-sm"></textarea>
+              </div>
+              <div class="flex gap-2 mt-2">
+                <button @click="generateMnemonic" class="btn btn-sm btn-secondary">Generate</button>
+                <button @click="useMnemonic" class="btn btn-sm btn-primary">Use Seed</button>
+              </div>
             </div>
           </details>
         </div>
       </div>
-    </section>
+    </header>
 
-    <!-- Peer Connections -->
-    <section v-if="connected" class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title">Peer Connections</h2>
-        <div class="stats stats-vertical sm:stats-horizontal shadow">
-          <div class="stat">
-            <div class="stat-title">Connected</div>
-            <div class="stat-value text-primary">{{ connectedPeers.length }}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-title">Total Known</div>
-            <div class="stat-value text-info">{{ allPeers.length }}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-title">Mesh Peers</div>
-            <div class="stat-value text-secondary">{{ meshPeersCount }}</div>
-          </div>
-        </div>
-        <ul class="space-y-2 mt-4">
-          <li v-for="p in allPeers" :key="p.id" class="card card-compact bg-base-200">
-            <div class="card-body p-3">
-              <div class="flex flex-wrap items-center gap-2">
-                <code class="badge badge-neutral">{{ p.id }}</code>
-                <span :class="connectedById[p.id] ? 'badge badge-success' : 'badge badge-ghost'">
-                  {{ connectedById[p.id] ? 'connected' : 'discovered' }}
-                </span>
-                <template v-if="connectedById[p.id]">
-                  <span class="badge badge-outline">{{ connectedById[p.id].direction || '—' }}</span>
-                  <span class="badge badge-outline">{{ connectedById[p.id].status || '—' }}</span>
-                </template>
+    <!-- Main Content -->
+    <main class="container mx-auto p-4" v-if="connected">
+      <div class="grid grid-cols-12 gap-4">
+        <!-- Left: Peers (Primary Focus) -->
+          <section class="col-span-12 lg:col-span-6">
+            <div class="card bg-base-100 shadow-xl ">
+            <div class="card-body">
+              <h2 class="card-title">Peers</h2>
+              
+              <!-- Peer Stats -->
+              <div class="stats stats-horizontal shadow w-full">
+                <div class="stat py-2">
+                  <div class="stat-title text-xs">Connected</div>
+                  <div class="stat-value text-lg text-primary">{{ connectedPeers.length }}</div>
+                </div>
+                <div class="stat py-2">
+                  <div class="stat-title text-xs">Known</div>
+                  <div class="stat-value text-lg text-info">{{ allPeers.length }}</div>
+                </div>
+                <div class="stat py-2">
+                  <div class="stat-title text-xs">Mesh</div>
+                  <div class="stat-value text-lg text-secondary">{{ meshPeersCount }}</div>
+                </div>
+                <div class="stat py-2">
+                  <div class="stat-title text-xs">Pubsub</div>
+                  <div class="stat-value text-lg text-accent">{{ pubsubPeersCount }}</div>
+                </div>
               </div>
-              <div class="text-sm"><code class="text-xs">{{ connectedById[p.id]?.remoteAddr || (p.addrs[0] || '—') }}</code></div>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </section>
 
-    <!-- GossipSub Mesh State -->
-    <section v-if="connected" class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title">GossipSub Mesh State</h2>
-        <div class="stats stats-vertical sm:stats-horizontal shadow">
-          <div class="stat">
-            <div class="stat-title">Total Pubsub Peers</div>
-            <div class="stat-value text-info">{{ pubsubPeersCount }}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-title">Active Topics</div>
-            <div class="stat-value text-secondary">{{ subscriptions.length }}</div>
-          </div>
-        </div>
-        <div v-if="meshDetails.length > 0" class="mt-4 space-y-2">
-          <div v-for="detail in meshDetails" :key="detail.topic" class="card card-compact bg-base-200">
-            <div class="card-body p-3">
-              <code class="text-sm">{{ detail.topic }}</code>
-              <div class="flex gap-2 mt-2">
-                <span class="badge badge-primary">Mesh: {{ detail.meshCount }}</span>
-                <span class="badge badge-secondary">Subscribers: {{ detail.subscribersCount }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Wallet Management -->
-    <section class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title">Wallet</h2>
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Mnemonic seed (12 or 24 words)</span>
-          </label>
-          <textarea v-model="mnemonic" rows="3" class="textarea textarea-bordered"></textarea>
-        </div>
-        <div class="flex gap-2 mt-4">
-          <button @click="generateMnemonic" class="btn btn-secondary">Generate Seed</button>
-          <button @click="useMnemonic" class="btn btn-primary">Use Seed</button>
-        </div>
-        <div class="mt-4 space-y-2">
-          <p>CosmJS address: <code class="badge badge-outline">{{ cosmjsAddress || '—' }}</code></p>
-          <p>Keplr address: <code class="badge badge-outline">{{ keplrAddress || (keplrAvailable ? '—' : 'Keplr not detected') }}</code></p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Subscriptions -->
-    <section v-if="connected" class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title">Subscriptions</h2>
-        <div v-if="subscriptions.length === 0" class="alert alert-info">
-          <span>No active subscriptions</span>
-        </div>
-        <div v-for="sub in subscriptions" :key="sub.topic" class="card bg-base-200 mt-4">
-          <div class="card-body p-4">
-            <div class="flex flex-wrap items-center gap-2 mb-2">
-              <code class="badge badge-neutral">{{ sub.topic }}</code>
-              <button @click="unsubscribe(sub.topic)" class="btn btn-sm btn-error">Unsubscribe</button>
-            </div>
-            <div class="text-sm">
-              Handlers: <span class="badge badge-ghost">{{ sub.handlers }}</span>, 
-              Messages: <span class="badge badge-ghost">{{ sub.messageCount }}</span>
-            </div>
-
-            <!-- Per-topic message log (GossipLog-backed, RX only) -->
-            <ul class="space-y-2 mt-4">
-              <li v-for="msg in (topicMessages[sub.topic] || [])" :key="msg.id" class="card card-compact bg-base-100">
-                <div class="card-body p-3">
-                  <details class="collapse collapse-arrow">
-                    <summary class="collapse-title text-sm">
-                      {{ msg.payload }}
-                    </summary>
-                    <div class="collapse-content">
-                      <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto">{{ msg.raw }}</pre>
+              <!-- Peer List -->
+              <div class="mt-4 space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto">
+                <div v-for="p in allPeers" :key="p.id" class="card card-compact bg-base-200">
+                  <div class="card-body p-3">
+                    <div class="flex flex-wrap items-center gap-2 mb-2">
+                      <code class="badge badge-neutral text-xs font-mono break-all">{{ p.id }}</code>
+                      <template v-if="connectedById[p.id]">
+                        <span class="badge badge-outline badge-sm">{{ connectedById[p.id].direction || '—' }}</span>
+                        <span class="badge badge-outline badge-sm">{{ connectedById[p.id].status || '—' }}</span>
+                      </template>
                     </div>
-                  </details>
+                    <div class="text-xs text-base-content/70 break-all">
+                      <code>{{ connectedById[p.id]?.remoteAddr || (p.addrs[0] || '—') }}</code>
+                    </div>
+                    <div v-if="connectedById[p.id]" class="text-xs text-base-content/50 mt-1">
+                      {{ connectedById[p.id].streams }} streams · {{ formatUptime(connectedById[p.id].openedMs) }} ago
+                    </div>
+                  </div>
                 </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="mt-4">
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Subscribe to topic</span>
-            </label>
-            <div class="join w-full">
-              <input v-model="newTopic" type="text" placeholder="/chainId/v1/address/suffix" class="input input-bordered join-item flex-1" />
-              <button @click="subscribeToTopic" :disabled="!newTopic.trim()" class="btn btn-primary join-item">Subscribe</button>
+                <div v-if="allPeers.length === 0" class="text-center text-base-content/50 py-8">
+                  No peers discovered yet
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
+        </section>
 
-    <!-- Publish Message -->
-    <section class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title">Publish Message</h2>
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Topic suffix (appended to <code>/CHAIN_ID/v1/&lt;address&gt;/</code>)</span>
-          </label>
-          <input v-model="topicSuffix" type="text" class="input input-bordered" />
-        </div>
-        <div class="form-control mt-4">
-          <label class="label">
-            <span class="label-text">Message payload (JSON or any text)</span>
-          </label>
-          <textarea v-model="payload" rows="4" class="textarea textarea-bordered"></textarea>
-        </div>
-        <div class="flex gap-2 mt-4">
-          <button @click="publishWithCosmjs" :disabled="!canPublishCosmjs" :title="publishCosmjsTitle" class="btn btn-primary">
-            Sign & Publish (CosmJS)
-          </button>
-          <button @click="publishWithKeplr" :disabled="!canPublishKeplr" :title="publishKeplrTitle" class="btn btn-secondary">
-            Sign & Publish (Keplr)
-          </button>
-        </div>
-        <div v-if="publishing" class="alert alert-info mt-4">
-          <span v-if="signingStatus">Signing...</span>
-          <span v-if="publishingStatus">Publishing...</span>
-        </div>
-      </div>
-    </section>
+        <!-- Center: Topics & Messages -->
+        <section class="col-span-12 lg:col-span-6">
 
-    <!-- ADR36 Signing Info -->
-    <section v-if="lastSignature" class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title">Last ADR36 Signature</h2>
-        <div class="space-y-2">
-          <div><strong>Signer:</strong> <code class="badge badge-outline">{{ lastSignature.signer }}</code></div>
-          <div><strong>Method:</strong> <span class="badge badge-info">{{ lastSignature.method }}</span></div>
-          <div><strong>Status:</strong> <span class="badge badge-success">Valid</span></div>
-        </div>
-        <details class="collapse collapse-arrow bg-base-200 mt-4">
-          <summary class="collapse-title">Envelope JSON</summary>
-          <div class="collapse-content">
-            <pre class="bg-base-300 p-4 rounded overflow-x-auto">{{ lastSignature.envelope }}</pre>
-          </div>
-        </details>
-      </div>
-    </section>
+          <div class="card bg-base-100 shadow-xl mb-4">
+            <div class="card-body">
+              <h2 class="card-title">Publish</h2>
+              
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text text-xs">Full Topic</span>
+                  <a @click.prevent="prependTopicPrefix" class="link link-primary text-xs" v-if="connected && client && (cosmjsAddress || keplrAddress)">
+                    /{{ client.chainId }}/v1/{{ cosmjsAddress || keplrAddress || '...' }}/
+                  </a>
+                </label>
+                <input v-model="fullTopic" type="text" placeholder="/{chainId}/v1/{address}/{suffix}" class="input input-bordered input-sm" />
+              </div>
+              
+              <div class="form-control mt-4">
+                <label class="label">
+                  <span class="label-text text-xs">Payload (JSON or text)</span>
+                </label>
+                <textarea v-model="payload" rows="3" class="textarea textarea-bordered textarea-sm"></textarea>
+              </div>
+              
+              <div class="flex flex-col gap-2 mt-4">
+                <button @click="publishWithCosmjs" :disabled="!canPublishCosmjs" :title="publishCosmjsTitle" class="btn btn-sm btn-primary">
+                  Publish (CosmJS)
+                </button>
+                <button @click="publishWithKeplr" :disabled="!canPublishKeplr" :title="publishKeplrTitle" class="btn btn-sm btn-secondary">
+                  Publish (Keplr)
+                </button>
+              </div>
 
-    <!-- Messages -->
-    <section class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title">Messages</h2>
-        <div class="flex flex-wrap gap-2 mb-4">
-          <button @click="clearMessages" class="btn btn-sm btn-error">Clear</button>
-          <input v-model="messageFilter" type="text" placeholder="Filter by topic or signer..." class="input input-bordered input-sm flex-1 min-w-48" />
-          <select v-model="messageFilterType" class="select select-bordered select-sm">
-            <option value="all">All</option>
-            <option value="sent">Sent</option>
-            <option value="received">Received</option>
-          </select>
-        </div>
-        <ul class="space-y-2">
-          <li v-for="msg in filteredMessages" :key="msg.id" class="card bg-base-200">
-            <div class="card-body p-3">
-              <details class="collapse collapse-arrow">
-                <summary class="collapse-title text-sm p-0">
-                  <span :class="msg.type === 'sent' ? 'badge badge-success' : 'badge badge-info'">
-                    {{ msg.type === 'sent' ? 'Sent' : 'Received' }}
-                  </span>
-                  <span class="ml-2">{{ formatTime(msg.timestamp) }}</span>
-                  <code class="badge badge-outline ml-2">{{ msg.topic }}</code>
-                  <span class="ml-2 text-xs">signer {{ msg.signer }}</span>
-                  <span class="badge badge-ghost ml-2">{{ msg.size }} bytes</span>
-                </summary>
-                <div class="collapse-content p-0 pt-2">
-                  <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto">{{ msg.raw || msg.payload }}</pre>
+              <div v-if="publishing" class="alert alert-info alert-sm mt-4">
+                <span v-if="signingStatus">Signing...</span>
+                <span v-if="publishingStatus">Publishing...</span>
+              </div>
+
+              <div v-if="lastSignature" class="mt-4 p-2 bg-base-200 rounded">
+                <div class="text-xs space-y-1">
+                  <div><strong>Signer:</strong> <code class="text-xs break-all">{{ lastSignature.signer }}</code></div>
+                  <div><strong>Method:</strong> {{ lastSignature.method }}</div>
                 </div>
-              </details>
+              </div>
             </div>
-          </li>
-        </ul>
-      </div>
-    </section>
+          </div>
 
-    <!-- Statistics -->
-    <section v-if="connected" class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title">Statistics</h2>
-        <div class="stats stats-vertical sm:stats-horizontal shadow w-full">
-          <div class="stat">
-            <div class="stat-title">Messages Sent</div>
-            <div class="stat-value text-primary">{{ stats.messagesSent }}</div>
+          <div class="card bg-base-100 shadow-xl flex flex-col">
+            <div class="card-body flex-1 flex flex-col">
+              <h2 class="card-title">Topics & Messages</h2>
+              
+              <!-- Topics Section -->
+              <div class="mb-4">
+                <div class="flex gap-2 mb-2">
+                  <input v-model="newTopic" @keyup.enter="subscribeToTopic" type="text" placeholder="Topic suffix or full topic" class="input input-bordered input-sm flex-1" />
+                  <button @click="subscribeToTopic" :disabled="!newTopic.trim()" class="btn btn-sm btn-primary">Subscribe</button>
+                </div>
+                <div class="space-y-2 max-h-32 overflow-y-auto">
+                  <div v-for="sub in subscriptions" :key="sub.topic" class="flex items-center justify-between bg-base-200 p-2 rounded">
+                    <code class="text-xs flex-1 break-all">{{ sub.topic }}</code>
+                    <div class="flex items-center gap-2">
+
+                      <button @click="unsubscribe(sub.topic)" class="btn btn-xs btn-error">×</button>
+                    </div>
+                  </div>
+                  <div v-if="subscriptions.length === 0" class="text-xs text-base-content/50 text-center py-2">
+                    No subscriptions
+                  </div>
+                </div>
+              </div>
+
+              <!-- Messages for Selected Topic -->
+              <div class="flex-1 flex flex-col min-h-0">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="text-sm font-semibold">Messages</h3>
+                  <select v-model="selectedTopic" class="select select-bordered select-sm w-48">
+                    <option value="">All topics</option>
+                    <option v-for="sub in subscriptions" :key="sub.topic" :value="sub.topic">{{ sub.topic }}</option>
+                  </select>
+                </div>
+                <div class="flex-1 overflow-y-auto space-y-2">
+                  <div v-for="msg in filteredTopicMessages" :key="msg.id" class="card card-compact bg-base-200">
+                    <div class="card-body p-2">
+                      <div class="flex items-center gap-2 mb-1">
+                        Topic <code class="text-xs text-primary break-all">{{ msg.topic }}</code>
+                      </div>
+                      <div class="text-sm mb-2 overflow-x-auto whitespace-nowrap">{{ msg.payload }}</div>
+                      <details class="collapse collapse-arrow bg-base-300">
+                        <summary class="collapse-title text-xs min-h-0">Details</summary>
+                        <div class="collapse-content p-2">
+                          <pre class="bg-base-100 p-2 rounded text-xs overflow-x-auto">{{ msg }}</pre>
+                        </div>
+                      </details>
+                    </div>
+                  </div>
+                  <div v-if="filteredTopicMessages.length === 0" class="text-center text-base-content/50 py-8 text-sm">
+                    No messages
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="stat">
-            <div class="stat-title">Messages Received</div>
-            <div class="stat-value text-info">{{ stats.messagesReceived }}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-title">Bytes Sent</div>
-            <div class="stat-value text-secondary">{{ formatBytes(stats.bytesSent) }}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-title">Bytes Received</div>
-            <div class="stat-value text-accent">{{ formatBytes(stats.bytesReceived) }}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-title">Uptime</div>
-            <div class="stat-value">{{ formatUptime(stats.uptime) }}</div>
-          </div>
+        </section>
+
+        
+      </div>
+    </main>
+
+    <!-- Disconnected State -->
+    <main v-else class="container mx-auto p-6">
+      <div class="card bg-base-100 shadow-xl">
+        <div class="card-body text-center py-12">
+          <p class="text-base-content/70">Click Connect to start</p>
         </div>
       </div>
-    </section>
-
-    <!-- Debug Log -->
-    <section class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title">Debug Log</h2>
-        <div class="flex gap-2 mb-4">
-          <button @click="clearLog" class="btn btn-sm btn-error">Clear Log</button>
-          <button @click="exportLog" class="btn btn-sm btn-secondary">Export Log</button>
-        </div>
-        <pre ref="logRef" class="bg-base-300 p-4 rounded overflow-x-auto text-xs max-h-96 overflow-y-auto">{{ logOutput }}</pre>
-      </div>
-    </section>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing'
 import { fromString as uint8FromString } from 'uint8arrays/from-string'
 import { toString as uint8ToString } from 'uint8arrays/to-string'
@@ -329,7 +246,7 @@ const keplrAvailable = ref(typeof window.keplr !== 'undefined')
 const keplrAddress = ref('')
 
 // Publishing state
-const topicSuffix = ref('demo')
+const fullTopic = ref('')
 const payload = ref('{"text":"Hello Dyson"}')
 const publishing = ref(false)
 const signingStatus = ref(false)
@@ -340,15 +257,14 @@ const lastSignature = ref<{ signer: string; method: string; envelope: string } |
 const subscriptions = ref<Array<{ topic: string; handlers: number; messageCount: number }>>([])
 const subscribedTopics = new Map<string, { handler: (msg: DysonMessage) => void; messageCount: number }>()
 const newTopic = ref('')
+const selectedTopic = ref('')
 
 // Per-topic UI state
-const topicDrafts = ref<Record<string, string>>({})
 const topicMessages = ref<Record<string, MessageItem[]>>({})
 
 // Messages
 interface MessageItem {
   id: string
-  type: 'sent' | 'received'
   topic: string
   signer: string
   from: string
@@ -358,8 +274,6 @@ interface MessageItem {
   size: number
 }
 const messages = ref<MessageItem[]>([])
-const messageFilter = ref('')
-const messageFilterType = ref<'all' | 'sent' | 'received'>('all')
 
 // Statistics
 const stats = ref({
@@ -370,10 +284,6 @@ const stats = ref({
   uptime: 0,
 })
 
-// Logging
-const logOutput = ref('')
-const logRef = ref<HTMLElement>()
-
 // Update intervals
 let updateInterval: ReturnType<typeof setInterval> | null = null
 
@@ -383,7 +293,6 @@ const connectionStatus = computed(() => {
   if (connected.value) return 'Connected'
   return 'Disconnected'
 })
-
 
 const canPublishCosmjs = computed(() => connected.value && !!cosmjsWallet.value && !!cosmjsAddress.value)
 const canPublishKeplr = computed(() => connected.value && keplrAvailable.value)
@@ -400,36 +309,12 @@ const publishKeplrTitle = computed(() => {
   return ''
 })
 
-const filteredMessages = computed(() => {
+const filteredTopicMessages = computed(() => {
   let filtered = messages.value
-  if (messageFilterType.value !== 'all') {
-    filtered = filtered.filter(m => m.type === messageFilterType.value)
+  if (selectedTopic.value) {
+    filtered = filtered.filter(m => m.topic === selectedTopic.value)
   }
-  if (messageFilter.value.trim()) {
-    const filter = messageFilter.value.toLowerCase()
-    filtered = filtered.filter(m => 
-      m.topic.toLowerCase().includes(filter) || 
-      m.signer.toLowerCase().includes(filter) ||
-      m.from.toLowerCase().includes(filter)
-    )
-  }
-  return filtered
-})
-
-const meshDetails = computed(() => {
-  return subscriptions.value.map(sub => {
-    if (!client.value) return { topic: sub.topic, meshCount: 0, subscribersCount: 0 }
-    const pubsub = (client.value.libp2p.services as any).pubsub
-    if (!pubsub) return { topic: sub.topic, meshCount: 0, subscribersCount: 0 }
-    const subscribers = pubsub.getSubscribers(sub.topic) || []
-    // Try to get mesh peers if available (GossipSub specific)
-    const mesh = (pubsub.getMeshPeers && typeof pubsub.getMeshPeers === 'function' && pubsub.getMeshPeers(sub.topic)) || []
-    return {
-      topic: sub.topic,
-      meshCount: mesh.length,
-      subscribersCount: subscribers.length,
-    }
-  })
+  return filtered.sort((a, b) => b.timestamp - a.timestamp)
 })
 
 const connectedById = computed<Record<string, any>>(() => {
@@ -437,25 +322,6 @@ const connectedById = computed<Record<string, any>>(() => {
   for (const p of connectedPeers.value) obj[p.id] = p
   return obj
 })
-
-// Logging
-function log(message: string, data?: any) {
-  const ts = new Date().toISOString()
-  const line = data !== undefined ? `${ts} [LOG] ${message} ${JSON.stringify(data)}` : `${ts} [LOG] ${message}`
-  console.log('[dyson-demo]', message, data ?? '')
-  logOutput.value = `${line}\n${logOutput.value || ''}`.slice(0, 100000)
-  if (logRef.value) {
-    logRef.value.scrollTop = 0
-  }
-}
-
-function logError(message: string, error: any) {
-  const ts = new Date().toISOString()
-  const errMsg = error instanceof Error ? error.message : String(error)
-  const line = `${ts} [ERROR] ${message}: ${errMsg}`
-  console.error('[dyson-demo]', message, error)
-  logOutput.value = `${line}\n${logOutput.value || ''}`.slice(0, 100000)
-}
 
 // Update peers
 function updatePeers() {
@@ -478,7 +344,6 @@ function updatePeers() {
   const peerStore = libp2p?.peerStore
   const addressBook = peerStore?.addressBook
 
-  // Build connection summaries by remotePeer
   const connections: any[] = libp2p.getConnections?.() || []
   const byPeer = new Map<string, any[]>()
   for (const c of connections) {
@@ -499,22 +364,16 @@ function updatePeers() {
     const opened: number = Number(primary?.timeline?.open ?? 0)
     const openedMs: number = opened ? Math.max(0, Date.now() - opened) : 0
 
-    // Protocols best-effort
     let protocols: string[] = []
+    const protoBook = peerStore?.protoBook
+    if (protoBook?.get) {
+      const p = protoBook.get(primary?.remotePeer)
+      if (Array.isArray(p)) protocols = p
+    }
 
-      const protoBook = peerStore?.protoBook
-      if (protoBook?.get) {
-        const p = protoBook.get(primary?.remotePeer)
-        if (Array.isArray(p)) protocols = p
-      }
-
-
-    // Addresses best-effort: from addressBook or remoteAddr
     let addrs: string[] = []
-    
-      const abAddrs = addressBook?.get?.(primary?.remotePeer) || []
-      addrs = Array.isArray(abAddrs) ? abAddrs.map((a: any) => a.toString?.() || a.multiaddr?.toString?.() || String(a)) : []
-
+    const abAddrs = addressBook?.get?.(primary?.remotePeer) || []
+    addrs = Array.isArray(abAddrs) ? abAddrs.map((a: any) => a.toString?.() || a.multiaddr?.toString?.() || String(a)) : []
     if (addrs.length === 0 && remoteAddr) addrs = [remoteAddr]
 
     connected.push({
@@ -531,7 +390,6 @@ function updatePeers() {
   }
   connectedPeers.value = connected
 
-  // Derive total known peers from pubsub peers and connection peers
   const knownIds = new Set<string>()
   try {
     const psPeers: any[] = (client.value.libp2p.services as any)?.pubsub?.getPeers?.() || []
@@ -543,7 +401,6 @@ function updatePeers() {
   for (const id of knownIds) {
     let addrs: string[] = []
     try {
-      // use addressBook if available by matching any connection's remotePeer
       const conn = byPeer.get(id)?.[0]
       const abAddrs = addressBook?.get?.(conn?.remotePeer) || []
       addrs = Array.isArray(abAddrs) ? abAddrs.map((a: any) => a.toString?.() || a.multiaddr?.toString?.() || String(a)) : []
@@ -572,15 +429,11 @@ async function handleConnect() {
   }
   
   connecting.value = true
-  log('Connecting to Dyson...')
   
   client.value = await createDysonClient()
   peerId.value = client.value.peerId
   bootstrap.value = client.value.bootstrap
   connectionStartTime.value = Date.now()
-  
-  log('Connected', { peerId: client.value.peerId, chainId: client.value.chainId })
-  log('Bootstrap info', client.value.bootstrap)
   
   connected.value = true
   connecting.value = false
@@ -588,13 +441,11 @@ async function handleConnect() {
   setupEventListeners()
   updatePeers()
   
-  // Auto-subscribe if we have an address
   if (cosmjsAddress.value) {
     const topic = buildTopic(cosmjsAddress.value)
     await ensureSubscription(topic)
   }
   
-  // Start update interval
   updateInterval = setInterval(() => {
     updatePeers()
     updateSubscriptions()
@@ -606,7 +457,6 @@ async function handleConnect() {
 
 async function disconnect() {
   if (client.value) {
-    log('Disconnecting...')
     await client.value.stop()
     client.value = undefined
   }
@@ -622,63 +472,25 @@ async function disconnect() {
     clearInterval(updateInterval)
     updateInterval = null
   }
-  log('Disconnected')
 }
 
 function setupEventListeners() {
   if (!client.value) return
   
-  client.value.libp2p.addEventListener('peer:connect', (e: any) => {
-    const peerId = e?.detail?.remotePeer?.toString?.()
-    log('peer:connect', { id: peerId })
-    updatePeers()
-  })
-  
-  client.value.libp2p.addEventListener('peer:disconnect', (e: any) => {
-    const peerId = e?.detail?.remotePeer?.toString?.()
-    log('peer:disconnect', { id: peerId })
-    updatePeers()
-  })
-  
-  client.value.libp2p.addEventListener('connection:open', (e: any) => {
-    const peerId = e?.detail?.remotePeer?.toString?.()
-    log('connection:open', { id: peerId })
-    updatePeers()
-  })
-  
-  client.value.libp2p.addEventListener('connection:close', (e: any) => {
-    const peerId = e?.detail?.remotePeer?.toString?.()
-    log('connection:close', { id: peerId })
-    updatePeers()
-  })
-  
-  client.value.libp2p.addEventListener('peer:discovery', (e: any) => {
-    const info = e?.detail
-    log('peer:discovery', { 
-      id: info?.id?.toString?.(), 
-      addrs: info?.multiaddrs?.map?.((m: any) => m?.toString?.()) 
-    })
-    updatePeers()
-  })
-  
-  const pubsub = (client.value!.libp2p.services as any).pubsub
-  if (pubsub?.addEventListener) {
-    pubsub.addEventListener('message', (evt: any) => {
-      const d = evt?.detail
-      log('pubsub:message', { topic: d?.topic, from: d?.from })
-    })
-  }
+  client.value.libp2p.addEventListener('peer:connect', () => updatePeers())
+  client.value.libp2p.addEventListener('peer:disconnect', () => updatePeers())
+  client.value.libp2p.addEventListener('connection:open', () => updatePeers())
+  client.value.libp2p.addEventListener('connection:close', () => updatePeers())
+  client.value.libp2p.addEventListener('peer:discovery', () => updatePeers())
 }
 
 // Wallet
 async function generateMnemonic() {
-  log('Generating mnemonic...')
   const wallet = await DirectSecp256k1HdWallet.generate(12, { prefix: DEFAULT_PREFIX })
   mnemonic.value = wallet.mnemonic
   cosmjsWallet.value = wallet
   const [account] = await wallet.getAccounts()
   cosmjsAddress.value = account.address
-  log('Generated mnemonic', { address: cosmjsAddress.value })
   
   if (connected.value && cosmjsAddress.value) {
     const topic = buildTopic(cosmjsAddress.value)
@@ -687,7 +499,6 @@ async function generateMnemonic() {
 }
 
 async function useMnemonic() {
-  log('Using mnemonic...')
   const trimmed = mnemonic.value.trim()
   if (!trimmed) {
     cosmjsWallet.value = undefined
@@ -698,7 +509,6 @@ async function useMnemonic() {
   cosmjsWallet.value = await DirectSecp256k1HdWallet.fromMnemonic(trimmed, { prefix: DEFAULT_PREFIX })
   const [account] = await cosmjsWallet.value.getAccounts()
   cosmjsAddress.value = account.address
-  log('Loaded mnemonic', { address: cosmjsAddress.value })
   
   if (connected.value && cosmjsAddress.value) {
     const topic = buildTopic(cosmjsAddress.value)
@@ -709,18 +519,21 @@ async function useMnemonic() {
 // Subscriptions
 function buildTopic(address: string): string {
   if (!client.value) throw new Error('Not connected')
-  const suffix = topicSuffix.value.trim() || 'demo'
-  return client.value.buildTopic(address, suffix)
+  return client.value.buildTopic(address, 'demo')
+}
+
+function prependTopicPrefix() {
+  if (!client.value) return
+  const address = cosmjsAddress.value || keplrAddress.value
+  if (!address) return
+  const prefix = `/chain-${client.value.chainId}/v1/${address}/`
+  fullTopic.value = prefix + fullTopic.value
 }
 
 async function ensureSubscription(topic: string) {
   if (!client.value) return
   if (subscribedTopics.has(topic)) return
   
-  log('Subscribing to topic', { topic })
-  
-  // Initialize per-topic UI state
-  if (topicDrafts.value[topic] === undefined) topicDrafts.value[topic] = ''
   if (!topicMessages.value[topic]) topicMessages.value[topic] = []
   
   const messageCount = 0
@@ -732,18 +545,14 @@ async function ensureSubscription(topic: string) {
       ? JSON.stringify(msg.payloadJson) 
       : uint8ToString(msg.payload)
     
-    // Extract signer address from envelope
     let signerAddress = msg.from
     if (msg.envelope) {
       signerAddress = msg.envelope.body?.messages?.[0]?.signer || msg.from
     }
     
-    log('Received message', { topic: msg.topic, from: msg.from, signer: signerAddress, payload: payloadText })
-    
     const rawText = msg.envelope ? JSON.stringify(msg.envelope, null, 2) : uint8ToString(msg.raw)
     
     addMessage({
-      type: 'received',
       topic: msg.topic,
       signer: signerAddress,
       from: msg.from,
@@ -753,7 +562,6 @@ async function ensureSubscription(topic: string) {
     })
     
     addTopicMessage({
-      type: 'received',
       topic: msg.topic,
       signer: signerAddress,
       from: msg.from,
@@ -771,7 +579,6 @@ async function ensureSubscription(topic: string) {
   await client.value.subscribe(topic, handler)
   subscribedTopics.set(topic, { handler, messageCount })
   updateSubscriptions()
-  log('Subscribed to topic', { topic })
 }
 
 async function subscribeToTopic() {
@@ -779,7 +586,6 @@ async function subscribeToTopic() {
   const topic = newTopic.value.trim()
   if (!topic) return
   
-  log('Manual subscription', { topic })
   await ensureSubscription(topic)
   newTopic.value = ''
 }
@@ -789,13 +595,11 @@ async function unsubscribe(topic: string) {
   const info = subscribedTopics.get(topic)
   if (!info) return
   
-  log('Unsubscribing from topic', { topic })
   await client.value.unsubscribe(topic, info.handler)
   subscribedTopics.delete(topic)
-  delete topicDrafts.value[topic]
   delete topicMessages.value[topic]
+  if (selectedTopic.value === topic) selectedTopic.value = ''
   updateSubscriptions()
-  log('Unsubscribed from topic', { topic })
 }
 
 // Publishing
@@ -806,15 +610,14 @@ async function publishWithCosmjs() {
   publishing.value = true
   signingStatus.value = true
   
-  log('Publishing with CosmJS...', { address: cosmjsAddress.value })
-  
   const signer = await createOfflineSignerSigner({ 
     wallet: cosmjsWallet.value, 
     address: cosmjsAddress.value || undefined 
   })
   cosmjsAddress.value = signer.address
   
-  const topic = buildTopic(cosmjsAddress.value)
+  const topic = fullTopic.value.trim()
+  if (!topic) throw new Error('Topic is required')
   await ensureSubscription(topic)
   
   const payloadJson = payload.value.trim() || '{}'
@@ -823,11 +626,8 @@ async function publishWithCosmjs() {
   signingStatus.value = false
   publishingStatus.value = true
   
-  log('Publishing message', { topic, bytes: payloadBytes.length })
-  
   await client.value.publish({ topic, payload: payloadBytes, signer })
   
-  // Get envelope for display - recreate for demo purposes
   const { createAdr36Envelope } = await import('./sdk/adr36')
   const envelope = await createAdr36Envelope({
     chainId: client.value!.chainId,
@@ -844,20 +644,9 @@ async function publishWithCosmjs() {
     envelope: envelopeStr,
   }
   
-  addMessage({
-    type: 'sent',
-    topic,
-    signer: signer.address,
-    from: client.value.peerId,
-    payload: payloadJson,
-    raw: envelopeStr,
-    size: payloadBytes.length,
-  })
   
   stats.value.messagesSent++
   stats.value.bytesSent += payloadBytes.length
-  
-  log('Published successfully', { topic, signer: signer.address })
   
   publishing.value = false
   signingStatus.value = false
@@ -870,12 +659,11 @@ async function publishWithKeplr() {
   publishing.value = true
   signingStatus.value = true
   
-  log('Publishing with Keplr...')
-  
   const signer = await createKeplrSigner(client.value.chainId)
   keplrAddress.value = signer.address
   
-  const topic = buildTopic(keplrAddress.value)
+  const topic = fullTopic.value.trim()
+  if (!topic) throw new Error('Topic is required')
   await ensureSubscription(topic)
   
   const payloadJson = payload.value.trim() || '{}'
@@ -884,13 +672,10 @@ async function publishWithKeplr() {
   signingStatus.value = false
   publishingStatus.value = true
   
-  log('Publishing message', { topic, bytes: payloadBytes.length })
-  
   await client.value.publish({ topic, payload: payloadBytes, signer })
   
-  // Get envelope for display - we already have it from publish, but recreate for display
-  const { createAdr36Envelope: createAdr36EnvelopeKeplr } = await import('./sdk/adr36')
-  const envelopeKeplr = await createAdr36EnvelopeKeplr({
+  const { createAdr36Envelope } = await import('./sdk/adr36')
+  const envelope = await createAdr36Envelope({
     chainId: client.value!.chainId,
     topic,
     payload: payloadBytes,
@@ -898,86 +683,20 @@ async function publishWithKeplr() {
     peerId: client.value!.peerId,
   })
   
-  const envelopeKeplrStr = JSON.stringify(envelopeKeplr, null, 2)
+  const envelopeStr = JSON.stringify(envelope, null, 2)
   lastSignature.value = {
     signer: signer.address,
     method: 'Keplr',
-    envelope: envelopeKeplrStr,
+    envelope: envelopeStr,
   }
   
-  addMessage({
-    type: 'sent',
-    topic,
-    signer: signer.address,
-    from: client.value.peerId,
-    payload: payloadJson,
-    raw: envelopeKeplrStr,
-    size: payloadBytes.length,
-  })
   
   stats.value.messagesSent++
   stats.value.bytesSent += payloadBytes.length
-  
-  log('Published successfully', { topic, signer: signer.address })
   
   publishing.value = false
   signingStatus.value = false
   publishingStatus.value = false
-}
-
-// Publish to a specific topic using the available signer (CosmJS preferred, else Keplr)
-async function sendToTopic(topic: string) {
-  if (!client.value) throw new Error('Not connected')
-  
-  log('Publishing to topic...', { topic })
-  
-  // Choose signer
-  let signer: Awaited<ReturnType<typeof createOfflineSignerSigner>> | Awaited<ReturnType<typeof createKeplrSigner>>
-  if (cosmjsWallet.value) {
-    const s = await createOfflineSignerSigner({ wallet: cosmjsWallet.value, address: cosmjsAddress.value || undefined })
-    cosmjsAddress.value = s.address
-    signer = s
-  } else if (keplrAvailable.value) {
-    const s = await createKeplrSigner(client.value.chainId)
-    keplrAddress.value = s.address
-    signer = s
-  } else {
-    throw new Error('No signer available (set a CosmJS seed or enable Keplr)')
-  }
-  
-  await ensureSubscription(topic)
-  
-  const payloadText = (topicDrafts.value[topic] || '').trim() || '{}'
-  const payloadBytes = uint8FromString(payloadText)
-  
-  await client.value.publish({ topic, payload: payloadBytes, signer })
-  
-  // Recreate envelope for raw display
-  const { createAdr36Envelope } = await import('./sdk/adr36')
-  const env = await createAdr36Envelope({
-    chainId: client.value!.chainId,
-    topic,
-    payload: payloadBytes,
-    signer,
-    peerId: client.value!.peerId,
-  })
-  const envStr = JSON.stringify(env, null, 2)
-  
-  const msgItem = {
-    type: 'sent' as const,
-    topic,
-    signer: signer.address,
-    from: client.value.peerId,
-    payload: payloadText,
-    raw: envStr,
-    size: payloadBytes.length,
-  }
-  addMessage(msgItem)
-  // Do not add to per-topic log; we want RX-only (GossipLog-backed) entries
-  
-  stats.value.messagesSent++
-  stats.value.bytesSent += payloadBytes.length
-  log('Published successfully', { topic, signer: signer.address })
 }
 
 // Messages
@@ -998,38 +717,10 @@ function addTopicMessage(msg: Omit<MessageItem, 'id' | 'timestamp'>) {
   })
 }
 
-function clearMessages() {
-  messages.value = []
-  log('Cleared messages')
-}
-
-// Logging
-function clearLog() {
-  logOutput.value = ''
-  log('Log cleared')
-}
-
-function exportLog() {
-  const blob = new Blob([logOutput.value], { type: 'text/plain' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `dyson-demo-log-${Date.now()}.txt`
-  a.click()
-  URL.revokeObjectURL(url)
-  log('Exported log')
-}
-
 // Formatting
 function formatTime(timestamp: number): string {
   const date = new Date(timestamp)
   return date.toLocaleTimeString()
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
 }
 
 function formatUptime(ms: number): string {
@@ -1043,10 +734,7 @@ function formatUptime(ms: number): string {
 
 // Lifecycle
 onMounted(async () => {
-  log('App mounted')
   keplrAvailable.value = typeof window.keplr !== 'undefined'
-  
-  // Auto-connect
   await handleConnect()
   if (mnemonic.value.trim()) {
     await useMnemonic()
@@ -1060,6 +748,3 @@ onUnmounted(async () => {
   await disconnect()
 })
 </script>
-
-
-

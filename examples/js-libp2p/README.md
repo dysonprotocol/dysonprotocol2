@@ -75,6 +75,31 @@ The browser mirrors the server’s validator for non-discovery topics and reject
 
 Discovery topic is excluded from validation.
 
+## Server-side validation and transport
+
+The Dyson REST server embeds a libp2p host that:
+
+- Validates non-discovery topics before forwarding on the mesh:
+  - Ensures the ADR‑36 envelope is structurally valid (body, auth_info, signatures)
+  - Checks `app_domain` equals the pubsub topic
+  - Resolves the `{address_or_name}` part of the topic and verifies the recovered signer equals that address
+  - Verifies `metadata.peerId` matches the libp2p sender peer ID
+  - Enforces envelope and payload size limits
+- Auto-joins application topics under `/{chainId}/v1/…` and forwards only validated frames
+- Exposes `/libp2p/bootstrap` (peerId, relay listen addrs, chainId, topicPrefix)
+- Runs Circuit Relay v2 to support WebRTC signaling for browser-to-browser connections
+- Participates in the discovery topic for cross-domain peer discovery
+
+This keeps the mesh healthy while letting browsers form direct links over WebRTC.
+
+## Client responsibilities
+
+Clients are expected to enforce business logic on top of signature checks. The demo SDK already mirrors the server’s validator client‑side (schema, topic, peerId, sizes, signature) and drops invalid frames before persistence, but your application should still:
+
+- Filter by the topics and signers that your app trusts
+- Authorize actions based on your own rules (recipient allowlists, capability scopes, etc.)
+- Treat the discovery topic as untrusted metadata and never as an authority
+
 ## Customising
 
 - Use different topic suffixes for multiple chat rooms.
