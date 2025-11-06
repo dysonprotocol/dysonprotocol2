@@ -65,16 +65,15 @@ Versioning is handled by the topic path (`/{chainID}/v1/...`), not the envelope.
  
  ### Configuration surface
  
- `P2PConfig` captures the tunables for the embedded host: home directory, listen addresses, bootstrap peers, payload limits, relay resources, and logger.
+`P2PConfig` captures the tunables for the embedded host: home directory, listen addresses, bootstrap peers, envelope limits, relay resources, and logger.
  
- ```39:55:dysond/server/dwapp/p2p_embed_libp2p.go
+```39:54:dysond/server/dwapp/p2p_embed_libp2p.go
  type P2PConfig struct {
  	HomeDir        string
  	ChainID        string
  	ListenAddrs    []string
  	BootstrapPeers []string
  	MaxEnvelope    int
- 	MaxPayload     int
  	RelayResources relayv2.Resources
  	Logger         log.Logger
  }
@@ -245,7 +244,7 @@ Versioning is handled by the topic path (`/{chainID}/v1/...`), not the envelope.
  
  - Topic namespace: `/{chainID}/v1/*`; `discovery` suffix stays unvalidated, all other topics require ADR-36 envelopes.
  - Topic cap: 512 concurrent topics; idle topics are pruned after 10 minutes without mesh peers.
- - Envelope cap: 64 KiB; payload cap: 48 KiB after ADR-36 extraction.
+- Envelope cap: 64 KiB.
  - Peer blacklist: five rejected payloads triggers a temporary blacklist.
  
  GossipSub metrics are emitted via Cosmos SDK telemetry counters (`libp2p.validator.{accept,reject}` and `libp2p.topics.active`).

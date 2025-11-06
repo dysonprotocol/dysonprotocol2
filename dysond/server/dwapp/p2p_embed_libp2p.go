@@ -22,6 +22,7 @@ import (
 	peerstore "github.com/libp2p/go-libp2p/core/peerstore"
 	rcmgr "github.com/libp2p/go-libp2p/p2p/host/resource-manager"
 	relayv2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
+	identify "github.com/libp2p/go-libp2p/p2p/protocol/identify"
 	quic "github.com/libp2p/go-libp2p/p2p/transport/quic"
 	tcp "github.com/libp2p/go-libp2p/p2p/transport/tcp"
 	webrtc "github.com/libp2p/go-libp2p/p2p/transport/webrtc"
@@ -32,7 +33,6 @@ import (
 
 const (
 	defaultMaxEnvelopeBytes = 64 * 1024
-	defaultMaxPayloadBytes  = 48 * 1024
 	defaultReservationTTL   = time.Hour
 )
 
@@ -43,7 +43,6 @@ type P2PConfig struct {
 	ListenAddrs    []string
 	BootstrapPeers []string
 	MaxEnvelope    int
-	MaxPayload     int
 	RelayResources relayv2.Resources
 	Logger         log.Logger
 }
@@ -109,6 +108,15 @@ func NewP2PService(cfg P2PConfig) (*P2PService, error) {
 		return nil, fmt.Errorf("create libp2p host: %w", err)
 	}
 
+	// Enable Identify so browser peers receive peer:identify once handshake completes
+	ids, err := identify.NewIDService(h)
+	if err != nil {
+		return nil, fmt.Errorf("start identify: %w", err)
+	}
+	ids.Start()
+
+	// Identify Push is enabled by the ID service in this version; no extra options
+
 	ctx, cancel := context.WithCancel(context.Background())
 	service := &P2PService{
 		cfg:         normalized,
@@ -118,6 +126,22 @@ func NewP2PService(cfg P2PConfig) (*P2PService, error) {
 		topics:      make(map[string]*topicState),
 		peerRejects: make(map[peer.ID]int),
 		logger:      normalized.Logger.With("component", "dwapp_p2p"),
+	}
+
+	// Log when identification completes to verify ID service activity
+	if sub, err := h.EventBus().Subscribe(new(event.EvtPeerIdentificationCompleted)); err == nil {
+		go func() {
+			for evt := range sub.Out() {
+				if e, ok := evt.(event.EvtPeerIdentificationCompleted); ok {
+					service.logger.Info("identify completed",
+						"peer", e.Peer.String(),
+						"protocols", len(e.Protocols),
+						"addrs", len(e.ListenAddrs),
+						"agent", e.AgentVersion,
+					)
+				}
+			}
+		}()
 	}
 
 	if err := service.enableRelay(); err != nil {
@@ -296,9 +320,6 @@ func normalizeConfig(cfg P2PConfig) (P2PConfig, error) {
 	}
 	if result.MaxEnvelope == 0 {
 		result.MaxEnvelope = defaultMaxEnvelopeBytes
-	}
-	if result.MaxPayload == 0 {
-		result.MaxPayload = defaultMaxPayloadBytes
 	}
 	if result.Logger == nil {
 		result.Logger = log.NewNopLogger()

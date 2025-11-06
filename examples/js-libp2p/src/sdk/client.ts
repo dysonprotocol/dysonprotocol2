@@ -32,7 +32,70 @@ import type {
 const textDecoder = new TextDecoder()
 
 const DEFAULT_MAX_ENVELOPE_BYTES = 64 * 1024
-const DEFAULT_MAX_PAYLOAD_BYTES = 48 * 1024
+// Minimal Promise.any polyfill for ES2020 targets
+async function promiseAny<T>(promises: Array<Promise<T>>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+        let pending = promises.length
+        if (pending === 0) {
+            reject(new Error('All promises were rejected'))
+            return
+        }
+        let rejected = 0
+        let firstError: any
+        for (const p of promises) {
+            p.then((v) => {
+                resolve(v)
+            }).catch((err) => {
+                rejected++
+                if (firstError === undefined) firstError = err
+                if (rejected === pending) {
+                    reject(firstError ?? new Error('All promises were rejected'))
+                }
+            })
+        }
+    })
+}
+
+// Track in-flight identify waits to avoid duplicate listeners per peer
+const identifyInFlight = new Map<string, Promise<void>>()
+
+function isWebsocketAddr(ma: Multiaddr): boolean {
+    const protos = ma.protoNames()
+    return protos.includes('ws') || protos.includes('wss') || protos.includes('tls')
+}
+
+function isWebTransportAddr(ma: Multiaddr): boolean {
+    const protos = ma.protoNames()
+    return protos.includes('webtransport')
+}
+
+function isWebRTCAddr(ma: Multiaddr): boolean {
+    const protos = ma.protoNames()
+    return protos.includes('webrtc') || protos.includes('webrtc-direct')
+}
+
+function selectPreferredBootstrapAddrs(addrs: string[]): Multiaddr[] {
+    const seen = new Set<string>()
+    const all = addrs.map((a) => multiaddr(a))
+
+    // Rank: WS/WSS > WebTransport > WebRTC > others
+    const ws = all.filter(isWebsocketAddr)
+    const wt = all.filter(isWebTransportAddr)
+    const wrtc = all.filter(isWebRTCAddr)
+    const rest = all.filter((a) => !ws.includes(a) && !wt.includes(a) && !wrtc.includes(a))
+
+    const ordered = [...ws, ...wt, ...wrtc, ...rest]
+    const result: Multiaddr[] = []
+    for (const ma of ordered) {
+        const s = ma.toString()
+        if (seen.has(s)) continue
+        seen.add(s)
+        result.push(ma)
+        if (result.length >= 6) break // cap initial concurrent dials
+    }
+    return result
+}
+
 
 interface TopicRegistryEntry {
     handlers: Set<DysonMessageHandler>
@@ -147,7 +210,7 @@ class DysonClientImpl implements DysonClient {
 
             // Skip discovery topic messages (they're handled by pubsubPeerDiscovery)
             if (topic === this.discoveryTopic) {
-                console.log('[dyson-sdk] skipping discovery topic message')
+                console.log('[dyson-sdk] skipping validation of discovery topic message')
                 return
             }
 
@@ -165,7 +228,6 @@ class DysonClientImpl implements DysonClient {
             try {
                 const { envelope } = validateEnvelope(detail.data, topic, from, {
                     maxEnvelopeBytes: DEFAULT_MAX_ENVELOPE_BYTES,
-                    maxPayloadBytes: DEFAULT_MAX_PAYLOAD_BYTES,
                 })
 
                 // Verify ADR-36 signature locally, then append
@@ -522,7 +584,7 @@ class DysonClientImpl implements DysonClient {
             for (const addr of updated.addrs ?? []) {
                 try {
                     const conn = await this.libp2p.dial(multiaddr(addr))
-                    await waitForIdentify(this.libp2p, conn.remotePeer)
+                    await waitForIdentify(this.libp2p, conn.remotePeer, 5000)
                     await waitForRelayReservation(this.libp2p)
                     connected = true
                     break
@@ -623,32 +685,36 @@ export async function createDysonClient(options: CreateDysonClientOptions = {}):
     node.services.pubsub.subscribe(discoveryTopic)
     console.log(`[dyson-sdk] pre-subscribed to discovery topic: ${discoveryTopic}`)
 
-    // Dial bootstrap server(s) and wait for relay reservation
-    let connected = false
-    for (const addr of bootstrap.addrs ?? []) {
-        if (connected) break
-        try {
-            console.log(`[dyson-sdk] dialing ${addr}...`)
-            const conn = await node.dial(multiaddr(addr))
-            console.log(`[dyson-sdk] connected to ${conn.remotePeer} via ${conn.remoteAddr}`)
-
-            // Wait for identify to complete
-            await waitForIdentify(node, conn.remotePeer)
-
-            // Wait for relay reservation
-            await waitForRelayReservation(node)
-
-            connected = true
-            break
-        } catch (err) {
-            // Expected: bootstrap peer may be unavailable, try next one
-            console.warn('[dyson-sdk] bootstrap dial failed', addr, err)
-        }
-    }
-
-    if (!connected) {
-        console.warn('[dyson-sdk] no successful connections to bootstrap peers')
-    }
+    // Dial bootstrap server(s) concurrently (non-blocking) and try to establish relay reservation in background
+    const bootstrapAddrs = bootstrap.addrs ?? []
+        ; (async () => {
+            if (bootstrapAddrs.length === 0) {
+                console.warn('[dyson-sdk] no bootstrap addrs provided')
+                return
+            }
+            try {
+                const preferred = selectPreferredBootstrapAddrs(bootstrapAddrs)
+                const connectedLogged = new Set<string>()
+                const dialPromises = preferred.map(async (ma) => {
+                    console.log(`[dyson-sdk] dialing ${ma.toString()}...`)
+                    const conn = await node.dial(ma)
+                    const pid = conn.remotePeer.toString()
+                    const addrStr = conn.remoteAddr?.toString?.() ?? ''
+                    if (!connectedLogged.has(pid)) {
+                        console.log(`[dyson-sdk] connected to ${pid} via ${addrStr}`)
+                        connectedLogged.add(pid)
+                    }
+                    // Best-effort identify and relay reservation (do not block UI)
+                    void waitForIdentify(node, conn.remotePeer, isWebRTCAddr(ma) ? 8000 : 3000)
+                    void waitForRelayReservation(node, 2500)
+                    return conn
+                })
+                await promiseAny(dialPromises)
+            } catch (err) {
+                // Expected: some bootstrap peers may be unavailable
+                console.warn('[dyson-sdk] bootstrap concurrent dial failed', err)
+            }
+        })()
 
     // Log addresses
     const myAddrs = node.getMultiaddrs()
@@ -661,45 +727,30 @@ export async function createDysonClient(options: CreateDysonClientOptions = {}):
 }
 
 async function waitForIdentify(node: Libp2p, peerId: PeerId, timeoutMs = 1000): Promise<void> {
-    const identifyService = (node.services as any)?.identify
-    if (identifyService?.identifyPeer) {
-        try {
-            await identifyService.identifyPeer(peerId)
-            console.log(`[dyson-sdk] identified peer ${peerId}`)
-            return
-        } catch (err) {
-            // Expected: identify may fail or timeout, continue with fallback
-            console.warn(`[dyson-sdk] identifyPeer call failed for ${peerId}:`, err)
-        }
-    }
+    const key = peerId.toString()
+    const existing = identifyInFlight.get(key)
+    if (existing) return existing
 
-    const signal = createTimeoutSignal(timeoutMs)
-
-    await new Promise<void>((resolve) => {
-        let settled = false
-        const cleanup = () => {
-            if (settled) return
-            settled = true
-            node.removeEventListener('peer:identify', onIdentify)
-            signal?.removeEventListener('abort', onAbort)
-            resolve()
-        }
+    const p = new Promise<void>((resolve) => {
+        const signal = createTimeoutSignal(timeoutMs)
         const onIdentify = (evt: any) => {
-            if (evt?.detail?.peerId?.toString() === peerId.toString()) {
-                console.log(`[dyson-sdk] identified peer ${peerId}`)
-                cleanup()
+            if (evt?.detail?.peerId?.toString() === key) {
+                node.removeEventListener('peer:identify', onIdentify)
+                signal?.removeEventListener?.('abort', onAbort as any)
+                resolve()
+                identifyInFlight.delete(key)
             }
         }
         const onAbort = () => {
-            console.warn(`[dyson-sdk] identify wait timed out for ${peerId}`)
-            cleanup()
+            node.removeEventListener('peer:identify', onIdentify)
+            identifyInFlight.delete(key)
+            resolve()
         }
-
         node.addEventListener('peer:identify', onIdentify)
-        if (signal) {
-            signal.addEventListener('abort', onAbort, { once: true })
-        }
+        if (signal) signal.addEventListener('abort', onAbort, { once: true })
     })
+    identifyInFlight.set(key, p)
+    return p
 }
 
 async function waitForRelayReservation(node: Libp2p, timeoutMs = 5000): Promise<void> {
@@ -713,25 +764,29 @@ async function waitForRelayReservation(node: Libp2p, timeoutMs = 5000): Promise<
     await new Promise<void>((resolve) => {
         let settled = false
         const cleanup = () => {
+            console.log('[dyson-sdk] cleanup called')
             if (settled) return
             settled = true
             node.removeEventListener('self:peer:update', onSelfPeerUpdate)
             signal?.removeEventListener('abort', onAbort)
             resolve()
+            console.log('[dyson-sdk] cleanup resolved')
         }
         const onSelfPeerUpdate = () => {
+            console.log('[dyson-sdk] self:peer:update', hasReservation())
             if (hasReservation()) {
                 console.log('[dyson-sdk] relay reservation created')
                 cleanup()
             }
         }
         const onAbort = () => {
-            console.warn('[dyson-sdk] relay reservation wait timed out')
+            console.info('[dyson-sdk] relay reservation wait timed out')
             cleanup()
         }
 
         node.addEventListener('self:peer:update', onSelfPeerUpdate)
         if (signal) {
+            console.log('[dyson-sdk] adding abort listener to signal', signal)
             signal.addEventListener('abort', onAbort, { once: true })
         }
 
@@ -789,7 +844,6 @@ function decodeMessage(detail: any, topic: string): DysonMessage {
 
 interface ValidationLimits {
     maxEnvelopeBytes: number
-    maxPayloadBytes: number
 }
 
 function validateEnvelope(rawInput: Uint8Array, topic: string, fromPeerId: string, limits: ValidationLimits): { envelope: MsgArbitraryData } {
@@ -820,9 +874,7 @@ function validateEnvelope(rawInput: Uint8Array, topic: string, fromPeerId: strin
     if (msg['@type'] !== '/dysonprotocol.script.v1.MsgArbitraryData') {
         throw new Error(`unexpected message type: ${msg['@type']}`)
     }
-    if (typeof msg.app_domain !== 'string' || msg.app_domain.trim() !== topic.trim()) {
-        throw new Error(`app_domain mismatch: ${msg.app_domain} != ${topic}`)
-    }
+    // app_domain is no longer compared to the topic here
     if (typeof msg.data !== 'string' || msg.data.length === 0) {
         throw new Error('missing data field')
     }
@@ -842,12 +894,6 @@ function validateEnvelope(rawInput: Uint8Array, topic: string, fromPeerId: strin
     }
     if (fromPeerId && peerId !== String(fromPeerId).trim()) {
         throw new Error(`peerId mismatch: payload=${peerId} sender=${fromPeerId}`)
-    }
-
-    // Interpret data as UTF-8 text and enforce payload size
-    const payloadBytes = new TextEncoder().encode(msg.data)
-    if (payloadBytes.length > limits.maxPayloadBytes) {
-        throw new Error(`payload too large: ${payloadBytes.length} bytes`)
     }
 
     return { envelope }

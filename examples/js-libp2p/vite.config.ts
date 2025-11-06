@@ -41,7 +41,7 @@ export default defineConfig(({ mode }) => {
 
         server: {
             port: 5173,
-
+            allowedHosts: true,
             proxy: {
                 "/cosmos": {
                     target: proxyTarget,
@@ -104,7 +104,6 @@ export default defineConfig(({ mode }) => {
                     changeOrigin: true,
                     secure: false,
                     headers: { Connection: "keep-alive" },
-
                 },
             }
         }

@@ -39,101 +39,72 @@
         <!-- Left: Peers (Primary Focus) -->
           <section class="col-span-12 lg:col-span-6">
             <div class="card bg-base-100 shadow-xl ">
-            <div class="card-body">
+      <div class="card-body">
               <h2 class="card-title">Peers</h2>
-              
-              <!-- Peer Stats -->
-              <div class="stats stats-horizontal shadow w-full">
-                <div class="stat py-2">
-                  <div class="stat-title text-xs">Connected</div>
-                  <div class="stat-value text-lg text-primary">{{ connectedPeers.length }}</div>
-                </div>
-                <div class="stat py-2">
-                  <div class="stat-title text-xs">Known</div>
-                  <div class="stat-value text-lg text-info">{{ allPeers.length }}</div>
-                </div>
-                <div class="stat py-2">
-                  <div class="stat-title text-xs">Mesh</div>
-                  <div class="stat-value text-lg text-secondary">{{ meshPeersCount }}</div>
-                </div>
-                <div class="stat py-2">
-                  <div class="stat-title text-xs">Pubsub</div>
-                  <div class="stat-value text-lg text-accent">{{ pubsubPeersCount }}</div>
-                </div>
-              </div>
 
-              <!-- Peer List -->
-              <div class="mt-4 space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto">
-                <div v-for="p in allPeers" :key="p.id" class="card card-compact bg-base-200">
-                  <div class="card-body p-3">
-                    <div class="flex flex-wrap items-center gap-2 mb-2">
-                      <code class="badge badge-neutral text-xs font-mono break-all">{{ p.id }}</code>
-                      <template v-if="connectedById[p.id]">
-                        <span class="badge badge-outline badge-sm">{{ connectedById[p.id].direction || '—' }}</span>
-                        <span class="badge badge-outline badge-sm">{{ connectedById[p.id].status || '—' }}</span>
-                      </template>
-                    </div>
-                    <div class="text-xs text-base-content/70 break-all">
-                      <code>{{ connectedById[p.id]?.remoteAddr || (p.addrs[0] || '—') }}</code>
-                    </div>
-                    <div v-if="connectedById[p.id]" class="text-xs text-base-content/50 mt-1">
-                      {{ connectedById[p.id].streams }} streams · {{ formatUptime(connectedById[p.id].openedMs) }} ago
-                    </div>
+              <div class="mt-2 max-h-[calc(100vh-280px)] overflow-y-auto">
+                <div v-for="p in allPeers" :key="p.id" class="py-1">
+                  <div class="text-xs break-all"><code>{{ p.id }}</code></div>
+                  <div class="text-xs text-base-content/70 break-all">
+                    <code>{{ connectedById[p.id]?.remoteAddr || (p.addrs[0] || '—') }}</code>
+                  </div>
+                  <div v-if="topicsByPeer[p.id]?.length" class="text-[10px] text-base-content/60 break-all">
+                    <code>{{ topicsByPeer[p.id].join(', ') }}</code>
                   </div>
                 </div>
-                <div v-if="allPeers.length === 0" class="text-center text-base-content/50 py-8">
+                <div v-if="allPeers.length === 0" class="text-center text-base-content/50 py-8 text-sm">
                   No peers discovered yet
                 </div>
               </div>
             </div>
           </div>
-        </section>
+    </section>
 
         <!-- Center: Topics & Messages -->
         <section class="col-span-12 lg:col-span-6">
 
           <div class="card bg-base-100 shadow-xl mb-4">
-            <div class="card-body">
+      <div class="card-body">
               <h2 class="card-title">Publish</h2>
               
-              <div class="form-control">
-                <label class="label">
+          <div class="form-control">
+            <label class="label">
                   <span class="label-text text-xs">Full Topic</span>
                   <a @click.prevent="prependTopicPrefix" class="link link-primary text-xs" v-if="connected && client && (cosmjsAddress || keplrAddress)">
                     /{{ client.chainId }}/v1/{{ cosmjsAddress || keplrAddress || '...' }}/
                   </a>
-                </label>
+            </label>
                 <input v-model="fullTopic" type="text" placeholder="/{chainId}/v1/{address}/{suffix}" class="input input-bordered input-sm" />
-              </div>
+            </div>
               
-              <div class="form-control mt-4">
-                <label class="label">
+        <div class="form-control mt-4">
+          <label class="label">
                   <span class="label-text text-xs">Payload (JSON or text)</span>
-                </label>
+          </label>
                 <textarea v-model="payload" rows="3" class="textarea textarea-bordered textarea-sm"></textarea>
-              </div>
+        </div>
               
               <div class="flex flex-col gap-2 mt-4">
                 <button @click="publishWithCosmjs" :disabled="!canPublishCosmjs" :title="publishCosmjsTitle" class="btn btn-sm btn-primary">
                   Publish (CosmJS)
-                </button>
+          </button>
                 <button @click="publishWithKeplr" :disabled="!canPublishKeplr" :title="publishKeplrTitle" class="btn btn-sm btn-secondary">
                   Publish (Keplr)
-                </button>
-              </div>
+          </button>
+        </div>
 
               <div v-if="publishing" class="alert alert-info alert-sm mt-4">
-                <span v-if="signingStatus">Signing...</span>
-                <span v-if="publishingStatus">Publishing...</span>
-              </div>
+          <span v-if="signingStatus">Signing...</span>
+          <span v-if="publishingStatus">Publishing...</span>
+        </div>
 
               <div v-if="lastSignature" class="mt-4 p-2 bg-base-200 rounded">
                 <div class="text-xs space-y-1">
                   <div><strong>Signer:</strong> <code class="text-xs break-all">{{ lastSignature.signer }}</code></div>
                   <div><strong>Method:</strong> {{ lastSignature.method }}</div>
-                </div>
-              </div>
-            </div>
+        </div>
+          </div>
+      </div>
           </div>
 
           <div class="card bg-base-100 shadow-xl flex flex-col">
@@ -145,18 +116,18 @@
                 <div class="flex gap-2 mb-2">
                   <input v-model="newTopic" @keyup.enter="subscribeToTopic" type="text" placeholder="Topic suffix or full topic" class="input input-bordered input-sm flex-1" />
                   <button @click="subscribeToTopic" :disabled="!newTopic.trim()" class="btn btn-sm btn-primary">Subscribe</button>
-                </div>
+        </div>
                 <div class="space-y-2 max-h-32 overflow-y-auto">
                   <div v-for="sub in subscriptions" :key="sub.topic" class="flex items-center justify-between bg-base-200 p-2 rounded">
                     <code class="text-xs flex-1 break-all">{{ sub.topic }}</code>
                     <div class="flex items-center gap-2">
 
                       <button @click="unsubscribe(sub.topic)" class="btn btn-xs btn-error">×</button>
-                    </div>
-                  </div>
+                </div>
+            </div>
                   <div v-if="subscriptions.length === 0" class="text-xs text-base-content/50 text-center py-2">
                     No subscriptions
-                  </div>
+      </div>
                 </div>
               </div>
 
@@ -168,33 +139,33 @@
                     <option value="">All topics</option>
                     <option v-for="sub in subscriptions" :key="sub.topic" :value="sub.topic">{{ sub.topic }}</option>
                   </select>
-                </div>
+          </div>
                 <div class="flex-1 overflow-y-auto space-y-2">
                   <div v-for="msg in filteredTopicMessages" :key="msg.id" class="card card-compact bg-base-200">
                     <div class="card-body p-2">
                       <div class="flex items-center gap-2 mb-1">
                         Topic <code class="text-xs text-primary break-all">{{ msg.topic }}</code>
-                      </div>
+          </div>
                       <div class="text-sm mb-2 overflow-x-auto whitespace-nowrap">{{ msg.payload }}</div>
                       <details class="collapse collapse-arrow bg-base-300">
                         <summary class="collapse-title text-xs min-h-0">Details</summary>
                         <div class="collapse-content p-2">
                           <pre class="bg-base-100 p-2 rounded text-xs overflow-x-auto">{{ msg }}</pre>
-                        </div>
+          </div>
                       </details>
-                    </div>
+          </div>
                   </div>
                   <div v-if="filteredTopicMessages.length === 0" class="text-center text-base-content/50 py-8 text-sm">
                     No messages
                   </div>
                 </div>
-              </div>
-            </div>
           </div>
-        </section>
+        </div>
+      </div>
+    </section>
 
         
-      </div>
+        </div>
     </main>
 
     <!-- Disconnected State -->
@@ -202,7 +173,7 @@
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body text-center py-12">
           <p class="text-base-content/70">Click Connect to start</p>
-        </div>
+      </div>
       </div>
     </main>
   </div>
@@ -233,10 +204,23 @@ const bootstrap = ref<any>(null)
 const connectionStartTime = ref<number>(0)
 
 // Peer state
-const connectedPeers = ref<Array<{ id: string; addrs: string[]; protocols: string[]; connCount: number; direction: string; status: string; remoteAddr: string; streams: number; openedMs: number }>>([])
+const identifiedPeerIds = new Set<string>()
+interface IdentifySummary {
+  peerId?: string
+  agentVersion?: string
+  protocolVersion?: string
+  protocols?: string[]
+  listenAddrs?: string[]
+  observedAddr?: string
+  publicKeyBase64?: string
+  signedPeerRecord?: { seq?: string; addresses?: string[] }
+}
+const identifyInfoByPeer = ref<Record<string, IdentifySummary>>({})
+const connectedPeers = ref<Array<{ id: string; addrs: string[]; protocols: string[]; agent?: string; metadata?: Array<{ key: string; value: string }>; identified: boolean; connCount: number; direction: string; status: string; remoteAddr: string; streams: number; openedMs: number }>>([])
 const allPeers = ref<Array<{ id: string; addrs: string[] }>>([])
 const pubsubPeersCount = ref(0)
 const meshPeersCount = ref(0)
+const topicsByPeer = ref<Record<string, string[]>>({})
 
 // Wallet state
 const mnemonic = ref('wise quiz boat phone alone govern crash estate face faith alcohol same')
@@ -324,7 +308,7 @@ const connectedById = computed<Record<string, any>>(() => {
 })
 
 // Update peers
-function updatePeers() {
+async function updatePeers() {
   if (!client.value) return
   
   const pubsub = (client.value.libp2p.services as any).pubsub
@@ -338,11 +322,24 @@ function updatePeers() {
       mesh.forEach((p: any) => meshPeers.add(p.toString()))
     })
     meshPeersCount.value = meshPeers.size
+
+    // Build per-peer topic list from known subscriptions
+    const map: Record<string, string[]> = {}
+    subscriptions.value.forEach(sub => {
+      const subs = (pubsub.getSubscribers?.(sub.topic) || pubsub.getMeshPeers?.(sub.topic) || [])
+      for (const pid of subs) {
+        const id = pid?.toString?.() || String(pid)
+        if (!id) continue
+        ;(map[id] ||= []).push(sub.topic)
+      }
+    })
+    topicsByPeer.value = map
   }
 
   const libp2p: any = client.value.libp2p as any
   const peerStore = libp2p?.peerStore
   const addressBook = peerStore?.addressBook
+  const metadataBook = peerStore?.metadataBook
 
   const connections: any[] = libp2p.getConnections?.() || []
   const byPeer = new Map<string, any[]>()
@@ -354,7 +351,7 @@ function updatePeers() {
     byPeer.set(id, list)
   }
 
-  const connected: Array<{ id: string; addrs: string[]; protocols: string[]; connCount: number; direction: string; status: string; remoteAddr: string; streams: number; openedMs: number }> = []
+  const connected: Array<{ id: string; addrs: string[]; protocols: string[]; agent?: string; metadata?: Array<{ key: string; value: string }>; identified: boolean; connCount: number; direction: string; status: string; remoteAddr: string; streams: number; openedMs: number }> = []
   for (const [id, conns] of byPeer.entries()) {
     const primary: any = conns[0]
     const status: string = String(primary?.status ?? '')
@@ -365,21 +362,55 @@ function updatePeers() {
     const openedMs: number = opened ? Math.max(0, Date.now() - opened) : 0
 
     let protocols: string[] = []
-    const protoBook = peerStore?.protoBook
-    if (protoBook?.get) {
-      const p = protoBook.get(primary?.remotePeer)
-      if (Array.isArray(p)) protocols = p
+    try {
+      const protoBook = peerStore?.protoBook
+      if (protoBook?.get) {
+        const p = protoBook.get(primary?.remotePeer)
+        if (Array.isArray(p)) protocols = p
+      }
+      // Fallback: read from peerStore.get(peerId)
+      if (protocols.length === 0 && typeof peerStore?.get === 'function') {
+        try {
+          const rec = await peerStore.get(primary?.remotePeer)
+          const recProtocols = (rec as any)?.protocols
+          if (Array.isArray(recProtocols)) protocols = recProtocols
+        } catch {}
+      }
+    } catch (err) {
+      console.error('Error getting protocols', err)
+    }
+
+    // Agent & metadata (best-effort)
+    let agent: string | undefined
+    let metadataEntries: any = {}
+    try {
+      const v = metadataBook?.getValue?.(primary?.remotePeer, 'AgentVersion') ?? metadataBook?.getValue?.(primary?.remotePeer, 'agentVersion')
+      if (v !== undefined && v !== null) {
+        agent = typeof v === 'string' ? v : (v?.toString?.() ?? String(v))
+      } else if (typeof peerStore?.get === 'function') {
+        try {
+          const rec = await peerStore.get(primary?.remotePeer) as any
+          metadataEntries = JSON.parse(JSON.stringify(rec))
+        } catch (err) {
+          console.error('Error getting metadata', err)
+        }
+      }
+    } catch (err) {
+      console.error('Error getting agent', err)
     }
 
     let addrs: string[] = []
-    const abAddrs = addressBook?.get?.(primary?.remotePeer) || []
-    addrs = Array.isArray(abAddrs) ? abAddrs.map((a: any) => a.toString?.() || a.multiaddr?.toString?.() || String(a)) : []
+      const abAddrs = addressBook?.get?.(primary?.remotePeer) || []
+      addrs = Array.isArray(abAddrs) ? abAddrs.map((a: any) => a.toString?.() || a.multiaddr?.toString?.() || String(a)) : []
     if (addrs.length === 0 && remoteAddr) addrs = [remoteAddr]
 
     connected.push({
       id,
       addrs,
       protocols,
+      agent,
+      metadata: metadataEntries,
+      identified: identifiedPeerIds.has(id) || protocols.length > 0 || !!agent,
       connCount: conns.length,
       direction,
       status,
@@ -404,7 +435,9 @@ function updatePeers() {
       const conn = byPeer.get(id)?.[0]
       const abAddrs = addressBook?.get?.(conn?.remotePeer) || []
       addrs = Array.isArray(abAddrs) ? abAddrs.map((a: any) => a.toString?.() || a.multiaddr?.toString?.() || String(a)) : []
-    } catch {}
+    } catch (err) {
+      console.error('Error getting addrs', err)
+    }
     all.push({ id, addrs })
   }
   allPeers.value = all
@@ -419,6 +452,76 @@ function updateSubscriptions() {
     handlers: 1,
     messageCount: info.messageCount,
   }))
+}
+
+// Seed identify detail cache from peerstore (used when updates arrive before identify event)
+async function seedIdentifyFromPeerStore(peerId: string) {
+  if (!client.value) return
+  try {
+    const libp2p: any = client.value.libp2p as any
+    const peerStore = libp2p?.peerStore
+    const addressBook = peerStore?.addressBook
+    const metadataBook = peerStore?.metadataBook
+
+    const pid = libp2p?.peerId
+    const toPeerId = (id: string) => {
+      // Best-effort: js-libp2p APIs accept string peer ids
+      return id
+    }
+
+    let protocols: string[] = []
+    try {
+      const protoBook = peerStore?.protoBook
+      if (protoBook?.get) {
+        const rec = protoBook.get(toPeerId(peerId))
+        if (Array.isArray(rec)) protocols = rec
+      }
+      if (protocols.length === 0 && typeof peerStore?.get === 'function') {
+        const rec = await peerStore.get(toPeerId(peerId)) as any
+        const recProtocols = rec?.protocols
+        if (Array.isArray(recProtocols)) protocols = recProtocols
+      }
+    } catch {}
+
+    let agent: string | undefined
+    try {
+      const v = metadataBook?.getValue?.(toPeerId(peerId), 'AgentVersion') ?? metadataBook?.getValue?.(toPeerId(peerId), 'agentVersion')
+      if (v !== undefined && v !== null) {
+        agent = typeof v === 'string' ? v : (v?.toString?.() ?? String(v))
+      } else if (typeof peerStore?.get === 'function') {
+        const rec = await peerStore.get(toPeerId(peerId)) as any
+        const mv = rec?.metadata?.AgentVersion ?? rec?.metadata?.agentVersion
+        if (mv) agent = String(mv)
+      }
+    } catch {}
+
+    let listenAddrs: string[] = []
+    try {
+      const abAddrs = addressBook?.get?.(toPeerId(peerId)) || []
+      listenAddrs = Array.isArray(abAddrs) ? abAddrs.map((a: any) => a.toString?.() || a.multiaddr?.toString?.() || String(a)) : []
+    } catch {}
+
+    if (!identifyInfoByPeer.value[peerId]) {
+      identifyInfoByPeer.value[peerId] = {
+        peerId,
+        agentVersion: agent,
+        protocolVersion: undefined,
+        protocols,
+        listenAddrs,
+        observedAddr: undefined,
+        publicKeyBase64: undefined,
+        signedPeerRecord: undefined,
+      }
+    } else {
+      const cur = identifyInfoByPeer.value[peerId]
+      identifyInfoByPeer.value[peerId] = {
+        ...cur,
+        agentVersion: cur?.agentVersion ?? agent,
+        protocols: cur?.protocols?.length ? cur.protocols : protocols,
+        listenAddrs: cur?.listenAddrs?.length ? cur.listenAddrs : listenAddrs,
+      }
+    }
+  } catch {}
 }
 
 // Connection
@@ -439,7 +542,7 @@ async function handleConnect() {
   connecting.value = false
   
   setupEventListeners()
-  updatePeers()
+  void updatePeers()
   
   if (cosmjsAddress.value) {
     const topic = buildTopic(cosmjsAddress.value)
@@ -447,7 +550,7 @@ async function handleConnect() {
   }
   
   updateInterval = setInterval(() => {
-    updatePeers()
+    void updatePeers()
     updateSubscriptions()
     if (connected.value) {
       stats.value.uptime = Date.now() - connectionStartTime.value
@@ -477,11 +580,49 @@ async function disconnect() {
 function setupEventListeners() {
   if (!client.value) return
   
-  client.value.libp2p.addEventListener('peer:connect', () => updatePeers())
-  client.value.libp2p.addEventListener('peer:disconnect', () => updatePeers())
-  client.value.libp2p.addEventListener('connection:open', () => updatePeers())
-  client.value.libp2p.addEventListener('connection:close', () => updatePeers())
-  client.value.libp2p.addEventListener('peer:discovery', () => updatePeers())
+  client.value.libp2p.addEventListener('peer:connect', () => { void updatePeers() })
+  client.value.libp2p.addEventListener('peer:disconnect', () => { void updatePeers() })
+  client.value.libp2p.addEventListener('connection:open', () => { void updatePeers() })
+  client.value.libp2p.addEventListener('connection:close', () => { void updatePeers() })
+  client.value.libp2p.addEventListener('peer:discovery', () => { void updatePeers() })
+  // When identify completes, refresh peer details (protocols, agent)
+  ;(client.value.libp2p as any).addEventListener?.('peer:identify', (e: any) => {
+    console.log('[dyson-sdk] peer:identify event', e)
+    const d: any = e?.detail || {}
+    const id: string = d.peerId?.toString?.() || d.peer?.id?.toString?.() || d.id?.toString?.() || ''
+    if (id) {
+      identifiedPeerIds.add(id)
+      try {
+        const listen = Array.isArray(d.listenAddrs) ? d.listenAddrs.map((m: any) => m?.toString?.() || String(m)) : []
+        const spr = d.signedPeerRecord || {}
+        const sprAddrs = Array.isArray(spr.addresses) ? spr.addresses.map((a: any) => (a?.toString ? a.toString() : String(a))) : []
+        const pk: Uint8Array | undefined = d.publicKey
+        const pkB64 = pk ? btoa(String.fromCharCode(...pk)) : undefined
+        identifyInfoByPeer.value[id] = {
+          peerId: id,
+          agentVersion: d.agentVersion,
+          protocolVersion: d.protocolVersion,
+          protocols: Array.isArray(d.protocols) ? d.protocols : [],
+          listenAddrs: listen,
+          observedAddr: d.observedAddr?.toString?.(),
+          publicKeyBase64: pkB64,
+          signedPeerRecord: { seq: spr.seq ? String(spr.seq) : undefined, addresses: sprAddrs },
+        }
+      } catch {}
+    }
+    updatePeers()
+  })
+
+  // When peerstore updates (protocols, metadata, addrs), refresh quickly
+  ;(client.value.libp2p as any).addEventListener?.('peer:update', (e: any) => {
+    console.log('[dyson-sdk] peer:update event', e)
+    try {
+      const d: any = e?.detail || {}
+      const id: string = d.peerId?.toString?.() || d.peer?.toString?.() || d.id?.toString?.() || ''
+      if (id) void seedIdentifyFromPeerStore(id)
+    } catch {}
+    void updatePeers()
+  })
 }
 
 // Wallet
@@ -526,7 +667,7 @@ function prependTopicPrefix() {
   if (!client.value) return
   const address = cosmjsAddress.value || keplrAddress.value
   if (!address) return
-  const prefix = `/chain-${client.value.chainId}/v1/${address}/`
+  const prefix = `/${client.value.chainId}/v1/${address}/`
   fullTopic.value = prefix + fullTopic.value
 }
 
@@ -735,7 +876,8 @@ function formatUptime(ms: number): string {
 // Lifecycle
 onMounted(async () => {
   keplrAvailable.value = typeof window.keplr !== 'undefined'
-  await handleConnect()
+  // Non-blocking connect to keep initial render responsive
+  void handleConnect()
   if (mnemonic.value.trim()) {
     await useMnemonic()
   }
