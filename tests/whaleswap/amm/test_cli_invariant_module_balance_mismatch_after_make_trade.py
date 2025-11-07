@@ -285,9 +285,10 @@ def test_cli_invariant_make_trade_should_call_assert_invariants(
             amount = int(coin["amount"])
             expected[denom] = expected.get(denom, 0) + amount
 
-    # Assert module balances == expected components
-    all_denoms = set(list(expected.keys()) + list(actual.keys()))
-    for denom in all_denoms:
+    # Assert module balances == expected components for denoms used in this test only
+    # (avoid false failures from residual state left by other tests)
+    test_denoms = {foo_denom, bar_denom}
+    for denom in test_denoms:
         exp = expected.get(denom, 0)
         act = actual.get(denom, 0)
         assert (
