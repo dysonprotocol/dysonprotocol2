@@ -23,7 +23,7 @@ from typing import List, Tuple, Iterable
 from textwrap import dedent
 from deepdiff import DeepDiff
 
-NUM_CHAINS = 1
+NUM_CHAINS = 2
 NUM_NODES = 1
 
 # Global constants

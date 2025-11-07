@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -15,6 +16,28 @@ func DefaultGenesis() json.RawMessage {
 	state := NewGenesisState()
 	cdc := codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
 	return cdc.MustMarshalJSON(state)
+}
+
+// NormalizeGenesisJSON fixes common genesis export issues before unmarshaling.
+// Specifically handles max_subscription_duration exported as number instead of string.
+func NormalizeGenesisJSON(rawGenesis []byte) ([]byte, error) {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(rawGenesis, &raw); err != nil {
+		return nil, err
+	}
+
+	params, ok := raw["params"].(map[string]interface{})
+	if !ok {
+		return rawGenesis, nil
+	}
+
+	// Fix max_subscription_duration if it's a number (nanoseconds)
+	if duration, ok := params["max_subscription_duration"].(float64); ok {
+		// Convert nanoseconds to Duration string
+		params["max_subscription_duration"] = time.Duration(duration).String()
+	}
+
+	return json.Marshal(raw)
 }
 
 // ValidateGenesis performs complete genesis state validation

@@ -345,6 +345,14 @@ def apply_genesis_overrides(
         for key, value in script_params.items():
             app_state_script_params[key] = str(value)
 
+    # Ensure IBC transfer module has its required params
+    app_state_transfer = app_state.setdefault("transfer", {})
+    if "params" not in app_state_transfer:
+        app_state_transfer["params"] = {
+            "send_enabled": True,
+            "receive_enabled": True,
+        }
+
     # Set bank denom metadata for dys/udys with 6 exponent
     app_state_bank = app_state.setdefault("bank", {})
     app_state_bank["denom_metadata"] = [

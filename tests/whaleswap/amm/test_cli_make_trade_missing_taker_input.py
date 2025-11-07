@@ -92,6 +92,7 @@ def test_cli_make_trade_missing_taker_input_accounting(
         m.get("escrowed_pool_coins", []),
         m.get("escrowed_offer_coins", []),
         m.get("escrowed_liquid_coins", []),
+        m.get("escrowed_auction_coins", []),
     ]:
         for coin in coin_list:
             denom = coin["denom"]

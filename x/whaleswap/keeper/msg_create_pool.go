@@ -303,6 +303,10 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 	if err := k.incrementPoolCreated(ctx, msg.Creator); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to update pool creator metrics")
 	}
+	// Pool creation involves adding initial liquidity, so increment liquidity_adds
+	if err := k.incrementLiquidityOp(ctx, msg.Creator, true); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update liquidity add metrics")
+	}
 
 	logger.Info("CreatePool completed successfully", "pool_id", id)
 	return &whaleswapv1.MsgCreatePoolResponse{PoolId: id}, nil

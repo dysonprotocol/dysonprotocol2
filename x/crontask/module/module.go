@@ -1,6 +1,7 @@
 package module
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -204,17 +205,29 @@ func (am AppModule) InitGenesis(ctx context.Context, source appmodule.GenesisSou
 		genesisState = types.NewGenesisState()
 	} else {
 		defer reader.Close()
-		gs := types.GenesisState{} // Local var for decoding
-		// Decode the JSON data from the reader into the GenesisState struct.
-		if err := json.NewDecoder(reader).Decode(&gs); err != nil {
-			// If EOF is met and it's an empty stream, it's like having no specific genesis data.
-			if err == io.EOF {
-				genesisState = types.NewGenesisState() // Use default for empty/EOF
-			} else {
+
+		// Read all data from reader
+		raw, err := io.ReadAll(reader)
+		if err != nil {
+			return fmt.Errorf("failed to read %s genesis data: %w", crontask.ModuleName, err)
+		}
+
+		trimmed := bytes.TrimSpace(raw)
+		if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("{}")) || bytes.Equal(trimmed, []byte("null")) {
+			genesisState = types.NewGenesisState()
+		} else {
+			// Normalize genesis JSON to fix common export issues (e.g., duration as number)
+			normalized, err := types.NormalizeGenesisJSON(trimmed)
+			if err != nil {
+				return fmt.Errorf("failed to normalize %s genesis JSON: %w", crontask.ModuleName, err)
+			}
+
+			var gs types.GenesisState
+			// Use the Cosmos SDK codec which properly handles protobuf JSON (uint64/int64 as strings)
+			if err := am.cdc.UnmarshalJSON(normalized, &gs); err != nil {
 				return fmt.Errorf("failed to decode %s genesis state from JSON: %w", crontask.ModuleName, err)
 			}
-		} else {
-			genesisState = &gs // Use decoded state
+			genesisState = &gs
 		}
 	}
 
@@ -255,9 +268,14 @@ func (am AppModule) ExportGenesis(ctx context.Context, target appmodule.GenesisT
 	}
 	defer writer.Close()
 
-	encoder := json.NewEncoder(writer)
-	if err := encoder.Encode(genesisState); err != nil {
+	// Use codec JSON marshaling to properly handle protobuf Any types
+	bz, err := am.cdc.MarshalJSON(genesisState)
+	if err != nil {
 		return fmt.Errorf("failed to encode %s genesis state: %w", crontask.ModuleName, err)
+	}
+
+	if _, err := writer.Write(bz); err != nil {
+		return fmt.Errorf("failed to write %s genesis state: %w", crontask.ModuleName, err)
 	}
 
 	return nil

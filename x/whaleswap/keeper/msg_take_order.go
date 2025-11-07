@@ -149,6 +149,15 @@ func (k Keeper) TakeOffer(ctx context.Context, msg *whaleswapv1.MsgTakeOffer) (*
 		if err := k.reindexOfferOnStatusChange(ctx, prev, offer); err != nil {
 			return nil, cosmossdkerrors.Wrapf(err, "failed to reindex offer after take")
 		}
+
+		// Update metrics if offer status changed to closed
+		if prev.Status != offer.Status && offer.Status == whaleswapv1.OfferStatusClosed {
+			volumeTaken := offer.InitialHave.Amount.Sub(offer.RemainingHave.Amount)
+			takenCoin := sdk.NewCoin(offer.InitialHave.Denom, volumeTaken)
+			if err := k.incrementOfferStatusChange(ctx, offer.Maker, offer.Status, takenCoin); err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "failed to update offer metrics")
+			}
+		}
 	}
 
 	// Compute taker deficits per solid denom from outputs only (makers get wants; taker gets credits)

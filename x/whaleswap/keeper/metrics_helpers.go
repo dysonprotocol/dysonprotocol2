@@ -5,8 +5,10 @@ import (
 	"errors"
 
 	"cosmossdk.io/collections"
+	cosmossdkerrors "cosmossdk.io/errors"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // getOrCreateMetrics retrieves existing metrics or creates a new zero-value instance.
@@ -35,8 +37,67 @@ func (k Keeper) getOrCreateMetrics(ctx context.Context, address string) (whalesw
 	return metrics, nil
 }
 
+// checkAddressMetricsInvariants validates address metrics for consistency and correctness.
+func (k Keeper) checkAddressMetricsInvariants(ctx context.Context, metrics whaleswapv1.AddressMetrics) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	// Logical consistency checks
+	if metrics.OffersClosed+metrics.OffersCancelled > metrics.OffersCreated {
+		return cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest,
+			"offers lifecycle inconsistent: closed(%d) + cancelled(%d) > created(%d)",
+			metrics.OffersClosed, metrics.OffersCancelled, metrics.OffersCreated)
+	}
+	if metrics.PositionsClosed > metrics.PositionsOpened {
+		return cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest,
+			"positions inconsistent: closed(%d) > opened(%d)",
+			metrics.PositionsClosed, metrics.PositionsOpened)
+	}
+	if metrics.LiquidityRemoves > metrics.LiquidityAdds {
+		return cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest,
+			"liquidity inconsistent: removes(%d) > adds(%d)",
+			metrics.LiquidityRemoves, metrics.LiquidityAdds)
+	}
+
+	// Validate coin arrays - all amounts must be positive, denoms valid
+	coinArrays := []sdk.Coins{
+		metrics.TotalVolumeSent,
+		metrics.TotalVolumeReceived,
+		metrics.LpFeesEarned,
+		metrics.LpInterestEarned,
+		metrics.InterestPaid,
+		metrics.LeveragePnl,
+		metrics.MakerVolume,
+		metrics.AuctionVolume,
+	}
+
+	for i, coins := range coinArrays {
+		for _, coin := range coins {
+			if err := sdk.ValidateDenom(coin.Denom); err != nil {
+				return cosmossdkerrors.Wrapf(err, "invalid denom in coin array %d: %s", i, coin.Denom)
+			}
+			if !coin.Amount.IsPositive() {
+				return cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest,
+					"non-positive coin amount in array %d: %s", i, coin.String())
+			}
+		}
+	}
+
+	// Temporal consistency - block height should not be in the future
+	if metrics.BlockHeight > uint64(sdkCtx.BlockHeight()) {
+		return cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest,
+			"block height in future: %d > %d", metrics.BlockHeight, sdkCtx.BlockHeight())
+	}
+
+	return nil
+}
+
 // saveMetrics persists metrics and updates block height.
 func (k Keeper) saveMetrics(ctx context.Context, metrics whaleswapv1.AddressMetrics) error {
+	// Run invariant checks first
+	if err := k.checkAddressMetricsInvariants(ctx, metrics); err != nil {
+		return cosmossdkerrors.Wrap(err, "address metrics invariants failed")
+	}
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	metrics.BlockHeight = uint64(sdkCtx.BlockHeight())
 	return k.AddressMetricsMap.Set(ctx, metrics.Address, metrics)

@@ -37,7 +37,7 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def test_trade_metrics(alice_addr, foo_name, bar_name):
+def demo_trade_metrics(alice_addr, foo_name, bar_name):
     base, quote = sorted([foo_name, bar_name])
     
     # Create pool
@@ -107,7 +107,7 @@ def test_trade_metrics(alice_addr, foo_name, bar_name):
         "--executor-address",
         gov_addr,
         "--function-name",
-        "test_trade_metrics",
+        "demo_trade_metrics",
         "--kwargs",
         kwargs,
         "--extra-code",
@@ -298,7 +298,7 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def test_orderbook_metrics(alice_addr, bob_addr, foo_name, bar_name):
+def demo_orderbook_metrics(alice_addr, bob_addr, foo_name, bar_name):
     # Make offer (escrow mode)
     offer_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgMakeOffer",
@@ -394,7 +394,7 @@ def test_orderbook_metrics(alice_addr, bob_addr, foo_name, bar_name):
         "--executor-address",
         gov_addr,
         "--function-name",
-        "test_orderbook_metrics",
+        "demo_orderbook_metrics",
         "--kwargs",
         kwargs,
         "--extra-code",
@@ -473,7 +473,7 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def test_liquidity_metrics(alice_addr, foo_name, bar_name):
+def demo_liquidity_metrics(alice_addr, foo_name, bar_name):
     base, quote = sorted([foo_name, bar_name])
     
     # Create pool
@@ -556,7 +556,7 @@ def test_liquidity_metrics(alice_addr, foo_name, bar_name):
         "--executor-address",
         gov_addr,
         "--function-name",
-        "test_liquidity_metrics",
+        "demo_liquidity_metrics",
         "--kwargs",
         kwargs,
         "--extra-code",
@@ -576,16 +576,17 @@ def test_liquidity_metrics(alice_addr, foo_name, bar_name):
     metrics_remove = demo_result["metrics_remove"]["metrics"]
 
     # Validate liquidity operations tracked
+    # Pool creation counts as liquidity add (initial liquidity) + explicit add = 2 total
     assert (
-        int(metrics_add.get("liquidity_adds", 0)) == 1
-    ), f"Should have 1 liquidity add: {metrics_add}"
+        int(metrics_add.get("liquidity_adds", 0)) == 2
+    ), f"Should have 2 liquidity adds (pool creation + explicit add): {metrics_add}"
     assert (
         int(metrics_add.get("liquidity_removes", 0)) == 0
     ), f"Should have 0 removes: {metrics_add}"
 
     assert (
-        int(metrics_remove.get("liquidity_adds", 0)) == 1
-    ), f"Should still have 1 add: {metrics_remove}"
+        int(metrics_remove.get("liquidity_adds", 0)) == 2
+    ), f"Should still have 2 adds: {metrics_remove}"
     assert (
         int(metrics_remove.get("liquidity_removes", 0)) == 1
     ), f"Should have 1 remove: {metrics_remove}"
@@ -613,7 +614,7 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def test_auction_metrics(alice_addr, foo_name, bar_name):
+def demo_auction_metrics(alice_addr, foo_name, bar_name):
     # Open auction
     auction_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgOpenAuction",
@@ -643,7 +644,7 @@ def test_auction_metrics(alice_addr, foo_name, bar_name):
         "--executor-address",
         gov_addr,
         "--function-name",
-        "test_auction_metrics",
+        "demo_auction_metrics",
         "--kwargs",
         kwargs,
         "--extra-code",
@@ -690,7 +691,7 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def test_multi_address(alice_addr, bob_addr, foo_name, bar_name):
+def demo_multi_address(alice_addr, bob_addr, foo_name, bar_name):
     # Alice creates pool
     pool_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
@@ -768,7 +769,7 @@ def test_multi_address(alice_addr, bob_addr, foo_name, bar_name):
         "--executor-address",
         gov_addr,
         "--function-name",
-        "test_multi_address",
+        "demo_multi_address",
         "--kwargs",
         kwargs,
         "--extra-code",
