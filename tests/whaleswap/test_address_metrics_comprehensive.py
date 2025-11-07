@@ -236,6 +236,24 @@ def test_address_metrics_leverage_coverage(chainnet, generate_account, register_
     )
     assert tx_open.get("code", 1) == 0, f"Position open failed: {tx_open}"
 
+    # Extract position_id from events
+    position_events = [
+        e
+        for e in tx_open.get("events", [])
+        if e.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+    ]
+    assert (
+        position_events
+    ), f"Missing EventLeveragePositionOpened: {json.dumps(tx_open, indent=2)}"
+    position_attrs = {
+        a.get("key"): a.get("value") for a in position_events[0].get("attributes", [])
+    }
+    position_id = position_attrs.get("position_id")
+    assert (
+        position_id
+    ), f"position_id missing: {json.dumps(position_events[0], indent=2)}"
+    position_id = position_id.strip('"')
+
     # Query metrics after position opened
     metrics_after_open = dysond(
         "query", "whaleswap", "address-metrics", f"--address={alice_addr}"
@@ -247,7 +265,7 @@ def test_address_metrics_leverage_coverage(chainnet, generate_account, register_
         "whaleswap",
         "close-position",
         "--position-id",
-        "1",
+        str(position_id),
         "--from",
         alice_name,
     )
