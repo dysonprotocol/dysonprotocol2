@@ -3916,10 +3916,11 @@ func (x *_MsgAddLiquidity_5_list) IsValid() bool {
 }
 
 var (
-	md_MsgAddLiquidity         protoreflect.MessageDescriptor
-	fd_MsgAddLiquidity_signer  protoreflect.FieldDescriptor
-	fd_MsgAddLiquidity_pool_id protoreflect.FieldDescriptor
-	fd_MsgAddLiquidity_amounts protoreflect.FieldDescriptor
+	md_MsgAddLiquidity            protoreflect.MessageDescriptor
+	fd_MsgAddLiquidity_signer     protoreflect.FieldDescriptor
+	fd_MsgAddLiquidity_pool_id    protoreflect.FieldDescriptor
+	fd_MsgAddLiquidity_amounts    protoreflect.FieldDescriptor
+	fd_MsgAddLiquidity_unbalanced protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -3928,6 +3929,7 @@ func init() {
 	fd_MsgAddLiquidity_signer = md_MsgAddLiquidity.Fields().ByName("signer")
 	fd_MsgAddLiquidity_pool_id = md_MsgAddLiquidity.Fields().ByName("pool_id")
 	fd_MsgAddLiquidity_amounts = md_MsgAddLiquidity.Fields().ByName("amounts")
+	fd_MsgAddLiquidity_unbalanced = md_MsgAddLiquidity.Fields().ByName("unbalanced")
 }
 
 var _ protoreflect.Message = (*fastReflection_MsgAddLiquidity)(nil)
@@ -4013,6 +4015,12 @@ func (x *fastReflection_MsgAddLiquidity) Range(f func(protoreflect.FieldDescript
 			return
 		}
 	}
+	if x.Unbalanced != false {
+		value := protoreflect.ValueOfBool(x.Unbalanced)
+		if !f(fd_MsgAddLiquidity_unbalanced, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -4034,6 +4042,8 @@ func (x *fastReflection_MsgAddLiquidity) Has(fd protoreflect.FieldDescriptor) bo
 		return x.PoolId != uint64(0)
 	case "dysonprotocol.whaleswap.v1.MsgAddLiquidity.amounts":
 		return len(x.Amounts) != 0
+	case "dysonprotocol.whaleswap.v1.MsgAddLiquidity.unbalanced":
+		return x.Unbalanced != false
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgAddLiquidity"))
@@ -4056,6 +4066,8 @@ func (x *fastReflection_MsgAddLiquidity) Clear(fd protoreflect.FieldDescriptor) 
 		x.PoolId = uint64(0)
 	case "dysonprotocol.whaleswap.v1.MsgAddLiquidity.amounts":
 		x.Amounts = nil
+	case "dysonprotocol.whaleswap.v1.MsgAddLiquidity.unbalanced":
+		x.Unbalanced = false
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgAddLiquidity"))
@@ -4084,6 +4096,9 @@ func (x *fastReflection_MsgAddLiquidity) Get(descriptor protoreflect.FieldDescri
 		}
 		listValue := &_MsgAddLiquidity_5_list{list: &x.Amounts}
 		return protoreflect.ValueOfList(listValue)
+	case "dysonprotocol.whaleswap.v1.MsgAddLiquidity.unbalanced":
+		value := x.Unbalanced
+		return protoreflect.ValueOfBool(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgAddLiquidity"))
@@ -4112,6 +4127,8 @@ func (x *fastReflection_MsgAddLiquidity) Set(fd protoreflect.FieldDescriptor, va
 		lv := value.List()
 		clv := lv.(*_MsgAddLiquidity_5_list)
 		x.Amounts = *clv.list
+	case "dysonprotocol.whaleswap.v1.MsgAddLiquidity.unbalanced":
+		x.Unbalanced = value.Bool()
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgAddLiquidity"))
@@ -4142,6 +4159,8 @@ func (x *fastReflection_MsgAddLiquidity) Mutable(fd protoreflect.FieldDescriptor
 		panic(fmt.Errorf("field signer of message dysonprotocol.whaleswap.v1.MsgAddLiquidity is not mutable"))
 	case "dysonprotocol.whaleswap.v1.MsgAddLiquidity.pool_id":
 		panic(fmt.Errorf("field pool_id of message dysonprotocol.whaleswap.v1.MsgAddLiquidity is not mutable"))
+	case "dysonprotocol.whaleswap.v1.MsgAddLiquidity.unbalanced":
+		panic(fmt.Errorf("field unbalanced of message dysonprotocol.whaleswap.v1.MsgAddLiquidity is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgAddLiquidity"))
@@ -4162,6 +4181,8 @@ func (x *fastReflection_MsgAddLiquidity) NewField(fd protoreflect.FieldDescripto
 	case "dysonprotocol.whaleswap.v1.MsgAddLiquidity.amounts":
 		list := []*v1beta1.Coin{}
 		return protoreflect.ValueOfList(&_MsgAddLiquidity_5_list{list: &list})
+	case "dysonprotocol.whaleswap.v1.MsgAddLiquidity.unbalanced":
+		return protoreflect.ValueOfBool(false)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.MsgAddLiquidity"))
@@ -4244,6 +4265,9 @@ func (x *fastReflection_MsgAddLiquidity) ProtoMethods() *protoiface.Methods {
 				n += 1 + l + runtime.Sov(uint64(l))
 			}
 		}
+		if x.Unbalanced {
+			n += 2
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -4272,6 +4296,16 @@ func (x *fastReflection_MsgAddLiquidity) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.Unbalanced {
+			i--
+			if x.Unbalanced {
+				dAtA[i] = 1
+			} else {
+				dAtA[i] = 0
+			}
+			i--
+			dAtA[i] = 0x30
 		}
 		if len(x.Amounts) > 0 {
 			for iNdEx := len(x.Amounts) - 1; iNdEx >= 0; iNdEx-- {
@@ -4435,6 +4469,26 @@ func (x *fastReflection_MsgAddLiquidity) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
 				iNdEx = postIndex
+			case 6:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Unbalanced", wireType)
+				}
+				var v int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				x.Unbalanced = bool(v != 0)
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -24307,8 +24361,12 @@ type MsgAddLiquidity struct {
 	// Amounts to add: exactly two positive coins matching the pool denoms.
 	// Canonicalized to pool denom order. Full amounts are escrowed; surplus is
 	// refunded (band mode: to match ΔL; non-concentrated: to match minted
-	// shares).
+	// shares). For unbalanced adds, full amounts are added without refunds.
 	Amounts []*v1beta1.Coin `protobuf:"bytes,5,rep,name=amounts,proto3" json:"amounts,omitempty"`
+	// If true, add amounts directly without proportional adjustments or refunds.
+	// Price may shift outside band (rejected if so); shares minted based on
+	// proportional contribution.
+	Unbalanced bool `protobuf:"varint,6,opt,name=unbalanced,proto3" json:"unbalanced,omitempty"`
 }
 
 func (x *MsgAddLiquidity) Reset() {
@@ -24350,6 +24408,13 @@ func (x *MsgAddLiquidity) GetAmounts() []*v1beta1.Coin {
 		return x.Amounts
 	}
 	return nil
+}
+
+func (x *MsgAddLiquidity) GetUnbalanced() bool {
+	if x != nil {
+		return x.Unbalanced
+	}
+	return false
 }
 
 // Empty response. See EventPoolLiquidityAdded for emitted details.
@@ -26734,7 +26799,7 @@ var file_dysonprotocol_whaleswap_v1_tx_proto_rawDesc = []byte{
 	0x69, 0x6e, 0x5f, 0x70, 0x72, 0x69, 0x63, 0x65, 0x52, 0x09, 0x6d, 0x61, 0x78, 0x5f, 0x70, 0x72,
 	0x69, 0x63, 0x65, 0x22, 0x1d, 0x0a, 0x1b, 0x4d, 0x73, 0x67, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65,
 	0x50, 0x6f, 0x6f, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x22, 0x84, 0x02, 0x0a, 0x0f, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x4c, 0x69, 0x71,
+	0x73, 0x65, 0x22, 0xa4, 0x02, 0x0a, 0x0f, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x4c, 0x69, 0x71,
 	0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x12, 0x30, 0x0a, 0x06, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x72,
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d,
 	0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67,
@@ -26747,7 +26812,9 @@ var file_dysonprotocol_whaleswap_v1_tx_proto_rawDesc = []byte{
 	0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d,
 	0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x9a,
 	0xe7, 0xb0, 0x2a, 0x0c, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x5f, 0x63, 0x6f, 0x69, 0x6e, 0x73,
-	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x07, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x3a, 0x0b,
+	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x07, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x12, 0x1e,
+	0x0a, 0x0a, 0x75, 0x6e, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x64, 0x18, 0x06, 0x20, 0x01,
+	0x28, 0x08, 0x52, 0x0a, 0x75, 0x6e, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x64, 0x3a, 0x0b,
 	0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x72, 0x4a, 0x04, 0x08, 0x03, 0x10,
 	0x04, 0x4a, 0x04, 0x08, 0x04, 0x10, 0x05, 0x52, 0x07, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x31,
 	0x52, 0x07, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x32, 0x22, 0x31, 0x0a, 0x17, 0x4d, 0x73, 0x67,

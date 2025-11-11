@@ -35927,7 +35927,18 @@ paths:
                   refunded (band mode: to match ΔL; non-concentrated: to match
                   minted
 
-                  shares).
+                  shares). For unbalanced adds, full amounts are added without
+                  refunds.
+              unbalanced:
+                type: boolean
+                description: >-
+                  If true, add amounts directly without proportional adjustments
+                  or refunds.
+
+                  Price may shift outside band (rejected if so); shares minted
+                  based on
+
+                  proportional contribution.
             title: MsgAddLiquidity
       tags:
         - Msg
@@ -80000,7 +80011,16 @@ definitions:
 
           refunded (band mode: to match ΔL; non-concentrated: to match minted
 
-          shares).
+          shares). For unbalanced adds, full amounts are added without refunds.
+      unbalanced:
+        type: boolean
+        description: >-
+          If true, add amounts directly without proportional adjustments or
+          refunds.
+
+          Price may shift outside band (rejected if so); shares minted based on
+
+          proportional contribution.
     title: MsgAddLiquidity
   dysonprotocol.whaleswap.v1.MsgAddLiquidityResponse:
     type: object

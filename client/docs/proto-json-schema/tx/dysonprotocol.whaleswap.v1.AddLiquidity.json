@@ -19,7 +19,11 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Amounts to add: exactly two positive coins matching the pool denoms. Canonicalized to pool denom order. Full amounts are escrowed; surplus is refunded (band mode: to match \u0394L; non-concentrated: to match minted shares)."
+                        "description": "Amounts to add: exactly two positive coins matching the pool denoms. Canonicalized to pool denom order. Full amounts are escrowed; surplus is refunded (band mode: to match \u0394L; non-concentrated: to match minted shares). For unbalanced adds, full amounts are added without refunds."
+                    },
+                    "unbalanced": {
+                        "type": "boolean",
+                        "description": "If true, add amounts directly without proportional adjustments or refunds. Price may shift outside band (rejected if so); shares minted based on proportional contribution."
                     }
                 },
                 "additionalProperties": false,

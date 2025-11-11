@@ -95,61 +95,112 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 	add2 := msg.Amounts[1]
 	orig1 := add1.Amount
 	orig2 := add2.Amount
-	refund1 := math.NewInt(0)
-	refund2 := math.NewInt(0)
 
+	if msg.Unbalanced {
+		// Direct add: no proportional adjustments, escrow full amounts, no refunds
+		logger.Info("AddLiquidity unbalanced escrow", "amounts", msg.Amounts)
+		if err := k.sendToModule(ctx, signer, msg.Amounts); err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to escrow adds %s", msg.Amounts.String())
+		}
+
+		// Update reserves with full provided amounts
+		pool.Coins = pool.Coins.Add(msg.Amounts...)
+		logger.Info("AddLiquidity unbalanced new reserves", "reserves", pool.Coins)
+
+		// Enforce price band after unbalanced add (if set)
+		if len(pool.MinPrice) == 2 {
+			rBase := pool.Coins.AmountOf(pool.Coins[0].Denom)
+			rQuote := pool.Coins.AmountOf(pool.Coins[1].Denom)
+			minBase := pool.MinPrice.AmountOf(pool.Coins[0].Denom)
+			minQuote := pool.MinPrice.AmountOf(pool.Coins[1].Denom)
+			maxBase := pool.MaxPrice.AmountOf(pool.Coins[0].Denom)
+			maxQuote := pool.MaxPrice.AmountOf(pool.Coins[1].Denom)
+			if rQuote.Mul(minBase).LT(rBase.Mul(minQuote)) {
+				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "resulting price below band after unbalanced add")
+			}
+			if rQuote.Mul(maxBase).GT(rBase.Mul(maxQuote)) {
+				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "resulting price above band after unbalanced add")
+			}
+		}
+	} else {
+		// Proportional add: adjust amounts, escrow full, refund excess
+		refund1 := math.NewInt(0)
+		refund2 := math.NewInt(0)
+
+		totalShares := k.bank.GetSupply(ctx, pool.SharesDenom).Amount
+		if !totalShares.IsPositive() {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid total shares supply")
+		}
+
+		s1 := add1.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR1.Amount.ToLegacyDec()).TruncateInt()
+		s2 := add2.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR2.Amount.ToLegacyDec()).TruncateInt()
+		minted := s1
+		if s2.LT(s1) {
+			minted = s2
+		}
+		if !minted.IsPositive() {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "shares must be > 0")
+		}
+
+		req1 := math.LegacyNewDecFromInt(minted).MulInt(exR1.Amount).QuoInt(totalShares).Ceil().TruncateInt()
+		req2 := math.LegacyNewDecFromInt(minted).MulInt(exR2.Amount).QuoInt(totalShares).Ceil().TruncateInt()
+		if req1.IsNegative() || req2.IsNegative() {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid required amounts")
+		}
+		if req1.GT(orig1) || req2.GT(orig2) {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "insufficient provided amounts for minted shares")
+		}
+
+		refund1 = orig1.Sub(req1)
+		refund2 = orig2.Sub(req2)
+		add1 = sdk.NewCoin(add1.Denom, req1)
+		add2 = sdk.NewCoin(add2.Denom, req2)
+
+		// Escrow the full user-provided amounts, then refund the unused difference.
+		escrow1 := sdk.NewCoin(exR1.Denom, orig1)
+		escrow2 := sdk.NewCoin(exR2.Denom, orig2)
+		logger.Info("AddLiquidity proportional escrow/refund before moves", "escrow1", escrow1, "escrow2", escrow2, "refund1", sdk.NewCoin(exR1.Denom, refund1), "refund2", sdk.NewCoin(exR2.Denom, refund2))
+		if err := k.sendToModule(ctx, signer, sdk.NewCoins(escrow1, escrow2)); err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to escrow adds %s,%s", escrow1.String(), escrow2.String())
+		}
+		refunds := sdk.NewCoins()
+		if refund1.IsPositive() {
+			refunds = refunds.Add(sdk.NewCoin(exR1.Denom, refund1))
+		}
+		if refund2.IsPositive() {
+			refunds = refunds.Add(sdk.NewCoin(exR2.Denom, refund2))
+		}
+		if !refunds.Empty() {
+			if err := k.sendFromModule(ctx, signer, refunds); err != nil {
+				return nil, cosmossdkerrors.Wrapf(err, "failed to refund %s", refunds.String())
+			}
+			logger.Info("AddLiquidity refunds sent", "refunds", refunds)
+		}
+
+		pool.Coins = sdk.NewCoins(exR1.Add(add1), exR2.Add(add2))
+		logger.Info("AddLiquidity proportional new reserves", "r1", pool.Coins[0], "r2", pool.Coins[1])
+	}
+
+	var minted math.Int
 	totalShares := k.bank.GetSupply(ctx, pool.SharesDenom).Amount
 	if !totalShares.IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid total shares supply")
 	}
 
-	s1 := add1.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR1.Amount.ToLegacyDec()).TruncateInt()
-	s2 := add2.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR2.Amount.ToLegacyDec()).TruncateInt()
-	minted := s1
-	if s2.LT(s1) {
-		minted = s2
-	}
-	if !minted.IsPositive() {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "shares must be > 0")
-	}
-
-	req1 := math.LegacyNewDecFromInt(minted).MulInt(exR1.Amount).QuoInt(totalShares).Ceil().TruncateInt()
-	req2 := math.LegacyNewDecFromInt(minted).MulInt(exR2.Amount).QuoInt(totalShares).Ceil().TruncateInt()
-	if req1.IsNegative() || req2.IsNegative() {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid required amounts")
-	}
-	if req1.GT(orig1) || req2.GT(orig2) {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "insufficient provided amounts for minted shares")
-	}
-
-	refund1 = orig1.Sub(req1)
-	refund2 = orig2.Sub(req2)
-	add1 = sdk.NewCoin(add1.Denom, req1)
-	add2 = sdk.NewCoin(add2.Denom, req2)
-
-	// Escrow the full user-provided amounts, then refund the unused difference.
-	escrow1 := sdk.NewCoin(exR1.Denom, orig1)
-	escrow2 := sdk.NewCoin(exR2.Denom, orig2)
-	logger.Info("AddLiquidity escrow/refund before moves", "escrow1", escrow1, "escrow2", escrow2, "refund1", sdk.NewCoin(exR1.Denom, refund1), "refund2", sdk.NewCoin(exR2.Denom, refund2))
-	if err := k.sendToModule(ctx, signer, sdk.NewCoins(escrow1, escrow2)); err != nil {
-		return nil, cosmossdkerrors.Wrapf(err, "failed to escrow adds %s,%s", escrow1.String(), escrow2.String())
-	}
-	refunds := sdk.NewCoins()
-	if refund1.IsPositive() {
-		refunds = refunds.Add(sdk.NewCoin(exR1.Denom, refund1))
-	}
-	if refund2.IsPositive() {
-		refunds = refunds.Add(sdk.NewCoin(exR2.Denom, refund2))
-	}
-	if !refunds.Empty() {
-		if err := k.sendFromModule(ctx, signer, refunds); err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to refund %s", refunds.String())
+	if msg.Unbalanced {
+		// For unbalanced, mint shares based on added amounts after update
+		s1 := add1.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR1.Amount.ToLegacyDec()).TruncateInt()
+		s2 := add2.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR2.Amount.ToLegacyDec()).TruncateInt()
+		minted = s1
+		if s2.LT(s1) {
+			minted = s2
 		}
-		logger.Info("AddLiquidity refunds sent", "refunds", refunds)
+		if !minted.IsPositive() {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "shares must be > 0")
+		}
+	} else {
+		// For proportional, minted is already calculated above
 	}
-
-	pool.Coins = sdk.NewCoins(exR1.Add(add1), exR2.Add(add2))
-	logger.Info("AddLiquidity new reserves", "r1", pool.Coins[0], "r2", pool.Coins[1])
 
 	// Persist and emit poolupdate
 	if err := k.updatePool(ctx, &pool); err != nil {

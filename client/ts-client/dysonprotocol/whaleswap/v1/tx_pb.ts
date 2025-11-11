@@ -394,11 +394,20 @@ export class MsgAddLiquidity extends Message<MsgAddLiquidity> {
    * Amounts to add: exactly two positive coins matching the pool denoms.
    * Canonicalized to pool denom order. Full amounts are escrowed; surplus is
    * refunded (band mode: to match ΔL; non-concentrated: to match minted
-   * shares).
+   * shares). For unbalanced adds, full amounts are added without refunds.
    *
    * @generated from field: repeated cosmos.base.v1beta1.Coin amounts = 5;
    */
   amounts: Coin[] = [];
+
+  /**
+   * If true, add amounts directly without proportional adjustments or refunds.
+   * Price may shift outside band (rejected if so); shares minted based on
+   * proportional contribution.
+   *
+   * @generated from field: bool unbalanced = 6;
+   */
+  unbalanced = false;
 
   constructor(data?: PartialMessage<MsgAddLiquidity>) {
     super();
@@ -411,6 +420,7 @@ export class MsgAddLiquidity extends Message<MsgAddLiquidity> {
     { no: 1, name: "signer", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 5, name: "amounts", kind: "message", T: Coin, repeated: true },
+    { no: 6, name: "unbalanced", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgAddLiquidity {

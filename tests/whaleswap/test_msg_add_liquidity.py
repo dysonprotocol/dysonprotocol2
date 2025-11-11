@@ -559,3 +559,79 @@ def demo_add_liquidity_refund(alice_addr, foo_name, bar_name):
     assert (
         amounts[demo_result["bar_name"]] == 17000
     )  # 12000 + 5000 effective (3000 refunded)
+
+
+@pytest.mark.usefixtures("faucet")
+def test_add_liquidity_unbalanced_basic(chainnet, generate_account, register_name):
+    """Add unbalanced liquidity to an unbounded pool (adds full amounts without refunds)."""
+    dysond = chainnet[0]
+    alice_name, alice_addr = generate_account("addliq_unbal", faucet_amount=5_000_000)
+    foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
+    bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
+
+    _mint_custom_denoms(dysond, alice_name, [foo_name, bar_name])
+
+    # Create unbounded pool
+    create_result = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"12000{foo_name}",
+        "--coins",
+        f"12000{bar_name}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "20.0",
+        "--liquidation-threshold",
+        "1.2",
+        "--max-borrow-percent",
+        "0.5",
+        "--fee-rate",
+        f"0.003{foo_name}",
+        "--fee-rate",
+        f"0.003{bar_name}",
+        "--from",
+        alice_name,
+    )
+    assert create_result.get("code", 1) == 0
+
+    pool_id = 1  # First pool
+
+    # Add unbalanced liquidity with unequal amounts
+    add_result = dysond(
+        "tx",
+        "whaleswap",
+        "add-liquidity",
+        "--pool-id",
+        str(pool_id),
+        "--amounts",
+        f"5000{foo_name}",
+        "--amounts",
+        f"3000{bar_name}",
+        "--unbalanced",
+        "--from",
+        alice_name,
+    )
+    assert add_result.get("code", 1) == 0
+
+    # Query pool after add
+    pool_query = dysond("query", "whaleswap", "pool", "--pool-id", str(pool_id))
+    pool_data = pool_query["pool"]
+
+    # Check reserves increased by full added amounts (no refunds)
+    amounts = {coin["denom"]: int(coin["amount"]) for coin in pool_data["coins"]}
+    assert amounts[foo_name] == 17000  # 12000 + 5000
+    assert amounts[bar_name] == 15000  # 12000 + 3000
+
+    # Check shares minted by querying balance
+    balance_query = dysond("query", "bank", "balances", alice_addr)
+    balances = {
+        coin["denom"]: int(coin["amount"]) for coin in balance_query["balances"]
+    }
+    shares_denom = pool_data["shares_denom"]
+    shares_minted = balances.get(shares_denom, 0) - 12000  # Initial shares were 12000
+
+    # Check shares minted (should be 3000: min(5000, 3000) since R1=R2=12000)
+    assert shares_minted == 3000

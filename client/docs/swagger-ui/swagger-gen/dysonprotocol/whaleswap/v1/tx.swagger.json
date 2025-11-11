@@ -698,7 +698,11 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
-          "description": "Amounts to add: exactly two positive coins matching the pool denoms.\nCanonicalized to pool denom order. Full amounts are escrowed; surplus is\nrefunded (band mode: to match \u0394L; non-concentrated: to match minted\nshares)."
+          "description": "Amounts to add: exactly two positive coins matching the pool denoms.\nCanonicalized to pool denom order. Full amounts are escrowed; surplus is\nrefunded (band mode: to match \u0394L; non-concentrated: to match minted\nshares). For unbalanced adds, full amounts are added without refunds."
+        },
+        "unbalanced": {
+          "type": "boolean",
+          "description": "If true, add amounts directly without proportional adjustments or refunds.\nPrice may shift outside band (rejected if so); shares minted based on\nproportional contribution."
         }
       },
       "title": "MsgAddLiquidity"
