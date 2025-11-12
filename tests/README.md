@@ -10,6 +10,8 @@ To run the entire test suite:
 make test
 ```
 
+**⚠️ Important**: Never use pipe (`|`) after the `make test` command. Piping can hide important error output and interfere with test execution. Always run `make test` directly without any pipes.
+
 This will:
 1. Set up a test environment
 2. Initialize a test node

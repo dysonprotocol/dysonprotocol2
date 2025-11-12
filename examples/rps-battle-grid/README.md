@@ -18,27 +18,35 @@ RPS Grid Battle is a blockchain game where players spawn pieces (Rock, Paper, or
 ## Quick Start
 
 ```bash
-# Coming soon - implementation pending
-# See spec.md for detailed design
+# 1. Deploy the script (see Quick Start for full command)
+# 2. Initialize with `initialize_game()`
+# 3. Spawn a piece: `spawn_piece("rock")`
+# 4. Move: `move_piece(1, 0, 1)`  # piece_id=1, target_x=0, target_y=1
+# 5. Engage combat: move onto a vulnerable enemy
 ```
 
 ## Game Rules
 
 ### Spawning
-- Pay 100 energy tokens to spawn a piece
+- Pay 100 udys (Phase 2) / 100 energy tokens (Phase 3) to spawn a piece
+- Must attach `MsgSend` payment message to `spawn_piece()` transaction
 - Choose Rock, Paper, or Scissors type
-- All pieces spawn at origin (0, 0) - move away immediately!
+- Pieces spawn at random empty locations on the board
 
 ### Movement
 - **King Move** (adjacent squares): FREE
 - **Queen Move** (straight lines): Costs distance² energy
+- **Board Boundaries**: Dynamic grid that expands with number of pieces
+  - Formula: `min = -1 * (10 + num_pieces)`, `max = 10 + num_pieces`
+  - Starts at -10 to 10, grows by ±1 per piece spawned
+  - Players restricted to boundaries; Snail NPC not restricted
 
 ### Combat
 - Attack by moving onto vulnerable enemy type
 - Rock > Scissors > Paper > Rock
 - Winner gains 50 energy
-- Loser's energy is distributed: market sale, random drops, and burn
-- **Beware the Snail**: Invulnerable NPC that hunts oldest players
+- Loser's energy is distributed: market sale, energy drops (in rectangle from origin to combat), and burn
+- **Beware the Snail**: Invulnerable NPC that hunts oldest players (not restricted by board boundaries)
 
 ### Energy Market
 - All energy is tradeable on Whaleswap
@@ -57,15 +65,15 @@ Built with Dyson Protocol modules:
 ## Documentation
 
 - [Specification](./spec.md) - Complete game design and implementation plan
-- [Tests](./tests/) - Coming soon
-- [Scripts](./script.py) - Coming soon
+- [Tests](../tests/examples/rps/) - CLI integration tests for spawning, movement, and combat
+- [Scripts](./script.py) - Dyslang implementation
 
 ## Development Status
 
-**Current Phase**: Planning & Specification
+**Current Phase**: Phase 2 – Combat Iteration
 
 - [x] Specification complete
-- [ ] Core grid & movement (Phase 1)
+- [x] Core grid & movement (Phase 1)
 - [ ] Combat & energy mechanics (Phase 2)  
 - [ ] Whaleswap integration (Phase 3)
 - [ ] Optimization & UI (Phase 4)

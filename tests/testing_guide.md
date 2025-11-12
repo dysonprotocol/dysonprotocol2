@@ -939,6 +939,8 @@ position_id = 1  # With comment explaining why
 make test COVERAGE_PACKAGES="dysonprotocol.com/x/whaleswap/keeper" PYTEST_ARGS="tests/whaleswap/leverage/ -x --ff --showlocals"
 ```
 
+**⚠️ Important**: Never use pipe (`|`) after the `make test` command. Piping can hide important error output and interfere with test execution. Always run `make test` directly without any pipes.
+
 **Flags**:
 - `COVERAGE_PACKAGES`: Go packages to measure
 - `-x`: Stop on first failure

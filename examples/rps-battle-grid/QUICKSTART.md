@@ -6,19 +6,21 @@
 # 1. Get some energy tokens
 dysond tx bank send <faucet> <your_address> 100rpsgrid.energy.dys --from your_key
 
-# 2. Spawn a piece
+# 2. Spawn a piece (requires 100 udys payment)
 dysond tx script exec \
   --script-address <game_address> \
   --function-name spawn_piece \
   --args '["rock"]' \
+  --attached-message '{"@type":"/cosmos.bank.v1beta1.MsgSend","from_address":"<your_address>","to_address":"<game_address>","amount":[{"denom":"udys","amount":"100"}]}' \
   --from your_key
 
 # 3. Move your piece (move away from spawn!)
 dysond tx script exec \
   --script-address <game_address> \
   --function-name move_piece \
-  --args '["<piece_id>", 1, 0]' \
+  --args '[1, 1, 0]' \
   --from your_key
+  # Args: [piece_id (int), target_x (int), target_y (int)]
 
 # 4. View the grid
 curl http://<game_address>.localhost:8000/
@@ -70,13 +72,13 @@ dysond query script exec \
 pip install -r dev-requirements.txt
 
 # Run all game tests
-pytest tests/rps-battle-grid/ -v
+pytest tests/examples/rps/ -v
 
-# Run specific test file
-pytest tests/rps-battle-grid/test_movement.py -v
+# Run specific test file (combat suite)
+pytest tests/examples/rps/test_combat.py -v
 
 # Run with coverage
-pytest tests/rps-battle-grid/ --cov=examples/rps-battle-grid
+pytest tests/examples/rps/ --cov=examples/rps-battle-grid
 ```
 
 ### Development Workflow
@@ -99,7 +101,8 @@ dysond query storage list <script_address> --index-prefix "game/pieces/"
 dysond query script exec \
   --script-address <script_address> \
   --function-name get_piece_info \
-  --args '["piece_123"]'
+  --args '[123]'
+  # Args: [piece_id (int)]
 
 # View player stats
 dysond query script exec \
@@ -129,8 +132,8 @@ examples/rps-battle-grid/
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| Phase 1 | 🟡 IN PROGRESS | Core grid & movement |
-| Phase 2 | ⚪ PENDING | Combat & energy economics |
+| Phase 1 | ✅ COMPLETE | Core grid & movement |
+| Phase 2 | 🟡 IN PROGRESS | Combat & energy economics |
 | Phase 3 | ⚪ PENDING | Whaleswap integration |
 | Phase 4 | ⚪ PENDING | Optimization & features |
 
@@ -181,7 +184,7 @@ When implementing new features:
 - Check energy balance before deductions
 - Verify rate limits (1 action/block/piece)
 - Validate coordinates in bounds
-- Use deterministic randomness (block hash)
+- Use Python's random module for randomness
 
 ## Debugging
 
@@ -214,7 +217,7 @@ dysond query storage list <script_address> --index-prefix "" | jq .
 
 **Version**: 0.1  
 **Last Updated**: 2025-11-11  
-**Status**: Pre-implementation
+**Status**: Phase 2 combat iteration
 
-**Next Steps**: Implement Phase 1 (see TODO.md)
+**Next Steps**: Expand combat features and integrate energy economics (see TODO.md)
 

@@ -1,5 +1,10 @@
 # RPS Grid Battle - Game Mechanics Visual Guide
 
+## Implementation Status
+
+- ✅ Player vs player combat implemented on-chain with 50 energy reward + 40/30/30 distribution.
+- 🔄 Energy pickups, snail behaviour, and market hooks scheduled for later phases.
+
 ## Rock-Paper-Scissors Combat Matrix
 
 ### Player vs Player
@@ -253,7 +258,7 @@ Strategy:
     · · · · ·      Guard energy spawns
     · · ◆ · ·      ◆ = Energy pickup
     · · · · ·      Defend territory
-    R · · · R      Note: Origin (0,0) is spawn chaos zone
+    R · · · R      Note: Pieces spawn at random locations across the board
 ```
 
 ## Type Selection Strategy

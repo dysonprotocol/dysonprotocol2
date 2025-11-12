@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	crontasktypes "dysonprotocol.com/x/crontask/types"
 )
 
@@ -53,7 +55,7 @@ func (k Keeper) InitGenesis(ctx context.Context, genState *crontasktypes.Genesis
 	// Import all tasks with basic message unpack validation
 	for _, task := range genState.Tasks {
 		for i, anyMsg := range task.Msgs {
-			var sdkMsg interface{}
+			var sdkMsg sdk.Msg
 			if err := k.cdc.UnpackAny(anyMsg, &sdkMsg); err != nil {
 				return fmt.Errorf("invalid task message at index %d: %w", i, err)
 			}
