@@ -9,6 +9,7 @@ Happy-path coverage includes:
 """
 
 import json
+import math
 import pytest
 from pathlib import Path
 from deep_parse import deep_parse
@@ -635,3 +636,183 @@ def test_add_liquidity_unbalanced_basic(chainnet, generate_account, register_nam
 
     # Check shares minted (should be 3000: min(5000, 3000) since R1=R2=12000)
     assert shares_minted == 3000
+
+
+@pytest.mark.usefixtures("faucet")
+def test_add_liquidity_unbalanced_s2_less_than_s1(
+    chainnet, generate_account, register_name
+):
+    """
+    Test unbalanced add-liquidity where s2 < s1 to ensure minted shares are calculated correctly.
+
+    This test specifically covers the bug where minted was nil when s2 < s1 in the unbalanced branch.
+    It verifies that shares are minted correctly and can be used to remove liquidity.
+    """
+    dysond = chainnet[0]
+    alice_name, alice_addr = generate_account(
+        "addliq_unbal_s2", faucet_amount=5_000_000
+    )
+    foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
+    bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
+
+    _mint_custom_denoms(dysond, alice_name, [foo_name, bar_name])
+
+    # Create pool with unequal initial reserves to ensure s2 < s1 scenario
+    # Initial reserves: 10000 foo, 20000 bar
+    # Adding: 5000 foo, 3000 bar
+    # s1 = (5000/10000) * totalShares = 0.5 * totalShares
+    # s2 = (3000/20000) * totalShares = 0.15 * totalShares
+    # So s2 < s1, and minted should be s2
+    create_result = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"10000{foo_name}",
+        "--coins",
+        f"20000{bar_name}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-leverage-ratio",
+        "20.0",
+        "--liquidation-threshold",
+        "1.2",
+        "--max-borrow-percent",
+        "0.5",
+        "--fee-rate",
+        f"0.003{foo_name}",
+        "--fee-rate",
+        f"0.003{bar_name}",
+        "--from",
+        alice_name,
+    )
+    assert (
+        create_result.get("code", 1) == 0
+    ), f"Pool creation failed: {json.dumps(create_result, indent=2)}"
+
+    # Extract pool_id from events
+    pool_events = [
+        e
+        for e in create_result.get("events", [])
+        if e.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    assert (
+        pool_events
+    ), f"Missing EventPoolCreated: {json.dumps(create_result, indent=2)}"
+    pool_attrs = {
+        a.get("key"): a.get("value") for a in pool_events[0].get("attributes", [])
+    }
+    pool_id = pool_attrs.get("pool_id", "").strip('"')
+    assert pool_id, f"pool_id missing: {pool_attrs}"
+    pool_id = int(pool_id)
+
+    # Query pool to get initial shares
+    pool_before = dysond("query", "whaleswap", "pool", "--pool-id", str(pool_id))
+    shares_denom = pool_before["pool"]["shares_denom"]
+
+    # Get initial shares balance
+    balance_before = dysond("query", "bank", "balances", alice_addr)
+    balances_before = {
+        coin["denom"]: int(coin["amount"]) for coin in balance_before["balances"]
+    }
+    initial_shares = balances_before.get(shares_denom, 0)
+
+    # Add unbalanced liquidity: 5000 foo, 3000 bar
+    # With R1=10000, R2=20000, this should result in s2 < s1
+    # s1 = (5000/10000) * totalShares = 0.5 * totalShares
+    # s2 = (3000/20000) * totalShares = 0.15 * totalShares
+    # So minted should be s2 (the minimum)
+    add_result = dysond(
+        "tx",
+        "whaleswap",
+        "add-liquidity",
+        "--pool-id",
+        str(pool_id),
+        "--amounts",
+        f"5000{foo_name}",
+        "--amounts",
+        f"3000{bar_name}",
+        "--unbalanced",
+        "--from",
+        alice_name,
+    )
+    assert (
+        add_result.get("code", 1) == 0
+    ), f"Add liquidity failed: {json.dumps(add_result, indent=2)}"
+
+    # Query pool after add
+    pool_after = dysond("query", "whaleswap", "pool", "--pool-id", str(pool_id))
+    pool_data = pool_after["pool"]
+
+    # Check reserves increased by full added amounts (no refunds for unbalanced)
+    amounts = {coin["denom"]: int(coin["amount"]) for coin in pool_data["coins"]}
+    assert (
+        amounts[foo_name] == 15000
+    ), f"Expected 15000 (10000+5000), got {amounts[foo_name]}"
+    assert (
+        amounts[bar_name] == 23000
+    ), f"Expected 23000 (20000+3000), got {amounts[bar_name]}"
+
+    # Check shares minted by querying balance
+    balance_after = dysond("query", "bank", "balances", alice_addr)
+    balances_after = {
+        coin["denom"]: int(coin["amount"]) for coin in balance_after["balances"]
+    }
+    final_shares = balances_after.get(shares_denom, 0)
+    shares_minted = final_shares - initial_shares
+
+    # Calculate expected shares: min(s1, s2) where:
+    # Initial shares = floor(sqrt(R1 * R2)) = floor(sqrt(10000 * 20000)) = floor(sqrt(200000000)) = 14142
+    # totalShares = 14142
+    # s1 = truncate((5000/10000) * 14142) = truncate(7071) = 7071
+    # s2 = truncate((3000/20000) * 14142) = truncate(2121.3) = 2121
+    # So minted should be min(7071, 2121) = 2121
+    # Verify initial shares calculation matches Go's floor(sqrt(R1*R2))
+    expected_initial_shares = int(math.sqrt(10000 * 20000))
+    assert (
+        initial_shares == expected_initial_shares
+    ), f"Initial shares should be {expected_initial_shares}, got {initial_shares}"
+
+    # Calculate expected minted shares using same logic as Go code
+    # s1 := add1.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR1.Amount.ToLegacyDec()).TruncateInt()
+    # s2 := add2.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR2.Amount.ToLegacyDec()).TruncateInt()
+    # minted = min(s1, s2)
+    total_shares = expected_initial_shares
+    s1 = int((5000 / 10000) * total_shares)  # Truncate in Go
+    s2 = int((3000 / 20000) * total_shares)  # Truncate in Go
+    expected_shares = min(s1, s2)
+    assert (
+        shares_minted == expected_shares
+    ), f"Expected {expected_shares} shares minted (min({s1}, {s2})), got {shares_minted}. Initial: {initial_shares}, Final: {final_shares}"
+
+    # CRITICAL: Verify shares can be used to remove liquidity (this would fail if minted was nil)
+    # Remove a small portion of the minted shares
+    remove_shares = shares_minted // 2  # Remove half
+    assert remove_shares > 0, f"remove_shares must be > 0, got {remove_shares}"
+
+    remove_result = dysond(
+        "tx",
+        "whaleswap",
+        "remove-liquidity",
+        "--pool-id",
+        str(pool_id),
+        "--shares",
+        str(remove_shares),
+        "--from",
+        alice_name,
+    )
+    assert (
+        remove_result.get("code", 1) == 0
+    ), f"Remove liquidity failed: {json.dumps(remove_result, indent=2)}"
+
+    # Verify shares were actually removed
+    balance_final = dysond("query", "bank", "balances", alice_addr)
+    balances_final = {
+        coin["denom"]: int(coin["amount"]) for coin in balance_final["balances"]
+    }
+    final_shares_after_remove = balances_final.get(shares_denom, 0)
+
+    # Shares should have decreased by remove_shares
+    assert (
+        final_shares_after_remove == final_shares - remove_shares
+    ), f"Shares should decrease by {remove_shares}. Before remove: {final_shares}, After remove: {final_shares_after_remove}"

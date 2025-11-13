@@ -479,9 +479,9 @@ print(f"- Time: {block_info['time']}")
 ```
 
     Block Information:
-    - Height: 10
+    - Height: 15
     - Chain ID: chain-a
-    - Time: 2025-10-24T22:19:58.151985Z
+    - Time: 2025-11-13T09:48:51.280033Z
 
 
 ## Transaction Data
@@ -602,7 +602,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
 ```
 
     {
-      "height": "12",
+      "height": "18",
       "txhash": "07CA48632DAFD22BD80387C8E3236CF6ECFBD02CBC76D254FC95988B4D1FEDFB",
       "codespace": "",
       "code": 0,
@@ -1239,20 +1239,7 @@ These are the available modules and functions that can be used in dyslang script
         "re2._Match.groups",
         "re2._Regexp.match",
         "scanner",
-        "script.a_or_b",
-        "script.benchmark_gas",
-        "script.check_limit",
-        "script.check_memory",
-        "script.check_messages",
-        "script.count_nodes",
-        "script.demonstrate_dys_eval",
-        "script.emit_test_event",
         "script.list_api",
-        "script.query_balance",
-        "script.query_multiple_balances",
-        "script.show_block_info",
-        "script.test_a_or_b",
-        "script.who_called_me",
         "search",
         "set.add",
         "set.clear",

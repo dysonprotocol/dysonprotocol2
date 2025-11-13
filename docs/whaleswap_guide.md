@@ -334,7 +334,7 @@ We’ll seed a pool with initial reserves and a fee (e.g., 0.3%).
 
 ```python
 # Create the pool with two repeated --coins flags; fee 0.003
-create_pool_tx = %sh dysond tx whaleswap create-pool --coins "100000$FOO_NAME" --coins "100000$BAR_NAME" --fee-pct "0.003" --from alice --gas auto -y -o json | dysond query wait-tx -o json
+create_pool_tx = %sh dysond tx whaleswap create-pool --coins "100000$FOO_NAME" --coins "100000$BAR_NAME" --fee-rate "0.003udys" --min-collateral-ratio "1.5" --max-leverage-ratio "10" --from alice --gas auto -y -o json | dysond query wait-tx -o json
 assert create_pool_tx['code'] == 0, create_pool_tx['raw_log']
 
 # Resolve pool_id by pair
@@ -357,10 +357,23 @@ print("POOL_ID:", POOL_ID)
       'coins': [{'denom': 'bar.dys', 'amount': '100000'},
        {'denom': 'foo.dys', 'amount': '100000'}],
       'shares_denom': 'whaleswap.dys/pools/1',
-      'fee_pct': '0.003',
-      'block_height': '69',
-      'created': '2025-10-24T22:20:36.124475Z',
-      'updated': '2025-10-24T22:20:36.124475Z'}}
+      'created_height': '18',
+      'created_time': '2025-11-13T09:52:01.458654Z',
+      'updated_time': '2025-11-13T09:52:01.458654Z',
+      'updated_height': '18',
+      'interest_rate': ['0.000000000000000000bar.dys',
+       '0.000000000000000000foo.dys'],
+      'min_collateral_ratio': ['1.500000000000000000bar.dys',
+       '1.500000000000000000foo.dys'],
+      'max_leverage_ratio': ['10.000000000000000000bar.dys',
+       '10.000000000000000000foo.dys'],
+      'liquidation_threshold': ['1.200000000000000000bar.dys',
+       '1.200000000000000000foo.dys'],
+      'max_borrow_percent': ['0.800000000000000000bar.dys',
+       '0.800000000000000000foo.dys'],
+      'bound_percent': ['1.000000000000000000bar.dys',
+       '1.000000000000000000foo.dys'],
+      'fee_rate': ['0.000000000000000000bar.dys', '0.000000000000000000foo.dys']}}
 
 
 
@@ -381,7 +394,7 @@ SHARES = pool_info['pool']['shares_denom']
 ADD1 = f"10000{DENOM0}"
 ADD2 = f"10000{DENOM1}"
 
-add_liq_tx = %sh dysond tx whaleswap add-liquidity --pool-id "{POOL_ID}" --amount1 "{ADD1}" --amount2 "{ADD2}" --from alice --gas auto -y -o json | dysond query wait-tx -o json
+add_liq_tx = %sh dysond tx whaleswap add-liquidity --pool-id "{POOL_ID}" --amounts "{ADD1}" --amounts "{ADD2}" --from alice --gas auto -y -o json | dysond query wait-tx -o json
 
 print("add-liquidity raw:")
 assert add_liq_tx['code'] == 0, add_liq_tx['raw_log']
@@ -742,7 +755,7 @@ Adjust fee or set price bands.
 
 ```python
 # Lower fee to 0.25% (example)
-upd_tx = %sh dysond tx whaleswap update-pool-config --pool-id "$POOL_ID" --fee-pct "0.0025" --from alice -y -o json | dysond query wait-tx -o json
+upd_tx = %sh dysond tx whaleswap update-pool-config --pool-id "$POOL_ID" --fee-rate "0.0025udys" --from alice -y -o json | dysond query wait-tx -o json
 assert upd_tx['code'] == 0, upd_tx['raw_log']
 print("Pool fee updated")
 
@@ -781,7 +794,7 @@ print(json.dumps(events, indent=2))
         "coins": [
           {
             "denom": "bar.dys",
-            "amount": "98254"
+            "amount": "98253"
           },
           {
             "denom": "foo.dys",
@@ -789,16 +802,38 @@ print(json.dumps(events, indent=2))
           }
         ],
         "shares_denom": "whaleswap.dys/pools/1",
-        "fee_pct": "0.0025",
-        "block_height": "79",
-        "created": "2025-10-24T22:20:36.124475Z",
-        "updated": "2025-10-24T22:20:43.293702Z",
+        "created_height": "18",
+        "created_time": "2025-11-13T09:52:01.458654Z",
+        "updated_time": "2025-11-13T09:52:03.97197Z",
+        "updated_height": "27",
         "num_trades": "2",
-        "fees_earned": [
-          {
-            "denom": "foo.dys",
-            "amount": "3"
-          }
+        "interest_rate": [
+          "0.000000000000000000bar.dys",
+          "0.000000000000000000foo.dys"
+        ],
+        "min_collateral_ratio": [
+          "1.500000000000000000bar.dys",
+          "1.500000000000000000foo.dys"
+        ],
+        "max_leverage_ratio": [
+          "10.000000000000000000bar.dys",
+          "10.000000000000000000foo.dys"
+        ],
+        "liquidation_threshold": [
+          "1.200000000000000000bar.dys",
+          "1.200000000000000000foo.dys"
+        ],
+        "max_borrow_percent": [
+          "0.800000000000000000bar.dys",
+          "0.800000000000000000foo.dys"
+        ],
+        "bound_percent": [
+          "1.000000000000000000bar.dys",
+          "1.000000000000000000foo.dys"
+        ],
+        "fee_rate": [
+          "0.000000000000000000bar.dys",
+          "0.000000000000000000foo.dys"
         ]
       }
     }
@@ -861,8 +896,10 @@ print(json.dumps(events, indent=2))
           "offer_id": "1",
           "status": "open",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "82",
-          "updated_timestamp": "2025-10-24T22:20:44.934769Z",
+          "updated_height": "29",
+          "created_height": "29",
+          "created_time": "2025-11-13T09:52:04.532557Z",
+          "updated_time": "2025-11-13T09:52:04.532557Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"
@@ -1421,9 +1458,15 @@ else:
     {
       "trade": {
         "trade_id": "5",
+        "sent": {
+          "amount": "0"
+        },
+        "received": {
+          "amount": "0"
+        },
         "trader": "dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el",
-        "height": "89",
-        "timestamp": "2025-10-24T22:20:49.488768Z",
+        "height": "35",
+        "timestamp": "2025-11-13T09:52:06.212891Z",
         "operations": [
           {
             "Op": {
@@ -1447,7 +1490,7 @@ else:
             },
             "received": {
               "denom": "bar.dys",
-              "amount": "293"
+              "amount": "294"
             }
           }
         ],
@@ -1460,7 +1503,7 @@ else:
         "total_received": [
           {
             "denom": "bar.dys",
-            "amount": "293"
+            "amount": "294"
           }
         ],
         "note": "Demo mixed trade with note"
@@ -1501,7 +1544,7 @@ print("Module metrics:")
           "coins": [
             {
               "denom": "bar.dys",
-              "amount": "97961"
+              "amount": "97959"
             },
             {
               "denom": "foo.dys",
@@ -1509,18 +1552,38 @@ print("Module metrics:")
             }
           ],
           "shares_denom": "whaleswap.dys/pools/1",
-          "fee_pct": "0.0025",
-          "block_height": "89",
-          "created": "2025-10-24T22:20:36.124475Z",
-          "updated": "2025-10-24T22:20:49.488768Z",
+          "created_height": "18",
+          "created_time": "2025-11-13T09:52:01.458654Z",
+          "updated_time": "2025-11-13T09:52:06.212891Z",
+          "updated_height": "35",
           "num_trades": "3",
-          "fees_earned": [
-            {
-              "denom": "foo.dys",
-
-
-              "amount": "4"
-            }
+          "interest_rate": [
+            "0.000000000000000000bar.dys",
+            "0.000000000000000000foo.dys"
+          ],
+          "min_collateral_ratio": [
+            "1.500000000000000000bar.dys",
+            "1.500000000000000000foo.dys"
+          ],
+          "max_leverage_ratio": [
+            "10.000000000000000000bar.dys",
+            "10.000000000000000000foo.dys"
+          ],
+          "liquidation_threshold": [
+            "1.200000000000000000bar.dys",
+            "1.200000000000000000foo.dys"
+          ],
+          "max_borrow_percent": [
+            "0.800000000000000000bar.dys",
+            "0.800000000000000000foo.dys"
+          ],
+          "bound_percent": [
+            "1.000000000000000000bar.dys",
+            "1.000000000000000000foo.dys"
+          ],
+          "fee_rate": [
+            "0.000000000000000000bar.dys",
+            "0.000000000000000000foo.dys"
           ]
         }
       ],
@@ -1539,8 +1602,10 @@ print("Module metrics:")
           "offer_id": "1",
           "status": "closed",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "83",
-          "updated_timestamp": "2025-10-24T22:20:45.5848Z",
+          "updated_height": "30",
+          "created_height": "29",
+          "created_time": "2025-11-13T09:52:04.532557Z",
+          "updated_time": "2025-11-13T09:52:04.811741Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"
@@ -1569,8 +1634,10 @@ print("Module metrics:")
           "offer_id": "2",
           "status": "closed",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "85",
-          "updated_timestamp": "2025-10-24T22:20:46.875755Z",
+          "updated_height": "32",
+          "created_height": "31",
+          "created_time": "2025-11-13T09:52:05.09015Z",
+          "updated_time": "2025-11-13T09:52:05.36977Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "100"
@@ -1620,17 +1687,11 @@ print("Module metrics:")
         "escrowed_pool_coins": [
           {
             "denom": "bar.dys",
-            "amount": "97961"
+            "amount": "97959"
           },
           {
             "denom": "foo.dys",
             "amount": "100054"
-          }
-        ],
-        "fees_earned": [
-          {
-            "denom": "foo.dys",
-            "amount": "4"
           }
         ]
       }

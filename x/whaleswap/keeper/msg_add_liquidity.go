@@ -96,6 +96,8 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 	orig1 := add1.Amount
 	orig2 := add2.Amount
 
+	var minted math.Int
+
 	if msg.Unbalanced {
 		// Direct add: no proportional adjustments, escrow full amounts, no refunds
 		logger.Info("AddLiquidity unbalanced escrow", "amounts", msg.Amounts)
@@ -134,7 +136,7 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 
 		s1 := add1.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR1.Amount.ToLegacyDec()).TruncateInt()
 		s2 := add2.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR2.Amount.ToLegacyDec()).TruncateInt()
-		minted := s1
+		minted = s1
 		if s2.LT(s1) {
 			minted = s2
 		}
@@ -181,14 +183,12 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		logger.Info("AddLiquidity proportional new reserves", "r1", pool.Coins[0], "r2", pool.Coins[1])
 	}
 
-	var minted math.Int
-	totalShares := k.bank.GetSupply(ctx, pool.SharesDenom).Amount
-	if !totalShares.IsPositive() {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid total shares supply")
-	}
-
 	if msg.Unbalanced {
-		// For unbalanced, mint shares based on added amounts after update
+		// For unbalanced, mint shares based on added amounts relative to old reserves
+		totalShares := k.bank.GetSupply(ctx, pool.SharesDenom).Amount
+		if !totalShares.IsPositive() {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid total shares supply")
+		}
 		s1 := add1.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR1.Amount.ToLegacyDec()).TruncateInt()
 		s2 := add2.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR2.Amount.ToLegacyDec()).TruncateInt()
 		minted = s1
@@ -198,9 +198,8 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		if !minted.IsPositive() {
 			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "shares must be > 0")
 		}
-	} else {
-		// For proportional, minted is already calculated above
 	}
+	// For proportional, minted is already calculated above
 
 	// Persist and emit poolupdate
 	if err := k.updatePool(ctx, &pool); err != nil {
