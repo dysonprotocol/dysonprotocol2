@@ -479,9 +479,9 @@ print(f"- Time: {block_info['time']}")
 ```
 
     Block Information:
-    - Height: 15
+    - Height: 19
     - Chain ID: chain-a
-    - Time: 2025-11-13T09:48:51.280033Z
+    - Time: 2025-11-13T18:43:36.454392Z
 
 
 ## Transaction Data
@@ -602,7 +602,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
 ```
 
     {
-      "height": "18",
+      "height": "22",
       "txhash": "07CA48632DAFD22BD80387C8E3236CF6ECFBD02CBC76D254FC95988B4D1FEDFB",
       "codespace": "",
       "code": 0,

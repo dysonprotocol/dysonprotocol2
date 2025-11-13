@@ -45,19 +45,20 @@ export const Msg = {
      *
      * Behavior:
      * - Input normalization: canonicalizes `coins` (exactly two positive coins)
-     * to the pool's denom order.
+     *   to the pool's denom order.
      * - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two
      *   DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
      *   interest_rate >= 0 per denom.
-     * - Leverage configuration (required): `min_collateral_ratio` and
-     *   `max_leverage_ratio` must have exactly two entries (> 1) matching pool
-     *   denoms; `liquidation_threshold` must have exactly two entries (> 1);
-     *   `max_borrow_percent` must have exactly two entries with amounts in [0,1).
+     * - Leverage configuration: `min_collateral_ratio` (required) and
+     *   `max_leverage_ratio` (deprecated; accepted for backward compatibility and
+     *   ignored by the server). `liquidation_threshold` (required).
+     * - `max_borrow_percent` (required) must have exactly two entries with
+     * amounts in [0,1).
      * - Bound percent (optional): when omitted defaults to 1 (unbounded) for both
      *   denoms. When provided, must contain exactly two DecCoins matching pool
      *   denoms with amounts in (0,1]; 1 disables the bound for that denom.
      * - Funds and shares: sends initial reserves from `creator` → module;
-     * allocates a new pool_id; persists the pool; computes initial shares as
+     *   allocates a new pool_id; persists the pool; computes initial shares as
      *   floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends
      *   them to the creator.
      * - Invariants: asserts AMM and module invariants before returning.
@@ -68,8 +69,6 @@ export const Msg = {
      * - interest_rate amounts must be >= 0 for both denoms when provided.
      * - min_collateral_ratio must have exactly two entries (> 1) matching pool
      *   denoms in canonical order.
-     * - max_leverage_ratio must have exactly two entries (> 1) matching pool
-     * denoms in canonical order.
      * - liquidation_threshold must have exactly two entries (> 1) matching pool
      *   denoms in canonical order.
      * - max_borrow_percent must have exactly two entries with amounts in [0,1)

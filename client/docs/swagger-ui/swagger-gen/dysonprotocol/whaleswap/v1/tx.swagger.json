@@ -180,7 +180,7 @@
     "dysonprotocol.whaleswap.v1.MsgCreatePool": {
       "post": {
         "summary": "*\nCreatePool creates a two-asset pool with per-denom fee/interest/leverage\nparameters and optional directional bound_percent limits.",
-        "description": "Behavior:\n- Input normalization: canonicalizes `coins` (exactly two positive coins)\nto the pool's denom order.\n- Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two\n  DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and\n  interest_rate >= 0 per denom.\n- Leverage configuration (required): `min_collateral_ratio` and\n  `max_leverage_ratio` must have exactly two entries (> 1) matching pool\n  denoms; `liquidation_threshold` must have exactly two entries (> 1);\n  `max_borrow_percent` must have exactly two entries with amounts in [0,1).\n- Bound percent (optional): when omitted defaults to 1 (unbounded) for both\n  denoms. When provided, must contain exactly two DecCoins matching pool\n  denoms with amounts in (0,1]; 1 disables the bound for that denom.\n- Funds and shares: sends initial reserves from `creator` \u2192 module;\nallocates a new pool_id; persists the pool; computes initial shares as\n  floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends\n  them to the creator.\n- Invariants: asserts AMM and module invariants before returning.\n\nValidation:\n- coins must contain exactly two positive coins with valid denoms.\n- fee_rate amounts must satisfy 0 <= x < 1 for both denoms when provided.\n- interest_rate amounts must be >= 0 for both denoms when provided.\n- min_collateral_ratio must have exactly two entries (> 1) matching pool\n  denoms in canonical order.\n- max_leverage_ratio must have exactly two entries (> 1) matching pool\ndenoms in canonical order.\n- liquidation_threshold must have exactly two entries (> 1) matching pool\n  denoms in canonical order.\n- max_borrow_percent must have exactly two entries with amounts in [0,1)\n  matching pool denoms in canonical order.\n- bound_percent when provided must contain at most two entries with amounts\n  in (0,1] matching pool denoms.\n\nEmits:\n- EventPoolCreated(pool_id)\n- EventPoolUpdate(pool_id)\n\nReturns:\n- pool_id of the newly created pool (see response).",
+        "description": "Behavior:\n- Input normalization: canonicalizes `coins` (exactly two positive coins)\n  to the pool's denom order.\n- Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two\n  DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and\n  interest_rate >= 0 per denom.\n- Leverage configuration: `min_collateral_ratio` (required) and\n  `max_leverage_ratio` (deprecated; accepted for backward compatibility and\n  ignored by the server). `liquidation_threshold` (required).\n- `max_borrow_percent` (required) must have exactly two entries with\namounts in [0,1).\n- Bound percent (optional): when omitted defaults to 1 (unbounded) for both\n  denoms. When provided, must contain exactly two DecCoins matching pool\n  denoms with amounts in (0,1]; 1 disables the bound for that denom.\n- Funds and shares: sends initial reserves from `creator` \u2192 module;\n  allocates a new pool_id; persists the pool; computes initial shares as\n  floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends\n  them to the creator.\n- Invariants: asserts AMM and module invariants before returning.\n\nValidation:\n- coins must contain exactly two positive coins with valid denoms.\n- fee_rate amounts must satisfy 0 <= x < 1 for both denoms when provided.\n- interest_rate amounts must be >= 0 for both denoms when provided.\n- min_collateral_ratio must have exactly two entries (> 1) matching pool\n  denoms in canonical order.\n- liquidation_threshold must have exactly two entries (> 1) matching pool\n  denoms in canonical order.\n- max_borrow_percent must have exactly two entries with amounts in [0,1)\n  matching pool denoms in canonical order.\n- bound_percent when provided must contain at most two entries with amounts\n  in (0,1] matching pool denoms.\n\nEmits:\n- EventPoolCreated(pool_id)\n- EventPoolUpdate(pool_id)\n\nReturns:\n- pool_id of the newly created pool (see response).",
         "operationId": "dysonprotocol.whaleswap.v1.MsgCreatePool",
         "responses": {
           "200": {
@@ -856,7 +856,7 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
-          "description": "Required: maximum leverage ratio per reserve denom (exactly two,\ncanonical order). Each amount is a LegacyDec string (> 1)."
+          "description": "Deprecated: maximum leverage ratio per reserve denom; ignored by server.\nKept for backward-compatible client requests."
         },
         "interest_rate": {
           "type": "array",
@@ -1314,7 +1314,7 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
-          "title": "Required: maximum leverage ratio per reserve denom (exactly two,\ncanonical order; > 1)"
+          "description": "Deprecated: maximum leverage ratio per reserve denom; ignored by server.\nKept for backward-compatible client requests."
         },
         "interest_rate": {
           "type": "array",

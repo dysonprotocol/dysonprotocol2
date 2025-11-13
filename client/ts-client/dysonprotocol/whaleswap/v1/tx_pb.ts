@@ -75,10 +75,11 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
   minCollateralRatio: DecCoin[] = [];
 
   /**
-   * Required: maximum leverage ratio per reserve denom (exactly two,
-   * canonical order). Each amount is a LegacyDec string (> 1).
+   * Deprecated: maximum leverage ratio per reserve denom; ignored by server.
+   * Kept for backward-compatible client requests.
    *
-   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7 [deprecated = true];
+   * @deprecated
    */
   maxLeverageRatio: DecCoin[] = [];
 
@@ -247,10 +248,11 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
   minCollateralRatio: DecCoin[] = [];
 
   /**
-   * Required: maximum leverage ratio per reserve denom (exactly two,
-   * canonical order; > 1)
+   * Deprecated: maximum leverage ratio per reserve denom; ignored by server.
+   * Kept for backward-compatible client requests.
    *
-   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7 [deprecated = true];
+   * @deprecated
    */
   maxLeverageRatio: DecCoin[] = [];
 

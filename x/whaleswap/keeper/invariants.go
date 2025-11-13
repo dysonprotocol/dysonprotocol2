@@ -450,18 +450,13 @@ func (k Keeper) AssertAMMInvariants(ctx context.Context) error {
 			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "invalid pool fee_rate amounts: pool_id=%d fee_rate=%s", p.PoolId, p.FeeRate.String())
 		}
 		// Ratios > 1 (per denom)
-		if len(p.MinCollateralRatio) != 2 || len(p.MaxLeverageRatio) != 2 {
-			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "missing leverage ratios: pool_id=%d", p.PoolId)
+		if len(p.MinCollateralRatio) != 2 {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "missing min_collateral_ratio entries: pool_id=%d", p.PoolId)
 		}
 		mcr1 := p.MinCollateralRatio.AmountOf(baseDenom)
 		mcr2 := p.MinCollateralRatio.AmountOf(quoteDenom)
-		mlr1 := p.MaxLeverageRatio.AmountOf(baseDenom)
-		mlr2 := p.MaxLeverageRatio.AmountOf(quoteDenom)
 		if !mcr1.GT(math.LegacyNewDec(1)) || !mcr2.GT(math.LegacyNewDec(1)) {
 			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "invalid min_collateral_ratio: pool_id=%d val=%s", p.PoolId, p.MinCollateralRatio.String())
-		}
-		if !mlr1.GT(math.LegacyNewDec(1)) || !mlr2.GT(math.LegacyNewDec(1)) {
-			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "invalid max_leverage_ratio: pool_id=%d val=%s", p.PoolId, p.MaxLeverageRatio.String())
 		}
 
 		// Shares denom uniqueness

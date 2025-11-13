@@ -24,7 +24,7 @@ import (
 //   - Computes collateral ratio CR = collateral_value / debt_value in borrow
 //     units, where collateral_value accounts for current pool price.
 //   - Validates CR >= pool.min_collateral_ratio[borrow_denom] (> 1).
-//   - Validates leverage <= pool.max_leverage_ratio[borrow_denom] (> 1).
+//   - Enforces borrow caps via pool.max_borrow_percent (per-denom).
 //   - Reduces pool reserves by borrow amount, updates total_borrowed.
 //   - Moves borrowed amount to borrow vault module account.
 //   - Executes exact-in swap (borrowed → held) via MakeTrade.
@@ -37,7 +37,7 @@ import (
 //   - Collateral/borrow amounts must be positive.
 //   - Collateral/borrow denoms must match pool denoms.
 //   - Collateral ratio must meet pool min_collateral_ratio for borrow denom.
-//   - Leverage must not exceed pool max_leverage_ratio for borrow denom.
+//   - Borrow must respect pool max_borrow_percent for borrow denom.
 //   - Borrow amount must not exceed pool borrow cap (max_borrow_percent).
 //   - Swap must produce positive held output.
 //
@@ -134,18 +134,7 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		return nil, cosmossdkerrors.Wrapf(whaleswapv1.ErrInsufficientCollateral, "CR %s < min_cr %s", cr.String(), minCR.String())
 	}
 
-	// Validate max leverage: (collateral_in_borrow + borrowed) / collateral_in_borrow
-	leverage := collateralValueInBorrow.Add(debtValue).Quo(collateralValueInBorrow)
-	if len(pool.MaxLeverageRatio) != 2 {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool max_leverage_ratio must be set")
-	}
-	maxLeverage := pool.MaxLeverageRatio.AmountOf(borrowDenom)
-	if !maxLeverage.GT(math.LegacyNewDec(1)) {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool max_leverage_ratio must be > 1 for borrow denom")
-	}
-	if leverage.GT(maxLeverage) {
-		return nil, cosmossdkerrors.Wrapf(whaleswapv1.ErrInvalidCollateralRatio, "leverage %s exceeds max %s", leverage.String(), maxLeverage.String())
-	}
+	// Deprecated max_leverage_ratio removed: leverage clamp is redundant with min_collateral_ratio and max_borrow_percent.
 
 	// Allocate position ID
 	posID, err := k.leveragePositionSeq.Next(ctx)

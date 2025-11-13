@@ -153,11 +153,13 @@ export class Pool extends Message<Pool> {
   minCollateralRatio: DecCoin[] = [];
 
   /**
-   * Maximum leverage ratio allowed (collateral + borrowed) / collateral per
-   * reserve denom (exactly two, canonical order). Each amount is a decimal
-   * string (> 1).
+   * Deprecated: maximum leverage ratio per reserve denom.
+   * This field is ignored by the keeper; risk is enforced via
+   * min_collateral_ratio, liquidation_threshold, and max_borrow_percent.
+   * Kept for backward-compatible JSON/proto decoding of older clients.
    *
-   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 22;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 22 [deprecated = true];
+   * @deprecated
    */
   maxLeverageRatio: DecCoin[] = [];
 

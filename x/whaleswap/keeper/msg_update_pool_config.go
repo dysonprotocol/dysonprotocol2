@@ -16,8 +16,7 @@ import (
 // Behavior:
 //   - Loads pool; validates signer and majority-ownership.
 //   - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1.
-//   - Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`
-//     with exactly two entries matching pool denoms; each > 1.
+//   - Leverage config: required `min_collateral_ratio` (two entries; > 1).
 //   - Liquidation threshold: required with exactly two entries; each > 1.
 //   - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.
 //   - Max borrow percent: optional; if provided exactly two entries; 0 <= x < 1.
@@ -31,8 +30,8 @@ import (
 //   - Pool must exist.
 //   - Signer must be valid address and hold majority of pool shares.
 //   - Fee rates when provided must satisfy 0 <= x < 1 for both denoms.
-//   - Leverage config (min_collateral_ratio, max_leverage_ratio) must have
-//     exactly two entries (> 1) matching pool denoms in canonical order.
+//   - Leverage config (min_collateral_ratio) must have exactly two entries (> 1)
+//     matching pool denoms in canonical order.
 //   - Liquidation threshold must have exactly two entries (> 1) matching pool
 //     denoms in canonical order.
 //   - Interest rates when provided must be >= 0 for both denoms.
@@ -101,14 +100,7 @@ func (k Keeper) UpdatePoolConfig(ctx context.Context, msg *whaleswapv1.MsgUpdate
 	}
 	pool.MinCollateralRatio = inMinCR
 
-	inMaxLev := sdk.NewDecCoins(msg.MaxLeverageRatio...)
-	if len(inMaxLev) != 2 || inMaxLev[0].Denom != denomA || inMaxLev[1].Denom != denomB {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_leverage_ratio must have exactly two entries matching pool denoms [%s,%s] in canonical order", denomA, denomB)
-	}
-	if inMaxLev[0].Amount.LTE(one) || inMaxLev[1].Amount.LTE(one) {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "max_leverage_ratio amounts must be > 1 for both denoms")
-	}
-	pool.MaxLeverageRatio = inMaxLev
+	// Deprecated: max_leverage_ratio is ignored by the keeper; accepted in Msg for backward compatibility.
 
 	// Liquidation threshold (required; per-denom; > 1)
 	inLiq := sdk.NewDecCoins(msg.LiquidationThreshold...)

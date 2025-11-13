@@ -2321,7 +2321,7 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
-          "description": "Maximum leverage ratio allowed (collateral + borrowed) / collateral per\nreserve denom (exactly two, canonical order). Each amount is a decimal\nstring (> 1)."
+          "description": "Deprecated: maximum leverage ratio per reserve denom.\nThis field is ignored by the keeper; risk is enforced via\nmin_collateral_ratio, liquidation_threshold, and max_borrow_percent.\nKept for backward-compatible JSON/proto decoding of older clients."
         },
         "liquidation_threshold": {
           "type": "array",

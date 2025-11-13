@@ -145,15 +145,6 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 	}
 	msg.MinCollateralRatio = inMinCR
 
-	inMaxLev := sdk.NewDecCoins(msg.MaxLeverageRatio...)
-	if len(inMaxLev) != 2 || inMaxLev[0].Denom != denom1 || inMaxLev[1].Denom != denom2 {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "max_leverage_ratio must have exactly two entries matching pool denoms [%s,%s] in canonical order", denom1, denom2)
-	}
-	if inMaxLev[0].Amount.LTE(one) || inMaxLev[1].Amount.LTE(one) { // require strictly > 1
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "max_leverage_ratio amounts must be > 1 for both denoms")
-	}
-	msg.MaxLeverageRatio = inMaxLev
-
 	// Liquidation threshold: required and must be > 1 (per-denom DecCoins)
 	inLiq := sdk.NewDecCoins(msg.LiquidationThreshold...)
 	if len(inLiq) != 2 || inLiq[0].Denom != denom1 || inLiq[1].Denom != denom2 {
@@ -235,7 +226,6 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		UpdatedTime:          &t,
 		NumTrades:            0,
 		MinCollateralRatio:   msg.MinCollateralRatio,
-		MaxLeverageRatio:     msg.MaxLeverageRatio,
 		LiquidationThreshold: msg.LiquidationThreshold,
 		InterestRate:         msg.InterestRate,
 		MaxBorrowPercent:     msg.MaxBorrowPercent,

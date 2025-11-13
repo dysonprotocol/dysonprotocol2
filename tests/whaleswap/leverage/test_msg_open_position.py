@@ -572,10 +572,10 @@ def demo_insufficient_cr(alice_addr, foo_name, bar_name):
     ), f"Expected 'collateral' in error, got: {exception_msg}"
 
 
-def test_open_position_excessive_leverage(
+def test_open_position_no_leverage_clamp(
     chainnet, leverage_accounts, leverage_names_and_coins
 ):
-    """Test that OpenPosition fails when leverage > max_leverage_ratio."""
+    """OpenPosition should succeed even if old max_leverage_ratio would have blocked it (deprecated, ignored)."""
     dysond = chainnet[0]
     alice_addr = leverage_accounts["alice"]["addr"]
     foo_name = leverage_names_and_coins["foo_name"]
@@ -593,7 +593,7 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_excessive_leverage(alice_addr, foo_name, bar_name):
+def demo_leverage_no_clamp(alice_addr, foo_name, bar_name):
     base, quote = sorted([foo_name, bar_name])
     sudo_pool_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
@@ -625,8 +625,8 @@ def demo_excessive_leverage(alice_addr, foo_name, bar_name):
     })
     pool_id = sudo_pool_result["results"][0]["pool_id"]
     
-    # CR = 750/500 = 1.5 (passes min_collateral_ratio)
-    # Leverage = (750 + 500) / 750 = 1.667 > 1.4 (max)
+    # CR = 750/500 = 1.5 (passes min_collateral_ratio).
+    # Old leverage clamp 1.4 would have rejected; now ignored.
     sudo_position_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgOpenPosition",
         "trader": alice_addr,
@@ -634,7 +634,7 @@ def demo_excessive_leverage(alice_addr, foo_name, bar_name):
         "collateral": {"denom": bar_name, "amount": "750"},
         "borrow": {"denom": foo_name, "amount": "500"}
     })
-    return {"unexpected": "should have failed"}
+    return {"ok": True, "position_id": sudo_position_result["results"][0]["position_id"]}
 """
     kwargs = json.dumps(
         {"alice_addr": alice_addr, "foo_name": foo_name, "bar_name": bar_name}
@@ -648,20 +648,14 @@ def demo_excessive_leverage(alice_addr, foo_name, bar_name):
         "--executor-address",
         gov_addr,
         "--function-name",
-        "demo_excessive_leverage",
+        "demo_leverage_no_clamp",
         "--kwargs",
         kwargs,
         "--extra-code",
         extra_code,
     )
 
-    assert (
-        "exception" in query_result
-    ), f"Expected exception for excessive leverage. Got: {json.dumps(query_result, indent=2)}"
-    exception_msg = str(query_result["exception"])
-    assert (
-        "leverage" in exception_msg.lower()
-    ), f"Expected leverage error, got: {exception_msg}"
+    assert "exception" not in query_result, f"Did not expect exception (leverage clamp deprecated). Full: {json.dumps(query_result, indent=2)}"
 
 
 def test_open_position_borrow_cap_exceeded(

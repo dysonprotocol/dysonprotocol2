@@ -36,10 +36,10 @@ We demonstrate both CLI and dyslang-based queries.
     {
       "validators": [
         {
-          "operator_address": "dys2valoper142656vp0pld9tkearct5tug6zhsztey5hcht5p",
+          "operator_address": "dys2valoper1tcx55yxmg3a49upmg0nxgs5jc3d3t9udnpxn62",
           "consensus_pubkey": {
             "type": "/cosmos.crypto.ed25519.PubKey",
-            "value": "wuItfgSFN05Toiwpia07kuISQE5ceozLWdwkNPu+d+w="
+            "value": "9Igke7OEqMFvujy/M55yDMDKA4GFPV7732aOUcFhYso="
           },
           "status": "BOND_STATUS_BONDED",
           "tokens": "1000000",
@@ -54,7 +54,7 @@ We demonstrate both CLI and dyslang-based queries.
               "max_rate": "0.200000000000000000",
               "max_change_rate": "0.010000000000000000"
             },
-            "update_time": "2025-11-13T09:48:44.439658Z"
+            "update_time": "2025-11-13T18:43:28.494108Z"
           },
           "min_self_delegation": "1"
         }
@@ -108,11 +108,11 @@ with tempfile.NamedTemporaryFile("w+", suffix=".py", delete=True) as f:
                 "max_rate": "0.200000000000000000",
                 "rate": "0.100000000000000000"
               },
-              "update_time": "2025-11-13T09:48:44.439658Z"
+              "update_time": "2025-11-13T18:43:28.494108Z"
             },
             "consensus_pubkey": {
               "@type": "/cosmos.crypto.ed25519.PubKey",
-              "key": "wuItfgSFN05Toiwpia07kuISQE5ceozLWdwkNPu+d+w="
+              "key": "9Igke7OEqMFvujy/M55yDMDKA4GFPV7732aOUcFhYso="
             },
             "delegator_shares": "1000000.000000000000000000",
             "description": {
@@ -124,7 +124,7 @@ with tempfile.NamedTemporaryFile("w+", suffix=".py", delete=True) as f:
             },
             "jailed": false,
             "min_self_delegation": "1",
-            "operator_address": "dys2valoper142656vp0pld9tkearct5tug6zhsztey5hcht5p",
+            "operator_address": "dys2valoper1tcx55yxmg3a49upmg0nxgs5jc3d3t9udnpxn62",
             "status": "BOND_STATUS_BONDED",
             "tokens": "1000000",
             "unbonding_height": "0",
@@ -155,15 +155,15 @@ print(f"Delegating {AMOUNT} from {ALICE} to {VALOPER}")
 
 ```
 
-    Delegating 1000udys from dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej to dys2valoper142656vp0pld9tkearct5tug6zhsztey5hcht5p
+    Delegating 1000udys from dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej to dys2valoper1tcx55yxmg3a49upmg0nxgs5jc3d3t9udnpxn62
 
 
     gas estimate: 105783
 
 
     {
-      "height": "189",
-      "txhash": "BC4B35AF0328361C347FB747941087F68F5297BB3BCD6BADE5E1CAA70F3F2DE1",
+      "height": "160",
+      "txhash": "61A68057C359F74DC35C01A43FA3D73E01675C2F99AF29E1B1042C6B81FF2C62",
       "codespace": "",
       "code": 0,
       "data": "122D0A2B2F636F736D6F732E7374616B696E672E763162657461312E4D736744656C6567617465526573706F6E7365",
@@ -180,7 +180,7 @@ print(f"Delegating {AMOUNT} from {ALICE} to {VALOPER}")
           "attributes": [
             {
               "key": "acc_seq",
-              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/24",
+              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/8",
               "index": true
             }
           ]
@@ -190,7 +190,7 @@ print(f"Delegating {AMOUNT} from {ALICE} to {VALOPER}")
           "attributes": [
             {
               "key": "signature",
-              "value": "gjepLoAASTgPDuISOYuyLuNF/sHGzrDSljTjxIg+lClvzpkCqQCWmJqsfCd9ZjUExIobDoCmTql8eE8WozikTA==",
+              "value": "UHCayliToIHf4Xz6J3W+6Wxw+kZ3zP0hSxs/P+QGHCJq9S95KCkuPyc4LZ9vF79ykeOCYW2q7Vh9HVt1cEFguw==",
               "index": true
             }
           ]
@@ -265,7 +265,7 @@ print(f"Delegating {AMOUNT} from {ALICE} to {VALOPER}")
           "attributes": [
             {
               "key": "validator",
-              "value": "dys2valoper142656vp0pld9tkearct5tug6zhsztey5hcht5p",
+              "value": "dys2valoper1tcx55yxmg3a49upmg0nxgs5jc3d3t9udnpxn62",
               "index": true
             },
             {
@@ -335,21 +335,21 @@ args = shlex.quote(json.dumps(["100udys", VALOPER]))
     gas estimate: 1057160
 
 
-    {"height":"191","txhash":"91ABAACBFF7E749DA11EDE4C84EB60853F059334F5155E01335DDDF975F69443","codespace":"","code":0,"data":"12360A302F6479736F6E70726F746F636F6C2E7363726970742E76312E4D7367557064617465536372697074526573706F6E736512020802","raw_log":"","logs":[],"info":"","gas_wanted":"1057160","gas_used":"1055212","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/25","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"VGMVxyGRGRnY2opy4HUDmfv59VI2SEEv7zywcswhjwN/4RIpf/M24CnWqzjZj+TmFGZwBQghk1rSuotFGMUuHg==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.script.v1.MsgUpdateScript","index":true},{"key":"sender","value":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej","index":true},{"key":"module","value":"script","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.script.v1.EventUpdateScript","attributes":[{"key":"script_address","value":"\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\"","index":true},{"key":"version","value":"\"2\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}
+    {"height":"162","txhash":"E930626324F68485BA27B8DBE2D6628442234FF2F62E7047AA055F394C35F160","codespace":"","code":0,"data":"12360A302F6479736F6E70726F746F636F6C2E7363726970742E76312E4D7367557064617465536372697074526573706F6E736512020802","raw_log":"","logs":[],"info":"","gas_wanted":"1057160","gas_used":"1055212","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/9","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"LACfXcK/JJWS+dCVI3fTjxwLuc8d2K2WGpV0DO+e/XUg2cukNfQtmA7AMrVxRcar953rLt3UIW4An0cumILrQw==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.script.v1.MsgUpdateScript","index":true},{"key":"sender","value":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej","index":true},{"key":"module","value":"script","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.script.v1.EventUpdateScript","attributes":[{"key":"script_address","value":"\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\"","index":true},{"key":"version","value":"\"2\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}
 
 
-    gas estimate: 1161197
+    gas estimate: 1161194
 
 
     {
       "cumsize": 13086,
       "exception": null,
-      "gas_limit": 1161197,
+      "gas_limit": 1161194,
       "nodes_called": 46,
       "result": {
         "@type": "/cosmos.staking.v1beta1.MsgDelegateResponse"
       },
-      "script_gas_consumed": 1159249,
+      "script_gas_consumed": 1159279,
       "stdout": ""
     }
 
@@ -366,7 +366,7 @@ We’ll query rewards for a delegator using both CLI and dyslang.
     {
       "rewards": [
         {
-          "validator_address": "dys2valoper142656vp0pld9tkearct5tug6zhsztey5hcht5p",
+          "validator_address": "dys2valoper1tcx55yxmg3a49upmg0nxgs5jc3d3t9udnpxn62",
           "reward": [
             "0.797597243032663700udys"
           ]
@@ -417,7 +417,7 @@ with tempfile.NamedTemporaryFile("w+", suffix=".py", delete=True) as f:
                 "denom": "udys"
               }
             ],
-            "validator_address": "dys2valoper142656vp0pld9tkearct5tug6zhsztey5hcht5p"
+            "validator_address": "dys2valoper1tcx55yxmg3a49upmg0nxgs5jc3d3t9udnpxn62"
           }
         ],
         "total": [
@@ -505,7 +505,7 @@ with tempfile.NamedTemporaryFile("w+", suffix=".py", delete=True) as f:
         ],
         "withdrawn": 1
       },
-      "script_gas_consumed": 1175217,
+      "script_gas_consumed": 1175247,
       "stdout": ""
     }
 
@@ -599,10 +599,10 @@ assert int(exec_result['result']['total']['udys']) > 0, "Expected a positive amo
       "result": {
         "delegations": 1,
         "total": {
-          "udys": "2"
+          "udys": "3"
         }
       },
-      "script_gas_consumed": 1342662,
+      "script_gas_consumed": 1342665,
       "stdout": ""
     }
 

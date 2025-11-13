@@ -7331,13 +7331,16 @@ paths:
 
                           signatures required by gogoproto.
                       description: >-
-                        Maximum leverage ratio allowed (collateral + borrowed) /
-                        collateral per
+                        Deprecated: maximum leverage ratio per reserve denom.
 
-                        reserve denom (exactly two, canonical order). Each
-                        amount is a decimal
+                        This field is ignored by the keeper; risk is enforced
+                        via
 
-                        string (> 1).
+                        min_collateral_ratio, liquidation_threshold, and
+                        max_borrow_percent.
+
+                        Kept for backward-compatible JSON/proto decoding of
+                        older clients.
                     liquidation_threshold:
                       type: array
                       items:
@@ -7824,13 +7827,16 @@ paths:
 
                           signatures required by gogoproto.
                       description: >-
-                        Maximum leverage ratio allowed (collateral + borrowed) /
-                        collateral per
+                        Deprecated: maximum leverage ratio per reserve denom.
 
-                        reserve denom (exactly two, canonical order). Each
-                        amount is a decimal
+                        This field is ignored by the keeper; risk is enforced
+                        via
 
-                        string (> 1).
+                        min_collateral_ratio, liquidation_threshold, and
+                        max_borrow_percent.
+
+                        Kept for backward-compatible JSON/proto decoding of
+                        older clients.
                     liquidation_threshold:
                       type: array
                       items:
@@ -8326,13 +8332,16 @@ paths:
 
                           signatures required by gogoproto.
                       description: >-
-                        Maximum leverage ratio allowed (collateral + borrowed) /
-                        collateral per
+                        Deprecated: maximum leverage ratio per reserve denom.
 
-                        reserve denom (exactly two, canonical order). Each
-                        amount is a decimal
+                        This field is ignored by the keeper; risk is enforced
+                        via
 
-                        string (> 1).
+                        min_collateral_ratio, liquidation_threshold, and
+                        max_borrow_percent.
+
+                        Kept for backward-compatible JSON/proto decoding of
+                        older clients.
                     liquidation_threshold:
                       type: array
                       items:
@@ -8839,13 +8848,16 @@ paths:
 
                           signatures required by gogoproto.
                       description: >-
-                        Maximum leverage ratio allowed (collateral + borrowed) /
-                        collateral per
+                        Deprecated: maximum leverage ratio per reserve denom.
 
-                        reserve denom (exactly two, canonical order). Each
-                        amount is a decimal
+                        This field is ignored by the keeper; risk is enforced
+                        via
 
-                        string (> 1).
+                        min_collateral_ratio, liquidation_threshold, and
+                        max_borrow_percent.
+
+                        Kept for backward-compatible JSON/proto decoding of
+                        older clients.
                     liquidation_threshold:
                       type: array
                       items:
@@ -9344,13 +9356,15 @@ paths:
 
                         signatures required by gogoproto.
                     description: >-
-                      Maximum leverage ratio allowed (collateral + borrowed) /
-                      collateral per
+                      Deprecated: maximum leverage ratio per reserve denom.
 
-                      reserve denom (exactly two, canonical order). Each amount
-                      is a decimal
+                      This field is ignored by the keeper; risk is enforced via
 
-                      string (> 1).
+                      min_collateral_ratio, liquidation_threshold, and
+                      max_borrow_percent.
+
+                      Kept for backward-compatible JSON/proto decoding of older
+                      clients.
                   liquidation_threshold:
                     type: array
                     items:
@@ -9792,13 +9806,16 @@ paths:
 
                           signatures required by gogoproto.
                       description: >-
-                        Maximum leverage ratio allowed (collateral + borrowed) /
-                        collateral per
+                        Deprecated: maximum leverage ratio per reserve denom.
 
-                        reserve denom (exactly two, canonical order). Each
-                        amount is a decimal
+                        This field is ignored by the keeper; risk is enforced
+                        via
 
-                        string (> 1).
+                        min_collateral_ratio, liquidation_threshold, and
+                        max_borrow_percent.
+
+                        Kept for backward-compatible JSON/proto decoding of
+                        older clients.
                     liquidation_threshold:
                       type: array
                       items:
@@ -10273,13 +10290,15 @@ paths:
 
                         signatures required by gogoproto.
                     description: >-
-                      Maximum leverage ratio allowed (collateral + borrowed) /
-                      collateral per
+                      Deprecated: maximum leverage ratio per reserve denom.
 
-                      reserve denom (exactly two, canonical order). Each amount
-                      is a decimal
+                      This field is ignored by the keeper; risk is enforced via
 
-                      string (> 1).
+                      min_collateral_ratio, liquidation_threshold, and
+                      max_borrow_percent.
+
+                      Kept for backward-compatible JSON/proto decoding of older
+                      clients.
                   liquidation_threshold:
                     type: array
                     items:
@@ -36387,24 +36406,24 @@ paths:
 
         - Input normalization: canonicalizes `coins` (exactly two positive
         coins)
-
-        to the pool's denom order.
-
+          to the pool's denom order.
         - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly
         two
           DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
           interest_rate >= 0 per denom.
-        - Leverage configuration (required): `min_collateral_ratio` and
-          `max_leverage_ratio` must have exactly two entries (> 1) matching pool
-          denoms; `liquidation_threshold` must have exactly two entries (> 1);
-          `max_borrow_percent` must have exactly two entries with amounts in [0,1).
+        - Leverage configuration: `min_collateral_ratio` (required) and
+          `max_leverage_ratio` (deprecated; accepted for backward compatibility and
+          ignored by the server). `liquidation_threshold` (required).
+        - `max_borrow_percent` (required) must have exactly two entries with
+
+        amounts in [0,1).
+
         - Bound percent (optional): when omitted defaults to 1 (unbounded) for
         both
           denoms. When provided, must contain exactly two DecCoins matching pool
           denoms with amounts in (0,1]; 1 disables the bound for that denom.
         - Funds and shares: sends initial reserves from `creator` → module;
-
-        allocates a new pool_id; persists the pool; computes initial shares as
+          allocates a new pool_id; persists the pool; computes initial shares as
           floor(sqrt(x*y)); ensures at least one share; mints pool shares and sends
           them to the creator.
         - Invariants: asserts AMM and module invariants before returning.
@@ -36421,10 +36440,6 @@ paths:
 
         - min_collateral_ratio must have exactly two entries (> 1) matching pool
           denoms in canonical order.
-        - max_leverage_ratio must have exactly two entries (> 1) matching pool
-
-        denoms in canonical order.
-
         - liquidation_threshold must have exactly two entries (> 1) matching
         pool
           denoms in canonical order.
@@ -36566,10 +36581,10 @@ paths:
 
                     signatures required by gogoproto.
                 description: >-
-                  Required: maximum leverage ratio per reserve denom (exactly
-                  two,
+                  Deprecated: maximum leverage ratio per reserve denom; ignored
+                  by server.
 
-                  canonical order). Each amount is a LegacyDec string (> 1).
+                  Kept for backward-compatible client requests.
               interest_rate:
                 type: array
                 items:
@@ -38697,11 +38712,11 @@ paths:
                     method
 
                     signatures required by gogoproto.
-                title: >-
-                  Required: maximum leverage ratio per reserve denom (exactly
-                  two,
+                description: >-
+                  Deprecated: maximum leverage ratio per reserve denom; ignored
+                  by server.
 
-                  canonical order; > 1)
+                  Kept for backward-compatible client requests.
               interest_rate:
                 type: array
                 items:
@@ -51177,13 +51192,11 @@ definitions:
 
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
-        description: >-
-          Maximum leverage ratio allowed (collateral + borrowed) / collateral
-          per
-
-          reserve denom (exactly two, canonical order). Each amount is a decimal
-
-          string (> 1).
+        description: |-
+          Deprecated: maximum leverage ratio per reserve denom.
+          This field is ignored by the keeper; risk is enforced via
+          min_collateral_ratio, liquidation_threshold, and max_borrow_percent.
+          Kept for backward-compatible JSON/proto decoding of older clients.
       liquidation_threshold:
         type: array
         items:
@@ -53091,13 +53104,14 @@ definitions:
 
                 signatures required by gogoproto.
             description: >-
-              Maximum leverage ratio allowed (collateral + borrowed) /
-              collateral per
+              Deprecated: maximum leverage ratio per reserve denom.
 
-              reserve denom (exactly two, canonical order). Each amount is a
-              decimal
+              This field is ignored by the keeper; risk is enforced via
 
-              string (> 1).
+              min_collateral_ratio, liquidation_threshold, and
+              max_borrow_percent.
+
+              Kept for backward-compatible JSON/proto decoding of older clients.
           liquidation_threshold:
             type: array
             items:
@@ -53471,13 +53485,14 @@ definitions:
 
                 signatures required by gogoproto.
             description: >-
-              Maximum leverage ratio allowed (collateral + borrowed) /
-              collateral per
+              Deprecated: maximum leverage ratio per reserve denom.
 
-              reserve denom (exactly two, canonical order). Each amount is a
-              decimal
+              This field is ignored by the keeper; risk is enforced via
 
-              string (> 1).
+              min_collateral_ratio, liquidation_threshold, and
+              max_borrow_percent.
+
+              Kept for backward-compatible JSON/proto decoding of older clients.
           liquidation_threshold:
             type: array
             items:
@@ -53854,13 +53869,15 @@ definitions:
 
                   signatures required by gogoproto.
               description: >-
-                Maximum leverage ratio allowed (collateral + borrowed) /
-                collateral per
+                Deprecated: maximum leverage ratio per reserve denom.
 
-                reserve denom (exactly two, canonical order). Each amount is a
-                decimal
+                This field is ignored by the keeper; risk is enforced via
 
-                string (> 1).
+                min_collateral_ratio, liquidation_threshold, and
+                max_borrow_percent.
+
+                Kept for backward-compatible JSON/proto decoding of older
+                clients.
             liquidation_threshold:
               type: array
               items:
@@ -54270,13 +54287,15 @@ definitions:
 
                   signatures required by gogoproto.
               description: >-
-                Maximum leverage ratio allowed (collateral + borrowed) /
-                collateral per
+                Deprecated: maximum leverage ratio per reserve denom.
 
-                reserve denom (exactly two, canonical order). Each amount is a
-                decimal
+                This field is ignored by the keeper; risk is enforced via
 
-                string (> 1).
+                min_collateral_ratio, liquidation_threshold, and
+                max_borrow_percent.
+
+                Kept for backward-compatible JSON/proto decoding of older
+                clients.
             liquidation_threshold:
               type: array
               items:
@@ -54686,13 +54705,15 @@ definitions:
 
                   signatures required by gogoproto.
               description: >-
-                Maximum leverage ratio allowed (collateral + borrowed) /
-                collateral per
+                Deprecated: maximum leverage ratio per reserve denom.
 
-                reserve denom (exactly two, canonical order). Each amount is a
-                decimal
+                This field is ignored by the keeper; risk is enforced via
 
-                string (> 1).
+                min_collateral_ratio, liquidation_threshold, and
+                max_borrow_percent.
+
+                Kept for backward-compatible JSON/proto decoding of older
+                clients.
             liquidation_threshold:
               type: array
               items:
@@ -55102,13 +55123,15 @@ definitions:
 
                   signatures required by gogoproto.
               description: >-
-                Maximum leverage ratio allowed (collateral + borrowed) /
-                collateral per
+                Deprecated: maximum leverage ratio per reserve denom.
 
-                reserve denom (exactly two, canonical order). Each amount is a
-                decimal
+                This field is ignored by the keeper; risk is enforced via
 
-                string (> 1).
+                min_collateral_ratio, liquidation_threshold, and
+                max_borrow_percent.
+
+                Kept for backward-compatible JSON/proto decoding of older
+                clients.
             liquidation_threshold:
               type: array
               items:
@@ -55518,13 +55541,15 @@ definitions:
 
                   signatures required by gogoproto.
               description: >-
-                Maximum leverage ratio allowed (collateral + borrowed) /
-                collateral per
+                Deprecated: maximum leverage ratio per reserve denom.
 
-                reserve denom (exactly two, canonical order). Each amount is a
-                decimal
+                This field is ignored by the keeper; risk is enforced via
 
-                string (> 1).
+                min_collateral_ratio, liquidation_threshold, and
+                max_borrow_percent.
+
+                Kept for backward-compatible JSON/proto decoding of older
+                clients.
             liquidation_threshold:
               type: array
               items:
@@ -80363,9 +80388,11 @@ definitions:
 
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
-        description: |-
-          Required: maximum leverage ratio per reserve denom (exactly two,
-          canonical order). Each amount is a LegacyDec string (> 1).
+        description: >-
+          Deprecated: maximum leverage ratio per reserve denom; ignored by
+          server.
+
+          Kept for backward-compatible client requests.
       interest_rate:
         type: array
         items:
@@ -81740,9 +81767,11 @@ definitions:
 
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
-        title: |-
-          Required: maximum leverage ratio per reserve denom (exactly two,
-          canonical order; > 1)
+        description: >-
+          Deprecated: maximum leverage ratio per reserve denom; ignored by
+          server.
+
+          Kept for backward-compatible client requests.
       interest_rate:
         type: array
         items:

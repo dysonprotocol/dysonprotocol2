@@ -31,7 +31,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Required: maximum leverage ratio per reserve denom (exactly two, canonical order; > 1)"
+                        "description": "Deprecated: maximum leverage ratio per reserve denom; ignored by server. Kept for backward-compatible client requests."
                     },
                     "interest_rate": {
                         "items": {

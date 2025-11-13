@@ -357,16 +357,14 @@ print("POOL_ID:", POOL_ID)
       'coins': [{'denom': 'bar.dys', 'amount': '100000'},
        {'denom': 'foo.dys', 'amount': '100000'}],
       'shares_denom': 'whaleswap.dys/pools/1',
-      'created_height': '18',
-      'created_time': '2025-11-13T09:52:01.458654Z',
-      'updated_time': '2025-11-13T09:52:01.458654Z',
-      'updated_height': '18',
+      'created_height': '229',
+      'created_time': '2025-11-13T18:44:40.128264Z',
+      'updated_time': '2025-11-13T18:44:40.128264Z',
+      'updated_height': '229',
       'interest_rate': ['0.000000000000000000bar.dys',
        '0.000000000000000000foo.dys'],
       'min_collateral_ratio': ['1.500000000000000000bar.dys',
        '1.500000000000000000foo.dys'],
-      'max_leverage_ratio': ['10.000000000000000000bar.dys',
-       '10.000000000000000000foo.dys'],
       'liquidation_threshold': ['1.200000000000000000bar.dys',
        '1.200000000000000000foo.dys'],
       'max_borrow_percent': ['0.800000000000000000bar.dys',
@@ -556,7 +554,7 @@ print("Bob balances:")
         },
         {
           "denom": "udys",
-          "amount": "10000000000"
+          "amount": "10000000121"
         }
       ],
       "pagination": {
@@ -802,10 +800,10 @@ print(json.dumps(events, indent=2))
           }
         ],
         "shares_denom": "whaleswap.dys/pools/1",
-        "created_height": "18",
-        "created_time": "2025-11-13T09:52:01.458654Z",
-        "updated_time": "2025-11-13T09:52:03.97197Z",
-        "updated_height": "27",
+        "created_height": "229",
+        "created_time": "2025-11-13T18:44:40.128264Z",
+        "updated_time": "2025-11-13T18:44:42.634612Z",
+        "updated_height": "238",
         "num_trades": "2",
         "interest_rate": [
           "0.000000000000000000bar.dys",
@@ -814,10 +812,6 @@ print(json.dumps(events, indent=2))
         "min_collateral_ratio": [
           "1.500000000000000000bar.dys",
           "1.500000000000000000foo.dys"
-        ],
-        "max_leverage_ratio": [
-          "10.000000000000000000bar.dys",
-          "10.000000000000000000foo.dys"
         ],
         "liquidation_threshold": [
           "1.200000000000000000bar.dys",
@@ -896,10 +890,10 @@ print(json.dumps(events, indent=2))
           "offer_id": "1",
           "status": "open",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "29",
-          "created_height": "29",
-          "created_time": "2025-11-13T09:52:04.532557Z",
-          "updated_time": "2025-11-13T09:52:04.532557Z",
+          "updated_height": "240",
+          "created_height": "240",
+          "created_time": "2025-11-13T18:44:43.190545Z",
+          "updated_time": "2025-11-13T18:44:43.190545Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"
@@ -1465,8 +1459,8 @@ else:
           "amount": "0"
         },
         "trader": "dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el",
-        "height": "35",
-        "timestamp": "2025-11-13T09:52:06.212891Z",
+        "height": "246",
+        "timestamp": "2025-11-13T18:44:44.858362Z",
         "operations": [
           {
             "Op": {
@@ -1552,10 +1546,10 @@ print("Module metrics:")
             }
           ],
           "shares_denom": "whaleswap.dys/pools/1",
-          "created_height": "18",
-          "created_time": "2025-11-13T09:52:01.458654Z",
-          "updated_time": "2025-11-13T09:52:06.212891Z",
-          "updated_height": "35",
+          "created_height": "229",
+          "created_time": "2025-11-13T18:44:40.128264Z",
+          "updated_time": "2025-11-13T18:44:44.858362Z",
+          "updated_height": "246",
           "num_trades": "3",
           "interest_rate": [
             "0.000000000000000000bar.dys",
@@ -1564,10 +1558,6 @@ print("Module metrics:")
           "min_collateral_ratio": [
             "1.500000000000000000bar.dys",
             "1.500000000000000000foo.dys"
-          ],
-          "max_leverage_ratio": [
-            "10.000000000000000000bar.dys",
-            "10.000000000000000000foo.dys"
           ],
           "liquidation_threshold": [
             "1.200000000000000000bar.dys",
@@ -1602,10 +1592,10 @@ print("Module metrics:")
           "offer_id": "1",
           "status": "closed",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "30",
-          "created_height": "29",
-          "created_time": "2025-11-13T09:52:04.532557Z",
-          "updated_time": "2025-11-13T09:52:04.811741Z",
+          "updated_height": "241",
+          "created_height": "240",
+          "created_time": "2025-11-13T18:44:43.190545Z",
+          "updated_time": "2025-11-13T18:44:43.468589Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"
@@ -1634,10 +1624,10 @@ print("Module metrics:")
           "offer_id": "2",
           "status": "closed",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "32",
-          "created_height": "31",
-          "created_time": "2025-11-13T09:52:05.09015Z",
-          "updated_time": "2025-11-13T09:52:05.36977Z",
+          "updated_height": "243",
+          "created_height": "242",
+          "created_time": "2025-11-13T18:44:43.747301Z",
+          "updated_time": "2025-11-13T18:44:44.025507Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "100"

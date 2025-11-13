@@ -99,12 +99,19 @@ func MigratePool(pool *Pool) {
 		defaultMinCR, defaultMinCR,
 		func(d cosmossdkmath.LegacyDec) bool { return d.GT(oneDec) },
 	)
-	pool.MaxLeverageRatio = ensurePerDenomDecCoins(
-		pool.MaxLeverageRatio,
-		denomA, denomB,
-		defaultMaxLev, defaultMaxLev,
-		func(d cosmossdkmath.LegacyDec) bool { return d.GT(oneDec) },
-	)
+	// Deprecated: max_leverage_ratio is no longer used. Only normalize if already set (for backward compatibility),
+	// but don't populate defaults since it's deprecated and should remain empty for new pools.
+	if len(pool.MaxLeverageRatio) > 0 {
+		pool.MaxLeverageRatio = ensurePerDenomDecCoins(
+			pool.MaxLeverageRatio,
+			denomA, denomB,
+			defaultMaxLev, defaultMaxLev,
+			func(d cosmossdkmath.LegacyDec) bool { return d.GT(oneDec) },
+		)
+	} else {
+		// Keep empty for new pools (deprecated field)
+		pool.MaxLeverageRatio = sdk.DecCoins{}
+	}
 	pool.LiquidationThreshold = ensurePerDenomDecCoins(
 		pool.LiquidationThreshold,
 		denomA, denomB,
