@@ -54,11 +54,10 @@ A blockchain-based, unlimited multiplayer Rock-Paper-Scissors battle game on a 2
   - Scissors defeats Paper  
   - Paper defeats Rock
 - **Attack Outcome**:
-  - Attacker gains 50 energy from victim
-  - Victim's remaining energy distribution:
-    - 40% sold on Whaleswap market
-    - 30% placed randomly on grid as collectible
-    - 30% burned/removed
+  - Victim's total energy distribution:
+    - 50% → Attacker (as bank send of energy coins)
+    - 25% → Added as unbalanced liquidity to Whaleswap pool
+    - 25% → Placed randomly on grid as energy piece
   - Victim piece is destroyed
 
 #### Snail (Computer Piece)
@@ -75,8 +74,10 @@ A blockchain-based, unlimited multiplayer Rock-Paper-Scissors battle game on a 2
 - **AI Behavior**: Tracks and moves toward the oldest player piece on the grid
 - **Combat**: Can attack ANY piece type (ignores RPS rules)
 - **Attack Outcome**: 
-  - Snail gains 50 energy from victim (unused)
-  - Victim energy distributed same as normal combat
+  - Victim energy distributed same as normal combat:
+    - 50% → Snail (as bank send of energy coins, unused)
+    - 25% → Added as unbalanced liquidity to Whaleswap pool
+    - 25% → Placed randomly on grid as energy piece
   - Snail continues to next oldest player
 - **Invulnerability**: Cannot be attacked or captured by players
 
@@ -206,11 +207,10 @@ def execute_combat(attacker_id: str, victim_id: str) -> dict:
     """
     Resolve RPS combat
     - Validate RPS rules (attacker type beats victim type)
-    - Transfer 50 energy from victim to attacker
-    - Distribute victim remaining energy:
-        * 40% sell on Whaleswap (tracked as pending_market_energy)
-        * 30% place EnergyPiece in rectangle from (0,0) to combat location (falls back to random board if needed)
-        * 30% burn
+    - Distribute victim's total energy:
+        * 50% → Attacker (as bank send of energy coins)
+        * 25% → Added as unbalanced liquidity to Whaleswap pool
+        * 25% → Place EnergyPiece randomly on grid
     - Delete victim piece
     - Update stats
     """
@@ -263,12 +263,15 @@ def get_leaderboard(limit: int) -> list:
 - **Token Name**: `rpsgrid.energy.dys` (or similar registered name)
 - **Initial Pool**: Seed liquidity pool with energy/udys pair
 - **Movement Revenue**: `distance² * energy_cost` added to pool via `MsgAddLiquidity`
-- **Combat Sales**: 40% of victim energy sold via `MsgSwap` (energy → udys)
+- **Combat Distribution**: 
+  - 50% of victim energy sent to attacker as bank transfer (energy coins)
+  - 25% added as unbalanced liquidity to Whaleswap pool
+  - 25% placed randomly on grid as energy piece
 
 ### Economic Flow
 ```
 Player Movement (Queen) → Energy Cost → Liquidity Pool → Increased Market Depth
-Combat Victory → 40% Victim Energy → Market Sale → Price Impact
+Combat Victory → 50% Attacker Reward + 25% Liquidity + 25% Grid Drop
 Price Fluctuation → Player Strategy → Timing of Moves
 ```
 

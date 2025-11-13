@@ -563,14 +563,38 @@ def move_piece(piece_id: int, target_x: int, target_y: int):
     current_y = piece["y"]
 
     board_min, board_max = get_board_bounds()
-    if target_x < board_min or target_x > board_max:
-        raise ValueError(
-            f"target_x {target_x} out of bounds [{board_min}, {board_max}]"
-        )
-    if target_y < board_min or target_y > board_max:
-        raise ValueError(
-            f"target_y {target_y} out of bounds [{board_min}, {board_max}]"
-        )
+    current_out_of_bounds = (
+        current_x < board_min
+        or current_x > board_max
+        or current_y < board_min
+        or current_y > board_max
+    )
+    target_out_of_bounds = (
+        target_x < board_min
+        or target_x > board_max
+        or target_y < board_min
+        or target_y > board_max
+    )
+
+    if target_out_of_bounds:
+        if current_out_of_bounds:
+            # Both out of bounds: allow move if it brings piece closer to (0, 0)
+            current_dist_sq = current_x * current_x + current_y * current_y
+            target_dist_sq = target_x * target_x + target_y * target_y
+            if target_dist_sq >= current_dist_sq:
+                raise ValueError(
+                    f"target ({target_x}, {target_y}) out of bounds [{board_min}, {board_max}]. Out-of-bounds pieces can only move closer to (0, 0)"
+                )
+        else:
+            # Current in bounds, target out of bounds: not allowed
+            if target_x < board_min or target_x > board_max:
+                raise ValueError(
+                    f"target_x {target_x} out of bounds [{board_min}, {board_max}]"
+                )
+            if target_y < board_min or target_y > board_max:
+                raise ValueError(
+                    f"target_y {target_y} out of bounds [{board_min}, {board_max}]"
+                )
 
     block_info = get_block_info()
     block_height = block_info["height"]

@@ -772,3 +772,172 @@ def test_energy_pickup_collection(chainnet, generate_account):
     assert (
         "doesn't exist" in energy_piece_query
     ), f"Expected 'doesn't exist' error, got: {energy_piece_query}"
+
+
+def test_out_of_bounds_piece_can_move_closer_to_origin(chainnet, generate_account):
+    """Test that out-of-bounds pieces can move as long as they move closer to (0,0)"""
+    dysond_bin = chainnet[0]
+    account_name, account_address = generate_account(
+        "rps_out_of_bounds", faucet_amount=200
+    )
+
+    deploy_script(dysond_bin, account_name)
+    exec_initialize_game(dysond_bin, account_name, account_address)
+
+    # Set up deterministic scenario using direct storage
+    block_height = _get_block_height(dysond_bin)
+
+    # Place piece at (20, 20) - out of bounds when total_pieces=1 (bounds are [-11, 11])
+    piece_id = 1
+    piece = {
+        "id": piece_id,
+        "owner": account_address,
+        "type": "rock",
+        "x": 20,
+        "y": 20,
+        "energy": 1000,
+        "last_action_block": block_height - 1,
+        "is_npc": False,
+        "spawn_block": block_height - 10,
+    }
+    set_piece_direct(dysond_bin, account_name, account_address, piece_id, piece)
+    set_cell(dysond_bin, account_name, account_address, 20, 20, {"piece_id": piece_id})
+
+    # Update game state - with 1 piece, bounds are [-11, 11]
+    state = {
+        "total_pieces": 1,
+        "total_energy_circulation": 0,
+        "pending_market_energy": 0,
+        "pending_grid_energy": 0,
+        "last_updated_block": block_height - 1,
+        "next_piece_id": 2,
+    }
+    set_game_state(dysond_bin, account_name, account_address, state)
+
+    # Update player record
+    player_record = {
+        "pieces": [piece_id],
+        "total_kills": 0,
+        "total_deaths": 0,
+    }
+    set_player_record(
+        dysond_bin, account_name, account_address, account_address, player_record
+    )
+
+    wait_for_next_block(dysond_bin, block_height)
+
+    # Try to move closer to origin horizontally (19, 20) - should succeed
+    # Distance² from (20,20) to origin: 20² + 20² = 800
+    # Distance² from (19,20) to origin: 19² + 20² = 761
+    # 761 < 800, so move should be allowed
+    closer_move = exec_move_piece(
+        dysond_bin, account_name, account_address, piece_id, 19, 20, gas="12000000"
+    )
+    assert (
+        closer_move["piece"]["x"] == 19 and closer_move["piece"]["y"] == 20
+    ), f"Piece should move closer to origin: {json.dumps(closer_move['piece'], indent=2)}"
+
+    wait_for_next_block(dysond_bin, closer_move["piece"]["last_action_block"])
+
+    # Try to move further from origin horizontally (21, 20) - should fail
+    # Distance² from (19,20) to origin: 19² + 20² = 761
+    # Distance² from (21,20) to origin: 21² + 20² = 841
+    # 841 > 761, so move should be rejected
+    further_move_args = json.dumps([piece_id, 21, 20])
+    further_move_result = dysond_bin(
+        "tx",
+        "script",
+        "exec",
+        "--script-address",
+        account_address,
+        "--function-name",
+        "move_piece",
+        "--args",
+        further_move_args,
+        "--from",
+        account_name,
+        "--gas",
+        "12000000",
+    )
+    assert (
+        further_move_result["code"] != 0
+    ), f"Move further from origin should fail: {json.dumps(further_move_result, indent=2)}"
+    assert (
+        "closer to (0, 0)" in further_move_result["raw_log"].lower()
+    ), f"Expected 'closer to (0, 0)' error: {further_move_result['raw_log']}"
+
+    # Verify piece is still at (19, 20)
+    stored_piece = get_piece(dysond_bin, account_address, piece_id)
+    assert (
+        stored_piece["x"] == 19 and stored_piece["y"] == 20
+    ), f"Piece should remain at (19, 20): {json.dumps(stored_piece, indent=2)}"
+
+    wait_for_next_block(dysond_bin, stored_piece["last_action_block"])
+
+    # Move even closer to origin vertically (19, 19) - should succeed
+    # Distance² from (19,20) to origin: 19² + 20² = 761
+    # Distance² from (19,19) to origin: 19² + 19² = 722
+    # 722 < 761, so move should be allowed
+    closer_vertical_move = exec_move_piece(
+        dysond_bin, account_name, account_address, piece_id, 19, 19, gas="12000000"
+    )
+    assert (
+        closer_vertical_move["piece"]["x"] == 19
+        and closer_vertical_move["piece"]["y"] == 19
+    ), f"Piece should move closer to origin: {json.dumps(closer_vertical_move['piece'], indent=2)}"
+
+    wait_for_next_block(dysond_bin, closer_vertical_move["piece"]["last_action_block"])
+
+    # Move horizontally into bounds (11, 19) - should succeed and bring piece back into bounds
+    # Distance² from (19,19) to origin: 19² + 19² = 722
+    # Distance² from (11,19) to origin: 11² + 19² = 482
+    # 482 < 722, so move should be allowed
+    # With 1 piece, bounds are [-11, 11], so (11, 19) is still out of bounds in y, but closer
+    into_bounds_move = exec_move_piece(
+        dysond_bin, account_name, account_address, piece_id, 11, 19, gas="12000000"
+    )
+    assert (
+        into_bounds_move["piece"]["x"] == 11 and into_bounds_move["piece"]["y"] == 19
+    ), f"Piece should move closer to origin: {json.dumps(into_bounds_move['piece'], indent=2)}"
+
+    wait_for_next_block(dysond_bin, into_bounds_move["piece"]["last_action_block"])
+
+    # Move into full bounds (11, 11) - should succeed
+    # Distance² from (11,19) to origin: 11² + 19² = 482
+    # Distance² from (11,11) to origin: 11² + 11² = 242
+    # 242 < 482, so move should be allowed
+    # (11, 11) is within bounds [-11, 11]
+    fully_in_bounds_move = exec_move_piece(
+        dysond_bin, account_name, account_address, piece_id, 11, 11, gas="12000000"
+    )
+    assert (
+        fully_in_bounds_move["piece"]["x"] == 11
+        and fully_in_bounds_move["piece"]["y"] == 11
+    ), f"Piece should move into bounds: {json.dumps(fully_in_bounds_move['piece'], indent=2)}"
+
+    wait_for_next_block(dysond_bin, fully_in_bounds_move["piece"]["last_action_block"])
+
+    # Now that piece is in bounds, try to move out of bounds - should fail
+    # Try to move to (12, 11) which is out of bounds
+    out_of_bounds_move_args = json.dumps([piece_id, 12, 11])
+    out_of_bounds_move_result = dysond_bin(
+        "tx",
+        "script",
+        "exec",
+        "--script-address",
+        account_address,
+        "--function-name",
+        "move_piece",
+        "--args",
+        out_of_bounds_move_args,
+        "--from",
+        account_name,
+        "--gas",
+        "12000000",
+    )
+    assert (
+        out_of_bounds_move_result["code"] != 0
+    ), f"Move out of bounds should fail: {json.dumps(out_of_bounds_move_result, indent=2)}"
+    assert (
+        "out of bounds" in out_of_bounds_move_result["raw_log"].lower()
+    ), f"Expected 'out of bounds' error: {out_of_bounds_move_result['raw_log']}"

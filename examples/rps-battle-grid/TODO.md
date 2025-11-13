@@ -65,12 +65,12 @@
 ## Phase 2: Combat & Energy Economics 📋
 
 ### Combat System
-- [x] `execute_combat(attacker_id, victim_id)`
+- [x] `execute_combat(attacker_id, victim_id)` (Phase 2 implementation)
   - [x] Query attacker and victim pieces
   - [x] Validate RPS rules (attacker type beats victim type)
-  - [x] Transfer 50 energy from victim to attacker
+  - [x] Transfer 50 energy from victim to attacker (Phase 2: direct energy transfer)
   - [x] Distribute victim remaining energy:
-    - [x] 40% to market (sell on Whaleswap)
+    - [x] 40% to market (pending_market_energy, Phase 2: tracked only)
     - [x] 30% place random on grid
     - [x] 30% burn/remove
   - [x] Delete victim piece entity
@@ -78,6 +78,10 @@
   - [x] Update player stats (kills/deaths)
   - [x] Return combat result
   - [x] Create EnergyPiece for grid energy drops (30% of victim remainder)
+- [ ] Phase 3: Update combat distribution to new requirements:
+  - [ ] Send 50% of victim energy to attacker as bank transfer (energy coins)
+  - [ ] Add 25% as unbalanced liquidity to Whaleswap pool
+  - [ ] Place 25% randomly on grid as energy piece
 
 ### Movement with Energy Costs
 - [x] Integrate energy costs into `move_piece()`
@@ -214,11 +218,11 @@
   - [ ] Add energy + proportional udys to pool
   - [ ] Track liquidity added
 
-- [ ] Combat → Market Sale
-  - [ ] Calculate 40% of victim energy
-  - [ ] Call Whaleswap `MsgSwap` (energy → udys)
-  - [ ] Handle slippage and price impact
-  - [ ] Distribute sale proceeds
+- [ ] Combat → Market Distribution
+  - [ ] Send 50% of victim energy to attacker as bank transfer (energy coins)
+  - [ ] Add 25% as unbalanced liquidity to Whaleswap pool (MsgAddLiquidity)
+  - [ ] Place 25% randomly on grid as energy piece
+  - [ ] Handle liquidity calculation (proportional udys based on pool reserves)
 
 ### Price Oracle
 - [ ] Query energy price from pool

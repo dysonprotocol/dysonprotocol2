@@ -90,10 +90,9 @@ Player → TX[move_piece(piece_id, target_x, target_y)]
     → Query: game/pieces/{target_piece_id}
     → Validate RPS rules (attacker type > victim type)
     → Combat Resolution:
-        - Bank: Transfer 50 energy victim→attacker
-      - Bank: Transfer 40% victim energy to market (pending_market_energy)
-      - Storage: Place EnergyPiece(30%) in rectangle from (0,0) to combat location (5 attempts), then random board (up to 20 attempts)
-        - Bank: Burn 30% victim energy
+        - Bank: Send 50% of victim energy to attacker (as energy coins)
+        - Whaleswap: Add 25% as unbalanced liquidity to pool
+        - Storage: Place EnergyPiece(25%) randomly on grid
         - Storage: Delete victim piece
         - Storage: Delete victim grid cell
     → Bank: Deduct movement energy cost

@@ -137,11 +137,10 @@ Distance to Target    Speed    Travel Time (blocks)
 Snail vs Player Combat:
   - Snail ALWAYS wins (ignores RPS type)
   - Player piece is destroyed
-  - Snail gains 50 energy (though it doesn't need it)
   - Player energy distributed normally:
-      * 40% sold on Whaleswap
-      * 30% placed randomly on grid
-      * 30% burned
+      * 50% → Snail (as bank send of energy coins, unused)
+      * 25% → Added as unbalanced liquidity to Whaleswap pool
+      * 25% → Placed randomly on grid as energy piece
   
 Player vs Snail Combat:
   - FORBIDDEN

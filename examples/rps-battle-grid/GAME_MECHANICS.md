@@ -91,38 +91,36 @@ Diagonal moves beyond adjacent are INVALID
 
 ## Combat Energy Flow
 
-### Successful Attack (50 energy to winner)
+### Successful Attack (50% to attacker)
 ```
 Before Combat:
 ┌──────────┐         ┌──────────┐
 │ Rock (R) │  →→→    │ Scissors │
-│ 100 E    │  Attack │ 150 E    │
+│ 100 E    │  Attack │ 200 E    │
 └──────────┘         └──────────┘
                      (Vulnerable)
 
 After Combat:
 ┌──────────┐         ┌──────────┐
 │ Rock (R) │         │          │
-│ 150 E    │         │ DEFEATED │
+│ 200 E    │         │ DEFEATED │
 └──────────┘         └──────────┘
-   +50E                    ↓
-                     Remaining 150E
+   +100E                   ↓
+                     Total 200E
                            ↓
          ┌─────────────────┼─────────────────┐
          │                 │                 │
-    40% Market        30% Random         30% Burn
-    (60E sold)        (45E on grid)     (45E removed)
+    50% Attacker     25% Liquidity     25% Grid
+  (100E bank send)  (50E to pool)   (50E piece)
 ```
 
 ### Energy Distribution Detail
 ```
 Victim's Total Energy = X
   ↓
-├─ 50 → Attacker (fixed reward)
-└─ X-50 → Distributed as:
-          ├─ 40% → Sold on Whaleswap (market impact)
-          ├─ 30% → Placed randomly on grid (pickup)
-          └─ 30% → Burned (removed from circulation)
+├─ 50% → Attacker (as bank send of energy coins)
+├─ 25% → Added as unbalanced liquidity to Whaleswap pool
+└─ 25% → Placed randomly on grid as energy piece
 ```
 
 ## Game Economy Flow
@@ -317,14 +315,14 @@ Block 6: Player C spawns Paper - Pays 100 energy
 
 Block 7: Player C moves Paper to (0, 1) - Attacks Rock!
        Combat: Paper defeats Rock
-       - Paper(C): 100 → 150 energy (+50)
-       - Rock(A): DEFEATED (was 150E)
-       - 100E distributed: 40E→market, 30E→grid, 30E→burn
+       - Paper(C): 100 → 200 energy (+100E bank send, 50% of 200E)
+       - Rock(A): DEFEATED (was 200E)
+       - 200E distributed: 100E→attacker (bank send), 50E→liquidity pool, 50E→grid
        
-       Market Impact: 40E energy sold → Price drops 5%
+       Market Impact: 50E added as unbalanced liquidity → Price impact
        
-       Grid: [0,1]  = Paper(C, 150E)
-             [-5,3] = 30E pickup (random)
+       Grid: [0,1]  = Paper(C, 200E)
+             [-5,3] = 50E pickup (random, 25% of 200E)
              [3,2]  = 15E pickup (from earlier)
 ```
 
