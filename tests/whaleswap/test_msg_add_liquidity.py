@@ -598,7 +598,21 @@ def test_add_liquidity_unbalanced_basic(chainnet, generate_account, register_nam
     )
     assert create_result.get("code", 1) == 0
 
-    pool_id = 1  # First pool
+    # Extract pool_id from events
+    pool_events = [
+        e
+        for e in create_result.get("events", [])
+        if e.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    assert (
+        pool_events
+    ), f"EventPoolCreated not found: {json.dumps(create_result, indent=2)}"
+    pool_attrs = {
+        a.get("key"): a.get("value") for a in pool_events[0].get("attributes", [])
+    }
+    pool_id = pool_attrs.get("pool_id")
+    assert pool_id, f"pool_id missing: {json.dumps(pool_events[0], indent=2)}"
+    pool_id = pool_id.strip('"')
 
     # Add unbalanced liquidity with unequal amounts
     add_result = dysond(

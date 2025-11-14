@@ -131,10 +131,6 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 		borrowVault := k.leverageBorrowVaultBech(ctx)
 
 		// Unwind held → borrowed via pool swap from the borrow vault
-		mtNote := "leverage-cover-close"
-		if msg.Note != "" {
-			mtNote = msg.Note
-		}
 		mt := &whaleswapv1.MsgMakeTrade{
 			Trader:    borrowVault,
 			MaxInput:  sdk.NewCoins(pos.Held),
@@ -142,7 +138,7 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 			Operations: []whaleswapv1.TradeOperation{
 				{Op: &whaleswapv1.TradeOperation_Swap{Swap: &whaleswapv1.SwapLeg{PoolId: pos.PoolId, SwapIn: pos.Held}}},
 			},
-			Note: mtNote,
+			Note: msg.Note,
 		}
 		logger.Info("CoverPosition invoking MakeTrade to unwind held", "borrow_vault", borrowVault, "swap_in", pos.Held.String())
 		mtResp, mtErr := k.MakeTrade(ctx, mt)

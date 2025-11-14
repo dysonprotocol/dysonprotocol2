@@ -106,7 +106,7 @@ func (k Keeper) Metrics(ctx context.Context, _ *whaleswapv1.QueryMetricsRequest)
 //
 // Semantics:
 //   - Uses indexed queries on PositionsByUserIndex with (user,status,position_id) keys.
-//   - Defaults to OPEN positions when status unspecified.
+//   - Returns all positions when status unspecified.
 //   - Applies additional filters for pool_id, borrowed_denom, collateral_denom as specified.
 //   - Supports pagination with consistent ordering by position ID.
 //
@@ -126,12 +126,6 @@ func (k Keeper) PositionsByUser(ctx context.Context, req *whaleswapv1.QueryPosit
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "user address required")
 	}
 
-	status := req.Status
-	if status == whaleswapv1.PositionStatus_POSITION_STATUS_UNSPECIFIED {
-		status = whaleswapv1.PositionStatus_POSITION_STATUS_OPEN
-	}
-	statusKey := positionStatusKey(status)
-
 	results, pageRes, err := query.CollectionPaginate(
 		ctx,
 		k.PositionsByUserIndex,
@@ -140,6 +134,9 @@ func (k Keeper) PositionsByUser(ctx context.Context, req *whaleswapv1.QueryPosit
 			pos, err := k.LeveragePositions.Get(ctx, positionID)
 			if err != nil {
 				return nil, err
+			}
+			if req.Status != whaleswapv1.PositionStatus_POSITION_STATUS_UNSPECIFIED && pos.Status != req.Status {
+				return nil, nil
 			}
 			if req.PoolId != 0 && pos.PoolId != req.PoolId {
 				return nil, nil
@@ -153,8 +150,14 @@ func (k Keeper) PositionsByUser(ctx context.Context, req *whaleswapv1.QueryPosit
 			return &pos, nil
 		},
 		func(opt *query.CollectionsPaginateOptions[collections.Triple[string, uint32, uint64]]) {
-			prefix := collections.TripleSuperPrefix[string, uint32, uint64](req.User, statusKey)
-			opt.Prefix = &prefix
+			if req.Status != whaleswapv1.PositionStatus_POSITION_STATUS_UNSPECIFIED {
+				statusKey := positionStatusKey(req.Status)
+				prefix := collections.TripleSuperPrefix[string, uint32, uint64](req.User, statusKey)
+				opt.Prefix = &prefix
+			} else {
+				prefix := collections.TriplePrefix[string, uint32, uint64](req.User)
+				opt.Prefix = &prefix
+			}
 		},
 	)
 	if err != nil {
@@ -171,7 +174,7 @@ func (k Keeper) PositionsByUser(ctx context.Context, req *whaleswapv1.QueryPosit
 //
 // Semantics:
 //   - Uses indexed queries on PositionsByPoolIndex with (pool_id,status,position_id) keys.
-//   - Defaults to OPEN positions when status unspecified.
+//   - Returns all positions when status unspecified.
 //   - Filters positions by the specified pool_id.
 //   - Supports pagination with consistent ordering by position ID.
 //
@@ -191,12 +194,6 @@ func (k Keeper) PositionsByPool(ctx context.Context, req *whaleswapv1.QueryPosit
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool_id required")
 	}
 
-	status := req.Status
-	if status == whaleswapv1.PositionStatus_POSITION_STATUS_UNSPECIFIED {
-		status = whaleswapv1.PositionStatus_POSITION_STATUS_OPEN
-	}
-	statusKey := positionStatusKey(status)
-
 	results, pageRes, err := query.CollectionPaginate(
 		ctx,
 		k.PositionsByPoolIndex,
@@ -206,11 +203,20 @@ func (k Keeper) PositionsByPool(ctx context.Context, req *whaleswapv1.QueryPosit
 			if err != nil {
 				return nil, err
 			}
+			if req.Status != whaleswapv1.PositionStatus_POSITION_STATUS_UNSPECIFIED && pos.Status != req.Status {
+				return nil, nil
+			}
 			return &pos, nil
 		},
 		func(opt *query.CollectionsPaginateOptions[collections.Triple[uint64, uint32, uint64]]) {
-			prefix := collections.TripleSuperPrefix[uint64, uint32, uint64](req.PoolId, statusKey)
-			opt.Prefix = &prefix
+			if req.Status != whaleswapv1.PositionStatus_POSITION_STATUS_UNSPECIFIED {
+				statusKey := positionStatusKey(req.Status)
+				prefix := collections.TripleSuperPrefix[uint64, uint32, uint64](req.PoolId, statusKey)
+				opt.Prefix = &prefix
+			} else {
+				prefix := collections.TriplePrefix[uint64, uint32, uint64](req.PoolId)
+				opt.Prefix = &prefix
+			}
 		},
 	)
 	if err != nil {
