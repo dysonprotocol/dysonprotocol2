@@ -86,6 +86,9 @@ var (
 	fd_LeveragePosition_interest_rate                        protoreflect.FieldDescriptor
 	fd_LeveragePosition_min_collateral_ratio                 protoreflect.FieldDescriptor
 	fd_LeveragePosition_liquidation_threshold                protoreflect.FieldDescriptor
+	fd_LeveragePosition_initial_borrowed                     protoreflect.FieldDescriptor
+	fd_LeveragePosition_total_interest_paid                  protoreflect.FieldDescriptor
+	fd_LeveragePosition_last_interest_settlement_time        protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -108,6 +111,9 @@ func init() {
 	fd_LeveragePosition_interest_rate = md_LeveragePosition.Fields().ByName("interest_rate")
 	fd_LeveragePosition_min_collateral_ratio = md_LeveragePosition.Fields().ByName("min_collateral_ratio")
 	fd_LeveragePosition_liquidation_threshold = md_LeveragePosition.Fields().ByName("liquidation_threshold")
+	fd_LeveragePosition_initial_borrowed = md_LeveragePosition.Fields().ByName("initial_borrowed")
+	fd_LeveragePosition_total_interest_paid = md_LeveragePosition.Fields().ByName("total_interest_paid")
+	fd_LeveragePosition_last_interest_settlement_time = md_LeveragePosition.Fields().ByName("last_interest_settlement_time")
 }
 
 var _ protoreflect.Message = (*fastReflection_LeveragePosition)(nil)
@@ -277,6 +283,24 @@ func (x *fastReflection_LeveragePosition) Range(f func(protoreflect.FieldDescrip
 			return
 		}
 	}
+	if x.InitialBorrowed != nil {
+		value := protoreflect.ValueOfMessage(x.InitialBorrowed.ProtoReflect())
+		if !f(fd_LeveragePosition_initial_borrowed, value) {
+			return
+		}
+	}
+	if x.TotalInterestPaid != nil {
+		value := protoreflect.ValueOfMessage(x.TotalInterestPaid.ProtoReflect())
+		if !f(fd_LeveragePosition_total_interest_paid, value) {
+			return
+		}
+	}
+	if x.LastInterestSettlementTime != nil {
+		value := protoreflect.ValueOfMessage(x.LastInterestSettlementTime.ProtoReflect())
+		if !f(fd_LeveragePosition_last_interest_settlement_time, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -326,6 +350,12 @@ func (x *fastReflection_LeveragePosition) Has(fd protoreflect.FieldDescriptor) b
 		return x.MinCollateralRatio != ""
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.liquidation_threshold":
 		return x.LiquidationThreshold != ""
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.initial_borrowed":
+		return x.InitialBorrowed != nil
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.total_interest_paid":
+		return x.TotalInterestPaid != nil
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.last_interest_settlement_time":
+		return x.LastInterestSettlementTime != nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.LeveragePosition"))
@@ -376,6 +406,12 @@ func (x *fastReflection_LeveragePosition) Clear(fd protoreflect.FieldDescriptor)
 		x.MinCollateralRatio = ""
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.liquidation_threshold":
 		x.LiquidationThreshold = ""
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.initial_borrowed":
+		x.InitialBorrowed = nil
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.total_interest_paid":
+		x.TotalInterestPaid = nil
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.last_interest_settlement_time":
+		x.LastInterestSettlementTime = nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.LeveragePosition"))
@@ -446,6 +482,15 @@ func (x *fastReflection_LeveragePosition) Get(descriptor protoreflect.FieldDescr
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.liquidation_threshold":
 		value := x.LiquidationThreshold
 		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.initial_borrowed":
+		value := x.InitialBorrowed
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.total_interest_paid":
+		value := x.TotalInterestPaid
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.last_interest_settlement_time":
+		value := x.LastInterestSettlementTime
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.LeveragePosition"))
@@ -502,6 +547,12 @@ func (x *fastReflection_LeveragePosition) Set(fd protoreflect.FieldDescriptor, v
 		x.MinCollateralRatio = value.Interface().(string)
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.liquidation_threshold":
 		x.LiquidationThreshold = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.initial_borrowed":
+		x.InitialBorrowed = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.total_interest_paid":
+		x.TotalInterestPaid = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.last_interest_settlement_time":
+		x.LastInterestSettlementTime = value.Message().Interface().(*timestamppb.Timestamp)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.LeveragePosition"))
@@ -558,6 +609,21 @@ func (x *fastReflection_LeveragePosition) Mutable(fd protoreflect.FieldDescripto
 		}
 		value := &_LeveragePosition_22_list{list: &x.InterestRate}
 		return protoreflect.ValueOfList(value)
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.initial_borrowed":
+		if x.InitialBorrowed == nil {
+			x.InitialBorrowed = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.InitialBorrowed.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.total_interest_paid":
+		if x.TotalInterestPaid == nil {
+			x.TotalInterestPaid = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.TotalInterestPaid.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.last_interest_settlement_time":
+		if x.LastInterestSettlementTime == nil {
+			x.LastInterestSettlementTime = new(timestamppb.Timestamp)
+		}
+		return protoreflect.ValueOfMessage(x.LastInterestSettlementTime.ProtoReflect())
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.position_id":
 		panic(fmt.Errorf("field position_id of message dysonprotocol.whaleswap.v1.LeveragePosition is not mutable"))
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.pool_id":
@@ -632,6 +698,15 @@ func (x *fastReflection_LeveragePosition) NewField(fd protoreflect.FieldDescript
 		return protoreflect.ValueOfString("")
 	case "dysonprotocol.whaleswap.v1.LeveragePosition.liquidation_threshold":
 		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.initial_borrowed":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.total_interest_paid":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.LeveragePosition.last_interest_settlement_time":
+		m := new(timestamppb.Timestamp)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.LeveragePosition"))
@@ -764,6 +839,18 @@ func (x *fastReflection_LeveragePosition) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 2 + l + runtime.Sov(uint64(l))
 		}
+		if x.InitialBorrowed != nil {
+			l = options.Size(x.InitialBorrowed)
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		if x.TotalInterestPaid != nil {
+			l = options.Size(x.TotalInterestPaid)
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		if x.LastInterestSettlementTime != nil {
+			l = options.Size(x.LastInterestSettlementTime)
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -792,6 +879,54 @@ func (x *fastReflection_LeveragePosition) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.LastInterestSettlementTime != nil {
+			encoded, err := options.Marshal(x.LastInterestSettlementTime)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xda
+		}
+		if x.TotalInterestPaid != nil {
+			encoded, err := options.Marshal(x.TotalInterestPaid)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xd2
+		}
+		if x.InitialBorrowed != nil {
+			encoded, err := options.Marshal(x.InitialBorrowed)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xca
 		}
 		if len(x.LiquidationThreshold) > 0 {
 			i -= len(x.LiquidationThreshold)
@@ -1483,6 +1618,114 @@ func (x *fastReflection_LeveragePosition) ProtoMethods() *protoiface.Methods {
 				}
 				x.LiquidationThreshold = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
+			case 25:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field InitialBorrowed", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.InitialBorrowed == nil {
+					x.InitialBorrowed = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.InitialBorrowed); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 26:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TotalInterestPaid", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.TotalInterestPaid == nil {
+					x.TotalInterestPaid = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.TotalInterestPaid); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 27:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LastInterestSettlementTime", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.LastInterestSettlementTime == nil {
+					x.LastInterestSettlementTime = &timestamppb.Timestamp{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.LastInterestSettlementTime); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -1652,9 +1895,10 @@ type LeveragePosition struct {
 	CreatedTime                       *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_time,json=createdTime,proto3" json:"created_time,omitempty"`
 	LiquidationInitializedBlockHeight uint64                 `protobuf:"varint,10,opt,name=liquidation_initialized_block_height,json=liquidationInitializedBlockHeight,proto3" json:"liquidation_initialized_block_height,omitempty"`
 	LiquidationStatus                 LiquidationStatus      `protobuf:"varint,11,opt,name=liquidation_status,json=liquidationStatus,proto3,enum=dysonprotocol.whaleswap.v1.LiquidationStatus" json:"liquidation_status,omitempty"`
-	AccruedInterest                   *v1beta1.Coin          `protobuf:"bytes,12,opt,name=accrued_interest,json=accruedInterest,proto3" json:"accrued_interest,omitempty"`
-	UpdatedHeight                     uint64                 `protobuf:"varint,13,opt,name=updated_height,json=updatedHeight,proto3" json:"updated_height,omitempty"`
-	UpdatedTime                       *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=updated_time,json=updatedTime,proto3" json:"updated_time,omitempty"`
+	// Unpaid interest carried forward from prior settlements (borrowed denom).
+	AccruedInterest *v1beta1.Coin          `protobuf:"bytes,12,opt,name=accrued_interest,json=accruedInterest,proto3" json:"accrued_interest,omitempty"`
+	UpdatedHeight   uint64                 `protobuf:"varint,13,opt,name=updated_height,json=updatedHeight,proto3" json:"updated_height,omitempty"`
+	UpdatedTime     *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=updated_time,json=updatedTime,proto3" json:"updated_time,omitempty"`
 	// ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
 	// Annual interest rates per reserve denom (exactly two, canonical order).
 	// Each amount is a LegacyDec string representing APR (per-year accrual).
@@ -1664,6 +1908,12 @@ type LeveragePosition struct {
 	MinCollateralRatio string `protobuf:"bytes,23,opt,name=min_collateral_ratio,json=minCollateralRatio,proto3" json:"min_collateral_ratio,omitempty"`
 	// Liquidation threshold used for liquidation checks (cosmos.Dec string).
 	LiquidationThreshold string `protobuf:"bytes,24,opt,name=liquidation_threshold,json=liquidationThreshold,proto3" json:"liquidation_threshold,omitempty"`
+	// Opening principal snapshot for analytics/limits (borrowed denom).
+	InitialBorrowed *v1beta1.Coin `protobuf:"bytes,25,opt,name=initial_borrowed,json=initialBorrowed,proto3" json:"initial_borrowed,omitempty"`
+	// Lifetime interest paid by the user (borrowed denom).
+	TotalInterestPaid *v1beta1.Coin `protobuf:"bytes,26,opt,name=total_interest_paid,json=totalInterestPaid,proto3" json:"total_interest_paid,omitempty"`
+	// Timestamp of the last time interest was settled into accrued_interest.
+	LastInterestSettlementTime *timestamppb.Timestamp `protobuf:"bytes,27,opt,name=last_interest_settlement_time,json=lastInterestSettlementTime,proto3" json:"last_interest_settlement_time,omitempty"`
 }
 
 func (x *LeveragePosition) Reset() {
@@ -1805,6 +2055,27 @@ func (x *LeveragePosition) GetLiquidationThreshold() string {
 	return ""
 }
 
+func (x *LeveragePosition) GetInitialBorrowed() *v1beta1.Coin {
+	if x != nil {
+		return x.InitialBorrowed
+	}
+	return nil
+}
+
+func (x *LeveragePosition) GetTotalInterestPaid() *v1beta1.Coin {
+	if x != nil {
+		return x.TotalInterestPaid
+	}
+	return nil
+}
+
+func (x *LeveragePosition) GetLastInterestSettlementTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastInterestSettlementTime
+	}
+	return nil
+}
+
 var File_dysonprotocol_whaleswap_v1_leverage_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_whaleswap_v1_leverage_proto_rawDesc = []byte{
@@ -1819,7 +2090,7 @@ var file_dysonprotocol_whaleswap_v1_leverage_proto_rawDesc = []byte{
 	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d,
 	0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
 	0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74,
-	0x61, 0x6d, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xc3, 0x08, 0x0a, 0x10, 0x4c, 0x65,
+	0x61, 0x6d, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xc5, 0x0a, 0x0a, 0x10, 0x4c, 0x65,
 	0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1f,
 	0x0a, 0x0b, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12,
@@ -1887,29 +2158,45 @@ var file_dysonprotocol_whaleswap_v1_leverage_proto_rawDesc = []byte{
 	0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x74, 0x68, 0x72, 0x65, 0x73, 0x68,
 	0x6f, 0x6c, 0x64, 0x18, 0x18, 0x20, 0x01, 0x28, 0x09, 0x42, 0x0e, 0xd2, 0xb4, 0x2d, 0x0a, 0x63,
 	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x14, 0x6c, 0x69, 0x71, 0x75, 0x69,
-	0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x68, 0x72, 0x65, 0x73, 0x68, 0x6f, 0x6c, 0x64, 0x2a,
-	0x78, 0x0a, 0x11, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74,
-	0x61, 0x74, 0x75, 0x73, 0x12, 0x22, 0x0a, 0x1e, 0x4c, 0x49, 0x51, 0x55, 0x49, 0x44, 0x41, 0x54,
-	0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45,
-	0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x1b, 0x0a, 0x17, 0x4c, 0x49, 0x51, 0x55,
-	0x49, 0x44, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x4e,
-	0x4f, 0x4e, 0x45, 0x10, 0x01, 0x12, 0x22, 0x0a, 0x1e, 0x4c, 0x49, 0x51, 0x55, 0x49, 0x44, 0x41,
-	0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x49, 0x4e, 0x49, 0x54,
-	0x49, 0x41, 0x4c, 0x49, 0x5a, 0x45, 0x44, 0x10, 0x02, 0x2a, 0xa8, 0x01, 0x0a, 0x0e, 0x50, 0x6f,
-	0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x1f, 0x0a, 0x1b,
-	0x50, 0x4f, 0x53, 0x49, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f,
-	0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x18, 0x0a,
-	0x14, 0x50, 0x4f, 0x53, 0x49, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53,
-	0x5f, 0x4f, 0x50, 0x45, 0x4e, 0x10, 0x01, 0x12, 0x1a, 0x0a, 0x16, 0x50, 0x4f, 0x53, 0x49, 0x54,
-	0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x43, 0x4c, 0x4f, 0x53, 0x45,
-	0x44, 0x10, 0x02, 0x12, 0x1f, 0x0a, 0x1b, 0x50, 0x4f, 0x53, 0x49, 0x54, 0x49, 0x4f, 0x4e, 0x5f,
-	0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x4c, 0x49, 0x51, 0x55, 0x49, 0x44, 0x41, 0x54, 0x49,
-	0x4e, 0x47, 0x10, 0x03, 0x12, 0x1e, 0x0a, 0x1a, 0x50, 0x4f, 0x53, 0x49, 0x54, 0x49, 0x4f, 0x4e,
-	0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x4c, 0x49, 0x51, 0x55, 0x49, 0x44, 0x41, 0x54,
-	0x45, 0x44, 0x10, 0x04, 0x42, 0x25, 0x5a, 0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c,
-	0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x68, 0x72, 0x65, 0x73, 0x68, 0x6f, 0x6c, 0x64, 0x12,
+	0x4a, 0x0a, 0x10, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x5f, 0x62, 0x6f, 0x72, 0x72, 0x6f,
+	0x77, 0x65, 0x64, 0x18, 0x19, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e,
+	0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0f, 0x69, 0x6e, 0x69, 0x74,
+	0x69, 0x61, 0x6c, 0x42, 0x6f, 0x72, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x12, 0x4f, 0x0a, 0x13, 0x74,
+	0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x5f, 0x70, 0x61,
+	0x69, 0x64, 0x18, 0x1a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43,
+	0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x11, 0x74, 0x6f, 0x74, 0x61, 0x6c,
+	0x49, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x50, 0x61, 0x69, 0x64, 0x12, 0x63, 0x0a, 0x1d,
+	0x6c, 0x61, 0x73, 0x74, 0x5f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x5f, 0x73, 0x65,
+	0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x1b, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x42,
+	0x04, 0x90, 0xdf, 0x1f, 0x01, 0x52, 0x1a, 0x6c, 0x61, 0x73, 0x74, 0x49, 0x6e, 0x74, 0x65, 0x72,
+	0x65, 0x73, 0x74, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x54, 0x69, 0x6d,
+	0x65, 0x2a, 0x78, 0x0a, 0x11, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x22, 0x0a, 0x1e, 0x4c, 0x49, 0x51, 0x55, 0x49, 0x44,
+	0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x55, 0x4e, 0x53,
+	0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x1b, 0x0a, 0x17, 0x4c, 0x49,
+	0x51, 0x55, 0x49, 0x44, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53,
+	0x5f, 0x4e, 0x4f, 0x4e, 0x45, 0x10, 0x01, 0x12, 0x22, 0x0a, 0x1e, 0x4c, 0x49, 0x51, 0x55, 0x49,
+	0x44, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x49, 0x4e,
+	0x49, 0x54, 0x49, 0x41, 0x4c, 0x49, 0x5a, 0x45, 0x44, 0x10, 0x02, 0x2a, 0xa8, 0x01, 0x0a, 0x0e,
+	0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x1f,
+	0x0a, 0x1b, 0x50, 0x4f, 0x53, 0x49, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55,
+	0x53, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12,
+	0x18, 0x0a, 0x14, 0x50, 0x4f, 0x53, 0x49, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54,
+	0x55, 0x53, 0x5f, 0x4f, 0x50, 0x45, 0x4e, 0x10, 0x01, 0x12, 0x1a, 0x0a, 0x16, 0x50, 0x4f, 0x53,
+	0x49, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x43, 0x4c, 0x4f,
+	0x53, 0x45, 0x44, 0x10, 0x02, 0x12, 0x1f, 0x0a, 0x1b, 0x50, 0x4f, 0x53, 0x49, 0x54, 0x49, 0x4f,
+	0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x4c, 0x49, 0x51, 0x55, 0x49, 0x44, 0x41,
+	0x54, 0x49, 0x4e, 0x47, 0x10, 0x03, 0x12, 0x1e, 0x0a, 0x1a, 0x50, 0x4f, 0x53, 0x49, 0x54, 0x49,
+	0x4f, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x4c, 0x49, 0x51, 0x55, 0x49, 0x44,
+	0x41, 0x54, 0x45, 0x44, 0x10, 0x04, 0x42, 0x25, 0x5a, 0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77, 0x68,
+	0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1935,20 +2222,23 @@ var file_dysonprotocol_whaleswap_v1_leverage_proto_goTypes = []interface{}{
 	(*v1beta1.DecCoin)(nil),       // 5: cosmos.base.v1beta1.DecCoin
 }
 var file_dysonprotocol_whaleswap_v1_leverage_proto_depIdxs = []int32{
-	1, // 0: dysonprotocol.whaleswap.v1.LeveragePosition.status:type_name -> dysonprotocol.whaleswap.v1.PositionStatus
-	3, // 1: dysonprotocol.whaleswap.v1.LeveragePosition.borrowed:type_name -> cosmos.base.v1beta1.Coin
-	3, // 2: dysonprotocol.whaleswap.v1.LeveragePosition.held:type_name -> cosmos.base.v1beta1.Coin
-	3, // 3: dysonprotocol.whaleswap.v1.LeveragePosition.collateral:type_name -> cosmos.base.v1beta1.Coin
-	4, // 4: dysonprotocol.whaleswap.v1.LeveragePosition.created_time:type_name -> google.protobuf.Timestamp
-	0, // 5: dysonprotocol.whaleswap.v1.LeveragePosition.liquidation_status:type_name -> dysonprotocol.whaleswap.v1.LiquidationStatus
-	3, // 6: dysonprotocol.whaleswap.v1.LeveragePosition.accrued_interest:type_name -> cosmos.base.v1beta1.Coin
-	4, // 7: dysonprotocol.whaleswap.v1.LeveragePosition.updated_time:type_name -> google.protobuf.Timestamp
-	5, // 8: dysonprotocol.whaleswap.v1.LeveragePosition.interest_rate:type_name -> cosmos.base.v1beta1.DecCoin
-	9, // [9:9] is the sub-list for method output_type
-	9, // [9:9] is the sub-list for method input_type
-	9, // [9:9] is the sub-list for extension type_name
-	9, // [9:9] is the sub-list for extension extendee
-	0, // [0:9] is the sub-list for field type_name
+	1,  // 0: dysonprotocol.whaleswap.v1.LeveragePosition.status:type_name -> dysonprotocol.whaleswap.v1.PositionStatus
+	3,  // 1: dysonprotocol.whaleswap.v1.LeveragePosition.borrowed:type_name -> cosmos.base.v1beta1.Coin
+	3,  // 2: dysonprotocol.whaleswap.v1.LeveragePosition.held:type_name -> cosmos.base.v1beta1.Coin
+	3,  // 3: dysonprotocol.whaleswap.v1.LeveragePosition.collateral:type_name -> cosmos.base.v1beta1.Coin
+	4,  // 4: dysonprotocol.whaleswap.v1.LeveragePosition.created_time:type_name -> google.protobuf.Timestamp
+	0,  // 5: dysonprotocol.whaleswap.v1.LeveragePosition.liquidation_status:type_name -> dysonprotocol.whaleswap.v1.LiquidationStatus
+	3,  // 6: dysonprotocol.whaleswap.v1.LeveragePosition.accrued_interest:type_name -> cosmos.base.v1beta1.Coin
+	4,  // 7: dysonprotocol.whaleswap.v1.LeveragePosition.updated_time:type_name -> google.protobuf.Timestamp
+	5,  // 8: dysonprotocol.whaleswap.v1.LeveragePosition.interest_rate:type_name -> cosmos.base.v1beta1.DecCoin
+	3,  // 9: dysonprotocol.whaleswap.v1.LeveragePosition.initial_borrowed:type_name -> cosmos.base.v1beta1.Coin
+	3,  // 10: dysonprotocol.whaleswap.v1.LeveragePosition.total_interest_paid:type_name -> cosmos.base.v1beta1.Coin
+	4,  // 11: dysonprotocol.whaleswap.v1.LeveragePosition.last_interest_settlement_time:type_name -> google.protobuf.Timestamp
+	12, // [12:12] is the sub-list for method output_type
+	12, // [12:12] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_dysonprotocol_whaleswap_v1_leverage_proto_init() }

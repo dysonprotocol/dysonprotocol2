@@ -42,6 +42,7 @@ message LeveragePosition {
   uint64 liquidation_initialized_block_height = 10;
   LiquidationStatus liquidation_status = 11;
 
+  // Unpaid interest carried forward from prior settlements (borrowed denom).
   cosmos.base.v1beta1.Coin accrued_interest = 12
       [ (gogoproto.nullable) = false ];
 
@@ -60,4 +61,14 @@ message LeveragePosition {
   string min_collateral_ratio = 23 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
   // Liquidation threshold used for liquidation checks (cosmos.Dec string).
   string liquidation_threshold = 24 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+
+  // Opening principal snapshot for analytics/limits (borrowed denom).
+  cosmos.base.v1beta1.Coin initial_borrowed = 25
+      [ (gogoproto.nullable) = false ];
+  // Lifetime interest paid by the user (borrowed denom).
+  cosmos.base.v1beta1.Coin total_interest_paid = 26
+      [ (gogoproto.nullable) = false ];
+  // Timestamp of the last time interest was settled into accrued_interest.
+  google.protobuf.Timestamp last_interest_settlement_time = 27
+      [ (gogoproto.stdtime) = true ];
 }

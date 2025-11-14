@@ -266,6 +266,8 @@ def test_address_metrics_leverage_coverage(chainnet, generate_account, register_
         "close-position",
         "--position-id",
         str(position_id),
+        "--fraction",
+        "1",
         "--from",
         alice_name,
     )

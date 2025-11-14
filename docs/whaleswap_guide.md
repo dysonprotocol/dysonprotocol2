@@ -329,11 +329,11 @@ print(json.dumps(events, indent=2))
 
 ## Create AMM pool (foo.dys / bar.dys)
 
-We’ll seed a pool with initial reserves and a fee (e.g., 0.3%).
+We’ll seed a pool with initial reserves and a per-denom fee rate (e.g., 0.3% on each side).
 
 
 ```python
-# Create the pool with two repeated --coins flags; fee 0.003
+# Create the pool with two repeated --coins flags; fee rate 0.003
 create_pool_tx = %sh dysond tx whaleswap create-pool --coins "100000$FOO_NAME" --coins "100000$BAR_NAME" --fee-rate "0.003udys" --min-collateral-ratio "1.5" --max-leverage-ratio "10" --from alice --gas auto -y -o json | dysond query wait-tx -o json
 assert create_pool_tx['code'] == 0, create_pool_tx['raw_log']
 
@@ -346,6 +346,8 @@ print("POOL_ID:", POOL_ID)
 # Inspect the pool
 %sh dysond query whaleswap pool --pool-id "$POOL_ID" -o json
 ```
+
+> **Note:** the CLI flag is still `--min-collateral-ratio`, but after the recent proto update the underlying message field is named `min_inital_collateral_ratio`.
 
     POOL_ID: 1
 

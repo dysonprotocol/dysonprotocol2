@@ -27,24 +27,8 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 		if p.PoolId > maxPoolID {
 			maxPoolID = p.PoolId
 		}
-		// ONE-TIME MIGRATION: fee_pct → fee_rate
-		if len(p.FeeRate) == 0 && p.FeePct != "" {
-			feeDec, err := cosmossdk_math.LegacyNewDecFromStr(p.FeePct)
-			if err != nil {
-				panic(fmt.Sprintf("genesis: pool %d: invalid fee_pct %s: %v", p.PoolId, p.FeePct, err))
-			}
-			// Create two DecCoins, one per reserve denom in canonical order
-			if len(p.Coins) != 2 {
-				panic(fmt.Sprintf("genesis: pool %d: must have exactly 2 reserve coins for fee_rate migration", p.PoolId))
-			}
-			p.FeeRate = sdk.DecCoins{
-				sdk.NewDecCoinFromDec(p.Coins[0].Denom, feeDec),
-				sdk.NewDecCoinFromDec(p.Coins[1].Denom, feeDec),
-			}
-		}
-		// Validate FeeRate is set (either migrated or already in new format)
 		if len(p.FeeRate) == 0 {
-			panic(fmt.Sprintf("genesis: pool %d: fee_rate must be set (migration from fee_pct failed or missing)", p.PoolId))
+			panic(fmt.Sprintf("genesis: pool %d: fee_rate must be set", p.PoolId))
 		}
 		if len(p.FeeRate) != 2 {
 			panic(fmt.Sprintf("genesis: pool %d: fee_rate must have exactly 2 entries", p.PoolId))

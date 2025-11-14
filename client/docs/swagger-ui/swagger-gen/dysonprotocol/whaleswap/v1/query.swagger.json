@@ -2028,6 +2028,28 @@
       },
       "title": "AuctionRedeem operation for recording auction redemption in Trade history"
     },
+    "dysonprotocol.whaleswap.v1.InterestView": {
+      "type": "object",
+      "properties": {
+        "interest_due": {
+          "type": "string",
+          "description": "Decimal amount of interest owed right now (borrowed denom)."
+        },
+        "total_repayment": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Principal + interest as integer coin."
+        },
+        "time_elapsed": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Seconds since the last settlement reference."
+        },
+        "annual_rate": {
+          "type": "string",
+          "description": "Annual rate applied for this position (borrowed denom entry)."
+        }
+      }
+    },
     "dysonprotocol.whaleswap.v1.LeveragePosition": {
       "type": "object",
       "properties": {
@@ -2070,7 +2092,8 @@
           "$ref": "#/definitions/dysonprotocol.whaleswap.v1.LiquidationStatus"
         },
         "accrued_interest": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Unpaid interest carried forward from prior settlements (borrowed denom)."
         },
         "updated_height": {
           "type": "string",
@@ -2094,6 +2117,19 @@
         "liquidation_threshold": {
           "type": "string",
           "description": "Liquidation threshold used for liquidation checks (cosmos.Dec string)."
+        },
+        "initial_borrowed": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Opening principal snapshot for analytics/limits (borrowed denom)."
+        },
+        "total_interest_paid": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Lifetime interest paid by the user (borrowed denom)."
+        },
+        "last_interest_settlement_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the last time interest was settled into accrued_interest."
         }
       },
       "description": "LeveragePosition represents an active leverage position for a trader."
@@ -2230,10 +2266,6 @@
         "shares_denom": {
           "type": "string"
         },
-        "fee_pct": {
-          "type": "string",
-          "description": "Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec\nstring in [0,1)). Use fee_rate field 25 instead. Migration logic should\nread this and convert to fee_rate format (two DecCoins, one per reserve\ndenom in canonical order)."
-        },
         "min_price": {
           "type": "array",
           "items": {
@@ -2349,7 +2381,7 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
-          "description": "fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two\nentries in canonical pool order matching coins[0].denom and coins[1].denom.\nFee is applied to the OUTPUT denom of each swap leg: for exact-in, the\ncomputed gross output is reduced by fee; for exact-out, the required gross\noutput is inflated so net (after fee) meets the target. Fees accrue to\nfees_earned in the output denom.\nReplaces deprecated fee_pct field 5."
+          "description": "fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two\nentries in canonical pool order matching coins[0].denom and coins[1].denom.\nFee is applied to the OUTPUT denom of each swap leg: for exact-in, the\ncomputed gross output is reduced by fee; for exact-out, the required gross\noutput is inflated so net (after fee) meets the target. Fees accrue to\nfees_earned in the output denom."
         }
       },
       "description": "Pool describes AMM pool state.\n\nNotes:\n- coin_a.denom < coin_b.denom lexicographically (canonical order)\n- fee_rate is a per-denom decimal rate in [0,1) as DecCoins\n- coin_a.amount/coin_b.amount are sdk.Int strings.\n- The instantaneous price used by price-based queries is derived from\n  reserves as P = coin_b / coin_a, consistent with the notes above."
@@ -2686,22 +2718,8 @@
         "can_finalize_liquidation": {
           "type": "boolean"
         },
-        "borrowed": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "title": "Interest Information"
-        },
-        "accrued_interest": {
-          "type": "string"
-        },
-        "total_repayment": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-        },
-        "time_elapsed": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "annual_rate": {
-          "type": "string"
+        "interest": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.InterestView"
         }
       }
     },

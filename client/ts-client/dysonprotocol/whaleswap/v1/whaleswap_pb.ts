@@ -40,17 +40,6 @@ export class Pool extends Message<Pool> {
   sharesDenom = "";
 
   /**
-   * Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
-   * string in [0,1)). Use fee_rate field 25 instead. Migration logic should
-   * read this and convert to fee_rate format (two DecCoins, one per reserve
-   * denom in canonical order).
-   *
-   * @generated from field: string fee_pct = 5 [deprecated = true];
-   * @deprecated
-   */
-  feePct = "";
-
-  /**
    * Deprecated legacy price band fields retained for decoding old genesis
    * exports. Migration logic ignores their values and clears them.
    *
@@ -200,7 +189,6 @@ export class Pool extends Message<Pool> {
    * computed gross output is reduced by fee; for exact-out, the required gross
    * output is inflated so net (after fee) meets the target. Fees accrue to
    * fees_earned in the output denom.
-   * Replaces deprecated fee_pct field 5.
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin fee_rate = 25;
    */
@@ -217,7 +205,6 @@ export class Pool extends Message<Pool> {
     { no: 1, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 2, name: "coins", kind: "message", T: Coin, repeated: true },
     { no: 4, name: "shares_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 5, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "min_price", kind: "message", T: Coin, repeated: true },
     { no: 7, name: "max_price", kind: "message", T: Coin, repeated: true },
     { no: 10, name: "block_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },

@@ -93,7 +93,9 @@ def get_offers_for_pair(base_denom: str, quote_denom: str) -> list[dict]:
     """Get all offers mentioning either denom."""
     offers = []
     for denom in [base_denom, quote_denom]:
-        data = run_json(f'dysond query whaleswap offers-by-denom --denom "{denom}" -o json')
+        data = run_json(
+            f'dysond query whaleswap offers-by-denom --denom "{denom}" -o json'
+        )
         offers.extend(data.get("offers", []))
     # Deduplicate by offer_id
     seen = set()
@@ -108,7 +110,9 @@ def get_offers_for_pair(base_denom: str, quote_denom: str) -> list[dict]:
 
 def get_pools_for_pair(base_denom: str, quote_denom: str) -> list[dict]:
     """Get all pools for the pair."""
-    data = run_json(f'dysond query whaleswap pools-by-pair --base-denom "{base_denom}" --quote-denom "{quote_denom}" -o json')
+    data = run_json(
+        f'dysond query whaleswap pools-by-pair --base-denom "{base_denom}" --quote-denom "{quote_denom}" -o json'
+    )
     return data.get("pools", [])
 
 
@@ -121,7 +125,7 @@ def get_account_balances(account: str) -> list[dict]:
 def get_account_address(account: str) -> str:
     """Get bech32 address from key name."""
     result = subprocess.run(
-        f'dysond keys show -a {account}',
+        f"dysond keys show -a {account}",
         shell=True,
         capture_output=True,
         text=True,
@@ -134,7 +138,9 @@ def get_account_address(account: str) -> str:
 def get_owned_names(account: str) -> list[str]:
     """Get all names (NFTs in nameservice.dys class) owned by account."""
     address = get_account_address(account)
-    data = run_json(f'dysond query nft nfts nameservice.dys --owner "{address}" -o json')
+    data = run_json(
+        f'dysond query nft nfts nameservice.dys --owner "{address}" -o json'
+    )
     nfts = data.get("nfts", [])
     return [nft.get("id") for nft in nfts if nft.get("id")]
 
@@ -145,15 +151,17 @@ def mint_coins_for_names(account: str, amount_per_name: int) -> None:
     if not names:
         print(f"No names owned by {account}")
         return
-    
-    params = run_json('dysond query nameservice params -o json')
+
+    params = run_json("dysond query nameservice params -o json")
     fee_per = float(params["params"].get("mint_fee_per_coin", "0"))
     mint_fee = int(amount_per_name * fee_per + 0.99999)  # ceiling
-    
+
     for name in names:
         print(f"Minting {amount_per_name}{name} with fee {mint_fee}udys")
         try:
-            run_tx_and_wait(f'dysond tx nameservice mint-coins --amount "{amount_per_name}{name}" --mint-fee "{mint_fee}udys" --from {account} -y -o json')
+            run_tx_and_wait(
+                f'dysond tx nameservice mint-coins --amount "{amount_per_name}{name}" --mint-fee "{mint_fee}udys" --from {account} -y -o json'
+            )
             print(f"  Minted {amount_per_name}{name}")
         except RuntimeError as e:
             print(f"  Failed to mint {name}: {e}")
@@ -161,80 +169,105 @@ def mint_coins_for_names(account: str, amount_per_name: int) -> None:
 
 def count_pools_for_pair(denom1: str, denom2: str) -> int:
     """Count pools for a denom pair."""
-    data = run_json(f'dysond query whaleswap pools-by-pair --base-denom "{denom1}" --quote-denom "{denom2}" -o json')
+    data = run_json(
+        f'dysond query whaleswap pools-by-pair --base-denom "{denom1}" --quote-denom "{denom2}" -o json'
+    )
     return len(data.get("pools", []))
 
 
 def count_offers_for_pair(denom1: str, denom2: str) -> int:
     """Count open offers for a denom pair (both directions)."""
-    data = run_json(f'dysond query whaleswap offers --have-denom "{denom1}" --want-denom "{denom2}" -o json')
+    data = run_json(
+        f'dysond query whaleswap offers --have-denom "{denom1}" --want-denom "{denom2}" -o json'
+    )
     offers1 = [o for o in data.get("offers", []) if o.get("status") == "open"]
-    
-    data = run_json(f'dysond query whaleswap offers --have-denom "{denom2}" --want-denom "{denom1}" -o json')
+
+    data = run_json(
+        f'dysond query whaleswap offers --have-denom "{denom2}" --want-denom "{denom1}" -o json'
+    )
     offers2 = [o for o in data.get("offers", []) if o.get("status") == "open"]
-    
+
     return len(offers1) + len(offers2)
 
 
 def count_auctions_for_pair(sell_denom: str, bid_denom: str) -> int:
     """Count auctions for a sell/bid denom pair (both directions)."""
-    data = run_json(f'dysond query whaleswap auctions --sell-denom "{sell_denom}" --bid-denom "{bid_denom}" -o json')
+    data = run_json(
+        f'dysond query whaleswap auctions --sell-denom "{sell_denom}" --bid-denom "{bid_denom}" -o json'
+    )
     auctions1 = data.get("auctions", [])
-    
-    data = run_json(f'dysond query whaleswap auctions --sell-denom "{bid_denom}" --bid-denom "{sell_denom}" -o json')
+
+    data = run_json(
+        f'dysond query whaleswap auctions --sell-denom "{bid_denom}" --bid-denom "{sell_denom}" -o json'
+    )
     auctions2 = data.get("auctions", [])
-    
+
     return len(auctions1) + len(auctions2)
 
 
-def create_pool(account: str, denom1: str, amount1: int, denom2: str, amount2: int, fee_pct: str = "0.003") -> None:
+def create_pool(
+    account: str, denom1: str, amount1: int, denom2: str, amount2: int
+) -> None:
     """Create a pool with specified reserves."""
-    print(f"Creating pool: {amount1}{denom1} + {amount2}{denom2}, fee={fee_pct}")
-    run_tx_and_wait(f'dysond tx whaleswap create-pool --coins "{amount1}{denom1}" --coins "{amount2}{denom2}" --fee-pct "{fee_pct}" --from {account} -y -o json --gas auto')
+    print(f"Creating pool: {amount1}{denom1} + {amount2}{denom2}")
+    run_tx_and_wait(
+        f'dysond tx whaleswap create-pool --coins "{amount1}{denom1}" --coins "{amount2}{denom2}" --from {account} -y -o json --gas auto'
+    )
 
 
-def create_offer(account: str, have_denom: str, have_amount: int, want_denom: str, want_amount: int) -> None:
+def create_offer(
+    account: str, have_denom: str, have_amount: int, want_denom: str, want_amount: int
+) -> None:
     """Create an orderbook offer."""
-    print(f"Creating offer: have {have_amount}{have_denom}, want {want_amount}{want_denom}")
-    run_tx_and_wait(f'dysond tx whaleswap make-offer --have "{have_amount}{have_denom}" --want "{want_amount}{want_denom}" --from {account} -y -o json --gas auto')
+    print(
+        f"Creating offer: have {have_amount}{have_denom}, want {want_amount}{want_denom}"
+    )
+    run_tx_and_wait(
+        f'dysond tx whaleswap make-offer --have "{have_amount}{have_denom}" --want "{want_amount}{want_denom}" --from {account} -y -o json --gas auto'
+    )
 
 
-def create_auction(account: str, sell_denom: str, sell_amount: int, bid_denom: str) -> None:
+def create_auction(
+    account: str, sell_denom: str, sell_amount: int, bid_denom: str
+) -> None:
     """Create an auction."""
     print(f"Creating auction: sell {sell_amount}{sell_denom}, bid_denom={bid_denom}")
-    run_tx_and_wait(f'dysond tx whaleswap open-auction --sell "{sell_amount}{sell_denom}" --bid-denom "{bid_denom}" --from {account} -y -o json --gas auto')
+    run_tx_and_wait(
+        f'dysond tx whaleswap open-auction --sell "{sell_amount}{sell_denom}" --bid-denom "{bid_denom}" --from {account} -y -o json --gas auto'
+    )
 
 
 def setup_markets(account: str) -> None:
     """Create pools, offers, and auctions for all denom pairs in account balance."""
     import random
-    
+
     balances = get_account_balances(account)
-    
+
     # Filter out whaleswap.dys/* system denoms (pool shares, liquid denoms, pfand)
-    
+
     denoms = [
-        b["denom"] for b in balances 
-        if int(b.get("amount", "0")) > 0 
-        and not b["denom"].startswith("whaleswap.dys/")
+        b["denom"]
+        for b in balances
+        if int(b.get("amount", "0")) > 0 and not b["denom"].startswith("whaleswap.dys/")
     ]
-    print(f"Found {len(denoms)} tradeable denoms (excluding whaleswap.dys/* system denoms)")
-    
-    
+    print(
+        f"Found {len(denoms)} tradeable denoms (excluding whaleswap.dys/* system denoms)"
+    )
+
     # Generate all pairs
     pairs = []
     for i, d1 in enumerate(denoms):
-        for d2 in denoms[i+1:]:
+        for d2 in denoms[i + 1 :]:
             pairs.append((d1, d2))
-    
+
     print(f"Processing {len(pairs)} denom pairs")
-    
+
     for denom1, denom2 in pairs:
         print(f"\n--- Pair: {denom1} / {denom2} ---")
-        
+
         bal1 = int([b for b in balances if b["denom"] == denom1][0]["amount"])
         bal2 = int([b for b in balances if b["denom"] == denom2][0]["amount"])
-        
+
         # Pools: if <10, make one with 10% of balance
         num_pools = count_pools_for_pair(denom1, denom2)
         print(f"Pools: {num_pools}")
@@ -246,7 +279,7 @@ def setup_markets(account: str) -> None:
                 create_pool(account, denom1, amount1, denom2, amount2, fee)
             except RuntimeError as e:
                 print(f"  Pool creation failed: {e}")
-        
+
         # Offers: if <20, make 2 offers (one each direction)
         num_offers = count_offers_for_pair(denom1, denom2)
         print(f"Offers: {num_offers}")
@@ -258,7 +291,7 @@ def setup_markets(account: str) -> None:
                 create_offer(account, denom1, have1, denom2, want1)
             except RuntimeError as e:
                 print(f"  Offer 1 failed: {e}")
-            
+
             # Offer 2: have denom2, want denom1
             have2 = max(10, bal2 // 100)
             want2 = max(10, int(have2 * random.uniform(0.8, 1.2)))
@@ -266,7 +299,7 @@ def setup_markets(account: str) -> None:
                 create_offer(account, denom2, have2, denom1, want2)
             except RuntimeError as e:
                 print(f"  Offer 2 failed: {e}")
-        
+
         # Auctions: if <20, make 2 auctions (one each direction)
         num_auctions = count_auctions_for_pair(denom1, denom2)
         print(f"Auctions: {num_auctions}")
@@ -277,7 +310,7 @@ def setup_markets(account: str) -> None:
                 create_auction(account, denom1, sell1, denom2)
             except RuntimeError as e:
                 print(f"  Auction 1 failed: {e}")
-            
+
             # Auction 2: sell denom2, bid in denom1
             sell2 = max(10, bal2 // 100)
             try:
@@ -289,7 +322,7 @@ def setup_markets(account: str) -> None:
 def get_pool_details(pool_id: str) -> dict | None:
     """Get detailed information for a specific pool."""
     try:
-        pool_data = run_json(f'dysond query whaleswap pool {pool_id} -o json')
+        pool_data = run_json(f"dysond query whaleswap pool {pool_id} -o json")
         return pool_data.get("pool")
     except:
         return None
@@ -312,7 +345,7 @@ def is_pool_balanced(pool: dict, input_denom: str) -> bool:
 
     if not input_coin or not output_coin:
         return False
-    
+
     # Skip pools with whaleswap.dys/* system denoms
     if output_coin.get("denom", "").startswith("whaleswap.dys/"):
         return False
@@ -342,13 +375,19 @@ def get_all_trades_for_denom(denom: str) -> list[dict]:
     trades = []
 
     # Get offers for this denom
-    offers_data = run_json(f'dysond query whaleswap offers-by-denom --denom "{denom}" -o json')
+    offers_data = run_json(
+        f'dysond query whaleswap offers-by-denom --denom "{denom}" -o json'
+    )
     offers = offers_data.get("offers", [])
 
     # Get all pools that contain this denom
-    pools_data = run_json('dysond query whaleswap pools -o json')
+    pools_data = run_json("dysond query whaleswap pools -o json")
     all_pools = pools_data.get("pools", [])
-    candidate_pools = [pool for pool in all_pools if any(coin.get("denom") == denom for coin in pool.get("coins", []))]
+    candidate_pools = [
+        pool
+        for pool in all_pools
+        if any(coin.get("denom") == denom for coin in pool.get("coins", []))
+    ]
 
     # Filter pools to only include balanced ones
     pools = []
@@ -373,7 +412,7 @@ def find_best_buy_price(base_denom: str, quote_denom: str) -> dict | None:
     pools = get_pools_for_pair(base_denom, quote_denom)
     offers = get_offers_for_pair(base_denom, quote_denom)
 
-    best_price = float('inf')
+    best_price = float("inf")
     best_deal = None
 
     # Check pools: price = quote/base
@@ -466,9 +505,11 @@ def find_best_sell_price(base_denom: str, quote_denom: str) -> dict | None:
     return best_deal
 
 
-def collect_trade_operations(trades: list[dict], input_denom: str, amount: int, debug: bool = True) -> tuple[list[dict], list[str]]:
+def collect_trade_operations(
+    trades: list[dict], input_denom: str, amount: int, debug: bool = True
+) -> tuple[list[dict], list[str]]:
     """Collect trade operations and determine output denoms.
-    
+
     Consolidates operations by pool_id/offer_id since each can only be referenced once per trade.
     """
     pool_operations = {}  # pool_id -> (operation, output_denom)
@@ -481,11 +522,11 @@ def collect_trade_operations(trades: list[dict], input_denom: str, amount: int, 
         if trade["type"] == "pool":
             pool = trade["data"]
             pool_id = pool["pool_id"]
-            
+
             # Skip if we already have an operation for this pool
             if pool_id in pool_operations:
                 continue
-                
+
             coins = pool.get("coins", [])
             if len(coins) == 2:
                 # Find input and output coins
@@ -501,29 +542,33 @@ def collect_trade_operations(trades: list[dict], input_denom: str, amount: int, 
                 # Skip pools with whaleswap.dys/* system denoms
                 if output_denom and output_denom.startswith("whaleswap.dys/"):
                     if debug:
-                        print(f"  Skipping pool {pool_id}: output denom is whaleswap.dys/* system denom")
+                        print(
+                            f"  Skipping pool {pool_id}: output denom is whaleswap.dys/* system denom"
+                        )
                     continue
-                
+
                 if input_coin is None or output_coin is None:
                     if debug:
-                        print(f"  Skipping pool {pool_id}: coins={[c.get('denom') for c in coins]}, input_denom={input_denom}, matched={input_coin is not None}")
+                        print(
+                            f"  Skipping pool {pool_id}: coins={[c.get('denom') for c in coins]}, input_denom={input_denom}, matched={input_coin is not None}"
+                        )
                     continue
 
                 # For swap_in, we specify the exact input amount we want to provide
                 op = {
                     "swap": {
                         "pool_id": pool_id,
-                        "swap_in": {"denom": input_denom, "amount": str(amount)}
+                        "swap_in": {"denom": input_denom, "amount": str(amount)},
                     }
                 }
                 pool_operations[pool_id] = (op, output_denom)
                 if output_denom not in output_denoms:
                     output_denoms.append(output_denom)
-                    
+
         elif trade["type"] == "offer":
             offer = trade["data"]
             offer_id = offer["offer_id"]
-            
+
             # Skip if already used or not open
             if offer_id in offer_operations:
                 if debug:
@@ -533,72 +578,81 @@ def collect_trade_operations(trades: list[dict], input_denom: str, amount: int, 
                 if debug:
                     print(f"  Skipping offer {offer_id}: status={offer.get('status')}")
                 continue
-            
+
             # Check if this offer accepts our input_denom (we pay want, receive have)
             want_denom = offer.get("initial_want", {}).get("denom")
             have_denom = offer.get("initial_have", {}).get("denom")
-            
+
             # Skip offers with whaleswap.dys/* system denoms
-            if (want_denom and want_denom.startswith("whaleswap.dys/")) or \
-               (have_denom and have_denom.startswith("whaleswap.dys/")):
-                
+            if (want_denom and want_denom.startswith("whaleswap.dys/")) or (
+                have_denom and have_denom.startswith("whaleswap.dys/")
+            ):
+
                 print(f"  Skipping offer {offer_id}: contains whaleswap.dys/* denom")
                 continue
-            
+
             if want_denom == input_denom:
                 # We can take this offer by providing want_denom
                 output_denom = have_denom
-                
+
                 # Calculate units we can take with our amount
                 unit_want = int(offer.get("unit_want_int", "1"))
                 remaining_units = int(offer.get("remaining_units", "0"))
-                
+
                 if unit_want == 0 or remaining_units == 0:
                     if debug:
-                        print(f"  Skipping offer {offer_id}: unit_want={unit_want}, remaining_units={remaining_units}")
+                        print(
+                            f"  Skipping offer {offer_id}: unit_want={unit_want}, remaining_units={remaining_units}"
+                        )
                     continue
-                
+
                 # Take as many units as our amount allows
                 units_to_take = min(amount // unit_want, remaining_units)
-                
+
                 if units_to_take == 0:
                     if debug:
-                        print(f"  Skipping offer {offer_id}: units_to_take=0 (amount={amount}, unit_want={unit_want})")
+                        print(
+                            f"  Skipping offer {offer_id}: units_to_take=0 (amount={amount}, unit_want={unit_want})"
+                        )
                     continue
-                
-                op = {
-                    "take": {
-                        "offer_id": offer_id,
-                        "take_units": str(units_to_take)
-                    }
-                }
+
+                op = {"take": {"offer_id": offer_id, "take_units": str(units_to_take)}}
                 offer_operations[offer_id] = (op, output_denom)
                 if output_denom not in output_denoms:
                     output_denoms.append(output_denom)
             else:
                 if debug:
-                    print(f"  Skipping offer {offer_id}: want={want_denom}, have={have_denom}, input={input_denom}")
+                    print(
+                        f"  Skipping offer {offer_id}: want={want_denom}, have={have_denom}, input={input_denom}"
+                    )
 
     # Extract operations in a consistent order
-    operations = [op for op, _ in pool_operations.values()] + [op for op, _ in offer_operations.values()]
-    
+    operations = [op for op, _ in pool_operations.values()] + [
+        op for op, _ in offer_operations.values()
+    ]
+
     if debug:
-        print(f"  Total operations after dedup: {len(pool_operations)} pools, {len(offer_operations)} offers")
-    
+        print(
+            f"  Total operations after dedup: {len(pool_operations)} pools, {len(offer_operations)} offers"
+        )
+
     return operations, output_denoms
 
 
-def execute_batch_trades(from_acct: str, operations: list[dict], max_inputs: list[str], min_outputs: list[str], gas_flags: str = "") -> dict:
+def execute_batch_trades(
+    from_acct: str,
+    operations: list[dict],
+    max_inputs: list[str],
+    min_outputs: list[str],
+    gas_flags: str = "",
+) -> dict:
     """Execute multiple trade operations in a single transaction."""
     # Build command with multiple --op, --max-input, and --min-output flags
-    cmd_parts = [
-        "dysond tx whaleswap make-trade",
-        f"--from {shlex.quote(from_acct)}"
-    ]
+    cmd_parts = ["dysond tx whaleswap make-trade", f"--from {shlex.quote(from_acct)}"]
 
     # Add max-input flags
     for max_input in max_inputs:
-        cmd_parts.append(f"--max-input \"{max_input}\"")
+        cmd_parts.append(f'--max-input "{max_input}"')
 
     # Add operation flags
     for op in operations:
@@ -607,11 +661,13 @@ def execute_batch_trades(from_acct: str, operations: list[dict], max_inputs: lis
 
     # Add min-output flags
     for min_output in min_outputs:
-        cmd_parts.append(f"--min-output \"{min_output}\"")
+        cmd_parts.append(f'--min-output "{min_output}"')
 
     # add note flag
     # request https://jaspervdj.be/lorem-markdownum/markdown.txt?num-blocks=1
-    note = requests.get("https://jaspervdj.be/lorem-markdownum/markdown.txt?num-blocks=1").text[:100]
+    note = requests.get(
+        "https://jaspervdj.be/lorem-markdownum/markdown.txt?num-blocks=1"
+    ).text[:100]
     cmd_parts.append(f"--note {shlex.quote(note)}")
 
     # Add other flags
@@ -625,45 +681,58 @@ def execute_batch_trades(from_acct: str, operations: list[dict], max_inputs: lis
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Whaleswap market operations and stress testing")
+    parser = argparse.ArgumentParser(
+        description="Whaleswap market operations and stress testing"
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
-    
+
     # Mint command
-    mint_parser = subparsers.add_parser("mint", help="Mint coins for all names owned by account")
+    mint_parser = subparsers.add_parser(
+        "mint", help="Mint coins for all names owned by account"
+    )
     mint_parser.add_argument("--from", dest="from_acct", required=True, help="key name")
-    mint_parser.add_argument("--amount", type=int, default=1000000, help="Amount to mint per name")
-    
+    mint_parser.add_argument(
+        "--amount", type=int, default=1000000, help="Amount to mint per name"
+    )
+
     # Setup markets command
-    setup_parser = subparsers.add_parser("setup", help="Create pools, offers, and auctions for all denom pairs")
-    setup_parser.add_argument("--from", dest="from_acct", required=True, help="key name")
-    
+    setup_parser = subparsers.add_parser(
+        "setup", help="Create pools, offers, and auctions for all denom pairs"
+    )
+    setup_parser.add_argument(
+        "--from", dest="from_acct", required=True, help="key name"
+    )
+
     # Stress test command
-    stress_parser = subparsers.add_parser("stress", help="Stress test make-trade with multiple small trades")
-    stress_parser.add_argument("--from", dest="from_acct", required=True, help="key name")
+    stress_parser = subparsers.add_parser(
+        "stress", help="Stress test make-trade with multiple small trades"
+    )
+    stress_parser.add_argument(
+        "--from", dest="from_acct", required=True, help="key name"
+    )
     stress_parser.add_argument("--gas-flags", default="", help="Optional gas flags")
-    
+
     args = parser.parse_args()
-    
+
     if args.command == "mint":
         mint_coins_for_names(args.from_acct, args.amount)
         return
-    
+
     if args.command == "setup":
         setup_markets(args.from_acct)
         return
-    
+
     # Stress test command
     print(f"Account: {args.from_acct}")
 
     # Get account balances, filter out whaleswap.dys/* system denoms
-    
+
     all_balances = get_account_balances(args.from_acct)
-    balances = [
-        b for b in all_balances 
-        if not b["denom"].startswith("whaleswap.dys/")
-    ]
-    print(f"Found {len(balances)} tradeable denoms (excluding whaleswap.dys/* system denoms)")
-    
+    balances = [b for b in all_balances if not b["denom"].startswith("whaleswap.dys/")]
+    print(
+        f"Found {len(balances)} tradeable denoms (excluding whaleswap.dys/* system denoms)"
+    )
+
     # Collect all operations across all denoms with global pool/offer deduplication
     all_operations = []
     all_output_denoms = set()
@@ -685,7 +754,9 @@ def main() -> None:
         trades = get_all_trades_for_denom(denom)
         pool_count = sum(1 for t in trades if t["type"] == "pool")
         offer_count = sum(1 for t in trades if t["type"] == "offer")
-        print(f"Found {len(trades)} trade opportunities ({pool_count} pools, {offer_count} offers)")
+        print(
+            f"Found {len(trades)} trade opportunities ({pool_count} pools, {offer_count} offers)"
+        )
 
         # Use moderate amount that can satisfy typical offer unit sizes
         trade_amount = min(10000, available_amount // 10)
@@ -694,8 +765,10 @@ def main() -> None:
         print(f"Using trade amount: {trade_amount}")
 
         # Collect operations for this denom (already deduplicated by pool_id/offer_id)
-        operations, output_denoms = collect_trade_operations(trades, denom, trade_amount, debug=True)
-        
+        operations, output_denoms = collect_trade_operations(
+            trades, denom, trade_amount, debug=True
+        )
+
         # Filter out pools/offers we've already used globally
         new_operations = []
         for op in operations:
@@ -709,7 +782,7 @@ def main() -> None:
                 if offer_id not in used_offer_ids:
                     new_operations.append(op)
                     used_offer_ids.add(offer_id)
-        
+
         print(f"Collected {len(new_operations)} unique operations (after global dedup)")
 
         # Add operations if we have enough balance
@@ -736,7 +809,9 @@ def main() -> None:
 
     # Execute all operations in a single batch transaction
     try:
-        tx = execute_batch_trades(args.from_acct, all_operations, max_inputs, min_outputs, args.gas_flags)
+        tx = execute_batch_trades(
+            args.from_acct, all_operations, max_inputs, min_outputs, args.gas_flags
+        )
 
         # Count successful trades
         trade_count = 0
@@ -752,9 +827,7 @@ def main() -> None:
     except Exception as e:
         error_msg = str(e)
         print(f"Error: {error_msg}")
-        
+
 
 if __name__ == "__main__":
     main()
-
-

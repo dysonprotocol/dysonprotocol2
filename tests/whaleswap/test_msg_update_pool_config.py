@@ -170,13 +170,23 @@ def demo_update_all_fields(creator_addr, foo_name, bar_name):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
-    assert query_result.get("exception") is None, f"Script execution failed: {json.dumps(query_result.get('exception'), indent=2)}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed: {json.dumps(query_result.get('exception'), indent=2)}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"Result should be dict, got {type(demo_result)}"
-    assert "pool_id" in demo_result, f"Missing pool_id. Keys: {list(demo_result.keys())}"
+    assert isinstance(
+        demo_result, dict
+    ), f"Result should be dict, got {type(demo_result)}"
+    assert (
+        "pool_id" in demo_result
+    ), f"Missing pool_id. Keys: {list(demo_result.keys())}"
     assert "pool" in demo_result, f"Missing pool. Keys: {list(demo_result.keys())}"
 
     pool = demo_result["pool"]
@@ -184,33 +194,57 @@ def demo_update_all_fields(creator_addr, foo_name, bar_name):
 
     # Verify fee_rate updated
     fee_map = {fr["denom"]: fr["amount"] for fr in pool["fee_rate"]}
-    assert fee_map[denom_a] == "0.002000000000000000", f"Fee rate for {denom_a} should be 0.002"
-    assert fee_map[denom_b] == "0.002000000000000000", f"Fee rate for {denom_b} should be 0.002"
+    assert (
+        fee_map[denom_a] == "0.002000000000000000"
+    ), f"Fee rate for {denom_a} should be 0.002"
+    assert (
+        fee_map[denom_b] == "0.002000000000000000"
+    ), f"Fee rate for {denom_b} should be 0.002"
 
     # Verify min_collateral_ratio updated
     mcr_map = {mcr["denom"]: mcr["amount"] for mcr in pool["min_collateral_ratio"]}
-    assert mcr_map[denom_a] == "2.000000000000000000", f"Min CR for {denom_a} should be 2.0"
-    assert mcr_map[denom_b] == "2.000000000000000000", f"Min CR for {denom_b} should be 2.0"
+    assert (
+        mcr_map[denom_a] == "2.000000000000000000"
+    ), f"Min CR for {denom_a} should be 2.0"
+    assert (
+        mcr_map[denom_b] == "2.000000000000000000"
+    ), f"Min CR for {denom_b} should be 2.0"
 
     # Verify liquidation_threshold updated
     liq_map = {liq["denom"]: liq["amount"] for liq in pool["liquidation_threshold"]}
-    assert liq_map[denom_a] == "1.300000000000000000", f"Liquidation threshold for {denom_a} should be 1.3"
-    assert liq_map[denom_b] == "1.300000000000000000", f"Liquidation threshold for {denom_b} should be 1.3"
+    assert (
+        liq_map[denom_a] == "1.300000000000000000"
+    ), f"Liquidation threshold for {denom_a} should be 1.3"
+    assert (
+        liq_map[denom_b] == "1.300000000000000000"
+    ), f"Liquidation threshold for {denom_b} should be 1.3"
 
     # Verify interest_rate updated
     ir_map = {ir["denom"]: ir["amount"] for ir in pool["interest_rate"]}
-    assert ir_map[denom_a] == "0.050000000000000000", f"Interest rate for {denom_a} should be 0.05"
-    assert ir_map[denom_b] == "0.050000000000000000", f"Interest rate for {denom_b} should be 0.05"
+    assert (
+        ir_map[denom_a] == "0.050000000000000000"
+    ), f"Interest rate for {denom_a} should be 0.05"
+    assert (
+        ir_map[denom_b] == "0.050000000000000000"
+    ), f"Interest rate for {denom_b} should be 0.05"
 
     # Verify max_borrow_percent updated
     mbp_map = {mbp["denom"]: mbp["amount"] for mbp in pool["max_borrow_percent"]}
-    assert mbp_map[denom_a] == "0.800000000000000000", f"Max borrow percent for {denom_a} should be 0.8"
-    assert mbp_map[denom_b] == "0.800000000000000000", f"Max borrow percent for {denom_b} should be 0.8"
+    assert (
+        mbp_map[denom_a] == "0.800000000000000000"
+    ), f"Max borrow percent for {denom_a} should be 0.8"
+    assert (
+        mbp_map[denom_b] == "0.800000000000000000"
+    ), f"Max borrow percent for {denom_b} should be 0.8"
 
     # Verify bound_percent updated
     bp_map = {bp["denom"]: bp["amount"] for bp in pool["bound_percent"]}
-    assert bp_map[denom_a] == "0.500000000000000000", f"Bound percent for {denom_a} should be 0.5"
-    assert bp_map[denom_b] == "0.900000000000000000", f"Bound percent for {denom_b} should be 0.9"
+    assert (
+        bp_map[denom_a] == "0.500000000000000000"
+    ), f"Bound percent for {denom_a} should be 0.5"
+    assert (
+        bp_map[denom_b] == "0.900000000000000000"
+    ), f"Bound percent for {denom_b} should be 0.9"
 
 
 @pytest.mark.usefixtures("faucet")
@@ -330,9 +364,15 @@ def demo_deprecated_ignored(creator_addr, foo_name, bar_name):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
-    assert query_result.get("exception") is None, f"Script execution failed: {json.dumps(query_result.get('exception'), indent=2)}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed: {json.dumps(query_result.get('exception'), indent=2)}"
 
     demo_result = result["result"]["result"]
     pool = demo_result["pool"]
@@ -340,12 +380,20 @@ def demo_deprecated_ignored(creator_addr, foo_name, bar_name):
 
     # Verify update succeeded
     mcr_map = {mcr["denom"]: mcr["amount"] for mcr in pool["min_collateral_ratio"]}
-    assert mcr_map[denom_a] == "2.000000000000000000", f"Min CR should be updated to 2.0"
-    assert mcr_map[denom_b] == "2.000000000000000000", f"Min CR should be updated to 2.0"
+    assert (
+        mcr_map[denom_a] == "2.000000000000000000"
+    ), f"Min CR should be updated to 2.0"
+    assert (
+        mcr_map[denom_b] == "2.000000000000000000"
+    ), f"Min CR should be updated to 2.0"
 
     liq_map = {liq["denom"]: liq["amount"] for liq in pool["liquidation_threshold"]}
-    assert liq_map[denom_a] == "1.300000000000000000", f"Liquidation threshold should be updated to 1.3"
-    assert liq_map[denom_b] == "1.300000000000000000", f"Liquidation threshold should be updated to 1.3"
+    assert (
+        liq_map[denom_a] == "1.300000000000000000"
+    ), f"Liquidation threshold should be updated to 1.3"
+    assert (
+        liq_map[denom_b] == "1.300000000000000000"
+    ), f"Liquidation threshold should be updated to 1.3"
 
 
 @pytest.mark.usefixtures("faucet")
@@ -454,12 +502,20 @@ def demo_mincr_error(creator_addr, foo_name, bar_name):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"Result should be dict, got {type(demo_result)}"
-    assert "expected" in demo_result, f"Error should have been caught. Result: {json.dumps(demo_result, indent=2)}"
+    assert isinstance(
+        demo_result, dict
+    ), f"Result should be dict, got {type(demo_result)}"
+    assert (
+        "expected" in demo_result
+    ), f"Error should have been caught. Result: {json.dumps(demo_result, indent=2)}"
     assert demo_result["expected"] is True, f"Expected error to be caught"
 
 
@@ -569,12 +625,20 @@ def demo_liq_error(creator_addr, foo_name, bar_name):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"Result should be dict, got {type(demo_result)}"
-    assert "expected" in demo_result, f"Error should have been caught. Result: {json.dumps(demo_result, indent=2)}"
+    assert isinstance(
+        demo_result, dict
+    ), f"Result should be dict, got {type(demo_result)}"
+    assert (
+        "expected" in demo_result
+    ), f"Error should have been caught. Result: {json.dumps(demo_result, indent=2)}"
     assert demo_result["expected"] is True, f"Expected error to be caught"
 
 
@@ -688,19 +752,25 @@ def demo_fee_error(creator_addr, foo_name, bar_name):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"Result should be dict, got {type(demo_result)}"
-    assert "expected" in demo_result, f"Error should have been caught. Result: {json.dumps(demo_result, indent=2)}"
+    assert isinstance(
+        demo_result, dict
+    ), f"Result should be dict, got {type(demo_result)}"
+    assert (
+        "expected" in demo_result
+    ), f"Error should have been caught. Result: {json.dumps(demo_result, indent=2)}"
     assert demo_result["expected"] is True, f"Expected error to be caught"
 
 
 @pytest.mark.usefixtures("faucet")
-def test_update_pool_config_pool_not_found(
-    chainnet, generate_account, register_name
-):
+def test_update_pool_config_pool_not_found(chainnet, generate_account, register_name):
     """Test UpdatePoolConfig error when pool doesn't exist."""
     dysond = chainnet[0]
     creator_name, creator_addr = generate_account(
@@ -772,11 +842,18 @@ def demo_notfound(creator_addr, foo_name, bar_name):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"Result should be dict, got {type(demo_result)}"
-    assert "expected" in demo_result, f"Error should have been caught. Result: {json.dumps(demo_result, indent=2)}"
+    assert isinstance(
+        demo_result, dict
+    ), f"Result should be dict, got {type(demo_result)}"
+    assert (
+        "expected" in demo_result
+    ), f"Error should have been caught. Result: {json.dumps(demo_result, indent=2)}"
     assert demo_result["expected"] is True, f"Expected error to be caught"
-

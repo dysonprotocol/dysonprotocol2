@@ -4,6 +4,7 @@ package types
 import (
 	v1beta1 "cosmossdk.io/api/cosmos/base/v1beta1"
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-proto"
 	runtime "github.com/cosmos/cosmos-proto/runtime"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
@@ -8346,6 +8347,744 @@ func (x *fastReflection_EventLeverageCollateralAdded) ProtoMethods() *protoiface
 }
 
 var (
+	md_EventLeverageCollateralRemoved                      protoreflect.MessageDescriptor
+	fd_EventLeverageCollateralRemoved_position_id          protoreflect.FieldDescriptor
+	fd_EventLeverageCollateralRemoved_user                 protoreflect.FieldDescriptor
+	fd_EventLeverageCollateralRemoved_pool_id              protoreflect.FieldDescriptor
+	fd_EventLeverageCollateralRemoved_collateral_removed   protoreflect.FieldDescriptor
+	fd_EventLeverageCollateralRemoved_new_collateral       protoreflect.FieldDescriptor
+	fd_EventLeverageCollateralRemoved_new_collateral_ratio protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_dysonprotocol_whaleswap_v1_events_proto_init()
+	md_EventLeverageCollateralRemoved = File_dysonprotocol_whaleswap_v1_events_proto.Messages().ByName("EventLeverageCollateralRemoved")
+	fd_EventLeverageCollateralRemoved_position_id = md_EventLeverageCollateralRemoved.Fields().ByName("position_id")
+	fd_EventLeverageCollateralRemoved_user = md_EventLeverageCollateralRemoved.Fields().ByName("user")
+	fd_EventLeverageCollateralRemoved_pool_id = md_EventLeverageCollateralRemoved.Fields().ByName("pool_id")
+	fd_EventLeverageCollateralRemoved_collateral_removed = md_EventLeverageCollateralRemoved.Fields().ByName("collateral_removed")
+	fd_EventLeverageCollateralRemoved_new_collateral = md_EventLeverageCollateralRemoved.Fields().ByName("new_collateral")
+	fd_EventLeverageCollateralRemoved_new_collateral_ratio = md_EventLeverageCollateralRemoved.Fields().ByName("new_collateral_ratio")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventLeverageCollateralRemoved)(nil)
+
+type fastReflection_EventLeverageCollateralRemoved EventLeverageCollateralRemoved
+
+func (x *EventLeverageCollateralRemoved) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventLeverageCollateralRemoved)(x)
+}
+
+func (x *EventLeverageCollateralRemoved) slowProtoReflect() protoreflect.Message {
+	mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[16]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventLeverageCollateralRemoved_messageType fastReflection_EventLeverageCollateralRemoved_messageType
+var _ protoreflect.MessageType = fastReflection_EventLeverageCollateralRemoved_messageType{}
+
+type fastReflection_EventLeverageCollateralRemoved_messageType struct{}
+
+func (x fastReflection_EventLeverageCollateralRemoved_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventLeverageCollateralRemoved)(nil)
+}
+func (x fastReflection_EventLeverageCollateralRemoved_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventLeverageCollateralRemoved)
+}
+func (x fastReflection_EventLeverageCollateralRemoved_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventLeverageCollateralRemoved
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventLeverageCollateralRemoved) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventLeverageCollateralRemoved
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventLeverageCollateralRemoved) Type() protoreflect.MessageType {
+	return _fastReflection_EventLeverageCollateralRemoved_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventLeverageCollateralRemoved) New() protoreflect.Message {
+	return new(fastReflection_EventLeverageCollateralRemoved)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventLeverageCollateralRemoved) Interface() protoreflect.ProtoMessage {
+	return (*EventLeverageCollateralRemoved)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventLeverageCollateralRemoved) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.PositionId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PositionId)
+		if !f(fd_EventLeverageCollateralRemoved_position_id, value) {
+			return
+		}
+	}
+	if x.User != "" {
+		value := protoreflect.ValueOfString(x.User)
+		if !f(fd_EventLeverageCollateralRemoved_user, value) {
+			return
+		}
+	}
+	if x.PoolId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PoolId)
+		if !f(fd_EventLeverageCollateralRemoved_pool_id, value) {
+			return
+		}
+	}
+	if x.CollateralRemoved != nil {
+		value := protoreflect.ValueOfMessage(x.CollateralRemoved.ProtoReflect())
+		if !f(fd_EventLeverageCollateralRemoved_collateral_removed, value) {
+			return
+		}
+	}
+	if x.NewCollateral != nil {
+		value := protoreflect.ValueOfMessage(x.NewCollateral.ProtoReflect())
+		if !f(fd_EventLeverageCollateralRemoved_new_collateral, value) {
+			return
+		}
+	}
+	if x.NewCollateralRatio != "" {
+		value := protoreflect.ValueOfString(x.NewCollateralRatio)
+		if !f(fd_EventLeverageCollateralRemoved_new_collateral_ratio, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventLeverageCollateralRemoved) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.position_id":
+		return x.PositionId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.user":
+		return x.User != ""
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.pool_id":
+		return x.PoolId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.collateral_removed":
+		return x.CollateralRemoved != nil
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.new_collateral":
+		return x.NewCollateral != nil
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.new_collateral_ratio":
+		return x.NewCollateralRatio != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageCollateralRemoved) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.position_id":
+		x.PositionId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.user":
+		x.User = ""
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.pool_id":
+		x.PoolId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.collateral_removed":
+		x.CollateralRemoved = nil
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.new_collateral":
+		x.NewCollateral = nil
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.new_collateral_ratio":
+		x.NewCollateralRatio = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventLeverageCollateralRemoved) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.position_id":
+		value := x.PositionId
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.user":
+		value := x.User
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.pool_id":
+		value := x.PoolId
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.collateral_removed":
+		value := x.CollateralRemoved
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.new_collateral":
+		value := x.NewCollateral
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.new_collateral_ratio":
+		value := x.NewCollateralRatio
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageCollateralRemoved) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.position_id":
+		x.PositionId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.user":
+		x.User = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.pool_id":
+		x.PoolId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.collateral_removed":
+		x.CollateralRemoved = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.new_collateral":
+		x.NewCollateral = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.new_collateral_ratio":
+		x.NewCollateralRatio = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageCollateralRemoved) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.collateral_removed":
+		if x.CollateralRemoved == nil {
+			x.CollateralRemoved = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.CollateralRemoved.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.new_collateral":
+		if x.NewCollateral == nil {
+			x.NewCollateral = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.NewCollateral.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.position_id":
+		panic(fmt.Errorf("field position_id of message dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.user":
+		panic(fmt.Errorf("field user of message dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.pool_id":
+		panic(fmt.Errorf("field pool_id of message dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.new_collateral_ratio":
+		panic(fmt.Errorf("field new_collateral_ratio of message dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventLeverageCollateralRemoved) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.position_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.user":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.pool_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.collateral_removed":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.new_collateral":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.new_collateral_ratio":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventLeverageCollateralRemoved) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventLeverageCollateralRemoved) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeverageCollateralRemoved) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventLeverageCollateralRemoved) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventLeverageCollateralRemoved) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventLeverageCollateralRemoved)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.PositionId != 0 {
+			n += 1 + runtime.Sov(uint64(x.PositionId))
+		}
+		l = len(x.User)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.PoolId != 0 {
+			n += 1 + runtime.Sov(uint64(x.PoolId))
+		}
+		if x.CollateralRemoved != nil {
+			l = options.Size(x.CollateralRemoved)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.NewCollateral != nil {
+			l = options.Size(x.NewCollateral)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.NewCollateralRatio)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventLeverageCollateralRemoved)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.NewCollateralRatio) > 0 {
+			i -= len(x.NewCollateralRatio)
+			copy(dAtA[i:], x.NewCollateralRatio)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NewCollateralRatio)))
+			i--
+			dAtA[i] = 0x32
+		}
+		if x.NewCollateral != nil {
+			encoded, err := options.Marshal(x.NewCollateral)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x2a
+		}
+		if x.CollateralRemoved != nil {
+			encoded, err := options.Marshal(x.CollateralRemoved)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if x.PoolId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PoolId))
+			i--
+			dAtA[i] = 0x18
+		}
+		if len(x.User) > 0 {
+			i -= len(x.User)
+			copy(dAtA[i:], x.User)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.User)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.PositionId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PositionId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventLeverageCollateralRemoved)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventLeverageCollateralRemoved: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventLeverageCollateralRemoved: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PositionId", wireType)
+				}
+				x.PositionId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PositionId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field User", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.User = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PoolId", wireType)
+				}
+				x.PoolId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PoolId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CollateralRemoved", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.CollateralRemoved == nil {
+					x.CollateralRemoved = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.CollateralRemoved); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NewCollateral", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.NewCollateral == nil {
+					x.NewCollateral = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.NewCollateral); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 6:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NewCollateralRatio", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.NewCollateralRatio = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
 	md_EventLeverageLiquidationInitialized                       protoreflect.MessageDescriptor
 	fd_EventLeverageLiquidationInitialized_position_id           protoreflect.FieldDescriptor
 	fd_EventLeverageLiquidationInitialized_user                  protoreflect.FieldDescriptor
@@ -8375,7 +9114,7 @@ func (x *EventLeverageLiquidationInitialized) ProtoReflect() protoreflect.Messag
 }
 
 func (x *EventLeverageLiquidationInitialized) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[16]
+	mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9069,7 +9808,7 @@ func (x *EventLeverageLiquidationFinalized) ProtoReflect() protoreflect.Message 
 }
 
 func (x *EventLeverageLiquidationFinalized) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[17]
+	mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9890,7 +10629,7 @@ func (x *EventLeveragePositionCovered) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventLeveragePositionCovered) slowProtoReflect() protoreflect.Message {
-	mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[18]
+	mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10804,6 +11543,1203 @@ func (x *fastReflection_EventLeveragePositionCovered) ProtoMethods() *protoiface
 	}
 }
 
+var (
+	md_EventLeveragePositionPartiallyClosed                      protoreflect.MessageDescriptor
+	fd_EventLeveragePositionPartiallyClosed_position_id          protoreflect.FieldDescriptor
+	fd_EventLeveragePositionPartiallyClosed_user                 protoreflect.FieldDescriptor
+	fd_EventLeveragePositionPartiallyClosed_pool_id              protoreflect.FieldDescriptor
+	fd_EventLeveragePositionPartiallyClosed_fraction_closed      protoreflect.FieldDescriptor
+	fd_EventLeveragePositionPartiallyClosed_interest_paid        protoreflect.FieldDescriptor
+	fd_EventLeveragePositionPartiallyClosed_principal_paid       protoreflect.FieldDescriptor
+	fd_EventLeveragePositionPartiallyClosed_collateral_returned  protoreflect.FieldDescriptor
+	fd_EventLeveragePositionPartiallyClosed_profit               protoreflect.FieldDescriptor
+	fd_EventLeveragePositionPartiallyClosed_new_borrowed         protoreflect.FieldDescriptor
+	fd_EventLeveragePositionPartiallyClosed_new_held             protoreflect.FieldDescriptor
+	fd_EventLeveragePositionPartiallyClosed_new_collateral       protoreflect.FieldDescriptor
+	fd_EventLeveragePositionPartiallyClosed_new_collateral_ratio protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_dysonprotocol_whaleswap_v1_events_proto_init()
+	md_EventLeveragePositionPartiallyClosed = File_dysonprotocol_whaleswap_v1_events_proto.Messages().ByName("EventLeveragePositionPartiallyClosed")
+	fd_EventLeveragePositionPartiallyClosed_position_id = md_EventLeveragePositionPartiallyClosed.Fields().ByName("position_id")
+	fd_EventLeveragePositionPartiallyClosed_user = md_EventLeveragePositionPartiallyClosed.Fields().ByName("user")
+	fd_EventLeveragePositionPartiallyClosed_pool_id = md_EventLeveragePositionPartiallyClosed.Fields().ByName("pool_id")
+	fd_EventLeveragePositionPartiallyClosed_fraction_closed = md_EventLeveragePositionPartiallyClosed.Fields().ByName("fraction_closed")
+	fd_EventLeveragePositionPartiallyClosed_interest_paid = md_EventLeveragePositionPartiallyClosed.Fields().ByName("interest_paid")
+	fd_EventLeveragePositionPartiallyClosed_principal_paid = md_EventLeveragePositionPartiallyClosed.Fields().ByName("principal_paid")
+	fd_EventLeveragePositionPartiallyClosed_collateral_returned = md_EventLeveragePositionPartiallyClosed.Fields().ByName("collateral_returned")
+	fd_EventLeveragePositionPartiallyClosed_profit = md_EventLeveragePositionPartiallyClosed.Fields().ByName("profit")
+	fd_EventLeveragePositionPartiallyClosed_new_borrowed = md_EventLeveragePositionPartiallyClosed.Fields().ByName("new_borrowed")
+	fd_EventLeveragePositionPartiallyClosed_new_held = md_EventLeveragePositionPartiallyClosed.Fields().ByName("new_held")
+	fd_EventLeveragePositionPartiallyClosed_new_collateral = md_EventLeveragePositionPartiallyClosed.Fields().ByName("new_collateral")
+	fd_EventLeveragePositionPartiallyClosed_new_collateral_ratio = md_EventLeveragePositionPartiallyClosed.Fields().ByName("new_collateral_ratio")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventLeveragePositionPartiallyClosed)(nil)
+
+type fastReflection_EventLeveragePositionPartiallyClosed EventLeveragePositionPartiallyClosed
+
+func (x *EventLeveragePositionPartiallyClosed) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventLeveragePositionPartiallyClosed)(x)
+}
+
+func (x *EventLeveragePositionPartiallyClosed) slowProtoReflect() protoreflect.Message {
+	mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[20]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventLeveragePositionPartiallyClosed_messageType fastReflection_EventLeveragePositionPartiallyClosed_messageType
+var _ protoreflect.MessageType = fastReflection_EventLeveragePositionPartiallyClosed_messageType{}
+
+type fastReflection_EventLeveragePositionPartiallyClosed_messageType struct{}
+
+func (x fastReflection_EventLeveragePositionPartiallyClosed_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventLeveragePositionPartiallyClosed)(nil)
+}
+func (x fastReflection_EventLeveragePositionPartiallyClosed_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventLeveragePositionPartiallyClosed)
+}
+func (x fastReflection_EventLeveragePositionPartiallyClosed_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventLeveragePositionPartiallyClosed
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventLeveragePositionPartiallyClosed
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) Type() protoreflect.MessageType {
+	return _fastReflection_EventLeveragePositionPartiallyClosed_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) New() protoreflect.Message {
+	return new(fastReflection_EventLeveragePositionPartiallyClosed)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) Interface() protoreflect.ProtoMessage {
+	return (*EventLeveragePositionPartiallyClosed)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.PositionId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PositionId)
+		if !f(fd_EventLeveragePositionPartiallyClosed_position_id, value) {
+			return
+		}
+	}
+	if x.User != "" {
+		value := protoreflect.ValueOfString(x.User)
+		if !f(fd_EventLeveragePositionPartiallyClosed_user, value) {
+			return
+		}
+	}
+	if x.PoolId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PoolId)
+		if !f(fd_EventLeveragePositionPartiallyClosed_pool_id, value) {
+			return
+		}
+	}
+	if x.FractionClosed != "" {
+		value := protoreflect.ValueOfString(x.FractionClosed)
+		if !f(fd_EventLeveragePositionPartiallyClosed_fraction_closed, value) {
+			return
+		}
+	}
+	if x.InterestPaid != nil {
+		value := protoreflect.ValueOfMessage(x.InterestPaid.ProtoReflect())
+		if !f(fd_EventLeveragePositionPartiallyClosed_interest_paid, value) {
+			return
+		}
+	}
+	if x.PrincipalPaid != nil {
+		value := protoreflect.ValueOfMessage(x.PrincipalPaid.ProtoReflect())
+		if !f(fd_EventLeveragePositionPartiallyClosed_principal_paid, value) {
+			return
+		}
+	}
+	if x.CollateralReturned != nil {
+		value := protoreflect.ValueOfMessage(x.CollateralReturned.ProtoReflect())
+		if !f(fd_EventLeveragePositionPartiallyClosed_collateral_returned, value) {
+			return
+		}
+	}
+	if x.Profit != nil {
+		value := protoreflect.ValueOfMessage(x.Profit.ProtoReflect())
+		if !f(fd_EventLeveragePositionPartiallyClosed_profit, value) {
+			return
+		}
+	}
+	if x.NewBorrowed != nil {
+		value := protoreflect.ValueOfMessage(x.NewBorrowed.ProtoReflect())
+		if !f(fd_EventLeveragePositionPartiallyClosed_new_borrowed, value) {
+			return
+		}
+	}
+	if x.NewHeld != nil {
+		value := protoreflect.ValueOfMessage(x.NewHeld.ProtoReflect())
+		if !f(fd_EventLeveragePositionPartiallyClosed_new_held, value) {
+			return
+		}
+	}
+	if x.NewCollateral != nil {
+		value := protoreflect.ValueOfMessage(x.NewCollateral.ProtoReflect())
+		if !f(fd_EventLeveragePositionPartiallyClosed_new_collateral, value) {
+			return
+		}
+	}
+	if x.NewCollateralRatio != "" {
+		value := protoreflect.ValueOfString(x.NewCollateralRatio)
+		if !f(fd_EventLeveragePositionPartiallyClosed_new_collateral_ratio, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.position_id":
+		return x.PositionId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.user":
+		return x.User != ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.pool_id":
+		return x.PoolId != uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.fraction_closed":
+		return x.FractionClosed != ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.interest_paid":
+		return x.InterestPaid != nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.principal_paid":
+		return x.PrincipalPaid != nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.collateral_returned":
+		return x.CollateralReturned != nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.profit":
+		return x.Profit != nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_borrowed":
+		return x.NewBorrowed != nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_held":
+		return x.NewHeld != nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_collateral":
+		return x.NewCollateral != nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_collateral_ratio":
+		return x.NewCollateralRatio != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.position_id":
+		x.PositionId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.user":
+		x.User = ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.pool_id":
+		x.PoolId = uint64(0)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.fraction_closed":
+		x.FractionClosed = ""
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.interest_paid":
+		x.InterestPaid = nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.principal_paid":
+		x.PrincipalPaid = nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.collateral_returned":
+		x.CollateralReturned = nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.profit":
+		x.Profit = nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_borrowed":
+		x.NewBorrowed = nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_held":
+		x.NewHeld = nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_collateral":
+		x.NewCollateral = nil
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_collateral_ratio":
+		x.NewCollateralRatio = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.position_id":
+		value := x.PositionId
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.user":
+		value := x.User
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.pool_id":
+		value := x.PoolId
+		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.fraction_closed":
+		value := x.FractionClosed
+		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.interest_paid":
+		value := x.InterestPaid
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.principal_paid":
+		value := x.PrincipalPaid
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.collateral_returned":
+		value := x.CollateralReturned
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.profit":
+		value := x.Profit
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_borrowed":
+		value := x.NewBorrowed
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_held":
+		value := x.NewHeld
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_collateral":
+		value := x.NewCollateral
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_collateral_ratio":
+		value := x.NewCollateralRatio
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.position_id":
+		x.PositionId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.user":
+		x.User = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.pool_id":
+		x.PoolId = value.Uint()
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.fraction_closed":
+		x.FractionClosed = value.Interface().(string)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.interest_paid":
+		x.InterestPaid = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.principal_paid":
+		x.PrincipalPaid = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.collateral_returned":
+		x.CollateralReturned = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.profit":
+		x.Profit = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_borrowed":
+		x.NewBorrowed = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_held":
+		x.NewHeld = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_collateral":
+		x.NewCollateral = value.Message().Interface().(*v1beta1.Coin)
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_collateral_ratio":
+		x.NewCollateralRatio = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.interest_paid":
+		if x.InterestPaid == nil {
+			x.InterestPaid = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.InterestPaid.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.principal_paid":
+		if x.PrincipalPaid == nil {
+			x.PrincipalPaid = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.PrincipalPaid.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.collateral_returned":
+		if x.CollateralReturned == nil {
+			x.CollateralReturned = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.CollateralReturned.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.profit":
+		if x.Profit == nil {
+			x.Profit = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.Profit.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_borrowed":
+		if x.NewBorrowed == nil {
+			x.NewBorrowed = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.NewBorrowed.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_held":
+		if x.NewHeld == nil {
+			x.NewHeld = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.NewHeld.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_collateral":
+		if x.NewCollateral == nil {
+			x.NewCollateral = new(v1beta1.Coin)
+		}
+		return protoreflect.ValueOfMessage(x.NewCollateral.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.position_id":
+		panic(fmt.Errorf("field position_id of message dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.user":
+		panic(fmt.Errorf("field user of message dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.pool_id":
+		panic(fmt.Errorf("field pool_id of message dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.fraction_closed":
+		panic(fmt.Errorf("field fraction_closed of message dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed is not mutable"))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_collateral_ratio":
+		panic(fmt.Errorf("field new_collateral_ratio of message dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.position_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.user":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.pool_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.fraction_closed":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.interest_paid":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.principal_paid":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.collateral_returned":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.profit":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_borrowed":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_held":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_collateral":
+		m := new(v1beta1.Coin)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_collateral_ratio":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed"))
+		}
+		panic(fmt.Errorf("message dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventLeveragePositionPartiallyClosed) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventLeveragePositionPartiallyClosed)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.PositionId != 0 {
+			n += 1 + runtime.Sov(uint64(x.PositionId))
+		}
+		l = len(x.User)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.PoolId != 0 {
+			n += 1 + runtime.Sov(uint64(x.PoolId))
+		}
+		l = len(x.FractionClosed)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.InterestPaid != nil {
+			l = options.Size(x.InterestPaid)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.PrincipalPaid != nil {
+			l = options.Size(x.PrincipalPaid)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.CollateralReturned != nil {
+			l = options.Size(x.CollateralReturned)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.Profit != nil {
+			l = options.Size(x.Profit)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.NewBorrowed != nil {
+			l = options.Size(x.NewBorrowed)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.NewHeld != nil {
+			l = options.Size(x.NewHeld)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.NewCollateral != nil {
+			l = options.Size(x.NewCollateral)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.NewCollateralRatio)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventLeveragePositionPartiallyClosed)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.NewCollateralRatio) > 0 {
+			i -= len(x.NewCollateralRatio)
+			copy(dAtA[i:], x.NewCollateralRatio)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NewCollateralRatio)))
+			i--
+			dAtA[i] = 0x62
+		}
+		if x.NewCollateral != nil {
+			encoded, err := options.Marshal(x.NewCollateral)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x5a
+		}
+		if x.NewHeld != nil {
+			encoded, err := options.Marshal(x.NewHeld)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x52
+		}
+		if x.NewBorrowed != nil {
+			encoded, err := options.Marshal(x.NewBorrowed)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x4a
+		}
+		if x.Profit != nil {
+			encoded, err := options.Marshal(x.Profit)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x42
+		}
+		if x.CollateralReturned != nil {
+			encoded, err := options.Marshal(x.CollateralReturned)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x3a
+		}
+		if x.PrincipalPaid != nil {
+			encoded, err := options.Marshal(x.PrincipalPaid)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x32
+		}
+		if x.InterestPaid != nil {
+			encoded, err := options.Marshal(x.InterestPaid)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x2a
+		}
+		if len(x.FractionClosed) > 0 {
+			i -= len(x.FractionClosed)
+			copy(dAtA[i:], x.FractionClosed)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.FractionClosed)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if x.PoolId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PoolId))
+			i--
+			dAtA[i] = 0x18
+		}
+		if len(x.User) > 0 {
+			i -= len(x.User)
+			copy(dAtA[i:], x.User)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.User)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.PositionId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PositionId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventLeveragePositionPartiallyClosed)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventLeveragePositionPartiallyClosed: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventLeveragePositionPartiallyClosed: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PositionId", wireType)
+				}
+				x.PositionId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PositionId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field User", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.User = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PoolId", wireType)
+				}
+				x.PoolId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PoolId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field FractionClosed", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.FractionClosed = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field InterestPaid", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.InterestPaid == nil {
+					x.InterestPaid = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.InterestPaid); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 6:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PrincipalPaid", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.PrincipalPaid == nil {
+					x.PrincipalPaid = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.PrincipalPaid); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 7:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CollateralReturned", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.CollateralReturned == nil {
+					x.CollateralReturned = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.CollateralReturned); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 8:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Profit", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.Profit == nil {
+					x.Profit = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Profit); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 9:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NewBorrowed", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.NewBorrowed == nil {
+					x.NewBorrowed = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.NewBorrowed); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 10:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NewHeld", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.NewHeld == nil {
+					x.NewHeld = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.NewHeld); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 11:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NewCollateral", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.NewCollateral == nil {
+					x.NewCollateral = &v1beta1.Coin{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.NewCollateral); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 12:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NewCollateralRatio", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.NewCollateralRatio = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
 // Code generated by protoc-gen-go. DO NOT EDIT.
 // versions:
 // 	protoc-gen-go v1.27.0
@@ -11620,6 +13556,81 @@ func (x *EventLeverageCollateralAdded) GetNewCollateralRatio() string {
 	return ""
 }
 
+type EventLeverageCollateralRemoved struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PositionId         uint64        `protobuf:"varint,1,opt,name=position_id,json=positionId,proto3" json:"position_id,omitempty"`
+	User               string        `protobuf:"bytes,2,opt,name=user,proto3" json:"user,omitempty"`
+	PoolId             uint64        `protobuf:"varint,3,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
+	CollateralRemoved  *v1beta1.Coin `protobuf:"bytes,4,opt,name=collateral_removed,json=collateralRemoved,proto3" json:"collateral_removed,omitempty"`
+	NewCollateral      *v1beta1.Coin `protobuf:"bytes,5,opt,name=new_collateral,json=newCollateral,proto3" json:"new_collateral,omitempty"`
+	NewCollateralRatio string        `protobuf:"bytes,6,opt,name=new_collateral_ratio,json=newCollateralRatio,proto3" json:"new_collateral_ratio,omitempty"`
+}
+
+func (x *EventLeverageCollateralRemoved) Reset() {
+	*x = EventLeverageCollateralRemoved{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[16]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventLeverageCollateralRemoved) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventLeverageCollateralRemoved) ProtoMessage() {}
+
+// Deprecated: Use EventLeverageCollateralRemoved.ProtoReflect.Descriptor instead.
+func (*EventLeverageCollateralRemoved) Descriptor() ([]byte, []int) {
+	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *EventLeverageCollateralRemoved) GetPositionId() uint64 {
+	if x != nil {
+		return x.PositionId
+	}
+	return 0
+}
+
+func (x *EventLeverageCollateralRemoved) GetUser() string {
+	if x != nil {
+		return x.User
+	}
+	return ""
+}
+
+func (x *EventLeverageCollateralRemoved) GetPoolId() uint64 {
+	if x != nil {
+		return x.PoolId
+	}
+	return 0
+}
+
+func (x *EventLeverageCollateralRemoved) GetCollateralRemoved() *v1beta1.Coin {
+	if x != nil {
+		return x.CollateralRemoved
+	}
+	return nil
+}
+
+func (x *EventLeverageCollateralRemoved) GetNewCollateral() *v1beta1.Coin {
+	if x != nil {
+		return x.NewCollateral
+	}
+	return nil
+}
+
+func (x *EventLeverageCollateralRemoved) GetNewCollateralRatio() string {
+	if x != nil {
+		return x.NewCollateralRatio
+	}
+	return ""
+}
+
 type EventLeverageLiquidationInitialized struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -11636,7 +13647,7 @@ type EventLeverageLiquidationInitialized struct {
 func (x *EventLeverageLiquidationInitialized) Reset() {
 	*x = EventLeverageLiquidationInitialized{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[16]
+		mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -11650,7 +13661,7 @@ func (*EventLeverageLiquidationInitialized) ProtoMessage() {}
 
 // Deprecated: Use EventLeverageLiquidationInitialized.ProtoReflect.Descriptor instead.
 func (*EventLeverageLiquidationInitialized) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP(), []int{16}
+	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *EventLeverageLiquidationInitialized) GetPositionId() uint64 {
@@ -11712,7 +13723,7 @@ type EventLeverageLiquidationFinalized struct {
 func (x *EventLeverageLiquidationFinalized) Reset() {
 	*x = EventLeverageLiquidationFinalized{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[17]
+		mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -11726,7 +13737,7 @@ func (*EventLeverageLiquidationFinalized) ProtoMessage() {}
 
 // Deprecated: Use EventLeverageLiquidationFinalized.ProtoReflect.Descriptor instead.
 func (*EventLeverageLiquidationFinalized) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP(), []int{17}
+	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *EventLeverageLiquidationFinalized) GetPositionId() uint64 {
@@ -11797,7 +13808,7 @@ type EventLeveragePositionCovered struct {
 func (x *EventLeveragePositionCovered) Reset() {
 	*x = EventLeveragePositionCovered{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[18]
+		mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -11811,7 +13822,7 @@ func (*EventLeveragePositionCovered) ProtoMessage() {}
 
 // Deprecated: Use EventLeveragePositionCovered.ProtoReflect.Descriptor instead.
 func (*EventLeveragePositionCovered) Descriptor() ([]byte, []int) {
-	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP(), []int{18}
+	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *EventLeveragePositionCovered) GetPositionId() uint64 {
@@ -11877,6 +13888,129 @@ func (x *EventLeveragePositionCovered) GetProfit() *v1beta1.Coin {
 	return nil
 }
 
+type EventLeveragePositionPartiallyClosed struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PositionId         uint64        `protobuf:"varint,1,opt,name=position_id,json=positionId,proto3" json:"position_id,omitempty"`
+	User               string        `protobuf:"bytes,2,opt,name=user,proto3" json:"user,omitempty"`
+	PoolId             uint64        `protobuf:"varint,3,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
+	FractionClosed     string        `protobuf:"bytes,4,opt,name=fraction_closed,json=fractionClosed,proto3" json:"fraction_closed,omitempty"`
+	InterestPaid       *v1beta1.Coin `protobuf:"bytes,5,opt,name=interest_paid,json=interestPaid,proto3" json:"interest_paid,omitempty"`
+	PrincipalPaid      *v1beta1.Coin `protobuf:"bytes,6,opt,name=principal_paid,json=principalPaid,proto3" json:"principal_paid,omitempty"`
+	CollateralReturned *v1beta1.Coin `protobuf:"bytes,7,opt,name=collateral_returned,json=collateralReturned,proto3" json:"collateral_returned,omitempty"`
+	Profit             *v1beta1.Coin `protobuf:"bytes,8,opt,name=profit,proto3" json:"profit,omitempty"`
+	NewBorrowed        *v1beta1.Coin `protobuf:"bytes,9,opt,name=new_borrowed,json=newBorrowed,proto3" json:"new_borrowed,omitempty"`
+	NewHeld            *v1beta1.Coin `protobuf:"bytes,10,opt,name=new_held,json=newHeld,proto3" json:"new_held,omitempty"`
+	NewCollateral      *v1beta1.Coin `protobuf:"bytes,11,opt,name=new_collateral,json=newCollateral,proto3" json:"new_collateral,omitempty"`
+	NewCollateralRatio string        `protobuf:"bytes,12,opt,name=new_collateral_ratio,json=newCollateralRatio,proto3" json:"new_collateral_ratio,omitempty"`
+}
+
+func (x *EventLeveragePositionPartiallyClosed) Reset() {
+	*x = EventLeveragePositionPartiallyClosed{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[20]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventLeveragePositionPartiallyClosed) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventLeveragePositionPartiallyClosed) ProtoMessage() {}
+
+// Deprecated: Use EventLeveragePositionPartiallyClosed.ProtoReflect.Descriptor instead.
+func (*EventLeveragePositionPartiallyClosed) Descriptor() ([]byte, []int) {
+	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *EventLeveragePositionPartiallyClosed) GetPositionId() uint64 {
+	if x != nil {
+		return x.PositionId
+	}
+	return 0
+}
+
+func (x *EventLeveragePositionPartiallyClosed) GetUser() string {
+	if x != nil {
+		return x.User
+	}
+	return ""
+}
+
+func (x *EventLeveragePositionPartiallyClosed) GetPoolId() uint64 {
+	if x != nil {
+		return x.PoolId
+	}
+	return 0
+}
+
+func (x *EventLeveragePositionPartiallyClosed) GetFractionClosed() string {
+	if x != nil {
+		return x.FractionClosed
+	}
+	return ""
+}
+
+func (x *EventLeveragePositionPartiallyClosed) GetInterestPaid() *v1beta1.Coin {
+	if x != nil {
+		return x.InterestPaid
+	}
+	return nil
+}
+
+func (x *EventLeveragePositionPartiallyClosed) GetPrincipalPaid() *v1beta1.Coin {
+	if x != nil {
+		return x.PrincipalPaid
+	}
+	return nil
+}
+
+func (x *EventLeveragePositionPartiallyClosed) GetCollateralReturned() *v1beta1.Coin {
+	if x != nil {
+		return x.CollateralReturned
+	}
+	return nil
+}
+
+func (x *EventLeveragePositionPartiallyClosed) GetProfit() *v1beta1.Coin {
+	if x != nil {
+		return x.Profit
+	}
+	return nil
+}
+
+func (x *EventLeveragePositionPartiallyClosed) GetNewBorrowed() *v1beta1.Coin {
+	if x != nil {
+		return x.NewBorrowed
+	}
+	return nil
+}
+
+func (x *EventLeveragePositionPartiallyClosed) GetNewHeld() *v1beta1.Coin {
+	if x != nil {
+		return x.NewHeld
+	}
+	return nil
+}
+
+func (x *EventLeveragePositionPartiallyClosed) GetNewCollateral() *v1beta1.Coin {
+	if x != nil {
+		return x.NewCollateral
+	}
+	return nil
+}
+
+func (x *EventLeveragePositionPartiallyClosed) GetNewCollateralRatio() string {
+	if x != nil {
+		return x.NewCollateralRatio
+	}
+	return ""
+}
+
 var File_dysonprotocol_whaleswap_v1_events_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_whaleswap_v1_events_proto_rawDesc = []byte{
@@ -11888,205 +14022,271 @@ var file_dysonprotocol_whaleswap_v1_events_proto_rawDesc = []byte{
 	0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69,
 	0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1e,
 	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x62, 0x61, 0x73, 0x65, 0x2f, 0x76, 0x31, 0x62, 0x65,
-	0x74, 0x61, 0x31, 0x2f, 0x63, 0x6f, 0x69, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x23,
-	0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2f, 0x77, 0x68,
-	0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x76, 0x31, 0x2f, 0x74, 0x78, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x22, 0x2b, 0x0a, 0x10, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x50, 0x6f, 0x6f, 0x6c,
-	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f,
-	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64,
-	0x22, 0x2a, 0x0a, 0x0f, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x50, 0x6f, 0x6f, 0x6c, 0x55, 0x70, 0x64,
-	0x61, 0x74, 0x65, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x22, 0x6c, 0x0a, 0x0d,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x50, 0x6f, 0x6f, 0x6c, 0x53, 0x77, 0x61, 0x70, 0x12, 0x17, 0x0a,
-	0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06,
-	0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x72, 0x61, 0x64, 0x65, 0x5f,
-	0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x72, 0x61, 0x64, 0x65, 0x49,
-	0x64, 0x12, 0x27, 0x0a, 0x0f, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69,
-	0x6e, 0x64, 0x65, 0x78, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x0e, 0x6f, 0x70, 0x65, 0x72,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x22, 0x4a, 0x0a, 0x17, 0x45, 0x76,
-	0x65, 0x6e, 0x74, 0x50, 0x6f, 0x6f, 0x6c, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79,
-	0x41, 0x64, 0x64, 0x65, 0x64, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x16,
-	0x0a, 0x06, 0x73, 0x68, 0x61, 0x72, 0x65, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
-	0x73, 0x68, 0x61, 0x72, 0x65, 0x73, 0x22, 0x4c, 0x0a, 0x19, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x50,
-	0x6f, 0x6f, 0x6c, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x52, 0x65, 0x6d, 0x6f,
-	0x76, 0x65, 0x64, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06,
-	0x73, 0x68, 0x61, 0x72, 0x65, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x68,
-	0x61, 0x72, 0x65, 0x73, 0x22, 0x2e, 0x0a, 0x11, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4f, 0x66, 0x66,
-	0x65, 0x72, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x6f, 0x66, 0x66,
-	0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x6f, 0x66, 0x66,
-	0x65, 0x72, 0x49, 0x64, 0x22, 0x68, 0x0a, 0x0f, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4f, 0x66, 0x66,
-	0x65, 0x72, 0x54, 0x61, 0x6b, 0x65, 0x6e, 0x12, 0x19, 0x0a, 0x08, 0x6f, 0x66, 0x66, 0x65, 0x72,
-	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x6f, 0x66, 0x66, 0x65, 0x72,
-	0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x72, 0x61, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x72, 0x61, 0x64, 0x65, 0x49, 0x64, 0x12, 0x1f, 0x0a,
-	0x0b, 0x75, 0x6e, 0x69, 0x74, 0x73, 0x5f, 0x74, 0x61, 0x6b, 0x65, 0x6e, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x0a, 0x75, 0x6e, 0x69, 0x74, 0x73, 0x54, 0x61, 0x6b, 0x65, 0x6e, 0x22, 0x30,
-	0x0a, 0x13, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x43, 0x61, 0x6e, 0x63,
-	0x65, 0x6c, 0x6c, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x5f, 0x69,
-	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x49, 0x64,
-	0x22, 0x66, 0x0a, 0x10, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x50, 0x66, 0x61, 0x6e, 0x64, 0x4c, 0x6f,
-	0x63, 0x6b, 0x65, 0x64, 0x12, 0x37, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61,
-	0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42,
-	0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x19, 0x0a,
-	0x08, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x07, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x49, 0x64, 0x22, 0x83, 0x01, 0x0a, 0x12, 0x45, 0x76, 0x65,
-	0x6e, 0x74, 0x50, 0x66, 0x61, 0x6e, 0x64, 0x52, 0x65, 0x6c, 0x65, 0x61, 0x73, 0x65, 0x64, 0x12,
+	0x74, 0x61, 0x31, 0x2f, 0x63, 0x6f, 0x69, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2f, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77,
+	0x61, 0x70, 0x2f, 0x76, 0x31, 0x2f, 0x74, 0x78, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x2b,
+	0x0a, 0x10, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x50, 0x6f, 0x6f, 0x6c, 0x43, 0x72, 0x65, 0x61, 0x74,
+	0x65, 0x64, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x22, 0x2a, 0x0a, 0x0f, 0x45,
+	0x76, 0x65, 0x6e, 0x74, 0x50, 0x6f, 0x6f, 0x6c, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12, 0x17,
+	0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x22, 0x6c, 0x0a, 0x0d, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x50, 0x6f, 0x6f, 0x6c, 0x53, 0x77, 0x61, 0x70, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c,
+	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49,
+	0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x72, 0x61, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x72, 0x61, 0x64, 0x65, 0x49, 0x64, 0x12, 0x27, 0x0a, 0x0f,
+	0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x0e, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x49, 0x6e, 0x64, 0x65, 0x78, 0x22, 0x4a, 0x0a, 0x17, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x50, 0x6f,
+	0x6f, 0x6c, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x41, 0x64, 0x64, 0x65, 0x64,
+	0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x68, 0x61,
+	0x72, 0x65, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x68, 0x61, 0x72, 0x65,
+	0x73, 0x22, 0x4c, 0x0a, 0x19, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x50, 0x6f, 0x6f, 0x6c, 0x4c, 0x69,
+	0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x64, 0x12, 0x17,
+	0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x68, 0x61, 0x72, 0x65,
+	0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x68, 0x61, 0x72, 0x65, 0x73, 0x22,
+	0x2e, 0x0a, 0x11, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x43, 0x72, 0x65,
+	0x61, 0x74, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x5f, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x49, 0x64, 0x22,
+	0x68, 0x0a, 0x0f, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x54, 0x61, 0x6b,
+	0x65, 0x6e, 0x12, 0x19, 0x0a, 0x08, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x49, 0x64, 0x12, 0x19, 0x0a,
+	0x08, 0x74, 0x72, 0x61, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x07, 0x74, 0x72, 0x61, 0x64, 0x65, 0x49, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x75, 0x6e, 0x69, 0x74,
+	0x73, 0x5f, 0x74, 0x61, 0x6b, 0x65, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x75,
+	0x6e, 0x69, 0x74, 0x73, 0x54, 0x61, 0x6b, 0x65, 0x6e, 0x22, 0x30, 0x0a, 0x13, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x4f, 0x66, 0x66, 0x65, 0x72, 0x43, 0x61, 0x6e, 0x63, 0x65, 0x6c, 0x6c, 0x65, 0x64,
+	0x12, 0x19, 0x0a, 0x08, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x07, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x49, 0x64, 0x22, 0x66, 0x0a, 0x10, 0x45,
+	0x76, 0x65, 0x6e, 0x74, 0x50, 0x66, 0x61, 0x6e, 0x64, 0x4c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x12,
 	0x37, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
 	0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31,
 	0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00,
 	0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x6f, 0x66, 0x66, 0x65,
 	0x72, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x6f, 0x66, 0x66, 0x65,
-	0x72, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x72, 0x61, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18,
-	0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x72, 0x61, 0x64, 0x65, 0x49, 0x64, 0x22, 0x34,
-	0x0a, 0x13, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x72,
-	0x65, 0x61, 0x74, 0x65, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e,
-	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x61, 0x75, 0x63, 0x74, 0x69,
-	0x6f, 0x6e, 0x49, 0x64, 0x22, 0x50, 0x0a, 0x14, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x41, 0x75, 0x63,
-	0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x64, 0x65, 0x65, 0x6d, 0x65, 0x64, 0x12, 0x1d, 0x0a, 0x0a,
-	0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x09, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74,
-	0x72, 0x61, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74,
-	0x72, 0x61, 0x64, 0x65, 0x49, 0x64, 0x22, 0x82, 0x01, 0x0a, 0x12, 0x45, 0x76, 0x65, 0x6e, 0x74,
-	0x54, 0x72, 0x61, 0x64, 0x65, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x65, 0x64, 0x12, 0x19, 0x0a,
-	0x08, 0x74, 0x72, 0x61, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x07, 0x74, 0x72, 0x61, 0x64, 0x65, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x74, 0x72, 0x61, 0x64,
-	0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74, 0x72, 0x61, 0x64, 0x65, 0x72,
-	0x12, 0x25, 0x0a, 0x0e, 0x6e, 0x75, 0x6d, 0x5f, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x0d, 0x6e, 0x75, 0x6d, 0x4f, 0x70, 0x65,
-	0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x6f, 0x74, 0x65, 0x18,
-	0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x6f, 0x74, 0x65, 0x22, 0xfc, 0x02, 0x0a, 0x1b,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x50, 0x6f, 0x73,
-	0x69, 0x74, 0x69, 0x6f, 0x6e, 0x4f, 0x70, 0x65, 0x6e, 0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x70,
-	0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04,
-	0x75, 0x73, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72,
-	0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x29, 0x0a, 0x10, 0x63, 0x6f, 0x6c,
-	0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x18, 0x05, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x44,
-	0x65, 0x6e, 0x6f, 0x6d, 0x12, 0x2b, 0x0a, 0x11, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72,
-	0x61, 0x6c, 0x5f, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x10, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x41, 0x6d, 0x6f, 0x75, 0x6e,
-	0x74, 0x12, 0x25, 0x0a, 0x0e, 0x62, 0x6f, 0x72, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x5f, 0x64, 0x65,
-	0x6e, 0x6f, 0x6d, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x62, 0x6f, 0x72, 0x72, 0x6f,
-	0x77, 0x65, 0x64, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12, 0x27, 0x0a, 0x0f, 0x62, 0x6f, 0x72, 0x72,
-	0x6f, 0x77, 0x65, 0x64, 0x5f, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x08, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x0e, 0x62, 0x6f, 0x72, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x41, 0x6d, 0x6f, 0x75, 0x6e,
-	0x74, 0x12, 0x3c, 0x0a, 0x1b, 0x65, 0x6e, 0x74, 0x72, 0x79, 0x5f, 0x70, 0x72, 0x69, 0x63, 0x65,
-	0x5f, 0x68, 0x65, 0x6c, 0x64, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x62, 0x6f, 0x72, 0x72, 0x6f, 0x77,
-	0x18, 0x0b, 0x20, 0x01, 0x28, 0x09, 0x52, 0x17, 0x65, 0x6e, 0x74, 0x72, 0x79, 0x50, 0x72, 0x69,
-	0x63, 0x65, 0x48, 0x65, 0x6c, 0x64, 0x50, 0x65, 0x72, 0x42, 0x6f, 0x72, 0x72, 0x6f, 0x77, 0x12,
-	0x29, 0x0a, 0x10, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x72, 0x61,
-	0x74, 0x69, 0x6f, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x63, 0x6f, 0x6c, 0x6c, 0x61,
-	0x74, 0x65, 0x72, 0x61, 0x6c, 0x52, 0x61, 0x74, 0x69, 0x6f, 0x22, 0xf0, 0x01, 0x0a, 0x1b, 0x45,
-	0x76, 0x65, 0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x50, 0x6f, 0x73, 0x69,
-	0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6c, 0x6f, 0x73, 0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x6f,
-	0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x75,
-	0x73, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x12,
-	0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x37, 0x0a, 0x06, 0x70, 0x72, 0x6f, 0x66,
-	0x69, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
-	0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43,
-	0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06, 0x70, 0x72, 0x6f, 0x66, 0x69,
-	0x74, 0x12, 0x4a, 0x0a, 0x10, 0x61, 0x63, 0x63, 0x72, 0x75, 0x65, 0x64, 0x5f, 0x69, 0x6e, 0x74,
-	0x65, 0x72, 0x65, 0x73, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f,
-	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61,
-	0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0f, 0x61, 0x63,
-	0x63, 0x72, 0x75, 0x65, 0x64, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x22, 0xb2, 0x02,
-	0x0a, 0x1c, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x43,
-	0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x41, 0x64, 0x64, 0x65, 0x64, 0x12, 0x1f,
-	0x0a, 0x0b, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12,
-	0x12, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75,
-	0x73, 0x65, 0x72, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x4a, 0x0a, 0x10,
-	0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x61, 0x64, 0x64, 0x65, 0x64,
-	0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
+	0x72, 0x49, 0x64, 0x22, 0x83, 0x01, 0x0a, 0x12, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x50, 0x66, 0x61,
+	0x6e, 0x64, 0x52, 0x65, 0x6c, 0x65, 0x61, 0x73, 0x65, 0x64, 0x12, 0x37, 0x0a, 0x06, 0x61, 0x6d,
+	0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31,
+	0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06, 0x61, 0x6d, 0x6f,
+	0x75, 0x6e, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x49, 0x64, 0x12, 0x19,
+	0x0a, 0x08, 0x74, 0x72, 0x61, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04,
+	0x52, 0x07, 0x74, 0x72, 0x61, 0x64, 0x65, 0x49, 0x64, 0x22, 0x34, 0x0a, 0x13, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64,
+	0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x61, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x22,
+	0x50, 0x0a, 0x14, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x41, 0x75, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52,
+	0x65, 0x64, 0x65, 0x65, 0x6d, 0x65, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x75, 0x63, 0x74, 0x69,
+	0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x61, 0x75, 0x63,
+	0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x72, 0x61, 0x64, 0x65, 0x5f,
+	0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x72, 0x61, 0x64, 0x65, 0x49,
+	0x64, 0x22, 0x82, 0x01, 0x0a, 0x12, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x72, 0x61, 0x64, 0x65,
+	0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x72, 0x61, 0x64,
+	0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x72, 0x61, 0x64,
+	0x65, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x74, 0x72, 0x61, 0x64, 0x65, 0x72, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x06, 0x74, 0x72, 0x61, 0x64, 0x65, 0x72, 0x12, 0x25, 0x0a, 0x0e, 0x6e,
+	0x75, 0x6d, 0x5f, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x0d, 0x52, 0x0d, 0x6e, 0x75, 0x6d, 0x4f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x6f, 0x74, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x04, 0x6e, 0x6f, 0x74, 0x65, 0x22, 0xfc, 0x02, 0x0a, 0x1b, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e,
+	0x4f, 0x70, 0x65, 0x6e, 0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69,
+	0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x6f, 0x73,
+	0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x12, 0x17, 0x0a, 0x07, 0x70,
+	0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f,
+	0x6f, 0x6c, 0x49, 0x64, 0x12, 0x29, 0x0a, 0x10, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72,
+	0x61, 0x6c, 0x5f, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f,
+	0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12,
+	0x2b, 0x0a, 0x11, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x61, 0x6d,
+	0x6f, 0x75, 0x6e, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x10, 0x63, 0x6f, 0x6c, 0x6c,
+	0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x25, 0x0a, 0x0e,
+	0x62, 0x6f, 0x72, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x5f, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x18, 0x07,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x62, 0x6f, 0x72, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x44, 0x65,
+	0x6e, 0x6f, 0x6d, 0x12, 0x27, 0x0a, 0x0f, 0x62, 0x6f, 0x72, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x5f,
+	0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x62, 0x6f,
+	0x72, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x3c, 0x0a, 0x1b,
+	0x65, 0x6e, 0x74, 0x72, 0x79, 0x5f, 0x70, 0x72, 0x69, 0x63, 0x65, 0x5f, 0x68, 0x65, 0x6c, 0x64,
+	0x5f, 0x70, 0x65, 0x72, 0x5f, 0x62, 0x6f, 0x72, 0x72, 0x6f, 0x77, 0x18, 0x0b, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x17, 0x65, 0x6e, 0x74, 0x72, 0x79, 0x50, 0x72, 0x69, 0x63, 0x65, 0x48, 0x65, 0x6c,
+	0x64, 0x50, 0x65, 0x72, 0x42, 0x6f, 0x72, 0x72, 0x6f, 0x77, 0x12, 0x29, 0x0a, 0x10, 0x63, 0x6f,
+	0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x18, 0x0c,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c,
+	0x52, 0x61, 0x74, 0x69, 0x6f, 0x22, 0xf0, 0x01, 0x0a, 0x1b, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c,
+	0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x43,
+	0x6c, 0x6f, 0x73, 0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f,
+	0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x6f, 0x73, 0x69,
+	0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f,
+	0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f,
+	0x6c, 0x49, 0x64, 0x12, 0x37, 0x0a, 0x06, 0x70, 0x72, 0x6f, 0x66, 0x69, 0x74, 0x18, 0x05, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73,
+	0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04,
+	0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06, 0x70, 0x72, 0x6f, 0x66, 0x69, 0x74, 0x12, 0x4a, 0x0a, 0x10,
+	0x61, 0x63, 0x63, 0x72, 0x75, 0x65, 0x64, 0x5f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74,
+	0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
 	0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69,
-	0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65,
-	0x72, 0x61, 0x6c, 0x41, 0x64, 0x64, 0x65, 0x64, 0x12, 0x46, 0x0a, 0x0e, 0x6e, 0x65, 0x77, 0x5f,
-	0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76,
-	0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f,
-	0x00, 0x52, 0x0d, 0x6e, 0x65, 0x77, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c,
-	0x12, 0x30, 0x0a, 0x14, 0x6e, 0x65, 0x77, 0x5f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72,
-	0x61, 0x6c, 0x5f, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x12,
-	0x6e, 0x65, 0x77, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x52, 0x61, 0x74,
-	0x69, 0x6f, 0x22, 0xf6, 0x01, 0x0a, 0x23, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65,
-	0x72, 0x61, 0x67, 0x65, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49,
-	0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x69, 0x7a, 0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x6f,
-	0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x75,
-	0x73, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x12,
-	0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x29, 0x0a, 0x10, 0x63, 0x6f, 0x6c, 0x6c,
-	0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x18, 0x04, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x0f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x52, 0x61,
-	0x74, 0x69, 0x6f, 0x12, 0x33, 0x0a, 0x15, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x5f, 0x74, 0x68, 0x72, 0x65, 0x73, 0x68, 0x6f, 0x6c, 0x64, 0x18, 0x05, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x14, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x54,
-	0x68, 0x72, 0x65, 0x73, 0x68, 0x6f, 0x6c, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63,
-	0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b,
-	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xfb, 0x02, 0x0a, 0x21,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x4c, 0x69, 0x71,
-	0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x46, 0x69, 0x6e, 0x61, 0x6c, 0x69, 0x7a, 0x65,
-	0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e,
-	0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x12, 0x1e, 0x0a, 0x0a, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64,
-	0x61, 0x74, 0x6f, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x6c, 0x69, 0x71, 0x75,
-	0x69, 0x64, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69,
-	0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12,
-	0x50, 0x0a, 0x13, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x72, 0x65,
-	0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63,
-	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74,
-	0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x12, 0x63,
-	0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65,
-	0x64, 0x12, 0x4a, 0x0a, 0x10, 0x72, 0x65, 0x70, 0x61, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x61,
-	0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f,
+	0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0f, 0x61, 0x63, 0x63, 0x72, 0x75, 0x65, 0x64,
+	0x49, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x22, 0xb2, 0x02, 0x0a, 0x1c, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x74,
+	0x65, 0x72, 0x61, 0x6c, 0x41, 0x64, 0x64, 0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x6f, 0x73,
+	0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a,
+	0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x73,
+	0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x12, 0x17,
+	0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x4a, 0x0a, 0x10, 0x63, 0x6f, 0x6c, 0x6c, 0x61,
+	0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x61, 0x64, 0x64, 0x65, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e,
+	0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde,
+	0x1f, 0x00, 0x52, 0x0f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x41, 0x64,
+	0x64, 0x65, 0x64, 0x12, 0x46, 0x0a, 0x0e, 0x6e, 0x65, 0x77, 0x5f, 0x63, 0x6f, 0x6c, 0x6c, 0x61,
+	0x74, 0x65, 0x72, 0x61, 0x6c, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f,
 	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61,
-	0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0f, 0x72, 0x65,
-	0x70, 0x61, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x4a, 0x0a,
-	0x10, 0x61, 0x63, 0x63, 0x72, 0x75, 0x65, 0x64, 0x5f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73,
-	0x74, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
-	0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f,
-	0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0f, 0x61, 0x63, 0x63, 0x72, 0x75, 0x65,
-	0x64, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x22, 0xba, 0x03, 0x0a, 0x1c, 0x45, 0x76,
-	0x65, 0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x50, 0x6f, 0x73, 0x69, 0x74,
-	0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x76, 0x65, 0x72, 0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x6f,
-	0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x75,
-	0x73, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x12,
-	0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x44, 0x0a, 0x0d, 0x69, 0x6e, 0x74, 0x65,
-	0x72, 0x65, 0x73, 0x74, 0x5f, 0x70, 0x61, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31,
-	0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00,
-	0x52, 0x0c, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x50, 0x61, 0x69, 0x64, 0x12, 0x46,
-	0x0a, 0x0e, 0x70, 0x72, 0x69, 0x6e, 0x63, 0x69, 0x70, 0x61, 0x6c, 0x5f, 0x70, 0x61, 0x69, 0x64,
+	0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0d, 0x6e, 0x65,
+	0x77, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x12, 0x30, 0x0a, 0x14, 0x6e,
+	0x65, 0x77, 0x5f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x72, 0x61,
+	0x74, 0x69, 0x6f, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x12, 0x6e, 0x65, 0x77, 0x43, 0x6f,
+	0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x52, 0x61, 0x74, 0x69, 0x6f, 0x22, 0xb8, 0x02,
+	0x0a, 0x1e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x43,
+	0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x64,
+	0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49,
+	0x64, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x04, 0x75, 0x73, 0x65, 0x72, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x4e,
+	0x0a, 0x12, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x72, 0x65, 0x6d,
+	0x6f, 0x76, 0x65, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31,
+	0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x11, 0x63, 0x6f, 0x6c,
+	0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x64, 0x12, 0x46,
+	0x0a, 0x0e, 0x6e, 0x65, 0x77, 0x5f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c,
 	0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
 	0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69,
-	0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0d, 0x70, 0x72, 0x69, 0x6e, 0x63, 0x69, 0x70,
-	0x61, 0x6c, 0x50, 0x61, 0x69, 0x64, 0x12, 0x30, 0x0a, 0x14, 0x6e, 0x65, 0x77, 0x5f, 0x63, 0x6f,
+	0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0d, 0x6e, 0x65, 0x77, 0x43, 0x6f, 0x6c, 0x6c,
+	0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x12, 0x30, 0x0a, 0x14, 0x6e, 0x65, 0x77, 0x5f, 0x63, 0x6f,
 	0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x18, 0x06,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x12, 0x6e, 0x65, 0x77, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65,
-	0x72, 0x61, 0x6c, 0x52, 0x61, 0x74, 0x69, 0x6f, 0x12, 0x16, 0x0a, 0x06, 0x63, 0x6c, 0x6f, 0x73,
-	0x65, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x63, 0x6c, 0x6f, 0x73, 0x65, 0x64,
-	0x12, 0x3b, 0x0a, 0x08, 0x72, 0x65, 0x66, 0x75, 0x6e, 0x64, 0x65, 0x64, 0x18, 0x08, 0x20, 0x01,
+	0x72, 0x61, 0x6c, 0x52, 0x61, 0x74, 0x69, 0x6f, 0x22, 0xf6, 0x01, 0x0a, 0x23, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x69, 0x7a, 0x65, 0x64,
+	0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49,
+	0x64, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x04, 0x75, 0x73, 0x65, 0x72, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x29,
+	0x0a, 0x10, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x72, 0x61, 0x74,
+	0x69, 0x6f, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74,
+	0x65, 0x72, 0x61, 0x6c, 0x52, 0x61, 0x74, 0x69, 0x6f, 0x12, 0x33, 0x0a, 0x15, 0x6c, 0x69, 0x71,
+	0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x74, 0x68, 0x72, 0x65, 0x73, 0x68, 0x6f,
+	0x6c, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x14, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x68, 0x72, 0x65, 0x73, 0x68, 0x6f, 0x6c, 0x64, 0x12, 0x21,
+	0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x06,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68,
+	0x74, 0x22, 0xfb, 0x02, 0x0a, 0x21, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65, 0x72,
+	0x61, 0x67, 0x65, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x46, 0x69,
+	0x6e, 0x61, 0x6c, 0x69, 0x7a, 0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x6f, 0x73, 0x69, 0x74,
+	0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x6f,
+	0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x12, 0x1e, 0x0a, 0x0a,
+	0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x0a, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x17, 0x0a, 0x07,
+	0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70,
+	0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x50, 0x0a, 0x13, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65,
+	0x72, 0x61, 0x6c, 0x5f, 0x72, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x18, 0x05, 0x20, 0x01,
 	0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65,
 	0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8,
-	0xde, 0x1f, 0x00, 0x52, 0x08, 0x72, 0x65, 0x66, 0x75, 0x6e, 0x64, 0x65, 0x64, 0x12, 0x37, 0x0a,
-	0x06, 0x70, 0x72, 0x6f, 0x66, 0x69, 0x74, 0x18, 0x09, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e,
+	0xde, 0x1f, 0x00, 0x52, 0x12, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x52,
+	0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x12, 0x4a, 0x0a, 0x10, 0x72, 0x65, 0x70, 0x61, 0x79,
+	0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e,
+	0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde,
+	0x1f, 0x00, 0x52, 0x0f, 0x72, 0x65, 0x70, 0x61, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x41, 0x6d, 0x6f,
+	0x75, 0x6e, 0x74, 0x12, 0x4a, 0x0a, 0x10, 0x61, 0x63, 0x63, 0x72, 0x75, 0x65, 0x64, 0x5f, 0x69,
+	0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e,
 	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65,
-	0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06,
-	0x70, 0x72, 0x6f, 0x66, 0x69, 0x74, 0x42, 0x25, 0x5a, 0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77, 0x68,
-	0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0f,
+	0x61, 0x63, 0x63, 0x72, 0x75, 0x65, 0x64, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x22,
+	0xba, 0x03, 0x0a, 0x1c, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67,
+	0x65, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x76, 0x65, 0x72, 0x65, 0x64,
+	0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49,
+	0x64, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x04, 0x75, 0x73, 0x65, 0x72, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x44,
+	0x0a, 0x0d, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x5f, 0x70, 0x61, 0x69, 0x64, 0x18,
+	0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62,
+	0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e,
+	0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0c, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74,
+	0x50, 0x61, 0x69, 0x64, 0x12, 0x46, 0x0a, 0x0e, 0x70, 0x72, 0x69, 0x6e, 0x63, 0x69, 0x70, 0x61,
+	0x6c, 0x5f, 0x70, 0x61, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74,
+	0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0d, 0x70,
+	0x72, 0x69, 0x6e, 0x63, 0x69, 0x70, 0x61, 0x6c, 0x50, 0x61, 0x69, 0x64, 0x12, 0x30, 0x0a, 0x14,
+	0x6e, 0x65, 0x77, 0x5f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x72,
+	0x61, 0x74, 0x69, 0x6f, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x12, 0x6e, 0x65, 0x77, 0x43,
+	0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x52, 0x61, 0x74, 0x69, 0x6f, 0x12, 0x16,
+	0x0a, 0x06, 0x63, 0x6c, 0x6f, 0x73, 0x65, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06,
+	0x63, 0x6c, 0x6f, 0x73, 0x65, 0x64, 0x12, 0x3b, 0x0a, 0x08, 0x72, 0x65, 0x66, 0x75, 0x6e, 0x64,
+	0x65, 0x64, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43,
+	0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x08, 0x72, 0x65, 0x66, 0x75, 0x6e,
+	0x64, 0x65, 0x64, 0x12, 0x37, 0x0a, 0x06, 0x70, 0x72, 0x6f, 0x66, 0x69, 0x74, 0x18, 0x09, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73,
+	0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04,
+	0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06, 0x70, 0x72, 0x6f, 0x66, 0x69, 0x74, 0x22, 0xd0, 0x05, 0x0a,
+	0x24, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x65, 0x76, 0x65, 0x72, 0x61, 0x67, 0x65, 0x50, 0x6f,
+	0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x50, 0x61, 0x72, 0x74, 0x69, 0x61, 0x6c, 0x6c, 0x79, 0x43,
+	0x6c, 0x6f, 0x73, 0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f,
+	0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x6f, 0x73, 0x69,
+	0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f,
+	0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x70, 0x6f, 0x6f,
+	0x6c, 0x49, 0x64, 0x12, 0x37, 0x0a, 0x0f, 0x66, 0x72, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f,
+	0x63, 0x6c, 0x6f, 0x73, 0x65, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x0e, 0xd2, 0xb4,
+	0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x0e, 0x66, 0x72,
+	0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6c, 0x6f, 0x73, 0x65, 0x64, 0x12, 0x44, 0x0a, 0x0d,
+	0x69, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x5f, 0x70, 0x61, 0x69, 0x64, 0x18, 0x05, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73,
+	0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04,
+	0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0c, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x65, 0x73, 0x74, 0x50, 0x61,
+	0x69, 0x64, 0x12, 0x46, 0x0a, 0x0e, 0x70, 0x72, 0x69, 0x6e, 0x63, 0x69, 0x70, 0x61, 0x6c, 0x5f,
+	0x70, 0x61, 0x69, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31,
+	0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0d, 0x70, 0x72, 0x69,
+	0x6e, 0x63, 0x69, 0x70, 0x61, 0x6c, 0x50, 0x61, 0x69, 0x64, 0x12, 0x50, 0x0a, 0x13, 0x63, 0x6f,
+	0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f, 0x72, 0x65, 0x74, 0x75, 0x72, 0x6e, 0x65,
+	0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f,
+	0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x12, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74,
+	0x65, 0x72, 0x61, 0x6c, 0x52, 0x65, 0x74, 0x75, 0x72, 0x6e, 0x65, 0x64, 0x12, 0x37, 0x0a, 0x06,
+	0x70, 0x72, 0x6f, 0x66, 0x69, 0x74, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74,
+	0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06, 0x70,
+	0x72, 0x6f, 0x66, 0x69, 0x74, 0x12, 0x42, 0x0a, 0x0c, 0x6e, 0x65, 0x77, 0x5f, 0x62, 0x6f, 0x72,
+	0x72, 0x6f, 0x77, 0x65, 0x64, 0x18, 0x09, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61,
+	0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0b, 0x6e, 0x65,
+	0x77, 0x42, 0x6f, 0x72, 0x72, 0x6f, 0x77, 0x65, 0x64, 0x12, 0x3a, 0x0a, 0x08, 0x6e, 0x65, 0x77,
+	0x5f, 0x68, 0x65, 0x6c, 0x64, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61,
+	0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x07, 0x6e, 0x65,
+	0x77, 0x48, 0x65, 0x6c, 0x64, 0x12, 0x46, 0x0a, 0x0e, 0x6e, 0x65, 0x77, 0x5f, 0x63, 0x6f, 0x6c,
+	0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65,
+	0x74, 0x61, 0x31, 0x2e, 0x43, 0x6f, 0x69, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0d,
+	0x6e, 0x65, 0x77, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x12, 0x40, 0x0a,
+	0x14, 0x6e, 0x65, 0x77, 0x5f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x5f,
+	0x72, 0x61, 0x74, 0x69, 0x6f, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x09, 0x42, 0x0e, 0xd2, 0xb4, 0x2d,
+	0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x12, 0x6e, 0x65, 0x77,
+	0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x52, 0x61, 0x74, 0x69, 0x6f, 0x42,
+	0x25, 0x5a, 0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70,
+	0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -12101,48 +14301,59 @@ func file_dysonprotocol_whaleswap_v1_events_proto_rawDescGZIP() []byte {
 	return file_dysonprotocol_whaleswap_v1_events_proto_rawDescData
 }
 
-var file_dysonprotocol_whaleswap_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_dysonprotocol_whaleswap_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_dysonprotocol_whaleswap_v1_events_proto_goTypes = []interface{}{
-	(*EventPoolCreated)(nil),                    // 0: dysonprotocol.whaleswap.v1.EventPoolCreated
-	(*EventPoolUpdate)(nil),                     // 1: dysonprotocol.whaleswap.v1.EventPoolUpdate
-	(*EventPoolSwap)(nil),                       // 2: dysonprotocol.whaleswap.v1.EventPoolSwap
-	(*EventPoolLiquidityAdded)(nil),             // 3: dysonprotocol.whaleswap.v1.EventPoolLiquidityAdded
-	(*EventPoolLiquidityRemoved)(nil),           // 4: dysonprotocol.whaleswap.v1.EventPoolLiquidityRemoved
-	(*EventOfferCreated)(nil),                   // 5: dysonprotocol.whaleswap.v1.EventOfferCreated
-	(*EventOfferTaken)(nil),                     // 6: dysonprotocol.whaleswap.v1.EventOfferTaken
-	(*EventOfferCancelled)(nil),                 // 7: dysonprotocol.whaleswap.v1.EventOfferCancelled
-	(*EventPfandLocked)(nil),                    // 8: dysonprotocol.whaleswap.v1.EventPfandLocked
-	(*EventPfandReleased)(nil),                  // 9: dysonprotocol.whaleswap.v1.EventPfandReleased
-	(*EventAuctionCreated)(nil),                 // 10: dysonprotocol.whaleswap.v1.EventAuctionCreated
-	(*EventAuctionRedeemed)(nil),                // 11: dysonprotocol.whaleswap.v1.EventAuctionRedeemed
-	(*EventTradeRecorded)(nil),                  // 12: dysonprotocol.whaleswap.v1.EventTradeRecorded
-	(*EventLeveragePositionOpened)(nil),         // 13: dysonprotocol.whaleswap.v1.EventLeveragePositionOpened
-	(*EventLeveragePositionClosed)(nil),         // 14: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed
-	(*EventLeverageCollateralAdded)(nil),        // 15: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded
-	(*EventLeverageLiquidationInitialized)(nil), // 16: dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized
-	(*EventLeverageLiquidationFinalized)(nil),   // 17: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized
-	(*EventLeveragePositionCovered)(nil),        // 18: dysonprotocol.whaleswap.v1.EventLeveragePositionCovered
-	(*v1beta1.Coin)(nil),                        // 19: cosmos.base.v1beta1.Coin
+	(*EventPoolCreated)(nil),                     // 0: dysonprotocol.whaleswap.v1.EventPoolCreated
+	(*EventPoolUpdate)(nil),                      // 1: dysonprotocol.whaleswap.v1.EventPoolUpdate
+	(*EventPoolSwap)(nil),                        // 2: dysonprotocol.whaleswap.v1.EventPoolSwap
+	(*EventPoolLiquidityAdded)(nil),              // 3: dysonprotocol.whaleswap.v1.EventPoolLiquidityAdded
+	(*EventPoolLiquidityRemoved)(nil),            // 4: dysonprotocol.whaleswap.v1.EventPoolLiquidityRemoved
+	(*EventOfferCreated)(nil),                    // 5: dysonprotocol.whaleswap.v1.EventOfferCreated
+	(*EventOfferTaken)(nil),                      // 6: dysonprotocol.whaleswap.v1.EventOfferTaken
+	(*EventOfferCancelled)(nil),                  // 7: dysonprotocol.whaleswap.v1.EventOfferCancelled
+	(*EventPfandLocked)(nil),                     // 8: dysonprotocol.whaleswap.v1.EventPfandLocked
+	(*EventPfandReleased)(nil),                   // 9: dysonprotocol.whaleswap.v1.EventPfandReleased
+	(*EventAuctionCreated)(nil),                  // 10: dysonprotocol.whaleswap.v1.EventAuctionCreated
+	(*EventAuctionRedeemed)(nil),                 // 11: dysonprotocol.whaleswap.v1.EventAuctionRedeemed
+	(*EventTradeRecorded)(nil),                   // 12: dysonprotocol.whaleswap.v1.EventTradeRecorded
+	(*EventLeveragePositionOpened)(nil),          // 13: dysonprotocol.whaleswap.v1.EventLeveragePositionOpened
+	(*EventLeveragePositionClosed)(nil),          // 14: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed
+	(*EventLeverageCollateralAdded)(nil),         // 15: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded
+	(*EventLeverageCollateralRemoved)(nil),       // 16: dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved
+	(*EventLeverageLiquidationInitialized)(nil),  // 17: dysonprotocol.whaleswap.v1.EventLeverageLiquidationInitialized
+	(*EventLeverageLiquidationFinalized)(nil),    // 18: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized
+	(*EventLeveragePositionCovered)(nil),         // 19: dysonprotocol.whaleswap.v1.EventLeveragePositionCovered
+	(*EventLeveragePositionPartiallyClosed)(nil), // 20: dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed
+	(*v1beta1.Coin)(nil),                         // 21: cosmos.base.v1beta1.Coin
 }
 var file_dysonprotocol_whaleswap_v1_events_proto_depIdxs = []int32{
-	19, // 0: dysonprotocol.whaleswap.v1.EventPfandLocked.amount:type_name -> cosmos.base.v1beta1.Coin
-	19, // 1: dysonprotocol.whaleswap.v1.EventPfandReleased.amount:type_name -> cosmos.base.v1beta1.Coin
-	19, // 2: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.profit:type_name -> cosmos.base.v1beta1.Coin
-	19, // 3: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.accrued_interest:type_name -> cosmos.base.v1beta1.Coin
-	19, // 4: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.collateral_added:type_name -> cosmos.base.v1beta1.Coin
-	19, // 5: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral:type_name -> cosmos.base.v1beta1.Coin
-	19, // 6: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.collateral_received:type_name -> cosmos.base.v1beta1.Coin
-	19, // 7: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.repayment_amount:type_name -> cosmos.base.v1beta1.Coin
-	19, // 8: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.accrued_interest:type_name -> cosmos.base.v1beta1.Coin
-	19, // 9: dysonprotocol.whaleswap.v1.EventLeveragePositionCovered.interest_paid:type_name -> cosmos.base.v1beta1.Coin
-	19, // 10: dysonprotocol.whaleswap.v1.EventLeveragePositionCovered.principal_paid:type_name -> cosmos.base.v1beta1.Coin
-	19, // 11: dysonprotocol.whaleswap.v1.EventLeveragePositionCovered.refunded:type_name -> cosmos.base.v1beta1.Coin
-	19, // 12: dysonprotocol.whaleswap.v1.EventLeveragePositionCovered.profit:type_name -> cosmos.base.v1beta1.Coin
-	13, // [13:13] is the sub-list for method output_type
-	13, // [13:13] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	21, // 0: dysonprotocol.whaleswap.v1.EventPfandLocked.amount:type_name -> cosmos.base.v1beta1.Coin
+	21, // 1: dysonprotocol.whaleswap.v1.EventPfandReleased.amount:type_name -> cosmos.base.v1beta1.Coin
+	21, // 2: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.profit:type_name -> cosmos.base.v1beta1.Coin
+	21, // 3: dysonprotocol.whaleswap.v1.EventLeveragePositionClosed.accrued_interest:type_name -> cosmos.base.v1beta1.Coin
+	21, // 4: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.collateral_added:type_name -> cosmos.base.v1beta1.Coin
+	21, // 5: dysonprotocol.whaleswap.v1.EventLeverageCollateralAdded.new_collateral:type_name -> cosmos.base.v1beta1.Coin
+	21, // 6: dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.collateral_removed:type_name -> cosmos.base.v1beta1.Coin
+	21, // 7: dysonprotocol.whaleswap.v1.EventLeverageCollateralRemoved.new_collateral:type_name -> cosmos.base.v1beta1.Coin
+	21, // 8: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.collateral_received:type_name -> cosmos.base.v1beta1.Coin
+	21, // 9: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.repayment_amount:type_name -> cosmos.base.v1beta1.Coin
+	21, // 10: dysonprotocol.whaleswap.v1.EventLeverageLiquidationFinalized.accrued_interest:type_name -> cosmos.base.v1beta1.Coin
+	21, // 11: dysonprotocol.whaleswap.v1.EventLeveragePositionCovered.interest_paid:type_name -> cosmos.base.v1beta1.Coin
+	21, // 12: dysonprotocol.whaleswap.v1.EventLeveragePositionCovered.principal_paid:type_name -> cosmos.base.v1beta1.Coin
+	21, // 13: dysonprotocol.whaleswap.v1.EventLeveragePositionCovered.refunded:type_name -> cosmos.base.v1beta1.Coin
+	21, // 14: dysonprotocol.whaleswap.v1.EventLeveragePositionCovered.profit:type_name -> cosmos.base.v1beta1.Coin
+	21, // 15: dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.interest_paid:type_name -> cosmos.base.v1beta1.Coin
+	21, // 16: dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.principal_paid:type_name -> cosmos.base.v1beta1.Coin
+	21, // 17: dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.collateral_returned:type_name -> cosmos.base.v1beta1.Coin
+	21, // 18: dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.profit:type_name -> cosmos.base.v1beta1.Coin
+	21, // 19: dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_borrowed:type_name -> cosmos.base.v1beta1.Coin
+	21, // 20: dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_held:type_name -> cosmos.base.v1beta1.Coin
+	21, // 21: dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed.new_collateral:type_name -> cosmos.base.v1beta1.Coin
+	22, // [22:22] is the sub-list for method output_type
+	22, // [22:22] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_dysonprotocol_whaleswap_v1_events_proto_init() }
@@ -12345,7 +14556,7 @@ func file_dysonprotocol_whaleswap_v1_events_proto_init() {
 			}
 		}
 		file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventLeverageLiquidationInitialized); i {
+			switch v := v.(*EventLeverageCollateralRemoved); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -12357,7 +14568,7 @@ func file_dysonprotocol_whaleswap_v1_events_proto_init() {
 			}
 		}
 		file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventLeverageLiquidationFinalized); i {
+			switch v := v.(*EventLeverageLiquidationInitialized); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -12369,7 +14580,31 @@ func file_dysonprotocol_whaleswap_v1_events_proto_init() {
 			}
 		}
 		file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventLeverageLiquidationFinalized); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EventLeveragePositionCovered); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_dysonprotocol_whaleswap_v1_events_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventLeveragePositionPartiallyClosed); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -12387,7 +14622,7 @@ func file_dysonprotocol_whaleswap_v1_events_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_dysonprotocol_whaleswap_v1_events_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

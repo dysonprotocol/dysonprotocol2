@@ -40,28 +40,11 @@ func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequ
 	}
 	status := pos.Status
 
-	// Compute interest
-	if len(pos.InterestRate) != 2 {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "position interest_rate must have exactly 2 entries")
+	interest, elapsed, err := k.InterestStatus(ctx, &pos)
+	if err != nil {
+		return nil, err
 	}
 	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
-
-	// Calculate elapsed time
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	blockTime := sdkCtx.BlockTime()
-	elapsed := blockTime.Sub(*pos.UpdatedTime).Seconds()
-	isActive := status == whaleswapv1.PositionStatus_POSITION_STATUS_OPEN || status == whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATING
-
-	var interest math.LegacyDec
-	if isActive {
-		interest, err = k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		interest = math.LegacyNewDecFromInt(pos.AccruedInterest.Amount)
-		elapsed = 0
-	}
 
 	// Compute collateral ratio
 	collateralValue := math.LegacyNewDecFromInt(pos.Collateral.Amount)
@@ -100,6 +83,14 @@ func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequ
 
 	// Compute total repayment
 	totalRepayment := k.ComputeEffectiveRepayment(pos.Borrowed.Amount, interest)
+	repaymentCoin := sdk.NewCoin(pos.Borrowed.Denom, totalRepayment)
+
+	interestView := whaleswapv1.InterestView{
+		InterestDue:    interest,
+		TotalRepayment: repaymentCoin,
+		TimeElapsed:    uint64(elapsed),
+		AnnualRate:     rate,
+	}
 
 	return &whaleswapv1.QueryPositionResponse{
 		Position:                 pos,
@@ -112,10 +103,6 @@ func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequ
 		BlocksUntilCloseable:     blocksUntilCloseable,
 		CanInitializeLiquidation: canInitialize,
 		CanFinalizeLiquidation:   canFinalize,
-		Borrowed:                 pos.Borrowed,
-		AccruedInterest:          interest,
-		TotalRepayment:           sdk.NewCoin(pos.Borrowed.Denom, totalRepayment),
-		TimeElapsed:              uint64(elapsed),
-		AnnualRate:               rate,
+		Interest:                 interestView,
 	}, nil
 }

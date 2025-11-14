@@ -4,6 +4,7 @@ package dysonprotocol.whaleswap.v1;
 import "gogoproto/gogo.proto";
 import "amino/amino.proto";
 import "cosmos/base/v1beta1/coin.proto";
+import "cosmos_proto/cosmos.proto";
 import "dysonprotocol/whaleswap/v1/tx.proto";
 
 option go_package = "dysonprotocol.com/x/whaleswap/types";
@@ -103,6 +104,16 @@ message EventLeverageCollateralAdded {
   string new_collateral_ratio = 6;
 }
 
+message EventLeverageCollateralRemoved {
+  uint64 position_id = 1;
+  string user = 2;
+  uint64 pool_id = 3;
+  cosmos.base.v1beta1.Coin collateral_removed = 4
+      [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin new_collateral = 5 [ (gogoproto.nullable) = false ];
+  string new_collateral_ratio = 6;
+}
+
 message EventLeverageLiquidationInitialized {
   uint64 position_id = 1;
   string user = 2;
@@ -135,4 +146,20 @@ message EventLeveragePositionCovered {
   bool closed = 7;
   cosmos.base.v1beta1.Coin refunded = 8 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin profit = 9 [ (gogoproto.nullable) = false ];
+}
+
+message EventLeveragePositionPartiallyClosed {
+  uint64 position_id = 1;
+  string user = 2;
+  uint64 pool_id = 3;
+  string fraction_closed = 4 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+  cosmos.base.v1beta1.Coin interest_paid = 5 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin principal_paid = 6 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin collateral_returned = 7
+      [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin profit = 8 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin new_borrowed = 9 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin new_held = 10 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin new_collateral = 11 [ (gogoproto.nullable) = false ];
+  string new_collateral_ratio = 12 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
 }

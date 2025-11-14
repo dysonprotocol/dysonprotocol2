@@ -137,10 +137,6 @@
                     "shares_denom": {
                         "type": "string"
                     },
-                    "fee_pct": {
-                        "type": "string",
-                        "description": "Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec string in [0,1)). Use fee_rate field 25 instead. Migration logic should read this and convert to fee_rate format (two DecCoins, one per reserve denom in canonical order)."
-                    },
                     "min_price": {
                         "items": {
                             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
@@ -264,7 +260,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two entries in canonical pool order matching coins[0].denom and coins[1].denom. Fee is applied to the OUTPUT denom of each swap leg: for exact-in, the computed gross output is reduced by fee; for exact-out, the required gross output is inflated so net (after fee) meets the target. Fees accrue to fees_earned in the output denom. Replaces deprecated fee_pct field 5."
+                        "description": "fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two entries in canonical pool order matching coins[0].denom and coins[1].denom. Fee is applied to the OUTPUT denom of each swap leg: for exact-in, the computed gross output is reduced by fee; for exact-out, the required gross output is inflated so net (after fee) meets the target. Fees accrue to fees_earned in the output denom."
                     }
                 },
                 "additionalProperties": false,

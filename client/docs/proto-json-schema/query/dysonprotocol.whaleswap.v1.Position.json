@@ -72,23 +72,9 @@
                     "can_finalize_liquidation": {
                         "type": "boolean"
                     },
-                    "borrowed": {
-                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false,
-                        "description": "Interest Information"
-                    },
-                    "accrued_interest": {
-                        "type": "string"
-                    },
-                    "total_repayment": {
-                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                    "interest": {
+                        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.InterestView",
                         "additionalProperties": false
-                    },
-                    "time_elapsed": {
-                        "type": "string"
-                    },
-                    "annual_rate": {
-                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
@@ -122,6 +108,30 @@
                 "type": "object",
                 "title": "Dec Coin",
                 "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.whaleswap.v1.InterestView": {
+                "properties": {
+                    "interest_due": {
+                        "type": "string",
+                        "description": "Decimal amount of interest owed right now (borrowed denom)."
+                    },
+                    "total_repayment": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Principal + interest as integer coin."
+                    },
+                    "time_elapsed": {
+                        "type": "string",
+                        "description": "Seconds since the last settlement reference."
+                    },
+                    "annual_rate": {
+                        "type": "string",
+                        "description": "Annual rate applied for this position (borrowed denom entry)."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Interest View"
             },
             "dysonprotocol.whaleswap.v1.LeveragePosition": {
                 "properties": {
@@ -201,7 +211,8 @@
                     },
                     "accrued_interest": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Unpaid interest carried forward from prior settlements (borrowed denom)."
                     },
                     "updated_height": {
                         "type": "string"
@@ -225,6 +236,21 @@
                     "liquidation_threshold": {
                         "type": "string",
                         "description": "Liquidation threshold used for liquidation checks (cosmos.Dec string)."
+                    },
+                    "initial_borrowed": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Opening principal snapshot for analytics/limits (borrowed denom)."
+                    },
+                    "total_interest_paid": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Lifetime interest paid by the user (borrowed denom)."
+                    },
+                    "last_interest_settlement_time": {
+                        "type": "string",
+                        "description": "Timestamp of the last time interest was settled into accrued_interest.",
+                        "format": "date-time"
                     }
                 },
                 "additionalProperties": false,

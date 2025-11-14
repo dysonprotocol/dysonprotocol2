@@ -179,36 +179,6 @@ func CmdCreatePool() *cobra.Command {
 			default:
 				return fmt.Errorf("--min-collateral-ratio accepts 1 or 2 values")
 			}
-
-			mlrFlags, err := cmd.Flags().GetStringArray("max-leverage-ratio")
-			if err != nil {
-				return fmt.Errorf("failed to read --max-leverage-ratio: %w", err)
-			}
-			var maxLeverageRatio sdk.DecCoins
-			switch len(mlrFlags) {
-			case 0:
-				// Deprecated: flag is optional and ignored by server
-				maxLeverageRatio = sdk.NewDecCoins()
-			case 1:
-				d := mustDec(strings.TrimSpace(mlrFlags[0]))
-				maxLeverageRatio = sdk.NewDecCoins(
-					sdk.NewDecCoinFromDec(denom1, d),
-					sdk.NewDecCoinFromDec(denom2, d),
-				)
-			case 2:
-				if parsed, ok := tryParseDecCoins(mlrFlags); ok {
-					maxLeverageRatio = parsed
-				} else {
-					d1 := mustDec(strings.TrimSpace(mlrFlags[0]))
-					d2 := mustDec(strings.TrimSpace(mlrFlags[1]))
-					maxLeverageRatio = sdk.NewDecCoins(
-						sdk.NewDecCoinFromDec(denom1, d1),
-						sdk.NewDecCoinFromDec(denom2, d2),
-					)
-				}
-			default:
-				return fmt.Errorf("--max-leverage-ratio accepts 0, 1, or 2 values (deprecated)")
-			}
 			irFlags, err := cmd.Flags().GetStringArray("interest-rate")
 			if err != nil {
 				return fmt.Errorf("failed to read --interest-rate flags: %w", err)
@@ -380,15 +350,14 @@ func CmdCreatePool() *cobra.Command {
 			}
 
 			msg := &whaleswaptypes.MsgCreatePool{
-				Creator:              clientCtx.GetFromAddress().String(),
-				Coins:                coinList,
-				FeeRate:              feeRate,
-				MinCollateralRatio:   minCollateralRatio,
-				MaxLeverageRatio:     maxLeverageRatio,
-				InterestRate:         interestRate,
-				MaxBorrowPercent:     maxBorrowPercent,
-				LiquidationThreshold: liquidationThreshold,
-				BoundPercent:         boundPercent,
+				Creator:                  clientCtx.GetFromAddress().String(),
+				Coins:                    coinList,
+				FeeRate:                  feeRate,
+				MinInitalCollateralRatio: minCollateralRatio,
+				InterestRate:             interestRate,
+				MaxBorrowPercent:         maxBorrowPercent,
+				LiquidationThreshold:     liquidationThreshold,
+				BoundPercent:             boundPercent,
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -396,7 +365,6 @@ func CmdCreatePool() *cobra.Command {
 	cmd.Flags().StringArray("coins", nil, "Repeatable; provide exactly two flags, one per coin (e.g., 1000udys)")
 	cmd.Flags().StringArray("fee-rate", nil, "Repeatable (0, 1, or 2); per-denom swap fee as DecCoin in [0,1) (e.g., 0.003udys)")
 	cmd.Flags().StringArray("min-collateral-ratio", nil, "Repeatable (1 or 2); min collateral ratio per denom as Dec or DecCoin (e.g., 1.5 or 1.5udys)")
-	cmd.Flags().StringArray("max-leverage-ratio", nil, "Deprecated; ignored by server. Repeatable (0, 1, or 2) for backward compatibility")
 	cmd.Flags().StringArray("interest-rate", nil, "Repeatable (0, 1, or 2); APR per denom as DecCoin (e.g., 0.10udys). Optional; defaults to 0 for missing denoms")
 	cmd.Flags().StringArray("liquidation-threshold", nil, "Repeatable (0, 1, or 2); liquidation threshold per denom as Dec or DecCoin (default 1.2)")
 	cmd.Flags().StringArray("max-borrow-percent", nil, "Repeatable; 0, 1, or 2 values. If decimals without denoms are given, they map to the two pool denoms (e.g., 0.80)")
@@ -511,7 +479,7 @@ func CmdUpdatePoolConfig() *cobra.Command {
 				return fmt.Errorf("--liquidation-threshold accepts 0, 1, or 2 values")
 			}
 
-			// min/max ratios: allow override or fallback to current pool values
+			// min collateral ratio: allow override or fallback to current pool values
 			mcrFlags, _ := cmd.Flags().GetStringArray("min-collateral-ratio")
 			var minCollateralRatio sdk.DecCoins
 			switch len(mcrFlags) {
@@ -536,32 +504,6 @@ func CmdUpdatePoolConfig() *cobra.Command {
 				}
 			default:
 				return fmt.Errorf("--min-collateral-ratio accepts 0, 1, or 2 values")
-			}
-
-			mlrFlags, _ := cmd.Flags().GetStringArray("max-leverage-ratio")
-			var maxLeverageRatio sdk.DecCoins
-			switch len(mlrFlags) {
-			case 0:
-				maxLeverageRatio = sdk.NewDecCoins(pool.MaxLeverageRatio...)
-			case 1:
-				d := mustDec(strings.TrimSpace(mlrFlags[0]))
-				maxLeverageRatio = sdk.NewDecCoins(
-					sdk.NewDecCoinFromDec(denom1, d),
-					sdk.NewDecCoinFromDec(denom2, d),
-				)
-			case 2:
-				if parsed, ok := tryParseDecCoins(mlrFlags); ok {
-					maxLeverageRatio = parsed
-				} else {
-					d1 := mustDec(strings.TrimSpace(mlrFlags[0]))
-					d2 := mustDec(strings.TrimSpace(mlrFlags[1]))
-					maxLeverageRatio = sdk.NewDecCoins(
-						sdk.NewDecCoinFromDec(denom1, d1),
-						sdk.NewDecCoinFromDec(denom2, d2),
-					)
-				}
-			default:
-				return fmt.Errorf("--max-leverage-ratio accepts 0, 1, or 2 values")
 			}
 
 			// fee-rate: 0 => keep current. 1/2 => parse and set
@@ -631,15 +573,14 @@ func CmdUpdatePoolConfig() *cobra.Command {
 			}
 
 			msg := &whaleswaptypes.MsgUpdatePoolConfig{
-				Signer:               clientCtx.GetFromAddress().String(),
-				PoolId:               poolID,
-				FeeRate:              feeRate,
-				InterestRate:         interestRate,
-				MaxBorrowPercent:     maxBorrowPercent,
-				LiquidationThreshold: liquidationThreshold,
-				MinCollateralRatio:   minCollateralRatio,
-				MaxLeverageRatio:     maxLeverageRatio,
-				BoundPercent:         boundPercent,
+				Signer:                   clientCtx.GetFromAddress().String(),
+				PoolId:                   poolID,
+				FeeRate:                  feeRate,
+				InterestRate:             interestRate,
+				MaxBorrowPercent:         maxBorrowPercent,
+				LiquidationThreshold:     liquidationThreshold,
+				MinInitalCollateralRatio: minCollateralRatio,
+				BoundPercent:             boundPercent,
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -653,7 +594,6 @@ func CmdUpdatePoolConfig() *cobra.Command {
 	cmd.Flags().StringArray("max-borrow-percent", nil, "Repeatable (0, 1, or 2); max borrow percent per denom. Optional; defaults to current values when omitted")
 	cmd.Flags().String("liquidation-threshold", "", "Liquidation threshold (cosmos.Dec). Optional; defaults to current pool")
 	cmd.Flags().String("min-collateral-ratio", "", "Minimum collateral ratio for leverage. Optional; defaults to current pool")
-	cmd.Flags().String("max-leverage-ratio", "", "Deprecated; ignored by server. Only for backward compatibility")
 	cmd.Flags().StringArray("bound-percent", nil, "Repeatable (optional); provide two decimals or DecCoins specifying max fractional price drop per sold denom (0 < x <= 1). Omit to keep current bounds")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd

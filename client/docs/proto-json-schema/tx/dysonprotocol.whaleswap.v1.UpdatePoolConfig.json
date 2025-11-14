@@ -13,25 +13,13 @@
                         "type": "string",
                         "description": "Target pool id to update."
                     },
-                    "fee_pct": {
-                        "type": "string",
-                        "description": "Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec string in [0,1)). Use fee_rate field 11 instead. Migration logic should read this and convert to fee_rate format (two DecCoins, one per reserve denom in canonical order)."
-                    },
-                    "min_collateral_ratio": {
+                    "min_inital_collateral_ratio": {
                         "items": {
                             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
                         },
                         "additionalProperties": false,
                         "type": "array",
                         "description": "Leverage configuration (per-denom) Required: minimum collateral ratio per reserve denom (exactly two, canonical order; > 1)"
-                    },
-                    "max_leverage_ratio": {
-                        "items": {
-                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
-                        },
-                        "additionalProperties": false,
-                        "type": "array",
-                        "description": "Deprecated: maximum leverage ratio per reserve denom; ignored by server. Kept for backward-compatible client requests."
                     },
                     "interest_rate": {
                         "items": {

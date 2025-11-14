@@ -136,14 +136,14 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 	}
 
 	// Validate leverage configuration fields (required; per-denom DecCoins)
-	inMinCR := sdk.NewDecCoins(msg.MinCollateralRatio...)
+	inMinCR := sdk.NewDecCoins(msg.MinInitalCollateralRatio...)
 	if len(inMinCR) != 2 || inMinCR[0].Denom != denom1 || inMinCR[1].Denom != denom2 {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_collateral_ratio must have exactly two entries matching pool denoms [%s,%s] in canonical order", denom1, denom2)
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_inital_collateral_ratio must have exactly two entries matching pool denoms [%s,%s] in canonical order", denom1, denom2)
 	}
 	if inMinCR[0].Amount.LTE(one) || inMinCR[1].Amount.LTE(one) { // require strictly > 1
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "min_collateral_ratio amounts must be > 1 for both denoms")
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "min_inital_collateral_ratio amounts must be > 1 for both denoms")
 	}
-	msg.MinCollateralRatio = inMinCR
+	msg.MinInitalCollateralRatio = inMinCR
 
 	// Liquidation threshold: required and must be > 1 (per-denom DecCoins)
 	inLiq := sdk.NewDecCoins(msg.LiquidationThreshold...)
@@ -225,12 +225,11 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		UpdatedHeight:        uint64(sdkCtx.BlockHeight()),
 		UpdatedTime:          &t,
 		NumTrades:            0,
-		MinCollateralRatio:   msg.MinCollateralRatio,
 		LiquidationThreshold: msg.LiquidationThreshold,
 		InterestRate:         msg.InterestRate,
 		MaxBorrowPercent:     msg.MaxBorrowPercent,
+		MinCollateralRatio:   msg.MinInitalCollateralRatio,
 	}
-
 	logger.Info("CreatePool calculating initial shares (constant-product)")
 	prod := math.LegacyNewDecFromInt(msg.Coins[0].Amount).Mul(math.LegacyNewDecFromInt(msg.Coins[1].Amount))
 	sqrt, err := prod.ApproxSqrt()

@@ -7115,19 +7115,6 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    fee_pct:
-                      type: string
-                      description: >-
-                        Deprecated: fee_pct is the legacy pool swap fee
-                        percentage (cosmos.Dec
-
-                        string in [0,1)). Use fee_rate field 25 instead.
-                        Migration logic should
-
-                        read this and convert to fee_rate format (two DecCoins,
-                        one per reserve
-
-                        denom in canonical order).
                     min_price:
                       type: array
                       items:
@@ -7462,8 +7449,6 @@ paths:
                         Fees accrue to
 
                         fees_earned in the output denom.
-
-                        Replaces deprecated fee_pct field 5.
                   description: >-
                     Pool describes AMM pool state.
 
@@ -7611,19 +7596,6 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    fee_pct:
-                      type: string
-                      description: >-
-                        Deprecated: fee_pct is the legacy pool swap fee
-                        percentage (cosmos.Dec
-
-                        string in [0,1)). Use fee_rate field 25 instead.
-                        Migration logic should
-
-                        read this and convert to fee_rate format (two DecCoins,
-                        one per reserve
-
-                        denom in canonical order).
                     min_price:
                       type: array
                       items:
@@ -7958,8 +7930,6 @@ paths:
                         Fees accrue to
 
                         fees_earned in the output denom.
-
-                        Replaces deprecated fee_pct field 5.
                   description: >-
                     Pool describes AMM pool state.
 
@@ -8116,19 +8086,6 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    fee_pct:
-                      type: string
-                      description: >-
-                        Deprecated: fee_pct is the legacy pool swap fee
-                        percentage (cosmos.Dec
-
-                        string in [0,1)). Use fee_rate field 25 instead.
-                        Migration logic should
-
-                        read this and convert to fee_rate format (two DecCoins,
-                        one per reserve
-
-                        denom in canonical order).
                     min_price:
                       type: array
                       items:
@@ -8463,8 +8420,6 @@ paths:
                         Fees accrue to
 
                         fees_earned in the output denom.
-
-                        Replaces deprecated fee_pct field 5.
                   description: >-
                     Pool describes AMM pool state.
 
@@ -8632,19 +8587,6 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    fee_pct:
-                      type: string
-                      description: >-
-                        Deprecated: fee_pct is the legacy pool swap fee
-                        percentage (cosmos.Dec
-
-                        string in [0,1)). Use fee_rate field 25 instead.
-                        Migration logic should
-
-                        read this and convert to fee_rate format (two DecCoins,
-                        one per reserve
-
-                        denom in canonical order).
                     min_price:
                       type: array
                       items:
@@ -8979,8 +8921,6 @@ paths:
                         Fees accrue to
 
                         fees_earned in the output denom.
-
-                        Replaces deprecated fee_pct field 5.
                   description: >-
                     Pool describes AMM pool state.
 
@@ -9148,19 +9088,6 @@ paths:
                       coins[0].amount.
                   shares_denom:
                     type: string
-                  fee_pct:
-                    type: string
-                    description: >-
-                      Deprecated: fee_pct is the legacy pool swap fee percentage
-                      (cosmos.Dec
-
-                      string in [0,1)). Use fee_rate field 25 instead. Migration
-                      logic should
-
-                      read this and convert to fee_rate format (two DecCoins,
-                      one per reserve
-
-                      denom in canonical order).
                   min_price:
                     type: array
                     items:
@@ -9486,8 +9413,6 @@ paths:
                       Fees accrue to
 
                       fees_earned in the output denom.
-
-                      Replaces deprecated fee_pct field 5.
                 description: >-
                   Pool describes AMM pool state.
 
@@ -9590,19 +9515,6 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    fee_pct:
-                      type: string
-                      description: >-
-                        Deprecated: fee_pct is the legacy pool swap fee
-                        percentage (cosmos.Dec
-
-                        string in [0,1)). Use fee_rate field 25 instead.
-                        Migration logic should
-
-                        read this and convert to fee_rate format (two DecCoins,
-                        one per reserve
-
-                        denom in canonical order).
                     min_price:
                       type: array
                       items:
@@ -9937,8 +9849,6 @@ paths:
                         Fees accrue to
 
                         fees_earned in the output denom.
-
-                        Replaces deprecated fee_pct field 5.
                   description: >-
                     Pool describes AMM pool state.
 
@@ -10082,19 +9992,6 @@ paths:
                       coins[0].amount.
                   shares_denom:
                     type: string
-                  fee_pct:
-                    type: string
-                    description: >-
-                      Deprecated: fee_pct is the legacy pool swap fee percentage
-                      (cosmos.Dec
-
-                      string in [0,1)). Use fee_rate field 25 instead. Migration
-                      logic should
-
-                      read this and convert to fee_rate format (two DecCoins,
-                      one per reserve
-
-                      denom in canonical order).
                   min_price:
                     type: array
                     items:
@@ -10420,8 +10317,6 @@ paths:
                       Fees accrue to
 
                       fees_earned in the output denom.
-
-                      Replaces deprecated fee_pct field 5.
                 description: >-
                   Pool describes AMM pool state.
 
@@ -10634,6 +10529,42 @@ paths:
                       description: >-
                         Liquidation threshold used for liquidation checks
                         (cosmos.Dec string).
+                    initial_borrowed:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    total_interest_paid:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    last_interest_settlement_time:
+                      type: string
+                      format: date-time
+                      description: >-
+                        Timestamp of the last time interest was settled into
+                        accrued_interest.
                   description: >-
                     LeveragePosition represents an active leverage position for
                     a trader.
@@ -10897,6 +10828,42 @@ paths:
                       description: >-
                         Liquidation threshold used for liquidation checks
                         (cosmos.Dec string).
+                    initial_borrowed:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    total_interest_paid:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    last_interest_settlement_time:
+                      type: string
+                      format: date-time
+                      description: >-
+                        Timestamp of the last time interest was settled into
+                        accrued_interest.
                   description: >-
                     LeveragePosition represents an active leverage position for
                     a trader.
@@ -11177,6 +11144,42 @@ paths:
                     description: >-
                       Liquidation threshold used for liquidation checks
                       (cosmos.Dec string).
+                  initial_borrowed:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                  total_interest_paid:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                  last_interest_settlement_time:
+                    type: string
+                    format: date-time
+                    description: >-
+                      Timestamp of the last time interest was settled into
+                      accrued_interest.
                 description: >-
                   LeveragePosition represents an active leverage position for a
                   trader.
@@ -11206,44 +11209,38 @@ paths:
                 type: boolean
               can_finalize_liquidation:
                 type: boolean
-              borrowed:
+              interest:
                 type: object
                 properties:
-                  denom:
+                  interest_due:
                     type: string
-                  amount:
+                    description: >-
+                      Decimal amount of interest owed right now (borrowed
+                      denom).
+                  total_repayment:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                  time_elapsed:
                     type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-                title: Interest Information
-              accrued_interest:
-                type: string
-              total_repayment:
-                type: object
-                properties:
-                  denom:
+                    format: uint64
+                    description: Seconds since the last settlement reference.
+                  annual_rate:
                     type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              time_elapsed:
-                type: string
-                format: uint64
-              annual_rate:
-                type: string
+                    description: >-
+                      Annual rate applied for this position (borrowed denom
+                      entry).
         default:
           description: An unexpected error response.
           schema:
@@ -36131,6 +36128,74 @@ paths:
                   method
 
                   signatures required by gogoproto.
+              collateral_returned:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              new_borrowed:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              new_held:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              new_collateral:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              new_collateral_ratio:
+                type: string
+                description: >-
+                  Collateral ratio after the close; "0" when position fully
+                  closed.
+              closed:
+                type: boolean
+                description: True if the position was fully closed and deleted.
         default:
           description: An unexpected error response.
           schema:
@@ -36172,6 +36237,11 @@ paths:
                 description: >-
                   Optional note carried into internal trade logs (opaque to the
                   module).
+              fraction:
+                type: string
+                description: |-
+                  Fraction of the position to close (0 < fraction <= 1).
+                  Provide "1" to close the entire position.
             description: >-
               *
 
@@ -36411,9 +36481,8 @@ paths:
         two
           DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
           interest_rate >= 0 per denom.
-        - Leverage configuration: `min_collateral_ratio` (required) and
-          `max_leverage_ratio` (deprecated; accepted for backward compatibility and
-          ignored by the server). `liquidation_threshold` (required).
+        - Leverage configuration: `min_inital_collateral_ratio` (required) and
+          `liquidation_threshold` (required).
         - `max_borrow_percent` (required) must have exactly two entries with
 
         amounts in [0,1).
@@ -36438,8 +36507,11 @@ paths:
 
         - interest_rate amounts must be >= 0 for both denoms when provided.
 
-        - min_collateral_ratio must have exactly two entries (> 1) matching pool
-          denoms in canonical order.
+        - min_inital_collateral_ratio must have exactly two entries (> 1)
+        matching
+
+        pool denoms in canonical order.
+
         - liquidation_threshold must have exactly two entries (> 1) matching
         pool
           denoms in canonical order.
@@ -36526,20 +36598,7 @@ paths:
 
                   Order is canonicalized internally to pool denom order
                   (lexicographic).
-              fee_pct:
-                type: string
-                description: >-
-                  Deprecated: fee_pct is the legacy pool swap fee percentage
-                  (cosmos.Dec
-
-                  string in [0,1)). Use fee_rate field 11 instead. Migration
-                  logic should
-
-                  read this and convert to fee_rate format (two DecCoins, one
-                  per reserve
-
-                  denom in canonical order).
-              min_collateral_ratio:
+              min_inital_collateral_ratio:
                 type: array
                 items:
                   type: object
@@ -36562,29 +36621,6 @@ paths:
                   two,
 
                   canonical order). Each amount is a LegacyDec string (> 1).
-              max_leverage_ratio:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    denom:
-                      type: string
-                    amount:
-                      type: string
-                  description: >-
-                    DecCoin defines a token with a denomination and a decimal
-                    amount.
-
-
-                    NOTE: The amount field is an Dec which implements the custom
-                    method
-
-                    signatures required by gogoproto.
-                description: >-
-                  Deprecated: maximum leverage ratio per reserve denom; ignored
-                  by server.
-
-                  Kept for backward-compatible client requests.
               interest_rate:
                 type: array
                 items:
@@ -37723,9 +37759,6 @@ paths:
                 units, accounting for current pool price.
               - Validates CR >= pool.min_collateral_ratio[borrow_denom] (> 1).
 
-              - Validates leverage <= pool.max_leverage_ratio[borrow_denom] (>
-              1).
-
               - Reduces pool reserves by borrow amount, updates total_borrowed.
 
               - Moves borrowed amount to borrow vault, executes swap (borrowed →
@@ -37748,9 +37781,6 @@ paths:
               - Collateral/borrow denoms must match pool denoms.
 
               - Collateral ratio must meet pool min_collateral_ratio for borrow
-              denom.
-
-              - Leverage must not exceed pool max_leverage_ratio for borrow
               denom.
 
               - Borrow amount must not exceed pool borrow cap
@@ -38562,9 +38592,11 @@ paths:
         - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x <
         1.
 
-        - Leverage config: required `min_collateral_ratio` and
-        `max_leverage_ratio`
-          with exactly two entries matching pool denoms; each > 1.
+        - Leverage config: required `min_inital_collateral_ratio` with exactly
+        two
+
+        entries matching pool denoms; each > 1.
+
         - Liquidation threshold: required with exactly two entries; each > 1.
 
         - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.
@@ -38590,8 +38622,10 @@ paths:
 
         - Fee rates when provided must satisfy 0 <= x < 1 for both denoms.
 
-        - Leverage config (min_collateral_ratio, max_leverage_ratio) must have
-          exactly two entries (> 1) matching pool denoms in canonical order.
+        - Leverage config (min_inital_collateral_ratio) must have exactly two
+
+        entries (> 1) matching pool denoms in canonical order.
+
         - Liquidation threshold must have exactly two entries (> 1) matching
         pool
           denoms in canonical order.
@@ -38656,20 +38690,7 @@ paths:
                 type: string
                 format: uint64
                 description: Target pool id to update.
-              fee_pct:
-                type: string
-                description: >-
-                  Deprecated: fee_pct is the legacy pool swap fee percentage
-                  (cosmos.Dec
-
-                  string in [0,1)). Use fee_rate field 11 instead. Migration
-                  logic should
-
-                  read this and convert to fee_rate format (two DecCoins, one
-                  per reserve
-
-                  denom in canonical order).
-              min_collateral_ratio:
+              min_inital_collateral_ratio:
                 type: array
                 items:
                   type: object
@@ -38694,29 +38715,6 @@ paths:
                   two,
 
                   canonical order; > 1)
-              max_leverage_ratio:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    denom:
-                      type: string
-                    amount:
-                      type: string
-                  description: >-
-                    DecCoin defines a token with a denomination and a decimal
-                    amount.
-
-
-                    NOTE: The amount field is an Dec which implements the custom
-                    method
-
-                    signatures required by gogoproto.
-                description: >-
-                  Deprecated: maximum leverage ratio per reserve denom; ignored
-                  by server.
-
-                  Kept for backward-compatible client requests.
               interest_rate:
                 type: array
                 items:
@@ -50715,6 +50713,31 @@ definitions:
         type: string
         format: uint64
     title: AuctionRedeem operation for recording auction redemption in Trade history
+  dysonprotocol.whaleswap.v1.InterestView:
+    type: object
+    properties:
+      interest_due:
+        type: string
+        description: Decimal amount of interest owed right now (borrowed denom).
+      total_repayment:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      time_elapsed:
+        type: string
+        format: uint64
+        description: Seconds since the last settlement reference.
+      annual_rate:
+        type: string
+        description: Annual rate applied for this position (borrowed denom entry).
   dysonprotocol.whaleswap.v1.LeveragePosition:
     type: object
     properties:
@@ -50836,6 +50859,34 @@ definitions:
       liquidation_threshold:
         type: string
         description: Liquidation threshold used for liquidation checks (cosmos.Dec string).
+      initial_borrowed:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      total_interest_paid:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      last_interest_settlement_time:
+        type: string
+        format: date-time
+        description: Timestamp of the last time interest was settled into accrued_interest.
     description: LeveragePosition represents an active leverage position for a trader.
   dysonprotocol.whaleswap.v1.LiquidationStatus:
     type: string
@@ -51023,18 +51074,6 @@ definitions:
           coins[0].amount.
       shares_denom:
         type: string
-      fee_pct:
-        type: string
-        description: >-
-          Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
-
-          string in [0,1)). Use fee_rate field 25 instead. Migration logic
-          should
-
-          read this and convert to fee_rate format (two DecCoins, one per
-          reserve
-
-          denom in canonical order).
       min_price:
         type: array
         items:
@@ -51296,8 +51335,6 @@ definitions:
           output is inflated so net (after fee) meets the target. Fees accrue to
 
           fees_earned in the output denom.
-
-          Replaces deprecated fee_pct field 5.
     description: |-
       Pool describes AMM pool state.
 
@@ -52897,19 +52934,6 @@ definitions:
               coins[0].amount.
           shares_denom:
             type: string
-          fee_pct:
-            type: string
-            description: >-
-              Deprecated: fee_pct is the legacy pool swap fee percentage
-              (cosmos.Dec
-
-              string in [0,1)). Use fee_rate field 25 instead. Migration logic
-              should
-
-              read this and convert to fee_rate format (two DecCoins, one per
-              reserve
-
-              denom in canonical order).
           min_price:
             type: array
             items:
@@ -53233,8 +53257,6 @@ definitions:
               accrue to
 
               fees_earned in the output denom.
-
-              Replaces deprecated fee_pct field 5.
         description: |-
           Pool describes AMM pool state.
 
@@ -53278,19 +53300,6 @@ definitions:
               coins[0].amount.
           shares_denom:
             type: string
-          fee_pct:
-            type: string
-            description: >-
-              Deprecated: fee_pct is the legacy pool swap fee percentage
-              (cosmos.Dec
-
-              string in [0,1)). Use fee_rate field 25 instead. Migration logic
-              should
-
-              read this and convert to fee_rate format (two DecCoins, one per
-              reserve
-
-              denom in canonical order).
           min_price:
             type: array
             items:
@@ -53614,8 +53623,6 @@ definitions:
               accrue to
 
               fees_earned in the output denom.
-
-              Replaces deprecated fee_pct field 5.
         description: |-
           Pool describes AMM pool state.
 
@@ -53662,19 +53669,6 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            fee_pct:
-              type: string
-              description: >-
-                Deprecated: fee_pct is the legacy pool swap fee percentage
-                (cosmos.Dec
-
-                string in [0,1)). Use fee_rate field 25 instead. Migration logic
-                should
-
-                read this and convert to fee_rate format (two DecCoins, one per
-                reserve
-
-                denom in canonical order).
             min_price:
               type: array
               items:
@@ -53999,8 +53993,6 @@ definitions:
                 accrue to
 
                 fees_earned in the output denom.
-
-                Replaces deprecated fee_pct field 5.
           description: >-
             Pool describes AMM pool state.
 
@@ -54080,19 +54072,6 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            fee_pct:
-              type: string
-              description: >-
-                Deprecated: fee_pct is the legacy pool swap fee percentage
-                (cosmos.Dec
-
-                string in [0,1)). Use fee_rate field 25 instead. Migration logic
-                should
-
-                read this and convert to fee_rate format (two DecCoins, one per
-                reserve
-
-                denom in canonical order).
             min_price:
               type: array
               items:
@@ -54417,8 +54396,6 @@ definitions:
                 accrue to
 
                 fees_earned in the output denom.
-
-                Replaces deprecated fee_pct field 5.
           description: >-
             Pool describes AMM pool state.
 
@@ -54498,19 +54475,6 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            fee_pct:
-              type: string
-              description: >-
-                Deprecated: fee_pct is the legacy pool swap fee percentage
-                (cosmos.Dec
-
-                string in [0,1)). Use fee_rate field 25 instead. Migration logic
-                should
-
-                read this and convert to fee_rate format (two DecCoins, one per
-                reserve
-
-                denom in canonical order).
             min_price:
               type: array
               items:
@@ -54835,8 +54799,6 @@ definitions:
                 accrue to
 
                 fees_earned in the output denom.
-
-                Replaces deprecated fee_pct field 5.
           description: >-
             Pool describes AMM pool state.
 
@@ -54916,19 +54878,6 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            fee_pct:
-              type: string
-              description: >-
-                Deprecated: fee_pct is the legacy pool swap fee percentage
-                (cosmos.Dec
-
-                string in [0,1)). Use fee_rate field 25 instead. Migration logic
-                should
-
-                read this and convert to fee_rate format (two DecCoins, one per
-                reserve
-
-                denom in canonical order).
             min_price:
               type: array
               items:
@@ -55253,8 +55202,6 @@ definitions:
                 accrue to
 
                 fees_earned in the output denom.
-
-                Replaces deprecated fee_pct field 5.
           description: >-
             Pool describes AMM pool state.
 
@@ -55334,19 +55281,6 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            fee_pct:
-              type: string
-              description: >-
-                Deprecated: fee_pct is the legacy pool swap fee percentage
-                (cosmos.Dec
-
-                string in [0,1)). Use fee_rate field 25 instead. Migration logic
-                should
-
-                read this and convert to fee_rate format (two DecCoins, one per
-                reserve
-
-                denom in canonical order).
             min_price:
               type: array
               items:
@@ -55671,8 +55605,6 @@ definitions:
                 accrue to
 
                 fees_earned in the output denom.
-
-                Replaces deprecated fee_pct field 5.
           description: >-
             Pool describes AMM pool state.
 
@@ -55859,6 +55791,42 @@ definitions:
             description: >-
               Liquidation threshold used for liquidation checks (cosmos.Dec
               string).
+          initial_borrowed:
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+          total_interest_paid:
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+          last_interest_settlement_time:
+            type: string
+            format: date-time
+            description: >-
+              Timestamp of the last time interest was settled into
+              accrued_interest.
         description: LeveragePosition represents an active leverage position for a trader.
       health_status:
         title: Health Information
@@ -55886,38 +55854,34 @@ definitions:
         type: boolean
       can_finalize_liquidation:
         type: boolean
-      borrowed:
+      interest:
         type: object
         properties:
-          denom:
+          interest_due:
             type: string
-          amount:
-            type: string
-        description: |-
-          Coin defines a token with a denomination and an amount.
+            description: Decimal amount of interest owed right now (borrowed denom).
+          total_repayment:
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+            description: >-
+              Coin defines a token with a denomination and an amount.
 
-          NOTE: The amount field is an Int which implements the custom method
-          signatures required by gogoproto.
-        title: Interest Information
-      accrued_interest:
-        type: string
-      total_repayment:
-        type: object
-        properties:
-          denom:
-            type: string
-          amount:
-            type: string
-        description: |-
-          Coin defines a token with a denomination and an amount.
 
-          NOTE: The amount field is an Int which implements the custom method
-          signatures required by gogoproto.
-      time_elapsed:
-        type: string
-        format: uint64
-      annual_rate:
-        type: string
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+          time_elapsed:
+            type: string
+            format: uint64
+            description: Seconds since the last settlement reference.
+          annual_rate:
+            type: string
+            description: Annual rate applied for this position (borrowed denom entry).
   dysonprotocol.whaleswap.v1.QueryPositionsByPoolResponse:
     type: object
     properties:
@@ -56063,6 +56027,42 @@ definitions:
               description: >-
                 Liquidation threshold used for liquidation checks (cosmos.Dec
                 string).
+            initial_borrowed:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            total_interest_paid:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            last_interest_settlement_time:
+              type: string
+              format: date-time
+              description: >-
+                Timestamp of the last time interest was settled into
+                accrued_interest.
           description: >-
             LeveragePosition represents an active leverage position for a
             trader.
@@ -56239,6 +56239,42 @@ definitions:
               description: >-
                 Liquidation threshold used for liquidation checks (cosmos.Dec
                 string).
+            initial_borrowed:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            total_interest_paid:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            last_interest_settlement_time:
+              type: string
+              format: date-time
+              description: >-
+                Timestamp of the last time interest was settled into
+                accrued_interest.
           description: >-
             LeveragePosition represents an active leverage position for a
             trader.
@@ -80125,6 +80161,11 @@ definitions:
       note:
         type: string
         description: Optional note carried into internal trade logs (opaque to the module).
+      fraction:
+        type: string
+        description: |-
+          Fraction of the position to close (0 < fraction <= 1).
+          Provide "1" to close the entire position.
     description: |-
       *
       ClosePosition closes a synthetic leveraged position.
@@ -80175,6 +80216,60 @@ definitions:
 
           NOTE: The amount field is an Int which implements the custom method
           signatures required by gogoproto.
+      collateral_returned:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      new_borrowed:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      new_held:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      new_collateral:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      new_collateral_ratio:
+        type: string
+        description: Collateral ratio after the close; "0" when position fully closed.
+      closed:
+        type: boolean
+        description: True if the position was fully closed and deleted.
   dysonprotocol.whaleswap.v1.MsgCoverPosition:
     type: object
     properties:
@@ -80345,19 +80440,7 @@ definitions:
         description: |-
           Initial reserves. Required: exactly two coins with positive amounts.
           Order is canonicalized internally to pool denom order (lexicographic).
-      fee_pct:
-        type: string
-        description: >-
-          Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
-
-          string in [0,1)). Use fee_rate field 11 instead. Migration logic
-          should
-
-          read this and convert to fee_rate format (two DecCoins, one per
-          reserve
-
-          denom in canonical order).
-      min_collateral_ratio:
+      min_inital_collateral_ratio:
         type: array
         items:
           type: object
@@ -80374,25 +80457,6 @@ definitions:
         description: |-
           Required: minimum collateral ratio per reserve denom (exactly two,
           canonical order). Each amount is a LegacyDec string (> 1).
-      max_leverage_ratio:
-        type: array
-        items:
-          type: object
-          properties:
-            denom:
-              type: string
-            amount:
-              type: string
-          description: |-
-            DecCoin defines a token with a denomination and a decimal amount.
-
-            NOTE: The amount field is an Dec which implements the custom method
-            signatures required by gogoproto.
-        description: >-
-          Deprecated: maximum leverage ratio per reserve denom; ignored by
-          server.
-
-          Kept for backward-compatible client requests.
       interest_rate:
         type: array
         items:
@@ -81150,7 +81214,6 @@ definitions:
       - Computes collateral ratio CR = collateral_value / debt_value in borrow
         units, accounting for current pool price.
       - Validates CR >= pool.min_collateral_ratio[borrow_denom] (> 1).
-      - Validates leverage <= pool.max_leverage_ratio[borrow_denom] (> 1).
       - Reduces pool reserves by borrow amount, updates total_borrowed.
       - Moves borrowed amount to borrow vault, executes swap (borrowed → held).
       - Escrows collateral to whaleswap module after swap.
@@ -81162,7 +81225,6 @@ definitions:
       - Collateral/borrow amounts must be positive.
       - Collateral/borrow denoms must match pool denoms.
       - Collateral ratio must meet pool min_collateral_ratio for borrow denom.
-      - Leverage must not exceed pool max_leverage_ratio for borrow denom.
       - Borrow amount must not exceed pool borrow cap (max_borrow_percent).
       - Swap must produce positive held output.
 
@@ -81723,19 +81785,7 @@ definitions:
         type: string
         format: uint64
         description: Target pool id to update.
-      fee_pct:
-        type: string
-        description: >-
-          Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
-
-          string in [0,1)). Use fee_rate field 11 instead. Migration logic
-          should
-
-          read this and convert to fee_rate format (two DecCoins, one per
-          reserve
-
-          denom in canonical order).
-      min_collateral_ratio:
+      min_inital_collateral_ratio:
         type: array
         items:
           type: object
@@ -81753,25 +81803,6 @@ definitions:
           Leverage configuration (per-denom)
           Required: minimum collateral ratio per reserve denom (exactly two,
           canonical order; > 1)
-      max_leverage_ratio:
-        type: array
-        items:
-          type: object
-          properties:
-            denom:
-              type: string
-            amount:
-              type: string
-          description: |-
-            DecCoin defines a token with a denomination and a decimal amount.
-
-            NOTE: The amount field is an Dec which implements the custom method
-            signatures required by gogoproto.
-        description: >-
-          Deprecated: maximum leverage ratio per reserve denom; ignored by
-          server.
-
-          Kept for backward-compatible client requests.
       interest_rate:
         type: array
         items:

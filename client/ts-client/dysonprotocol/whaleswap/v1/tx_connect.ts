@@ -49,9 +49,8 @@ export const Msg = {
      * - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two
      *   DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
      *   interest_rate >= 0 per denom.
-     * - Leverage configuration: `min_collateral_ratio` (required) and
-     *   `max_leverage_ratio` (deprecated; accepted for backward compatibility and
-     *   ignored by the server). `liquidation_threshold` (required).
+     * - Leverage configuration: `min_inital_collateral_ratio` (required) and
+     *   `liquidation_threshold` (required).
      * - `max_borrow_percent` (required) must have exactly two entries with
      * amounts in [0,1).
      * - Bound percent (optional): when omitted defaults to 1 (unbounded) for both
@@ -67,8 +66,8 @@ export const Msg = {
      * - coins must contain exactly two positive coins with valid denoms.
      * - fee_rate amounts must satisfy 0 <= x < 1 for both denoms when provided.
      * - interest_rate amounts must be >= 0 for both denoms when provided.
-     * - min_collateral_ratio must have exactly two entries (> 1) matching pool
-     *   denoms in canonical order.
+     * - min_inital_collateral_ratio must have exactly two entries (> 1) matching
+     * pool denoms in canonical order.
      * - liquidation_threshold must have exactly two entries (> 1) matching pool
      *   denoms in canonical order.
      * - max_borrow_percent must have exactly two entries with amounts in [0,1)
@@ -99,8 +98,8 @@ export const Msg = {
      * Behavior:
      * - Loads pool; validates signer and majority-ownership.
      * - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1.
-     * - Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`
-     *   with exactly two entries matching pool denoms; each > 1.
+     * - Leverage config: required `min_inital_collateral_ratio` with exactly two
+     * entries matching pool denoms; each > 1.
      * - Liquidation threshold: required with exactly two entries; each > 1.
      * - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.
      * - Max borrow percent: optional; if provided exactly two entries; 0 <= x
@@ -115,8 +114,8 @@ export const Msg = {
      * - Pool must exist.
      * - Signer must be valid address and hold majority of pool shares.
      * - Fee rates when provided must satisfy 0 <= x < 1 for both denoms.
-     * - Leverage config (min_collateral_ratio, max_leverage_ratio) must have
-     *   exactly two entries (> 1) matching pool denoms in canonical order.
+     * - Leverage config (min_inital_collateral_ratio) must have exactly two
+     * entries (> 1) matching pool denoms in canonical order.
      * - Liquidation threshold must have exactly two entries (> 1) matching pool
      *   denoms in canonical order.
      * - Interest rates when provided must be >= 0 for both denoms.

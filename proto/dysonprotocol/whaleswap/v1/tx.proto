@@ -50,9 +50,8 @@ service Msg {
    * - Fees and rates: normalizes `fee_rate` and `interest_rate` to exactly two
    *   DecCoins in pool order; requires 0 <= fee_rate < 1 per denom and
    *   interest_rate >= 0 per denom.
-   * - Leverage configuration: `min_collateral_ratio` (required) and
-   *   `max_leverage_ratio` (deprecated; accepted for backward compatibility and
-   *   ignored by the server). `liquidation_threshold` (required).
+   * - Leverage configuration: `min_inital_collateral_ratio` (required) and
+   *   `liquidation_threshold` (required).
    * - `max_borrow_percent` (required) must have exactly two entries with
    * amounts in [0,1).
    * - Bound percent (optional): when omitted defaults to 1 (unbounded) for both
@@ -68,8 +67,8 @@ service Msg {
    * - coins must contain exactly two positive coins with valid denoms.
    * - fee_rate amounts must satisfy 0 <= x < 1 for both denoms when provided.
    * - interest_rate amounts must be >= 0 for both denoms when provided.
-   * - min_collateral_ratio must have exactly two entries (> 1) matching pool
-   *   denoms in canonical order.
+   * - min_inital_collateral_ratio must have exactly two entries (> 1) matching
+   * pool denoms in canonical order.
    * - liquidation_threshold must have exactly two entries (> 1) matching pool
    *   denoms in canonical order.
    * - max_borrow_percent must have exactly two entries with amounts in [0,1)
@@ -93,8 +92,8 @@ service Msg {
    * Behavior:
    * - Loads pool; validates signer and majority-ownership.
    * - Fee rates: optional; normalizes to two DecCoins (pool order); 0 <= x < 1.
-   * - Leverage config: required `min_collateral_ratio` and `max_leverage_ratio`
-   *   with exactly two entries matching pool denoms; each > 1.
+   * - Leverage config: required `min_inital_collateral_ratio` with exactly two
+   * entries matching pool denoms; each > 1.
    * - Liquidation threshold: required with exactly two entries; each > 1.
    * - Interest rate: allows 0/1/2 entries; normalizes to two; each >= 0.
    * - Max borrow percent: optional; if provided exactly two entries; 0 <= x
@@ -109,8 +108,8 @@ service Msg {
    * - Pool must exist.
    * - Signer must be valid address and hold majority of pool shares.
    * - Fee rates when provided must satisfy 0 <= x < 1 for both denoms.
-   * - Leverage config (min_collateral_ratio, max_leverage_ratio) must have
-   *   exactly two entries (> 1) matching pool denoms in canonical order.
+   * - Leverage config (min_inital_collateral_ratio) must have exactly two
+   * entries (> 1) matching pool denoms in canonical order.
    * - Liquidation threshold must have exactly two entries (> 1) matching pool
    *   denoms in canonical order.
    * - Interest rates when provided must be >= 0 for both denoms.
@@ -275,27 +274,16 @@ message MsgCreatePool {
     (amino.dont_omitempty) = true,
     (amino.encoding) = "legacy_coins"
   ];
-  reserved 3, 4;
-  reserved "min_price", "max_price";
-  // Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
-  // string in [0,1)). Use fee_rate field 11 instead. Migration logic should
-  // read this and convert to fee_rate format (two DecCoins, one per reserve
-  // denom in canonical order).
-  string fee_pct = 5
-      [ deprecated = true, (cosmos_proto.scalar) = "cosmos.Dec" ];
+  reserved 3, 4, 5;
+  reserved "min_price", "max_price", "fee_pct";
   // Required: minimum collateral ratio per reserve denom (exactly two,
   // canonical order). Each amount is a LegacyDec string (> 1).
-  repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 6 [
+  repeated cosmos.base.v1beta1.DecCoin min_inital_collateral_ratio = 6 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
   ];
-  // Deprecated: maximum leverage ratio per reserve denom; ignored by server.
-  // Kept for backward-compatible client requests.
-  repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7 [
-    deprecated = true,
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
-  ];
+  reserved 7;
+  reserved "max_leverage_ratio";
   // Annual interest rates per reserve denom (APR >= 0).
   // Input may include 0, 1, or 2 entries; keeper normalizes to exactly two
   // entries in canonical pool order.
@@ -352,28 +340,17 @@ message MsgUpdatePoolConfig {
   string signer = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   // Target pool id to update.
   uint64 pool_id = 2;
-  // Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
-  // string in [0,1)). Use fee_rate field 11 instead. Migration logic should
-  // read this and convert to fee_rate format (two DecCoins, one per reserve
-  // denom in canonical order).
-  string fee_pct = 3
-      [ deprecated = true, (cosmos_proto.scalar) = "cosmos.Dec" ];
-  reserved 4, 5;
-  reserved "min_price", "max_price";
+  reserved 3, 4, 5;
+  reserved "fee_pct", "min_price", "max_price";
   // Leverage configuration (per-denom)
   // Required: minimum collateral ratio per reserve denom (exactly two,
   // canonical order; > 1)
-  repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 6 [
+  repeated cosmos.base.v1beta1.DecCoin min_inital_collateral_ratio = 6 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
   ];
-  // Deprecated: maximum leverage ratio per reserve denom; ignored by server.
-  // Kept for backward-compatible client requests.
-  repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7 [
-    deprecated = true,
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
-  ];
+  reserved 7;
+  reserved "max_leverage_ratio";
   // Required: annual interest rates per reserve denom (APR >= 0).
   // Input may include 0, 1, or 2 entries; keeper normalizes to exactly two in
   // canonical pool order.
@@ -956,7 +933,6 @@ message MsgUpdateParamsResponse {}
  * - Computes collateral ratio CR = collateral_value / debt_value in borrow
  *   units, accounting for current pool price.
  * - Validates CR >= pool.min_collateral_ratio[borrow_denom] (> 1).
- * - Validates leverage <= pool.max_leverage_ratio[borrow_denom] (> 1).
  * - Reduces pool reserves by borrow amount, updates total_borrowed.
  * - Moves borrowed amount to borrow vault, executes swap (borrowed → held).
  * - Escrows collateral to whaleswap module after swap.
@@ -968,7 +944,6 @@ message MsgUpdateParamsResponse {}
  * - Collateral/borrow amounts must be positive.
  * - Collateral/borrow denoms must match pool denoms.
  * - Collateral ratio must meet pool min_collateral_ratio for borrow denom.
- * - Leverage must not exceed pool max_leverage_ratio for borrow denom.
  * - Borrow amount must not exceed pool borrow cap (max_borrow_percent).
  * - Swap must produce positive held output.
  *
@@ -1023,6 +998,9 @@ message MsgClosePosition {
   uint64 position_id = 2;
   // Optional note carried into internal trade logs (opaque to the module).
   string note = 3;
+  // Fraction of the position to close (0 < fraction <= 1).
+  // Provide "1" to close the entire position.
+  string fraction = 4 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
 }
 
 message MsgClosePositionResponse {
@@ -1032,6 +1010,23 @@ message MsgClosePositionResponse {
   cosmos.base.v1beta1.Coin principal_paid = 2 [ (gogoproto.nullable) = false ];
   // Profit returned to the user (borrowed denom).
   cosmos.base.v1beta1.Coin profit = 3 [ (gogoproto.nullable) = false ];
+  // Collateral returned to the user (collateral denom).
+  cosmos.base.v1beta1.Coin collateral_returned = 4
+      [ (gogoproto.nullable) = false ];
+  // Borrowed principal remaining on the position after the close.
+  cosmos.base.v1beta1.Coin new_borrowed = 5 [ (gogoproto.nullable) = false ];
+  // Held asset remaining on the position after the close.
+  cosmos.base.v1beta1.Coin new_held = 6 [ (gogoproto.nullable) = false ];
+  // Collateral remaining on the position after the close.
+  cosmos.base.v1beta1.Coin new_collateral = 7 [ (gogoproto.nullable) = false ];
+  // Collateral ratio after the close; "0" when position fully closed.
+  string new_collateral_ratio = 8 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  // True if the position was fully closed and deleted.
+  bool closed = 9;
 }
 
 /**
@@ -1075,6 +1070,37 @@ message MsgAddCollateralResponse {
   cosmos.base.v1beta1.Coin new_collateral = 1 [ (gogoproto.nullable) = false ];
   // New collateral ratio after addition (LegacyDec string).
   string new_collateral_ratio = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+/**
+ * RemoveCollateral withdraws excess collateral from a leveraged position while
+ * maintaining the minimum collateral ratio.
+ */
+message MsgRemoveCollateral {
+  option (cosmos.msg.v1.signer) = "user";
+  // Account removing collateral; must be the position owner.
+  string user = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // Target pool id; must match the position's pool.
+  uint64 pool_id = 2;
+  // Target position id to remove collateral from.
+  uint64 position_id = 3;
+  // Collateral coin to withdraw; denom must match position collateral; amount
+  // must be positive.
+  cosmos.base.v1beta1.Coin collateral = 4 [ (gogoproto.nullable) = false ];
+}
+
+message MsgRemoveCollateralResponse {
+  // Collateral actually removed.
+  cosmos.base.v1beta1.Coin collateral_removed = 1
+      [ (gogoproto.nullable) = false ];
+  // Remaining collateral on the position.
+  cosmos.base.v1beta1.Coin new_collateral = 2 [ (gogoproto.nullable) = false ];
+  // Collateral ratio after removal.
+  string new_collateral_ratio = 3 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false

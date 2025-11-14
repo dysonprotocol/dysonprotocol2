@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"strings"
 
 	cosmossdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -34,6 +35,24 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	if msg == nil {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "message cannot be nil")
 	}
+
+	oneDec := math.LegacyNewDec(1)
+	trimmed := strings.TrimSpace(msg.Fraction)
+	if trimmed == "" {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "fraction is required; use 1 for a full close")
+	}
+	fraction, err := math.LegacyNewDecFromStr(trimmed)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid fraction: %v", err)
+	}
+	if !fraction.GT(math.LegacyZeroDec()) || fraction.GT(oneDec) {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "fraction must satisfy 0 < fraction <= 1")
+	}
+	// TODO: allow fractional closes
+	if !fraction.Equal(oneDec) {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "fractional close not implemented yet")
+	}
+
 	pos, err := k.LeveragePositions.Get(ctx, msg.PositionId)
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "position %d not found", msg.PositionId)
@@ -61,19 +80,11 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	}
 	originalStatus := pos.Status
 
-	// Calculate interest using per-position snapshot rate; must be set (len 2)
-	if len(pos.InterestRate) != 2 {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "position interest_rate must have exactly 2 entries")
-	}
-	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	elapsed := sdkCtx.BlockTime().Sub(*pos.UpdatedTime).Seconds()
-	interest, err := k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))
+	interestDec, interestCoin, err := k.SettleInterest(ctx, &pos)
 	if err != nil {
 		return nil, err
 	}
-	interestInt := interest.TruncateInt()
-	interestCoin := sdk.NewCoin(pos.Borrowed.Denom, interestInt)
 
 	// Return collateral and profit to user; pool receives repayment
 	userAddr, err := k.addr(ctx, msg.User)
@@ -100,13 +111,14 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	if !proceedsBorrow.IsPositive() {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "close swap produced no %s output", pos.Borrowed.Denom)
 	}
-	repayment := k.ComputeEffectiveRepayment(pos.Borrowed.Amount, interest)
+	repayment := k.ComputeEffectiveRepayment(pos.Borrowed.Amount, interestDec)
 
 	// Determine funds available to cover repayment (after all swaps and fees)
 	var collateralUsedAmount math.Int
 	var collateralSwapped bool
 	var totalProceedsFromSwaps math.Int // Total funds in vault (for cross-denom case)
 	var profit sdk.Coin
+	collateralReturned := sdk.NewCoin(pos.Collateral.Denom, math.ZeroInt())
 
 	if proceedsBorrow.GTE(repayment) {
 		// Profitable: proceeds alone cover full repayment
@@ -262,6 +274,7 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 			if err := k.sendFromModule(ctx, userAddr, sdk.NewCoins(remainingCoin)); err != nil {
 				return nil, cosmossdkerrors.Wrap(err, "failed to return collateral")
 			}
+			collateralReturned = remainingCoin
 		}
 
 		// Return profit to user (only possible if proceeds >= repayment, meaning collateralUsedAmount = 0)
@@ -270,6 +283,12 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 				return nil, cosmossdkerrors.Wrap(err, "failed to return profit")
 			}
 		}
+	}
+
+	if _, remainder, err := k.ApplyInterestPayment(&pos, interestCoin.Amount); err != nil {
+		return nil, err
+	} else if !remainder.IsZero() {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "unexpected remainder after interest payment")
 	}
 
 	// Update pool accounting: decrease total_borrowed and add interest earned
@@ -284,7 +303,6 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	pos.Status = whaleswapv1.PositionStatus_POSITION_STATUS_CLOSED
 	pos.LiquidationStatus = whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE
 	pos.LiquidationInitializedBlockHeight = 0
-	pos.AccruedInterest = interestCoin
 	if err := k.savePosition(ctx, pos, originalStatus); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to persist closed position")
 	}
@@ -313,9 +331,19 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		return nil, cosmossdkerrors.Wrap(err, "failed to update position metrics")
 	}
 
+	newBorrowed := sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
+	newHeld := sdk.NewCoin(pos.Held.Denom, math.ZeroInt())
+	newCollateral := sdk.NewCoin(pos.Collateral.Denom, math.ZeroInt())
+
 	return &whaleswapv1.MsgClosePositionResponse{
-		InterestPaid:  interestCoin,
-		PrincipalPaid: principalCoin,
-		Profit:        profit,
+		InterestPaid:       interestCoin,
+		PrincipalPaid:      principalCoin,
+		Profit:             profit,
+		CollateralReturned: collateralReturned,
+		NewBorrowed:        newBorrowed,
+		NewHeld:            newHeld,
+		NewCollateral:      newCollateral,
+		NewCollateralRatio: math.LegacyZeroDec(),
+		Closed:             true,
 	}, nil
 }

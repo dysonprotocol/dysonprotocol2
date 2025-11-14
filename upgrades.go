@@ -10,22 +10,21 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
-// WhaleswapV2UpgradeName defines the on-chain upgrade name for
-// migrating whaleswap module from v1 proto fields to v2 (fee_pct → fee_rate,
-// Trade deprecated fields → new fields). This includes state migration.
-const WhaleswapV2UpgradeName = "whaleswap-v2"
+// WhaleswapLeverageUpgradeName defines the on-chain upgrade name for the next
+// whaleswap migration (leverage/interest schema overhaul).
+const WhaleswapLeverageUpgradeName = "whaleswap-leverage-interest-v1"
 
 func (app *DysApp) RegisterUpgradeHandlers() {
 	app.Logger().Info("RegisterUpgradeHandlers: installing upgrade handlers")
 
-	// Register handler for whaleswap-v2 (state migration upgrade)
+	// Register handler for leverage interest migration
 	app.UpgradeKeeper.SetUpgradeHandler(
-		WhaleswapV2UpgradeName,
+		WhaleswapLeverageUpgradeName,
 		func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-			app.Logger().Info("Executing whaleswap v1→v2 migration", "name", plan.Name, "height", plan.Height)
+			app.Logger().Info("Executing whaleswap leverage-interest migration", "name", plan.Name, "height", plan.Height)
 
 			// Run whaleswap state migration
-			if err := app.WhaleswapKeeper.MigrateWhaleswapV1ToV2(ctx); err != nil {
+			if err := app.WhaleswapKeeper.MigrateWhaleswapLeverageInterest(ctx); err != nil {
 				app.Logger().Error("Whaleswap migration failed", "name", plan.Name, "height", plan.Height, "err", err)
 				return fromVM, err
 			}
@@ -71,16 +70,15 @@ func (app *DysApp) RegisterUpgradeHandlers() {
 	}
 
 	if !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-		switch upgradeInfo.Name {
-		case WhaleswapV2UpgradeName:
+		if upgradeInfo.Name == WhaleswapLeverageUpgradeName {
 			// State migration upgrade; no store migrations needed (migration happens in handler)
-			app.Logger().Info("Whaleswap v2 upgrade; state migration in handler", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
-		default:
-			app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{WhaleswapV2UpgradeName}, "height", upgradeInfo.Height)
+			app.Logger().Info("Whaleswap leverage-interest upgrade; state migration in handler", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
+		} else {
+			app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{WhaleswapLeverageUpgradeName}, "height", upgradeInfo.Height)
 		}
-	} else if upgradeInfo.Name == WhaleswapV2UpgradeName {
+	} else if upgradeInfo.Name == WhaleswapLeverageUpgradeName {
 		app.Logger().Info("Skip height is set; not configuring store loader", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
 	} else {
-		app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{WhaleswapV2UpgradeName}, "height", upgradeInfo.Height)
+		app.Logger().Info("No store loader configured for current upgrade info", "disk_name", upgradeInfo.Name, "expected_names", []string{WhaleswapLeverageUpgradeName}, "height", upgradeInfo.Height)
 	}
 }

@@ -204,6 +204,8 @@ def test_close_position_note_propagates(
         "close-position",
         "--position-id",
         position_id,
+        "--fraction",
+        "1",
         "--position-note",
         note_text,
         "--from",
@@ -326,6 +328,8 @@ def test_close_position_happy_path_long(
         "close-position",
         "--position-id",
         position_id,
+        "--fraction",
+        "1",
         "--from",
         charlie_name,
     )
@@ -707,6 +711,8 @@ def test_close_position_not_owner_direct(
         "close-position",
         "--position-id",
         str(position_id),
+        "--fraction",
+        "1",
         "--from",
         bob_name,
     )
@@ -992,6 +998,8 @@ def test_close_position_cross_denom_underwater_rejected(
         "close-position",
         "--position-id",
         position_id,
+        "--fraction",
+        "1",
         "--from",
         alice_name,
     )
@@ -1171,6 +1179,8 @@ def test_close_position_same_denom_collateral_sufficient_underwater(
         "close-position",
         "--position-id",
         position_id,
+        "--fraction",
+        "1",
         "--from",
         bob_name,
     )
@@ -1340,6 +1350,8 @@ def test_close_position_cross_denom_swap_still_underwater(
         "close-position",
         "--position-id",
         position_id,
+        "--fraction",
+        "1",
         "--from",
         charlie_name,
     )
@@ -1510,6 +1522,8 @@ def test_close_position_same_denom_collateral_covers_shortfall(
         "close-position",
         "--position-id",
         position_id,
+        "--fraction",
+        "1",
         "--from",
         alice_name,
     )
@@ -1680,6 +1694,8 @@ def test_close_position_profitable_same_denom(
         "close-position",
         "--position-id",
         position_id,
+        "--fraction",
+        "1",
         "--from",
         charlie_name,
     )
@@ -1831,6 +1847,8 @@ def test_close_position_same_denom_insufficient_underwater_rejected(
             "close-position",
             "--position-id",
             position_id,
+            "--fraction",
+            "1",
             "--from",
             alice_name,
             "--gas",

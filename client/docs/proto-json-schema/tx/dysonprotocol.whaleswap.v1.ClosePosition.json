@@ -16,6 +16,10 @@
                     "note": {
                         "type": "string",
                         "description": "Optional note carried into internal trade logs (opaque to the module)."
+                    },
+                    "fraction": {
+                        "type": "string",
+                        "description": "Fraction of the position to close (0 < fraction <= 1). Provide \"1\" to close the entire position."
                     }
                 },
                 "additionalProperties": false,
@@ -45,6 +49,34 @@
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false,
                         "description": "Profit returned to the user (borrowed denom)."
+                    },
+                    "collateral_returned": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Collateral returned to the user (collateral denom)."
+                    },
+                    "new_borrowed": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Borrowed principal remaining on the position after the close."
+                    },
+                    "new_held": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Held asset remaining on the position after the close."
+                    },
+                    "new_collateral": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Collateral remaining on the position after the close."
+                    },
+                    "new_collateral_ratio": {
+                        "type": "string",
+                        "description": "Collateral ratio after the close; \"0\" when position fully closed."
+                    },
+                    "closed": {
+                        "type": "boolean",
+                        "description": "True if the position was fully closed and deleted."
                     }
                 },
                 "additionalProperties": false,

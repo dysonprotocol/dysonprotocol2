@@ -104,6 +104,8 @@ def test_close_position_happy_path_regression(
         "close-position",
         "--position-id",
         position_id,
+        "--fraction",
+        "1",
         "--from",
         charlie_name,
     )

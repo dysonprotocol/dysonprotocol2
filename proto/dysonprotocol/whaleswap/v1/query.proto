@@ -803,17 +803,22 @@ message QueryPositionResponse {
   bool can_initialize_liquidation = 9;
   bool can_finalize_liquidation = 10;
 
-  // Interest Information
-  cosmos.base.v1beta1.Coin borrowed = 11 [ (gogoproto.nullable) = false ];
-  string accrued_interest = 12 [
+  InterestView interest = 11 [ (gogoproto.nullable) = false ];
+}
+
+message InterestView {
+  // Decimal amount of interest owed right now (borrowed denom).
+  string interest_due = 1 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
-  cosmos.base.v1beta1.Coin total_repayment = 13
-      [ (gogoproto.nullable) = false ];
-  uint64 time_elapsed = 14;
-  string annual_rate = 15 [
+  // Principal + interest as integer coin.
+  cosmos.base.v1beta1.Coin total_repayment = 2 [ (gogoproto.nullable) = false ];
+  // Seconds since the last settlement reference.
+  uint64 time_elapsed = 3;
+  // Annual rate applied for this position (borrowed denom entry).
+  string annual_rate = 4 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false

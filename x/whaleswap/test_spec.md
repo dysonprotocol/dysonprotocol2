@@ -80,7 +80,7 @@ base = f"http://{api_address['host']}:{api_address['port']}"
 ### CLI tests (amm/test_amm_cli.py)
 
 - CreatePool (v2 constant product):
-  - create with --coin-a, --coin-b, optional --fee-pct
+- create with --coin-a, --coin-b, optional --fee-rate
   - assert event pool_id and query pool returns canonical denom order (denomA < denomB)
   - shares minted to creator: bank balance of shares_denom > 0
 
@@ -105,7 +105,7 @@ base = f"http://{api_address['host']}:{api_address['port']}"
 
 Example CLI:
 ```bash
-dysond tx whaleswap create-pool --coin-a=1000udys --coin-b=500ufoo --fee-pct=0.003 --from alice
+dysond tx whaleswap create-pool --coin-a=1000udys --coin-b=500ufoo --fee-rate=0.003udys --from alice
 dysond tx whaleswap create-pool --coin-a=1000udys --coin-b=500ufoo \
   --min-price=1udys,2ufoo --max-price=1udys,3ufoo --from alice
 dysond tx whaleswap add-liquidity --pool-id=1 --amount1=200udys --amount2=100ufoo --from alice
@@ -125,7 +125,7 @@ curl "$BASE/dysonprotocol/whaleswap/v1/pools/1"
 curl "$BASE/dysonprotocol/whaleswap/v1/pools?pagination.limit=50"
 ```
 
-- Assert JSON fields: coinA/coinB, shares_denom, fee_pct, min_price/max_price, num_trades
+- Assert JSON fields: coinA/coinB, shares_denom, fee_rate, min_price/max_price, num_trades
 
 ### Dyslang script tests (amm/test_amm_script.py)
 
@@ -281,7 +281,7 @@ def open_auc(seller, bid_denom, sell_denom, sell_amt):
 
 ## Negative and edge cases (spread across suites)
 
-- AMM: attempt non-owner LP; band violations on add/remove/swap; invalid fee_pct
+- AMM: attempt non-owner LP; band violations on add/remove/swap; invalid fee_rate
 - Orderbook: invalid denoms; want must be solid; insufficient funds; liquid close index cleanup
 - Auctions: sell==bid denom rejected; redeem with active bidder rejected
 

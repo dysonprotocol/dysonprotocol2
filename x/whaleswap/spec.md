@@ -60,7 +60,7 @@ Notes:
   - reserve1, reserve2 (sdk.Int)
   - total_shares (sdk.Int)
   - shares_denom (string)
-  - fee_pct (math.Dec, 0 ≤ fee < 1)
+- fee_rate (per-denom DecCoin, 0 ≤ fee < 1)
   - min_price, max_price (math.Dec; inclusive bounds on P = R2/R1)
   - block_height (int64), created (time), updated (time), num_trades (uint64)
 
@@ -93,23 +93,23 @@ Design updates (required):
 - Mode B (price range set): concentrated liquidity (Uniswap v3-style) with a single band per pool
   - The owner specifies an inclusive price band [min_price, max_price] over P = R2/R1.
   - Within the band the pool uses concentrated liquidity math; outside the band swaps halt and liquidity sits fully in one asset.
-- Each pool has a fee percentage `fee_pct` applied to swaps (0 ≤ fee < 1).
+- Each pool has a per-denom fee rate `fee_rate` applied to swaps (0 ≤ fee < 1).
 - Owner definition: the pool "owner" at any time is the address that holds strictly more than 50% of the outstanding pool shares.
   - Enforcement: before any owner-privileged action (Add/Remove liquidity, UpdatePoolConfig), the module computes majority-of-shares for the pool's `shares_denom` by iterating balances (or using a cached value with verification) and requires the signer to be the current majority holder.
   - The module may cache `owner_majority_cached` on mints/burns/known transfers but must re-validate during privileged ops to avoid stale state.
 - Anyone can swap as long as the resulting price stays within the configured range.
-- The pool owner can change pool config (fee_pct, min_price, max_price) at any time.
+- The pool owner can change pool config (fee_rate, min_price, max_price) at any time.
 - No one can join someone else's pool (owner-only liquidity). Others may hold/receive shares via transfers, but only the current majority holder may add/remove liquidity.
 
 Pool creation
-- Msg: CreatePool(coinA, coinB, min_price, max_price, fee_pct)
+- Msg: CreatePool(coinA, coinB, min_price, max_price, fee_rate, min_inital_collateral_ratio)
   - Caller becomes owner.
   - Canonicalize: coin1_denom < coin2_denom; reorder amounts accordingly.
   - Move both coin amounts caller → module; initialize reserves.
   - total_shares = initial_shares minted to owner; shares denom `whaleswap.dys/pools/{pool_id}`.
     - v2 (no band): initial_shares = floor(sqrt(R1*R2)).
     - v3 (band set): initial_shares = floor(L) from liquidity within [sa,sb].
-  - Validate 0 ≤ fee_pct < 1 and 0 ≤ min_price ≤ max_price; initial P within [min,max].
+  - Validate 0 ≤ fee_rate < 1 per denom and 0 ≤ min_price ≤ max_price; initial P within [min,max].
 
 Owner adds/removes liquidity (only owner)
 
@@ -152,22 +152,22 @@ Swaps (any user)
   - Single-pool swap only. To route across multiple pools, include multiple PoolSwap messages in the same transaction or call the module multiple times from a script.
   - Apply math based on pool mode:
     - Mode A (v2): constant product with fee on input.
-      - k = R1*R2; effective_in = dx * (1 - fee_pct).
+      - k = R1*R2; effective_in = dx * (1 - fee_rate_out).
       - out = R2 - ceil(k / (R1 + effective_in)) (or symmetric for coin2 input).
       - Update reserves; enforce price band if configured.
     - Mode B (v3-style): concentrated liquidity within [sa, sb].
       - Use sqrt-price integration with constant liquidity L.
-      - For token1→token2 swap (input denom1, output denom2), price moves up: with fee on input, let dxe = dx*(1-fee_pct).
+      - For token1→token2 swap (input denom1, output denom2), price moves up: with fee on input, let dxe = dx*(1-fee_rate_out).
         - Move from sp to sp' within [sa, sb] such that dxe = L * (1/sp - 1/sp').
         - out = floor(L * (sp' - sp)). If input exhausts before hitting band edge, stop at boundary.
-      - For token2→token1, symmetric with price moving down: dye = dy*(1-fee_pct), dxe = floor(L * (1/sp' - 1/sp)).
+      - For token2→token1, symmetric with price moving down: dye = dy*(1-fee_rate_out), dxe = floor(L * (1/sp' - 1/sp)).
       - Reject if resulting price exits band.
   - Require out_denom match and amount ≥ minimum_out_amount; send to caller.
   - Per-leg XOR rule: SwapLegs accept exact-in (swap_in) or exact-out (swap_out), but not both together; combine with message-level max_input/min_output for symmetric guarantees.
 
 Pool configuration updates (only owner)
-- Msg: UpdatePoolConfig(pool_id, fee_pct?, min_price?, max_price?)
-  - Optional fields; validate 0 ≤ fee_pct < 1 and 0 ≤ min_price ≤ max_price.
+- Msg: UpdatePoolConfig(pool_id, fee_rate?, min_price?, max_price?)
+  - Optional fields; validate 0 ≤ fee_rate < 1 and 0 ≤ min_price ≤ max_price.
   - Ensure current mid-price remains within new band.
 
 Ownership
@@ -240,7 +240,7 @@ Msgs
 
 ### 9. Queries (gRPC + CLI)
 
-- Pools: Get(pool_id), List(pagination). Return reserves, fee_pct, band, owner, timestamps, num_trades.
+- Pools: Get(pool_id), List(pagination). Return reserves, fee_rate, band, owner, timestamps, num_trades.
 - Offers: Get(id), ByOwner(owner,status), Offers(have_denom?, want_denom?) with pagination.
 - Trades: ByOffer(offer_id), ByTaker(addr).
 - Auctions: Get(id), List with optional filters (sell_denom?, bid_denom?) and pagination.
@@ -266,8 +266,8 @@ Msgs
 
 ### 12. Math and rounding policy
 
-- Prefer sdk.Int storage for amounts; use math.Dec for fee_pct and price bounds.
-- AMM swap: `out = R_out - ceil(k / (R_in + effective_in))` with `effective_in = in * (1 - fee_pct)`.
+- Prefer sdk.Int storage for amounts; use math.Dec for fee_rate entries and price bounds.
+- AMM swap: `out = R_out - ceil(k / (R_in + effective_in))` with `effective_in = in * (1 - fee_rate_out)`.
 - Shares mint/burn: floor for proportional calculations; reject if both outs floor to 0.
 
 
@@ -653,7 +653,7 @@ If you want, I can open issues in-spec and add guardrails in code for the high-r
     - Decision: disallow exits that zero-out either reserve (would make P undefined or violate band). After compute, if new R1<=0 or R2<=0 → ErrInvalidRequest “would deplete reserve”.
     - Rationale: we store P=R2/R1 and enforce band; zero reserve breaks price checks.
   - Fee semantics
-    - Decision: fee applied on input (effective_in = in*(1−fee_pct)), fees accrue to LPs via reserves; no separate fee bucket in MVP. Document in spec/events.
+    - Decision: fee applied on input (effective_in = in*(1−fee_rate_out)), fees accrue to LPs via reserves; no separate fee bucket in MVP. Document in spec/events.
   - Multi-hop (removed)
     - Decision: single-pool swaps only. Routing = multiple PoolSwap msgs in one tx or multiple script calls. Spec/autocli/proto already aligned.
   - Majority-owner changes

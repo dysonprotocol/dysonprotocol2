@@ -11,7 +11,9 @@ import pytest
 from deep_parse import deep_parse
 
 
-def test_positions_by_user_all_statuses(chainnet, leverage_accounts, leverage_names_and_coins):
+def test_positions_by_user_all_statuses(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
     """Test PositionsByUser returns all positions when status is unspecified."""
     dysond = chainnet[0]
     alice_addr = leverage_accounts["alice"]["addr"]
@@ -37,7 +39,9 @@ def test_positions_by_user_all_statuses(chainnet, leverage_accounts, leverage_na
         "--from",
         alice_name,
     )
-    assert pool_result.get("code", 1) == 0, f"create-pool failed: {json.dumps(pool_result, indent=2)}"
+    assert (
+        pool_result.get("code", 1) == 0
+    ), f"create-pool failed: {json.dumps(pool_result, indent=2)}"
 
     # Extract pool_id from events
     pool_events = [
@@ -67,14 +71,17 @@ def test_positions_by_user_all_statuses(chainnet, leverage_accounts, leverage_na
         "--from",
         alice_name,
     )
-    assert pos1_result.get("code", 1) == 0, f"open-position failed: {json.dumps(pos1_result, indent=2)}"
+    assert (
+        pos1_result.get("code", 1) == 0
+    ), f"open-position failed: {json.dumps(pos1_result, indent=2)}"
 
     pos1_attrs = [
         attr.get("value")
         for event in pos1_result.get("events", [])
         for attr in event.get("attributes", [])
         if attr.get("key") == "position_id"
-        and event.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
     ]
     assert pos1_attrs, f"position_id missing: {json.dumps(pos1_result, indent=2)}"
     pos1_id = pos1_attrs[0].strip('"')
@@ -93,14 +100,17 @@ def test_positions_by_user_all_statuses(chainnet, leverage_accounts, leverage_na
         "--from",
         alice_name,
     )
-    assert pos2_result.get("code", 1) == 0, f"open-position failed: {json.dumps(pos2_result, indent=2)}"
+    assert (
+        pos2_result.get("code", 1) == 0
+    ), f"open-position failed: {json.dumps(pos2_result, indent=2)}"
 
     pos2_attrs = [
         attr.get("value")
         for event in pos2_result.get("events", [])
         for attr in event.get("attributes", [])
         if attr.get("key") == "position_id"
-        and event.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
     ]
     assert pos2_attrs, f"position_id missing: {json.dumps(pos2_result, indent=2)}"
     pos2_id = pos2_attrs[0].strip('"')
@@ -118,7 +128,9 @@ def test_positions_by_user_all_statuses(chainnet, leverage_accounts, leverage_na
         "--from",
         alice_name,
     )
-    assert cover_result.get("code", 1) == 0, f"cover-position failed: {json.dumps(cover_result, indent=2)}"
+    assert (
+        cover_result.get("code", 1) == 0
+    ), f"cover-position failed: {json.dumps(cover_result, indent=2)}"
 
     # Query all positions (status unspecified) - should return both OPEN and CLOSED
     all_positions = dysond(
@@ -128,12 +140,20 @@ def test_positions_by_user_all_statuses(chainnet, leverage_accounts, leverage_na
         "--user",
         alice_addr,
     )
-    assert isinstance(all_positions, dict), f"All positions should be dict, got {type(all_positions)}"
-    assert "positions" in all_positions, f"Missing 'positions' key. Keys: {list(all_positions.keys())}"
-    
+    assert isinstance(
+        all_positions, dict
+    ), f"All positions should be dict, got {type(all_positions)}"
+    assert (
+        "positions" in all_positions
+    ), f"Missing 'positions' key. Keys: {list(all_positions.keys())}"
+
     all_pos_list = all_positions["positions"]
-    assert isinstance(all_pos_list, list), f"Positions should be list, got {type(all_pos_list)}"
-    assert len(all_pos_list) == 2, f"Should return 2 positions (1 OPEN, 1 CLOSED), got {len(all_pos_list)}"
+    assert isinstance(
+        all_pos_list, list
+    ), f"Positions should be list, got {type(all_pos_list)}"
+    assert (
+        len(all_pos_list) == 2
+    ), f"Should return 2 positions (1 OPEN, 1 CLOSED), got {len(all_pos_list)}"
 
     # Query only OPEN positions
     open_positions = dysond(
@@ -146,9 +166,15 @@ def test_positions_by_user_all_statuses(chainnet, leverage_accounts, leverage_na
         "open",
     )
     open_pos_list = open_positions["positions"]
-    assert isinstance(open_pos_list, list), f"Open positions should be list, got {type(open_pos_list)}"
-    assert len(open_pos_list) == 1, f"Should return 1 OPEN position, got {len(open_pos_list)}"
-    assert open_pos_list[0]["status"] == "POSITION_STATUS_OPEN", f"Position should be OPEN, got {open_pos_list[0]['status']}"
+    assert isinstance(
+        open_pos_list, list
+    ), f"Open positions should be list, got {type(open_pos_list)}"
+    assert (
+        len(open_pos_list) == 1
+    ), f"Should return 1 OPEN position, got {len(open_pos_list)}"
+    assert (
+        open_pos_list[0]["status"] == "POSITION_STATUS_OPEN"
+    ), f"Position should be OPEN, got {open_pos_list[0]['status']}"
 
     # Query only CLOSED positions
     closed_positions = dysond(
@@ -161,12 +187,20 @@ def test_positions_by_user_all_statuses(chainnet, leverage_accounts, leverage_na
         "closed",
     )
     closed_pos_list = closed_positions["positions"]
-    assert isinstance(closed_pos_list, list), f"Closed positions should be list, got {type(closed_pos_list)}"
-    assert len(closed_pos_list) == 1, f"Should return 1 CLOSED position, got {len(closed_pos_list)}"
-    assert closed_pos_list[0]["status"] == "POSITION_STATUS_CLOSED", f"Position should be CLOSED, got {closed_pos_list[0]['status']}"
+    assert isinstance(
+        closed_pos_list, list
+    ), f"Closed positions should be list, got {type(closed_pos_list)}"
+    assert (
+        len(closed_pos_list) == 1
+    ), f"Should return 1 CLOSED position, got {len(closed_pos_list)}"
+    assert (
+        closed_pos_list[0]["status"] == "POSITION_STATUS_CLOSED"
+    ), f"Position should be CLOSED, got {closed_pos_list[0]['status']}"
 
 
-def test_positions_by_pool_all_statuses(chainnet, leverage_accounts, leverage_names_and_coins):
+def test_positions_by_pool_all_statuses(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
     """Test PositionsByPool returns all positions when status is unspecified."""
     dysond = chainnet[0]
     alice_addr = leverage_accounts["alice"]["addr"]
@@ -192,7 +226,9 @@ def test_positions_by_pool_all_statuses(chainnet, leverage_accounts, leverage_na
         "--from",
         alice_name,
     )
-    assert pool_result.get("code", 1) == 0, f"create-pool failed: {json.dumps(pool_result, indent=2)}"
+    assert (
+        pool_result.get("code", 1) == 0
+    ), f"create-pool failed: {json.dumps(pool_result, indent=2)}"
 
     # Extract pool_id from events
     pool_events = [
@@ -222,14 +258,17 @@ def test_positions_by_pool_all_statuses(chainnet, leverage_accounts, leverage_na
         "--from",
         alice_name,
     )
-    assert pos1_result.get("code", 1) == 0, f"open-position failed: {json.dumps(pos1_result, indent=2)}"
+    assert (
+        pos1_result.get("code", 1) == 0
+    ), f"open-position failed: {json.dumps(pos1_result, indent=2)}"
 
     pos1_attrs = [
         attr.get("value")
         for event in pos1_result.get("events", [])
         for attr in event.get("attributes", [])
         if attr.get("key") == "position_id"
-        and event.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
     ]
     assert pos1_attrs, f"position_id missing: {json.dumps(pos1_result, indent=2)}"
     pos1_id = pos1_attrs[0].strip('"')
@@ -248,14 +287,17 @@ def test_positions_by_pool_all_statuses(chainnet, leverage_accounts, leverage_na
         "--from",
         alice_name,
     )
-    assert pos2_result.get("code", 1) == 0, f"open-position failed: {json.dumps(pos2_result, indent=2)}"
+    assert (
+        pos2_result.get("code", 1) == 0
+    ), f"open-position failed: {json.dumps(pos2_result, indent=2)}"
 
     pos2_attrs = [
         attr.get("value")
         for event in pos2_result.get("events", [])
         for attr in event.get("attributes", [])
         if attr.get("key") == "position_id"
-        and event.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
     ]
     assert pos2_attrs, f"position_id missing: {json.dumps(pos2_result, indent=2)}"
     pos2_id = pos2_attrs[0].strip('"')
@@ -273,7 +315,9 @@ def test_positions_by_pool_all_statuses(chainnet, leverage_accounts, leverage_na
         "--from",
         alice_name,
     )
-    assert cover_result.get("code", 1) == 0, f"cover-position failed: {json.dumps(cover_result, indent=2)}"
+    assert (
+        cover_result.get("code", 1) == 0
+    ), f"cover-position failed: {json.dumps(cover_result, indent=2)}"
 
     # Query all positions (status unspecified) - should return both OPEN and CLOSED
     all_positions = dysond(
@@ -283,12 +327,20 @@ def test_positions_by_pool_all_statuses(chainnet, leverage_accounts, leverage_na
         "--pool-id",
         pool_id,
     )
-    assert isinstance(all_positions, dict), f"All positions should be dict, got {type(all_positions)}"
-    assert "positions" in all_positions, f"Missing 'positions' key. Keys: {list(all_positions.keys())}"
-    
+    assert isinstance(
+        all_positions, dict
+    ), f"All positions should be dict, got {type(all_positions)}"
+    assert (
+        "positions" in all_positions
+    ), f"Missing 'positions' key. Keys: {list(all_positions.keys())}"
+
     all_pos_list = all_positions["positions"]
-    assert isinstance(all_pos_list, list), f"Positions should be list, got {type(all_pos_list)}"
-    assert len(all_pos_list) == 2, f"Should return 2 positions (1 OPEN, 1 CLOSED), got {len(all_pos_list)}"
+    assert isinstance(
+        all_pos_list, list
+    ), f"Positions should be list, got {type(all_pos_list)}"
+    assert (
+        len(all_pos_list) == 2
+    ), f"Should return 2 positions (1 OPEN, 1 CLOSED), got {len(all_pos_list)}"
 
     # Query only OPEN positions
     open_positions = dysond(
@@ -301,9 +353,15 @@ def test_positions_by_pool_all_statuses(chainnet, leverage_accounts, leverage_na
         "open",
     )
     open_pos_list = open_positions["positions"]
-    assert isinstance(open_pos_list, list), f"Open positions should be list, got {type(open_pos_list)}"
-    assert len(open_pos_list) == 1, f"Should return 1 OPEN position, got {len(open_pos_list)}"
-    assert open_pos_list[0]["status"] == "POSITION_STATUS_OPEN", f"Position should be OPEN, got {open_pos_list[0]['status']}"
+    assert isinstance(
+        open_pos_list, list
+    ), f"Open positions should be list, got {type(open_pos_list)}"
+    assert (
+        len(open_pos_list) == 1
+    ), f"Should return 1 OPEN position, got {len(open_pos_list)}"
+    assert (
+        open_pos_list[0]["status"] == "POSITION_STATUS_OPEN"
+    ), f"Position should be OPEN, got {open_pos_list[0]['status']}"
 
     # Query only CLOSED positions
     closed_positions = dysond(
@@ -316,7 +374,12 @@ def test_positions_by_pool_all_statuses(chainnet, leverage_accounts, leverage_na
         "closed",
     )
     closed_pos_list = closed_positions["positions"]
-    assert isinstance(closed_pos_list, list), f"Closed positions should be list, got {type(closed_pos_list)}"
-    assert len(closed_pos_list) == 1, f"Should return 1 CLOSED position, got {len(closed_pos_list)}"
-    assert closed_pos_list[0]["status"] == "POSITION_STATUS_CLOSED", f"Position should be CLOSED, got {closed_pos_list[0]['status']}"
-
+    assert isinstance(
+        closed_pos_list, list
+    ), f"Closed positions should be list, got {type(closed_pos_list)}"
+    assert (
+        len(closed_pos_list) == 1
+    ), f"Should return 1 CLOSED position, got {len(closed_pos_list)}"
+    assert (
+        closed_pos_list[0]["status"] == "POSITION_STATUS_CLOSED"
+    ), f"Position should be CLOSED, got {closed_pos_list[0]['status']}"

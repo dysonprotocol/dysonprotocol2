@@ -56,32 +56,12 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
   coins: Coin[] = [];
 
   /**
-   * Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
-   * string in [0,1)). Use fee_rate field 11 instead. Migration logic should
-   * read this and convert to fee_rate format (two DecCoins, one per reserve
-   * denom in canonical order).
-   *
-   * @generated from field: string fee_pct = 5 [deprecated = true];
-   * @deprecated
-   */
-  feePct = "";
-
-  /**
    * Required: minimum collateral ratio per reserve denom (exactly two,
    * canonical order). Each amount is a LegacyDec string (> 1).
    *
-   * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 6;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_inital_collateral_ratio = 6;
    */
-  minCollateralRatio: DecCoin[] = [];
-
-  /**
-   * Deprecated: maximum leverage ratio per reserve denom; ignored by server.
-   * Kept for backward-compatible client requests.
-   *
-   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7 [deprecated = true];
-   * @deprecated
-   */
-  maxLeverageRatio: DecCoin[] = [];
+  minInitalCollateralRatio: DecCoin[] = [];
 
   /**
    * Annual interest rates per reserve denom (APR >= 0).
@@ -137,9 +117,7 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "creator", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "coins", kind: "message", T: Coin, repeated: true },
-    { no: 5, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 6, name: "min_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
-    { no: 7, name: "max_leverage_ratio", kind: "message", T: DecCoin, repeated: true },
+    { no: 6, name: "min_inital_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
     { no: 8, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 9, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },
     { no: 10, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },
@@ -228,33 +206,13 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
   poolId = protoInt64.zero;
 
   /**
-   * Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
-   * string in [0,1)). Use fee_rate field 11 instead. Migration logic should
-   * read this and convert to fee_rate format (two DecCoins, one per reserve
-   * denom in canonical order).
-   *
-   * @generated from field: string fee_pct = 3 [deprecated = true];
-   * @deprecated
-   */
-  feePct = "";
-
-  /**
    * Leverage configuration (per-denom)
    * Required: minimum collateral ratio per reserve denom (exactly two,
    * canonical order; > 1)
    *
-   * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 6;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_inital_collateral_ratio = 6;
    */
-  minCollateralRatio: DecCoin[] = [];
-
-  /**
-   * Deprecated: maximum leverage ratio per reserve denom; ignored by server.
-   * Kept for backward-compatible client requests.
-   *
-   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 7 [deprecated = true];
-   * @deprecated
-   */
-  maxLeverageRatio: DecCoin[] = [];
+  minInitalCollateralRatio: DecCoin[] = [];
 
   /**
    * Required: annual interest rates per reserve denom (APR >= 0).
@@ -310,9 +268,7 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "signer", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 3, name: "fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 6, name: "min_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
-    { no: 7, name: "max_leverage_ratio", kind: "message", T: DecCoin, repeated: true },
+    { no: 6, name: "min_inital_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
     { no: 8, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 9, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },
     { no: 10, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },
@@ -1812,7 +1768,6 @@ export class MsgUpdateParamsResponse extends Message<MsgUpdateParamsResponse> {
  * - Computes collateral ratio CR = collateral_value / debt_value in borrow
  *   units, accounting for current pool price.
  * - Validates CR >= pool.min_collateral_ratio[borrow_denom] (> 1).
- * - Validates leverage <= pool.max_leverage_ratio[borrow_denom] (> 1).
  * - Reduces pool reserves by borrow amount, updates total_borrowed.
  * - Moves borrowed amount to borrow vault, executes swap (borrowed → held).
  * - Escrows collateral to whaleswap module after swap.
@@ -1824,7 +1779,6 @@ export class MsgUpdateParamsResponse extends Message<MsgUpdateParamsResponse> {
  * - Collateral/borrow amounts must be positive.
  * - Collateral/borrow denoms must match pool denoms.
  * - Collateral ratio must meet pool min_collateral_ratio for borrow denom.
- * - Leverage must not exceed pool max_leverage_ratio for borrow denom.
  * - Borrow amount must not exceed pool borrow cap (max_borrow_percent).
  * - Swap must produce positive held output.
  *
@@ -1992,6 +1946,14 @@ export class MsgClosePosition extends Message<MsgClosePosition> {
    */
   note = "";
 
+  /**
+   * Fraction of the position to close (0 < fraction <= 1).
+   * Provide "1" to close the entire position.
+   *
+   * @generated from field: string fraction = 4;
+   */
+  fraction = "";
+
   constructor(data?: PartialMessage<MsgClosePosition>) {
     super();
     proto3.util.initPartial(data, this);
@@ -2003,6 +1965,7 @@ export class MsgClosePosition extends Message<MsgClosePosition> {
     { no: 1, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 3, name: "note", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "fraction", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgClosePosition {
@@ -2047,6 +2010,48 @@ export class MsgClosePositionResponse extends Message<MsgClosePositionResponse> 
    */
   profit?: Coin;
 
+  /**
+   * Collateral returned to the user (collateral denom).
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin collateral_returned = 4;
+   */
+  collateralReturned?: Coin;
+
+  /**
+   * Borrowed principal remaining on the position after the close.
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin new_borrowed = 5;
+   */
+  newBorrowed?: Coin;
+
+  /**
+   * Held asset remaining on the position after the close.
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin new_held = 6;
+   */
+  newHeld?: Coin;
+
+  /**
+   * Collateral remaining on the position after the close.
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin new_collateral = 7;
+   */
+  newCollateral?: Coin;
+
+  /**
+   * Collateral ratio after the close; "0" when position fully closed.
+   *
+   * @generated from field: string new_collateral_ratio = 8;
+   */
+  newCollateralRatio = "";
+
+  /**
+   * True if the position was fully closed and deleted.
+   *
+   * @generated from field: bool closed = 9;
+   */
+  closed = false;
+
   constructor(data?: PartialMessage<MsgClosePositionResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -2058,6 +2063,12 @@ export class MsgClosePositionResponse extends Message<MsgClosePositionResponse> 
     { no: 1, name: "interest_paid", kind: "message", T: Coin },
     { no: 2, name: "principal_paid", kind: "message", T: Coin },
     { no: 3, name: "profit", kind: "message", T: Coin },
+    { no: 4, name: "collateral_returned", kind: "message", T: Coin },
+    { no: 5, name: "new_borrowed", kind: "message", T: Coin },
+    { no: 6, name: "new_held", kind: "message", T: Coin },
+    { no: 7, name: "new_collateral", kind: "message", T: Coin },
+    { no: 8, name: "new_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 9, name: "closed", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgClosePositionResponse {
@@ -2208,6 +2219,129 @@ export class MsgAddCollateralResponse extends Message<MsgAddCollateralResponse> 
 
   static equals(a: MsgAddCollateralResponse | PlainMessage<MsgAddCollateralResponse> | undefined, b: MsgAddCollateralResponse | PlainMessage<MsgAddCollateralResponse> | undefined): boolean {
     return proto3.util.equals(MsgAddCollateralResponse, a, b);
+  }
+}
+
+/**
+ * *
+ * RemoveCollateral withdraws excess collateral from a leveraged position while
+ * maintaining the minimum collateral ratio.
+ *
+ * @generated from message dysonprotocol.whaleswap.v1.MsgRemoveCollateral
+ */
+export class MsgRemoveCollateral extends Message<MsgRemoveCollateral> {
+  /**
+   * Account removing collateral; must be the position owner.
+   *
+   * @generated from field: string user = 1;
+   */
+  user = "";
+
+  /**
+   * Target pool id; must match the position's pool.
+   *
+   * @generated from field: uint64 pool_id = 2;
+   */
+  poolId = protoInt64.zero;
+
+  /**
+   * Target position id to remove collateral from.
+   *
+   * @generated from field: uint64 position_id = 3;
+   */
+  positionId = protoInt64.zero;
+
+  /**
+   * Collateral coin to withdraw; denom must match position collateral; amount
+   * must be positive.
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin collateral = 4;
+   */
+  collateral?: Coin;
+
+  constructor(data?: PartialMessage<MsgRemoveCollateral>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgRemoveCollateral";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 3, name: "position_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 4, name: "collateral", kind: "message", T: Coin },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgRemoveCollateral {
+    return new MsgRemoveCollateral().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgRemoveCollateral {
+    return new MsgRemoveCollateral().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgRemoveCollateral {
+    return new MsgRemoveCollateral().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgRemoveCollateral | PlainMessage<MsgRemoveCollateral> | undefined, b: MsgRemoveCollateral | PlainMessage<MsgRemoveCollateral> | undefined): boolean {
+    return proto3.util.equals(MsgRemoveCollateral, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.MsgRemoveCollateralResponse
+ */
+export class MsgRemoveCollateralResponse extends Message<MsgRemoveCollateralResponse> {
+  /**
+   * Collateral actually removed.
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin collateral_removed = 1;
+   */
+  collateralRemoved?: Coin;
+
+  /**
+   * Remaining collateral on the position.
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin new_collateral = 2;
+   */
+  newCollateral?: Coin;
+
+  /**
+   * Collateral ratio after removal.
+   *
+   * @generated from field: string new_collateral_ratio = 3;
+   */
+  newCollateralRatio = "";
+
+  constructor(data?: PartialMessage<MsgRemoveCollateralResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.MsgRemoveCollateralResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "collateral_removed", kind: "message", T: Coin },
+    { no: 2, name: "new_collateral", kind: "message", T: Coin },
+    { no: 3, name: "new_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgRemoveCollateralResponse {
+    return new MsgRemoveCollateralResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MsgRemoveCollateralResponse {
+    return new MsgRemoveCollateralResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MsgRemoveCollateralResponse {
+    return new MsgRemoveCollateralResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MsgRemoveCollateralResponse | PlainMessage<MsgRemoveCollateralResponse> | undefined, b: MsgRemoveCollateralResponse | PlainMessage<MsgRemoveCollateralResponse> | undefined): boolean {
+    return proto3.util.equals(MsgRemoveCollateralResponse, a, b);
   }
 }
 

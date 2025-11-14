@@ -133,6 +133,8 @@ export class LeveragePosition extends Message<LeveragePosition> {
   liquidationStatus = LiquidationStatus.UNSPECIFIED;
 
   /**
+   * Unpaid interest carried forward from prior settlements (borrowed denom).
+   *
    * @generated from field: cosmos.base.v1beta1.Coin accrued_interest = 12;
    */
   accruedInterest?: Coin;
@@ -171,6 +173,27 @@ export class LeveragePosition extends Message<LeveragePosition> {
    */
   liquidationThreshold = "";
 
+  /**
+   * Opening principal snapshot for analytics/limits (borrowed denom).
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin initial_borrowed = 25;
+   */
+  initialBorrowed?: Coin;
+
+  /**
+   * Lifetime interest paid by the user (borrowed denom).
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin total_interest_paid = 26;
+   */
+  totalInterestPaid?: Coin;
+
+  /**
+   * Timestamp of the last time interest was settled into accrued_interest.
+   *
+   * @generated from field: google.protobuf.Timestamp last_interest_settlement_time = 27;
+   */
+  lastInterestSettlementTime?: Timestamp;
+
   constructor(data?: PartialMessage<LeveragePosition>) {
     super();
     proto3.util.initPartial(data, this);
@@ -196,6 +219,9 @@ export class LeveragePosition extends Message<LeveragePosition> {
     { no: 22, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 23, name: "min_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 24, name: "liquidation_threshold", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 25, name: "initial_borrowed", kind: "message", T: Coin },
+    { no: 26, name: "total_interest_paid", kind: "message", T: Coin },
+    { no: 27, name: "last_interest_settlement_time", kind: "message", T: Timestamp },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LeveragePosition {

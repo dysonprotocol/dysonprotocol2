@@ -26,12 +26,8 @@ message Pool {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
   string shares_denom = 4;
-  // Deprecated: fee_pct is the legacy pool swap fee percentage (cosmos.Dec
-  // string in [0,1)). Use fee_rate field 25 instead. Migration logic should
-  // read this and convert to fee_rate format (two DecCoins, one per reserve
-  // denom in canonical order).
-  string fee_pct = 5
-      [ deprecated = true, (cosmos_proto.scalar) = "cosmos.Dec" ];
+  reserved 5;
+  reserved "fee_pct";
   // Deprecated legacy price band fields retained for decoding old genesis
   // exports. Migration logic ignores their values and clears them.
   repeated cosmos.base.v1beta1.Coin min_price = 6 [
@@ -135,7 +131,6 @@ message Pool {
   // computed gross output is reduced by fee; for exact-out, the required gross
   // output is inflated so net (after fee) meets the target. Fees accrue to
   // fees_earned in the output denom.
-  // Replaces deprecated fee_pct field 5.
   repeated cosmos.base.v1beta1.DecCoin fee_rate = 25 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"

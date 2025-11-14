@@ -234,7 +234,8 @@
                     },
                     "accrued_interest": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Unpaid interest carried forward from prior settlements (borrowed denom)."
                     },
                     "updated_height": {
                         "type": "string"
@@ -258,6 +259,21 @@
                     "liquidation_threshold": {
                         "type": "string",
                         "description": "Liquidation threshold used for liquidation checks (cosmos.Dec string)."
+                    },
+                    "initial_borrowed": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Opening principal snapshot for analytics/limits (borrowed denom)."
+                    },
+                    "total_interest_paid": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Lifetime interest paid by the user (borrowed denom)."
+                    },
+                    "last_interest_settlement_time": {
+                        "type": "string",
+                        "description": "Timestamp of the last time interest was settled into accrued_interest.",
+                        "format": "date-time"
                     }
                 },
                 "additionalProperties": false,

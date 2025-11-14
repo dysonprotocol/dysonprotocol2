@@ -138,7 +138,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "CreatePool",
-					Use:       "create-pool --coins <coin> --coins <coin> [--fee-pct=<dec>] [--min-price <coin>] [--min-price <coin>] [--max-price <coin>] [--max-price <coin>]",
+					Use:       "create-pool --coins <coin> --coins <coin> [--fee-rate <decCoin>] [--min-price <coin>] [--min-price <coin>] [--max-price <coin>] [--max-price <coin>]",
 					Short:     "Create a new AMM pool",
 					Long: "Create a new AMM pool. If no price band is set, the pool behaves as constant product (v2). If a band is set, concentrated liquidity (v3) math is used.\n\n" +
 						"Initial reserves are provided via repeated --coins flags (exactly two), one coin per flag. Order doesn't matter; the module canonicalizes by denom.\n" +
@@ -146,16 +146,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						"Example with reserves udys/ufoo: --min-price 1udys --min-price 2ufoo encodes Pmin = 2 ufoo per 1 udys.\n" +
 						"Similarly: --max-price 1udys --max-price 3ufoo encodes Pmax = 3 ufoo per 1 udys.\n" +
 						"Note: zero-width bands are rejected (max must be strictly greater than min).",
-					Example: "dysond tx whaleswap create-pool --coins 1000udys --coins 500ufoo --fee-pct=0.003\n" +
+					Example: "dysond tx whaleswap create-pool --coins 1000udys --coins 500ufoo --fee-rate 0.003udys\n" +
 						"dysond tx whaleswap create-pool --coins 1000udys --coins 500ufoo --min-price 1udys --min-price 2ufoo --max-price 1udys --max-price 3ufoo",
 				},
 				{
 					RpcMethod: "UpdatePoolConfig",
-					Use:       "update-pool-config --pool-id=<id> [--fee-pct=<dec>] [--min-price <coin>] [--min-price <coin>] [--max-price <coin>] [--max-price <coin>]",
+					Use:       "update-pool-config --pool-id=<id> [--fee-rate <decCoin>] [--min-price <coin>] [--min-price <coin>] [--max-price <coin>] [--max-price <coin>]",
 					Short:     "Update pool fee or price band",
 					Long: "Update an existing pool's fee percent and/or price band. Only the majority owner (>50% shares) may update.\n\n" +
 						"When setting bands, repeat the flag and provide one coin per flag to encode coin_b/coin_a at the edge. Example: --min-price 1udys --min-price 2ufoo.",
-					Example: "dysond tx whaleswap update-pool-config --pool-id=1 --fee-pct=0.0025 --min-price 1udys --min-price 2ufoo --max-price 1udys --max-price 3ufoo",
+					Example: "dysond tx whaleswap update-pool-config --pool-id=1 --fee-rate 0.0025udys --min-price 1udys --min-price 2ufoo --max-price 1udys --max-price 3ufoo",
 				},
 				{
 					RpcMethod: "AddLiquidity",
@@ -258,15 +258,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "ClosePosition",
-					Use:       "close-position --position-id <id>",
+					Use:       "close-position --position-id <id> --fraction <dec>",
 					Short:     "Close a leveraged position and settle",
-					Long:      "Close an existing leveraged position. Only the position owner may close before liquidation windows. The signer (--from) is used as the user.",
-					Example:   "dysond tx whaleswap close-position --position-id 7",
+					Long:      "Close an existing leveraged position. Only the position owner may close before liquidation windows. You must provide --fraction (0<fraction<=1); set it to 1 for a full close. The signer (--from) is used as the user.",
+					Example:   "dysond tx whaleswap close-position --position-id 7 --fraction 0.25",
 					FlagOptions: map[string]*autocliv1.FlagOptions{
 						// Map signer field to standard --from flag
 						"user":        {Name: "from", Usage: "Position owner (signer)"},
 						"position_id": {Name: "position-id", Usage: "Position ID"},
 						"note":        {Name: "position-note", Usage: "Optional note echoed to internal swaps"},
+						"fraction":    {Name: "fraction", Usage: "Fraction (0<f<=1) to close; set to 1 for full close"},
 					},
 				},
 				{

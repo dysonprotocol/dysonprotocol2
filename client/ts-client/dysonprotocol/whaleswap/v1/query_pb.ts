@@ -2572,31 +2572,9 @@ export class QueryPositionResponse extends Message<QueryPositionResponse> {
   canFinalizeLiquidation = false;
 
   /**
-   * Interest Information
-   *
-   * @generated from field: cosmos.base.v1beta1.Coin borrowed = 11;
+   * @generated from field: dysonprotocol.whaleswap.v1.InterestView interest = 11;
    */
-  borrowed?: Coin;
-
-  /**
-   * @generated from field: string accrued_interest = 12;
-   */
-  accruedInterest = "";
-
-  /**
-   * @generated from field: cosmos.base.v1beta1.Coin total_repayment = 13;
-   */
-  totalRepayment?: Coin;
-
-  /**
-   * @generated from field: uint64 time_elapsed = 14;
-   */
-  timeElapsed = protoInt64.zero;
-
-  /**
-   * @generated from field: string annual_rate = 15;
-   */
-  annualRate = "";
+  interest?: InterestView;
 
   constructor(data?: PartialMessage<QueryPositionResponse>) {
     super();
@@ -2616,11 +2594,7 @@ export class QueryPositionResponse extends Message<QueryPositionResponse> {
     { no: 8, name: "blocks_until_closeable", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 9, name: "can_initialize_liquidation", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 10, name: "can_finalize_liquidation", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 11, name: "borrowed", kind: "message", T: Coin },
-    { no: 12, name: "accrued_interest", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 13, name: "total_repayment", kind: "message", T: Coin },
-    { no: 14, name: "time_elapsed", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 15, name: "annual_rate", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 11, name: "interest", kind: "message", T: InterestView },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPositionResponse {
@@ -2637,6 +2611,69 @@ export class QueryPositionResponse extends Message<QueryPositionResponse> {
 
   static equals(a: QueryPositionResponse | PlainMessage<QueryPositionResponse> | undefined, b: QueryPositionResponse | PlainMessage<QueryPositionResponse> | undefined): boolean {
     return proto3.util.equals(QueryPositionResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.InterestView
+ */
+export class InterestView extends Message<InterestView> {
+  /**
+   * Decimal amount of interest owed right now (borrowed denom).
+   *
+   * @generated from field: string interest_due = 1;
+   */
+  interestDue = "";
+
+  /**
+   * Principal + interest as integer coin.
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin total_repayment = 2;
+   */
+  totalRepayment?: Coin;
+
+  /**
+   * Seconds since the last settlement reference.
+   *
+   * @generated from field: uint64 time_elapsed = 3;
+   */
+  timeElapsed = protoInt64.zero;
+
+  /**
+   * Annual rate applied for this position (borrowed denom entry).
+   *
+   * @generated from field: string annual_rate = 4;
+   */
+  annualRate = "";
+
+  constructor(data?: PartialMessage<InterestView>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.InterestView";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "interest_due", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "total_repayment", kind: "message", T: Coin },
+    { no: 3, name: "time_elapsed", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 4, name: "annual_rate", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): InterestView {
+    return new InterestView().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): InterestView {
+    return new InterestView().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): InterestView {
+    return new InterestView().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: InterestView | PlainMessage<InterestView> | undefined, b: InterestView | PlainMessage<InterestView> | undefined): boolean {
+    return proto3.util.equals(InterestView, a, b);
   }
 }
 
