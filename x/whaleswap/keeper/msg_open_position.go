@@ -123,10 +123,10 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	cr := collateralValueInBorrow.Quo(debtValue)
 
 	// Use pool-specific min CR threshold (per-borrow denom)
-	if len(pool.MinCollateralRatio) != 2 {
+	if len(pool.MinInitialCollateralRatio) != 2 {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool min_collateral_ratio must be set")
 	}
-	minCR := pool.MinCollateralRatio.AmountOf(borrowDenom)
+	minCR := pool.MinInitialCollateralRatio.AmountOf(borrowDenom)
 	if !minCR.GT(math.LegacyNewDec(1)) {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool min_collateral_ratio must be > 1 for borrow denom")
 	}

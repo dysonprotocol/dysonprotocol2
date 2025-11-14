@@ -2341,7 +2341,7 @@
           },
           "title": "Total borrowed (aggregate for cap enforcement)"
         },
-        "min_collateral_ratio": {
+        "min_initial_collateral_ratio": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"

@@ -29,8 +29,6 @@ def test_cover_position_note_propagates(
         f"5000{bar_name}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "10.0",
         "--max-borrow-percent",
         "0.8",
         "--from",
@@ -145,8 +143,6 @@ def test_close_position_note_propagates(
         f"5000{bar_name}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "10.0",
         "--max-borrow-percent",
         "0.8",
         "--from",
@@ -270,8 +266,6 @@ def test_close_position_happy_path_long(
         f"0.003{bar_name}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "20.0",
         "--max-borrow-percent",
         "0.8",
         "--from",
@@ -400,13 +394,9 @@ def demo_block_delay_enforced(bob_addr, foo_name, bar_name):
             {"denom": foo_name, "amount": "0.003"},
             {"denom": bar_name, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": foo_name, "amount": "1.5"},
             {"denom": bar_name, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": foo_name, "amount": "20.0"},
-            {"denom": bar_name, "amount": "20.0"}
         ],
         "liquidation_threshold": [
             {"denom": foo_name, "amount": "1.2"},
@@ -433,7 +423,8 @@ def demo_block_delay_enforced(bob_addr, foo_name, bar_name):
     sudo_close_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgClosePosition",
         "user": bob_addr,
-        "position_id": position_id
+        "position_id": position_id,
+        "fraction": "1.0"
     })
     
     return {"unexpected": "should have failed"}
@@ -491,7 +482,8 @@ def demo_position_not_found(alice_addr):
     sudo_close_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgClosePosition",
         "user": alice_addr,
-        "position_id": "99999"
+        "position_id": "99999",
+        "fraction": "1.0"
     })
     return {"unexpected": "should have failed"}
 """
@@ -559,13 +551,9 @@ def demo_not_owner(alice_addr, bob_addr, foo_name, bar_name):
             {"denom": foo_name, "amount": "0.003"},
             {"denom": bar_name, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": foo_name, "amount": "1.5"},
             {"denom": bar_name, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": foo_name, "amount": "20.0"},
-            {"denom": bar_name, "amount": "20.0"}
         ],
         "liquidation_threshold": [
             {"denom": foo_name, "amount": "1.2"},
@@ -592,7 +580,8 @@ def demo_not_owner(alice_addr, bob_addr, foo_name, bar_name):
     sudo_close_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgClosePosition",
         "user": bob_addr,
-        "position_id": position_id
+        "position_id": position_id,
+        "fraction": "1.0"
     })
     return {"unexpected": "should have failed"}
 """
@@ -655,8 +644,6 @@ def test_close_position_not_owner_direct(
         f"0.003{bar_name}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "20.0",
         "--max-borrow-percent",
         "0.8",
         "--from",
@@ -764,7 +751,7 @@ def demo_invalid_address(alice_addr, foo_name, bar_name):
             {"denom": foo_name, "amount": "0.003"},
             {"denom": bar_name, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": foo_name, "amount": "1.5"},
             {"denom": bar_name, "amount": "1.5"}
         ],
@@ -859,8 +846,6 @@ def test_close_position_cross_denom_underwater_rejected(
         f"0.003{bar_name}",
         "--min-collateral-ratio",
         "1.2",
-        "--max-leverage-ratio",
-        "10.0",
         "--max-borrow-percent",
         "0.8",
         "--from",
@@ -1092,8 +1077,6 @@ def test_close_position_same_denom_collateral_sufficient_underwater(
         f"0.003{bar_name}",
         "--min-collateral-ratio",
         "1.2",
-        "--max-leverage-ratio",
-        "10.0",
         "--max-borrow-percent",
         "0.8",
         "--from",
@@ -1269,8 +1252,6 @@ def test_close_position_cross_denom_swap_still_underwater(
         f"0.003{bar_name}",
         "--min-collateral-ratio",
         "1.2",
-        "--max-leverage-ratio",
-        "10.0",
         "--max-borrow-percent",
         "0.8",
         "--from",
@@ -1433,8 +1414,6 @@ def test_close_position_same_denom_collateral_covers_shortfall(
         f"0.003{bar_name}",
         "--min-collateral-ratio",
         "1.2",
-        "--max-leverage-ratio",
-        "10.0",
         "--max-borrow-percent",
         "0.8",
         "--from",
@@ -1614,8 +1593,6 @@ def test_close_position_profitable_same_denom(
         f"0.003{bar_name}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "20.0",
         "--max-borrow-percent",
         "0.8",
         "--from",
@@ -1752,8 +1729,6 @@ def test_close_position_same_denom_insufficient_underwater_rejected(
         f"0.003{bar_name}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "20.0",
         "--max-borrow-percent",
         "0.8",
         "--from",
@@ -1861,3 +1836,125 @@ def test_close_position_same_denom_insufficient_underwater_rejected(
         assert "insufficient collateral" in result.get(
             "raw_log", ""
         ), f"Expected 'insufficient collateral' in error message: {result}"
+
+
+def test_close_position_partial_close_50_percent(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """Test partial close of 50% of a position."""
+    dysond = chainnet[0]
+    alice_name = leverage_accounts["alice"]["name"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+
+    # Create pool
+    pool_result = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"10000{foo_name}",
+        "--coins",
+        f"10000{bar_name}",
+        "--min-collateral-ratio",
+        "1.2",
+        "--max-borrow-percent",
+        "0.8",
+        "--from",
+        alice_name,
+    )
+    assert pool_result.get("code", 1) == 0
+
+    pool_id_attrs = [
+        attr.get("value")
+        for event in pool_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "pool_id"
+        and event.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    pool_id = pool_id_attrs[0].strip('"')
+
+    # Open position
+    open_result = dysond(
+        "tx",
+        "whaleswap",
+        "open-position",
+        "--pool-id",
+        pool_id,
+        "--collateral",
+        f"1500{bar_name}",
+        "--borrow",
+        f"1000{foo_name}",
+        "--from",
+        alice_name,
+    )
+    assert open_result.get("code", 1) == 0
+
+    position_id_attrs = [
+        attr.get("value")
+        for event in open_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "position_id"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+    ]
+    position_id = position_id_attrs[0].strip('"')
+
+    # Query position before partial close
+    pos_before = dysond("query", "whaleswap", "position", "--position-id", position_id)
+    borrowed_before = int(pos_before["position"]["borrowed"]["amount"])
+    held_before = int(pos_before["position"]["held"]["amount"])
+    collateral_before = int(pos_before["position"]["collateral"]["amount"])
+
+    # Partial close 50%
+    close_result = dysond(
+        "tx",
+        "whaleswap",
+        "close-position",
+        "--position-id",
+        position_id,
+        "--fraction",
+        "0.5",
+        "--from",
+        alice_name,
+    )
+    assert close_result.get("code", 1) == 0
+
+    # Verify partial close event
+    partial_close_events = [
+        e
+        for e in close_result.get("events", [])
+        if e.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed"
+    ]
+    assert (
+        len(partial_close_events) == 1
+    ), f"Expected 1 partial close event, got {len(partial_close_events)}"
+
+    # Query position after partial close
+    pos_after = dysond("query", "whaleswap", "position", "--position-id", position_id)
+
+    # Verify position state reduced by approximately 50%
+    borrowed_after = int(pos_after["position"]["borrowed"]["amount"])
+    held_after = int(pos_after["position"]["held"]["amount"])
+    collateral_after = int(pos_after["position"]["collateral"]["amount"])
+
+    # Allow for small rounding differences
+    assert abs(borrowed_after - borrowed_before // 2) <= 1, (
+        f"Borrowed should be ~50% of original: "
+        f"before={borrowed_before}, after={borrowed_after}, expected={borrowed_before // 2}"
+    )
+    assert abs(held_after - held_before // 2) <= 1, (
+        f"Held should be ~50% of original: "
+        f"before={held_before}, after={held_after}, expected={held_before // 2}"
+    )
+    assert abs(collateral_after - collateral_before // 2) <= 1, (
+        f"Collateral should be ~50% of original: "
+        f"before={collateral_before}, after={collateral_after}, expected={collateral_before // 2}"
+    )
+
+    # Verify position is still open
+    assert pos_after["position"]["status"] == "POSITION_STATUS_OPEN", (
+        f"Position should still be open after partial close, "
+        f"got {pos_after['position']['status']}"
+    )

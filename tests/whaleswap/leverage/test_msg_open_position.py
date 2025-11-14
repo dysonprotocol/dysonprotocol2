@@ -42,8 +42,6 @@ def test_open_position_note_propagates(
         f"5000{bar_name}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "10.0",
         "--max-borrow-percent",
         "0.8",
         "--from",

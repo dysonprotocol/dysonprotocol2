@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"strings"
 
 	cosmossdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -36,22 +35,13 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "message cannot be nil")
 	}
 
-	oneDec := math.LegacyNewDec(1)
-	trimmed := strings.TrimSpace(msg.Fraction)
-	if trimmed == "" {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "fraction is required; use 1 for a full close")
-	}
-	fraction, err := math.LegacyNewDecFromStr(trimmed)
-	if err != nil {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid fraction: %v", err)
-	}
-	if !fraction.GT(math.LegacyZeroDec()) || fraction.GT(oneDec) {
+	// Validate fraction
+	fraction := msg.Fraction
+	oneDec := math.LegacyOneDec()
+	if fraction.IsNegative() || fraction.IsZero() || fraction.GT(oneDec) {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "fraction must satisfy 0 < fraction <= 1")
 	}
-	// TODO: allow fractional closes
-	if !fraction.Equal(oneDec) {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "fractional close not implemented yet")
-	}
+	isPartialClose := !fraction.Equal(oneDec)
 
 	pos, err := k.LeveragePositions.Get(ctx, msg.PositionId)
 	if err != nil {
@@ -78,10 +68,9 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "pool %d not found", pos.PoolId)
 	}
-	originalStatus := pos.Status
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	interestDec, interestCoin, err := k.SettleInterest(ctx, &pos)
+	_, interestCoin, err := k.SettleInterest(ctx, &pos)
 	if err != nil {
 		return nil, err
 	}
@@ -92,14 +81,107 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidAddress, err.Error())
 	}
 
+	// Calculate amounts for partial/full close
+	// For partial close: calculate what REMAINS to avoid rounding accumulation
+	// Any rounding error favors the pool (user gets slightly less)
+	var (
+		principalToRepay   sdk.Coin
+		interestToRepay    sdk.Coin
+		heldToSwap         sdk.Coin
+		collateralToReturn sdk.Coin
+	)
+
+	if isPartialClose {
+		// Calculate remaining amounts (what stays in position)
+		remainingFraction := math.LegacyOneDec().Sub(fraction)
+		principalRemainingAmt := remainingFraction.MulInt(pos.Borrowed.Amount).TruncateInt()
+		interestRemainingAmt := remainingFraction.MulInt(interestCoin.Amount).TruncateInt()
+		heldRemainingAmt := remainingFraction.MulInt(pos.Held.Amount).TruncateInt()
+		collateralRemainingAmt := remainingFraction.MulInt(pos.Collateral.Amount).TruncateInt()
+
+		// Validate that partial close won't create inconsistent state
+		// If any critical field would be fully closed due to rounding, reject partial close
+		if principalRemainingAmt.IsZero() && pos.Borrowed.IsPositive() {
+			return nil, cosmossdkerrors.Wrap(
+				sdkerrors.ErrInvalidRequest,
+				"partial close would round principal to zero; use fraction=1 for full close",
+			)
+		}
+		if heldRemainingAmt.IsZero() && pos.Held.IsPositive() {
+			return nil, cosmossdkerrors.Wrap(
+				sdkerrors.ErrInvalidRequest,
+				"partial close would round held to zero; use fraction=1 for full close",
+			)
+		}
+		if collateralRemainingAmt.IsZero() && pos.Collateral.IsPositive() {
+			return nil, cosmossdkerrors.Wrap(
+				sdkerrors.ErrInvalidRequest,
+				"partial close would round collateral to zero; use fraction=1 for full close",
+			)
+		}
+
+		// Amount to close = total - remaining (captures any rounding dust)
+		principalRemainingCoin := sdk.NewCoin(pos.Borrowed.Denom, principalRemainingAmt)
+		interestRemainingCoin := sdk.NewCoin(interestCoin.Denom, interestRemainingAmt)
+		heldRemainingCoin := sdk.NewCoin(pos.Held.Denom, heldRemainingAmt)
+		collateralRemainingCoin := sdk.NewCoin(pos.Collateral.Denom, collateralRemainingAmt)
+
+		principalToRepay = pos.Borrowed.Sub(principalRemainingCoin)
+		interestToRepay = interestCoin.Sub(interestRemainingCoin)
+		heldToSwap = pos.Held.Sub(heldRemainingCoin)
+		collateralToReturn = pos.Collateral.Sub(collateralRemainingCoin)
+
+		// Validate that remaining position would still be healthy
+		// Calculate what the position state would be after partial close
+		// Total debt = borrowed + accrued interest (after settling current interest and paying partial)
+		totalRemainingDebtCoin := principalRemainingCoin.Add(interestRemainingCoin)
+
+		if totalRemainingDebtCoin.IsPositive() {
+			// Calculate collateral ratio: collateral / debt
+			collateralValue := math.LegacyNewDecFromInt(collateralRemainingCoin.Amount)
+			debtValue := math.LegacyNewDecFromInt(totalRemainingDebtCoin.Amount)
+
+			if !debtValue.IsZero() {
+				remainingCR, err := k.ComputeCollateralRatio(collateralValue, debtValue)
+				if err != nil {
+					return nil, cosmossdkerrors.Wrap(err, "failed to compute remaining collateral ratio")
+				}
+
+				// Parse the minimum collateral ratio for this position
+				minCR, err := math.LegacyNewDecFromStr(pos.MinCollateralRatio)
+				if err != nil {
+					return nil, cosmossdkerrors.Wrap(err, "invalid min_collateral_ratio on position")
+				}
+
+				// Remaining position must meet minimum collateral ratio
+				if remainingCR.LT(minCR) {
+					return nil, cosmossdkerrors.Wrapf(
+						sdkerrors.ErrInvalidRequest,
+						"partial close would leave position unhealthy: remaining_cr=%s < min_cr=%s",
+						remainingCR.String(),
+						minCR.String(),
+					)
+				}
+			}
+		}
+	} else {
+		principalToRepay = pos.Borrowed
+		interestToRepay = interestCoin
+		heldToSwap = pos.Held
+		collateralToReturn = pos.Collateral
+	}
+
+	requiredRepayment := principalToRepay.Add(interestToRepay)
+
 	// Swap held back to borrowed denom via MakeTrade using the borrow vault as trader
 	borrowVault := k.leverageBorrowVaultBech(ctx)
+	originalStatus := pos.Status
 	mt := &whaleswapv1.MsgMakeTrade{
 		Trader:    borrowVault,
-		MaxInput:  sdk.NewCoins(pos.Held),
+		MaxInput:  sdk.NewCoins(heldToSwap),
 		MinOutput: sdk.NewCoins(),
 		Operations: []whaleswapv1.TradeOperation{
-			{Op: &whaleswapv1.TradeOperation_Swap{Swap: &whaleswapv1.SwapLeg{PoolId: pos.PoolId, SwapIn: pos.Held}}},
+			{Op: &whaleswapv1.TradeOperation_Swap{Swap: &whaleswapv1.SwapLeg{PoolId: pos.PoolId, SwapIn: heldToSwap}}},
 		},
 		Note: msg.Note,
 	}
@@ -107,76 +189,71 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	if mtErr != nil {
 		return nil, cosmossdkerrors.Wrap(mtErr, "failed leverage close MakeTrade")
 	}
-	proceedsBorrow := mtResp.TraderOutputs.AmountOf(pos.Borrowed.Denom)
-	if !proceedsBorrow.IsPositive() {
+	proceedsCoin := sdk.NewCoin(pos.Borrowed.Denom, mtResp.TraderOutputs.AmountOf(pos.Borrowed.Denom))
+	if !proceedsCoin.IsPositive() {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "close swap produced no %s output", pos.Borrowed.Denom)
 	}
-	repayment := k.ComputeEffectiveRepayment(pos.Borrowed.Amount, interestDec)
 
 	// Determine funds available to cover repayment (after all swaps and fees)
-	var collateralUsedAmount math.Int
+	var collateralUsed sdk.Coin
 	var collateralSwapped bool
-	var totalProceedsFromSwaps math.Int // Total funds in vault (for cross-denom case)
+	var totalProceeds sdk.Coin // Total funds in vault (for cross-denom case)
 	var profit sdk.Coin
 	collateralReturned := sdk.NewCoin(pos.Collateral.Denom, math.ZeroInt())
 
-	if proceedsBorrow.GTE(repayment) {
+	if proceedsCoin.IsGTE(requiredRepayment) {
 		// Profitable: proceeds alone cover full repayment
 		// User gets: all collateral back + profit from proceeds
-		collateralUsedAmount = math.ZeroInt()
+		collateralUsed = sdk.NewCoin(pos.Collateral.Denom, math.ZeroInt())
 		collateralSwapped = false
-		totalProceedsFromSwaps = proceedsBorrow
-		pnl := proceedsBorrow.Sub(repayment)
-		profit = sdk.NewCoin(pos.Borrowed.Denom, pnl)
+		totalProceeds = proceedsCoin
+		profit = proceedsCoin.Sub(requiredRepayment)
 	} else {
 		// Underwater: proceeds insufficient, need to use collateral
 		// User gets: remaining collateral (if any), NO profit
-		shortfall := repayment.Sub(proceedsBorrow)
+		shortfallCoin := requiredRepayment.Sub(proceedsCoin)
 
 		if pos.Collateral.Denom == pos.Borrowed.Denom {
 			// Same denom: collateral can directly cover shortfall
-			if pos.Collateral.Amount.LT(shortfall) {
+			if collateralToReturn.IsLT(shortfallCoin) {
 				// Insufficient: reject transaction to prevent pool loss
 				return nil, cosmossdkerrors.Wrapf(
 					whaleswapv1.ErrInsufficientCollateral,
 					"position underwater: proceeds=%s + collateral=%s < repayment=%s (shortfall=%s)",
-					proceedsBorrow,
-					pos.Collateral.Amount,
-					repayment,
-					shortfall,
+					proceedsCoin,
+					collateralToReturn,
+					requiredRepayment,
+					shortfallCoin,
 				)
 			}
 			// Collateral covers shortfall
-			collateralUsedAmount = shortfall
+			collateralUsed = shortfallCoin
 			collateralSwapped = false
-			totalProceedsFromSwaps = proceedsBorrow
+			totalProceeds = proceedsCoin
 			profit = sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
 		} else {
 			// Cross-denom collateral: must swap to borrowed denom
-			collateralToSwap := pos.Collateral
-
-			// Stage status: mark CLOSED and persist BEFORE moving funds so invariants
-			// stop counting position collateral while it's staged in the borrow vault
-			pos.Status = whaleswapv1.PositionStatus_POSITION_STATUS_CLOSED
+			// Update position state first to avoid invariant violation
+			pos.Collateral = pos.Collateral.Sub(collateralToReturn)
 			if err := k.savePosition(ctx, pos, originalStatus); err != nil {
-				return nil, cosmossdkerrors.Wrap(err, "failed to update position status before collateral swap")
+				return nil, cosmossdkerrors.Wrap(err, "failed to update position before collateral swap")
 			}
 
 			// Move collateral from module → borrow vault for swap
-			if err := k.moveModuleToModule(ctx, whaleswap.ModuleName, whaleswap.LeverageBorrowVaultModuleName, sdk.NewCoins(collateralToSwap)); err != nil {
+			if err := k.moveModuleToModule(ctx, whaleswap.ModuleName, whaleswap.LeverageBorrowVaultModuleName, sdk.NewCoins(collateralToReturn)); err != nil {
 				return nil, cosmossdkerrors.Wrap(err, "failed to move collateral to borrow vault for swap")
 			}
 
 			// Swap collateral to borrowed denom
 			collateralSwapMt := &whaleswapv1.MsgMakeTrade{
 				Trader:    borrowVault,
-				MaxInput:  sdk.NewCoins(collateralToSwap),
+				MaxInput:  sdk.NewCoins(collateralToReturn),
 				MinOutput: sdk.NewCoins(),
 				Operations: []whaleswapv1.TradeOperation{
 					{Op: &whaleswapv1.TradeOperation_Swap{
 						Swap: &whaleswapv1.SwapLeg{
 							PoolId: pos.PoolId,
-							SwapIn: collateralToSwap,
+							SwapIn: collateralToReturn,
 						},
 					}},
 				},
@@ -187,38 +264,37 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 				return nil, cosmossdkerrors.Wrap(collSwapErr, "failed to swap collateral for shortfall coverage")
 			}
 
-			collateralProceeds := collSwapResp.TraderOutputs.AmountOf(pos.Borrowed.Denom)
-			if !collateralProceeds.IsPositive() {
+			collateralProceedsCoin := sdk.NewCoin(pos.Borrowed.Denom, collSwapResp.TraderOutputs.AmountOf(pos.Borrowed.Denom))
+			if !collateralProceedsCoin.IsPositive() {
 				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "collateral swap produced no %s output", pos.Borrowed.Denom)
 			}
 
-			totalProceedsFromSwaps = proceedsBorrow.Add(collateralProceeds)
+			totalProceeds = proceedsCoin.Add(collateralProceedsCoin)
 
 			// Critical check: reject if still underwater after swapping collateral
-			if totalProceedsFromSwaps.LT(repayment) {
+			if totalProceeds.IsLT(requiredRepayment) {
 				return nil, cosmossdkerrors.Wrapf(
 					whaleswapv1.ErrInsufficientCollateral,
 					"position underwater after collateral swap: held_proceeds=%s + collateral_proceeds=%s < repayment=%s",
-					proceedsBorrow,
-					collateralProceeds,
-					repayment,
+					proceedsCoin,
+					collateralProceedsCoin,
+					requiredRepayment,
 				)
 			}
 
 			// Collateral was entirely swapped
-			collateralUsedAmount = collateralToSwap.Amount
+			collateralUsed = collateralToReturn
 			collateralSwapped = true
 			// Calculate profit from total proceeds (may be positive if collateral swap yielded excess)
-			pnl := totalProceedsFromSwaps.Sub(repayment)
-			profit = sdk.NewCoin(pos.Borrowed.Denom, pnl)
+			profit = totalProceeds.Sub(requiredRepayment)
 
 			sdkCtx.Logger().Info("ClosePosition: cross-denom collateral swap executed",
-				"held_proceeds", proceedsBorrow,
-				"collateral_swapped", collateralToSwap.Amount,
-				"collateral_proceeds", collateralProceeds,
-				"total_proceeds", totalProceedsFromSwaps,
-				"repayment", repayment,
-				"profit", pnl)
+				"held_proceeds", proceedsCoin,
+				"collateral_swapped", collateralToReturn,
+				"collateral_proceeds", collateralProceedsCoin,
+				"total_proceeds", totalProceeds,
+				"repayment", requiredRepayment,
+				"profit", profit)
 		}
 	}
 
@@ -233,20 +309,18 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	if collateralSwapped {
 		// Cross-denom case: both swaps executed in vault
 		// Move all proceeds (held swap + collateral swap) to module
-		proceedsCoin := sdk.NewCoin(pos.Borrowed.Denom, totalProceedsFromSwaps)
-		if err := k.moveModuleToModule(ctx, whaleswap.LeverageBorrowVaultModuleName, whaleswap.ModuleName, sdk.NewCoins(proceedsCoin)); err != nil {
+		if err := k.moveModuleToModule(ctx, whaleswap.LeverageBorrowVaultModuleName, whaleswap.ModuleName, sdk.NewCoins(totalProceeds)); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to transfer proceeds to module")
 		}
 
 		// Restore pool reserves with full repayment (all funds now in module)
-		repaymentCoin := sdk.NewCoin(pos.Borrowed.Denom, repayment)
-		pool.Coins = pool.Coins.Add(repaymentCoin)
+		pool.Coins = pool.Coins.Add(requiredRepayment)
 		if err := k.updatePool(ctx, &pool); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to update pool after repayment")
 		}
 
 		// Return profit to user (excess over repayment, if any)
-		if profit.Amount.IsPositive() {
+		if profit.IsPositive() {
 			if err := k.sendFromModule(ctx, userAddr, sdk.NewCoins(profit)); err != nil {
 				return nil, cosmossdkerrors.Wrap(err, "failed to return profit")
 			}
@@ -254,68 +328,105 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	} else {
 		// Same-denom case: swap proceeds in vault, collateral (if needed) already in module
 		// Move swap proceeds from vault to module
-		proceedsCoin := sdk.NewCoin(pos.Borrowed.Denom, totalProceedsFromSwaps)
-		if err := k.moveModuleToModule(ctx, whaleswap.LeverageBorrowVaultModuleName, whaleswap.ModuleName, sdk.NewCoins(proceedsCoin)); err != nil {
+		if err := k.moveModuleToModule(ctx, whaleswap.LeverageBorrowVaultModuleName, whaleswap.ModuleName, sdk.NewCoins(totalProceeds)); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to transfer proceeds to module")
 		}
 
 		// Restore pool reserves with full repayment
-		// repayment funded by: totalProceedsFromSwaps (just moved to module) + collateralUsedAmount (already in module)
-		repaymentCoin := sdk.NewCoin(pos.Borrowed.Denom, repayment)
-		pool.Coins = pool.Coins.Add(repaymentCoin)
+		// repayment funded by: totalProceeds (just moved to module) + collateralUsed (already in module)
+		pool.Coins = pool.Coins.Add(requiredRepayment)
 		if err := k.updatePool(ctx, &pool); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to update pool after repayment")
 		}
 
 		// Return remaining collateral to user (amount not used for repayment)
-		remainingCollateral := pos.Collateral.Amount.Sub(collateralUsedAmount)
-		if remainingCollateral.IsPositive() {
-			remainingCoin := sdk.NewCoin(pos.Collateral.Denom, remainingCollateral)
-			if err := k.sendFromModule(ctx, userAddr, sdk.NewCoins(remainingCoin)); err != nil {
+		remainingCollateralCoin := collateralToReturn.Sub(collateralUsed)
+		if remainingCollateralCoin.IsPositive() {
+			if err := k.sendFromModule(ctx, userAddr, sdk.NewCoins(remainingCollateralCoin)); err != nil {
 				return nil, cosmossdkerrors.Wrap(err, "failed to return collateral")
 			}
-			collateralReturned = remainingCoin
+			collateralReturned = remainingCollateralCoin
 		}
 
-		// Return profit to user (only possible if proceeds >= repayment, meaning collateralUsedAmount = 0)
-		if profit.Amount.IsPositive() {
+		// Return profit to user (only possible if proceeds >= repayment, meaning collateralUsed = 0)
+		if profit.IsPositive() {
 			if err := k.sendFromModule(ctx, userAddr, sdk.NewCoins(profit)); err != nil {
 				return nil, cosmossdkerrors.Wrap(err, "failed to return profit")
 			}
 		}
 	}
 
-	if _, remainder, err := k.ApplyInterestPayment(&pos, interestCoin.Amount); err != nil {
+	// Apply interest payment to position accounting
+	actualInterestPaidCoin, actualPrincipalPaidCoin, err := k.ApplyInterestPayment(&pos, requiredRepayment)
+	if err != nil {
 		return nil, err
-	} else if !remainder.IsZero() {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "unexpected remainder after interest payment")
+	}
+
+	// Update position state after all fund movements
+	pos.Borrowed = pos.Borrowed.Sub(actualPrincipalPaidCoin)
+	pos.Held = pos.Held.Sub(heldToSwap)
+	// Collateral already updated in cross-denom path; update here for same-denom path
+	if !collateralSwapped {
+		pos.Collateral = pos.Collateral.Sub(collateralToReturn)
+	}
+
+	positionClosed := false
+	if !isPartialClose {
+		pos.Status = whaleswapv1.PositionStatus_POSITION_STATUS_CLOSED
+		pos.LiquidationStatus = whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE
+		pos.LiquidationInitializedBlockHeight = 0
+		positionClosed = true
+	}
+
+	if err := k.savePosition(ctx, pos, originalStatus); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to persist position after close")
 	}
 
 	// Update pool accounting: decrease total_borrowed and add interest earned
-	principalCoin := pos.Borrowed
-	totalBorrowed := sdk.NewCoins(pool.TotalBorrowed...).Sub(pos.Borrowed)
+	totalBorrowed := sdk.NewCoins(pool.TotalBorrowed...).Sub(principalToRepay)
 	pool.TotalBorrowed = totalBorrowed
-	interestEarned := sdk.NewCoins(pool.InterestEarned...).Add(interestCoin)
-	pool.InterestEarned = interestEarned
+	pool.InterestEarned = sdk.NewCoins(pool.InterestEarned...).Add(interestToRepay)
 	if err := k.PoolsMap.Set(ctx, pos.PoolId, pool); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to update pool")
 	}
-	pos.Status = whaleswapv1.PositionStatus_POSITION_STATUS_CLOSED
-	pos.LiquidationStatus = whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE
-	pos.LiquidationInitializedBlockHeight = 0
-	if err := k.savePosition(ctx, pos, originalStatus); err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "failed to persist closed position")
-	}
 
 	// Emit event
-	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventLeveragePositionClosed{
-		PositionId:      msg.PositionId,
-		User:            msg.User,
-		PoolId:          pos.PoolId,
-		Profit:          profit,
-		AccruedInterest: interestCoin,
-	}); err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "failed to emit event")
+	if isPartialClose {
+		// Calculate current collateral ratio
+		collateralValue := math.LegacyNewDecFromInt(pos.Collateral.Amount)
+		totalDebt := pos.Borrowed.Add(pos.AccruedInterest)
+		debtValue := math.LegacyNewDecFromInt(totalDebt.Amount)
+		currentCR := math.LegacyZeroDec()
+		if !debtValue.IsZero() {
+			currentCR, _ = k.ComputeCollateralRatio(collateralValue, debtValue)
+		}
+
+		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventLeveragePositionPartiallyClosed{
+			PositionId:         msg.PositionId,
+			User:               msg.User,
+			PoolId:             pos.PoolId,
+			FractionClosed:     fraction.String(),
+			InterestPaid:       actualInterestPaidCoin,
+			PrincipalPaid:      actualPrincipalPaidCoin,
+			CollateralReturned: collateralReturned,
+			Profit:             profit,
+			NewBorrowed:        pos.Borrowed,
+			NewHeld:            pos.Held,
+			NewCollateral:      pos.Collateral,
+			NewCollateralRatio: currentCR.String(),
+		}); err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "failed to emit partial close event")
+		}
+	} else {
+		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventLeveragePositionClosed{
+			PositionId:      msg.PositionId,
+			User:            msg.User,
+			PoolId:          pos.PoolId,
+			Profit:          profit,
+			AccruedInterest: actualInterestPaidCoin,
+		}); err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "failed to emit full close event")
+		}
 	}
 
 	// Invariants after settlement
@@ -327,23 +438,28 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	}
 
 	// Update address metrics
-	if err := k.incrementPositionClosed(ctx, msg.User, interestCoin, profit); err != nil {
+	if err := k.incrementPositionClosed(ctx, msg.User, actualInterestPaidCoin, profit); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to update position metrics")
 	}
 
-	newBorrowed := sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
-	newHeld := sdk.NewCoin(pos.Held.Denom, math.ZeroInt())
-	newCollateral := sdk.NewCoin(pos.Collateral.Denom, math.ZeroInt())
+	// Calculate final collateral ratio
+	collateralValue := math.LegacyNewDecFromInt(pos.Collateral.Amount)
+	totalDebt := pos.Borrowed.Add(pos.AccruedInterest)
+	debtValue := math.LegacyNewDecFromInt(totalDebt.Amount)
+	finalCR := math.LegacyZeroDec()
+	if !debtValue.IsZero() {
+		finalCR, _ = k.ComputeCollateralRatio(collateralValue, debtValue)
+	}
 
 	return &whaleswapv1.MsgClosePositionResponse{
-		InterestPaid:       interestCoin,
-		PrincipalPaid:      principalCoin,
-		Profit:             profit,
+		InterestPaid:       actualInterestPaidCoin,
+		PrincipalPaid:      actualPrincipalPaidCoin,
 		CollateralReturned: collateralReturned,
-		NewBorrowed:        newBorrowed,
-		NewHeld:            newHeld,
-		NewCollateral:      newCollateral,
-		NewCollateralRatio: math.LegacyZeroDec(),
-		Closed:             true,
+		Profit:             profit,
+		NewBorrowed:        pos.Borrowed,
+		NewHeld:            pos.Held,
+		NewCollateral:      pos.Collateral,
+		NewCollateralRatio: finalCR,
+		Closed:             positionClosed,
 	}, nil
 }

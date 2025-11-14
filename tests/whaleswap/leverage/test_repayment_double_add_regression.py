@@ -39,8 +39,6 @@ def test_close_position_happy_path_regression(
         f"0.003{bar_name}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "20.0",
         "--max-borrow-percent",
         "0.8",
         "--from",

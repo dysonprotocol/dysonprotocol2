@@ -87,18 +87,18 @@ func (k Keeper) UpdatePoolConfig(ctx context.Context, msg *whaleswapv1.MsgUpdate
 		}
 	}
 
-	// MinCollateralRatio: required; per-denom; > 1
+	// MinInitialCollateralRatio: required; per-denom; > 1
 	denomA, denomB := pool.Coins[0].Denom, pool.Coins[1].Denom
 	one := math.LegacyNewDec(1)
 	zero := math.LegacyZeroDec()
-	inMinCR := sdk.NewDecCoins(msg.MinInitalCollateralRatio...)
+	inMinCR := sdk.NewDecCoins(msg.MinInitialCollateralRatio...)
 	if len(inMinCR) != 2 || inMinCR[0].Denom != denomA || inMinCR[1].Denom != denomB {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "min_inital_collateral_ratio must have exactly two entries matching pool denoms [%s,%s] in canonical order", denomA, denomB)
 	}
 	if inMinCR[0].Amount.LTE(one) || inMinCR[1].Amount.LTE(one) {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "min_inital_collateral_ratio amounts must be > 1 for both denoms")
 	}
-	pool.MinCollateralRatio = inMinCR
+	pool.MinInitialCollateralRatio = inMinCR
 
 	// Deprecated: max_leverage_ratio is ignored by the keeper; accepted in Msg for backward compatibility.
 

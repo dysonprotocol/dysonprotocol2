@@ -278,7 +278,7 @@ message MsgCreatePool {
   reserved "min_price", "max_price", "fee_pct";
   // Required: minimum collateral ratio per reserve denom (exactly two,
   // canonical order). Each amount is a LegacyDec string (> 1).
-  repeated cosmos.base.v1beta1.DecCoin min_inital_collateral_ratio = 6 [
+  repeated cosmos.base.v1beta1.DecCoin min_initial_collateral_ratio = 6 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
   ];
@@ -345,7 +345,7 @@ message MsgUpdatePoolConfig {
   // Leverage configuration (per-denom)
   // Required: minimum collateral ratio per reserve denom (exactly two,
   // canonical order; > 1)
-  repeated cosmos.base.v1beta1.DecCoin min_inital_collateral_ratio = 6 [
+  repeated cosmos.base.v1beta1.DecCoin min_initial_collateral_ratio = 6 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
   ];
@@ -1000,7 +1000,11 @@ message MsgClosePosition {
   string note = 3;
   // Fraction of the position to close (0 < fraction <= 1).
   // Provide "1" to close the entire position.
-  string fraction = 4 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+  string fraction = 4 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message MsgClosePositionResponse {

@@ -67,7 +67,7 @@ func TestMigratePool_NormalizesRiskVectors(t *testing.T) {
 			sdk.NewInt64Coin("foo", 1_000),
 			sdk.NewInt64Coin("bar", 1_000),
 		),
-		MinCollateralRatio: sdk.DecCoins{
+		MinInitialCollateralRatio: sdk.DecCoins{
 			sdk.NewDecCoinFromDec("foo", cosmossdkmath.LegacyMustNewDecFromStr("1.4")),
 		},
 		MaxLeverageRatio:     sdk.DecCoins{},
@@ -82,8 +82,8 @@ func TestMigratePool_NormalizesRiskVectors(t *testing.T) {
 
 	types.MigratePool(&pool)
 
-	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.4"), pool.MinCollateralRatio.AmountOf("foo"))
-	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.4"), pool.MinCollateralRatio.AmountOf("bar"))
+	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.4"), pool.MinInitialCollateralRatio.AmountOf("foo"))
+	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.4"), pool.MinInitialCollateralRatio.AmountOf("bar"))
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("20"), pool.MaxLeverageRatio.AmountOf("foo"))
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("20"), pool.MaxLeverageRatio.AmountOf("bar"))
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.2"), pool.LiquidationThreshold.AmountOf("foo"))
@@ -101,7 +101,7 @@ func TestMigratePool_ReplacesInvalidValues(t *testing.T) {
 			sdk.NewInt64Coin("foo", 500),
 			sdk.NewInt64Coin("bar", 500),
 		),
-		MinCollateralRatio: sdk.DecCoins{
+		MinInitialCollateralRatio: sdk.DecCoins{
 			sdk.NewDecCoinFromDec("foo", cosmossdkmath.LegacyMustNewDecFromStr("0.9")),
 			sdk.NewDecCoinFromDec("bar", cosmossdkmath.LegacyMustNewDecFromStr("0.8")),
 		},
@@ -120,8 +120,8 @@ func TestMigratePool_ReplacesInvalidValues(t *testing.T) {
 
 	types.MigratePool(&pool)
 
-	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.5"), pool.MinCollateralRatio.AmountOf("foo"))
-	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.5"), pool.MinCollateralRatio.AmountOf("bar"))
+	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.5"), pool.MinInitialCollateralRatio.AmountOf("foo"))
+	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.5"), pool.MinInitialCollateralRatio.AmountOf("bar"))
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("20"), pool.MaxLeverageRatio.AmountOf("foo"))
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("20"), pool.MaxLeverageRatio.AmountOf("bar"))
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.2"), pool.LiquidationThreshold.AmountOf("foo"))

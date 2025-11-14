@@ -93,28 +93,32 @@ func (k Keeper) SettleInterest(ctx context.Context, pos *whaleswapv1.LeveragePos
 
 // ApplyInterestPayment consumes up to payment amount from AccruedInterest,
 // updates TotalInterestPaid, and returns the interest coin actually consumed
-// alongside any remaining payment that can be applied to principal.
-func (k Keeper) ApplyInterestPayment(pos *whaleswapv1.LeveragePosition, payment math.Int) (sdk.Coin, math.Int, error) {
+// alongside any remaining payment coin that can be applied to principal.
+func (k Keeper) ApplyInterestPayment(pos *whaleswapv1.LeveragePosition, payment sdk.Coin) (sdk.Coin, sdk.Coin, error) {
 	if payment.IsNegative() {
-		return sdk.Coin{}, math.Int{}, fmt.Errorf("interest payment cannot be negative")
+		return sdk.Coin{}, sdk.Coin{}, fmt.Errorf("interest payment cannot be negative")
 	}
-	denom := pos.Borrowed.Denom
-	due := pos.AccruedInterest.Amount
-
-	payable := payment
-	if payable.GT(due) {
-		payable = due
+	if payment.Denom != pos.Borrowed.Denom {
+		return sdk.Coin{}, sdk.Coin{}, fmt.Errorf("payment denom %s does not match borrowed denom %s", payment.Denom, pos.Borrowed.Denom)
 	}
 
+	// Calculate how much of the payment goes to interest
+	payableToInterest := payment
+	if payment.IsGT(pos.AccruedInterest) {
+		payableToInterest = pos.AccruedInterest
+	}
+
+	// Update total interest paid
 	if pos.TotalInterestPaid.Denom == "" {
-		pos.TotalInterestPaid = sdk.NewCoin(denom, payable)
+		pos.TotalInterestPaid = payableToInterest
 	} else {
-		pos.TotalInterestPaid.Amount = pos.TotalInterestPaid.Amount.Add(payable)
+		pos.TotalInterestPaid = pos.TotalInterestPaid.Add(payableToInterest)
 	}
 
-	pos.AccruedInterest.Amount = due.Sub(payable)
+	// Reduce accrued interest
+	pos.AccruedInterest = pos.AccruedInterest.Sub(payableToInterest)
 
-	interestPaid := sdk.NewCoin(denom, payable)
-	remainder := payment.Sub(payable)
-	return interestPaid, remainder, nil
+	// Calculate remainder for principal
+	remainder := payment.Sub(payableToInterest)
+	return payableToInterest, remainder, nil
 }

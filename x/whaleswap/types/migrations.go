@@ -93,8 +93,8 @@ func MigratePool(pool *Pool) {
 		}
 	}
 
-	pool.MinCollateralRatio = ensurePerDenomDecCoins(
-		pool.MinCollateralRatio,
+	pool.MinInitialCollateralRatio = ensurePerDenomDecCoins(
+		pool.MinInitialCollateralRatio,
 		denomA, denomB,
 		defaultMinCR, defaultMinCR,
 		func(d cosmossdkmath.LegacyDec) bool { return d.GT(oneDec) },

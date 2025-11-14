@@ -868,7 +868,7 @@
           },
           "description": "Initial reserves. Required: exactly two coins with positive amounts.\nOrder is canonicalized internally to pool denom order (lexicographic)."
         },
-        "min_inital_collateral_ratio": {
+        "min_initial_collateral_ratio": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
@@ -1315,7 +1315,7 @@
           "format": "uint64",
           "description": "Target pool id to update."
         },
-        "min_inital_collateral_ratio": {
+        "min_initial_collateral_ratio": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"

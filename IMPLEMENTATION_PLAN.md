@@ -56,7 +56,7 @@ Update all existing flows (`OpenPosition`, `ClosePosition`, `CoverPosition`, liq
    - Leave interest untouched (since no payment).
 6. **Emit Event** + response with new CR.
 
-### 5. MsgPartialClosePosition
+### 5. MsgPartialClosePosition (integrated into `MsgClosePosition`)
 1. **Proto**: `MsgPartialClosePosition` (fractional parameter or explicit target amounts – we’ll use `fraction` Dec for now) + response + `EventLeveragePositionPartiallyClosed`.
 2. **Flow**:
    - Validate fraction (0 < f < 1) and block-delay (same as close).

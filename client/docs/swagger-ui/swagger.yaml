@@ -7272,7 +7272,7 @@ paths:
 
                           signatures required by gogoproto.
                       title: Total borrowed (aggregate for cap enforcement)
-                    min_collateral_ratio:
+                    min_initial_collateral_ratio:
                       type: array
                       items:
                         type: object
@@ -7753,7 +7753,7 @@ paths:
 
                           signatures required by gogoproto.
                       title: Total borrowed (aggregate for cap enforcement)
-                    min_collateral_ratio:
+                    min_initial_collateral_ratio:
                       type: array
                       items:
                         type: object
@@ -8243,7 +8243,7 @@ paths:
 
                           signatures required by gogoproto.
                       title: Total borrowed (aggregate for cap enforcement)
-                    min_collateral_ratio:
+                    min_initial_collateral_ratio:
                       type: array
                       items:
                         type: object
@@ -8744,7 +8744,7 @@ paths:
 
                           signatures required by gogoproto.
                       title: Total borrowed (aggregate for cap enforcement)
-                    min_collateral_ratio:
+                    min_initial_collateral_ratio:
                       type: array
                       items:
                         type: object
@@ -9238,7 +9238,7 @@ paths:
 
                         signatures required by gogoproto.
                     title: Total borrowed (aggregate for cap enforcement)
-                  min_collateral_ratio:
+                  min_initial_collateral_ratio:
                     type: array
                     items:
                       type: object
@@ -9672,7 +9672,7 @@ paths:
 
                           signatures required by gogoproto.
                       title: Total borrowed (aggregate for cap enforcement)
-                    min_collateral_ratio:
+                    min_initial_collateral_ratio:
                       type: array
                       items:
                         type: object
@@ -10142,7 +10142,7 @@ paths:
 
                         signatures required by gogoproto.
                     title: Total borrowed (aggregate for cap enforcement)
-                  min_collateral_ratio:
+                  min_initial_collateral_ratio:
                     type: array
                     items:
                       type: object
@@ -36598,7 +36598,7 @@ paths:
 
                   Order is canonicalized internally to pool denom order
                   (lexicographic).
-              min_inital_collateral_ratio:
+              min_initial_collateral_ratio:
                 type: array
                 items:
                   type: object
@@ -38690,7 +38690,7 @@ paths:
                 type: string
                 format: uint64
                 description: Target pool id to update.
-              min_inital_collateral_ratio:
+              min_initial_collateral_ratio:
                 type: array
                 items:
                   type: object
@@ -51199,7 +51199,7 @@ definitions:
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
         title: Total borrowed (aggregate for cap enforcement)
-      min_collateral_ratio:
+      min_initial_collateral_ratio:
         type: array
         items:
           type: object
@@ -53083,7 +53083,7 @@ definitions:
 
                 signatures required by gogoproto.
             title: Total borrowed (aggregate for cap enforcement)
-          min_collateral_ratio:
+          min_initial_collateral_ratio:
             type: array
             items:
               type: object
@@ -53449,7 +53449,7 @@ definitions:
 
                 signatures required by gogoproto.
             title: Total borrowed (aggregate for cap enforcement)
-          min_collateral_ratio:
+          min_initial_collateral_ratio:
             type: array
             items:
               type: object
@@ -53818,7 +53818,7 @@ definitions:
 
                   signatures required by gogoproto.
               title: Total borrowed (aggregate for cap enforcement)
-            min_collateral_ratio:
+            min_initial_collateral_ratio:
               type: array
               items:
                 type: object
@@ -54221,7 +54221,7 @@ definitions:
 
                   signatures required by gogoproto.
               title: Total borrowed (aggregate for cap enforcement)
-            min_collateral_ratio:
+            min_initial_collateral_ratio:
               type: array
               items:
                 type: object
@@ -54624,7 +54624,7 @@ definitions:
 
                   signatures required by gogoproto.
               title: Total borrowed (aggregate for cap enforcement)
-            min_collateral_ratio:
+            min_initial_collateral_ratio:
               type: array
               items:
                 type: object
@@ -55027,7 +55027,7 @@ definitions:
 
                   signatures required by gogoproto.
               title: Total borrowed (aggregate for cap enforcement)
-            min_collateral_ratio:
+            min_initial_collateral_ratio:
               type: array
               items:
                 type: object
@@ -55430,7 +55430,7 @@ definitions:
 
                   signatures required by gogoproto.
               title: Total borrowed (aggregate for cap enforcement)
-            min_collateral_ratio:
+            min_initial_collateral_ratio:
               type: array
               items:
                 type: object
@@ -80440,7 +80440,7 @@ definitions:
         description: |-
           Initial reserves. Required: exactly two coins with positive amounts.
           Order is canonicalized internally to pool denom order (lexicographic).
-      min_inital_collateral_ratio:
+      min_initial_collateral_ratio:
         type: array
         items:
           type: object
@@ -81785,7 +81785,7 @@ definitions:
         type: string
         format: uint64
         description: Target pool id to update.
-      min_inital_collateral_ratio:
+      min_initial_collateral_ratio:
         type: array
         items:
           type: object

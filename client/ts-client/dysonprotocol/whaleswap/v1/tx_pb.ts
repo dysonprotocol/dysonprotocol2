@@ -59,9 +59,9 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
    * Required: minimum collateral ratio per reserve denom (exactly two,
    * canonical order). Each amount is a LegacyDec string (> 1).
    *
-   * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_inital_collateral_ratio = 6;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_initial_collateral_ratio = 6;
    */
-  minInitalCollateralRatio: DecCoin[] = [];
+  minInitialCollateralRatio: DecCoin[] = [];
 
   /**
    * Annual interest rates per reserve denom (APR >= 0).
@@ -117,7 +117,7 @@ export class MsgCreatePool extends Message<MsgCreatePool> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "creator", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "coins", kind: "message", T: Coin, repeated: true },
-    { no: 6, name: "min_inital_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
+    { no: 6, name: "min_initial_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
     { no: 8, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 9, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },
     { no: 10, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },
@@ -210,9 +210,9 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
    * Required: minimum collateral ratio per reserve denom (exactly two,
    * canonical order; > 1)
    *
-   * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_inital_collateral_ratio = 6;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_initial_collateral_ratio = 6;
    */
-  minInitalCollateralRatio: DecCoin[] = [];
+  minInitialCollateralRatio: DecCoin[] = [];
 
   /**
    * Required: annual interest rates per reserve denom (APR >= 0).
@@ -268,7 +268,7 @@ export class MsgUpdatePoolConfig extends Message<MsgUpdatePoolConfig> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "signer", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 6, name: "min_inital_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
+    { no: 6, name: "min_initial_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
     { no: 8, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 9, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },
     { no: 10, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },

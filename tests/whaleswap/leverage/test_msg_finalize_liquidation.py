@@ -93,8 +93,6 @@ def _create_pool_and_open_position(dysond, alice_name, foo, bar):
         f"10000{bar}",
         "--min-collateral-ratio",
         "1.05",
-        "--max-leverage-ratio",
-        "5.0",
         "--max-borrow-percent",
         "0.8",
         "--liquidation-threshold",

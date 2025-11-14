@@ -17,7 +17,7 @@
                         "type": "array",
                         "description": "Initial reserves. Required: exactly two coins with positive amounts. Order is canonicalized internally to pool denom order (lexicographic)."
                     },
-                    "min_inital_collateral_ratio": {
+                    "min_initial_collateral_ratio": {
                         "items": {
                             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
                         },

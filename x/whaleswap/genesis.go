@@ -220,7 +220,7 @@ func ValidateGenesisState(s types.GenesisState) error {
 		if len(p.InterestRate) != 2 {
 			return fmt.Errorf("position %d interest_rate must have exactly 2 entries", p.PositionId)
 		}
-		// Validate min_collateral_ratio is a valid decimal
+		// Validate min_collateral_ratio is a valid decimal (per-position snapshot)
 		if p.MinCollateralRatio != "" {
 			if _, err := cosmossdk_math.LegacyNewDecFromStr(p.MinCollateralRatio); err != nil {
 				return fmt.Errorf("position %d invalid min_collateral_ratio: %v", p.PositionId, err)

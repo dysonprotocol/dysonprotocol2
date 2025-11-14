@@ -137,9 +137,9 @@ export class Pool extends Message<Pool> {
    * Minimum collateral ratio required at position open per reserve denom
    * (exactly two, canonical order). Each amount is a decimal string (> 1).
    *
-   * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_collateral_ratio = 21;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin min_initial_collateral_ratio = 21;
    */
-  minCollateralRatio: DecCoin[] = [];
+  minInitialCollateralRatio: DecCoin[] = [];
 
   /**
    * Deprecated: maximum leverage ratio per reserve denom.
@@ -219,7 +219,7 @@ export class Pool extends Message<Pool> {
     { no: 15, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 19, name: "interest_earned", kind: "message", T: Coin, repeated: true },
     { no: 20, name: "total_borrowed", kind: "message", T: Coin, repeated: true },
-    { no: 21, name: "min_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
+    { no: 21, name: "min_initial_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
     { no: 22, name: "max_leverage_ratio", kind: "message", T: DecCoin, repeated: true },
     { no: 23, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },
     { no: 24, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },

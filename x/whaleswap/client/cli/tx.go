@@ -353,7 +353,7 @@ func CmdCreatePool() *cobra.Command {
 				Creator:                  clientCtx.GetFromAddress().String(),
 				Coins:                    coinList,
 				FeeRate:                  feeRate,
-				MinInitalCollateralRatio: minCollateralRatio,
+				MinInitialCollateralRatio: minCollateralRatio,
 				InterestRate:             interestRate,
 				MaxBorrowPercent:         maxBorrowPercent,
 				LiquidationThreshold:     liquidationThreshold,
@@ -484,7 +484,7 @@ func CmdUpdatePoolConfig() *cobra.Command {
 			var minCollateralRatio sdk.DecCoins
 			switch len(mcrFlags) {
 			case 0:
-				minCollateralRatio = sdk.NewDecCoins(pool.MinCollateralRatio...)
+				minCollateralRatio = sdk.NewDecCoins(pool.MinInitialCollateralRatio...)
 			case 1:
 				d := mustDec(strings.TrimSpace(mcrFlags[0]))
 				minCollateralRatio = sdk.NewDecCoins(
@@ -579,7 +579,7 @@ func CmdUpdatePoolConfig() *cobra.Command {
 				InterestRate:             interestRate,
 				MaxBorrowPercent:         maxBorrowPercent,
 				LiquidationThreshold:     liquidationThreshold,
-				MinInitalCollateralRatio: minCollateralRatio,
+				MinInitialCollateralRatio: minCollateralRatio,
 				BoundPercent:             boundPercent,
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
