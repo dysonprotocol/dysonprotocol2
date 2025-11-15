@@ -28,8 +28,6 @@ def test_make_trade_caps_duplicate_normalization_fail(chainnet, ws_setup_env):
         f"20{b}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "3.0",
         "--max-borrow-percent",
         "0.8",
         "--from",

@@ -40,8 +40,6 @@ def _create_pool(dysond, creator_name, a, b, ai=10, bi=10):
         f"{bi}{b}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "3.0",
         "--max-borrow-percent",
         "0.8",
         "--from",

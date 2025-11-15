@@ -33,8 +33,6 @@ def test_add_liquidity_v2(chainnet, generate_account, faucet, register_name):
         f"500{name}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "3.0",
         "--max-borrow-percent",
         "0.8",
         "--from",

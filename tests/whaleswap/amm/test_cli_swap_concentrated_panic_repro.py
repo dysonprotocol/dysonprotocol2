@@ -44,8 +44,6 @@ def test_concentrated_swap_does_not_panic(
         f"500{custom}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "3.0",
         "--max-borrow-percent",
         "0.8",
         "--from",

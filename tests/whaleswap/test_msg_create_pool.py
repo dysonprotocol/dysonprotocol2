@@ -71,13 +71,13 @@ def demo_create_pool_unbounded(alice_addr, foo_name, bar_name):
             {"denom": denom_a, "amount": "0.003"},
             {"denom": denom_b, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "1.5"},
             {"denom": denom_b, "amount": "1.5"}
         ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "20.0"},
-            {"denom": denom_b, "amount": "20.0"}
+        "interest_rate": [
+            {"denom": denom_a, "amount": "0.0"},
+            {"denom": denom_b, "amount": "0.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.2"},
@@ -214,17 +214,17 @@ def demo_create_pool_with_bounds(alice_addr, foo_name, bar_name):
             {"denom": denom_a, "amount": "0.002"},
             {"denom": denom_b, "amount": "0.004"}
         ],
+        "interest_rate": [
+            {"denom": denom_a, "amount": "0.0"},
+            {"denom": denom_b, "amount": "0.0"}
+        ],
         "bound_percent": [
             {"denom": denom_a, "amount": "0.250000000000000000"},
             {"denom": denom_b, "amount": "0.750000000000000000"}
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "1.5"},
             {"denom": denom_b, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "20.0"},
-            {"denom": denom_b, "amount": "20.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.2"},
@@ -356,13 +356,9 @@ def demo_create_pool_with_interest(alice_addr, foo_name, bar_name):
             {"denom": denom_a, "amount": "0.05"},
             {"denom": denom_b, "amount": "0.05"}
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "1.5"},
             {"denom": denom_b, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "15.0"},
-            {"denom": denom_b, "amount": "15.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.2"},

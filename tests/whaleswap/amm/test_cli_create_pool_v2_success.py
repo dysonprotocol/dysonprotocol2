@@ -34,8 +34,6 @@ def test_create_pool_v2_success(chainnet, generate_account, faucet, register_nam
         f"500{name}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "3.0",
         "--max-borrow-percent",
         "0.8",
         "--from",

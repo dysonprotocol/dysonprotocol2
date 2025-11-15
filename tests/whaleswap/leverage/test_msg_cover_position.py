@@ -1,7 +1,9 @@
 import json
 
 
-def test_cover_position_partial_reduce_principal(chainnet, leverage_accounts, leverage_names_and_coins):
+def test_cover_position_partial_reduce_principal(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
     dysond = chainnet[0]
     alice_name = leverage_accounts["alice"]["name"]
     foo = leverage_names_and_coins["foo_name"]
@@ -79,14 +81,21 @@ def test_cover_position_partial_reduce_principal(chainnet, leverage_accounts, le
         if e.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionCovered"
     ]
     assert len(cover_events) == 1, "EventLeveragePositionCovered not found"
-    attrs = {a.get("key"): a.get("value", "").strip('"') for a in cover_events[0].get("attributes", [])}
+    attrs = {
+        a.get("key"): a.get("value", "").strip('"')
+        for a in cover_events[0].get("attributes", [])
+    }
     assert "closed" in attrs, f"closed attr missing: {attrs}"
-    assert attrs.get("closed") == "false", f"Expected closed=false for partial cover, got: {attrs.get('closed')}"
+    assert (
+        attrs.get("closed") == "false"
+    ), f"Expected closed=false for partial cover, got: {attrs.get('closed')}"
     assert "interest_paid" in attrs, f"interest_paid missing: {attrs}"
     assert "principal_paid" in attrs, f"principal_paid missing: {attrs}"
 
 
-def test_cover_position_overpay_autoclose_refund(chainnet, leverage_accounts, leverage_names_and_coins):
+def test_cover_position_overpay_autoclose_refund(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
     dysond = chainnet[0]
     bob_name = leverage_accounts["bob"]["name"]
     bob_addr = leverage_accounts["bob"]["addr"]
@@ -167,21 +176,36 @@ def test_cover_position_overpay_autoclose_refund(chainnet, leverage_accounts, le
         if e.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionCovered"
     ]
     assert len(cover_events) == 1, "EventLeveragePositionCovered not found"
-    attrs = {a.get("key"): a.get("value", "").strip('"') for a in cover_events[0].get("attributes", [])}
-    assert attrs.get("closed") == "true", f"Expected closed=true, got: {attrs.get('closed')}"
+    attrs = {
+        a.get("key"): a.get("value", "").strip('"')
+        for a in cover_events[0].get("attributes", [])
+    }
+    assert (
+        attrs.get("closed") == "true"
+    ), f"Expected closed=true, got: {attrs.get('closed')}"
     assert "refunded" in attrs, f"refunded missing: {attrs}"
-    assert foo in attrs.get("refunded", ""), f"Refund denom mismatch: {attrs.get('refunded')}"
+    assert foo in attrs.get(
+        "refunded", ""
+    ), f"Refund denom mismatch: {attrs.get('refunded')}"
 
     # Also expect standard close event
     close_events = [
-        e for e in cover_result.get("events", []) if e.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed"
+        e
+        for e in cover_result.get("events", [])
+        if e.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed"
     ]
-    assert len(close_events) == 1, "EventLeveragePositionClosed not emitted on overpay close"
+    assert (
+        len(close_events) == 1
+    ), "EventLeveragePositionClosed not emitted on overpay close"
 
 
-def test_cover_position_overpay_block_delay_enforced(chainnet, leverage_accounts, leverage_names_and_coins):
+def test_cover_position_overpay_block_delay_enforced(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
     dysond = chainnet[0]
-    gov = dysond("query", "auth", "module-account", "gov")["account"]["value"]["address"]
+    gov = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
     alice = leverage_accounts["alice"]["addr"]
     foo = leverage_names_and_coins["foo_name"]
     bar = leverage_names_and_coins["bar_name"]
@@ -208,13 +232,13 @@ def demo_cover_block_delay(alice, foo, bar):
             {"denom": foo, "amount": "0.003"},
             {"denom": bar, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": foo, "amount": "0.05"},
+            {"denom": bar, "amount": "0.05"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": foo, "amount": "1.5"},
             {"denom": bar, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": foo, "amount": "20.0"},
-            {"denom": bar, "amount": "20.0"}
         ],
         "liquidation_threshold": [
             {"denom": foo, "amount": "1.2"},
@@ -263,9 +287,9 @@ def demo_cover_block_delay(alice, foo, bar):
         "--extra-code",
         extra_code,
     )
-    assert "exception" in res, f"Expected exception for block delay; got: {json.dumps(res, indent=2)}"
+    assert (
+        "exception" in res
+    ), f"Expected exception for block delay; got: {json.dumps(res, indent=2)}"
     emsg = str(res["exception"]).lower()
     assert "block" in emsg, f"Expected 'block' in error message, got: {emsg}"
     assert "locked" in emsg, f"Expected 'locked' in error message, got: {emsg}"
-
-

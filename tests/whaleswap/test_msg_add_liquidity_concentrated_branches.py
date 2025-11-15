@@ -76,13 +76,13 @@ def demo_add_liquidity_preserves_bounds(alice_addr, foo_name, bar_name):
             {"denom": denom_a, "amount": "0.400000000000000000"},
             {"denom": denom_b, "amount": "1.000000000000000000"}
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "1.5"},
             {"denom": denom_b, "amount": "1.5"}
         ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "12.0"},
-            {"denom": denom_b, "amount": "12.0"}
+        "interest_rate": [
+            {"denom": denom_a, "amount": "0.0"},
+            {"denom": denom_b, "amount": "0.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.2"},
@@ -204,13 +204,13 @@ def demo_update_bound_percent(alice_addr, foo_name, bar_name):
             {"denom": denom_a, "amount": "0.002"},
             {"denom": denom_b, "amount": "0.002"}
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "1.5"},
             {"denom": denom_b, "amount": "1.5"}
         ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "18.0"},
-            {"denom": denom_b, "amount": "18.0"}
+        "interest_rate": [
+            {"denom": denom_a, "amount": "0.0"},
+            {"denom": denom_b, "amount": "0.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.2"},
@@ -231,13 +231,13 @@ def demo_update_bound_percent(alice_addr, foo_name, bar_name):
             {"denom": denom_a, "amount": "0.300000000000000000"},
             {"denom": denom_b, "amount": "1.000000000000000000"}
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "1.5"},
             {"denom": denom_b, "amount": "1.5"}
         ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "18.0"},
-            {"denom": denom_b, "amount": "18.0"}
+        "interest_rate": [
+            {"denom": denom_a, "amount": "0.0"},
+            {"denom": denom_b, "amount": "0.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.2"},

@@ -41,8 +41,6 @@ def _create_pool(dysond, owner, denom_x, amt_x, denom_y, amt_y):
         f"{amt_y}{denom_y}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "3.0",
         "--max-borrow-percent",
         "0.8",
         "--from",

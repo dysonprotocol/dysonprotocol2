@@ -80,13 +80,13 @@ def demo_update_all_fields(creator_addr, foo_name, bar_name):
             {"denom": denom_a, "amount": "0.001"},
             {"denom": denom_b, "amount": "0.001"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": denom_a, "amount": "0.0"},
+            {"denom": denom_b, "amount": "0.0"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "1.5"},
             {"denom": denom_b, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "10.0"},
-            {"denom": denom_b, "amount": "10.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.2"},
@@ -108,13 +108,9 @@ def demo_update_all_fields(creator_addr, foo_name, bar_name):
             {"denom": denom_a, "amount": "0.002"},
             {"denom": denom_b, "amount": "0.002"}
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "2.0"},
             {"denom": denom_b, "amount": "2.0"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "99.0"},
-            {"denom": denom_b, "amount": "99.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.3"},
@@ -202,7 +198,9 @@ def demo_update_all_fields(creator_addr, foo_name, bar_name):
     ), f"Fee rate for {denom_b} should be 0.002"
 
     # Verify min_collateral_ratio updated
-    mcr_map = {mcr["denom"]: mcr["amount"] for mcr in pool["min_collateral_ratio"]}
+    mcr_map = {
+        mcr["denom"]: mcr["amount"] for mcr in pool["min_initial_collateral_ratio"]
+    }
     assert (
         mcr_map[denom_a] == "2.000000000000000000"
     ), f"Min CR for {denom_a} should be 2.0"
@@ -290,13 +288,13 @@ def demo_deprecated_ignored(creator_addr, foo_name, bar_name):
             {"denom": denom_a, "amount": "0.001"},
             {"denom": denom_b, "amount": "0.001"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": denom_a, "amount": "0.0"},
+            {"denom": denom_b, "amount": "0.0"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "1.5"},
             {"denom": denom_b, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "10.0"},
-            {"denom": denom_b, "amount": "10.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.2"},
@@ -314,13 +312,9 @@ def demo_deprecated_ignored(creator_addr, foo_name, bar_name):
         "@type": "/dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig",
         "signer": creator_addr,
         "pool_id": pool_id,
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "2.0"},
             {"denom": denom_b, "amount": "2.0"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "999.0"},
-            {"denom": denom_b, "amount": "999.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.3"},
@@ -379,7 +373,9 @@ def demo_deprecated_ignored(creator_addr, foo_name, bar_name):
     denom_a, denom_b = sorted([foo_name, bar_name])
 
     # Verify update succeeded
-    mcr_map = {mcr["denom"]: mcr["amount"] for mcr in pool["min_collateral_ratio"]}
+    mcr_map = {
+        mcr["denom"]: mcr["amount"] for mcr in pool["min_initial_collateral_ratio"]
+    }
     assert (
         mcr_map[denom_a] == "2.000000000000000000"
     ), f"Min CR should be updated to 2.0"
@@ -439,13 +435,13 @@ def demo_mincr_error(creator_addr, foo_name, bar_name):
             {"denom": denom_a, "amount": "0.001"},
             {"denom": denom_b, "amount": "0.001"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": denom_a, "amount": "0.0"},
+            {"denom": denom_b, "amount": "0.0"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "1.5"},
             {"denom": denom_b, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "10.0"},
-            {"denom": denom_b, "amount": "10.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.2"},
@@ -464,7 +460,7 @@ def demo_mincr_error(creator_addr, foo_name, bar_name):
             "@type": "/dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig",
             "signer": creator_addr,
             "pool_id": pool_id,
-            "min_collateral_ratio": [
+            "min_initial_collateral_ratio": [
                 {"denom": denom_a, "amount": "1.0"},
                 {"denom": denom_b, "amount": "1.5"}
             ],
@@ -562,13 +558,13 @@ def demo_liq_error(creator_addr, foo_name, bar_name):
             {"denom": denom_a, "amount": "0.001"},
             {"denom": denom_b, "amount": "0.001"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": denom_a, "amount": "0.0"},
+            {"denom": denom_b, "amount": "0.0"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "1.5"},
             {"denom": denom_b, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "10.0"},
-            {"denom": denom_b, "amount": "10.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.2"},
@@ -587,7 +583,7 @@ def demo_liq_error(creator_addr, foo_name, bar_name):
             "@type": "/dysonprotocol.whaleswap.v1.MsgUpdatePoolConfig",
             "signer": creator_addr,
             "pool_id": pool_id,
-            "min_collateral_ratio": [
+            "min_initial_collateral_ratio": [
                 {"denom": denom_a, "amount": "1.5"},
                 {"denom": denom_b, "amount": "1.5"}
             ],
@@ -685,13 +681,13 @@ def demo_fee_error(creator_addr, foo_name, bar_name):
             {"denom": denom_a, "amount": "0.001"},
             {"denom": denom_b, "amount": "0.001"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": denom_a, "amount": "0.0"},
+            {"denom": denom_b, "amount": "0.0"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "1.5"},
             {"denom": denom_b, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "10.0"},
-            {"denom": denom_b, "amount": "10.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.2"},
@@ -714,7 +710,7 @@ def demo_fee_error(creator_addr, foo_name, bar_name):
                 {"denom": denom_a, "amount": "1.0"},
                 {"denom": denom_b, "amount": "0.001"}
             ],
-            "min_collateral_ratio": [
+            "min_initial_collateral_ratio": [
                 {"denom": denom_a, "amount": "1.5"},
                 {"denom": denom_b, "amount": "1.5"}
             ],

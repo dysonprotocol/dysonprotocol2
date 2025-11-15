@@ -36,8 +36,6 @@ def test_update_pool_config_owner_only(
         f"500{name}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "3.0",
         "--max-borrow-percent",
         "0.8",
         "--from",

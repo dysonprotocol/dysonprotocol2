@@ -44,13 +44,13 @@ def demo_position_query(alice_addr, foo_name, bar_name):
             {"denom": base, "amount": "0.003"},
             {"denom": quote, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": base, "amount": "1.5"},
             {"denom": quote, "amount": "1.5"}
         ],
-        "max_leverage_ratio": [
-            {"denom": base, "amount": "20.0"},
-            {"denom": quote, "amount": "20.0"}
+        "interest_rate": [
+            {"denom": base, "amount": "0.0"},
+            {"denom": quote, "amount": "0.0"}
         ],
         "liquidation_threshold": [
             {"denom": base, "amount": "1.2"},
@@ -108,7 +108,9 @@ def demo_position_query(alice_addr, foo_name, bar_name):
         extra_code,
     )
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}; full={json.dumps(query_result, indent=2)}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}; full={json.dumps(query_result, indent=2)}"
 
     print(f"Full query_result: {json.dumps(query_result, indent=2)}")
     print(f"Deep parsed result: {json.dumps(result, indent=2)}")
@@ -143,69 +145,150 @@ def demo_position_query(alice_addr, foo_name, bar_name):
     position_query = demo_result["position_query"]
 
     # Verify the query response structure
-    assert isinstance(position_query, dict), f"Position query should return dict, got {type(position_query)}"
-    assert "position" in position_query, f"Position query missing 'position' key. Keys: {list(position_query.keys())}"
-    assert "health_status" in position_query, f"Position query missing 'health_status' key. Keys: {list(position_query.keys())}"
-    assert "current_collateral_ratio" in position_query, f"Position query missing 'current_collateral_ratio' key. Keys: {list(position_query.keys())}"
-    assert "liquidation_threshold" in position_query, f"Position query missing 'liquidation_threshold' key. Keys: {list(position_query.keys())}"
-    assert "collateral_value" in position_query, f"Position query missing 'collateral_value' key. Keys: {list(position_query.keys())}"
-    assert "debt_with_interest" in position_query, f"Position query missing 'debt_with_interest' key. Keys: {list(position_query.keys())}"
-    assert "can_close_by_owner" in position_query, f"Position query missing 'can_close_by_owner' key. Keys: {list(position_query.keys())}"
-    assert "blocks_until_closeable" in position_query, f"Position query missing 'blocks_until_closeable' key. Keys: {list(position_query.keys())}"
-    assert "can_initialize_liquidation" in position_query, f"Position query missing 'can_initialize_liquidation' key. Keys: {list(position_query.keys())}"
-    assert "can_finalize_liquidation" in position_query, f"Position query missing 'can_finalize_liquidation' key. Keys: {list(position_query.keys())}"
-    assert "borrowed" in position_query, f"Position query missing 'borrowed' key. Keys: {list(position_query.keys())}"
-    assert "accrued_interest" in position_query, f"Position query missing 'accrued_interest' key. Keys: {list(position_query.keys())}"
-    assert "total_repayment" in position_query, f"Position query missing 'total_repayment' key. Keys: {list(position_query.keys())}"
-    assert "time_elapsed" in position_query, f"Position query missing 'time_elapsed' key. Keys: {list(position_query.keys())}"
-    assert "annual_rate" in position_query, f"Position query missing 'annual_rate' key. Keys: {list(position_query.keys())}"
+    assert isinstance(
+        position_query, dict
+    ), f"Position query should return dict, got {type(position_query)}"
+    assert (
+        "position" in position_query
+    ), f"Position query missing 'position' key. Keys: {list(position_query.keys())}"
+    assert (
+        "health_status" in position_query
+    ), f"Position query missing 'health_status' key. Keys: {list(position_query.keys())}"
+    assert (
+        "current_collateral_ratio" in position_query
+    ), f"Position query missing 'current_collateral_ratio' key. Keys: {list(position_query.keys())}"
+    assert (
+        "liquidation_threshold" in position_query
+    ), f"Position query missing 'liquidation_threshold' key. Keys: {list(position_query.keys())}"
+    assert (
+        "collateral_value" in position_query
+    ), f"Position query missing 'collateral_value' key. Keys: {list(position_query.keys())}"
+    assert (
+        "debt_with_interest" in position_query
+    ), f"Position query missing 'debt_with_interest' key. Keys: {list(position_query.keys())}"
+    assert (
+        "can_close_by_owner" in position_query
+    ), f"Position query missing 'can_close_by_owner' key. Keys: {list(position_query.keys())}"
+    assert (
+        "blocks_until_closeable" in position_query
+    ), f"Position query missing 'blocks_until_closeable' key. Keys: {list(position_query.keys())}"
+    assert (
+        "can_initialize_liquidation" in position_query
+    ), f"Position query missing 'can_initialize_liquidation' key. Keys: {list(position_query.keys())}"
+    assert (
+        "can_finalize_liquidation" in position_query
+    ), f"Position query missing 'can_finalize_liquidation' key. Keys: {list(position_query.keys())}"
+
+    # After extracting position, update the assertions and assignments:
 
     # Verify position details
     position = position_query["position"]
     assert isinstance(position, dict), f"Position should be dict, got {type(position)}"
-    assert int(position["position_id"]) == int(demo_result["position_id"]), f"Position ID mismatch: expected {demo_result['position_id']}, got {position['position_id']}"
-    assert position["pool_id"] == demo_result["pool_id"], f"Pool ID mismatch: expected {demo_result['pool_id']}, got {position['pool_id']}"
-    assert position["user"] == alice_addr, f"User address mismatch: expected {alice_addr}, got {position['user']}"
+    assert int(position["position_id"]) == int(
+        demo_result["position_id"]
+    ), f"Position ID mismatch: expected {demo_result['position_id']}, got {position['position_id']}"
+    assert (
+        position["pool_id"] == demo_result["pool_id"]
+    ), f"Pool ID mismatch: expected {demo_result['pool_id']}, got {position['pool_id']}"
+    assert (
+        position["user"] == alice_addr
+    ), f"User address mismatch: expected {alice_addr}, got {position['user']}"
 
     # Verify collateral
-    assert "collateral" in position, f"Position missing 'collateral' key. Keys: {list(position.keys())}"
+    assert (
+        "collateral" in position
+    ), f"Position missing 'collateral' key. Keys: {list(position.keys())}"
     collateral = position["collateral"]
-    assert collateral["denom"] == bar_name, f"Collateral denom mismatch: expected {bar_name}, got {collateral['denom']}"
-    assert collateral["amount"] == "750", f"Collateral amount mismatch: expected '750', got {collateral['amount']}"
+    assert (
+        collateral["denom"] == bar_name
+    ), f"Collateral denom mismatch: expected {bar_name}, got {collateral['denom']}"
+    assert (
+        collateral["amount"] == "750"
+    ), f"Collateral amount mismatch: expected '750', got {collateral['amount']}"
 
     # Verify borrowed amount
-    borrowed = position_query["borrowed"]
-    assert borrowed["denom"] == foo_name, f"Borrowed denom mismatch: expected {foo_name}, got {borrowed['denom']}"
-    assert borrowed["amount"] == "500", f"Borrowed amount mismatch: expected '500', got {borrowed['amount']}"
+    assert (
+        "borrowed" in position
+    ), f"Position missing 'borrowed' key. Keys: {list(position.keys())}"
+    borrowed = position["borrowed"]
+    assert (
+        borrowed["denom"] == foo_name
+    ), f"Borrowed denom mismatch: expected {foo_name}, got {borrowed['denom']}"
+    assert (
+        borrowed["amount"] == "500"
+    ), f"Borrowed amount mismatch: expected '500', got {borrowed['amount']}"
 
     # Verify health status is a string (enum)
     health_status = position_query["health_status"]
-    assert isinstance(health_status, str), f"Health status should be string, got {type(health_status)}"
+    assert isinstance(
+        health_status, str
+    ), f"Health status should be string, got {type(health_status)}"
 
     # Verify numeric fields are strings (cosmos.Dec format)
-    assert isinstance(position_query["current_collateral_ratio"], str), f"Current collateral ratio should be string, got {type(position_query['current_collateral_ratio'])}"
-    assert isinstance(position_query["liquidation_threshold"], str), f"Liquidation threshold should be string, got {type(position_query['liquidation_threshold'])}"
-    assert isinstance(position_query["collateral_value"], str), f"Collateral value should be string, got {type(position_query['collateral_value'])}"
-    assert isinstance(position_query["debt_with_interest"], str), f"Debt with interest should be string, got {type(position_query['debt_with_interest'])}"
+    assert isinstance(
+        position_query["current_collateral_ratio"], str
+    ), f"Current collateral ratio should be string, got {type(position_query['current_collateral_ratio'])}"
+    assert isinstance(
+        position_query["liquidation_threshold"], str
+    ), f"Liquidation threshold should be string, got {type(position_query['liquidation_threshold'])}"
+    assert isinstance(
+        position_query["collateral_value"], str
+    ), f"Collateral value should be string, got {type(position_query['collateral_value'])}"
+    assert isinstance(
+        position_query["debt_with_interest"], str
+    ), f"Debt with interest should be string, got {type(position_query['debt_with_interest'])}"
 
     # Verify boolean fields
-    assert isinstance(position_query["can_close_by_owner"], bool), f"Can close by owner should be bool, got {type(position_query['can_close_by_owner'])}"
-    assert isinstance(position_query["can_initialize_liquidation"], bool), f"Can initialize liquidation should be bool, got {type(position_query['can_initialize_liquidation'])}"
-    assert isinstance(position_query["can_finalize_liquidation"], bool), f"Can finalize liquidation should be bool, got {type(position_query['can_finalize_liquidation'])}"
+    assert isinstance(
+        position_query["can_close_by_owner"], bool
+    ), f"Can close by owner should be bool, got {type(position_query['can_close_by_owner'])}"
+    assert isinstance(
+        position_query["can_initialize_liquidation"], bool
+    ), f"Can initialize liquidation should be bool, got {type(position_query['can_initialize_liquidation'])}"
+    assert isinstance(
+        position_query["can_finalize_liquidation"], bool
+    ), f"Can finalize liquidation should be bool, got {type(position_query['can_finalize_liquidation'])}"
 
     # Verify integer fields (may be strings in JSON response)
-    assert isinstance(position_query["blocks_until_closeable"], (int, str)), f"Blocks until closeable should be int or str, got {type(position_query['blocks_until_closeable'])}"
-    assert isinstance(position_query["time_elapsed"], (int, str)), f"Time elapsed should be int or str, got {type(position_query['time_elapsed'])}"
+    assert isinstance(
+        position_query["blocks_until_closeable"], (int, str)
+    ), f"Blocks until closeable should be int or str, got {type(position_query['blocks_until_closeable'])}"
 
     # Verify coin structures
-    total_repayment = position_query["total_repayment"]
-    assert isinstance(total_repayment, dict), f"Total repayment should be dict, got {type(total_repayment)}"
+    assert (
+        "interest" in position_query
+    ), f"Position query missing 'interest' key. Keys: {list(position_query.keys())}"
+    interest = position_query["interest"]
+    total_repayment = interest["total_repayment"]
+    assert isinstance(
+        total_repayment, dict
+    ), f"Total repayment should be dict, got {type(total_repayment)}"
     assert "denom" in total_repayment, f"Total repayment missing 'denom' key"
     assert "amount" in total_repayment, f"Total repayment missing 'amount' key"
-    assert total_repayment["denom"] == foo_name, f"Total repayment denom mismatch: expected {foo_name}, got {total_repayment['denom']}"
+    assert (
+        total_repayment["denom"] == foo_name
+    ), f"Total repayment denom mismatch: expected {foo_name}, got {total_repayment['denom']}"
 
     # Verify accrued interest is a string (cosmos.Int format)
-    assert isinstance(position_query["accrued_interest"], str), f"Accrued interest should be string, got {type(position_query['accrued_interest'])}"
+    assert (
+        "accrued_interest" in position
+    ), f"Position missing 'accrued_interest' key. Keys: {list(position.keys())}"
+    accrued_interest_amount = position["accrued_interest"]["amount"]
+    assert isinstance(
+        accrued_interest_amount, str
+    ), f"Accrued interest amount should be string, got {type(accrued_interest_amount)}"
 
-    # Verify annual rate is a string (cosmos.Dec format)
-    assert isinstance(position_query["annual_rate"], str), f"Annual rate should be string, got {type(position_query['annual_rate'])}"
+    # Verify time elapsed and annual rate under interest
+    assert (
+        "time_elapsed" in interest
+    ), f"Interest missing 'time_elapsed' key. Keys: {list(interest.keys())}"
+    assert isinstance(
+        interest["time_elapsed"], (int, str)
+    ), f"Time elapsed should be int or str, got {type(interest['time_elapsed'])}"
+
+    assert (
+        "annual_rate" in interest
+    ), f"Interest missing 'annual_rate' key. Keys: {list(interest.keys())}"
+    assert isinstance(
+        interest["annual_rate"], str
+    ), f"Annual rate should be string, got {type(interest['annual_rate'])}"

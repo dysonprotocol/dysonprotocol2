@@ -38,8 +38,6 @@ def test_make_trade_min_output_pass(chainnet, ws_setup_env):
         f"100{b}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "3.0",
         "--max-borrow-percent",
         "0.8",
         "--from",

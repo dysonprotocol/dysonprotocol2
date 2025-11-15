@@ -67,27 +67,23 @@ def test_make_trade_single_swap_random_amount(
             ],
             "fee_rate": [
                 {"denom": base, "amount": "0.003"},
-                {"denom": quote, "amount": "0.003"}
+                {"denom": quote, "amount": "0.003"},
             ],
             "interest_rate": [
                 {"denom": base, "amount": "0.05"},
-                {"denom": quote, "amount": "0.05"}
+                {"denom": quote, "amount": "0.05"},
             ],
-            "min_collateral_ratio": [
+            "min_initial_collateral_ratio": [
                 {"denom": base, "amount": "1.5"},
-                {"denom": quote, "amount": "1.5"}
-            ],
-            "max_leverage_ratio": [
-                {"denom": base, "amount": "20.0"},
-                {"denom": quote, "amount": "20.0"}
+                {"denom": quote, "amount": "1.5"},
             ],
             "liquidation_threshold": [
                 {"denom": base, "amount": "1.2"},
-                {"denom": quote, "amount": "1.2"}
+                {"denom": quote, "amount": "1.2"},
             ],
             "max_borrow_percent": [
                 {"denom": base, "amount": "0.8"},
-                {"denom": quote, "amount": "0.8"}
+                {"denom": quote, "amount": "0.8"},
             ],
         }
     )
@@ -185,27 +181,23 @@ def test_make_trade_take_offer_random_units(
             ],
             "fee_rate": [
                 {"denom": base, "amount": "0.003"},
-                {"denom": quote, "amount": "0.003"}
+                {"denom": quote, "amount": "0.003"},
             ],
             "interest_rate": [
                 {"denom": base, "amount": "0.05"},
-                {"denom": quote, "amount": "0.05"}
+                {"denom": quote, "amount": "0.05"},
             ],
-            "min_collateral_ratio": [
+            "min_initial_collateral_ratio": [
                 {"denom": base, "amount": "1.5"},
-                {"denom": quote, "amount": "1.5"}
-            ],
-            "max_leverage_ratio": [
-                {"denom": base, "amount": "20.0"},
-                {"denom": quote, "amount": "20.0"}
+                {"denom": quote, "amount": "1.5"},
             ],
             "liquidation_threshold": [
                 {"denom": base, "amount": "1.2"},
-                {"denom": quote, "amount": "1.2"}
+                {"denom": quote, "amount": "1.2"},
             ],
             "max_borrow_percent": [
                 {"denom": base, "amount": "0.8"},
-                {"denom": quote, "amount": "0.8"}
+                {"denom": quote, "amount": "0.8"},
             ],
         }
     )
@@ -347,27 +339,23 @@ def test_liquidity_add_remove_cycles(
             ],
             "fee_rate": [
                 {"denom": base, "amount": "0.003"},
-                {"denom": quote, "amount": "0.003"}
+                {"denom": quote, "amount": "0.003"},
             ],
             "interest_rate": [
                 {"denom": base, "amount": "0.05"},
-                {"denom": quote, "amount": "0.05"}
+                {"denom": quote, "amount": "0.05"},
             ],
-            "min_collateral_ratio": [
+            "min_initial_collateral_ratio": [
                 {"denom": base, "amount": "1.5"},
-                {"denom": quote, "amount": "1.5"}
-            ],
-            "max_leverage_ratio": [
-                {"denom": base, "amount": "20.0"},
-                {"denom": quote, "amount": "20.0"}
+                {"denom": quote, "amount": "1.5"},
             ],
             "liquidation_threshold": [
                 {"denom": base, "amount": "1.2"},
-                {"denom": quote, "amount": "1.2"}
+                {"denom": quote, "amount": "1.2"},
             ],
             "max_borrow_percent": [
                 {"denom": base, "amount": "0.8"},
-                {"denom": quote, "amount": "0.8"}
+                {"denom": quote, "amount": "0.8"},
             ],
         }
     )
@@ -461,27 +449,23 @@ def test_liquidity_full_exit_deletes_pool(
             ],
             "fee_rate": [
                 {"denom": base, "amount": "0.003"},
-                {"denom": quote, "amount": "0.003"}
+                {"denom": quote, "amount": "0.003"},
             ],
             "interest_rate": [
                 {"denom": base, "amount": "0.05"},
-                {"denom": quote, "amount": "0.05"}
+                {"denom": quote, "amount": "0.05"},
             ],
-            "min_collateral_ratio": [
+            "min_initial_collateral_ratio": [
                 {"denom": base, "amount": "1.5"},
-                {"denom": quote, "amount": "1.5"}
-            ],
-            "max_leverage_ratio": [
-                {"denom": base, "amount": "20.0"},
-                {"denom": quote, "amount": "20.0"}
+                {"denom": quote, "amount": "1.5"},
             ],
             "liquidation_threshold": [
                 {"denom": base, "amount": "1.2"},
-                {"denom": quote, "amount": "1.2"}
+                {"denom": quote, "amount": "1.2"},
             ],
             "max_borrow_percent": [
                 {"denom": base, "amount": "0.8"},
-                {"denom": quote, "amount": "0.8"}
+                {"denom": quote, "amount": "0.8"},
             ],
         }
     )
@@ -879,27 +863,23 @@ def test_query_trades_after_operations(
             ],
             "fee_rate": [
                 {"denom": base, "amount": "0.003"},
-                {"denom": quote, "amount": "0.003"}
+                {"denom": quote, "amount": "0.003"},
             ],
             "interest_rate": [
                 {"denom": base, "amount": "0.05"},
-                {"denom": quote, "amount": "0.05"}
+                {"denom": quote, "amount": "0.05"},
             ],
-            "min_collateral_ratio": [
+            "min_initial_collateral_ratio": [
                 {"denom": base, "amount": "1.5"},
-                {"denom": quote, "amount": "1.5"}
-            ],
-            "max_leverage_ratio": [
-                {"denom": base, "amount": "20.0"},
-                {"denom": quote, "amount": "20.0"}
+                {"denom": quote, "amount": "1.5"},
             ],
             "liquidation_threshold": [
                 {"denom": base, "amount": "1.2"},
-                {"denom": quote, "amount": "1.2"}
+                {"denom": quote, "amount": "1.2"},
             ],
             "max_borrow_percent": [
                 {"denom": base, "amount": "0.8"},
-                {"denom": quote, "amount": "0.8"}
+                {"denom": quote, "amount": "0.8"},
             ],
         }
     )

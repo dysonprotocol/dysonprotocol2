@@ -35,8 +35,6 @@ def test_remove_liquidity_full_exit_deletes_pool(
         f"500{name}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "3.0",
         "--max-borrow-percent",
         "0.8",
         "--from",

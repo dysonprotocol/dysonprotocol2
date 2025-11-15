@@ -20,9 +20,9 @@ def test_initialize_liquidation_liquidatable_position(
     initializer_addr = leverage_accounts["bob"]["addr"]
     foo_name = leverage_names_and_coins["foo_name"]
     bar_name = leverage_names_and_coins["bar_name"]
-    gov_addr = dysond("query", "auth", "module-account", "gov")[
-        "account"
-    ]["value"]["address"]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
 
     extra_code = """
 from dys import _msg, _query, get_executor_address
@@ -49,13 +49,13 @@ def demo_initialize_liquidation(alice_addr, initializer_addr, borrow_denom, coll
             {"denom": base, "amount": "0.003"},
             {"denom": quote, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": base, "amount": "0.05"},
+            {"denom": quote, "amount": "0.05"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": base, "amount": "1.100000000000000000"},
             {"denom": quote, "amount": "1.100000000000000000"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": base, "amount": "5.000000000000000000"},
-            {"denom": quote, "amount": "5.000000000000000000"}
         ],
         "liquidation_threshold": [
             {"denom": base, "amount": "1.200000000000000000"},
@@ -147,22 +147,21 @@ def demo_initialize_liquidation(alice_addr, initializer_addr, borrow_denom, coll
         liquidation_result, dict
     ), f"Liquidation result must be dict. type={type(liquidation_result)}"
     assert (
-        liquidation_result["collateral_ratio"]
-        == "1.150000000000000000"
+        liquidation_result["collateral_ratio"] == "1.150000000000000000"
     ), f"Collateral ratio mismatch. result={json.dumps(liquidation_result, indent=2)}"
     assert (
-        liquidation_result["liquidation_threshold"]
-        == "1.200000000000000000"
+        liquidation_result["liquidation_threshold"] == "1.200000000000000000"
     ), f"Liquidation threshold mismatch. result={json.dumps(liquidation_result, indent=2)}"
 
     assert isinstance(
         position_query, dict
     ), f"Position query must be dict. type={type(position_query)}"
-    assert "position" in position_query, f"Position response missing 'position'. keys={list(position_query.keys())}"
+    assert (
+        "position" in position_query
+    ), f"Position response missing 'position'. keys={list(position_query.keys())}"
     position = position_query["position"]
     assert (
-        position["liquidation_status"]
-        == "LIQUIDATION_STATUS_INITIALIZED"
+        position["liquidation_status"] == "LIQUIDATION_STATUS_INITIALIZED"
     ), f"Liquidation status incorrect. position={json.dumps(position, indent=2)}"
     assert (
         int(position["liquidation_initialized_block_height"]) > 0
@@ -178,9 +177,9 @@ def test_initialize_liquidation_rejects_healthy_position(
     initializer_addr = leverage_accounts["bob"]["addr"]
     foo_name = leverage_names_and_coins["foo_name"]
     bar_name = leverage_names_and_coins["bar_name"]
-    gov_addr = dysond("query", "auth", "module-account", "gov")[
-        "account"
-    ]["value"]["address"]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
 
     extra_code = """
 from dys import _msg, _query, get_executor_address
@@ -207,13 +206,13 @@ def demo_initialize_liquidation_failure(alice_addr, initializer_addr, borrow_den
             {"denom": base, "amount": "0.003"},
             {"denom": quote, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": base, "amount": "0.05"},
+            {"denom": quote, "amount": "0.05"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": base, "amount": "1.100000000000000000"},
             {"denom": quote, "amount": "1.100000000000000000"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": base, "amount": "5.000000000000000000"},
-            {"denom": quote, "amount": "5.000000000000000000"}
         ],
         "liquidation_threshold": [
             {"denom": base, "amount": "1.200000000000000000"},
@@ -292,4 +291,3 @@ def demo_initialize_liquidation_failure(alice_addr, initializer_addr, borrow_den
     assert (
         exception.get("msg") == expected_msg
     ), f"Unexpected exception message. expected={expected_msg} actual={json.dumps(exception, indent=2)}"
-

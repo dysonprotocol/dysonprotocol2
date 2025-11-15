@@ -44,8 +44,6 @@ def test_make_trade_mixed_swap_then_take(
         f"500{foo}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "3.0",
         "--max-borrow-percent",
         "0.8",
         "--from",

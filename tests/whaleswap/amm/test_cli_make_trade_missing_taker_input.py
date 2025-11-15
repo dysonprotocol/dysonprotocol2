@@ -42,8 +42,6 @@ def test_cli_make_trade_missing_taker_input_accounting(
         f"30{bar_denom}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "3.0",
         "--max-borrow-percent",
         "0.8",
         "--from",

@@ -47,7 +47,9 @@ def test_open_position_note_propagates(
         "--from",
         trader_name,
     )
-    assert pool_result.get("code", 1) == 0, f"create-pool failed: {json.dumps(pool_result, indent=2)}"
+    assert (
+        pool_result.get("code", 1) == 0
+    ), f"create-pool failed: {json.dumps(pool_result, indent=2)}"
 
     pool_events = [
         e
@@ -55,7 +57,9 @@ def test_open_position_note_propagates(
         if e.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
     ]
     assert pool_events, f"missing EventPoolCreated: {json.dumps(pool_result, indent=2)}"
-    pool_attrs = {a.get("key"): a.get("value") for a in pool_events[0].get("attributes", [])}
+    pool_attrs = {
+        a.get("key"): a.get("value") for a in pool_events[0].get("attributes", [])
+    }
     pool_id = pool_attrs.get("pool_id")
     assert pool_id, f"pool_id missing: {json.dumps(pool_events[0], indent=2)}"
     pool_id = pool_id.strip('"')
@@ -76,18 +80,26 @@ def test_open_position_note_propagates(
         "--from",
         trader_name,
     )
-    assert open_result.get("code", 1) == 0, f"open-position failed: {json.dumps(open_result, indent=2)}"
+    assert (
+        open_result.get("code", 1) == 0
+    ), f"open-position failed: {json.dumps(open_result, indent=2)}"
 
     trade_events = [
         e
         for e in open_result.get("events", [])
         if e.get("type") == "dysonprotocol.whaleswap.v1.EventTradeRecorded"
     ]
-    assert trade_events, f"missing EventTradeRecorded: {json.dumps(open_result, indent=2)}"
+    assert (
+        trade_events
+    ), f"missing EventTradeRecorded: {json.dumps(open_result, indent=2)}"
 
-    attrs = {a.get("key"): a.get("value") for a in trade_events[0].get("attributes", [])}
+    attrs = {
+        a.get("key"): a.get("value") for a in trade_events[0].get("attributes", [])
+    }
     note_attr = attrs.get("note")
-    assert note_attr is not None, f"note attribute missing: {json.dumps(trade_events[0], indent=2)}"
+    assert (
+        note_attr is not None
+    ), f"note attribute missing: {json.dumps(trade_events[0], indent=2)}"
     assert json.loads(note_attr) == note_text, f"note mismatch: {note_attr}"
 
     trade_id_raw = attrs.get("trade_id")
@@ -97,7 +109,9 @@ def test_open_position_note_propagates(
     trade_resp = dysond("query", "whaleswap", "trade", "--trade-id", str(trade_id))
     assert isinstance(trade_resp, dict), f"query returned {type(trade_resp)}"
     trade = trade_resp.get("trade", {})
-    assert trade.get("note") == note_text, f"trade note mismatch: {json.dumps(trade, indent=2)}"
+    assert (
+        trade.get("note") == note_text
+    ), f"trade note mismatch: {json.dumps(trade, indent=2)}"
 
 
 def test_open_long_position_basic(
@@ -135,13 +149,13 @@ def demo_long_position(alice_addr, foo_name, bar_name):
             {"denom": base, "amount": "0.003"},
             {"denom": quote, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": base, "amount": "0.05"},
+            {"denom": quote, "amount": "0.05"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": base, "amount": "1.5"},
             {"denom": quote, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": base, "amount": "20.0"},
-            {"denom": quote, "amount": "20.0"}
         ],
         "liquidation_threshold": [
             {"denom": base, "amount": "1.2"},
@@ -205,7 +219,9 @@ def demo_long_position(alice_addr, foo_name, bar_name):
         extra_code,
     )
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}; full={json.dumps(query_result, indent=2)}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}; full={json.dumps(query_result, indent=2)}"
 
     print(f"Full query_result: {json.dumps(query_result, indent=2)}")
     print(f"Deep parsed result: {json.dumps(result, indent=2)}")
@@ -294,13 +310,13 @@ def demo_short_position(alice_addr, foo_name, bar_name):
             {"denom": base, "amount": "0.003"},
             {"denom": quote, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": base, "amount": "0.05"},
+            {"denom": quote, "amount": "0.05"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": base, "amount": "1.5"},
             {"denom": quote, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": base, "amount": "20.0"},
-            {"denom": quote, "amount": "20.0"}
         ],
         "liquidation_threshold": [
             {"denom": base, "amount": "1.2"},
@@ -364,7 +380,9 @@ def demo_short_position(alice_addr, foo_name, bar_name):
         extra_code,
     )
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}; full={json.dumps(query_result, indent=2)}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}; full={json.dumps(query_result, indent=2)}"
 
     print(f"Full query_result: {json.dumps(query_result, indent=2)}")
     print(f"Deep parsed result: {json.dumps(result, indent=2)}")
@@ -513,13 +531,13 @@ def demo_insufficient_cr(alice_addr, foo_name, bar_name):
             {"denom": base, "amount": "0.003"},
             {"denom": quote, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": base, "amount": "0.05"},
+            {"denom": quote, "amount": "0.05"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": base, "amount": "1.5"},
             {"denom": quote, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": base, "amount": "20.0"},
-            {"denom": quote, "amount": "20.0"}
         ],
         "liquidation_threshold": [
             {"denom": base, "amount": "1.2"},
@@ -604,13 +622,13 @@ def demo_leverage_no_clamp(alice_addr, foo_name, bar_name):
             {"denom": base, "amount": "0.003"},
             {"denom": quote, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": base, "amount": "0.05"},
+            {"denom": quote, "amount": "0.05"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": base, "amount": "1.5"},
             {"denom": quote, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": base, "amount": "1.4"},
-            {"denom": quote, "amount": "1.4"}
         ],
         "liquidation_threshold": [
             {"denom": base, "amount": "1.2"},
@@ -653,7 +671,9 @@ def demo_leverage_no_clamp(alice_addr, foo_name, bar_name):
         extra_code,
     )
 
-    assert "exception" not in query_result, f"Did not expect exception (leverage clamp deprecated). Full: {json.dumps(query_result, indent=2)}"
+    assert (
+        "exception" not in query_result
+    ), f"Did not expect exception (leverage clamp deprecated). Full: {json.dumps(query_result, indent=2)}"
 
 
 def test_open_position_borrow_cap_exceeded(
@@ -690,13 +710,13 @@ def demo_borrow_cap_exceeded(alice_addr, foo_name, bar_name):
             {"denom": base, "amount": "0.003"},
             {"denom": quote, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": base, "amount": "0.05"},
+            {"denom": quote, "amount": "0.05"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": base, "amount": "1.5"},
             {"denom": quote, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": base, "amount": "20.0"},
-            {"denom": quote, "amount": "20.0"}
         ],
         "liquidation_threshold": [
             {"denom": base, "amount": "1.2"},
@@ -782,13 +802,13 @@ def demo_invalid_collateral_denom(alice_addr, foo_name, bar_name):
             {"denom": base, "amount": "0.003"},
             {"denom": quote, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": base, "amount": "0.05"},
+            {"denom": quote, "amount": "0.05"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": base, "amount": "1.5"},
             {"denom": quote, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": base, "amount": "20.0"},
-            {"denom": quote, "amount": "20.0"}
         ],
         "liquidation_threshold": [
             {"denom": base, "amount": "1.2"},
@@ -874,13 +894,13 @@ def demo_invalid_borrow_denom(alice_addr, foo_name, bar_name):
             {"denom": base, "amount": "0.003"},
             {"denom": quote, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": base, "amount": "0.05"},
+            {"denom": quote, "amount": "0.05"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": base, "amount": "1.5"},
             {"denom": quote, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": base, "amount": "20.0"},
-            {"denom": quote, "amount": "20.0"}
         ],
         "liquidation_threshold": [
             {"denom": base, "amount": "1.2"},
@@ -966,13 +986,13 @@ def demo_zero_collateral(alice_addr, foo_name, bar_name):
             {"denom": base, "amount": "0.003"},
             {"denom": quote, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": base, "amount": "0.05"},
+            {"denom": quote, "amount": "0.05"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": base, "amount": "1.5"},
             {"denom": quote, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": base, "amount": "20.0"},
-            {"denom": quote, "amount": "20.0"}
         ],
         "liquidation_threshold": [
             {"denom": base, "amount": "1.2"},
@@ -1056,13 +1076,13 @@ def demo_zero_borrow(alice_addr, foo_name, bar_name):
             {"denom": base, "amount": "0.003"},
             {"denom": quote, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": base, "amount": "0.05"},
+            {"denom": quote, "amount": "0.05"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": base, "amount": "1.5"},
             {"denom": quote, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": base, "amount": "20.0"},
-            {"denom": quote, "amount": "20.0"}
         ],
         "liquidation_threshold": [
             {"denom": base, "amount": "1.2"},

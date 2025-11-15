@@ -52,13 +52,13 @@ def demo_trade_metrics(alice_addr, foo_name, bar_name):
             {"denom": base, "amount": "0.003"},
             {"denom": quote, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": base, "amount": "1.5"},
             {"denom": quote, "amount": "1.5"}
         ],
-        "max_leverage_ratio": [
-            {"denom": base, "amount": "20.0"},
-            {"denom": quote, "amount": "20.0"}
+        "interest_rate": [
+            {"denom": base, "amount": "0.0"},
+            {"denom": quote, "amount": "0.0"}
         ],
         "liquidation_threshold": [
             {"denom": base, "amount": "1.2"},
@@ -185,10 +185,6 @@ def test_address_metrics_leverage_coverage(chainnet, generate_account, register_
         f"1.5{base}",
         "--min-collateral-ratio",
         f"1.5{quote}",
-        "--max-leverage-ratio",
-        f"20.0{base}",
-        "--max-leverage-ratio",
-        f"20.0{quote}",
         "--liquidation-threshold",
         f"1.2{base}",
         "--liquidation-threshold",
@@ -495,7 +491,7 @@ def _sudo(msg_dict):
 
 def demo_liquidity_metrics(alice_addr, foo_name, bar_name):
     base, quote = sorted([foo_name, bar_name])
-    
+
     # Create pool
     pool_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
@@ -508,13 +504,13 @@ def demo_liquidity_metrics(alice_addr, foo_name, bar_name):
             {"denom": base, "amount": "0.003"},
             {"denom": quote, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": base, "amount": "1.5"},
             {"denom": quote, "amount": "1.5"}
         ],
-        "max_leverage_ratio": [
-            {"denom": base, "amount": "20.0"},
-            {"denom": quote, "amount": "20.0"}
+        "interest_rate": [
+            {"denom": base, "amount": "0.0"},
+            {"denom": quote, "amount": "0.0"}
         ],
         "liquidation_threshold": [
             {"denom": base, "amount": "1.2"},
@@ -724,13 +720,9 @@ def demo_multi_address(alice_addr, bob_addr, foo_name, bar_name):
             {"denom": sorted([foo_name, bar_name])[0], "amount": "0.003"},
             {"denom": sorted([foo_name, bar_name])[1], "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
             {"denom": sorted([foo_name, bar_name])[0], "amount": "1.5"},
             {"denom": sorted([foo_name, bar_name])[1], "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": sorted([foo_name, bar_name])[0], "amount": "20.0"},
-            {"denom": sorted([foo_name, bar_name])[1], "amount": "20.0"}
         ],
         "liquidation_threshold": [
             {"denom": sorted([foo_name, bar_name])[0], "amount": "1.2"},

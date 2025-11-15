@@ -45,8 +45,6 @@ def test_create_pool_v3_with_band_success(
         f"{bound_values[1]}{sorted_denoms[1]}",
         "--min-collateral-ratio",
         "1.5",
-        "--max-leverage-ratio",
-        "3.0",
         "--max-borrow-percent",
         "0.8",
         "--from",

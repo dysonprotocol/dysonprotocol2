@@ -53,27 +53,23 @@ def test_query_pools_by_pair_and_denom(
                 ],
                 "fee_rate": [
                     {"denom": base, "amount": "0.003"},
-                    {"denom": quote, "amount": "0.003"}
+                    {"denom": quote, "amount": "0.003"},
                 ],
                 "interest_rate": [
                     {"denom": base, "amount": "0.05"},
-                    {"denom": quote, "amount": "0.05"}
+                    {"denom": quote, "amount": "0.05"},
                 ],
-                "min_collateral_ratio": [
+                "min_initial_collateral_ratio": [
                     {"denom": base, "amount": "1.5"},
-                    {"denom": quote, "amount": "1.5"}
-                ],
-                "max_leverage_ratio": [
-                    {"denom": base, "amount": "20.0"},
-                    {"denom": quote, "amount": "20.0"}
+                    {"denom": quote, "amount": "1.5"},
                 ],
                 "liquidation_threshold": [
                     {"denom": base, "amount": "1.2"},
-                    {"denom": quote, "amount": "1.2"}
+                    {"denom": quote, "amount": "1.2"},
                 ],
                 "max_borrow_percent": [
                     {"denom": base, "amount": "0.8"},
-                    {"denom": quote, "amount": "0.8"}
+                    {"denom": quote, "amount": "0.8"},
                 ],
             }
         )

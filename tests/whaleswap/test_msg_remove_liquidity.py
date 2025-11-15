@@ -68,13 +68,13 @@ def demo_remove_liquidity_full(alice_addr, foo_name, bar_name):
             {"denom": denom_a, "amount": "0.002"},
             {"denom": denom_b, "amount": "0.002"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": denom_a, "amount": "0.0"},
+            {"denom": denom_b, "amount": "0.0"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "1.5"},
             {"denom": denom_b, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "15.0"},
-            {"denom": denom_b, "amount": "15.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.2"},
@@ -204,13 +204,13 @@ def demo_remove_liquidity_partial(alice_addr, foo_name, bar_name):
             {"denom": denom_a, "amount": "0.003"},
             {"denom": denom_b, "amount": "0.003"}
         ],
-        "min_collateral_ratio": [
+        "interest_rate": [
+            {"denom": denom_a, "amount": "0.0"},
+            {"denom": denom_b, "amount": "0.0"}
+        ],
+        "min_initial_collateral_ratio": [
             {"denom": denom_a, "amount": "1.5"},
             {"denom": denom_b, "amount": "1.5"}
-        ],
-        "max_leverage_ratio": [
-            {"denom": denom_a, "amount": "20.0"},
-            {"denom": denom_b, "amount": "20.0"}
         ],
         "liquidation_threshold": [
             {"denom": denom_a, "amount": "1.2"},
