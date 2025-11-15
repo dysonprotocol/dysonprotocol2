@@ -1,5 +1,5 @@
 """
-Test PositionsByUser and PositionsByPool queries for leverage positions.
+Test PositionsByAddress and PositionsByPool queries for leverage positions.
 
 Tests that:
 1. When status is unspecified, all positions are returned (OPEN, CLOSED, LIQUIDATED)
@@ -11,10 +11,10 @@ import pytest
 from deep_parse import deep_parse
 
 
-def test_positions_by_user_all_statuses(
+def test_positions_by_address_all_statuses(
     chainnet, leverage_accounts, leverage_names_and_coins
 ):
-    """Test PositionsByUser returns all positions when status is unspecified."""
+    """Test PositionsByAddress returns all positions when status is unspecified."""
     dysond = chainnet[0]
     alice_addr = leverage_accounts["alice"]["addr"]
     alice_name = leverage_accounts["alice"]["name"]
@@ -135,8 +135,8 @@ def test_positions_by_user_all_statuses(
     all_positions = dysond(
         "query",
         "whaleswap",
-        "positions-by-user",
-        "--user",
+        "positions-by-address",
+        "--address",
         alice_addr,
         "--pool-id",
         pool_id,
@@ -173,8 +173,8 @@ def test_positions_by_user_all_statuses(
     open_positions = dysond(
         "query",
         "whaleswap",
-        "positions-by-user",
-        "--user",
+        "positions-by-address",
+        "--address",
         alice_addr,
         "--pool-id",
         pool_id,
@@ -197,8 +197,8 @@ def test_positions_by_user_all_statuses(
     closed_positions = dysond(
         "query",
         "whaleswap",
-        "positions-by-user",
-        "--user",
+        "positions-by-address",
+        "--address",
         alice_addr,
         "--pool-id",
         pool_id,

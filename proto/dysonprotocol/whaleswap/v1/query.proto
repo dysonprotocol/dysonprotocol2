@@ -339,18 +339,19 @@ service Query {
         "/dysonprotocol/whaleswap/v1/positions/{position_id}";
   }
   /*
-   * PositionsByUser lists all leverage positions for a user with optional
-   * filters.
+   * PositionsByAddress lists all leverage positions for an address with
+   * optional filters.
    *
-   * Uses indexed queries on PositionsByUserIndex with (user,status,position_id)
-   * keys. Defaults to OPEN positions when status unspecified. Applies
-   * additional filters for pool_id, borrowed_denom, collateral_denom as
-   * specified. Supports pagination with consistent ordering by position ID.
+   * Uses indexed queries on PositionsByAddressIndex with
+   * (address,status,position_id) keys. Defaults to OPEN positions when status
+   * unspecified. Applies additional filters for pool_id, borrowed_denom,
+   * collateral_denom as specified. Supports pagination with consistent ordering
+   * by position ID.
    */
-  rpc PositionsByUser(QueryPositionsByUserRequest)
-      returns (QueryPositionsByUserResponse) {
+  rpc PositionsByAddress(QueryPositionsByAddressRequest)
+      returns (QueryPositionsByAddressResponse) {
     option (google.api.http).get =
-        "/dysonprotocol/whaleswap/v1/positions/user/{user}";
+        "/dysonprotocol/whaleswap/v1/positions/address/{address}";
   }
   /*
    * PositionsByPool lists all leverage positions in a specific pool with
@@ -825,10 +826,10 @@ message InterestView {
   ];
 }
 
-message QueryPositionsByUserRequest {
-  // User address to filter positions by; returns all positions owned by this
-  // address
-  string user = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+message QueryPositionsByAddressRequest {
+  // Account address to filter positions by; returns all positions owned by this
+  // address.
+  string address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   // Optional filter by borrowed denomination
   string borrowed_denom = 2;
   // Optional filter by collateral denomination
@@ -841,8 +842,8 @@ message QueryPositionsByUserRequest {
   PositionStatus status = 6;
 }
 
-message QueryPositionsByUserResponse {
-  // List of positions matching the user and filter criteria
+message QueryPositionsByAddressResponse {
+  // List of positions matching the address and filter criteria
   repeated LeveragePosition positions = 1;
   // Pagination metadata for result set navigation
   cosmos.base.query.v1beta1.PageResponse pagination = 2;

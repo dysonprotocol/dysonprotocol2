@@ -1,13 +1,13 @@
 {
     "request": {
         "$schema": "http://json-schema.org/draft-04/schema#",
-        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPositionsByAddressRequest",
         "definitions": {
-            "dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest": {
+            "dysonprotocol.whaleswap.v1.QueryPositionsByAddressRequest": {
                 "properties": {
-                    "user": {
+                    "address": {
                         "type": "string",
-                        "description": "User address to filter positions by; returns all positions owned by this address"
+                        "description": "Account address to filter positions by; returns all positions owned by this address."
                     },
                     "borrowed_denom": {
                         "type": "string",
@@ -52,7 +52,7 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Positions By User Request"
+                "title": "Query Positions By Address Request"
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -88,9 +88,9 @@
     },
     "response": {
         "$schema": "http://json-schema.org/draft-04/schema#",
-        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPositionsByUserResponse",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPositionsByAddressResponse",
         "definitions": {
-            "dysonprotocol.whaleswap.v1.QueryPositionsByUserResponse": {
+            "dysonprotocol.whaleswap.v1.QueryPositionsByAddressResponse": {
                 "properties": {
                     "positions": {
                         "items": {
@@ -98,7 +98,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "List of positions matching the user and filter criteria"
+                        "description": "List of positions matching the address and filter criteria"
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
@@ -108,7 +108,7 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Positions By User Response"
+                "title": "Query Positions By Address Response"
             },
             "cosmos.base.query.v1beta1.PageResponse": {
                 "properties": {

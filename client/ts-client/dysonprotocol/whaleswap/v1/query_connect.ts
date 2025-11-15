@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { QueryAddressMetricsRequest, QueryAddressMetricsResponse, QueryAuctionByNFTRequest, QueryAuctionByNFTResponse, QueryAuctionRequest, QueryAuctionResponse, QueryAuctionsByPairPriceRangeRequest, QueryAuctionsByPairPriceRangeResponse, QueryAuctionsBySellerRequest, QueryAuctionsBySellerResponse, QueryAuctionsRequest, QueryAuctionsResponse, QueryMetricsRequest, QueryMetricsResponse, QueryOfferRequest, QueryOfferResponse, QueryOffersBestRequest, QueryOffersBestResponse, QueryOffersByDenomRequest, QueryOffersByDenomResponse, QueryOffersByOwnerRequest, QueryOffersByOwnerResponse, QueryOffersByPairPriceRangeRequest, QueryOffersByPairPriceRangeResponse, QueryOffersRequest, QueryOffersResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolBySharesDenomRequest, QueryPoolBySharesDenomResponse, QueryPoolRequest, QueryPoolResponse, QueryPoolsByDenomRequest, QueryPoolsByDenomResponse, QueryPoolsByOwnerRequest, QueryPoolsByOwnerResponse, QueryPoolsByPairPriceRangeRequest, QueryPoolsByPairPriceRangeResponse, QueryPoolsByPairRequest, QueryPoolsByPairResponse, QueryPoolsRequest, QueryPoolsResponse, QueryPositionRequest, QueryPositionResponse, QueryPositionsByPoolRequest, QueryPositionsByPoolResponse, QueryPositionsByUserRequest, QueryPositionsByUserResponse, QueryTradeRequest, QueryTradeResponse, QueryTradesByAuctionRequest, QueryTradesByAuctionResponse, QueryTradesByOfferRequest, QueryTradesByOfferResponse, QueryTradesByPoolRequest, QueryTradesByPoolResponse, QueryTradesByTakerRequest, QueryTradesByTakerResponse, QueryTradesRequest, QueryTradesResponse } from "./query_pb.js";
+import { QueryAddressMetricsRequest, QueryAddressMetricsResponse, QueryAuctionByNFTRequest, QueryAuctionByNFTResponse, QueryAuctionRequest, QueryAuctionResponse, QueryAuctionsByPairPriceRangeRequest, QueryAuctionsByPairPriceRangeResponse, QueryAuctionsBySellerRequest, QueryAuctionsBySellerResponse, QueryAuctionsRequest, QueryAuctionsResponse, QueryMetricsRequest, QueryMetricsResponse, QueryOfferRequest, QueryOfferResponse, QueryOffersBestRequest, QueryOffersBestResponse, QueryOffersByDenomRequest, QueryOffersByDenomResponse, QueryOffersByOwnerRequest, QueryOffersByOwnerResponse, QueryOffersByPairPriceRangeRequest, QueryOffersByPairPriceRangeResponse, QueryOffersRequest, QueryOffersResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolBySharesDenomRequest, QueryPoolBySharesDenomResponse, QueryPoolRequest, QueryPoolResponse, QueryPoolsByDenomRequest, QueryPoolsByDenomResponse, QueryPoolsByOwnerRequest, QueryPoolsByOwnerResponse, QueryPoolsByPairPriceRangeRequest, QueryPoolsByPairPriceRangeResponse, QueryPoolsByPairRequest, QueryPoolsByPairResponse, QueryPoolsRequest, QueryPoolsResponse, QueryPositionRequest, QueryPositionResponse, QueryPositionsByAddressRequest, QueryPositionsByAddressResponse, QueryPositionsByPoolRequest, QueryPositionsByPoolResponse, QueryTradeRequest, QueryTradeResponse, QueryTradesByAuctionRequest, QueryTradesByAuctionResponse, QueryTradesByOfferRequest, QueryTradesByOfferResponse, QueryTradesByPoolRequest, QueryTradesByPoolResponse, QueryTradesByTakerRequest, QueryTradesByTakerResponse, QueryTradesRequest, QueryTradesResponse } from "./query_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -459,20 +459,21 @@ export const Query = {
     },
     /**
      *
-     * PositionsByUser lists all leverage positions for a user with optional
-     * filters.
+     * PositionsByAddress lists all leverage positions for an address with
+     * optional filters.
      *
-     * Uses indexed queries on PositionsByUserIndex with (user,status,position_id)
-     * keys. Defaults to OPEN positions when status unspecified. Applies
-     * additional filters for pool_id, borrowed_denom, collateral_denom as
-     * specified. Supports pagination with consistent ordering by position ID.
+     * Uses indexed queries on PositionsByAddressIndex with
+     * (address,status,position_id) keys. Defaults to OPEN positions when status
+     * unspecified. Applies additional filters for pool_id, borrowed_denom,
+     * collateral_denom as specified. Supports pagination with consistent ordering
+     * by position ID.
      *
-     * @generated from rpc dysonprotocol.whaleswap.v1.Query.PositionsByUser
+     * @generated from rpc dysonprotocol.whaleswap.v1.Query.PositionsByAddress
      */
-    positionsByUser: {
-      name: "PositionsByUser",
-      I: QueryPositionsByUserRequest,
-      O: QueryPositionsByUserResponse,
+    positionsByAddress: {
+      name: "PositionsByAddress",
+      I: QueryPositionsByAddressRequest,
+      O: QueryPositionsByAddressResponse,
       kind: MethodKind.Unary,
     },
     /**

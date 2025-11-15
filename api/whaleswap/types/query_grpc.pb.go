@@ -45,7 +45,7 @@ const (
 	Query_AuctionByNFT_FullMethodName             = "/dysonprotocol.whaleswap.v1.Query/AuctionByNFT"
 	Query_AuctionsByPairPriceRange_FullMethodName = "/dysonprotocol.whaleswap.v1.Query/AuctionsByPairPriceRange"
 	Query_Position_FullMethodName                 = "/dysonprotocol.whaleswap.v1.Query/Position"
-	Query_PositionsByUser_FullMethodName          = "/dysonprotocol.whaleswap.v1.Query/PositionsByUser"
+	Query_PositionsByAddress_FullMethodName       = "/dysonprotocol.whaleswap.v1.Query/PositionsByAddress"
 	Query_PositionsByPool_FullMethodName          = "/dysonprotocol.whaleswap.v1.Query/PositionsByPool"
 	Query_Metrics_FullMethodName                  = "/dysonprotocol.whaleswap.v1.Query/Metrics"
 	Query_AddressMetrics_FullMethodName           = "/dysonprotocol.whaleswap.v1.Query/AddressMetrics"
@@ -240,14 +240,15 @@ type QueryClient interface {
 	// liquidation. Returns enriched position data with computed fields for UI
 	// consumption.
 	Position(ctx context.Context, in *QueryPositionRequest, opts ...grpc.CallOption) (*QueryPositionResponse, error)
-	// PositionsByUser lists all leverage positions for a user with optional
-	// filters.
+	// PositionsByAddress lists all leverage positions for an address with
+	// optional filters.
 	//
-	// Uses indexed queries on PositionsByUserIndex with (user,status,position_id)
-	// keys. Defaults to OPEN positions when status unspecified. Applies
-	// additional filters for pool_id, borrowed_denom, collateral_denom as
-	// specified. Supports pagination with consistent ordering by position ID.
-	PositionsByUser(ctx context.Context, in *QueryPositionsByUserRequest, opts ...grpc.CallOption) (*QueryPositionsByUserResponse, error)
+	// Uses indexed queries on PositionsByAddressIndex with
+	// (address,status,position_id) keys. Defaults to OPEN positions when status
+	// unspecified. Applies additional filters for pool_id, borrowed_denom,
+	// collateral_denom as specified. Supports pagination with consistent ordering
+	// by position ID.
+	PositionsByAddress(ctx context.Context, in *QueryPositionsByAddressRequest, opts ...grpc.CallOption) (*QueryPositionsByAddressResponse, error)
 	// PositionsByPool lists all leverage positions in a specific pool with
 	// optional status filter.
 	//
@@ -543,10 +544,10 @@ func (c *queryClient) Position(ctx context.Context, in *QueryPositionRequest, op
 	return out, nil
 }
 
-func (c *queryClient) PositionsByUser(ctx context.Context, in *QueryPositionsByUserRequest, opts ...grpc.CallOption) (*QueryPositionsByUserResponse, error) {
+func (c *queryClient) PositionsByAddress(ctx context.Context, in *QueryPositionsByAddressRequest, opts ...grpc.CallOption) (*QueryPositionsByAddressResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryPositionsByUserResponse)
-	err := c.cc.Invoke(ctx, Query_PositionsByUser_FullMethodName, in, out, cOpts...)
+	out := new(QueryPositionsByAddressResponse)
+	err := c.cc.Invoke(ctx, Query_PositionsByAddress_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -772,14 +773,15 @@ type QueryServer interface {
 	// liquidation. Returns enriched position data with computed fields for UI
 	// consumption.
 	Position(context.Context, *QueryPositionRequest) (*QueryPositionResponse, error)
-	// PositionsByUser lists all leverage positions for a user with optional
-	// filters.
+	// PositionsByAddress lists all leverage positions for an address with
+	// optional filters.
 	//
-	// Uses indexed queries on PositionsByUserIndex with (user,status,position_id)
-	// keys. Defaults to OPEN positions when status unspecified. Applies
-	// additional filters for pool_id, borrowed_denom, collateral_denom as
-	// specified. Supports pagination with consistent ordering by position ID.
-	PositionsByUser(context.Context, *QueryPositionsByUserRequest) (*QueryPositionsByUserResponse, error)
+	// Uses indexed queries on PositionsByAddressIndex with
+	// (address,status,position_id) keys. Defaults to OPEN positions when status
+	// unspecified. Applies additional filters for pool_id, borrowed_denom,
+	// collateral_denom as specified. Supports pagination with consistent ordering
+	// by position ID.
+	PositionsByAddress(context.Context, *QueryPositionsByAddressRequest) (*QueryPositionsByAddressResponse, error)
 	// PositionsByPool lists all leverage positions in a specific pool with
 	// optional status filter.
 	//
@@ -893,8 +895,8 @@ func (UnimplementedQueryServer) AuctionsByPairPriceRange(context.Context, *Query
 func (UnimplementedQueryServer) Position(context.Context, *QueryPositionRequest) (*QueryPositionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Position not implemented")
 }
-func (UnimplementedQueryServer) PositionsByUser(context.Context, *QueryPositionsByUserRequest) (*QueryPositionsByUserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PositionsByUser not implemented")
+func (UnimplementedQueryServer) PositionsByAddress(context.Context, *QueryPositionsByAddressRequest) (*QueryPositionsByAddressResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PositionsByAddress not implemented")
 }
 func (UnimplementedQueryServer) PositionsByPool(context.Context, *QueryPositionsByPoolRequest) (*QueryPositionsByPoolResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PositionsByPool not implemented")
@@ -1394,20 +1396,20 @@ func _Query_Position_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_PositionsByUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryPositionsByUserRequest)
+func _Query_PositionsByAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPositionsByAddressRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).PositionsByUser(ctx, in)
+		return srv.(QueryServer).PositionsByAddress(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_PositionsByUser_FullMethodName,
+		FullMethod: Query_PositionsByAddress_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).PositionsByUser(ctx, req.(*QueryPositionsByUserRequest))
+		return srv.(QueryServer).PositionsByAddress(ctx, req.(*QueryPositionsByAddressRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1578,8 +1580,8 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_Position_Handler,
 		},
 		{
-			MethodName: "PositionsByUser",
-			Handler:    _Query_PositionsByUser_Handler,
+			MethodName: "PositionsByAddress",
+			Handler:    _Query_PositionsByAddress_Handler,
 		},
 		{
 			MethodName: "PositionsByPool",

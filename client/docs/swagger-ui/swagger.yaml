@@ -10365,6 +10365,329 @@ paths:
           format: uint64
       tags:
         - Query
+  /dysonprotocol/whaleswap/v1/positions/address/{address}:
+    get:
+      summary: |-
+        PositionsByAddress lists all leverage positions for an address with
+        optional filters.
+      description: >-
+        Uses indexed queries on PositionsByAddressIndex with
+
+        (address,status,position_id) keys. Defaults to OPEN positions when
+        status
+
+        unspecified. Applies additional filters for pool_id, borrowed_denom,
+
+        collateral_denom as specified. Supports pagination with consistent
+        ordering
+
+        by position ID.
+      operationId: dysonprotocol.whaleswap.v1.QueryPositionsByAddressRequest
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              positions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    position_id:
+                      type: string
+                      format: uint64
+                    pool_id:
+                      type: string
+                      format: uint64
+                    user:
+                      type: string
+                    status:
+                      type: string
+                      enum:
+                        - POSITION_STATUS_UNSPECIFIED
+                        - POSITION_STATUS_OPEN
+                        - POSITION_STATUS_CLOSED
+                        - POSITION_STATUS_LIQUIDATING
+                        - POSITION_STATUS_LIQUIDATED
+                      default: POSITION_STATUS_UNSPECIFIED
+                    borrowed:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    held:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    collateral:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    created_height:
+                      type: string
+                      format: uint64
+                    created_time:
+                      type: string
+                      format: date-time
+                    liquidation_initialized_block_height:
+                      type: string
+                      format: uint64
+                    liquidation_status:
+                      type: string
+                      enum:
+                        - LIQUIDATION_STATUS_UNSPECIFIED
+                        - LIQUIDATION_STATUS_NONE
+                        - LIQUIDATION_STATUS_INITIALIZED
+                      default: LIQUIDATION_STATUS_UNSPECIFIED
+                    accrued_interest:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    updated_height:
+                      type: string
+                      format: uint64
+                    updated_time:
+                      type: string
+                      format: date-time
+                    interest_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        ═════ PER-POSITION SNAPSHOTS (sticky to this position)
+                        ═════
+
+                        Annual interest rates per reserve denom (exactly two,
+                        canonical order).
+
+                        Each amount is a LegacyDec string representing APR
+                        (per-year accrual).
+                    min_collateral_ratio:
+                      type: string
+                      description: >-
+                        Minimum collateral ratio used for health/liquidation
+                        checks (cosmos.Dec
+
+                        string).
+                    liquidation_threshold:
+                      type: string
+                      description: >-
+                        Liquidation threshold used for liquidation checks
+                        (cosmos.Dec string).
+                    initial_borrowed:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    total_interest_paid:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    last_interest_settlement_time:
+                      type: string
+                      format: date-time
+                      description: >-
+                        Timestamp of the last time interest was settled into
+                        accrued_interest.
+                  description: >-
+                    LeveragePosition represents an active leverage position for
+                    a trader.
+                title: List of positions matching the address and filter criteria
+              pagination:
+                title: Pagination metadata for result set navigation
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: address
+          description: >-
+            Account address to filter positions by; returns all positions owned
+            by this
+
+            address.
+          in: path
+          required: true
+          type: string
+        - name: borrowed_denom
+          description: Optional filter by borrowed denomination.
+          in: query
+          required: false
+          type: string
+        - name: collateral_denom
+          description: Optional filter by collateral denomination.
+          in: query
+          required: false
+          type: string
+        - name: pool_id
+          description: >-
+            Optional filter by pool ID (cannot combine with borrowed/collateral
+            denoms).
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.key
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          in: query
+          required: false
+          type: boolean
+        - name: status
+          description: Optional filter by lifecycle status; defaults to OPEN positions.
+          in: query
+          required: false
+          type: string
+          enum:
+            - POSITION_STATUS_UNSPECIFIED
+            - POSITION_STATUS_OPEN
+            - POSITION_STATUS_CLOSED
+            - POSITION_STATUS_LIQUIDATING
+            - POSITION_STATUS_LIQUIDATED
+          default: POSITION_STATUS_UNSPECIFIED
+      tags:
+        - Query
   /dysonprotocol/whaleswap/v1/positions/pool/{pool_id}:
     get:
       summary: |-
@@ -10625,326 +10948,6 @@ paths:
           description: Pool ID to filter positions by; returns all positions in this pool
           in: path
           required: true
-          type: string
-          format: uint64
-        - name: pagination.key
-          in: query
-          required: false
-          type: string
-          format: byte
-        - name: pagination.offset
-          in: query
-          required: false
-          type: string
-          format: uint64
-        - name: pagination.limit
-          in: query
-          required: false
-          type: string
-          format: uint64
-        - name: pagination.count_total
-          in: query
-          required: false
-          type: boolean
-        - name: pagination.reverse
-          in: query
-          required: false
-          type: boolean
-        - name: status
-          description: Optional filter by lifecycle status; defaults to OPEN positions.
-          in: query
-          required: false
-          type: string
-          enum:
-            - POSITION_STATUS_UNSPECIFIED
-            - POSITION_STATUS_OPEN
-            - POSITION_STATUS_CLOSED
-            - POSITION_STATUS_LIQUIDATING
-            - POSITION_STATUS_LIQUIDATED
-          default: POSITION_STATUS_UNSPECIFIED
-      tags:
-        - Query
-  /dysonprotocol/whaleswap/v1/positions/user/{user}:
-    get:
-      summary: |-
-        PositionsByUser lists all leverage positions for a user with optional
-        filters.
-      description: >-
-        Uses indexed queries on PositionsByUserIndex with
-        (user,status,position_id)
-
-        keys. Defaults to OPEN positions when status unspecified. Applies
-
-        additional filters for pool_id, borrowed_denom, collateral_denom as
-
-        specified. Supports pagination with consistent ordering by position ID.
-      operationId: dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest
-      responses:
-        '200':
-          description: A successful response.
-          schema:
-            type: object
-            properties:
-              positions:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    position_id:
-                      type: string
-                      format: uint64
-                    pool_id:
-                      type: string
-                      format: uint64
-                    user:
-                      type: string
-                    status:
-                      type: string
-                      enum:
-                        - POSITION_STATUS_UNSPECIFIED
-                        - POSITION_STATUS_OPEN
-                        - POSITION_STATUS_CLOSED
-                        - POSITION_STATUS_LIQUIDATING
-                        - POSITION_STATUS_LIQUIDATED
-                      default: POSITION_STATUS_UNSPECIFIED
-                    borrowed:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    held:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    collateral:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    created_height:
-                      type: string
-                      format: uint64
-                    created_time:
-                      type: string
-                      format: date-time
-                    liquidation_initialized_block_height:
-                      type: string
-                      format: uint64
-                    liquidation_status:
-                      type: string
-                      enum:
-                        - LIQUIDATION_STATUS_UNSPECIFIED
-                        - LIQUIDATION_STATUS_NONE
-                        - LIQUIDATION_STATUS_INITIALIZED
-                      default: LIQUIDATION_STATUS_UNSPECIFIED
-                    accrued_interest:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    updated_height:
-                      type: string
-                      format: uint64
-                    updated_time:
-                      type: string
-                      format: date-time
-                    interest_rate:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        ═════ PER-POSITION SNAPSHOTS (sticky to this position)
-                        ═════
-
-                        Annual interest rates per reserve denom (exactly two,
-                        canonical order).
-
-                        Each amount is a LegacyDec string representing APR
-                        (per-year accrual).
-                    min_collateral_ratio:
-                      type: string
-                      description: >-
-                        Minimum collateral ratio used for health/liquidation
-                        checks (cosmos.Dec
-
-                        string).
-                    liquidation_threshold:
-                      type: string
-                      description: >-
-                        Liquidation threshold used for liquidation checks
-                        (cosmos.Dec string).
-                    initial_borrowed:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    total_interest_paid:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    last_interest_settlement_time:
-                      type: string
-                      format: date-time
-                      description: >-
-                        Timestamp of the last time interest was settled into
-                        accrued_interest.
-                  description: >-
-                    LeveragePosition represents an active leverage position for
-                    a trader.
-                title: List of positions matching the user and filter criteria
-              pagination:
-                title: Pagination metadata for result set navigation
-                type: object
-                properties:
-                  next_key:
-                    type: string
-                    format: byte
-                    description: |-
-                      next_key is the key to be passed to PageRequest.key to
-                      query the next page most efficiently. It will be empty if
-                      there are no more results.
-                  total:
-                    type: string
-                    format: uint64
-                    title: >-
-                      total is total number of results available if
-                      PageRequest.count_total
-
-                      was set, its value is undefined otherwise
-                description: >-
-                  PageResponse is to be embedded in gRPC response messages where
-                  the
-
-                  corresponding request message has used PageRequest.
-
-                   message SomeResponse {
-                           repeated Bar results = 1;
-                           PageResponse page = 2;
-                   }
-        default:
-          description: An unexpected error response.
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              code:
-                type: integer
-                format: int32
-              message:
-                type: string
-              details:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    type_url:
-                      type: string
-                    value:
-                      type: string
-                      format: byte
-      parameters:
-        - name: user
-          description: >-
-            User address to filter positions by; returns all positions owned by
-            this
-
-            address
-          in: path
-          required: true
-          type: string
-        - name: borrowed_denom
-          description: Optional filter by borrowed denomination.
-          in: query
-          required: false
-          type: string
-        - name: collateral_denom
-          description: Optional filter by collateral denomination.
-          in: query
-          required: false
-          type: string
-        - name: pool_id
-          description: >-
-            Optional filter by pool ID (cannot combine with borrowed/collateral
-            denoms).
-          in: query
-          required: false
           type: string
           format: uint64
         - name: pagination.key
@@ -55882,6 +55885,218 @@ definitions:
           annual_rate:
             type: string
             description: Annual rate applied for this position (borrowed denom entry).
+  dysonprotocol.whaleswap.v1.QueryPositionsByAddressResponse:
+    type: object
+    properties:
+      positions:
+        type: array
+        items:
+          type: object
+          properties:
+            position_id:
+              type: string
+              format: uint64
+            pool_id:
+              type: string
+              format: uint64
+            user:
+              type: string
+            status:
+              type: string
+              enum:
+                - POSITION_STATUS_UNSPECIFIED
+                - POSITION_STATUS_OPEN
+                - POSITION_STATUS_CLOSED
+                - POSITION_STATUS_LIQUIDATING
+                - POSITION_STATUS_LIQUIDATED
+              default: POSITION_STATUS_UNSPECIFIED
+            borrowed:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            held:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            collateral:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            created_height:
+              type: string
+              format: uint64
+            created_time:
+              type: string
+              format: date-time
+            liquidation_initialized_block_height:
+              type: string
+              format: uint64
+            liquidation_status:
+              type: string
+              enum:
+                - LIQUIDATION_STATUS_UNSPECIFIED
+                - LIQUIDATION_STATUS_NONE
+                - LIQUIDATION_STATUS_INITIALIZED
+              default: LIQUIDATION_STATUS_UNSPECIFIED
+            accrued_interest:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            updated_height:
+              type: string
+              format: uint64
+            updated_time:
+              type: string
+              format: date-time
+            interest_rate:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: >-
+                ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
+
+                Annual interest rates per reserve denom (exactly two, canonical
+                order).
+
+                Each amount is a LegacyDec string representing APR (per-year
+                accrual).
+            min_collateral_ratio:
+              type: string
+              description: >-
+                Minimum collateral ratio used for health/liquidation checks
+                (cosmos.Dec
+
+                string).
+            liquidation_threshold:
+              type: string
+              description: >-
+                Liquidation threshold used for liquidation checks (cosmos.Dec
+                string).
+            initial_borrowed:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            total_interest_paid:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            last_interest_settlement_time:
+              type: string
+              format: date-time
+              description: >-
+                Timestamp of the last time interest was settled into
+                accrued_interest.
+          description: >-
+            LeveragePosition represents an active leverage position for a
+            trader.
+        title: List of positions matching the address and filter criteria
+      pagination:
+        title: Pagination metadata for result set navigation
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
   dysonprotocol.whaleswap.v1.QueryPositionsByPoolResponse:
     type: object
     properties:
@@ -56067,218 +56282,6 @@ definitions:
             LeveragePosition represents an active leverage position for a
             trader.
         title: List of positions in the specified pool
-      pagination:
-        title: Pagination metadata for result set navigation
-        type: object
-        properties:
-          next_key:
-            type: string
-            format: byte
-            description: |-
-              next_key is the key to be passed to PageRequest.key to
-              query the next page most efficiently. It will be empty if
-              there are no more results.
-          total:
-            type: string
-            format: uint64
-            title: >-
-              total is total number of results available if
-              PageRequest.count_total
-
-              was set, its value is undefined otherwise
-        description: |-
-          PageResponse is to be embedded in gRPC response messages where the
-          corresponding request message has used PageRequest.
-
-           message SomeResponse {
-                   repeated Bar results = 1;
-                   PageResponse page = 2;
-           }
-  dysonprotocol.whaleswap.v1.QueryPositionsByUserResponse:
-    type: object
-    properties:
-      positions:
-        type: array
-        items:
-          type: object
-          properties:
-            position_id:
-              type: string
-              format: uint64
-            pool_id:
-              type: string
-              format: uint64
-            user:
-              type: string
-            status:
-              type: string
-              enum:
-                - POSITION_STATUS_UNSPECIFIED
-                - POSITION_STATUS_OPEN
-                - POSITION_STATUS_CLOSED
-                - POSITION_STATUS_LIQUIDATING
-                - POSITION_STATUS_LIQUIDATED
-              default: POSITION_STATUS_UNSPECIFIED
-            borrowed:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-            held:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-            collateral:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-            created_height:
-              type: string
-              format: uint64
-            created_time:
-              type: string
-              format: date-time
-            liquidation_initialized_block_height:
-              type: string
-              format: uint64
-            liquidation_status:
-              type: string
-              enum:
-                - LIQUIDATION_STATUS_UNSPECIFIED
-                - LIQUIDATION_STATUS_NONE
-                - LIQUIDATION_STATUS_INITIALIZED
-              default: LIQUIDATION_STATUS_UNSPECIFIED
-            accrued_interest:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-            updated_height:
-              type: string
-              format: uint64
-            updated_time:
-              type: string
-              format: date-time
-            interest_rate:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  DecCoin defines a token with a denomination and a decimal
-                  amount.
-
-
-                  NOTE: The amount field is an Dec which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
-
-                Annual interest rates per reserve denom (exactly two, canonical
-                order).
-
-                Each amount is a LegacyDec string representing APR (per-year
-                accrual).
-            min_collateral_ratio:
-              type: string
-              description: >-
-                Minimum collateral ratio used for health/liquidation checks
-                (cosmos.Dec
-
-                string).
-            liquidation_threshold:
-              type: string
-              description: >-
-                Liquidation threshold used for liquidation checks (cosmos.Dec
-                string).
-            initial_borrowed:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-            total_interest_paid:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-            last_interest_settlement_time:
-              type: string
-              format: date-time
-              description: >-
-                Timestamp of the last time interest was settled into
-                accrued_interest.
-          description: >-
-            LeveragePosition represents an active leverage position for a
-            trader.
-        title: List of positions matching the user and filter criteria
       pagination:
         title: Pagination metadata for result set navigation
         type: object

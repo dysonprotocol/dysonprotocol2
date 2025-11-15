@@ -2678,16 +2678,16 @@ export class InterestView extends Message<InterestView> {
 }
 
 /**
- * @generated from message dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest
+ * @generated from message dysonprotocol.whaleswap.v1.QueryPositionsByAddressRequest
  */
-export class QueryPositionsByUserRequest extends Message<QueryPositionsByUserRequest> {
+export class QueryPositionsByAddressRequest extends Message<QueryPositionsByAddressRequest> {
   /**
-   * User address to filter positions by; returns all positions owned by this
-   * address
+   * Account address to filter positions by; returns all positions owned by this
+   * address.
    *
-   * @generated from field: string user = 1;
+   * @generated from field: string address = 1;
    */
-  user = "";
+  address = "";
 
   /**
    * Optional filter by borrowed denomination
@@ -2724,15 +2724,15 @@ export class QueryPositionsByUserRequest extends Message<QueryPositionsByUserReq
    */
   status = PositionStatus.UNSPECIFIED;
 
-  constructor(data?: PartialMessage<QueryPositionsByUserRequest>) {
+  constructor(data?: PartialMessage<QueryPositionsByAddressRequest>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest";
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPositionsByAddressRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "user", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "address", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "borrowed_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "collateral_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
@@ -2740,29 +2740,29 @@ export class QueryPositionsByUserRequest extends Message<QueryPositionsByUserReq
     { no: 6, name: "status", kind: "enum", T: proto3.getEnumType(PositionStatus) },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPositionsByUserRequest {
-    return new QueryPositionsByUserRequest().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPositionsByAddressRequest {
+    return new QueryPositionsByAddressRequest().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPositionsByUserRequest {
-    return new QueryPositionsByUserRequest().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPositionsByAddressRequest {
+    return new QueryPositionsByAddressRequest().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPositionsByUserRequest {
-    return new QueryPositionsByUserRequest().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPositionsByAddressRequest {
+    return new QueryPositionsByAddressRequest().fromJsonString(jsonString, options);
   }
 
-  static equals(a: QueryPositionsByUserRequest | PlainMessage<QueryPositionsByUserRequest> | undefined, b: QueryPositionsByUserRequest | PlainMessage<QueryPositionsByUserRequest> | undefined): boolean {
-    return proto3.util.equals(QueryPositionsByUserRequest, a, b);
+  static equals(a: QueryPositionsByAddressRequest | PlainMessage<QueryPositionsByAddressRequest> | undefined, b: QueryPositionsByAddressRequest | PlainMessage<QueryPositionsByAddressRequest> | undefined): boolean {
+    return proto3.util.equals(QueryPositionsByAddressRequest, a, b);
   }
 }
 
 /**
- * @generated from message dysonprotocol.whaleswap.v1.QueryPositionsByUserResponse
+ * @generated from message dysonprotocol.whaleswap.v1.QueryPositionsByAddressResponse
  */
-export class QueryPositionsByUserResponse extends Message<QueryPositionsByUserResponse> {
+export class QueryPositionsByAddressResponse extends Message<QueryPositionsByAddressResponse> {
   /**
-   * List of positions matching the user and filter criteria
+   * List of positions matching the address and filter criteria
    *
    * @generated from field: repeated dysonprotocol.whaleswap.v1.LeveragePosition positions = 1;
    */
@@ -2775,32 +2775,32 @@ export class QueryPositionsByUserResponse extends Message<QueryPositionsByUserRe
    */
   pagination?: PageResponse;
 
-  constructor(data?: PartialMessage<QueryPositionsByUserResponse>) {
+  constructor(data?: PartialMessage<QueryPositionsByAddressResponse>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPositionsByUserResponse";
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryPositionsByAddressResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "positions", kind: "message", T: LeveragePosition, repeated: true },
     { no: 2, name: "pagination", kind: "message", T: PageResponse },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPositionsByUserResponse {
-    return new QueryPositionsByUserResponse().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryPositionsByAddressResponse {
+    return new QueryPositionsByAddressResponse().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPositionsByUserResponse {
-    return new QueryPositionsByUserResponse().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryPositionsByAddressResponse {
+    return new QueryPositionsByAddressResponse().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPositionsByUserResponse {
-    return new QueryPositionsByUserResponse().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryPositionsByAddressResponse {
+    return new QueryPositionsByAddressResponse().fromJsonString(jsonString, options);
   }
 
-  static equals(a: QueryPositionsByUserResponse | PlainMessage<QueryPositionsByUserResponse> | undefined, b: QueryPositionsByUserResponse | PlainMessage<QueryPositionsByUserResponse> | undefined): boolean {
-    return proto3.util.equals(QueryPositionsByUserResponse, a, b);
+  static equals(a: QueryPositionsByAddressResponse | PlainMessage<QueryPositionsByAddressResponse> | undefined, b: QueryPositionsByAddressResponse | PlainMessage<QueryPositionsByAddressResponse> | undefined): boolean {
+    return proto3.util.equals(QueryPositionsByAddressResponse, a, b);
   }
 }
 

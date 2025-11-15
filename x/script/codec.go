@@ -299,7 +299,7 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 
 		// Leverage queries
 		&whaleswapv1.QueryPositionRequest{}, &whaleswapv1.QueryPositionResponse{},
-		&whaleswapv1.QueryPositionsByUserRequest{}, &whaleswapv1.QueryPositionsByUserResponse{},
+		&whaleswapv1.QueryPositionsByAddressRequest{}, &whaleswapv1.QueryPositionsByAddressResponse{},
 		&whaleswapv1.QueryPositionsByPoolRequest{}, &whaleswapv1.QueryPositionsByPoolResponse{},
 		&whaleswapv1.QueryMetricsRequest{}, &whaleswapv1.QueryMetricsResponse{},
 	)

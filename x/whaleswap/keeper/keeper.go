@@ -47,7 +47,7 @@ var (
 	// Leverage
 	LeveragePositionSeqPrefix = collections.NewPrefix(19)
 	LeveragePositionsPrefix   = collections.NewPrefix(20)
-	PositionsByUserPrefix     = collections.NewPrefix(21)
+	PositionsByAddressPrefix  = collections.NewPrefix(21)
 	PositionsByPoolPrefix     = collections.NewPrefix(22)
 	// Metrics
 	AddressMetricsPrefix = collections.NewPrefix(23)
@@ -92,7 +92,7 @@ type Keeper struct {
 	// Leverage
 	leveragePositionSeq  collections.Sequence
 	LeveragePositions    collections.Map[uint64, whaleswapv1.LeveragePosition]
-	PositionsByUserIndex collections.Map[collections.Triple[string, uint32, uint64], uint64]
+	PositionsByAddressIndex collections.Map[collections.Triple[string, uint32, uint64], uint64]
 	PositionsByPoolIndex collections.Map[collections.Triple[uint64, uint32, uint64], uint64]
 	// Metrics
 	AddressMetricsMap collections.Map[string, whaleswapv1.AddressMetrics]
@@ -238,10 +238,10 @@ func NewKeeper(
 		collections.Uint64Key,
 		codec.CollValue[whaleswapv1.LeveragePosition](cdc),
 	)
-	k.PositionsByUserIndex = collections.NewMap(
+	k.PositionsByAddressIndex = collections.NewMap(
 		sb,
-		PositionsByUserPrefix,
-		"positions_by_user",
+		PositionsByAddressPrefix,
+		"positions_by_address",
 		collections.TripleKeyCodec(collections.StringKey, collections.Uint32Key, collections.Uint64Key),
 		collections.Uint64Value,
 	)
@@ -379,7 +379,7 @@ func positionStatusKey(status whaleswapv1.PositionStatus) uint32 {
 
 func (k Keeper) indexPosition(ctx context.Context, pos whaleswapv1.LeveragePosition) error {
 	statusKey := positionStatusKey(pos.Status)
-	if err := k.PositionsByUserIndex.Set(ctx, collections.Join3(pos.User, statusKey, pos.PositionId), pos.PositionId); err != nil {
+	if err := k.PositionsByAddressIndex.Set(ctx, collections.Join3(pos.User, statusKey, pos.PositionId), pos.PositionId); err != nil {
 		return err
 	}
 	if err := k.PositionsByPoolIndex.Set(ctx, collections.Join3(pos.PoolId, statusKey, pos.PositionId), pos.PositionId); err != nil {
@@ -390,7 +390,7 @@ func (k Keeper) indexPosition(ctx context.Context, pos whaleswapv1.LeveragePosit
 
 func (k Keeper) removePositionIndex(ctx context.Context, user string, poolID uint64, status whaleswapv1.PositionStatus, positionID uint64) error {
 	statusKey := positionStatusKey(status)
-	if err := k.PositionsByUserIndex.Remove(ctx, collections.Join3(user, statusKey, positionID)); err != nil && !errors.Is(err, collections.ErrNotFound) {
+	if err := k.PositionsByAddressIndex.Remove(ctx, collections.Join3(user, statusKey, positionID)); err != nil && !errors.Is(err, collections.ErrNotFound) {
 		return err
 	}
 	if err := k.PositionsByPoolIndex.Remove(ctx, collections.Join3(poolID, statusKey, positionID)); err != nil && !errors.Is(err, collections.ErrNotFound) {

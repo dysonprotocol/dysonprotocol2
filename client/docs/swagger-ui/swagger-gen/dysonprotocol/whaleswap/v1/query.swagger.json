@@ -1198,16 +1198,16 @@
         ]
       }
     },
-    "/dysonprotocol/whaleswap/v1/positions/pool/{pool_id}": {
+    "/dysonprotocol/whaleswap/v1/positions/address/{address}": {
       "get": {
-        "summary": "PositionsByPool lists all leverage positions in a specific pool with\noptional status filter.",
-        "description": "Uses indexed queries on PositionsByPoolIndex with\n(pool_id,status,position_id) keys. Defaults to OPEN positions when status\nunspecified. Filters positions by the specified pool_id. Supports\npagination with consistent ordering by position ID.",
-        "operationId": "dysonprotocol.whaleswap.v1.QueryPositionsByPoolRequest",
+        "summary": "PositionsByAddress lists all leverage positions for an address with\noptional filters.",
+        "description": "Uses indexed queries on PositionsByAddressIndex with\n(address,status,position_id) keys. Defaults to OPEN positions when status\nunspecified. Applies additional filters for pool_id, borrowed_denom,\ncollateral_denom as specified. Supports pagination with consistent ordering\nby position ID.",
+        "operationId": "dysonprotocol.whaleswap.v1.QueryPositionsByAddressRequest",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPositionsByPoolResponse"
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPositionsByAddressResponse"
             }
           },
           "default": {
@@ -1219,10 +1219,31 @@
         },
         "parameters": [
           {
-            "name": "pool_id",
-            "description": "Pool ID to filter positions by; returns all positions in this pool",
+            "name": "address",
+            "description": "Account address to filter positions by; returns all positions owned by this\naddress.",
             "in": "path",
             "required": true,
+            "type": "string"
+          },
+          {
+            "name": "borrowed_denom",
+            "description": "Optional filter by borrowed denomination.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "collateral_denom",
+            "description": "Optional filter by collateral denomination.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pool_id",
+            "description": "Optional filter by pool ID (cannot combine with borrowed/collateral denoms).",
+            "in": "query",
+            "required": false,
             "type": "string",
             "format": "uint64"
           },
@@ -1280,16 +1301,16 @@
         ]
       }
     },
-    "/dysonprotocol/whaleswap/v1/positions/user/{user}": {
+    "/dysonprotocol/whaleswap/v1/positions/pool/{pool_id}": {
       "get": {
-        "summary": "PositionsByUser lists all leverage positions for a user with optional\nfilters.",
-        "description": "Uses indexed queries on PositionsByUserIndex with (user,status,position_id)\nkeys. Defaults to OPEN positions when status unspecified. Applies\nadditional filters for pool_id, borrowed_denom, collateral_denom as\nspecified. Supports pagination with consistent ordering by position ID.",
-        "operationId": "dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest",
+        "summary": "PositionsByPool lists all leverage positions in a specific pool with\noptional status filter.",
+        "description": "Uses indexed queries on PositionsByPoolIndex with\n(pool_id,status,position_id) keys. Defaults to OPEN positions when status\nunspecified. Filters positions by the specified pool_id. Supports\npagination with consistent ordering by position ID.",
+        "operationId": "dysonprotocol.whaleswap.v1.QueryPositionsByPoolRequest",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPositionsByUserResponse"
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPositionsByPoolResponse"
             }
           },
           "default": {
@@ -1301,31 +1322,10 @@
         },
         "parameters": [
           {
-            "name": "user",
-            "description": "User address to filter positions by; returns all positions owned by this\naddress",
+            "name": "pool_id",
+            "description": "Pool ID to filter positions by; returns all positions in this pool",
             "in": "path",
             "required": true,
-            "type": "string"
-          },
-          {
-            "name": "borrowed_denom",
-            "description": "Optional filter by borrowed denomination.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "collateral_denom",
-            "description": "Optional filter by collateral denomination.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "pool_id",
-            "description": "Optional filter by pool ID (cannot combine with borrowed/collateral denoms).",
-            "in": "query",
-            "required": false,
             "type": "string",
             "format": "uint64"
           },
@@ -2723,6 +2723,22 @@
         }
       }
     },
+    "dysonprotocol.whaleswap.v1.QueryPositionsByAddressResponse": {
+      "type": "object",
+      "properties": {
+        "positions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.LeveragePosition"
+          },
+          "title": "List of positions matching the address and filter criteria"
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
+        }
+      }
+    },
     "dysonprotocol.whaleswap.v1.QueryPositionsByPoolResponse": {
       "type": "object",
       "properties": {
@@ -2732,22 +2748,6 @@
             "$ref": "#/definitions/dysonprotocol.whaleswap.v1.LeveragePosition"
           },
           "title": "List of positions in the specified pool"
-        },
-        "pagination": {
-          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
-          "title": "Pagination metadata for result set navigation"
-        }
-      }
-    },
-    "dysonprotocol.whaleswap.v1.QueryPositionsByUserResponse": {
-      "type": "object",
-      "properties": {
-        "positions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.LeveragePosition"
-          },
-          "title": "List of positions matching the user and filter criteria"
         },
         "pagination": {
           "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
