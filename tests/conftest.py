@@ -540,6 +540,9 @@ def chainnet(worker_id, test_base_dir, test_config_path):
     reimport_home = base_dir / "reimport_node"
     reimport_home.mkdir(exist_ok=True)
 
+    if worker_id != "master":
+        return
+
     # Initialize a new chain with the exported genesis
     print(f"Initializing reimport node at {reimport_home}...")
     init_result = subprocess.run(

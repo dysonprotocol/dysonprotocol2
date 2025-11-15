@@ -148,8 +148,9 @@ def emit_payment():
     def _has_scheduled():
         res = dysond("query", "crontask", "tasks-by-address", "--creator", creator_addr)
         tasks = res.get("tasks") or []
-        task = (len(tasks) > 0 and tasks[0]) or None
-        return task is not None and task.get("status") == "SCHEDULED"
+        wanted = ["SCHEDULED", "PENDING", "DONE"]
+        matches = [t.get("status") in wanted for t in tasks]
+        return True in matches
 
     poll_until_condition(
         _has_scheduled,

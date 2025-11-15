@@ -115,6 +115,10 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "payment %s less than accrued interest %s", msg.Payment.Amount, interestInt)
 	}
 
+	settlementTime := sdkCtx.BlockTime()
+	pos.AccruedInterest = interestCoin
+	pos.LastInterestSettlementTime = &settlementTime
+
 	userAddr, aerr := k.addr(ctx, msg.User)
 	if aerr != nil {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidAddress, aerr.Error())
@@ -287,6 +291,10 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 	// Transfer payment to module now (no block-delay requirement)
 	if err := k.sendToModule(ctx, userAddr, sdk.NewCoins(msg.Payment)); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to transfer payment to module")
+	}
+
+	if _, _, err := k.ApplyInterestPayment(&pos, interestCoin); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to apply interest payment")
 	}
 
 	principalPaid := msg.Payment.Amount.Sub(interestInt)

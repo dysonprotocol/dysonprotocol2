@@ -6,6 +6,7 @@ def test_cover_position_partial_reduce_principal(
 ):
     dysond = chainnet[0]
     alice_name = leverage_accounts["alice"]["name"]
+    alice_addr = leverage_accounts["alice"]["addr"]
     foo = leverage_names_and_coins["foo_name"]
     bar = leverage_names_and_coins["bar_name"]
 
@@ -91,6 +92,36 @@ def test_cover_position_partial_reduce_principal(
     ), f"Expected closed=false for partial cover, got: {attrs.get('closed')}"
     assert "interest_paid" in attrs, f"interest_paid missing: {attrs}"
     assert "principal_paid" in attrs, f"principal_paid missing: {attrs}"
+
+    positions_after_cover = dysond(
+        "query",
+        "whaleswap",
+        "positions-by-address",
+        "--address",
+        alice_addr,
+        "--pool-id",
+        pool_id,
+    )
+    assert isinstance(
+        positions_after_cover, dict
+    ), f"positions-by-address result should be dict, got {type(positions_after_cover)}"
+    assert "positions" in positions_after_cover, (
+        f"positions key missing: {json.dumps(positions_after_cover, indent=2)}"
+    )
+
+    positions_list = positions_after_cover["positions"]
+    positions_by_id = {
+        pos.get("position_id", "").strip('"'): pos for pos in positions_list
+    }
+    assert position_id in positions_by_id, (
+        f"Covered position {position_id} not found in positions: {json.dumps(positions_after_cover, indent=2)}"
+    )
+
+    covered_position = positions_by_id[position_id]
+    accrued_interest = covered_position.get("accrued_interest", {})
+    assert accrued_interest.get("amount") == "0", (
+        f"Accrued interest should reset to 0 after partial cover, got: {json.dumps(covered_position, indent=2)}"
+    )
 
 
 def test_cover_position_overpay_autoclose_refund(
