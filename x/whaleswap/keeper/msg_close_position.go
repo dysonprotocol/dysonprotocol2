@@ -132,36 +132,12 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		collateralToReturn = pos.Collateral.Sub(collateralRemainingCoin)
 
 		// Validate that remaining position would still be healthy
-		// Calculate what the position state would be after partial close
 		// Total debt = borrowed + accrued interest (after settling current interest and paying partial)
 		totalRemainingDebtCoin := principalRemainingCoin.Add(interestRemainingCoin)
-
 		if totalRemainingDebtCoin.IsPositive() {
-			// Calculate collateral ratio: collateral / debt
-			collateralValue := math.LegacyNewDecFromInt(collateralRemainingCoin.Amount)
-			debtValue := math.LegacyNewDecFromInt(totalRemainingDebtCoin.Amount)
-
-			if !debtValue.IsZero() {
-				remainingCR, err := k.ComputeCollateralRatio(collateralValue, debtValue)
-				if err != nil {
-					return nil, cosmossdkerrors.Wrap(err, "failed to compute remaining collateral ratio")
-				}
-
-				// Parse the minimum collateral ratio for this position
-				minCR, err := math.LegacyNewDecFromStr(pos.MinCollateralRatio)
-				if err != nil {
-					return nil, cosmossdkerrors.Wrap(err, "invalid min_collateral_ratio on position")
-				}
-
-				// Remaining position must meet minimum collateral ratio
-				if remainingCR.LT(minCR) {
-					return nil, cosmossdkerrors.Wrapf(
-						sdkerrors.ErrInvalidRequest,
-						"partial close would leave position unhealthy: remaining_cr=%s < min_cr=%s",
-						remainingCR.String(),
-						minCR.String(),
-					)
-				}
+			collateralForRatio := sdk.NewCoin(pos.Borrowed.Denom, collateralRemainingCoin.Amount)
+			if _, err := k.ensureHealthyCollateralRatio(&pos, collateralForRatio, totalRemainingDebtCoin); err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "partial close would leave position unhealthy")
 			}
 		}
 	} else {
@@ -438,8 +414,14 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	}
 
 	// Update address metrics
-	if err := k.incrementPositionClosed(ctx, msg.User, actualInterestPaidCoin, profit); err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "failed to update position metrics")
+	var metricsErr error
+	if positionClosed {
+		metricsErr = k.incrementPositionClosed(ctx, msg.User, actualInterestPaidCoin, profit)
+	} else {
+		metricsErr = k.trackPartialCloseMetrics(ctx, msg.User, actualInterestPaidCoin, profit)
+	}
+	if metricsErr != nil {
+		return nil, cosmossdkerrors.Wrap(metricsErr, "failed to update position metrics")
 	}
 
 	// Calculate final collateral ratio

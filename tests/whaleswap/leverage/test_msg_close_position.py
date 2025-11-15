@@ -1296,16 +1296,20 @@ def test_close_position_cross_denom_swap_still_underwater(
     position_id = position_id_attrs[0].strip('"')
 
     # Manipulate pool severely to crash bar price
-    # This makes both held bar and collateral bar worth much less
+    # Inject a massive amount of bar to make bar nearly worthless relative to foo
+    swap_in_amount = "120000"
     swap_leg_json = json.dumps(
-        {"pool_id": int(pool_id), "swap_in": {"denom": bar_name, "amount": "3000"}}
+        {
+            "pool_id": int(pool_id),
+            "swap_in": {"denom": bar_name, "amount": swap_in_amount},
+        }
     )
     swap_result = dysond(
         "tx",
         "whaleswap",
         "swap",
         "--max-input",
-        f"3000{bar_name}",
+        f"{swap_in_amount}{bar_name}",
         "--legs",
         swap_leg_json,
         "--min-output",
@@ -1316,12 +1320,6 @@ def test_close_position_cross_denom_swap_still_underwater(
     assert (
         swap_result.get("code", 1) == 0
     ), f"Price manipulation swap failed: {swap_result}"
-
-    # Get pool state before close
-    pool_before = dysond("query", "whaleswap", "pool", "--pool-id", pool_id)
-    foo_reserve_before = int(
-        [c for c in pool_before["pool"]["coins"] if c["denom"] == foo_name][0]["amount"]
-    )
 
     # Close position - even cross-denom swap of collateral won't cover full repayment
     # Expected: swap held (bar→foo) insufficient, swap collateral (bar→foo) also insufficient, pool takes loss
@@ -1336,48 +1334,18 @@ def test_close_position_cross_denom_swap_still_underwater(
         "--from",
         charlie_name,
     )
-    assert close_result.get("code", 1) == 0, f"Close position failed: {close_result}"
-
-    # Verify close event
-    close_events = [
-        event
-        for event in close_result.get("events", [])
-        if event.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed"
-    ]
-    assert (
-        len(close_events) == 1
-    ), f"Expected exactly 1 close event, got {len(close_events)}"
-
-    # Extract profit from event (should be zero or minimal since very underwater)
-    profit_attrs = [
-        attr
-        for attr in close_events[0].get("attributes", [])
-        if attr.get("key") == "profit"
-    ]
-    assert len(profit_attrs) == 1, "Expected profit attribute"
-    profit_str = profit_attrs[0].get("value", "").strip('"')
-
-    # Get pool state after close
-    pool_after = dysond("query", "whaleswap", "pool", "--pool-id", pool_id)
-    foo_reserve_after = int(
-        [c for c in pool_after["pool"]["coins"] if c["denom"] == foo_name][0]["amount"]
+    assert close_result.get("code", 0) != 0, (
+        "cross-denom underwater close should fail: "
+        f"{json.dumps(close_result, indent=2)}"
     )
-
-    # Verify pool took a loss (even with cross-denom collateral swap)
-    # Pool should have less foo than before close because total proceeds < repayment
-    assert (
-        foo_reserve_after < foo_reserve_before
-    ), f"Expected pool loss (underwater with cross-denom swap), foo before={foo_reserve_before}, after={foo_reserve_after}"
-
-    # Get charlie's balance - collateral should have been entirely consumed
-    charlie_balance_after = dysond("query", "bank", "balances", charlie_addr)
-    bar_after = int(
-        [b for b in charlie_balance_after["balances"] if b["denom"] == bar_name][0][
-            "amount"
-        ]
+    assert close_result.get("code") == 1002, (
+        "expected ErrInsufficientCollateral (1002), got "
+        f"{json.dumps(close_result, indent=2)}"
     )
-
-    # Charlie should have lost all collateral (was swapped to try to cover repayment)
+    assert "insufficient collateral" in close_result.get("raw_log", "").lower(), (
+        "missing insufficient collateral detail: "
+        f"{json.dumps(close_result, indent=2)}"
+    )
 
 
 def test_close_position_same_denom_collateral_covers_shortfall(
@@ -1560,6 +1528,88 @@ def test_close_position_same_denom_collateral_covers_shortfall(
     assert (
         foo_change < 1000
     ), f"Expected partial collateral return (some used for shortfall), got {foo_change}"
+
+
+def test_close_position_partial_fraction_rounding_guard(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """Partial close fractions that zero-out principal should be rejected."""
+    dysond = chainnet[0]
+    alice = leverage_accounts["alice"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+
+    pool_result = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"10000{foo_name}",
+        "--coins",
+        f"10000{bar_name}",
+        "--fee-rate",
+        f"0.003{foo_name}",
+        "--fee-rate",
+        f"0.003{bar_name}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-borrow-percent",
+        "0.8",
+        "--from",
+        alice["name"],
+    )
+    assert pool_result.get("code", 1) == 0, f"Pool creation failed: {pool_result}"
+    pool_id_attrs = [
+        attr.get("value")
+        for event in pool_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "pool_id"
+        and event.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    pool_id = pool_id_attrs[0].strip('"')
+
+    open_result = dysond(
+        "tx",
+        "whaleswap",
+        "open-position",
+        "--pool-id",
+        pool_id,
+        "--collateral",
+        f"20{foo_name}",
+        "--borrow",
+        f"10{foo_name}",
+        "--from",
+        alice["name"],
+    )
+    assert open_result.get("code", 1) == 0, f"Open position failed: {open_result}"
+    position_id_attrs = [
+        attr.get("value")
+        for event in open_result.get("events", [])
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "position_id"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+    ]
+    position_id = position_id_attrs[0].strip('"')
+
+    close_result = dysond(
+        "tx",
+        "whaleswap",
+        "close-position",
+        "--position-id",
+        position_id,
+        "--fraction",
+        "0.96",
+        "--from",
+        alice["name"],
+    )
+    assert (
+        close_result.get("code", 0) != 0
+    ), f"Rounding guard should reject close: {json.dumps(close_result, indent=2)}"
+    assert (
+        "partial close would round principal to zero"
+        in close_result.get("raw_log", "").lower()
+    ), f"Missing rounding guard detail: {json.dumps(close_result, indent=2)}"
 
 
 def test_close_position_profitable_same_denom(
@@ -1863,11 +1913,23 @@ def test_close_position_partial_close_50_percent(
         "--from",
         alice_name,
     )
-    assert pool_result.get("code", 1) == 0
+    assert isinstance(
+        pool_result, dict
+    ), f"create-pool response must be dict: {type(pool_result)}"
+    assert (
+        "code" in pool_result
+    ), f"create-pool missing code: {json.dumps(pool_result, indent=2)}"
+    assert (
+        pool_result["code"] == 0
+    ), f"create-pool failed: {json.dumps(pool_result, indent=2)}"
+    pool_events = pool_result.get("events")
+    assert isinstance(
+        pool_events, list
+    ), f"create-pool events must be list: {json.dumps(pool_result, indent=2)}"
 
     pool_id_attrs = [
         attr.get("value")
-        for event in pool_result.get("events", [])
+        for event in pool_events
         for attr in event.get("attributes", [])
         if attr.get("key") == "pool_id"
         and event.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
@@ -1888,11 +1950,23 @@ def test_close_position_partial_close_50_percent(
         "--from",
         alice_name,
     )
-    assert open_result.get("code", 1) == 0
+    assert isinstance(
+        open_result, dict
+    ), f"open-position response must be dict: {type(open_result)}"
+    assert (
+        "code" in open_result
+    ), f"open-position missing code: {json.dumps(open_result, indent=2)}"
+    assert (
+        open_result["code"] == 0
+    ), f"open-position failed: {json.dumps(open_result, indent=2)}"
+    open_events = open_result.get("events")
+    assert isinstance(
+        open_events, list
+    ), f"open-position events must be list: {json.dumps(open_result, indent=2)}"
 
     position_id_attrs = [
         attr.get("value")
-        for event in open_result.get("events", [])
+        for event in open_events
         for attr in event.get("attributes", [])
         if attr.get("key") == "position_id"
         and event.get("type")
@@ -1902,9 +1976,30 @@ def test_close_position_partial_close_50_percent(
 
     # Query position before partial close
     pos_before = dysond("query", "whaleswap", "position", "--position-id", position_id)
-    borrowed_before = int(pos_before["position"]["borrowed"]["amount"])
-    held_before = int(pos_before["position"]["held"]["amount"])
-    collateral_before = int(pos_before["position"]["collateral"]["amount"])
+    assert isinstance(
+        pos_before, dict
+    ), f"position query response must be dict: {type(pos_before)}"
+    assert (
+        "position" in pos_before
+    ), f"position query missing payload: {json.dumps(pos_before, indent=2)}"
+    position_before = pos_before["position"]
+    assert isinstance(
+        position_before, dict
+    ), f"position payload must be dict: {json.dumps(position_before, indent=2)}"
+    for key in ("borrowed", "held", "collateral"):
+        assert (
+            key in position_before
+        ), f"position missing {key}: {json.dumps(pos_before, indent=2)}"
+        assert isinstance(
+            position_before[key], dict
+        ), f"position[{key}] must be dict: {json.dumps(position_before[key], indent=2)}"
+        assert (
+            "amount" in position_before[key]
+        ), f"{key} missing amount: {json.dumps(position_before[key], indent=2)}"
+
+    borrowed_before = int(position_before["borrowed"]["amount"])
+    held_before = int(position_before["held"]["amount"])
+    collateral_before = int(position_before["collateral"]["amount"])
 
     # Partial close 50%
     close_result = dysond(
@@ -1918,12 +2013,24 @@ def test_close_position_partial_close_50_percent(
         "--from",
         alice_name,
     )
-    assert close_result.get("code", 1) == 0
+    assert isinstance(
+        close_result, dict
+    ), f"close-position response must be dict: {type(close_result)}"
+    assert (
+        "code" in close_result
+    ), f"close-position missing code: {json.dumps(close_result, indent=2)}"
+    assert (
+        close_result["code"] == 0
+    ), f"close-position failed: {json.dumps(close_result, indent=2)}"
+    close_events = close_result.get("events")
+    assert isinstance(
+        close_events, list
+    ), f"close-position events must be list: {json.dumps(close_result, indent=2)}"
 
     # Verify partial close event
     partial_close_events = [
         e
-        for e in close_result.get("events", [])
+        for e in close_events
         if e.get("type")
         == "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed"
     ]
@@ -1933,11 +2040,34 @@ def test_close_position_partial_close_50_percent(
 
     # Query position after partial close
     pos_after = dysond("query", "whaleswap", "position", "--position-id", position_id)
+    assert isinstance(
+        pos_after, dict
+    ), f"position query response must be dict: {type(pos_after)}"
+    assert (
+        "position" in pos_after
+    ), f"position query missing payload: {json.dumps(pos_after, indent=2)}"
+    position_after = pos_after["position"]
+    assert isinstance(
+        position_after, dict
+    ), f"position payload must be dict: {json.dumps(position_after, indent=2)}"
+    for key in ("borrowed", "held", "collateral"):
+        assert (
+            key in position_after
+        ), f"position missing {key}: {json.dumps(pos_after, indent=2)}"
+        assert isinstance(
+            position_after[key], dict
+        ), f"position[{key}] must be dict: {json.dumps(position_after[key], indent=2)}"
+        assert (
+            "amount" in position_after[key]
+        ), f"{key} missing amount: {json.dumps(position_after[key], indent=2)}"
+    assert (
+        "status" in position_after
+    ), f"position missing status: {json.dumps(pos_after, indent=2)}"
 
     # Verify position state reduced by approximately 50%
-    borrowed_after = int(pos_after["position"]["borrowed"]["amount"])
-    held_after = int(pos_after["position"]["held"]["amount"])
-    collateral_after = int(pos_after["position"]["collateral"]["amount"])
+    borrowed_after = int(position_after["borrowed"]["amount"])
+    held_after = int(position_after["held"]["amount"])
+    collateral_after = int(position_after["collateral"]["amount"])
 
     # Allow for small rounding differences
     assert abs(borrowed_after - borrowed_before // 2) <= 1, (
@@ -1954,7 +2084,136 @@ def test_close_position_partial_close_50_percent(
     )
 
     # Verify position is still open
-    assert pos_after["position"]["status"] == "POSITION_STATUS_OPEN", (
+    assert position_after["status"] == "POSITION_STATUS_OPEN", (
         f"Position should still be open after partial close, "
-        f"got {pos_after['position']['status']}"
+        f"got {position_after['status']}"
     )
+
+
+def test_close_position_partial_then_full_hits_metrics_bug(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """
+    Document regression: partial close increments positions_closed metrics, so the
+    subsequent full close (fraction=1) fails with positions_closed > positions_opened.
+    """
+
+    dysond = chainnet[0]
+    alice_name = leverage_accounts["alice"]["name"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+
+    pool_result = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"6000{foo_name}",
+        "--coins",
+        f"6000{bar_name}",
+        "--min-collateral-ratio",
+        "1.3",
+        "--max-borrow-percent",
+        "0.8",
+        "--from",
+        alice_name,
+    )
+    assert (
+        pool_result.get("code", 1) == 0
+    ), f"create-pool failed: {json.dumps(pool_result, indent=2)}"
+    pool_events = pool_result.get("events")
+    assert isinstance(
+        pool_events, list
+    ), f"create-pool events missing: {json.dumps(pool_result, indent=2)}"
+    pool_id_attrs = [
+        attr.get("value")
+        for event in pool_events
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "pool_id"
+        and event.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    assert (
+        pool_id_attrs
+    ), f"pool_id missing in create-pool events: {json.dumps(pool_events, indent=2)}"
+    pool_id = pool_id_attrs[0].strip('"')
+
+    open_result = dysond(
+        "tx",
+        "whaleswap",
+        "open-position",
+        "--pool-id",
+        pool_id,
+        "--collateral",
+        f"800{bar_name}",
+        "--borrow",
+        f"500{foo_name}",
+        "--from",
+        alice_name,
+    )
+    assert (
+        open_result.get("code", 1) == 0
+    ), f"open-position failed: {json.dumps(open_result, indent=2)}"
+    open_events = open_result.get("events")
+    assert isinstance(
+        open_events, list
+    ), f"open-position events missing: {json.dumps(open_result, indent=2)}"
+    position_id_attrs = [
+        attr.get("value")
+        for event in open_events
+        for attr in event.get("attributes", [])
+        if attr.get("key") == "position_id"
+        and event.get("type")
+        == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
+    ]
+    assert (
+        position_id_attrs
+    ), f"position_id missing in open events: {json.dumps(open_events, indent=2)}"
+    position_id = position_id_attrs[0].strip('"')
+
+    partial_close = dysond(
+        "tx",
+        "whaleswap",
+        "close-position",
+        "--position-id",
+        position_id,
+        "--fraction",
+        "0.5",
+        "--from",
+        alice_name,
+    )
+    assert (
+        partial_close.get("code", 1) == 0
+    ), f"partial close failed: {json.dumps(partial_close, indent=2)}"
+    partial_events = partial_close.get("events")
+    assert isinstance(
+        partial_events, list
+    ), f"partial close events missing: {json.dumps(partial_close, indent=2)}"
+    partial_types = [event.get("type") for event in partial_events]
+    assert (
+        "dysonprotocol.whaleswap.v1.EventLeveragePositionPartiallyClosed"
+        in partial_types
+    ), f"partial close event missing: {json.dumps(partial_events, indent=2)}"
+
+    full_close = dysond(
+        "tx",
+        "whaleswap",
+        "close-position",
+        "--position-id",
+        position_id,
+        "--fraction",
+        "1",
+        "--from",
+        alice_name,
+    )
+    assert full_close.get("code", 1) == 0, (
+        "Full close after partial close should succeed; "
+        f"unexpected invariant error: {json.dumps(full_close, indent=2)}"
+    )
+    full_events = full_close.get("events")
+    assert isinstance(
+        full_events, list
+    ), f"full close events missing: {json.dumps(full_close, indent=2)}"
+    full_types = [event.get("type") for event in full_events]
+    assert (
+        "dysonprotocol.whaleswap.v1.EventLeveragePositionClosed" in full_types
+    ), f"full close event missing: {json.dumps(full_events, indent=2)}"

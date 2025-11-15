@@ -409,3 +409,28 @@ def test_positions_by_pool_all_statuses(
     assert (
         closed_pos_list[0]["status"] == "POSITION_STATUS_CLOSED"
     ), f"Position should be CLOSED, got {closed_pos_list[0]['status']}"
+
+
+def test_positions_by_address_rejects_pool_and_denoms(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """Query should reject mixing pool_id with denom filters."""
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    foo_name = leverage_names_and_coins["foo_name"]
+
+    query_result = dysond(
+        "query",
+        "whaleswap",
+        "positions-by-address",
+        "--address",
+        alice_addr,
+        "--pool-id",
+        "1",
+        "--borrowed-denom",
+        foo_name,
+    )
+    raw = json.dumps(query_result, default=str)
+    assert (
+        "pool_id cannot be combined" in raw.lower()
+    ), f"missing pool/denom validation detail: {raw}"

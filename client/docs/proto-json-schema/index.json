@@ -344,6 +344,7 @@
       {"type":"file","name":"dysonprotocol.whaleswap.v1.OpenPosition.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.PoolSwap.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.RedeemAuction.json"},
+      {"type":"file","name":"dysonprotocol.whaleswap.v1.RemoveCollateral.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.RemoveLiquidity.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.TakeOffer.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.UpdateParams.json"},
@@ -387,5 +388,5 @@
     ]}
   ]}
 ,
-  {"type":"report","directories":3,"files":381}
+  {"type":"report","directories":3,"files":382}
 ]

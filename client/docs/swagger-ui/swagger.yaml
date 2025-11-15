@@ -38106,6 +38106,115 @@ paths:
               without trade)
       tags:
         - Msg
+  dysonprotocol.whaleswap.v1.MsgRemoveCollateral:
+    post:
+      summary: |-
+        *
+        RemoveCollateral withdraws excess collateral from a leveraged position.
+      operationId: dysonprotocol.whaleswap.v1.MsgRemoveCollateral
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              collateral_removed:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              new_collateral:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              new_collateral_ratio:
+                type: string
+                description: Collateral ratio after removal.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              user:
+                type: string
+                description: Account removing collateral; must be the position owner.
+              pool_id:
+                type: string
+                format: uint64
+                description: Target pool id; must match the position's pool.
+              position_id:
+                type: string
+                format: uint64
+                description: Target position id to remove collateral from.
+              collateral:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+            description: >-
+              *
+
+              RemoveCollateral withdraws excess collateral from a leveraged
+              position while
+
+              maintaining the minimum collateral ratio.
+      tags:
+        - Msg
   dysonprotocol.whaleswap.v1.MsgRemoveLiquidity:
     post:
       summary: |-
@@ -81453,6 +81562,69 @@ definitions:
     description: |-
       *
       Empty response. See EventAuctionRedeemed for emitted details.
+  dysonprotocol.whaleswap.v1.MsgRemoveCollateral:
+    type: object
+    properties:
+      user:
+        type: string
+        description: Account removing collateral; must be the position owner.
+      pool_id:
+        type: string
+        format: uint64
+        description: Target pool id; must match the position's pool.
+      position_id:
+        type: string
+        format: uint64
+        description: Target position id to remove collateral from.
+      collateral:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+    description: >-
+      *
+
+      RemoveCollateral withdraws excess collateral from a leveraged position
+      while
+
+      maintaining the minimum collateral ratio.
+  dysonprotocol.whaleswap.v1.MsgRemoveCollateralResponse:
+    type: object
+    properties:
+      collateral_removed:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      new_collateral:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      new_collateral_ratio:
+        type: string
+        description: Collateral ratio after removal.
   dysonprotocol.whaleswap.v1.MsgRemoveLiquidity:
     type: object
     properties:

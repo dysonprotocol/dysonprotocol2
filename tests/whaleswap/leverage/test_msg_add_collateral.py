@@ -604,6 +604,103 @@ def demo_add_collateral_pool_mismatch(alice_addr, foo_name, bar_name):
     ), f"Exception should mention pool_id mismatch. Got: {exception_msg}"
 
 
+def test_add_collateral_invalid_user_address(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """Test AddCollateral fails when user address is malformed (k.addr error)."""
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_add_collateral_invalid_address(alice_addr, foo_name, bar_name):
+    base, quote = sorted([foo_name, bar_name])
+    sudo_pool_result = _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": foo_name, "amount": "5000"},
+            {"denom": bar_name, "amount": "5000"}
+        ],
+        "fee_rate": [
+            {"denom": base, "amount": "0.003"},
+            {"denom": quote, "amount": "0.003"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base, "amount": "1.5"},
+            {"denom": quote, "amount": "1.5"}
+        ],
+        "liquidation_threshold": [
+            {"denom": base, "amount": "1.2"},
+            {"denom": quote, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base, "amount": "0.8"},
+            {"denom": quote, "amount": "0.8"}
+        ]
+    })
+    pool_id = sudo_pool_result["results"][0]["pool_id"]
+
+    sudo_position_result = _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgOpenPosition",
+        "trader": alice_addr,
+        "pool_id": pool_id,
+        "collateral": {"denom": bar_name, "amount": "600"},
+        "borrow": {"denom": foo_name, "amount": "300"}
+    })
+    position_id = sudo_position_result["results"][0]["position_id"]
+
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgAddCollateral",
+        "user": "invalid_address",
+        "pool_id": pool_id,
+        "position_id": int(position_id),
+        "collateral": {"denom": bar_name, "amount": "100"}
+    })
+"""
+
+    kwargs = json.dumps(
+        {"alice_addr": alice_addr, "foo_name": foo_name, "bar_name": bar_name}
+    )
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_add_collateral_invalid_address",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    assert (
+        query_result.get("exception") is not None
+    ), f"Script should fail for invalid bech32. Result: {json.dumps(query_result, indent=2)}"
+
+    exception_msg = str(query_result["exception"]).lower()
+    assert "not position owner" in exception_msg, (
+        "Keeper validates ownership before parsing addresses, so invalid bech32 "
+        f"strings manifest as unauthorized errors. Got: {exception_msg}"
+    )
+
+
 def test_add_collateral_denom_mismatch(
     chainnet, leverage_accounts, leverage_names_and_coins
 ):

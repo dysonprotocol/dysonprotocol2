@@ -223,6 +223,12 @@ service Msg {
   rpc AddCollateral(MsgAddCollateral) returns (MsgAddCollateralResponse);
 
   /**
+   * RemoveCollateral withdraws excess collateral from a leveraged position.
+   */
+  rpc RemoveCollateral(MsgRemoveCollateral)
+      returns (MsgRemoveCollateralResponse);
+
+  /**
    * CoverPosition repays accrued interest; optionally reduces principal or
    * auto-closes on full repayment.
    */

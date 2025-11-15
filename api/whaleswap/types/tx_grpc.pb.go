@@ -33,6 +33,7 @@ const (
 	Msg_OpenPosition_FullMethodName          = "/dysonprotocol.whaleswap.v1.Msg/OpenPosition"
 	Msg_ClosePosition_FullMethodName         = "/dysonprotocol.whaleswap.v1.Msg/ClosePosition"
 	Msg_AddCollateral_FullMethodName         = "/dysonprotocol.whaleswap.v1.Msg/AddCollateral"
+	Msg_RemoveCollateral_FullMethodName      = "/dysonprotocol.whaleswap.v1.Msg/RemoveCollateral"
 	Msg_CoverPosition_FullMethodName         = "/dysonprotocol.whaleswap.v1.Msg/CoverPosition"
 	Msg_InitializeLiquidation_FullMethodName = "/dysonprotocol.whaleswap.v1.Msg/InitializeLiquidation"
 	Msg_FinalizeLiquidation_FullMethodName   = "/dysonprotocol.whaleswap.v1.Msg/FinalizeLiquidation"
@@ -225,6 +226,9 @@ type MsgClient interface {
 	// clears liquidation markers.
 	AddCollateral(ctx context.Context, in *MsgAddCollateral, opts ...grpc.CallOption) (*MsgAddCollateralResponse, error)
 	// *
+	// RemoveCollateral withdraws excess collateral from a leveraged position.
+	RemoveCollateral(ctx context.Context, in *MsgRemoveCollateral, opts ...grpc.CallOption) (*MsgRemoveCollateralResponse, error)
+	// *
 	// CoverPosition repays accrued interest; optionally reduces principal or
 	// auto-closes on full repayment.
 	CoverPosition(ctx context.Context, in *MsgCoverPosition, opts ...grpc.CallOption) (*MsgCoverPositionResponse, error)
@@ -385,6 +389,16 @@ func (c *msgClient) AddCollateral(ctx context.Context, in *MsgAddCollateral, opt
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MsgAddCollateralResponse)
 	err := c.cc.Invoke(ctx, Msg_AddCollateral_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) RemoveCollateral(ctx context.Context, in *MsgRemoveCollateral, opts ...grpc.CallOption) (*MsgRemoveCollateralResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgRemoveCollateralResponse)
+	err := c.cc.Invoke(ctx, Msg_RemoveCollateral_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -617,6 +631,9 @@ type MsgServer interface {
 	// clears liquidation markers.
 	AddCollateral(context.Context, *MsgAddCollateral) (*MsgAddCollateralResponse, error)
 	// *
+	// RemoveCollateral withdraws excess collateral from a leveraged position.
+	RemoveCollateral(context.Context, *MsgRemoveCollateral) (*MsgRemoveCollateralResponse, error)
+	// *
 	// CoverPosition repays accrued interest; optionally reduces principal or
 	// auto-closes on full repayment.
 	CoverPosition(context.Context, *MsgCoverPosition) (*MsgCoverPositionResponse, error)
@@ -684,6 +701,9 @@ func (UnimplementedMsgServer) ClosePosition(context.Context, *MsgClosePosition) 
 }
 func (UnimplementedMsgServer) AddCollateral(context.Context, *MsgAddCollateral) (*MsgAddCollateralResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddCollateral not implemented")
+}
+func (UnimplementedMsgServer) RemoveCollateral(context.Context, *MsgRemoveCollateral) (*MsgRemoveCollateralResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveCollateral not implemented")
 }
 func (UnimplementedMsgServer) CoverPosition(context.Context, *MsgCoverPosition) (*MsgCoverPositionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CoverPosition not implemented")
@@ -970,6 +990,24 @@ func _Msg_AddCollateral_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_RemoveCollateral_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRemoveCollateral)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RemoveCollateral(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_RemoveCollateral_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RemoveCollateral(ctx, req.(*MsgRemoveCollateral))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Msg_CoverPosition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgCoverPosition)
 	if err := dec(in); err != nil {
@@ -1104,6 +1142,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddCollateral",
 			Handler:    _Msg_AddCollateral_Handler,
+		},
+		{
+			MethodName: "RemoveCollateral",
+			Handler:    _Msg_RemoveCollateral_Handler,
 		},
 		{
 			MethodName: "CoverPosition",

@@ -387,7 +387,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
         "250ms",
         "--no-blocks-timeout",
         "15",
-        "--logs",
+        # "--logs",
     ]
 
     # Support optional log module filtering via environment variable

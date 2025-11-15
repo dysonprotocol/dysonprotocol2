@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { MsgAddCollateral, MsgAddCollateralResponse, MsgAddLiquidity, MsgAddLiquidityResponse, MsgCancelOffer, MsgCancelOfferResponse, MsgClosePosition, MsgClosePositionResponse, MsgCoverPosition, MsgCoverPositionResponse, MsgCreatePool, MsgCreatePoolResponse, MsgFinalizeLiquidation, MsgFinalizeLiquidationResponse, MsgInitializeLiquidation, MsgInitializeLiquidationResponse, MsgMakeOffer, MsgMakeOfferResponse, MsgMakeTrade, MsgMakeTradeResponse, MsgOpenAuction, MsgOpenAuctionResponse, MsgOpenPosition, MsgOpenPositionResponse, MsgPoolSwap, MsgPoolSwapResponse, MsgRedeemAuction, MsgRedeemAuctionResponse, MsgRemoveLiquidity, MsgRemoveLiquidityResponse, MsgTakeOffer, MsgTakeOfferResponse, MsgUpdateParams, MsgUpdateParamsResponse, MsgUpdatePoolConfig, MsgUpdatePoolConfigResponse } from "./tx_pb.js";
+import { MsgAddCollateral, MsgAddCollateralResponse, MsgAddLiquidity, MsgAddLiquidityResponse, MsgCancelOffer, MsgCancelOfferResponse, MsgClosePosition, MsgClosePositionResponse, MsgCoverPosition, MsgCoverPositionResponse, MsgCreatePool, MsgCreatePoolResponse, MsgFinalizeLiquidation, MsgFinalizeLiquidationResponse, MsgInitializeLiquidation, MsgInitializeLiquidationResponse, MsgMakeOffer, MsgMakeOfferResponse, MsgMakeTrade, MsgMakeTradeResponse, MsgOpenAuction, MsgOpenAuctionResponse, MsgOpenPosition, MsgOpenPositionResponse, MsgPoolSwap, MsgPoolSwapResponse, MsgRedeemAuction, MsgRedeemAuctionResponse, MsgRemoveCollateral, MsgRemoveCollateralResponse, MsgRemoveLiquidity, MsgRemoveLiquidityResponse, MsgTakeOffer, MsgTakeOfferResponse, MsgUpdateParams, MsgUpdateParamsResponse, MsgUpdatePoolConfig, MsgUpdatePoolConfigResponse } from "./tx_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -315,6 +315,18 @@ export const Msg = {
       name: "AddCollateral",
       I: MsgAddCollateral,
       O: MsgAddCollateralResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * *
+     * RemoveCollateral withdraws excess collateral from a leveraged position.
+     *
+     * @generated from rpc dysonprotocol.whaleswap.v1.Msg.RemoveCollateral
+     */
+    removeCollateral: {
+      name: "RemoveCollateral",
+      I: MsgRemoveCollateral,
+      O: MsgRemoveCollateralResponse,
       kind: MethodKind.Unary,
     },
     /**

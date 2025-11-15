@@ -475,6 +475,39 @@
         ]
       }
     },
+    "dysonprotocol.whaleswap.v1.MsgRemoveCollateral": {
+      "post": {
+        "summary": "*\nRemoveCollateral withdraws excess collateral from a leveraged position.",
+        "operationId": "dysonprotocol.whaleswap.v1.MsgRemoveCollateral",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgRemoveCollateralResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgRemoveCollateral"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
     "dysonprotocol.whaleswap.v1.MsgRemoveLiquidity": {
       "post": {
         "summary": "*\nRemoveLiquidity burns the caller's shares and returns the underlying\nreserves proportional to the share burned.",
@@ -1218,6 +1251,47 @@
     "dysonprotocol.whaleswap.v1.MsgRedeemAuctionResponse": {
       "type": "object",
       "description": "*\nEmpty response. See EventAuctionRedeemed for emitted details."
+    },
+    "dysonprotocol.whaleswap.v1.MsgRemoveCollateral": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "string",
+          "description": "Account removing collateral; must be the position owner."
+        },
+        "pool_id": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Target pool id; must match the position's pool."
+        },
+        "position_id": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Target position id to remove collateral from."
+        },
+        "collateral": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Collateral coin to withdraw; denom must match position collateral; amount\nmust be positive."
+        }
+      },
+      "description": "*\nRemoveCollateral withdraws excess collateral from a leveraged position while\nmaintaining the minimum collateral ratio."
+    },
+    "dysonprotocol.whaleswap.v1.MsgRemoveCollateralResponse": {
+      "type": "object",
+      "properties": {
+        "collateral_removed": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Collateral actually removed."
+        },
+        "new_collateral": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Remaining collateral on the position."
+        },
+        "new_collateral_ratio": {
+          "type": "string",
+          "description": "Collateral ratio after removal."
+        }
+      }
     },
     "dysonprotocol.whaleswap.v1.MsgRemoveLiquidity": {
       "type": "object",

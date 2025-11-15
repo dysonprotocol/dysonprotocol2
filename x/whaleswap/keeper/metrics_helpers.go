@@ -165,12 +165,23 @@ func (k Keeper) incrementPositionOpened(ctx context.Context, user string) error 
 
 // incrementPositionClosed increments positions_closed counter and tracks interest/PnL.
 func (k Keeper) incrementPositionClosed(ctx context.Context, user string, interestPaid sdk.Coin, pnl sdk.Coin) error {
+	return k.recordPositionCloseMetrics(ctx, user, interestPaid, pnl, true)
+}
+
+// trackPartialCloseMetrics updates interest/PnL without incrementing positions_closed.
+func (k Keeper) trackPartialCloseMetrics(ctx context.Context, user string, interestPaid sdk.Coin, pnl sdk.Coin) error {
+	return k.recordPositionCloseMetrics(ctx, user, interestPaid, pnl, false)
+}
+
+func (k Keeper) recordPositionCloseMetrics(ctx context.Context, user string, interestPaid sdk.Coin, pnl sdk.Coin, incrementClosed bool) error {
 	metrics, err := k.getOrCreateMetrics(ctx, user)
 	if err != nil {
 		return err
 	}
 
-	metrics.PositionsClosed++
+	if incrementClosed {
+		metrics.PositionsClosed++
+	}
 
 	// Track interest paid (filter by metadata)
 	if k.shouldTrackDenom(ctx, interestPaid.Denom) && interestPaid.IsPositive() {
