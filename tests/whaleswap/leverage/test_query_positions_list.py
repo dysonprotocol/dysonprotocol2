@@ -114,29 +114,32 @@ def test_positions_by_user_all_statuses(
     pos2_id = pos2_attrs[0].strip('"')
 
     # Wait for block delay, then close position 1
-    # Use cover-position with payment >= principal + interest to auto-close
-    cover_result = dysond(
+    # Use close-position for full close
+    close_result = dysond(
         "tx",
         "whaleswap",
-        "cover-position",
+        "close-position",
         "--position-id",
         pos1_id,
-        "--payment",
-        f"600{foo_name}",  # More than borrowed to trigger auto-close
+        "--fraction",
+        "1.0",
         "--from",
         alice_name,
     )
     assert (
-        cover_result.get("code", 1) == 0
-    ), f"cover-position failed: {json.dumps(cover_result, indent=2)}"
+        close_result.get("code", 1) == 0
+    ), f"close-position failed: {json.dumps(close_result, indent=2)}"
 
     # Query all positions (status unspecified) - should return both OPEN and CLOSED
+    # Filter by pool_id to avoid state leakage from other tests
     all_positions = dysond(
         "query",
         "whaleswap",
         "positions-by-user",
         "--user",
         alice_addr,
+        "--pool-id",
+        pool_id,
     )
     assert isinstance(
         all_positions, dict
@@ -146,20 +149,35 @@ def test_positions_by_user_all_statuses(
     ), f"Missing 'positions' key. Keys: {list(all_positions.keys())}"
 
     all_pos_list = all_positions["positions"]
+
     assert isinstance(
         all_pos_list, list
     ), f"Positions should be list, got {type(all_pos_list)}"
+
     assert (
         len(all_pos_list) == 2
-    ), f"Should return 2 positions (1 OPEN, 1 CLOSED), got {len(all_pos_list)}"
+    ), f"Should return 2 positions (one OPEN, one CLOSED when status unspecified), got {len(all_pos_list)}"
+
+    # Verify one OPEN and one CLOSED
+    open_count = sum(
+        1 for pos in all_pos_list if pos.get("borrowed", {}).get("amount", "0") != "0"
+    )
+    closed_count = sum(
+        1 for pos in all_pos_list if pos.get("borrowed", {}).get("amount", "0") == "0"
+    )
+    assert open_count == 1, f"Expected 1 OPEN position, got {open_count}"
+    assert closed_count == 1, f"Expected 1 CLOSED position, got {closed_count}"
 
     # Query only OPEN positions
+    # Filter by pool_id to avoid state leakage from other tests
     open_positions = dysond(
         "query",
         "whaleswap",
         "positions-by-user",
         "--user",
         alice_addr,
+        "--pool-id",
+        pool_id,
         "--status",
         "open",
     )
@@ -174,13 +192,16 @@ def test_positions_by_user_all_statuses(
         open_pos_list[0]["status"] == "POSITION_STATUS_OPEN"
     ), f"Position should be OPEN, got {open_pos_list[0]['status']}"
 
-    # Query only CLOSED positions
+    # Query only CLOSED positions - should return 1 since retained with status CLOSED
+    # Filter by pool_id to avoid state leakage from other tests
     closed_positions = dysond(
         "query",
         "whaleswap",
         "positions-by-user",
         "--user",
         alice_addr,
+        "--pool-id",
+        pool_id,
         "--status",
         "closed",
     )
@@ -190,7 +211,7 @@ def test_positions_by_user_all_statuses(
     ), f"Closed positions should be list, got {type(closed_pos_list)}"
     assert (
         len(closed_pos_list) == 1
-    ), f"Should return 1 CLOSED position, got {len(closed_pos_list)}"
+    ), f"Should return 1 CLOSED position (retained after close), got {len(closed_pos_list)}"
     assert (
         closed_pos_list[0]["status"] == "POSITION_STATUS_CLOSED"
     ), f"Position should be CLOSED, got {closed_pos_list[0]['status']}"
@@ -298,22 +319,21 @@ def test_positions_by_pool_all_statuses(
     assert pos2_attrs, f"position_id missing: {json.dumps(pos2_result, indent=2)}"
     pos2_id = pos2_attrs[0].strip('"')
 
-    # Wait for block delay, then close position 1
-    # Use cover-position with payment >= principal + interest to auto-close
-    cover_result = dysond(
+    # Wait for block delay, then close position 2
+    close_result = dysond(
         "tx",
         "whaleswap",
-        "cover-position",
+        "close-position",
         "--position-id",
-        pos1_id,
-        "--payment",
-        f"600{foo_name}",  # More than borrowed to trigger auto-close
+        pos2_id,
+        "--fraction",
+        "1.0",
         "--from",
         alice_name,
     )
     assert (
-        cover_result.get("code", 1) == 0
-    ), f"cover-position failed: {json.dumps(cover_result, indent=2)}"
+        close_result.get("code", 1) == 0
+    ), f"close-position failed: {json.dumps(close_result, indent=2)}"
 
     # Query all positions (status unspecified) - should return both OPEN and CLOSED
     all_positions = dysond(
@@ -336,7 +356,17 @@ def test_positions_by_pool_all_statuses(
     ), f"Positions should be list, got {type(all_pos_list)}"
     assert (
         len(all_pos_list) == 2
-    ), f"Should return 2 positions (1 OPEN, 1 CLOSED), got {len(all_pos_list)}"
+    ), f"Should return 2 positions (one OPEN, one CLOSED when status unspecified), got {len(all_pos_list)}"
+
+    # Verify one OPEN and one CLOSED
+    open_count = sum(
+        1 for pos in all_pos_list if pos.get("borrowed", {}).get("amount", "0") != "0"
+    )
+    closed_count = sum(
+        1 for pos in all_pos_list if pos.get("borrowed", {}).get("amount", "0") == "0"
+    )
+    assert open_count == 1, f"Expected 1 OPEN position, got {open_count}"
+    assert closed_count == 1, f"Expected 1 CLOSED position, got {closed_count}"
 
     # Query only OPEN positions
     open_positions = dysond(
@@ -359,7 +389,7 @@ def test_positions_by_pool_all_statuses(
         open_pos_list[0]["status"] == "POSITION_STATUS_OPEN"
     ), f"Position should be OPEN, got {open_pos_list[0]['status']}"
 
-    # Query only CLOSED positions
+    # Query only CLOSED positions - should return 1 since retained with status CLOSED
     closed_positions = dysond(
         "query",
         "whaleswap",
@@ -375,7 +405,7 @@ def test_positions_by_pool_all_statuses(
     ), f"Closed positions should be list, got {type(closed_pos_list)}"
     assert (
         len(closed_pos_list) == 1
-    ), f"Should return 1 CLOSED position, got {len(closed_pos_list)}"
+    ), f"Should return 1 CLOSED position (retained after close), got {len(closed_pos_list)}"
     assert (
         closed_pos_list[0]["status"] == "POSITION_STATUS_CLOSED"
     ), f"Position should be CLOSED, got {closed_pos_list[0]['status']}"

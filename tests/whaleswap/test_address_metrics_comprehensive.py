@@ -491,7 +491,7 @@ def _sudo(msg_dict):
 
 def demo_liquidity_metrics(alice_addr, foo_name, bar_name):
     base, quote = sorted([foo_name, bar_name])
-
+    
     # Create pool
     pool_result = _sudo({
         "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",

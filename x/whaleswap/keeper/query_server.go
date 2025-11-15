@@ -125,6 +125,10 @@ func (k Keeper) PositionsByUser(ctx context.Context, req *whaleswapv1.QueryPosit
 	if req.User == "" {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "user address required")
 	}
+	// Validate that pool_id cannot be combined with borrowed_denom or collateral_denom
+	if req.PoolId != 0 && (req.BorrowedDenom != "" || req.CollateralDenom != "") {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool_id cannot be combined with borrowed_denom or collateral_denom")
+	}
 
 	results, pageRes, err := query.CollectionPaginate(
 		ctx,
@@ -141,11 +145,14 @@ func (k Keeper) PositionsByUser(ctx context.Context, req *whaleswapv1.QueryPosit
 			if req.PoolId != 0 && pos.PoolId != req.PoolId {
 				return nil, nil
 			}
-			if req.BorrowedDenom != "" && pos.Borrowed.Denom != req.BorrowedDenom {
-				return nil, nil
-			}
-			if req.CollateralDenom != "" && pos.Collateral.Denom != req.CollateralDenom {
-				return nil, nil
+			// Only check denom filters if pool_id is not specified (mutually exclusive)
+			if req.PoolId == 0 {
+				if req.BorrowedDenom != "" && pos.Borrowed.Denom != req.BorrowedDenom {
+					return nil, nil
+				}
+				if req.CollateralDenom != "" && pos.Collateral.Denom != req.CollateralDenom {
+					return nil, nil
+				}
 			}
 			return &pos, nil
 		},
