@@ -273,6 +273,7 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		InitialBorrowed:            borrowed,
 		TotalInterestPaid:          sdk.NewCoin(borrowDenom, math.ZeroInt()),
 		LastInterestSettlementTime: &now,
+		TradeIds:                   []uint64{mtResp.TradeId},
 	}
 	sdkCtx.Logger().Info("OpenPosition: position created", "posID", posID, "borrowDenom", pos.Borrowed.Denom, "heldDenom", pos.Held.Denom)
 	if err := k.savePosition(ctx, pos, whaleswapv1.PositionStatus_POSITION_STATUS_UNSPECIFIED); err != nil {

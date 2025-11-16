@@ -75,4 +75,15 @@ message LeveragePosition {
   // settlements.
   string accrued_interest_remainder = 28
       [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+
+  // Trade IDs associated with this position over its lifetime.
+  //
+  // Semantics:
+  // - Includes the opening trade that created the position.
+  // - Includes all trades from partial and full closes.
+  // - Includes trades from liquidation paths.
+  // - Includes trades from MsgCoverPosition (covers) auto-close path.
+  //
+  // Values are whaleswap Trade.trade_id (uint64).
+  repeated uint64 trade_ids = 29;
 }

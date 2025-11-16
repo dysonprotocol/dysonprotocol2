@@ -10963,6 +10963,29 @@ paths:
                         preserved between
 
                         settlements.
+                    trade_ids:
+                      type: array
+                      items:
+                        type: string
+                        format: uint64
+                      description: >-
+                        Trade IDs associated with this position over its
+                        lifetime.
+
+
+                        Semantics:
+
+                        - Includes the opening trade that created the position.
+
+                        - Includes all trades from partial and full closes.
+
+                        - Includes trades from liquidation paths.
+
+                        - Includes trades from MsgCoverPosition (covers)
+                        auto-close path.
+
+
+                        Values are whaleswap Trade.trade_id (uint64).
                   description: >-
                     LeveragePosition represents an active leverage position for
                     a trader.
@@ -11290,6 +11313,29 @@ paths:
                         preserved between
 
                         settlements.
+                    trade_ids:
+                      type: array
+                      items:
+                        type: string
+                        format: uint64
+                      description: >-
+                        Trade IDs associated with this position over its
+                        lifetime.
+
+
+                        Semantics:
+
+                        - Includes the opening trade that created the position.
+
+                        - Includes all trades from partial and full closes.
+
+                        - Includes trades from liquidation paths.
+
+                        - Includes trades from MsgCoverPosition (covers)
+                        auto-close path.
+
+
+                        Values are whaleswap Trade.trade_id (uint64).
                   description: >-
                     LeveragePosition represents an active leverage position for
                     a trader.
@@ -11592,6 +11638,28 @@ paths:
                       between
 
                       settlements.
+                  trade_ids:
+                    type: array
+                    items:
+                      type: string
+                      format: uint64
+                    description: >-
+                      Trade IDs associated with this position over its lifetime.
+
+
+                      Semantics:
+
+                      - Includes the opening trade that created the position.
+
+                      - Includes all trades from partial and full closes.
+
+                      - Includes trades from liquidation paths.
+
+                      - Includes trades from MsgCoverPosition (covers)
+                      auto-close path.
+
+
+                      Values are whaleswap Trade.trade_id (uint64).
                 description: >-
                   LeveragePosition represents an active leverage position for a
                   trader.
@@ -51428,6 +51496,21 @@ definitions:
         description: |-
           Fractional interest remainder (<1 borrowed coin) preserved between
           settlements.
+      trade_ids:
+        type: array
+        items:
+          type: string
+          format: uint64
+        description: |-
+          Trade IDs associated with this position over its lifetime.
+
+          Semantics:
+          - Includes the opening trade that created the position.
+          - Includes all trades from partial and full closes.
+          - Includes trades from liquidation paths.
+          - Includes trades from MsgCoverPosition (covers) auto-close path.
+
+          Values are whaleswap Trade.trade_id (uint64).
     description: LeveragePosition represents an active leverage position for a trader.
   dysonprotocol.whaleswap.v1.LiquidationStatus:
     type: string
@@ -56677,6 +56760,21 @@ definitions:
             description: |-
               Fractional interest remainder (<1 borrowed coin) preserved between
               settlements.
+          trade_ids:
+            type: array
+            items:
+              type: string
+              format: uint64
+            description: |-
+              Trade IDs associated with this position over its lifetime.
+
+              Semantics:
+              - Includes the opening trade that created the position.
+              - Includes all trades from partial and full closes.
+              - Includes trades from liquidation paths.
+              - Includes trades from MsgCoverPosition (covers) auto-close path.
+
+              Values are whaleswap Trade.trade_id (uint64).
         description: LeveragePosition represents an active leverage position for a trader.
       health_status:
         title: Health Information
@@ -56920,6 +57018,28 @@ definitions:
                 between
 
                 settlements.
+            trade_ids:
+              type: array
+              items:
+                type: string
+                format: uint64
+              description: >-
+                Trade IDs associated with this position over its lifetime.
+
+
+                Semantics:
+
+                - Includes the opening trade that created the position.
+
+                - Includes all trades from partial and full closes.
+
+                - Includes trades from liquidation paths.
+
+                - Includes trades from MsgCoverPosition (covers) auto-close
+                path.
+
+
+                Values are whaleswap Trade.trade_id (uint64).
           description: >-
             LeveragePosition represents an active leverage position for a
             trader.
@@ -57139,6 +57259,28 @@ definitions:
                 between
 
                 settlements.
+            trade_ids:
+              type: array
+              items:
+                type: string
+                format: uint64
+              description: >-
+                Trade IDs associated with this position over its lifetime.
+
+
+                Semantics:
+
+                - Includes the opening trade that created the position.
+
+                - Includes all trades from partial and full closes.
+
+                - Includes trades from liquidation paths.
+
+                - Includes trades from MsgCoverPosition (covers) auto-close
+                path.
+
+
+                Values are whaleswap Trade.trade_id (uint64).
           description: >-
             LeveragePosition represents an active leverage position for a
             trader.

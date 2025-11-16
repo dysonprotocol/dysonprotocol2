@@ -266,6 +266,13 @@
                     "accrued_interest_remainder": {
                         "type": "string",
                         "description": "Fractional interest remainder (<1 borrowed coin) preserved between settlements."
+                    },
+                    "trade_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "Trade IDs associated with this position over its lifetime. Semantics: - Includes the opening trade that created the position. - Includes all trades from partial and full closes. - Includes trades from liquidation paths. - Includes trades from MsgCoverPosition (covers) auto-close path. Values are whaleswap Trade.trade_id (uint64)."
                     }
                 },
                 "additionalProperties": false,

@@ -137,6 +137,7 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 		if mtErr != nil {
 			return nil, cosmossdkerrors.Wrap(mtErr, "failed MakeTrade for cover close")
 		}
+		pos.TradeIds = append(pos.TradeIds, mtResp.TradeId)
 		proceedsBorrow := mtResp.TraderOutputs.AmountOf(pos.Borrowed.Denom)
 		if !proceedsBorrow.IsPositive() {
 			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "cover close swap produced no %s output", pos.Borrowed.Denom)

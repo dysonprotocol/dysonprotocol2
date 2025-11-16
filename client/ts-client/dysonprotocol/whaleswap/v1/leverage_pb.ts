@@ -202,6 +202,21 @@ export class LeveragePosition extends Message<LeveragePosition> {
    */
   accruedInterestRemainder = "";
 
+  /**
+   * Trade IDs associated with this position over its lifetime.
+   *
+   * Semantics:
+   * - Includes the opening trade that created the position.
+   * - Includes all trades from partial and full closes.
+   * - Includes trades from liquidation paths.
+   * - Includes trades from MsgCoverPosition (covers) auto-close path.
+   *
+   * Values are whaleswap Trade.trade_id (uint64).
+   *
+   * @generated from field: repeated uint64 trade_ids = 29;
+   */
+  tradeIds: bigint[] = [];
+
   constructor(data?: PartialMessage<LeveragePosition>) {
     super();
     proto3.util.initPartial(data, this);
@@ -231,6 +246,7 @@ export class LeveragePosition extends Message<LeveragePosition> {
     { no: 26, name: "total_interest_paid", kind: "message", T: Coin },
     { no: 27, name: "last_interest_settlement_time", kind: "message", T: Timestamp },
     { no: 28, name: "accrued_interest_remainder", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 29, name: "trade_ids", kind: "scalar", T: 4 /* ScalarType.UINT64 */, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LeveragePosition {

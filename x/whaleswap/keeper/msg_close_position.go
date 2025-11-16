@@ -165,6 +165,7 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	if mtErr != nil {
 		return nil, cosmossdkerrors.Wrap(mtErr, "failed leverage close MakeTrade")
 	}
+	pos.TradeIds = append(pos.TradeIds, mtResp.TradeId)
 	proceedsCoin := sdk.NewCoin(pos.Borrowed.Denom, mtResp.TraderOutputs.AmountOf(pos.Borrowed.Denom))
 	if !proceedsCoin.IsPositive() {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "close swap produced no %s output", pos.Borrowed.Denom)
@@ -241,6 +242,7 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 			if collSwapErr != nil {
 				return nil, cosmossdkerrors.Wrap(collSwapErr, "failed to swap collateral for shortfall coverage")
 			}
+			pos.TradeIds = append(pos.TradeIds, collSwapResp.TradeId)
 
 			collateralProceedsCoin := sdk.NewCoin(pos.Borrowed.Denom, collSwapResp.TraderOutputs.AmountOf(pos.Borrowed.Denom))
 			if !collateralProceedsCoin.IsPositive() {
