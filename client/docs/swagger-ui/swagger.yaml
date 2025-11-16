@@ -5516,7 +5516,7 @@ paths:
 
                         signatures required by gogoproto.
                     title: Total interest paid (denoms with metadata only)
-                  leverage_pnl:
+                  profit:
                     type: array
                     items:
                       type: object
@@ -5534,7 +5534,27 @@ paths:
 
                         signatures required by gogoproto.
                     title: >-
-                      Net PnL from closed leverage positions (denoms with
+                      Profit from closed leverage positions (denoms with
+                      metadata only)
+                  losses:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    title: >-
+                      Losses from closed leverage positions (denoms with
                       metadata only)
                   liquidations:
                     type: string
@@ -50731,7 +50751,7 @@ definitions:
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
         title: Total interest paid (denoms with metadata only)
-      leverage_pnl:
+      profit:
         type: array
         items:
           type: object
@@ -50745,7 +50765,22 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
-        title: Net PnL from closed leverage positions (denoms with metadata only)
+        title: Profit from closed leverage positions (denoms with metadata only)
+      losses:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+        title: Losses from closed leverage positions (denoms with metadata only)
       liquidations:
         type: string
         format: uint64
@@ -51643,7 +51678,7 @@ definitions:
 
                 signatures required by gogoproto.
             title: Total interest paid (denoms with metadata only)
-          leverage_pnl:
+          profit:
             type: array
             items:
               type: object
@@ -51660,7 +51695,25 @@ definitions:
                 method
 
                 signatures required by gogoproto.
-            title: Net PnL from closed leverage positions (denoms with metadata only)
+            title: Profit from closed leverage positions (denoms with metadata only)
+          losses:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            title: Losses from closed leverage positions (denoms with metadata only)
           liquidations:
             type: string
             format: uint64

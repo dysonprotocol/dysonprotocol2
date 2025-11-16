@@ -10,10 +10,11 @@
 
 ### Scope
 
-- Validate x/whaleswap end-to-end for three feature areas:
+- Validate x/whaleswap end-to-end for four feature areas:
   - AMM: pools (create/update), LP (add/remove), swap, owner gating, bands, fees
   - Orderbook: make/take/cancel, liquid mode Pfand, indexes and queries
   - Auctions: open/redeem, NFT class policy, allowed denoms, reverse indexes
+  - Address metrics: per-address lifetime counters/coins, including leverage `profit` and `losses` arrays
 - Exercise three surfaces for each area:
   - CLI (autocli): dysond tx/query whaleswap
   - Swagger API (gRPC-Gateway): HTTP GET/POST against REST endpoints
@@ -72,6 +73,17 @@ pool_id = int([a for e in pool_evs for a in e.get("attributes", []) if a.get("ke
 ```python
 base = f"http://{api_address['host']}:{api_address['port']}"
 ```
+
+---
+
+## Address metrics
+
+- CLI smoke (`tests/whaleswap/test_address_metrics.py`):
+  - Query `whaleswap address-metrics --address <addr>` for a fresh address and assert zero/empty values, including the `profit` and `losses` arrays.
+- REST coverage:
+  - GET `/dysonprotocol/whaleswap/v1/metrics/address/{addr}` and ensure the JSON mirrors CLI output for both empty and active addresses.
+- Future leverage scenarios:
+  - Drive a profitable close followed by a loss-making close; confirm `profit` increases only on gains, `losses` increases only on realized losses, and dashboards can derive net P&L as `profit - losses` per denom.
 
 ---
 

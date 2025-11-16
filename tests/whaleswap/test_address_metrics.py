@@ -38,7 +38,8 @@ def test_address_metrics_no_activity(chainnet, generate_account):
     assert int(result["metrics"].get("positions_opened", 0)) == 0
     assert int(result["metrics"].get("positions_closed", 0)) == 0
     assert result["metrics"].get("interest_paid", []) == []
-    assert result["metrics"].get("leverage_pnl", []) == []
+    assert result["metrics"].get("profit", []) == []
+    assert result["metrics"].get("losses", []) == []
     assert int(result["metrics"].get("liquidations", 0)) == 0
 
     # Orderbook metrics

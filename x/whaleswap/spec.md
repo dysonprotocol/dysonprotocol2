@@ -82,6 +82,14 @@ Notes:
     - `(sell_denom, bid_denom, auction_id)` → `auction_id`
     - `(bid_denom, sell_denom, auction_id)` → `auction_id`
   - NFT class: `whaleswap.dys/auction/{bid_denom}` (one class per bid denom)
+- Address metrics: `address_metrics/{address}` → AddressMetrics
+  - Aggregates lifetime activity (trades, LP ops, leverage, offers, auctions) per address.
+  - Coin arrays only track denoms with metadata; keeper filters additions.
+  - Leverage analytics now split realized P&L into two fields:
+    - `profit`: cumulative positive P&L coins per denom.
+    - `losses`: cumulative losses stored as positive magnitudes per denom.
+    - Net realized P&L = `profit` − `losses`; both arrays validate strictly positive amounts.
+  - Metrics are incrementally updated via helper functions whenever user actions mutate whaleswap state; the query `AddressMetrics(address)` simply reads the stored struct.
 
 
 ### 6. AMM – owner-only LP with price band and fee

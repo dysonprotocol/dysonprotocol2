@@ -844,11 +844,18 @@ export class AddressMetrics extends Message<AddressMetrics> {
   interestPaid: Coin[] = [];
 
   /**
-   * Net PnL from closed leverage positions (denoms with metadata only)
+   * Profit from closed leverage positions (denoms with metadata only)
    *
-   * @generated from field: repeated cosmos.base.v1beta1.Coin leverage_pnl = 33;
+   * @generated from field: repeated cosmos.base.v1beta1.Coin profit = 33;
    */
-  leveragePnl: Coin[] = [];
+  profit: Coin[] = [];
+
+  /**
+   * Losses from closed leverage positions (denoms with metadata only)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin losses = 35;
+   */
+  losses: Coin[] = [];
 
   /**
    * Count of positions liquidated (lifetime)
@@ -923,7 +930,8 @@ export class AddressMetrics extends Message<AddressMetrics> {
     { no: 30, name: "positions_opened", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 31, name: "positions_closed", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 32, name: "interest_paid", kind: "message", T: Coin, repeated: true },
-    { no: 33, name: "leverage_pnl", kind: "message", T: Coin, repeated: true },
+    { no: 33, name: "profit", kind: "message", T: Coin, repeated: true },
+    { no: 35, name: "losses", kind: "message", T: Coin, repeated: true },
     { no: 34, name: "liquidations", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 40, name: "offers_created", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 41, name: "offers_closed", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },

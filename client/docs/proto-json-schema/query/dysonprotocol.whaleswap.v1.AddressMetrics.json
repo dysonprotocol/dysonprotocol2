@@ -123,13 +123,21 @@
                         "type": "array",
                         "description": "Total interest paid (denoms with metadata only)"
                     },
-                    "leverage_pnl": {
+                    "profit": {
                         "items": {
                             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "Net PnL from closed leverage positions (denoms with metadata only)"
+                        "description": "Profit from closed leverage positions (denoms with metadata only)"
+                    },
+                    "losses": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Losses from closed leverage positions (denoms with metadata only)"
                     },
                     "liquidations": {
                         "type": "string",

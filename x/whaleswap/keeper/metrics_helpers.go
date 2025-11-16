@@ -28,7 +28,8 @@ func (k Keeper) getOrCreateMetrics(ctx context.Context, address string) (whalesw
 			LpFeesEarned:        sdk.NewCoins(),
 			LpInterestEarned:    sdk.NewCoins(),
 			InterestPaid:        sdk.NewCoins(),
-			LeveragePnl:         sdk.NewCoins(),
+			Profit:              sdk.NewCoins(),
+			Losses:              sdk.NewCoins(),
 			MakerVolume:         sdk.NewCoins(),
 			AuctionVolume:       sdk.NewCoins(),
 		}
@@ -65,7 +66,8 @@ func (k Keeper) checkAddressMetricsInvariants(ctx context.Context, metrics whale
 		metrics.LpFeesEarned,
 		metrics.LpInterestEarned,
 		metrics.InterestPaid,
-		metrics.LeveragePnl,
+		metrics.Profit,
+		metrics.Losses,
 		metrics.MakerVolume,
 		metrics.AuctionVolume,
 	}
@@ -164,16 +166,16 @@ func (k Keeper) incrementPositionOpened(ctx context.Context, user string) error 
 }
 
 // incrementPositionClosed increments positions_closed counter and tracks interest/PnL.
-func (k Keeper) incrementPositionClosed(ctx context.Context, user string, interestPaid sdk.Coin, pnl sdk.Coin) error {
-	return k.recordPositionCloseMetrics(ctx, user, interestPaid, pnl, true)
+func (k Keeper) incrementPositionClosed(ctx context.Context, user string, interestPaid sdk.Coin, profit sdk.Coin, loss sdk.Coin) error {
+	return k.recordPositionCloseMetrics(ctx, user, interestPaid, profit, loss, true)
 }
 
 // trackPartialCloseMetrics updates interest/PnL without incrementing positions_closed.
-func (k Keeper) trackPartialCloseMetrics(ctx context.Context, user string, interestPaid sdk.Coin, pnl sdk.Coin) error {
-	return k.recordPositionCloseMetrics(ctx, user, interestPaid, pnl, false)
+func (k Keeper) trackPartialCloseMetrics(ctx context.Context, user string, interestPaid sdk.Coin, profit sdk.Coin, loss sdk.Coin) error {
+	return k.recordPositionCloseMetrics(ctx, user, interestPaid, profit, loss, false)
 }
 
-func (k Keeper) recordPositionCloseMetrics(ctx context.Context, user string, interestPaid sdk.Coin, pnl sdk.Coin, incrementClosed bool) error {
+func (k Keeper) recordPositionCloseMetrics(ctx context.Context, user string, interestPaid sdk.Coin, profit sdk.Coin, loss sdk.Coin, incrementClosed bool) error {
 	metrics, err := k.getOrCreateMetrics(ctx, user)
 	if err != nil {
 		return err
@@ -188,9 +190,14 @@ func (k Keeper) recordPositionCloseMetrics(ctx context.Context, user string, int
 		metrics.InterestPaid = metrics.InterestPaid.Add(interestPaid)
 	}
 
-	// Track PnL (filter by metadata)
-	if k.shouldTrackDenom(ctx, pnl.Denom) && pnl.IsPositive() {
-		metrics.LeveragePnl = metrics.LeveragePnl.Add(pnl)
+	// Track profit (filter by metadata)
+	if k.shouldTrackDenom(ctx, profit.Denom) && profit.IsPositive() {
+		metrics.Profit = metrics.Profit.Add(profit)
+	}
+
+	// Track losses (filter by metadata)
+	if k.shouldTrackDenom(ctx, loss.Denom) && loss.IsPositive() {
+		metrics.Losses = metrics.Losses.Add(loss)
 	}
 
 	return k.saveMetrics(ctx, metrics)

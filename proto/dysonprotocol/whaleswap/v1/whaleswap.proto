@@ -323,8 +323,13 @@ message AddressMetrics {
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
-  // Net PnL from closed leverage positions (denoms with metadata only)
-  repeated cosmos.base.v1beta1.Coin leverage_pnl = 33 [
+  // Profit from closed leverage positions (denoms with metadata only)
+  repeated cosmos.base.v1beta1.Coin profit = 33 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  // Losses from closed leverage positions (denoms with metadata only)
+  repeated cosmos.base.v1beta1.Coin losses = 35 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];

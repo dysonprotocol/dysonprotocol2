@@ -175,6 +175,7 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	var collateralSwapped bool
 	var totalProceeds sdk.Coin // Total funds in vault (for cross-denom case)
 	var profit sdk.Coin
+	var loss sdk.Coin
 	collateralReturned := sdk.NewCoin(pos.Collateral.Denom, math.ZeroInt())
 
 	if proceedsCoin.IsGTE(requiredRepayment) {
@@ -188,6 +189,7 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		// Underwater: proceeds insufficient, need to use collateral
 		// User gets: remaining collateral (if any), NO profit
 		shortfallCoin := requiredRepayment.Sub(proceedsCoin)
+		loss = shortfallCoin
 
 		if pos.Collateral.Denom == pos.Borrowed.Denom {
 			// Same denom: collateral can directly cover shortfall
@@ -263,6 +265,9 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 			collateralSwapped = true
 			// Calculate profit from total proceeds (may be positive if collateral swap yielded excess)
 			profit = totalProceeds.Sub(requiredRepayment)
+			if profit.IsPositive() {
+				loss = sdk.Coin{}
+			}
 
 			sdkCtx.Logger().Info("ClosePosition: cross-denom collateral swap executed",
 				"held_proceeds", proceedsCoin,
@@ -421,9 +426,9 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	// Update address metrics
 	var metricsErr error
 	if positionClosed {
-		metricsErr = k.incrementPositionClosed(ctx, msg.User, actualInterestPaidCoin, profit)
+		metricsErr = k.incrementPositionClosed(ctx, msg.User, actualInterestPaidCoin, profit, loss)
 	} else {
-		metricsErr = k.trackPartialCloseMetrics(ctx, msg.User, actualInterestPaidCoin, profit)
+		metricsErr = k.trackPartialCloseMetrics(ctx, msg.User, actualInterestPaidCoin, profit, loss)
 	}
 	if metricsErr != nil {
 		return nil, cosmossdkerrors.Wrap(metricsErr, "failed to update position metrics")
