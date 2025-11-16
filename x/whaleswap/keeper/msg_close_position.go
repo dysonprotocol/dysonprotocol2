@@ -345,6 +345,7 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	if !collateralSwapped {
 		pos.Collateral = pos.Collateral.Sub(collateralToReturn)
 	}
+	resetInterestRemainderIfNoDebt(&pos)
 
 	positionClosed := false
 	if !isPartialClose {
@@ -371,7 +372,11 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		// Calculate current collateral ratio
 		collateralValue := math.LegacyNewDecFromInt(pos.Collateral.Amount)
 		totalDebt := pos.Borrowed.Add(pos.AccruedInterest)
-		debtValue := math.LegacyNewDecFromInt(totalDebt.Amount)
+		remainder, remErr := getAccruedInterestRemainder(&pos)
+		if remErr != nil {
+			return nil, remErr
+		}
+		debtValue := math.LegacyNewDecFromInt(totalDebt.Amount).Add(remainder)
 		currentCR := math.LegacyZeroDec()
 		if !debtValue.IsZero() {
 			currentCR, _ = k.ComputeCollateralRatio(collateralValue, debtValue)
@@ -427,7 +432,11 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	// Calculate final collateral ratio
 	collateralValue := math.LegacyNewDecFromInt(pos.Collateral.Amount)
 	totalDebt := pos.Borrowed.Add(pos.AccruedInterest)
-	debtValue := math.LegacyNewDecFromInt(totalDebt.Amount)
+	remainder, remErr := getAccruedInterestRemainder(&pos)
+	if remErr != nil {
+		return nil, remErr
+	}
+	debtValue := math.LegacyNewDecFromInt(totalDebt.Amount).Add(remainder)
 	finalCR := math.LegacyZeroDec()
 	if !debtValue.IsZero() {
 		finalCR, _ = k.ComputeCollateralRatio(collateralValue, debtValue)

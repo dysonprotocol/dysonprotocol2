@@ -2130,6 +2130,10 @@
           "type": "string",
           "format": "date-time",
           "description": "Timestamp of the last time interest was settled into accrued_interest."
+        },
+        "accrued_interest_remainder": {
+          "type": "string",
+          "description": "Fractional interest remainder (<1 borrowed coin) preserved between\nsettlements."
         }
       },
       "description": "LeveragePosition represents an active leverage position for a trader."

@@ -10568,6 +10568,13 @@ paths:
                       description: >-
                         Timestamp of the last time interest was settled into
                         accrued_interest.
+                    accrued_interest_remainder:
+                      type: string
+                      description: >-
+                        Fractional interest remainder (<1 borrowed coin)
+                        preserved between
+
+                        settlements.
                   description: >-
                     LeveragePosition represents an active leverage position for
                     a trader.
@@ -10888,6 +10895,13 @@ paths:
                       description: >-
                         Timestamp of the last time interest was settled into
                         accrued_interest.
+                    accrued_interest_remainder:
+                      type: string
+                      description: >-
+                        Fractional interest remainder (<1 borrowed coin)
+                        preserved between
+
+                        settlements.
                   description: >-
                     LeveragePosition represents an active leverage position for
                     a trader.
@@ -11183,6 +11197,13 @@ paths:
                     description: >-
                       Timestamp of the last time interest was settled into
                       accrued_interest.
+                  accrued_interest_remainder:
+                    type: string
+                    description: >-
+                      Fractional interest remainder (<1 borrowed coin) preserved
+                      between
+
+                      settlements.
                 description: >-
                   LeveragePosition represents an active leverage position for a
                   trader.
@@ -50999,6 +51020,11 @@ definitions:
         type: string
         format: date-time
         description: Timestamp of the last time interest was settled into accrued_interest.
+      accrued_interest_remainder:
+        type: string
+        description: |-
+          Fractional interest remainder (<1 borrowed coin) preserved between
+          settlements.
     description: LeveragePosition represents an active leverage position for a trader.
   dysonprotocol.whaleswap.v1.LiquidationStatus:
     type: string
@@ -55939,6 +55965,11 @@ definitions:
             description: >-
               Timestamp of the last time interest was settled into
               accrued_interest.
+          accrued_interest_remainder:
+            type: string
+            description: |-
+              Fractional interest remainder (<1 borrowed coin) preserved between
+              settlements.
         description: LeveragePosition represents an active leverage position for a trader.
       health_status:
         title: Health Information
@@ -56175,6 +56206,13 @@ definitions:
               description: >-
                 Timestamp of the last time interest was settled into
                 accrued_interest.
+            accrued_interest_remainder:
+              type: string
+              description: >-
+                Fractional interest remainder (<1 borrowed coin) preserved
+                between
+
+                settlements.
           description: >-
             LeveragePosition represents an active leverage position for a
             trader.
@@ -56387,6 +56425,13 @@ definitions:
               description: >-
                 Timestamp of the last time interest was settled into
                 accrued_interest.
+            accrued_interest_remainder:
+              type: string
+              description: >-
+                Fractional interest remainder (<1 borrowed coin) preserved
+                between
+
+                settlements.
           description: >-
             LeveragePosition represents an active leverage position for a
             trader.

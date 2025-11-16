@@ -4,6 +4,7 @@ import (
 	"context"
 
 	cosmossdkerrors "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	whaleswap "dysonprotocol.com/x/whaleswap"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -86,17 +87,13 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 		return nil, cosmossdkerrors.Wrapf(err, "pool %d not found", pos.PoolId)
 	}
 
-	// Calculate final repayment using per-position snapshot rate; must be set (len 2)
-	if len(pos.InterestRate) != 2 {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "position interest_rate must have exactly 2 entries")
+	interestDec, interestCoin, err := k.SettleInterest(ctx, &pos)
+	if err != nil {
+		return nil, err
 	}
-	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
-	elapsed := sdkCtx.BlockTime().Sub(*pos.UpdatedTime).Seconds()
-	interest, _ := k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))
-	repayment := k.ComputeEffectiveRepayment(pos.Borrowed.Amount, interest)
+	repayment := k.ComputeEffectiveRepayment(pos.Borrowed.Amount, interestDec)
 	logger.Info("FinalizeLiquidation: computed",
-		"elapsed_sec", int64(elapsed),
-		"interest", interest.String(),
+		"interest", interestDec.String(),
 		"repayment", repayment.String(),
 	)
 
@@ -122,7 +119,6 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 		"module_after", afterRepayBal.String(),
 	)
 
-	interestCoin := sdk.NewCoin(pos.Borrowed.Denom, interest.TruncateInt())
 	collateralSent := pos.Collateral
 
 	// Send all collateral to liquidator
@@ -163,7 +159,9 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 	pos.Status = whaleswapv1.PositionStatus_POSITION_STATUS_LIQUIDATED
 	pos.LiquidationStatus = whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE
 	pos.LiquidationInitializedBlockHeight = 0
-	pos.AccruedInterest = interestCoin
+	pos.Borrowed = sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
+	pos.AccruedInterest = sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
+	resetInterestRemainderIfNoDebt(&pos)
 	if err := k.savePosition(ctx, pos, prevStatus); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to persist position status")
 	}

@@ -12,6 +12,20 @@ import (
 
 const secondsPerYear = 365.25 * 24 * 60 * 60
 
+func getAccruedInterestRemainder(pos *whaleswapv1.LeveragePosition) (math.LegacyDec, error) {
+	if pos.AccruedInterestRemainder == "" {
+		return math.LegacyZeroDec(), nil
+	}
+	rem, err := math.LegacyNewDecFromStr(pos.AccruedInterestRemainder)
+	if err != nil {
+		return math.LegacyZeroDec(), fmt.Errorf("invalid accrued_interest_remainder: %w", err)
+	}
+	if rem.IsNegative() || rem.GTE(math.LegacyOneDec()) {
+		return math.LegacyZeroDec(), fmt.Errorf("accrued_interest_remainder must be in [0,1)")
+	}
+	return rem, nil
+}
+
 // CalculateInterest computes accrued interest on borrowed amount.
 // interest = borrowed_amount × rate × (elapsed_seconds / seconds_per_year)
 func (k Keeper) CalculateInterest(borrowed math.Int, annualRate math.LegacyDec, elapsedSeconds int64) (math.LegacyDec, error) {
@@ -44,6 +58,11 @@ func (k Keeper) InterestStatus(ctx context.Context, pos *whaleswapv1.LeveragePos
 	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
+	remainder, err := getAccruedInterestRemainder(pos)
+	if err != nil {
+		return math.LegacyDec{}, 0, err
+	}
+
 	var baseTime *time.Time
 	if pos.LastInterestSettlementTime != nil {
 		baseTime = pos.LastInterestSettlementTime
@@ -60,15 +79,15 @@ func (k Keeper) InterestStatus(ctx context.Context, pos *whaleswapv1.LeveragePos
 	}
 
 	fresh := math.LegacyZeroDec()
-	var err error
 	if elapsed > 0 && pos.Borrowed.Amount.IsPositive() {
-		fresh, err = k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))
-		if err != nil {
-			return math.LegacyDec{}, 0, err
+		if calc, calcErr := k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed)); calcErr != nil {
+			return math.LegacyDec{}, 0, calcErr
+		} else {
+			fresh = calc
 		}
 	}
 
-	carry := math.LegacyNewDecFromInt(pos.AccruedInterest.Amount)
+	carry := math.LegacyNewDecFromInt(pos.AccruedInterest.Amount).Add(remainder)
 	return carry.Add(fresh), int64(elapsed), nil
 }
 
@@ -84,11 +103,21 @@ func (k Keeper) SettleInterest(ctx context.Context, pos *whaleswapv1.LeveragePos
 	interestInt := interestDec.TruncateInt()
 	denom := pos.Borrowed.Denom
 	pos.AccruedInterest = sdk.NewCoin(denom, interestInt)
+	pos.AccruedInterestRemainder = interestDec.Sub(math.LegacyNewDecFromInt(interestInt)).String()
 
 	now := sdk.UnwrapSDKContext(ctx).BlockTime()
 	pos.LastInterestSettlementTime = &now
 
 	return interestDec, pos.AccruedInterest, nil
+}
+
+func resetInterestRemainderIfNoDebt(pos *whaleswapv1.LeveragePosition) {
+	if pos == nil {
+		return
+	}
+	if pos.Borrowed.Amount.IsZero() && pos.AccruedInterest.Amount.IsZero() {
+		pos.AccruedInterestRemainder = math.LegacyZeroDec().String()
+	}
 }
 
 // ApplyInterestPayment consumes up to payment amount from AccruedInterest,

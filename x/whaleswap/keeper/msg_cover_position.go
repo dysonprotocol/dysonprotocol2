@@ -92,32 +92,20 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 		return nil, cosmossdkerrors.Wrapf(err, "pool %d not found", pos.PoolId)
 	}
 
-	// Interest using position snapshot rate
-	if len(pos.InterestRate) != 2 {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "position interest_rate must have exactly 2 entries")
-	}
-	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)
 	logger.Info("CoverPosition starting", "position_id", msg.PositionId, "user", msg.User, "payment", msg.Payment.String(), "pool_id", pos.PoolId, "borrowed", pos.Borrowed.String(), "held", pos.Held.String(), "collateral", pos.Collateral.String())
-	elapsed := sdkCtx.BlockTime().Sub(*pos.UpdatedTime).Seconds()
-	interestDec, ierr := k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))
-	if ierr != nil {
-		return nil, ierr
+	interestDec, interestCoin, err := k.SettleInterest(ctx, &pos)
+	if err != nil {
+		return nil, err
 	}
-	interestInt := interestDec.TruncateInt()
-	interestCoin := sdk.NewCoin(pos.Borrowed.Denom, interestInt)
-	totalRepayment := pos.Borrowed.Amount.Add(interestInt)
-	logger.Info("CoverPosition interest computed", "elapsed_sec", int64(elapsed), "rate", rate.String(), "interest", interestInt.String(), "total_repayment", totalRepayment.String())
+	totalRepayment := pos.Borrowed.Amount.Add(interestCoin.Amount)
+	logger.Info("CoverPosition interest settled", "interest_dec", interestDec.String(), "interest_coin", interestCoin.String(), "total_repayment", totalRepayment.String())
 
 	// Require full interest coverage
-	if msg.Payment.Amount.LT(interestInt) {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "payment %s less than accrued interest %s", msg.Payment.Amount, interestInt)
+	if msg.Payment.Amount.LT(interestCoin.Amount) {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "payment %s less than accrued interest %s", msg.Payment.Amount, interestCoin.Amount)
 	}
-
-	settlementTime := sdkCtx.BlockTime()
-	pos.AccruedInterest = interestCoin
-	pos.LastInterestSettlementTime = &settlementTime
 
 	userAddr, aerr := k.addr(ctx, msg.User)
 	if aerr != nil {
@@ -193,7 +181,7 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 		if err := k.updatePool(ctx, &pool); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to update pool")
 		}
-		logger.Info("CoverPosition updated pool after close", "added_to_reserve", repaymentCoin.String(), "new_total_borrowed", sdk.NewCoins(pool.TotalBorrowed...).String(), "interest_earned_added", interestInt.String(), "pool_reserves", sdk.NewCoins(pool.Coins...).String())
+		logger.Info("CoverPosition updated pool after close", "added_to_reserve", repaymentCoin.String(), "new_total_borrowed", sdk.NewCoins(pool.TotalBorrowed...).String(), "interest_earned_added", interestCoin.Amount.String(), "pool_reserves", sdk.NewCoins(pool.Coins...).String())
 
 		// Refund any unused portion of the user's payment
 		refundAmt := msg.Payment.Amount.Sub(needFromPayment)
@@ -228,6 +216,10 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 			logger.Info("CoverPosition returned collateral", "collateral", pos.Collateral.String())
 		}
 
+		borrowDenom := pos.Borrowed.Denom
+		pos.Borrowed = sdk.NewCoin(borrowDenom, math.ZeroInt())
+		pos.AccruedInterest = sdk.NewCoin(borrowDenom, math.ZeroInt())
+		resetInterestRemainderIfNoDebt(&pos)
 		pos.Status = whaleswapv1.PositionStatus_POSITION_STATUS_CLOSED
 		pos.LiquidationStatus = whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE
 		pos.LiquidationInitializedBlockHeight = 0
@@ -297,8 +289,8 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 		return nil, cosmossdkerrors.Wrap(err, "failed to apply interest payment")
 	}
 
-	principalPaid := msg.Payment.Amount.Sub(interestInt)
-	logger.Info("CoverPosition partial cover", "payment", msg.Payment.String(), "interest_paid", interestInt.String(), "principal_paid", principalPaid.String())
+	principalPaid := msg.Payment.Amount.Sub(interestCoin.Amount)
+	logger.Info("CoverPosition partial cover", "payment", msg.Payment.String(), "interest_paid", interestCoin.Amount.String(), "principal_paid", principalPaid.String())
 
 	// Update pool reserves/accounting: add interest+principal payments
 	addCoin := sdk.NewCoin(pos.Borrowed.Denom, msg.Payment.Amount)
@@ -310,11 +302,12 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 	if err := k.updatePool(ctx, &pool); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to update pool")
 	}
-	logger.Info("CoverPosition updated pool after partial cover", "added_to_reserve", addCoin.String(), "principal_reduction", principalPaid.String(), "new_total_borrowed", sdk.NewCoins(pool.TotalBorrowed...).String(), "interest_earned_added", interestInt.String(), "pool_reserves", sdk.NewCoins(pool.Coins...).String())
+	logger.Info("CoverPosition updated pool after partial cover", "added_to_reserve", addCoin.String(), "principal_reduction", principalPaid.String(), "new_total_borrowed", sdk.NewCoins(pool.TotalBorrowed...).String(), "interest_earned_added", interestCoin.Amount.String(), "pool_reserves", sdk.NewCoins(pool.Coins...).String())
 
 	// Update position: reduce principal, reset borrow_time, clear liquidation (like AddCollateral)
 	newPrincipal := pos.Borrowed.Amount.Sub(principalPaid)
 	pos.Borrowed = sdk.NewCoin(pos.Borrowed.Denom, newPrincipal)
+	resetInterestRemainderIfNoDebt(&pos)
 	now := sdkCtx.BlockTime()
 	pos.UpdatedTime = &now
 	pos.UpdatedHeight = uint64(sdkCtx.BlockHeight())

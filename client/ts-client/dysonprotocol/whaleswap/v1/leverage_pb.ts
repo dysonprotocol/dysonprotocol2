@@ -194,6 +194,14 @@ export class LeveragePosition extends Message<LeveragePosition> {
    */
   lastInterestSettlementTime?: Timestamp;
 
+  /**
+   * Fractional interest remainder (<1 borrowed coin) preserved between
+   * settlements.
+   *
+   * @generated from field: string accrued_interest_remainder = 28;
+   */
+  accruedInterestRemainder = "";
+
   constructor(data?: PartialMessage<LeveragePosition>) {
     super();
     proto3.util.initPartial(data, this);
@@ -222,6 +230,7 @@ export class LeveragePosition extends Message<LeveragePosition> {
     { no: 25, name: "initial_borrowed", kind: "message", T: Coin },
     { no: 26, name: "total_interest_paid", kind: "message", T: Coin },
     { no: 27, name: "last_interest_settlement_time", kind: "message", T: Timestamp },
+    { no: 28, name: "accrued_interest_remainder", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LeveragePosition {

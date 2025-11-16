@@ -266,6 +266,7 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		UpdatedTime:                &now,
 		LiquidationStatus:          whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE,
 		AccruedInterest:            sdk.NewCoin(borrowDenom, math.ZeroInt()),
+		AccruedInterestRemainder:   math.LegacyZeroDec().String(),
 		InterestRate:               snapIR,
 		MinCollateralRatio:         minCR.String(),
 		LiquidationThreshold:       pool.LiquidationThreshold.AmountOf(borrowDenom).String(),

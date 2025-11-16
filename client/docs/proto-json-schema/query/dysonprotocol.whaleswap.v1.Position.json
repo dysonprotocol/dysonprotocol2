@@ -251,6 +251,10 @@
                         "type": "string",
                         "description": "Timestamp of the last time interest was settled into accrued_interest.",
                         "format": "date-time"
+                    },
+                    "accrued_interest_remainder": {
+                        "type": "string",
+                        "description": "Fractional interest remainder (<1 borrowed coin) preserved between settlements."
                     }
                 },
                 "additionalProperties": false,

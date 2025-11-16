@@ -26,7 +26,11 @@ func (k Keeper) ensureHealthyCollateralRatio(
 	}
 
 	collateralValue := math.LegacyNewDecFromInt(collateral.Amount)
-	debtValue := math.LegacyNewDecFromInt(debt.Amount)
+	remainder, err := getAccruedInterestRemainder(pos)
+	if err != nil {
+		return math.LegacyZeroDec(), err
+	}
+	debtValue := math.LegacyNewDecFromInt(debt.Amount).Add(remainder)
 	ratio, err := k.ComputeCollateralRatio(collateralValue, debtValue)
 	if err != nil {
 		return math.LegacyZeroDec(), err

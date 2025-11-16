@@ -71,4 +71,8 @@ message LeveragePosition {
   // Timestamp of the last time interest was settled into accrued_interest.
   google.protobuf.Timestamp last_interest_settlement_time = 27
       [ (gogoproto.stdtime) = true ];
+  // Fractional interest remainder (<1 borrowed coin) preserved between
+  // settlements.
+  string accrued_interest_remainder = 28
+      [ (cosmos_proto.scalar) = "cosmos.Dec" ];
 }

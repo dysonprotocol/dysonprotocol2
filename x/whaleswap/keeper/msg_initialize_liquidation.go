@@ -59,19 +59,15 @@ func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgI
 		"liquidation_status", pos.LiquidationStatus.String(),
 	)
 
-	// Calculate CR using per-position snapshot rate; must be set (len 2)
-	if len(pos.InterestRate) != 2 {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "position interest_rate must have exactly 2 entries")
+	interest, elapsed, err := k.InterestStatus(ctx, &pos)
+	if err != nil {
+		return nil, err
 	}
-	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
-	elapsed := sdkCtx.BlockTime().Sub(*pos.UpdatedTime).Seconds()
-	interest, _ := k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed))
-
 	collateralValue := math.LegacyNewDecFromInt(pos.Collateral.Amount)
 	debtValue := math.LegacyNewDecFromInt(pos.Borrowed.Amount).Add(interest)
 	cr, _ := k.ComputeCollateralRatio(collateralValue, debtValue)
 	logger.Info("InitializeLiquidation: computed",
-		"elapsed_sec", int64(elapsed),
+		"elapsed_sec", elapsed,
 		"interest", interest.String(),
 		"collateral_value", collateralValue.String(),
 		"debt_with_interest", debtValue.String(),
