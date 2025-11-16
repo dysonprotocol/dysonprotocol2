@@ -2984,3 +2984,90 @@ export class QueryAddressMetricsResponse extends Message<QueryAddressMetricsResp
   }
 }
 
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryAddressMetricsAllRequest
+ */
+export class QueryAddressMetricsAllRequest extends Message<QueryAddressMetricsAllRequest> {
+  /**
+   * Standard pagination parameters; results ordered lexicographically by
+   * address
+   *
+   * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 1;
+   */
+  pagination?: PageRequest;
+
+  constructor(data?: PartialMessage<QueryAddressMetricsAllRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryAddressMetricsAllRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "pagination", kind: "message", T: PageRequest },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryAddressMetricsAllRequest {
+    return new QueryAddressMetricsAllRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryAddressMetricsAllRequest {
+    return new QueryAddressMetricsAllRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryAddressMetricsAllRequest {
+    return new QueryAddressMetricsAllRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryAddressMetricsAllRequest | PlainMessage<QueryAddressMetricsAllRequest> | undefined, b: QueryAddressMetricsAllRequest | PlainMessage<QueryAddressMetricsAllRequest> | undefined): boolean {
+    return proto3.util.equals(QueryAddressMetricsAllRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.QueryAddressMetricsAllResponse
+ */
+export class QueryAddressMetricsAllResponse extends Message<QueryAddressMetricsAllResponse> {
+  /**
+   * List of address metrics for all addresses in the system
+   *
+   * @generated from field: repeated dysonprotocol.whaleswap.v1.AddressMetrics metrics = 1;
+   */
+  metrics: AddressMetrics[] = [];
+
+  /**
+   * Pagination metadata for result set navigation
+   *
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryAddressMetricsAllResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QueryAddressMetricsAllResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "metrics", kind: "message", T: AddressMetrics, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryAddressMetricsAllResponse {
+    return new QueryAddressMetricsAllResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryAddressMetricsAllResponse {
+    return new QueryAddressMetricsAllResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryAddressMetricsAllResponse {
+    return new QueryAddressMetricsAllResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryAddressMetricsAllResponse | PlainMessage<QueryAddressMetricsAllResponse> | undefined, b: QueryAddressMetricsAllResponse | PlainMessage<QueryAddressMetricsAllResponse> | undefined): boolean {
+    return proto3.util.equals(QueryAddressMetricsAllResponse, a, b);
+  }
+}
+

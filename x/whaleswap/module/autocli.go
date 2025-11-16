@@ -130,6 +130,13 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						"address": {Name: "address", Usage: "Address to compute metrics for"},
 					},
 				},
+				{
+					RpcMethod: "AddressMetricsAll",
+					Use:       "address-metrics-all",
+					Short:     "List all stored address metrics with pagination",
+					Long:      "List the lifetime whaleswap metrics for every tracked address. Use pagination flags to limit results; this endpoint can be expensive on large datasets.",
+					Example:   "dysond query whaleswap address-metrics-all --limit 50",
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{

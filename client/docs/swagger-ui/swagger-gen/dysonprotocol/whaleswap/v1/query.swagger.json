@@ -368,6 +368,65 @@
         ]
       }
     },
+    "/dysonprotocol/whaleswap/v1/metrics/addresses": {
+      "get": {
+        "summary": "AddressMetricsAll lists all stored address metrics with pagination.",
+        "description": "Iterates the AddressMetrics map in key order and returns the aggregated\nmetrics for every known address. Supports standard pagination to avoid\nexhausting gRPC limits. Only use this endpoint for analytics dashboards or\ninvariants; it can be expensive on large datasets.",
+        "operationId": "dysonprotocol.whaleswap.v1.QueryAddressMetricsAllRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAddressMetricsAllResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pagination.key",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
     "/dysonprotocol/whaleswap/v1/offers": {
       "get": {
         "summary": "Offers provides unified offer listing with optional denom filters and\npagination.",
@@ -2418,6 +2477,22 @@
         "POSITION_STATUS_LIQUIDATED"
       ],
       "default": "POSITION_STATUS_UNSPECIFIED"
+    },
+    "dysonprotocol.whaleswap.v1.QueryAddressMetricsAllResponse": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AddressMetrics"
+          },
+          "title": "List of address metrics for all addresses in the system"
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "Pagination metadata for result set navigation"
+        }
+      }
     },
     "dysonprotocol.whaleswap.v1.QueryAddressMetricsResponse": {
       "type": "object",

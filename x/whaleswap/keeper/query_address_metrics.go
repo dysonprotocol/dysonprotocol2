@@ -7,6 +7,7 @@ import (
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
 // AddressMetrics retrieves lifetime activity metrics for a specific address.
@@ -42,6 +43,36 @@ func (k Keeper) AddressMetrics(ctx context.Context, req *whaleswapv1.QueryAddres
 	}
 
 	return &whaleswapv1.QueryAddressMetricsResponse{Metrics: metrics}, nil
+}
+
+// AddressMetricsAll paginates over every stored address metrics record.
+// Results are ordered lexicographically by address and should only be used for
+// analytics or administrative tooling because the dataset can be large.
+func (k Keeper) AddressMetricsAll(ctx context.Context, req *whaleswapv1.QueryAddressMetricsAllRequest) (*whaleswapv1.QueryAddressMetricsAllResponse, error) {
+	if req == nil {
+		req = &whaleswapv1.QueryAddressMetricsAllRequest{}
+	}
+
+	results, pageRes, err := query.CollectionPaginate(
+		ctx,
+		k.AddressMetricsMap,
+		req.Pagination,
+		func(_ string, value whaleswapv1.AddressMetrics) (*whaleswapv1.AddressMetrics, error) {
+			v := value
+			return &v, nil
+		},
+	)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "paginate address metrics")
+	}
+	if results == nil {
+		results = make([]*whaleswapv1.AddressMetrics, 0)
+	}
+
+	return &whaleswapv1.QueryAddressMetricsAllResponse{
+		Metrics:    results,
+		Pagination: pageRes,
+	}, nil
 }
 
 // shouldTrackDenom returns true if the denom should be tracked in metrics.

@@ -396,6 +396,20 @@ service Query {
     option (google.api.http).get =
         "/dysonprotocol/whaleswap/v1/metrics/address/{address}";
   }
+
+  /*
+   * AddressMetricsAll lists all stored address metrics with pagination.
+   *
+   * Iterates the AddressMetrics map in key order and returns the aggregated
+   * metrics for every known address. Supports standard pagination to avoid
+   * exhausting gRPC limits. Only use this endpoint for analytics dashboards or
+   * invariants; it can be expensive on large datasets.
+   */
+  rpc AddressMetricsAll(QueryAddressMetricsAllRequest)
+      returns (QueryAddressMetricsAllResponse) {
+    option (google.api.http).get =
+        "/dysonprotocol/whaleswap/v1/metrics/addresses";
+  }
 }
 
 message QueryParamsRequest {}
@@ -873,4 +887,17 @@ message QueryAddressMetricsRequest {
 message QueryAddressMetricsResponse {
   // Comprehensive lifetime metrics for the specified address
   AddressMetrics metrics = 1 [ (gogoproto.nullable) = false ];
+}
+
+message QueryAddressMetricsAllRequest {
+  // Standard pagination parameters; results ordered lexicographically by
+  // address
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAddressMetricsAllResponse {
+  // List of address metrics for all addresses in the system
+  repeated AddressMetrics metrics = 1;
+  // Pagination metadata for result set navigation
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

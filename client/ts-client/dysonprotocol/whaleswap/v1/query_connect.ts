@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { QueryAddressMetricsRequest, QueryAddressMetricsResponse, QueryAuctionByNFTRequest, QueryAuctionByNFTResponse, QueryAuctionRequest, QueryAuctionResponse, QueryAuctionsByPairPriceRangeRequest, QueryAuctionsByPairPriceRangeResponse, QueryAuctionsBySellerRequest, QueryAuctionsBySellerResponse, QueryAuctionsRequest, QueryAuctionsResponse, QueryMetricsRequest, QueryMetricsResponse, QueryOfferRequest, QueryOfferResponse, QueryOffersBestRequest, QueryOffersBestResponse, QueryOffersByDenomRequest, QueryOffersByDenomResponse, QueryOffersByOwnerRequest, QueryOffersByOwnerResponse, QueryOffersByPairPriceRangeRequest, QueryOffersByPairPriceRangeResponse, QueryOffersRequest, QueryOffersResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolBySharesDenomRequest, QueryPoolBySharesDenomResponse, QueryPoolRequest, QueryPoolResponse, QueryPoolsByDenomRequest, QueryPoolsByDenomResponse, QueryPoolsByOwnerRequest, QueryPoolsByOwnerResponse, QueryPoolsByPairPriceRangeRequest, QueryPoolsByPairPriceRangeResponse, QueryPoolsByPairRequest, QueryPoolsByPairResponse, QueryPoolsRequest, QueryPoolsResponse, QueryPositionRequest, QueryPositionResponse, QueryPositionsByAddressRequest, QueryPositionsByAddressResponse, QueryPositionsByPoolRequest, QueryPositionsByPoolResponse, QueryTradeRequest, QueryTradeResponse, QueryTradesByAuctionRequest, QueryTradesByAuctionResponse, QueryTradesByOfferRequest, QueryTradesByOfferResponse, QueryTradesByPoolRequest, QueryTradesByPoolResponse, QueryTradesByTakerRequest, QueryTradesByTakerResponse, QueryTradesRequest, QueryTradesResponse } from "./query_pb.js";
+import { QueryAddressMetricsAllRequest, QueryAddressMetricsAllResponse, QueryAddressMetricsRequest, QueryAddressMetricsResponse, QueryAuctionByNFTRequest, QueryAuctionByNFTResponse, QueryAuctionRequest, QueryAuctionResponse, QueryAuctionsByPairPriceRangeRequest, QueryAuctionsByPairPriceRangeResponse, QueryAuctionsBySellerRequest, QueryAuctionsBySellerResponse, QueryAuctionsRequest, QueryAuctionsResponse, QueryMetricsRequest, QueryMetricsResponse, QueryOfferRequest, QueryOfferResponse, QueryOffersBestRequest, QueryOffersBestResponse, QueryOffersByDenomRequest, QueryOffersByDenomResponse, QueryOffersByOwnerRequest, QueryOffersByOwnerResponse, QueryOffersByPairPriceRangeRequest, QueryOffersByPairPriceRangeResponse, QueryOffersRequest, QueryOffersResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolBySharesDenomRequest, QueryPoolBySharesDenomResponse, QueryPoolRequest, QueryPoolResponse, QueryPoolsByDenomRequest, QueryPoolsByDenomResponse, QueryPoolsByOwnerRequest, QueryPoolsByOwnerResponse, QueryPoolsByPairPriceRangeRequest, QueryPoolsByPairPriceRangeResponse, QueryPoolsByPairRequest, QueryPoolsByPairResponse, QueryPoolsRequest, QueryPoolsResponse, QueryPositionRequest, QueryPositionResponse, QueryPositionsByAddressRequest, QueryPositionsByAddressResponse, QueryPositionsByPoolRequest, QueryPositionsByPoolResponse, QueryTradeRequest, QueryTradeResponse, QueryTradesByAuctionRequest, QueryTradesByAuctionResponse, QueryTradesByOfferRequest, QueryTradesByOfferResponse, QueryTradesByPoolRequest, QueryTradesByPoolResponse, QueryTradesByTakerRequest, QueryTradesByTakerResponse, QueryTradesRequest, QueryTradesResponse } from "./query_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -529,6 +529,23 @@ export const Query = {
       name: "AddressMetrics",
       I: QueryAddressMetricsRequest,
       O: QueryAddressMetricsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     *
+     * AddressMetricsAll lists all stored address metrics with pagination.
+     *
+     * Iterates the AddressMetrics map in key order and returns the aggregated
+     * metrics for every known address. Supports standard pagination to avoid
+     * exhausting gRPC limits. Only use this endpoint for analytics dashboards or
+     * invariants; it can be expensive on large datasets.
+     *
+     * @generated from rpc dysonprotocol.whaleswap.v1.Query.AddressMetricsAll
+     */
+    addressMetricsAll: {
+      name: "AddressMetricsAll",
+      I: QueryAddressMetricsAllRequest,
+      O: QueryAddressMetricsAllResponse,
       kind: MethodKind.Unary,
     },
   }

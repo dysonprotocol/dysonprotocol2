@@ -5663,6 +5663,374 @@ paths:
           type: string
       tags:
         - Query
+  /dysonprotocol/whaleswap/v1/metrics/addresses:
+    get:
+      summary: AddressMetricsAll lists all stored address metrics with pagination.
+      description: >-
+        Iterates the AddressMetrics map in key order and returns the aggregated
+
+        metrics for every known address. Supports standard pagination to avoid
+
+        exhausting gRPC limits. Only use this endpoint for analytics dashboards
+        or
+
+        invariants; it can be expensive on large datasets.
+      operationId: dysonprotocol.whaleswap.v1.QueryAddressMetricsAllRequest
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              metrics:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    address:
+                      type: string
+                      title: Core identity
+                    block_height:
+                      type: string
+                      format: uint64
+                    total_trades:
+                      type: string
+                      format: uint64
+                      title: |-
+                        ═════ TRADING ═════
+                        Total unique trades executed as trader
+                    total_trade_ops:
+                      type: string
+                      format: uint64
+                      title: >-
+                        Total operations across all trades (swap legs + takes +
+                        auction redeems)
+                    total_volume_sent:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: >-
+                        Lifetime aggregate coins sent (denoms with metadata
+                        only)
+                    total_volume_received:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: >-
+                        Lifetime aggregate coins received (denoms with metadata
+                        only)
+                    pools_created:
+                      type: string
+                      format: uint64
+                      title: |-
+                        ═════ LP ACTIVITY ═════
+                        Total pools created by this address
+                    lp_fees_earned:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Cumulative swap fees earned (denoms with metadata only)
+                    lp_interest_earned:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: >-
+                        Cumulative interest earned from leverage borrowers
+                        (denoms with metadata
+
+                        only)
+                    liquidity_adds:
+                      type: string
+                      format: uint64
+                      title: Count of liquidity add operations
+                    liquidity_removes:
+                      type: string
+                      format: uint64
+                      title: Count of liquidity remove operations
+                    positions_opened:
+                      type: string
+                      format: uint64
+                      title: |-
+                        ═════ LEVERAGE (BORROWER) ═════
+                        Total leverage positions opened (lifetime)
+                    positions_closed:
+                      type: string
+                      format: uint64
+                      title: Total leverage positions closed (lifetime)
+                    interest_paid:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Total interest paid (denoms with metadata only)
+                    profit:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: >-
+                        Profit from closed leverage positions (denoms with
+                        metadata only)
+                    losses:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: >-
+                        Losses from closed leverage positions (denoms with
+                        metadata only)
+                    liquidations:
+                      type: string
+                      format: uint64
+                      title: Count of positions liquidated (lifetime)
+                    offers_created:
+                      type: string
+                      format: uint64
+                      title: |-
+                        ═════ ORDERBOOK ═════
+                        Total offers created (lifetime)
+                    offers_closed:
+                      type: string
+                      format: uint64
+                      title: Total offers closed via full execution (lifetime)
+                    offers_cancelled:
+                      type: string
+                      format: uint64
+                      title: Total offers cancelled before completion (lifetime)
+                    maker_volume:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: >-
+                        Cumulative volume traded as maker (denoms with metadata
+                        only)
+                    auctions_created:
+                      type: string
+                      format: uint64
+                      title: |-
+                        ═════ AUCTIONS ═════
+                        Total auctions created as seller (lifetime)
+                    auction_volume:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Total auction volume sold (denoms with metadata only)
+                  description: >-
+                    AddressMetrics aggregates lifetime whaleswap activity for a
+                    specific address.
+
+                    All metrics are cumulative totals, not current state
+                    snapshots.
+
+
+                    NOTE: Only coins with existing denom metadata are tracked to
+                    prevent spam
+
+                    and focus on relevant assets. Coins without metadata are
+                    excluded from all
+
+                    volume and balance aggregations.
+                title: List of address metrics for all addresses in the system
+              pagination:
+                title: Pagination metadata for result set navigation
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: pagination.key
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
   /dysonprotocol/whaleswap/v1/offers:
     get:
       summary: |-
@@ -51535,6 +51903,292 @@ definitions:
       - POSITION_STATUS_LIQUIDATING
       - POSITION_STATUS_LIQUIDATED
     default: POSITION_STATUS_UNSPECIFIED
+  dysonprotocol.whaleswap.v1.QueryAddressMetricsAllResponse:
+    type: object
+    properties:
+      metrics:
+        type: array
+        items:
+          type: object
+          properties:
+            address:
+              type: string
+              title: Core identity
+            block_height:
+              type: string
+              format: uint64
+            total_trades:
+              type: string
+              format: uint64
+              title: |-
+                ═════ TRADING ═════
+                Total unique trades executed as trader
+            total_trade_ops:
+              type: string
+              format: uint64
+              title: >-
+                Total operations across all trades (swap legs + takes + auction
+                redeems)
+            total_volume_sent:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Lifetime aggregate coins sent (denoms with metadata only)
+            total_volume_received:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Lifetime aggregate coins received (denoms with metadata only)
+            pools_created:
+              type: string
+              format: uint64
+              title: |-
+                ═════ LP ACTIVITY ═════
+                Total pools created by this address
+            lp_fees_earned:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Cumulative swap fees earned (denoms with metadata only)
+            lp_interest_earned:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: >-
+                Cumulative interest earned from leverage borrowers (denoms with
+                metadata
+
+                only)
+            liquidity_adds:
+              type: string
+              format: uint64
+              title: Count of liquidity add operations
+            liquidity_removes:
+              type: string
+              format: uint64
+              title: Count of liquidity remove operations
+            positions_opened:
+              type: string
+              format: uint64
+              title: |-
+                ═════ LEVERAGE (BORROWER) ═════
+                Total leverage positions opened (lifetime)
+            positions_closed:
+              type: string
+              format: uint64
+              title: Total leverage positions closed (lifetime)
+            interest_paid:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Total interest paid (denoms with metadata only)
+            profit:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: >-
+                Profit from closed leverage positions (denoms with metadata
+                only)
+            losses:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: >-
+                Losses from closed leverage positions (denoms with metadata
+                only)
+            liquidations:
+              type: string
+              format: uint64
+              title: Count of positions liquidated (lifetime)
+            offers_created:
+              type: string
+              format: uint64
+              title: |-
+                ═════ ORDERBOOK ═════
+                Total offers created (lifetime)
+            offers_closed:
+              type: string
+              format: uint64
+              title: Total offers closed via full execution (lifetime)
+            offers_cancelled:
+              type: string
+              format: uint64
+              title: Total offers cancelled before completion (lifetime)
+            maker_volume:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Cumulative volume traded as maker (denoms with metadata only)
+            auctions_created:
+              type: string
+              format: uint64
+              title: |-
+                ═════ AUCTIONS ═════
+                Total auctions created as seller (lifetime)
+            auction_volume:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              title: Total auction volume sold (denoms with metadata only)
+          description: >-
+            AddressMetrics aggregates lifetime whaleswap activity for a specific
+            address.
+
+            All metrics are cumulative totals, not current state snapshots.
+
+
+            NOTE: Only coins with existing denom metadata are tracked to prevent
+            spam
+
+            and focus on relevant assets. Coins without metadata are excluded
+            from all
+
+            volume and balance aggregations.
+        title: List of address metrics for all addresses in the system
+      pagination:
+        title: Pagination metadata for result set navigation
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
   dysonprotocol.whaleswap.v1.QueryAddressMetricsResponse:
     type: object
     properties:
