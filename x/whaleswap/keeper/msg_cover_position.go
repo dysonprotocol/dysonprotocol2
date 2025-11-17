@@ -202,6 +202,13 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 			profitAmt = proceedsBorrow.Sub(totalRepayment)
 		}
 		profit := sdk.NewCoin(pos.Borrowed.Denom, profitAmt)
+		if profit.IsPositive() {
+			if pos.TotalRealizedProfit.Denom == "" {
+				pos.TotalRealizedProfit = profit
+			} else {
+				pos.TotalRealizedProfit = pos.TotalRealizedProfit.Add(profit)
+			}
+		}
 		if profit.Amount.IsPositive() {
 			if err := k.sendFromModule(ctx, userAddr, sdk.NewCoins(profit)); err != nil {
 				return nil, cosmossdkerrors.Wrap(err, "failed to send profit")
