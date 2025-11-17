@@ -175,8 +175,8 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	var collateralUsed sdk.Coin
 	var collateralSwapped bool
 	var totalProceeds sdk.Coin // Total funds in vault (for cross-denom case)
-	var profit sdk.Coin
-	var loss sdk.Coin
+	profit := sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
+	loss := sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
 	collateralReturned := sdk.NewCoin(pos.Collateral.Denom, math.ZeroInt())
 
 	if proceedsCoin.IsGTE(requiredRepayment) {
@@ -268,7 +268,7 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 			// Calculate profit from total proceeds (may be positive if collateral swap yielded excess)
 			profit = totalProceeds.Sub(requiredRepayment)
 			if profit.IsPositive() {
-				loss = sdk.Coin{}
+				loss = sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
 			}
 
 			sdkCtx.Logger().Info("ClosePosition: cross-denom collateral swap executed",

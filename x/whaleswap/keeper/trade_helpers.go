@@ -75,19 +75,23 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 	rOut := math.LegacyNewDecFromInt(pool.Coins[outputIdx].Amount)
 
 	if hasIn {
-		// exact-in
-		effIn := math.LegacyNewDecFromInt(actualInCoin.Amount)
+		// exact-in with input-side fee based on output denom.
+		// Use effective input = in * (1 - fee) for AMM math, but deposit full input into reserves.
+		effIn := math.LegacyNewDecFromInt(actualInCoin.Amount).Mul(one.Sub(fee))
+		if !effIn.IsPositive() {
+			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "effective input not positive")
+		}
 		kDec := rIn.Mul(rOut)
 		q := kDec.Quo(rIn.Add(effIn)).Ceil()
 		outDec := rOut.Sub(q)
 		outAmt = outDec.TruncateInt()
-		feeInt := math.LegacyNewDecFromInt(outAmt).Mul(fee).TruncateInt()
-		if feeInt.IsPositive() {
-			pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(pool.Coins[outputIdx].Denom, feeInt))
-		}
-		outAmt = outAmt.Sub(feeInt)
 		if !outAmt.IsPositive() {
 			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap output too small")
+		}
+		// Input-side fee (kept in pool reserves) for metrics accounting.
+		feeInInt := math.LegacyNewDecFromInt(actualInCoin.Amount).Mul(fee).TruncateInt()
+		if feeInInt.IsPositive() {
+			pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(actualInCoin.Denom, feeInInt))
 		}
 		newIn := pool.Coins[inputIdx].Amount.Add(actualInCoin.Amount)
 		newOut := pool.Coins[outputIdx].Amount.Sub(outAmt)
@@ -112,42 +116,59 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 		if !targetOutAmt.IsPositive() {
 			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap_out must be > 0")
 		}
-		grossOut := math.LegacyNewDecFromInt(targetOutAmt).Quo(one.Sub(fee)).Ceil().TruncateInt()
-		out := math.LegacyNewDecFromInt(grossOut)
-		if out.GTE(rOut) {
+		targetOutDec := math.LegacyNewDecFromInt(targetOutAmt)
+		if targetOutDec.GTE(rOut) {
 			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "exact-out equals/exceeds reserve")
 		}
-		effInReq := rIn.Mul(rOut.Quo(rOut.Sub(out)).Sub(one))
-		gross := effInReq.Ceil().TruncateInt()
+		// Solve constant-product for effective input (after fee) required to get targetOutAmt.
+		// (rIn + effInReq)*(rOut - targetOutDec) = rIn * rOut  => effInReq = rIn*(rOut/(rOut-targetOutDec)-1)
+		kDec := rIn.Mul(rOut)
+		den := rOut.Sub(targetOutDec)
+		if !den.IsPositive() {
+			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid reserve configuration for exact-out")
+		}
+		effInReq := kDec.Quo(den).Sub(rIn)
+		oneMinusFee := one.Sub(fee)
+		if !oneMinusFee.IsPositive() {
+			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "fee must be < 1 for exact-out")
+		}
+		grossInDec := effInReq.Quo(oneMinusFee)
+		gross := grossInDec.Ceil().TruncateInt()
 		if !gross.IsPositive() {
 			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "computed input not positive")
 		}
-		effInActual := math.LegacyNewDecFromInt(gross)
-		kDec := rIn.Mul(rOut)
+		// Single refinement: compute resulting out and, if rounding undershoots, bump gross once.
+		effInActual := math.LegacyNewDecFromInt(gross).Mul(oneMinusFee)
+		if !effInActual.IsPositive() {
+			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "effective input not positive during refinement")
+		}
 		q := kDec.Quo(rIn.Add(effInActual)).Ceil()
 		outDec := rOut.Sub(q)
 		outAct := outDec.TruncateInt()
-		for {
-			feeInt := math.LegacyNewDecFromInt(outAct).Mul(fee).TruncateInt()
-			net := outAct.Sub(feeInt)
-			if !net.LT(targetOutAmt) {
-				break
-			}
+		if !outAct.IsPositive() {
+			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap output too small during refinement")
+		}
+		if outAct.LT(targetOutAmt) {
+			// Bump by one unit of input to cover any residual rounding gap.
 			gross = gross.AddRaw(1)
-			effInActual = math.LegacyNewDecFromInt(gross)
+			effInActual = math.LegacyNewDecFromInt(gross).Mul(oneMinusFee)
+			if !effInActual.IsPositive() {
+				return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "effective input not positive after bump")
+			}
 			q = kDec.Quo(rIn.Add(effInActual)).Ceil()
 			outDec = rOut.Sub(q)
 			outAct = outDec.TruncateInt()
+			if !outAct.IsPositive() || outAct.LT(targetOutAmt) {
+				return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "cannot satisfy exact-out with given reserves and fee")
+			}
 		}
-		feeIntOut := math.LegacyNewDecFromInt(outAct).Mul(fee).TruncateInt()
-		outAmt = outAct.Sub(feeIntOut)
-		if feeIntOut.IsPositive() {
-			pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(pool.Coins[outputIdx].Denom, feeIntOut))
-		}
-		if !outAmt.IsPositive() {
-			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap output too small after fee")
-		}
+		outAmt = outAct
+		// Record actual input and input-side fee.
 		actualInCoin = sdk.NewCoin(pool.Coins[inputIdx].Denom, gross)
+		feeInInt := math.LegacyNewDecFromInt(gross).Mul(fee).TruncateInt()
+		if feeInInt.IsPositive() {
+			pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(actualInCoin.Denom, feeInInt))
+		}
 		newIn := pool.Coins[inputIdx].Amount.Add(gross)
 		newOut := pool.Coins[outputIdx].Amount.Sub(outAmt)
 		if !newOut.IsPositive() {
