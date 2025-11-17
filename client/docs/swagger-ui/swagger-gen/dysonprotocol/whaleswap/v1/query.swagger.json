@@ -2208,6 +2208,14 @@
             "format": "uint64"
           },
           "description": "Trade IDs associated with this position over its lifetime.\n\nSemantics:\n- Includes the opening trade that created the position.\n- Includes all trades from partial and full closes.\n- Includes trades from liquidation paths.\n- Includes trades from MsgCoverPosition (covers) auto-close path.\n\nValues are whaleswap Trade.trade_id (uint64)."
+        },
+        "total_realized_profit": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "title": "\u2550\u2550\u2550\u2550\u2550 REALIZED P&L (PER POSITION) \u2550\u2550\u2550\u2550\u2550\nCumulative realized profit from this position over its lifetime,\ndenominated in the borrowed denom. Includes:\n- Profits from ClosePosition (full and partial closes)\n- Profits from MsgCoverPosition auto-close path"
+        },
+        "total_realized_loss": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "title": "Cumulative realized loss from this position over its lifetime,\ndenominated in the borrowed denom. Includes:\n- Losses realized in ClosePosition (full and partial closes)\n- Losses realized during liquidation flows (if any)"
         }
       },
       "description": "LeveragePosition represents an active leverage position for a trader."

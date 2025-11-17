@@ -10986,6 +10986,57 @@ paths:
 
 
                         Values are whaleswap Trade.trade_id (uint64).
+                    total_realized_profit:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      title: >-
+                        ═════ REALIZED P&L (PER POSITION) ═════
+
+                        Cumulative realized profit from this position over its
+                        lifetime,
+
+                        denominated in the borrowed denom. Includes:
+
+                        - Profits from ClosePosition (full and partial closes)
+
+                        - Profits from MsgCoverPosition auto-close path
+                    total_realized_loss:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      title: >-
+                        Cumulative realized loss from this position over its
+                        lifetime,
+
+                        denominated in the borrowed denom. Includes:
+
+                        - Losses realized in ClosePosition (full and partial
+                        closes)
+
+                        - Losses realized during liquidation flows (if any)
                   description: >-
                     LeveragePosition represents an active leverage position for
                     a trader.
@@ -11336,6 +11387,57 @@ paths:
 
 
                         Values are whaleswap Trade.trade_id (uint64).
+                    total_realized_profit:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      title: >-
+                        ═════ REALIZED P&L (PER POSITION) ═════
+
+                        Cumulative realized profit from this position over its
+                        lifetime,
+
+                        denominated in the borrowed denom. Includes:
+
+                        - Profits from ClosePosition (full and partial closes)
+
+                        - Profits from MsgCoverPosition auto-close path
+                    total_realized_loss:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      title: >-
+                        Cumulative realized loss from this position over its
+                        lifetime,
+
+                        denominated in the borrowed denom. Includes:
+
+                        - Losses realized in ClosePosition (full and partial
+                        closes)
+
+                        - Losses realized during liquidation flows (if any)
                   description: >-
                     LeveragePosition represents an active leverage position for
                     a trader.
@@ -11660,6 +11762,57 @@ paths:
 
 
                       Values are whaleswap Trade.trade_id (uint64).
+                  total_realized_profit:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    title: >-
+                      ═════ REALIZED P&L (PER POSITION) ═════
+
+                      Cumulative realized profit from this position over its
+                      lifetime,
+
+                      denominated in the borrowed denom. Includes:
+
+                      - Profits from ClosePosition (full and partial closes)
+
+                      - Profits from MsgCoverPosition auto-close path
+                  total_realized_loss:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    title: >-
+                      Cumulative realized loss from this position over its
+                      lifetime,
+
+                      denominated in the borrowed denom. Includes:
+
+                      - Losses realized in ClosePosition (full and partial
+                      closes)
+
+                      - Losses realized during liquidation flows (if any)
                 description: >-
                   LeveragePosition represents an active leverage position for a
                   trader.
@@ -51511,6 +51664,41 @@ definitions:
           - Includes trades from MsgCoverPosition (covers) auto-close path.
 
           Values are whaleswap Trade.trade_id (uint64).
+      total_realized_profit:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        title: |-
+          ═════ REALIZED P&L (PER POSITION) ═════
+          Cumulative realized profit from this position over its lifetime,
+          denominated in the borrowed denom. Includes:
+          - Profits from ClosePosition (full and partial closes)
+          - Profits from MsgCoverPosition auto-close path
+      total_realized_loss:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        title: |-
+          Cumulative realized loss from this position over its lifetime,
+          denominated in the borrowed denom. Includes:
+          - Losses realized in ClosePosition (full and partial closes)
+          - Losses realized during liquidation flows (if any)
     description: LeveragePosition represents an active leverage position for a trader.
   dysonprotocol.whaleswap.v1.LiquidationStatus:
     type: string
@@ -56775,6 +56963,47 @@ definitions:
               - Includes trades from MsgCoverPosition (covers) auto-close path.
 
               Values are whaleswap Trade.trade_id (uint64).
+          total_realized_profit:
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            title: |-
+              ═════ REALIZED P&L (PER POSITION) ═════
+              Cumulative realized profit from this position over its lifetime,
+              denominated in the borrowed denom. Includes:
+              - Profits from ClosePosition (full and partial closes)
+              - Profits from MsgCoverPosition auto-close path
+          total_realized_loss:
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            title: |-
+              Cumulative realized loss from this position over its lifetime,
+              denominated in the borrowed denom. Includes:
+              - Losses realized in ClosePosition (full and partial closes)
+              - Losses realized during liquidation flows (if any)
         description: LeveragePosition represents an active leverage position for a trader.
       health_status:
         title: Health Information
@@ -57040,6 +57269,47 @@ definitions:
 
 
                 Values are whaleswap Trade.trade_id (uint64).
+            total_realized_profit:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              title: |-
+                ═════ REALIZED P&L (PER POSITION) ═════
+                Cumulative realized profit from this position over its lifetime,
+                denominated in the borrowed denom. Includes:
+                - Profits from ClosePosition (full and partial closes)
+                - Profits from MsgCoverPosition auto-close path
+            total_realized_loss:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              title: |-
+                Cumulative realized loss from this position over its lifetime,
+                denominated in the borrowed denom. Includes:
+                - Losses realized in ClosePosition (full and partial closes)
+                - Losses realized during liquidation flows (if any)
           description: >-
             LeveragePosition represents an active leverage position for a
             trader.
@@ -57281,6 +57551,47 @@ definitions:
 
 
                 Values are whaleswap Trade.trade_id (uint64).
+            total_realized_profit:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              title: |-
+                ═════ REALIZED P&L (PER POSITION) ═════
+                Cumulative realized profit from this position over its lifetime,
+                denominated in the borrowed denom. Includes:
+                - Profits from ClosePosition (full and partial closes)
+                - Profits from MsgCoverPosition auto-close path
+            total_realized_loss:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              title: |-
+                Cumulative realized loss from this position over its lifetime,
+                denominated in the borrowed denom. Includes:
+                - Losses realized in ClosePosition (full and partial closes)
+                - Losses realized during liquidation flows (if any)
           description: >-
             LeveragePosition represents an active leverage position for a
             trader.

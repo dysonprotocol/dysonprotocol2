@@ -262,6 +262,16 @@
                         },
                         "type": "array",
                         "description": "Trade IDs associated with this position over its lifetime. Semantics: - Includes the opening trade that created the position. - Includes all trades from partial and full closes. - Includes trades from liquidation paths. - Includes trades from MsgCoverPosition (covers) auto-close path. Values are whaleswap Trade.trade_id (uint64)."
+                    },
+                    "total_realized_profit": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "\u2550\u2550\u2550\u2550\u2550 REALIZED P&L (PER POSITION) \u2550\u2550\u2550\u2550\u2550 Cumulative realized profit from this position over its lifetime, denominated in the borrowed denom. Includes: - Profits from ClosePosition (full and partial closes) - Profits from MsgCoverPosition auto-close path"
+                    },
+                    "total_realized_loss": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Cumulative realized loss from this position over its lifetime, denominated in the borrowed denom. Includes: - Losses realized in ClosePosition (full and partial closes) - Losses realized during liquidation flows (if any)"
                     }
                 },
                 "additionalProperties": false,

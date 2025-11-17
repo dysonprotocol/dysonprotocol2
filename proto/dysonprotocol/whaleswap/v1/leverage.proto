@@ -86,4 +86,19 @@ message LeveragePosition {
   //
   // Values are whaleswap Trade.trade_id (uint64).
   repeated uint64 trade_ids = 29;
+
+  // ═════ REALIZED P&L (PER POSITION) ═════
+  // Cumulative realized profit from this position over its lifetime,
+  // denominated in the borrowed denom. Includes:
+  // - Profits from ClosePosition (full and partial closes)
+  // - Profits from MsgCoverPosition auto-close path
+  cosmos.base.v1beta1.Coin total_realized_profit = 30
+      [ (gogoproto.nullable) = false ];
+
+  // Cumulative realized loss from this position over its lifetime,
+  // denominated in the borrowed denom. Includes:
+  // - Losses realized in ClosePosition (full and partial closes)
+  // - Losses realized during liquidation flows (if any)
+  cosmos.base.v1beta1.Coin total_realized_loss = 31
+      [ (gogoproto.nullable) = false ];
 }

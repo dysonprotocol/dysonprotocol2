@@ -217,6 +217,27 @@ export class LeveragePosition extends Message<LeveragePosition> {
    */
   tradeIds: bigint[] = [];
 
+  /**
+   * ═════ REALIZED P&L (PER POSITION) ═════
+   * Cumulative realized profit from this position over its lifetime,
+   * denominated in the borrowed denom. Includes:
+   * - Profits from ClosePosition (full and partial closes)
+   * - Profits from MsgCoverPosition auto-close path
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin total_realized_profit = 30;
+   */
+  totalRealizedProfit?: Coin;
+
+  /**
+   * Cumulative realized loss from this position over its lifetime,
+   * denominated in the borrowed denom. Includes:
+   * - Losses realized in ClosePosition (full and partial closes)
+   * - Losses realized during liquidation flows (if any)
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin total_realized_loss = 31;
+   */
+  totalRealizedLoss?: Coin;
+
   constructor(data?: PartialMessage<LeveragePosition>) {
     super();
     proto3.util.initPartial(data, this);
@@ -247,6 +268,8 @@ export class LeveragePosition extends Message<LeveragePosition> {
     { no: 27, name: "last_interest_settlement_time", kind: "message", T: Timestamp },
     { no: 28, name: "accrued_interest_remainder", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 29, name: "trade_ids", kind: "scalar", T: 4 /* ScalarType.UINT64 */, repeated: true },
+    { no: 30, name: "total_realized_profit", kind: "message", T: Coin },
+    { no: 31, name: "total_realized_loss", kind: "message", T: Coin },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LeveragePosition {

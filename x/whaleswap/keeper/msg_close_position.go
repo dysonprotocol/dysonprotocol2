@@ -345,6 +345,22 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		return nil, err
 	}
 
+	// Update per-position realized P&L (borrowed denom)
+	if profit.IsPositive() {
+		if pos.TotalRealizedProfit.Denom == "" {
+			pos.TotalRealizedProfit = profit
+		} else {
+			pos.TotalRealizedProfit = pos.TotalRealizedProfit.Add(profit)
+		}
+	}
+	if loss.IsPositive() {
+		if pos.TotalRealizedLoss.Denom == "" {
+			pos.TotalRealizedLoss = loss
+		} else {
+			pos.TotalRealizedLoss = pos.TotalRealizedLoss.Add(loss)
+		}
+	}
+
 	// Update position state after all fund movements
 	pos.Borrowed = pos.Borrowed.Sub(actualPrincipalPaidCoin)
 	pos.Held = pos.Held.Sub(heldToSwap)
