@@ -157,18 +157,25 @@ func ensurePerDenomDecCoins(
 	valid func(cosmossdkmath.LegacyDec) bool,
 ) sdk.DecCoins {
 	coins := sdk.NewDecCoins(input...)
-	valA := coins.AmountOf(denomA)
-	valB := coins.AmountOf(denomB)
+	valA, hasA := amountOfWithPresence(coins, denomA)
+	valB, hasB := amountOfWithPresence(coins, denomB)
+
+	copyAllowed := fallbackA.Equal(fallbackB) || hasA != hasB
+
+	if !hasA && hasB && copyAllowed {
+		valA = valB
+		hasA = true
+	}
+	if hasA && !hasB && copyAllowed {
+		valB = valA
+		hasB = true
+	}
 
 	if !valid(valA) {
 		valA = fallbackA
 	}
 	if !valid(valB) {
-		if valid(valA) && (len(coins) == 1 || fallbackA.Equal(fallbackB)) {
-			valB = valA
-		} else {
-			valB = fallbackB
-		}
+		valB = fallbackB
 	}
 
 	return sdk.DecCoins{
@@ -177,26 +184,60 @@ func ensurePerDenomDecCoins(
 	}
 }
 
+func amountOfWithPresence(coins sdk.DecCoins, denom string) (cosmossdkmath.LegacyDec, bool) {
+	for _, coin := range coins {
+		if coin.Denom == denom {
+			return coin.Amount, true
+		}
+	}
+	return cosmossdkmath.LegacyZeroDec(), false
+}
+
 func normalizeLegacyGenesisJSON(raw []byte) ([]byte, bool, error) {
 	var root map[string]json.RawMessage
 	if err := json.Unmarshal(raw, &root); err != nil {
 		return nil, false, err
 	}
 
-	paramsRaw, ok := root["params"]
-	if !ok || len(bytes.TrimSpace(paramsRaw)) == 0 {
-		return nil, false, nil
+	changed := false
+
+	if paramsRaw, ok := root["params"]; ok && len(bytes.TrimSpace(paramsRaw)) > 0 {
+		updatedParams, paramsChanged, err := normalizeLegacyParamsJSON(paramsRaw)
+		if err != nil {
+			return nil, false, fmt.Errorf("normalize params: %w", err)
+		}
+		if paramsChanged {
+			root["params"] = updatedParams
+			changed = true
+		}
 	}
 
-	updatedParams, changed, err := normalizeLegacyParamsJSON(paramsRaw)
-	if err != nil {
-		return nil, false, fmt.Errorf("normalize params: %w", err)
+	if poolsRaw, ok := root["pools"]; ok && len(bytes.TrimSpace(poolsRaw)) > 0 {
+		updatedPools, poolsChanged, err := normalizeLegacyPoolsJSON(poolsRaw)
+		if err != nil {
+			return nil, false, fmt.Errorf("normalize pools: %w", err)
+		}
+		if poolsChanged {
+			root["pools"] = updatedPools
+			changed = true
+		}
 	}
+
+	if metricsRaw, ok := root["address_metrics"]; ok && len(bytes.TrimSpace(metricsRaw)) > 0 {
+		updatedMetrics, metricsChanged, err := normalizeLegacyAddressMetricsJSON(metricsRaw)
+		if err != nil {
+			return nil, false, fmt.Errorf("normalize address metrics: %w", err)
+		}
+		if metricsChanged {
+			root["address_metrics"] = updatedMetrics
+			changed = true
+		}
+	}
+
 	if !changed {
 		return nil, false, nil
 	}
 
-	root["params"] = updatedParams
 	buf, err := json.Marshal(root)
 	if err != nil {
 		return nil, false, err
@@ -315,5 +356,154 @@ func extractJSONInt(v any) (int64, error) {
 		return int64(val), nil
 	default:
 		return 0, fmt.Errorf("unsupported number type %T", v)
+	}
+}
+
+func normalizeLegacyPoolsJSON(raw json.RawMessage) ([]byte, bool, error) {
+	var pools []map[string]any
+	dec := json.NewDecoder(bytes.NewReader(raw))
+	dec.UseNumber()
+	if err := dec.Decode(&pools); err != nil {
+		return nil, false, err
+	}
+
+	changed := false
+	for _, pool := range pools {
+		if pool == nil {
+			continue
+		}
+
+		poolID := renderInterfaceString(pool["pool_id"])
+
+		if val, ok := pool["min_collateral_ratio"]; ok {
+			if _, exists := pool["min_initial_collateral_ratio"]; !exists {
+				pool["min_initial_collateral_ratio"] = val
+			}
+			delete(pool, "min_collateral_ratio")
+			changed = true
+		}
+
+		if feePct, ok := pool["fee_pct"]; ok {
+			delete(pool, "fee_pct")
+			changed = true
+
+			if needsFeeRate(pool["fee_rate"]) {
+				amountStr := strings.TrimSpace(renderInterfaceString(feePct))
+				if amountStr != "" {
+					feeDec, err := cosmossdkmath.LegacyNewDecFromStr(amountStr)
+					if err != nil {
+						return nil, false, fmt.Errorf("pool %s invalid fee_pct: %w", poolID, err)
+					}
+					denoms, err := extractPoolDenoms(pool["coins"])
+					if err != nil {
+						return nil, false, fmt.Errorf("pool %s: %w", poolID, err)
+					}
+					feeRate := make([]map[string]string, len(denoms))
+					for i, denom := range denoms {
+						feeRate[i] = map[string]string{
+							"denom":  denom,
+							"amount": feeDec.String(),
+						}
+					}
+					pool["fee_rate"] = feeRate
+				}
+			}
+		}
+	}
+
+	if !changed {
+		return nil, false, nil
+	}
+	buf, err := json.Marshal(pools)
+	if err != nil {
+		return nil, false, err
+	}
+	return buf, true, nil
+}
+
+func normalizeLegacyAddressMetricsJSON(raw json.RawMessage) ([]byte, bool, error) {
+	var metrics []map[string]any
+	dec := json.NewDecoder(bytes.NewReader(raw))
+	dec.UseNumber()
+	if err := dec.Decode(&metrics); err != nil {
+		return nil, false, err
+	}
+
+	changed := false
+	for _, entry := range metrics {
+		if entry == nil {
+			continue
+		}
+		pnl, ok := entry["leverage_pnl"]
+		if !ok {
+			continue
+		}
+		delete(entry, "leverage_pnl")
+		if _, exists := entry["profit"]; !exists {
+			entry["profit"] = pnl
+		}
+		if _, exists := entry["losses"]; !exists {
+			entry["losses"] = []any{}
+		}
+		changed = true
+	}
+
+	if !changed {
+		return nil, false, nil
+	}
+	buf, err := json.Marshal(metrics)
+	if err != nil {
+		return nil, false, err
+	}
+	return buf, true, nil
+}
+
+func needsFeeRate(value any) bool {
+	if value == nil {
+		return true
+	}
+	arr, ok := value.([]any)
+	if !ok {
+		return false
+	}
+	return len(arr) == 0
+}
+
+func extractPoolDenoms(value any) ([]string, error) {
+	arr, ok := value.([]any)
+	if !ok {
+		return nil, fmt.Errorf("coins must be an array")
+	}
+	if len(arr) < 2 {
+		return nil, fmt.Errorf("coins must contain at least two entries")
+	}
+	denoms := make([]string, len(arr))
+	for i, item := range arr {
+		entry, ok := item.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("coin entry %d must be an object", i)
+		}
+		denom, ok := entry["denom"].(string)
+		if !ok || strings.TrimSpace(denom) == "" {
+			return nil, fmt.Errorf("coin entry %d missing denom", i)
+		}
+		denoms[i] = denom
+	}
+	return denoms, nil
+}
+
+func renderInterfaceString(v any) string {
+	switch val := v.(type) {
+	case string:
+		return val
+	case json.Number:
+		return val.String()
+	case fmt.Stringer:
+		return val.String()
+	default:
+		if val == nil {
+			return ""
+		}
+		return fmt.Sprintf("%v", val)
 	}
 }

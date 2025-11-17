@@ -1270,20 +1270,25 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs, log_mod
 
     def get_block_info(rpc_url):
         """Get latest block height and timestamp from RPC endpoint"""
-        try:
-            resp = requests.get(f"{rpc_url}/status", timeout=3)
-            if resp.status_code == 200:
-                data = resp.json()
-                sync_info = data["result"]["sync_info"]
-                height = int(sync_info["latest_block_height"])
-                # Parse the timestamp (format: "2025-01-20T15:17:07.770381Z")
-                block_time_str = sync_info["latest_block_time"]
-                block_time = datetime.fromisoformat(
-                    block_time_str.replace("Z", "+00:00")
+        for i in range(3):
+            try:
+                resp = requests.get(f"{rpc_url}/status", timeout=3)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    sync_info = data["result"]["sync_info"]
+                    height = int(sync_info["latest_block_height"])
+                    # Parse the timestamp (format: "2025-01-20T15:17:07.770381Z")
+                    block_time_str = sync_info["latest_block_time"]
+                    block_time = datetime.fromisoformat(
+                        block_time_str.replace("Z", "+00:00")
+                    )
+                    return height, block_time
+            except Exception as e:
+                click.echo(
+                    f"Error getting block info for {rpc_url} (attempt {i+1} of 3): {e}",
+                    err=True,
                 )
-                return height, block_time
-        except Exception as e:
-            click.echo(f"Error getting block info for {rpc_url}: {e}", err=True)
+                time.sleep(1)
         return None, None
 
     def monitor_blocks(timeout):

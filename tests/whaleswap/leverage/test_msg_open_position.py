@@ -430,10 +430,10 @@ def demo_short_position(alice_addr, foo_name, bar_name):
         held_denom_response == foo_name
     ), f"SHORT: held denom should be {foo_name}, got {held_denom_response}"
 
-    # Verify held amount with output-side fee and pre-debited reserves
+    # Verify held amount with input-side fee keyed by output denom (0.3% fee)
     assert (
-        held_amount_response == 499
-    ), f"SHORT: held amount should be 499 with 0.3% output fee, got {held_amount_response}"
+        held_amount_response == 498
+    ), f"SHORT: held amount should be 498 with 0.3% fee on the swap, got {held_amount_response}"
 
 
 def test_open_position_pool_not_found(
