@@ -427,6 +427,40 @@
         ]
       }
     },
+    "/dysonprotocol/whaleswap/v1/offer/{offer_id}": {
+      "get": {
+        "summary": "Offer queries a single offer by ID.",
+        "description": "Returns offer data including maker, amounts, status, and timestamps.\nDirect lookup by offer_id for fast retrieval.",
+        "operationId": "dysonprotocol.whaleswap.v1.QueryOfferRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryOfferResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "offer_id",
+            "description": "ID of the offer to retrieve",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
     "/dysonprotocol/whaleswap/v1/offers": {
       "get": {
         "summary": "Offers provides unified offer listing with optional denom filters and\npagination.",
@@ -621,6 +655,79 @@
         ]
       }
     },
+    "/dysonprotocol/whaleswap/v1/offers/by_owner/{owner}": {
+      "get": {
+        "summary": "OffersByOwner queries offers by owner address with optional status filter.",
+        "description": "Returns offers owned by the specified address, optionally filtered by\nstatus. Uses indexed queries when both owner and status provided for\noptimal performance. Falls back to filtered scans for partial filters to\navoid nil entries. Supports pagination with consistent ordering by offer\nID.",
+        "operationId": "dysonprotocol.whaleswap.v1.QueryOffersByOwnerRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryOffersByOwnerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "owner",
+            "description": "Owner address to filter offers by; must be a valid bech32 address",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "Optional status filter; valid values are \"open\", \"closed\", \"cancelled\"\nIf empty, returns offers with any status. Enables indexed queries when\ncombined with owner.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
     "/dysonprotocol/whaleswap/v1/offers/by_pair_price": {
       "get": {
         "summary": "OffersByPairPriceRange queries offers for a pair whose price lies within\noptional bounds.",
@@ -708,113 +815,6 @@
         ]
       }
     },
-    "/dysonprotocol/whaleswap/v1/offers/owner/{owner}": {
-      "get": {
-        "summary": "OffersByOwner queries offers by owner address with optional status filter.",
-        "description": "Returns offers owned by the specified address, optionally filtered by\nstatus. Uses indexed queries when both owner and status provided for\noptimal performance. Falls back to filtered scans for partial filters to\navoid nil entries. Supports pagination with consistent ordering by offer\nID.",
-        "operationId": "dysonprotocol.whaleswap.v1.QueryOffersByOwnerRequest",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryOffersByOwnerResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/grpc.gateway.runtime.Error"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "owner",
-            "description": "Owner address to filter offers by; must be a valid bech32 address",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "status",
-            "description": "Optional status filter; valid values are \"open\", \"closed\", \"cancelled\"\nIf empty, returns offers with any status. Enables indexed queries when\ncombined with owner.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "pagination.key",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "byte"
-          },
-          {
-            "name": "pagination.offset",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "pagination.limit",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "pagination.count_total",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "pagination.reverse",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
-          }
-        ],
-        "tags": [
-          "Query"
-        ]
-      }
-    },
-    "/dysonprotocol/whaleswap/v1/offers/{offer_id}": {
-      "get": {
-        "summary": "Offer queries a single offer by ID.",
-        "description": "Returns offer data including maker, amounts, status, and timestamps.\nDirect lookup by offer_id for fast retrieval.",
-        "operationId": "dysonprotocol.whaleswap.v1.QueryOfferRequest",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryOfferResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/grpc.gateway.runtime.Error"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "offer_id",
-            "description": "ID of the offer to retrieve",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          }
-        ],
-        "tags": [
-          "Query"
-        ]
-      }
-    },
     "/dysonprotocol/whaleswap/v1/params": {
       "get": {
         "summary": "Params queries the current whaleswap module parameters.",
@@ -839,7 +839,41 @@
         ]
       }
     },
-    "/dysonprotocol/whaleswap/v1/pools": {
+    "/dysonprotocol/whaleswap/v1/pool/{pool_id}": {
+      "get": {
+        "summary": "Pool queries a single AMM pool by ID.",
+        "description": "Returns complete pool data including reserves, shares denom, and\nconfiguration. Direct lookup by pool_id for fast retrieval.",
+        "operationId": "dysonprotocol.whaleswap.v1.QueryPoolRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pool_id",
+            "description": "ID of the pool to retrieve",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/dysonprotocol/whaleswap/v1/pools/all": {
       "get": {
         "summary": "Pools lists all AMM pools with pagination.",
         "description": "Returns all pools in the system with no filtering. Uses direct pagination\nover the primary PoolsMap. Results ordered by pool ID ascending.",
@@ -923,6 +957,72 @@
             "description": "Denomination to search for; returns pools where this denom appears on\neither side.",
             "in": "query",
             "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/dysonprotocol/whaleswap/v1/pools/by_owner/{owner}": {
+      "get": {
+        "summary": "PoolsByOwner queries pools where the owner holds non-zero shares balance.",
+        "description": "Returns pools where the specified owner has a positive balance of pool\nshares. Uses bank module balance checks for each pool's shares denom. Falls\nback to filtered scan when no dedicated index exists. Results ordered by\npool ID ascending.",
+        "operationId": "dysonprotocol.whaleswap.v1.QueryPoolsByOwnerRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolsByOwnerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "owner",
+            "description": "Owner address to filter pools by; must be a valid bech32 address",
+            "in": "path",
+            "required": true,
             "type": "string"
           },
           {
@@ -1150,106 +1250,6 @@
             "in": "query",
             "required": false,
             "type": "string"
-          }
-        ],
-        "tags": [
-          "Query"
-        ]
-      }
-    },
-    "/dysonprotocol/whaleswap/v1/pools/owner/{owner}": {
-      "get": {
-        "summary": "PoolsByOwner queries pools where the owner holds non-zero shares balance.",
-        "description": "Returns pools where the specified owner has a positive balance of pool\nshares. Uses bank module balance checks for each pool's shares denom. Falls\nback to filtered scan when no dedicated index exists. Results ordered by\npool ID ascending.",
-        "operationId": "dysonprotocol.whaleswap.v1.QueryPoolsByOwnerRequest",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolsByOwnerResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/grpc.gateway.runtime.Error"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "owner",
-            "description": "Owner address to filter pools by; must be a valid bech32 address",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "pagination.key",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "byte"
-          },
-          {
-            "name": "pagination.offset",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "pagination.limit",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "pagination.count_total",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "pagination.reverse",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
-          }
-        ],
-        "tags": [
-          "Query"
-        ]
-      }
-    },
-    "/dysonprotocol/whaleswap/v1/pools/{pool_id}": {
-      "get": {
-        "summary": "Pool queries a single AMM pool by ID.",
-        "description": "Returns complete pool data including reserves, shares denom, and\nconfiguration. Direct lookup by pool_id for fast retrieval.",
-        "operationId": "dysonprotocol.whaleswap.v1.QueryPoolRequest",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/grpc.gateway.runtime.Error"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "pool_id",
-            "description": "ID of the pool to retrieve",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
           }
         ],
         "tags": [

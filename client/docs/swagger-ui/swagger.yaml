@@ -6031,6 +6031,174 @@ paths:
           type: boolean
       tags:
         - Query
+  /dysonprotocol/whaleswap/v1/offer/{offer_id}:
+    get:
+      summary: Offer queries a single offer by ID.
+      description: |-
+        Returns offer data including maker, amounts, status, and timestamps.
+        Direct lookup by offer_id for fast retrieval.
+      operationId: dysonprotocol.whaleswap.v1.QueryOfferRequest
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              offer:
+                title: The requested offer data
+                type: object
+                properties:
+                  offer_id:
+                    type: string
+                    format: uint64
+                  status:
+                    type: string
+                  maker:
+                    type: string
+                  updated_height:
+                    type: string
+                    format: uint64
+                  updated_timestamp:
+                    type: string
+                    format: date-time
+                    title: >-
+                      Deprecated for backward-compatible JSON decoding of old
+                      genesis
+                  created_height:
+                    type: string
+                    format: uint64
+                    title: New normalized timestamps
+                  created_time:
+                    type: string
+                    format: date-time
+                  updated_time:
+                    type: string
+                    format: date-time
+                  initial_have:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                  initial_want:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                  remaining_have:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                  remaining_want:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                  unit_have_int:
+                    type: string
+                  unit_want_int:
+                    type: string
+                  remaining_units:
+                    type: string
+                  pfand_locked:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                  settlement_mode:
+                    description: >-
+                      settlement_mode mirrors MsgMakeOffer.settlement_mode for
+                      this offer.
+                    type: string
+                    enum:
+                      - SETTLEMENT_ESCROW
+                      - SETTLEMENT_LIQUID
+                    default: SETTLEMENT_ESCROW
+                description: |-
+                  OfferData mirrors orderbook offer state.
+
+                  Status values: "open" | "closed" | "cancelled".
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: offer_id
+          description: ID of the offer to retrieve
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
   /dysonprotocol/whaleswap/v1/offers:
     get:
       summary: |-
@@ -6697,6 +6865,246 @@ paths:
           type: boolean
       tags:
         - Query
+  /dysonprotocol/whaleswap/v1/offers/by_owner/{owner}:
+    get:
+      summary: >-
+        OffersByOwner queries offers by owner address with optional status
+        filter.
+      description: |-
+        Returns offers owned by the specified address, optionally filtered by
+        status. Uses indexed queries when both owner and status provided for
+        optimal performance. Falls back to filtered scans for partial filters to
+        avoid nil entries. Supports pagination with consistent ordering by offer
+        ID.
+      operationId: dysonprotocol.whaleswap.v1.QueryOffersByOwnerRequest
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              offers:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    offer_id:
+                      type: string
+                      format: uint64
+                    status:
+                      type: string
+                    maker:
+                      type: string
+                    updated_height:
+                      type: string
+                      format: uint64
+                    updated_timestamp:
+                      type: string
+                      format: date-time
+                      title: >-
+                        Deprecated for backward-compatible JSON decoding of old
+                        genesis
+                    created_height:
+                      type: string
+                      format: uint64
+                      title: New normalized timestamps
+                    created_time:
+                      type: string
+                      format: date-time
+                    updated_time:
+                      type: string
+                      format: date-time
+                    initial_have:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    initial_want:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    remaining_have:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    remaining_want:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    unit_have_int:
+                      type: string
+                    unit_want_int:
+                      type: string
+                    remaining_units:
+                      type: string
+                    pfand_locked:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    settlement_mode:
+                      description: >-
+                        settlement_mode mirrors MsgMakeOffer.settlement_mode for
+                        this offer.
+                      type: string
+                      enum:
+                        - SETTLEMENT_ESCROW
+                        - SETTLEMENT_LIQUID
+                      default: SETTLEMENT_ESCROW
+                  description: |-
+                    OfferData mirrors orderbook offer state.
+
+                    Status values: "open" | "closed" | "cancelled".
+                title: >-
+                  List of offers matching the owner and status criteria, ordered
+                  by offer ID
+              pagination:
+                title: Pagination metadata for result set navigation
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: owner
+          description: Owner address to filter offers by; must be a valid bech32 address
+          in: path
+          required: true
+          type: string
+        - name: status
+          description: >-
+            Optional status filter; valid values are "open", "closed",
+            "cancelled"
+
+            If empty, returns offers with any status. Enables indexed queries
+            when
+
+            combined with owner.
+          in: query
+          required: false
+          type: string
+        - name: pagination.key
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
   /dysonprotocol/whaleswap/v1/offers/by_pair_price:
     get:
       summary: |-
@@ -6947,414 +7355,6 @@ paths:
           type: boolean
       tags:
         - Query
-  /dysonprotocol/whaleswap/v1/offers/owner/{owner}:
-    get:
-      summary: >-
-        OffersByOwner queries offers by owner address with optional status
-        filter.
-      description: |-
-        Returns offers owned by the specified address, optionally filtered by
-        status. Uses indexed queries when both owner and status provided for
-        optimal performance. Falls back to filtered scans for partial filters to
-        avoid nil entries. Supports pagination with consistent ordering by offer
-        ID.
-      operationId: dysonprotocol.whaleswap.v1.QueryOffersByOwnerRequest
-      responses:
-        '200':
-          description: A successful response.
-          schema:
-            type: object
-            properties:
-              offers:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    offer_id:
-                      type: string
-                      format: uint64
-                    status:
-                      type: string
-                    maker:
-                      type: string
-                    updated_height:
-                      type: string
-                      format: uint64
-                    updated_timestamp:
-                      type: string
-                      format: date-time
-                      title: >-
-                        Deprecated for backward-compatible JSON decoding of old
-                        genesis
-                    created_height:
-                      type: string
-                      format: uint64
-                      title: New normalized timestamps
-                    created_time:
-                      type: string
-                      format: date-time
-                    updated_time:
-                      type: string
-                      format: date-time
-                    initial_have:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    initial_want:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    remaining_have:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    remaining_want:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    unit_have_int:
-                      type: string
-                    unit_want_int:
-                      type: string
-                    remaining_units:
-                      type: string
-                    pfand_locked:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    settlement_mode:
-                      description: >-
-                        settlement_mode mirrors MsgMakeOffer.settlement_mode for
-                        this offer.
-                      type: string
-                      enum:
-                        - SETTLEMENT_ESCROW
-                        - SETTLEMENT_LIQUID
-                      default: SETTLEMENT_ESCROW
-                  description: |-
-                    OfferData mirrors orderbook offer state.
-
-                    Status values: "open" | "closed" | "cancelled".
-                title: >-
-                  List of offers matching the owner and status criteria, ordered
-                  by offer ID
-              pagination:
-                title: Pagination metadata for result set navigation
-                type: object
-                properties:
-                  next_key:
-                    type: string
-                    format: byte
-                    description: |-
-                      next_key is the key to be passed to PageRequest.key to
-                      query the next page most efficiently. It will be empty if
-                      there are no more results.
-                  total:
-                    type: string
-                    format: uint64
-                    title: >-
-                      total is total number of results available if
-                      PageRequest.count_total
-
-                      was set, its value is undefined otherwise
-                description: >-
-                  PageResponse is to be embedded in gRPC response messages where
-                  the
-
-                  corresponding request message has used PageRequest.
-
-                   message SomeResponse {
-                           repeated Bar results = 1;
-                           PageResponse page = 2;
-                   }
-        default:
-          description: An unexpected error response.
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              code:
-                type: integer
-                format: int32
-              message:
-                type: string
-              details:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    type_url:
-                      type: string
-                    value:
-                      type: string
-                      format: byte
-      parameters:
-        - name: owner
-          description: Owner address to filter offers by; must be a valid bech32 address
-          in: path
-          required: true
-          type: string
-        - name: status
-          description: >-
-            Optional status filter; valid values are "open", "closed",
-            "cancelled"
-
-            If empty, returns offers with any status. Enables indexed queries
-            when
-
-            combined with owner.
-          in: query
-          required: false
-          type: string
-        - name: pagination.key
-          in: query
-          required: false
-          type: string
-          format: byte
-        - name: pagination.offset
-          in: query
-          required: false
-          type: string
-          format: uint64
-        - name: pagination.limit
-          in: query
-          required: false
-          type: string
-          format: uint64
-        - name: pagination.count_total
-          in: query
-          required: false
-          type: boolean
-        - name: pagination.reverse
-          in: query
-          required: false
-          type: boolean
-      tags:
-        - Query
-  /dysonprotocol/whaleswap/v1/offers/{offer_id}:
-    get:
-      summary: Offer queries a single offer by ID.
-      description: |-
-        Returns offer data including maker, amounts, status, and timestamps.
-        Direct lookup by offer_id for fast retrieval.
-      operationId: dysonprotocol.whaleswap.v1.QueryOfferRequest
-      responses:
-        '200':
-          description: A successful response.
-          schema:
-            type: object
-            properties:
-              offer:
-                type: object
-                properties:
-                  offer_id:
-                    type: string
-                    format: uint64
-                  status:
-                    type: string
-                  maker:
-                    type: string
-                  updated_height:
-                    type: string
-                    format: uint64
-                  updated_timestamp:
-                    type: string
-                    format: date-time
-                    title: >-
-                      Deprecated for backward-compatible JSON decoding of old
-                      genesis
-                  created_height:
-                    type: string
-                    format: uint64
-                    title: New normalized timestamps
-                  created_time:
-                    type: string
-                    format: date-time
-                  updated_time:
-                    type: string
-                    format: date-time
-                  initial_have:
-                    type: object
-                    properties:
-                      denom:
-                        type: string
-                      amount:
-                        type: string
-                    description: >-
-                      Coin defines a token with a denomination and an amount.
-
-
-                      NOTE: The amount field is an Int which implements the
-                      custom method
-
-                      signatures required by gogoproto.
-                  initial_want:
-                    type: object
-                    properties:
-                      denom:
-                        type: string
-                      amount:
-                        type: string
-                    description: >-
-                      Coin defines a token with a denomination and an amount.
-
-
-                      NOTE: The amount field is an Int which implements the
-                      custom method
-
-                      signatures required by gogoproto.
-                  remaining_have:
-                    type: object
-                    properties:
-                      denom:
-                        type: string
-                      amount:
-                        type: string
-                    description: >-
-                      Coin defines a token with a denomination and an amount.
-
-
-                      NOTE: The amount field is an Int which implements the
-                      custom method
-
-                      signatures required by gogoproto.
-                  remaining_want:
-                    type: object
-                    properties:
-                      denom:
-                        type: string
-                      amount:
-                        type: string
-                    description: >-
-                      Coin defines a token with a denomination and an amount.
-
-
-                      NOTE: The amount field is an Int which implements the
-                      custom method
-
-                      signatures required by gogoproto.
-                  unit_have_int:
-                    type: string
-                  unit_want_int:
-                    type: string
-                  remaining_units:
-                    type: string
-                  pfand_locked:
-                    type: object
-                    properties:
-                      denom:
-                        type: string
-                      amount:
-                        type: string
-                    description: >-
-                      Coin defines a token with a denomination and an amount.
-
-
-                      NOTE: The amount field is an Int which implements the
-                      custom method
-
-                      signatures required by gogoproto.
-                  settlement_mode:
-                    description: >-
-                      settlement_mode mirrors MsgMakeOffer.settlement_mode for
-                      this offer.
-                    type: string
-                    enum:
-                      - SETTLEMENT_ESCROW
-                      - SETTLEMENT_LIQUID
-                    default: SETTLEMENT_ESCROW
-                description: |-
-                  OfferData mirrors orderbook offer state.
-
-                  Status values: "open" | "closed" | "cancelled".
-                title: The requested offer data
-        default:
-          description: An unexpected error response.
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              code:
-                type: integer
-                format: int32
-              message:
-                type: string
-              details:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    type_url:
-                      type: string
-                    value:
-                      type: string
-                      format: byte
-      parameters:
-        - name: offer_id
-          description: ID of the offer to retrieve
-          in: path
-          required: true
-          type: string
-          format: uint64
-      tags:
-        - Query
   /dysonprotocol/whaleswap/v1/params:
     get:
       summary: Params queries the current whaleswap module parameters.
@@ -7454,7 +7454,424 @@ paths:
                       format: byte
       tags:
         - Query
-  /dysonprotocol/whaleswap/v1/pools:
+  /dysonprotocol/whaleswap/v1/pool/{pool_id}:
+    get:
+      summary: Pool queries a single AMM pool by ID.
+      description: |-
+        Returns complete pool data including reserves, shares denom, and
+        configuration. Direct lookup by pool_id for fast retrieval.
+      operationId: dysonprotocol.whaleswap.v1.QueryPoolRequest
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              pool:
+                title: The requested pool data
+                type: object
+                properties:
+                  pool_id:
+                    type: string
+                    format: uint64
+                  coins:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      coins holds exactly two coins in canonical denom order
+                      (denom[0] <
+
+                      denom[1]). All math derives price as P = coins[1].amount /
+                      coins[0].amount.
+                  shares_denom:
+                    type: string
+                  min_price:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Deprecated legacy price band fields retained for decoding
+                      old genesis
+
+                      exports. Migration logic ignores their values and clears
+                      them.
+                  max_price:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                  block_height:
+                    type: string
+                    format: uint64
+                    title: >-
+                      Deprecated legacy fields for backward-compatible JSON
+                      decoding of old
+
+                      genesis
+                  created:
+                    type: string
+                    format: date-time
+                  updated:
+                    type: string
+                    format: date-time
+                  created_height:
+                    type: string
+                    format: uint64
+                    title: New normalized fields
+                  created_time:
+                    type: string
+                    format: date-time
+                  updated_time:
+                    type: string
+                    format: date-time
+                  updated_height:
+                    type: string
+                    format: uint64
+                  num_trades:
+                    type: string
+                    format: uint64
+                  fees_earned:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    title: cumulative swap fees retained by the pool (accrue to LPs)
+                  interest_rate:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      ═════ LEVERAGE FIELDS ═════
+
+                      Annual interest rates per reserve denom (exactly two,
+                      canonical order).
+
+                      Each amount is a decimal string representing APR (per-year
+                      accrual).
+                  interest_earned:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    title: Total accrued interest (yield for LPs)
+                  total_borrowed:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    title: Total borrowed (aggregate for cap enforcement)
+                  min_initial_collateral_ratio:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
+
+                      Minimum collateral ratio required at position open per
+                      reserve denom
+
+                      (exactly two, canonical order). Each amount is a decimal
+                      string (> 1).
+                  max_leverage_ratio:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Deprecated: maximum leverage ratio per reserve denom.
+
+                      This field is ignored by the keeper; risk is enforced via
+
+                      min_collateral_ratio, liquidation_threshold, and
+                      max_borrow_percent.
+
+                      Kept for backward-compatible JSON/proto decoding of older
+                      clients.
+                  liquidation_threshold:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Collateral ratio threshold below which position is
+                      liquidatable per reserve
+
+                      denom (exactly two, canonical order). Each amount is a
+                      decimal string
+
+                      (> 1).
+                  max_borrow_percent:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Maximum borrow capacity per reserve denom as DecCoins
+                      (exactly two,
+
+                      canonical order). Each amount is a decimal in [0,1).
+                  bound_percent:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      Directional price-impact bounds keyed by the sold denom.
+
+                      Each amount must satisfy 0 < x <= 1; x == 1 disables the
+                      bound (unbounded).
+
+                      Missing entries default to 1 for both pool denoms. Stored
+                      in canonical pool
+
+                      order (coins[0], coins[1]). During swaps, selling denom D
+                      enforces that the
+
+                      post-trade price of D quoted in the opposite denom may
+                      drop by at most
+
+                      x fraction (B = 1/(1-x) multiplier). Values outside (0,1]
+                      are rejected at
+
+                      validation time.
+                  fee_rate:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: >-
+                      fee_rate is the per-denom pool swap fee rate (amount in
+                      [0,1)), exactly two
+
+                      entries in canonical pool order matching coins[0].denom
+                      and coins[1].denom.
+
+                      Fee is applied to the OUTPUT denom of each swap leg: for
+                      exact-in, the
+
+                      computed gross output is reduced by fee; for exact-out,
+                      the required gross
+
+                      output is inflated so net (after fee) meets the target.
+                      Fees accrue to
+
+                      fees_earned in the output denom.
+                description: >-
+                  Pool describes AMM pool state.
+
+
+                  Notes:
+
+                  - coin_a.denom < coin_b.denom lexicographically (canonical
+                  order)
+
+                  - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
+
+                  - coin_a.amount/coin_b.amount are sdk.Int strings.
+
+                  - The instantaneous price used by price-based queries is
+                  derived from
+                    reserves as P = coin_b / coin_a, consistent with the notes above.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: pool_id
+          description: ID of the pool to retrieve
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
+  /dysonprotocol/whaleswap/v1/pools/all:
     get:
       summary: Pools lists all AMM pools with pagination.
       description: >-
@@ -8395,6 +8812,494 @@ paths:
             either side.
           in: query
           required: false
+          type: string
+        - name: pagination.key
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /dysonprotocol/whaleswap/v1/pools/by_owner/{owner}:
+    get:
+      summary: >-
+        PoolsByOwner queries pools where the owner holds non-zero shares
+        balance.
+      description: >-
+        Returns pools where the specified owner has a positive balance of pool
+
+        shares. Uses bank module balance checks for each pool's shares denom.
+        Falls
+
+        back to filtered scan when no dedicated index exists. Results ordered by
+
+        pool ID ascending.
+      operationId: dysonprotocol.whaleswap.v1.QueryPoolsByOwnerRequest
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              pools:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    pool_id:
+                      type: string
+                      format: uint64
+                    coins:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        coins holds exactly two coins in canonical denom order
+                        (denom[0] <
+
+                        denom[1]). All math derives price as P = coins[1].amount
+                        / coins[0].amount.
+                    shares_denom:
+                      type: string
+                    min_price:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Deprecated legacy price band fields retained for
+                        decoding old genesis
+
+                        exports. Migration logic ignores their values and clears
+                        them.
+                    max_price:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                    block_height:
+                      type: string
+                      format: uint64
+                      title: >-
+                        Deprecated legacy fields for backward-compatible JSON
+                        decoding of old
+
+                        genesis
+                    created:
+                      type: string
+                      format: date-time
+                    updated:
+                      type: string
+                      format: date-time
+                    created_height:
+                      type: string
+                      format: uint64
+                      title: New normalized fields
+                    created_time:
+                      type: string
+                      format: date-time
+                    updated_time:
+                      type: string
+                      format: date-time
+                    updated_height:
+                      type: string
+                      format: uint64
+                    num_trades:
+                      type: string
+                      format: uint64
+                    fees_earned:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: >-
+                        cumulative swap fees retained by the pool (accrue to
+                        LPs)
+                    interest_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        ═════ LEVERAGE FIELDS ═════
+
+                        Annual interest rates per reserve denom (exactly two,
+                        canonical order).
+
+                        Each amount is a decimal string representing APR
+                        (per-year accrual).
+                    interest_earned:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Total accrued interest (yield for LPs)
+                    total_borrowed:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      title: Total borrowed (aggregate for cap enforcement)
+                    min_initial_collateral_ratio:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom)
+                        ═════
+
+                        Minimum collateral ratio required at position open per
+                        reserve denom
+
+                        (exactly two, canonical order). Each amount is a decimal
+                        string (> 1).
+                    max_leverage_ratio:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Deprecated: maximum leverage ratio per reserve denom.
+
+                        This field is ignored by the keeper; risk is enforced
+                        via
+
+                        min_collateral_ratio, liquidation_threshold, and
+                        max_borrow_percent.
+
+                        Kept for backward-compatible JSON/proto decoding of
+                        older clients.
+                    liquidation_threshold:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Collateral ratio threshold below which position is
+                        liquidatable per reserve
+
+                        denom (exactly two, canonical order). Each amount is a
+                        decimal string
+
+                        (> 1).
+                    max_borrow_percent:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Maximum borrow capacity per reserve denom as DecCoins
+                        (exactly two,
+
+                        canonical order). Each amount is a decimal in [0,1).
+                    bound_percent:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        Directional price-impact bounds keyed by the sold denom.
+
+                        Each amount must satisfy 0 < x <= 1; x == 1 disables the
+                        bound (unbounded).
+
+                        Missing entries default to 1 for both pool denoms.
+                        Stored in canonical pool
+
+                        order (coins[0], coins[1]). During swaps, selling denom
+                        D enforces that the
+
+                        post-trade price of D quoted in the opposite denom may
+                        drop by at most
+
+                        x fraction (B = 1/(1-x) multiplier). Values outside
+                        (0,1] are rejected at
+
+                        validation time.
+                    fee_rate:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: >-
+                        fee_rate is the per-denom pool swap fee rate (amount in
+                        [0,1)), exactly two
+
+                        entries in canonical pool order matching coins[0].denom
+                        and coins[1].denom.
+
+                        Fee is applied to the OUTPUT denom of each swap leg: for
+                        exact-in, the
+
+                        computed gross output is reduced by fee; for exact-out,
+                        the required gross
+
+                        output is inflated so net (after fee) meets the target.
+                        Fees accrue to
+
+                        fees_earned in the output denom.
+                  description: >-
+                    Pool describes AMM pool state.
+
+
+                    Notes:
+
+                    - coin_a.denom < coin_b.denom lexicographically (canonical
+                    order)
+
+                    - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
+
+                    - coin_a.amount/coin_b.amount are sdk.Int strings.
+
+                    - The instantaneous price used by price-based queries is
+                    derived from
+                      reserves as P = coin_b / coin_a, consistent with the notes above.
+                title: List of pools where the owner holds non-zero shares balance
+              pagination:
+                title: Pagination metadata for result set navigation
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: owner
+          description: Owner address to filter pools by; must be a valid bech32 address
+          in: path
+          required: true
           type: string
         - name: pagination.key
           in: query
@@ -9846,911 +10751,6 @@ paths:
           in: query
           required: false
           type: string
-      tags:
-        - Query
-  /dysonprotocol/whaleswap/v1/pools/owner/{owner}:
-    get:
-      summary: >-
-        PoolsByOwner queries pools where the owner holds non-zero shares
-        balance.
-      description: >-
-        Returns pools where the specified owner has a positive balance of pool
-
-        shares. Uses bank module balance checks for each pool's shares denom.
-        Falls
-
-        back to filtered scan when no dedicated index exists. Results ordered by
-
-        pool ID ascending.
-      operationId: dysonprotocol.whaleswap.v1.QueryPoolsByOwnerRequest
-      responses:
-        '200':
-          description: A successful response.
-          schema:
-            type: object
-            properties:
-              pools:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    pool_id:
-                      type: string
-                      format: uint64
-                    coins:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        coins holds exactly two coins in canonical denom order
-                        (denom[0] <
-
-                        denom[1]). All math derives price as P = coins[1].amount
-                        / coins[0].amount.
-                    shares_denom:
-                      type: string
-                    min_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Deprecated legacy price band fields retained for
-                        decoding old genesis
-
-                        exports. Migration logic ignores their values and clears
-                        them.
-                    max_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                    block_height:
-                      type: string
-                      format: uint64
-                      title: >-
-                        Deprecated legacy fields for backward-compatible JSON
-                        decoding of old
-
-                        genesis
-                    created:
-                      type: string
-                      format: date-time
-                    updated:
-                      type: string
-                      format: date-time
-                    created_height:
-                      type: string
-                      format: uint64
-                      title: New normalized fields
-                    created_time:
-                      type: string
-                      format: date-time
-                    updated_time:
-                      type: string
-                      format: date-time
-                    updated_height:
-                      type: string
-                      format: uint64
-                    num_trades:
-                      type: string
-                      format: uint64
-                    fees_earned:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      title: >-
-                        cumulative swap fees retained by the pool (accrue to
-                        LPs)
-                    interest_rate:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        ═════ LEVERAGE FIELDS ═════
-
-                        Annual interest rates per reserve denom (exactly two,
-                        canonical order).
-
-                        Each amount is a decimal string representing APR
-                        (per-year accrual).
-                    interest_earned:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      title: Total accrued interest (yield for LPs)
-                    total_borrowed:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      title: Total borrowed (aggregate for cap enforcement)
-                    min_initial_collateral_ratio:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom)
-                        ═════
-
-                        Minimum collateral ratio required at position open per
-                        reserve denom
-
-                        (exactly two, canonical order). Each amount is a decimal
-                        string (> 1).
-                    max_leverage_ratio:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Deprecated: maximum leverage ratio per reserve denom.
-
-                        This field is ignored by the keeper; risk is enforced
-                        via
-
-                        min_collateral_ratio, liquidation_threshold, and
-                        max_borrow_percent.
-
-                        Kept for backward-compatible JSON/proto decoding of
-                        older clients.
-                    liquidation_threshold:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Collateral ratio threshold below which position is
-                        liquidatable per reserve
-
-                        denom (exactly two, canonical order). Each amount is a
-                        decimal string
-
-                        (> 1).
-                    max_borrow_percent:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Maximum borrow capacity per reserve denom as DecCoins
-                        (exactly two,
-
-                        canonical order). Each amount is a decimal in [0,1).
-                    bound_percent:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Directional price-impact bounds keyed by the sold denom.
-
-                        Each amount must satisfy 0 < x <= 1; x == 1 disables the
-                        bound (unbounded).
-
-                        Missing entries default to 1 for both pool denoms.
-                        Stored in canonical pool
-
-                        order (coins[0], coins[1]). During swaps, selling denom
-                        D enforces that the
-
-                        post-trade price of D quoted in the opposite denom may
-                        drop by at most
-
-                        x fraction (B = 1/(1-x) multiplier). Values outside
-                        (0,1] are rejected at
-
-                        validation time.
-                    fee_rate:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        fee_rate is the per-denom pool swap fee rate (amount in
-                        [0,1)), exactly two
-
-                        entries in canonical pool order matching coins[0].denom
-                        and coins[1].denom.
-
-                        Fee is applied to the OUTPUT denom of each swap leg: for
-                        exact-in, the
-
-                        computed gross output is reduced by fee; for exact-out,
-                        the required gross
-
-                        output is inflated so net (after fee) meets the target.
-                        Fees accrue to
-
-                        fees_earned in the output denom.
-                  description: >-
-                    Pool describes AMM pool state.
-
-
-                    Notes:
-
-                    - coin_a.denom < coin_b.denom lexicographically (canonical
-                    order)
-
-                    - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
-
-                    - coin_a.amount/coin_b.amount are sdk.Int strings.
-
-                    - The instantaneous price used by price-based queries is
-                    derived from
-                      reserves as P = coin_b / coin_a, consistent with the notes above.
-                title: List of pools where the owner holds non-zero shares balance
-              pagination:
-                title: Pagination metadata for result set navigation
-                type: object
-                properties:
-                  next_key:
-                    type: string
-                    format: byte
-                    description: |-
-                      next_key is the key to be passed to PageRequest.key to
-                      query the next page most efficiently. It will be empty if
-                      there are no more results.
-                  total:
-                    type: string
-                    format: uint64
-                    title: >-
-                      total is total number of results available if
-                      PageRequest.count_total
-
-                      was set, its value is undefined otherwise
-                description: >-
-                  PageResponse is to be embedded in gRPC response messages where
-                  the
-
-                  corresponding request message has used PageRequest.
-
-                   message SomeResponse {
-                           repeated Bar results = 1;
-                           PageResponse page = 2;
-                   }
-        default:
-          description: An unexpected error response.
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              code:
-                type: integer
-                format: int32
-              message:
-                type: string
-              details:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    type_url:
-                      type: string
-                    value:
-                      type: string
-                      format: byte
-      parameters:
-        - name: owner
-          description: Owner address to filter pools by; must be a valid bech32 address
-          in: path
-          required: true
-          type: string
-        - name: pagination.key
-          in: query
-          required: false
-          type: string
-          format: byte
-        - name: pagination.offset
-          in: query
-          required: false
-          type: string
-          format: uint64
-        - name: pagination.limit
-          in: query
-          required: false
-          type: string
-          format: uint64
-        - name: pagination.count_total
-          in: query
-          required: false
-          type: boolean
-        - name: pagination.reverse
-          in: query
-          required: false
-          type: boolean
-      tags:
-        - Query
-  /dysonprotocol/whaleswap/v1/pools/{pool_id}:
-    get:
-      summary: Pool queries a single AMM pool by ID.
-      description: |-
-        Returns complete pool data including reserves, shares denom, and
-        configuration. Direct lookup by pool_id for fast retrieval.
-      operationId: dysonprotocol.whaleswap.v1.QueryPoolRequest
-      responses:
-        '200':
-          description: A successful response.
-          schema:
-            type: object
-            properties:
-              pool:
-                type: object
-                properties:
-                  pool_id:
-                    type: string
-                    format: uint64
-                  coins:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      coins holds exactly two coins in canonical denom order
-                      (denom[0] <
-
-                      denom[1]). All math derives price as P = coins[1].amount /
-                      coins[0].amount.
-                  shares_denom:
-                    type: string
-                  min_price:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      Deprecated legacy price band fields retained for decoding
-                      old genesis
-
-                      exports. Migration logic ignores their values and clears
-                      them.
-                  max_price:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                  block_height:
-                    type: string
-                    format: uint64
-                    title: >-
-                      Deprecated legacy fields for backward-compatible JSON
-                      decoding of old
-
-                      genesis
-                  created:
-                    type: string
-                    format: date-time
-                  updated:
-                    type: string
-                    format: date-time
-                  created_height:
-                    type: string
-                    format: uint64
-                    title: New normalized fields
-                  created_time:
-                    type: string
-                    format: date-time
-                  updated_time:
-                    type: string
-                    format: date-time
-                  updated_height:
-                    type: string
-                    format: uint64
-                  num_trades:
-                    type: string
-                    format: uint64
-                  fees_earned:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    title: cumulative swap fees retained by the pool (accrue to LPs)
-                  interest_rate:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        DecCoin defines a token with a denomination and a
-                        decimal amount.
-
-
-                        NOTE: The amount field is an Dec which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      ═════ LEVERAGE FIELDS ═════
-
-                      Annual interest rates per reserve denom (exactly two,
-                      canonical order).
-
-                      Each amount is a decimal string representing APR (per-year
-                      accrual).
-                  interest_earned:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    title: Total accrued interest (yield for LPs)
-                  total_borrowed:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    title: Total borrowed (aggregate for cap enforcement)
-                  min_initial_collateral_ratio:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        DecCoin defines a token with a denomination and a
-                        decimal amount.
-
-
-                        NOTE: The amount field is an Dec which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
-
-                      Minimum collateral ratio required at position open per
-                      reserve denom
-
-                      (exactly two, canonical order). Each amount is a decimal
-                      string (> 1).
-                  max_leverage_ratio:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        DecCoin defines a token with a denomination and a
-                        decimal amount.
-
-
-                        NOTE: The amount field is an Dec which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      Deprecated: maximum leverage ratio per reserve denom.
-
-                      This field is ignored by the keeper; risk is enforced via
-
-                      min_collateral_ratio, liquidation_threshold, and
-                      max_borrow_percent.
-
-                      Kept for backward-compatible JSON/proto decoding of older
-                      clients.
-                  liquidation_threshold:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        DecCoin defines a token with a denomination and a
-                        decimal amount.
-
-
-                        NOTE: The amount field is an Dec which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      Collateral ratio threshold below which position is
-                      liquidatable per reserve
-
-                      denom (exactly two, canonical order). Each amount is a
-                      decimal string
-
-                      (> 1).
-                  max_borrow_percent:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        DecCoin defines a token with a denomination and a
-                        decimal amount.
-
-
-                        NOTE: The amount field is an Dec which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      Maximum borrow capacity per reserve denom as DecCoins
-                      (exactly two,
-
-                      canonical order). Each amount is a decimal in [0,1).
-                  bound_percent:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        DecCoin defines a token with a denomination and a
-                        decimal amount.
-
-
-                        NOTE: The amount field is an Dec which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      Directional price-impact bounds keyed by the sold denom.
-
-                      Each amount must satisfy 0 < x <= 1; x == 1 disables the
-                      bound (unbounded).
-
-                      Missing entries default to 1 for both pool denoms. Stored
-                      in canonical pool
-
-                      order (coins[0], coins[1]). During swaps, selling denom D
-                      enforces that the
-
-                      post-trade price of D quoted in the opposite denom may
-                      drop by at most
-
-                      x fraction (B = 1/(1-x) multiplier). Values outside (0,1]
-                      are rejected at
-
-                      validation time.
-                  fee_rate:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        DecCoin defines a token with a denomination and a
-                        decimal amount.
-
-
-                        NOTE: The amount field is an Dec which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      fee_rate is the per-denom pool swap fee rate (amount in
-                      [0,1)), exactly two
-
-                      entries in canonical pool order matching coins[0].denom
-                      and coins[1].denom.
-
-                      Fee is applied to the OUTPUT denom of each swap leg: for
-                      exact-in, the
-
-                      computed gross output is reduced by fee; for exact-out,
-                      the required gross
-
-                      output is inflated so net (after fee) meets the target.
-                      Fees accrue to
-
-                      fees_earned in the output denom.
-                description: >-
-                  Pool describes AMM pool state.
-
-
-                  Notes:
-
-                  - coin_a.denom < coin_b.denom lexicographically (canonical
-                  order)
-
-                  - fee_rate is a per-denom decimal rate in [0,1) as DecCoins
-
-                  - coin_a.amount/coin_b.amount are sdk.Int strings.
-
-                  - The instantaneous price used by price-based queries is
-                  derived from
-                    reserves as P = coin_b / coin_a, consistent with the notes above.
-                title: The requested pool data
-        default:
-          description: An unexpected error response.
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              code:
-                type: integer
-                format: int32
-              message:
-                type: string
-              details:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    type_url:
-                      type: string
-                    value:
-                      type: string
-                      format: byte
-      parameters:
-        - name: pool_id
-          description: ID of the pool to retrieve
-          in: path
-          required: true
-          type: string
-          format: uint64
       tags:
         - Query
   /dysonprotocol/whaleswap/v1/positions/address/{address}:
@@ -52901,6 +52901,7 @@ definitions:
     type: object
     properties:
       offer:
+        title: The requested offer data
         type: object
         properties:
           offer_id:
@@ -53021,7 +53022,6 @@ definitions:
           OfferData mirrors orderbook offer state.
 
           Status values: "open" | "closed" | "cancelled".
-        title: The requested offer data
   dysonprotocol.whaleswap.v1.QueryOffersBestResponse:
     type: object
     properties:
@@ -54199,6 +54199,7 @@ definitions:
     type: object
     properties:
       pool:
+        title: The requested pool data
         type: object
         properties:
           pool_id:
@@ -54560,7 +54561,6 @@ definitions:
           - coin_a.amount/coin_b.amount are sdk.Int strings.
           - The instantaneous price used by price-based queries is derived from
             reserves as P = coin_b / coin_a, consistent with the notes above.
-        title: The requested pool data
   dysonprotocol.whaleswap.v1.QueryPoolsByDenomResponse:
     type: object
     properties:

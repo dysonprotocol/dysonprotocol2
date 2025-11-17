@@ -2931,9 +2931,9 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 var (
 	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"dysonprotocol", "whaleswap", "v1", "params"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Pool_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"dysonprotocol", "whaleswap", "v1", "pools", "pool_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_Pool_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"dysonprotocol", "whaleswap", "v1", "pool", "pool_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Pools_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"dysonprotocol", "whaleswap", "v1", "pools"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_Pools_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"dysonprotocol", "whaleswap", "v1", "pools", "all"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_PoolsByPair_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"dysonprotocol", "whaleswap", "v1", "pools", "by_pair"}, "", runtime.AssumeColonVerbOpt(false)))
 
@@ -2943,11 +2943,11 @@ var (
 
 	pattern_Query_PoolsByPairPriceRange_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"dysonprotocol", "whaleswap", "v1", "pools", "by_pair_price"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_PoolsByOwner_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 4}, []string{"dysonprotocol", "whaleswap", "v1", "pools", "owner"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_PoolsByOwner_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"dysonprotocol", "whaleswap", "v1", "pools", "by_owner", "owner"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Offer_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"dysonprotocol", "whaleswap", "v1", "offers", "offer_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_Offer_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"dysonprotocol", "whaleswap", "v1", "offer", "offer_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_OffersByOwner_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 4}, []string{"dysonprotocol", "whaleswap", "v1", "offers", "owner"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_OffersByOwner_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"dysonprotocol", "whaleswap", "v1", "offers", "by_owner", "owner"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_Offers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"dysonprotocol", "whaleswap", "v1", "offers"}, "", runtime.AssumeColonVerbOpt(false)))
 
