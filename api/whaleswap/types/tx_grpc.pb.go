@@ -23,10 +23,8 @@ const (
 	Msg_UpdatePoolConfig_FullMethodName      = "/dysonprotocol.whaleswap.v1.Msg/UpdatePoolConfig"
 	Msg_AddLiquidity_FullMethodName          = "/dysonprotocol.whaleswap.v1.Msg/AddLiquidity"
 	Msg_RemoveLiquidity_FullMethodName       = "/dysonprotocol.whaleswap.v1.Msg/RemoveLiquidity"
-	Msg_PoolSwap_FullMethodName              = "/dysonprotocol.whaleswap.v1.Msg/PoolSwap"
 	Msg_MakeTrade_FullMethodName             = "/dysonprotocol.whaleswap.v1.Msg/MakeTrade"
 	Msg_MakeOffer_FullMethodName             = "/dysonprotocol.whaleswap.v1.Msg/MakeOffer"
-	Msg_TakeOffer_FullMethodName             = "/dysonprotocol.whaleswap.v1.Msg/TakeOffer"
 	Msg_CancelOffer_FullMethodName           = "/dysonprotocol.whaleswap.v1.Msg/CancelOffer"
 	Msg_OpenAuction_FullMethodName           = "/dysonprotocol.whaleswap.v1.Msg/OpenAuction"
 	Msg_RedeemAuction_FullMethodName         = "/dysonprotocol.whaleswap.v1.Msg/RedeemAuction"
@@ -182,11 +180,6 @@ type MsgClient interface {
 	// reserves proportional to the share burned.
 	RemoveLiquidity(ctx context.Context, in *MsgRemoveLiquidity, opts ...grpc.CallOption) (*MsgRemoveLiquidityResponse, error)
 	// *
-	// PoolSwap executes one or more exact-in or exact-out pool swap legs with a
-	// single end-of-tx settlement. Applies output-side fees per leg and enforces
-	// aggregate max_input caps and min_output guarantees.
-	PoolSwap(ctx context.Context, in *MsgPoolSwap, opts ...grpc.CallOption) (*MsgPoolSwapResponse, error)
-	// *
 	// MakeTrade combines AMM pool swaps and orderbook takes into a single
 	// transaction with end-of-tx settlement.
 	MakeTrade(ctx context.Context, in *MsgMakeTrade, opts ...grpc.CallOption) (*MsgMakeTradeResponse, error)
@@ -195,9 +188,6 @@ type MsgClient interface {
 	// LIQUID: lock PFAND; settlement draws from maker balance at take. Units are
 	// derived via GCD for partial fills.
 	MakeOffer(ctx context.Context, in *MsgMakeOffer, opts ...grpc.CallOption) (*MsgMakeOfferResponse, error)
-	// *
-	// TakeOffer executes one or more orderbook takes with netting and settlement.
-	TakeOffer(ctx context.Context, in *MsgTakeOffer, opts ...grpc.CallOption) (*MsgTakeOfferResponse, error)
 	// *
 	// CancelOffer (maker or authorized third party) cancels an open offer and
 	// refunds escrowed assets to the maker while releasing PFAND to the closer.
@@ -295,16 +285,6 @@ func (c *msgClient) RemoveLiquidity(ctx context.Context, in *MsgRemoveLiquidity,
 	return out, nil
 }
 
-func (c *msgClient) PoolSwap(ctx context.Context, in *MsgPoolSwap, opts ...grpc.CallOption) (*MsgPoolSwapResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(MsgPoolSwapResponse)
-	err := c.cc.Invoke(ctx, Msg_PoolSwap_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *msgClient) MakeTrade(ctx context.Context, in *MsgMakeTrade, opts ...grpc.CallOption) (*MsgMakeTradeResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MsgMakeTradeResponse)
@@ -319,16 +299,6 @@ func (c *msgClient) MakeOffer(ctx context.Context, in *MsgMakeOffer, opts ...grp
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MsgMakeOfferResponse)
 	err := c.cc.Invoke(ctx, Msg_MakeOffer_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) TakeOffer(ctx context.Context, in *MsgTakeOffer, opts ...grpc.CallOption) (*MsgTakeOfferResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(MsgTakeOfferResponse)
-	err := c.cc.Invoke(ctx, Msg_TakeOffer_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -587,11 +557,6 @@ type MsgServer interface {
 	// reserves proportional to the share burned.
 	RemoveLiquidity(context.Context, *MsgRemoveLiquidity) (*MsgRemoveLiquidityResponse, error)
 	// *
-	// PoolSwap executes one or more exact-in or exact-out pool swap legs with a
-	// single end-of-tx settlement. Applies output-side fees per leg and enforces
-	// aggregate max_input caps and min_output guarantees.
-	PoolSwap(context.Context, *MsgPoolSwap) (*MsgPoolSwapResponse, error)
-	// *
 	// MakeTrade combines AMM pool swaps and orderbook takes into a single
 	// transaction with end-of-tx settlement.
 	MakeTrade(context.Context, *MsgMakeTrade) (*MsgMakeTradeResponse, error)
@@ -600,9 +565,6 @@ type MsgServer interface {
 	// LIQUID: lock PFAND; settlement draws from maker balance at take. Units are
 	// derived via GCD for partial fills.
 	MakeOffer(context.Context, *MsgMakeOffer) (*MsgMakeOfferResponse, error)
-	// *
-	// TakeOffer executes one or more orderbook takes with netting and settlement.
-	TakeOffer(context.Context, *MsgTakeOffer) (*MsgTakeOfferResponse, error)
 	// *
 	// CancelOffer (maker or authorized third party) cancels an open offer and
 	// refunds escrowed assets to the maker while releasing PFAND to the closer.
@@ -672,17 +634,11 @@ func (UnimplementedMsgServer) AddLiquidity(context.Context, *MsgAddLiquidity) (*
 func (UnimplementedMsgServer) RemoveLiquidity(context.Context, *MsgRemoveLiquidity) (*MsgRemoveLiquidityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveLiquidity not implemented")
 }
-func (UnimplementedMsgServer) PoolSwap(context.Context, *MsgPoolSwap) (*MsgPoolSwapResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PoolSwap not implemented")
-}
 func (UnimplementedMsgServer) MakeTrade(context.Context, *MsgMakeTrade) (*MsgMakeTradeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MakeTrade not implemented")
 }
 func (UnimplementedMsgServer) MakeOffer(context.Context, *MsgMakeOffer) (*MsgMakeOfferResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MakeOffer not implemented")
-}
-func (UnimplementedMsgServer) TakeOffer(context.Context, *MsgTakeOffer) (*MsgTakeOfferResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TakeOffer not implemented")
 }
 func (UnimplementedMsgServer) CancelOffer(context.Context, *MsgCancelOffer) (*MsgCancelOfferResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelOffer not implemented")
@@ -810,24 +766,6 @@ func _Msg_RemoveLiquidity_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_PoolSwap_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgPoolSwap)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).PoolSwap(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_PoolSwap_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).PoolSwap(ctx, req.(*MsgPoolSwap))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Msg_MakeTrade_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgMakeTrade)
 	if err := dec(in); err != nil {
@@ -860,24 +798,6 @@ func _Msg_MakeOffer_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).MakeOffer(ctx, req.(*MsgMakeOffer))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_TakeOffer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgTakeOffer)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).TakeOffer(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_TakeOffer_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).TakeOffer(ctx, req.(*MsgTakeOffer))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1104,20 +1024,12 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_RemoveLiquidity_Handler,
 		},
 		{
-			MethodName: "PoolSwap",
-			Handler:    _Msg_PoolSwap_Handler,
-		},
-		{
 			MethodName: "MakeTrade",
 			Handler:    _Msg_MakeTrade_Handler,
 		},
 		{
 			MethodName: "MakeOffer",
 			Handler:    _Msg_MakeOffer_Handler,
-		},
-		{
-			MethodName: "TakeOffer",
-			Handler:    _Msg_TakeOffer_Handler,
 		},
 		{
 			MethodName: "CancelOffer",

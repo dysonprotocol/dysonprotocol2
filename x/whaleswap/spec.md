@@ -156,9 +156,13 @@ Mode B (v3-style, price range set)
 - In all cases, enforce post-condition price remains within [min,max].
 
 Swaps (any user)
-- Msg: PoolSwap(pool_id, input_coin, minimum_out_amount, out_denom)
-  - Single-pool swap only. To route across multiple pools, include multiple PoolSwap messages in the same transaction or call the module multiple times from a script.
-  - Apply math based on pool mode:
+- Msg: MakeTrade(trader, max_input[], operations[], min_output[])
+  - **Primary trading interface**: supports mixing pool swaps, orderbook takes, and auction redemptions in a single atomic transaction with aggregated settlement.
+  - Operations are executed in order; each operation can be:
+    - SwapLeg: pool swap (exact-in, exact-out, or rate-constrained)
+    - TakeItem: orderbook take (deprecated standalone MsgTakeOffer)
+    - RedeemItem: auction redemption (future)
+  - Apply math based on pool mode per swap leg:
     - Mode A (v2): constant product with fee on input.
       - k = R1*R2; effective_in = dx * (1 - fee_rate_out).
       - out = R2 - ceil(k / (R1 + effective_in)) (or symmetric for coin2 input).
@@ -170,8 +174,11 @@ Swaps (any user)
         - out = floor(L * (sp' - sp)). If input exhausts before hitting band edge, stop at boundary.
       - For token2→token1, symmetric with price moving down: dye = dy*(1-fee_rate_out), dxe = floor(L * (1/sp' - 1/sp)).
       - Reject if resulting price exits band.
-  - Require out_denom match and amount ≥ minimum_out_amount; send to caller.
-  - Per-leg XOR rule: SwapLegs accept exact-in (swap_in) or exact-out (swap_out), but not both together; combine with message-level max_input/min_output for symmetric guarantees.
+  - Per-leg constraints: SwapLegs accept exact-in (swap_in), exact-out (swap_out), or both (rate constraint).
+  - Tx-level constraints: max_input[] caps trader debits per denom; min_output[] guarantees trader credits per denom.
+  - Settlement: single aggregated multi-send at end of all operations.
+  
+- **Deprecated**: MsgPoolSwap and MsgTakeOffer (removed; use MsgMakeTrade instead)
 
 Pool configuration updates (only owner)
 - Msg: UpdatePoolConfig(pool_id, fee_rate?, min_price?, max_price?)
@@ -209,7 +216,7 @@ Msgs
   - LIQUID: lock `pfand_per_offer` from maker; no base escrow.
   - Units: gcd(have.amount, want.amount) defines unit_have/unit_want and remaining_units.
 
-- TakeOffer(trades[])
+- **Taking offers**: Use MsgMakeTrade with TakeItem operations (MsgTakeOffer removed)
   - Atomic TAKE_ALL-only settlement. Any infeasible leg aborts the entire batch.
   - Planning: iterate legs, compute `take_units`; aggregate maker wants (want denoms), taker credits (have denoms), and include PFAND to taker on close.
   - Netting: for each denom, net trader credits against maker wants; fund remaining deficits from trader base; module covers any remainder.
@@ -218,7 +225,7 @@ Msgs
 
 - CancelOffer(offer_id)
   - Maker can cancel open offers.
-  - Third-party may cancel liquid-mode offers if maker’s balance of `have` < 1 unit_have; PFAND is sent to closer.
+  - Third-party may cancel liquid-mode offers if maker's balance of `have` < 1 unit_have; PFAND is sent to closer.
 
 Indexes and queries
 - Offers primary: `OffersMap[id]` → OfferData
@@ -434,7 +441,7 @@ Here’s what remains to implement to meet the spec.
 
 ### ComposeOperations
 - Implement `MsgComposeOperations`
-  - Three-phase execution: collect inputs → apply ops internally (TakeOffer/PoolSwap with module escrow bookkeeping) → single final settlement. All-or-nothing. Files: `x/whaleswap/keeper/msg_compose.go` (new), reuse math from existing handlers, keep state updates atomic.
+  - **Completed**: MsgMakeTrade now provides unified execution with three-phase flow: collect inputs → apply ops internally (pool swaps and orderbook takes with module escrow bookkeeping) → single final settlement. All-or-nothing. Files: `x/whaleswap/keeper/msg_make_trade.go`, `x/whaleswap/keeper/trade_helpers.go`.
 
 ### Genesis
 - Full InitGenesis/ExportGenesis
@@ -562,7 +569,7 @@ I'll expand the whaleswap AutoCLI options to be multiline and add Short, Long, a
 
 - Reformatted x/whaleswap/module/autocli.go with multiline keyed fields and added Short, Long, and Example for every whaleswap query and tx RPC:
   - Query: Params, Pool, Pools, Offer, OffersByOwner, Offers, TradesByOffer, TradesByTaker, Auction, Auctions.
-- Tx: CreatePool, UpdatePoolConfig, AddLiquidity, RemoveLiquidity, PoolSwap, MakeOffer, TakeOffer, CancelOffer, OpenAuction, RedeemAuction, UpdateParams.
+- Tx: CreatePool, UpdatePoolConfig, AddLiquidity, RemoveLiquidity, MakeTrade (replaces PoolSwap and TakeOffer), MakeOffer, CancelOffer, OpenAuction, RedeemAuction, UpdateParams.
   - Added positional arg descriptors where applicable.
   - Lints clean.
 
@@ -585,19 +592,7 @@ I'll update the AMM section in x/whaleswap/spec.md to define PoolSwap as single-
 Let me know if you want me to also adjust the tx.proto and keeper to enforce single-pool inputs at the type level (and simplify AutoCLI help accordingly).
 
 ==================================================
-I'll scan the tx.proto to confirm the current MsgPoolSwap fields and update them to single pool_id. Then I'll modify keeper/msg_pool_swap.go to accept a single pool_id and remove route logic, and adjust the AutoCLI command help accordingly.
-
-[6 tools called]
-
-I’m going to regenerate protobufs and rebuild since we changed tx.proto to make PoolSwap single-pool. Then I’ll fix any compile errors.
-
-[5 tools called]
-
-- Changed proto: `MsgPoolSwap` now single-pool with `uint64 pool_id` (removed `route_ids`). Updated `proto/dysonprotocol/whaleswap/v1/tx.proto`.
-- Updated keeper: `msg_pool_swap.go` enforces `pool_id` and removed route parsing/multi-hop loop. Logic executes exactly one pool swap, then enforces min-out and sends output.
-- Updated CLI help in `x/whaleswap/module/autocli.go` to use `--pool-id` and clarified multi-pool chaining via multiple messages.
-
-You should run: make proto-gen install to regenerate types and rebuild.
+**Historical note**: MsgPoolSwap was removed in favor of MsgMakeTrade, which provides a unified interface for pool swaps, orderbook takes, and auction redemptions with aggregated settlement.
 
 ==================================================
 Here are the main edge cases and undefined/underspecified behaviors to firm up:

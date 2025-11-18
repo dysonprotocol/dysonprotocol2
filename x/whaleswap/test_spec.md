@@ -6,7 +6,7 @@
 - Use single-pool `swap --pool-id` everywhere; multi-hop = multiple msgs.
 - Wrappers removed: no liquid denom usage in tests. Use SettlementMode (ESCROW/LIQUID) with base denoms.
 - Module account owns `whaleswap.dys` root; tests can assert authority by querying nameservice owner to be the module address.
-- Orderbook TakeOffer is TAKE_ALL only (no modes, no `--take` flag). All legs are planned, netted, and settled via one aggregated multi-send from the whaleswap module helper, followed by burning any liquid inputs at the module. Liquid wants are disallowed at MakeOffer.
+- Orderbook takes use MsgMakeTrade with TakeItem operations (TAKE_ALL semantics only). All legs are planned, netted, and settled via one aggregated multi-send from the whaleswap module helper, followed by burning any liquid inputs at the module. Liquid wants are disallowed at MakeOffer.
 
 ### Scope
 
@@ -111,9 +111,10 @@ base = f"http://{api_address['host']}:{api_address['port']}"
 - RemoveLiquidity:
   - v2: proportional exit; v3: band-aware outputs; post-op price within band
 
-  - PoolSwap (single pool only):
+  - MakeTrade with SwapLeg operations (single or multiple pools):
   - v2 and v3 paths; amount out > 0; post-op price within band; out denom matches
-  - To route across multiple pools, chain multiple PoolSwap msgs in one tx or call the module multiple times from a script
+  - Supports exact-in, exact-out, or rate-constrained swaps per leg
+  - To route across multiple pools, include multiple SwapLeg operations in one MakeTrade
 
 Example CLI:
 ```bash
@@ -122,7 +123,7 @@ dysond tx whaleswap create-pool --coin-a=1000udys --coin-b=500ufoo \
   --min-price=1udys,2ufoo --max-price=1udys,3ufoo --from alice
 dysond tx whaleswap add-liquidity --pool-id=1 --amount1=200udys --amount2=100ufoo --from alice
 dysond tx whaleswap remove-liquidity --pool-id=1 --shares=50 --from alice
-dysond tx whaleswap swap --pool-id=1 --input=100udys --minimum-out-amount=50 --out-denom=ufoo --from bob
+dysond tx whaleswap make-trade --op='{"swap":{"pool_id":1,"swap_in":{"denom":"udys","amount":"100"}}}' --min-output=50ufoo --from bob
 ```
 
 ### Swagger API tests (amm/test_amm_api.py)
@@ -171,7 +172,7 @@ def amm_create(denom_a, amt_a, denom_b, amt_b):
   - have is liquid L(S); optionally update params.pfand_per_offer > 0 via UpdateParams (authority)
   - locks pfand; EventPfandLocked emitted
 
-- TakeOffer (atomic batch netting):
+- MakeTrade with TakeItem operations (atomic batch netting):
   - Only TAKE_ALL semantics; no `--take` flag. If any leg is infeasible, the entire batch fails and no state changes persist.
   - The keeper aggregates all inputs/outputs across legs and performs a single multi-send via whaleswap’s internal helper. Events are emitted per leg during planning and are rolled back on failure.
   - Same-denom netting: if the taker both pays and receives the same solid denom across legs, reduce the taker’s output by the nettable amount before computing deficits.
@@ -188,7 +189,7 @@ Example CLI:
 ```bash
 dysond tx whaleswap make-offer --have=100udys --want=50ufoo --from alice
 dysond tx whaleswap make-offer --have=100udys --want=50ufoo --settlement-mode settlement-liquid --from alice
-dysond tx whaleswap take-offer --trades offer_id=1,take_units=10 --trades offer_id=2 --from bob
+dysond tx whaleswap make-trade --op='{"take":{"offer_id":1,"take_units":"10"}}' --op='{"take":{"offer_id":2}}' --from bob
 dysond tx whaleswap cancel-offer --offer-id=2 --from bob
 ```
 
@@ -339,8 +340,8 @@ def open_auc(seller, bid_denom, sell_denom, sell_amt):
 - `test_add_liquidity_owner_only`: owner add succeeds (refunds possible in v3); non-owner add fails
 - `test_remove_liquidity_partial_keeps_reserves_positive`: proportional exit (v2) and band-aware exit (v3); rejects if would zero a reserve (partial)
 - `test_remove_liquidity_full_exit_deletes_pool`: burn all shares → pays full reserves and removes pool
-- `test_pool_swap_v2_single_pool`: in/out denoms enforced; out > 0; price stays valid; min_out honored
-- `test_pool_swap_v3_single_pool`: band respected; Lcur guard; out > 0
+- `test_make_trade_swap_v2_single_pool`: in/out denoms enforced; out > 0; price stays valid; min_out honored
+- `test_make_trade_swap_v3_single_pool`: band respected; Lcur guard; out > 0
 - `test_fees_accrue_to_pool`: perform swaps; assert `pool.fees_earned` increases and denoms/amounts sane
 - `test_amm_invariant_error_context_on_bad_update`: craft invalid UpdatePoolConfig to trigger invariant failure; assert raw_log includes contextual Wrapf message (e.g., “AMM invariant after UpdatePoolConfig: pool_id=…”)
 - REST smoke:
@@ -350,10 +351,10 @@ def open_auc(seller, bid_denom, sell_denom, sell_amt):
 
 ### Orderbook e2e (tests/whaleswap/orderbook/)
 - `test_make_offer_normal_escrows_have`: maker creates solid→solid; module escrow balance increases; OffersByOwner shows open
-- `test_take_offer_settles_and_closes`: batch take fully; Trade recorded; offer status=closed; reverse indexes removed
+- `test_make_trade_take_settles_and_closes`: batch take fully via MakeTrade; Trade recorded; offer status=closed; reverse indexes removed
 - `test_cancel_offer_refunds_normal_have`: cancel open normal offer → refund solid have to maker; EventOfferCancelled
 - `test_make_offer_liquid_have_pfand_locked`: require pfand from params; liquid have accepted; pfand locked event; no have escrow
-- `test_take_offer_liquid_have_path`: taker pays want (base+liquid mix); burns maker L(have); pfand released on close; Trade.Received uses base-have denom
+- `test_make_trade_take_liquid_have_path`: taker pays want (base+liquid mix) via MakeTrade; burns maker L(have); pfand released on close; Trade.Received uses base-have denom
 - `test_third_party_cancel_liquid_offer_if_maker_lacks_liquid`: simulate maker lacks ≥1 unit L(have); third-party cancel succeeds; pfand to closer
 - `test_validate_denoms_and_reject_liquid_want`: invalid denoms rejected; liquid want rejected, liquid have allowed
 - `test_offers_by_owner_status_validation`: unknown status → error; valid statuses paginate correctly

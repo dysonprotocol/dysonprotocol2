@@ -1,9 +1,13 @@
-### Goals
-- Support per-leg constraints: exact-in (`swap_in`), exact-out (`swap_out`), or both (rate constraint).
-- Support Tx-level caps and guarantees: `max_input[]` and `min_output[]` (both repeated).
+### Implementation Status: COMPLETED
 
-### Proto changes
-- MsgPoolSwap
+MsgPoolSwap has been removed and replaced with MsgMakeTrade, which provides all the functionality described in this document.
+
+### Goals (ACHIEVED)
+- Support per-leg constraints: exact-in (`swap_in`), exact-out (`swap_out`), or both (rate constraint). ✓
+- Support Tx-level caps and guarantees: `max_input[]` and `min_output[]` (both repeated). ✓
+
+### Proto changes (COMPLETED)
+- MsgMakeTrade (replaces MsgPoolSwap)
   - Keep `input[]` as deprecated alias of caps (back-compat). Add `max_input[]` (new).
   - Enforce caps as the per-denom minimum of `input[]` and `max_input[]` when both provided.
   - Keep `min_output[]` (vector slippage guarantee).
@@ -49,7 +53,7 @@
   - End-of-tx guarantee vector: credits[d] ≥ min_output[d] for all denom entries.
   - Missing denom has no guarantee.
 
-### Keeper implementation (msg_pool_swap.go)
+### Keeper implementation (msg_make_trade.go and trade_helpers.go)
 - Parse caps: build combined caps map from `input[]` and `max_input[]` (min-merge).
 - For each leg:
   - Validate leg (at least one of `swap_in`/`swap_out` set; denoms match pool reserves; amounts > 0).
@@ -100,8 +104,8 @@
   - Circular-profit, no inputs: already covered; ensure no trader debits and positive credits.
   - v3 exact-out: within band, moderate sizes; assert no panic and constraints enforced.
 
-### Rollout
-- Update proto (new field 5); run “make proto-gen install”.
-- Implement leg exact-out path and “both fields” constraint checks; keep reserve/band safety checks.
-- Update autocli; add docs and examples.
-- Add focused tests; run targeted pytest to avoid full suite slowness.
+### Rollout (COMPLETED)
+- ✓ Proto updated with MsgMakeTrade; "make proto-gen install" run.
+- ✓ Leg exact-out path and "both fields" constraint checks implemented in trade_helpers.go.
+- ✓ Autocli updated with MakeTrade commands; docs and examples added.
+- ✓ Tests added and passing; full suite runs successfully.

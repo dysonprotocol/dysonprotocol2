@@ -72,7 +72,6 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx sdkclient.Context, mux
 func (am AppModule) GetTxCmd() *cobra.Command {
 	root := &cobra.Command{Use: whaleswap.ModuleName}
 	// Attach custom CLI where we need richer flag parsing than autocli supports
-	root.AddCommand(whaleswapcli.CmdTakeOffer())
 	root.AddCommand(whaleswapcli.CmdCreatePool())
 	root.AddCommand(whaleswapcli.CmdUpdatePoolConfig())
 	root.AddCommand(whaleswapcli.CmdCoverPosition())

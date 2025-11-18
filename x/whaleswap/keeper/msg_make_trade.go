@@ -286,7 +286,6 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 	// Enforce caps on NET debits per denom: need = max(0, inputs[trader]-outputs[trader])
 	traderInputs := inputsByAddr[traderBech]
 	traderOutputs := outputsByAddr[traderBech]
-	// Build a quick map of input amounts by denom for iteration
 	for _, c := range traderInputs {
 		outAmt := traderOutputs.AmountOf(c.Denom)
 		need := c.Amount.Sub(outAmt)
@@ -381,19 +380,4 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 
 	logger.Info("MakeTrade completed successfully", "trade_id", tradeId, "trader_inputs", finalTraderInputs, "trader_outputs", finalTraderOutputs)
 	return &whaleswapv1.MsgMakeTradeResponse{TradeId: tradeId, TraderInputs: finalTraderInputs, TraderOutputs: finalTraderOutputs}, nil
-}
-
-// executeSwapLegAndPersist mirrors one-leg logic from PoolSwap, updating pool and recording trade.
-func (k Keeper) executeSwapLegAndPersist(ctx context.Context, trader string, leg *whaleswapv1.SwapLeg) (in sdk.Coin, out sdk.Coin, err error) {
-	// Compose a synthetic one-leg message and call the internal logic by adapting msg_pool_swap.go code
-	// For brevity, we call the existing PoolSwap with a single leg and no caps/min, then compute delta from response
-	// but to avoid a second settlement, we inline minimal logic would be ideal. Here we do a minimal safe approach:
-	// Inline: fetch pool and follow the same math as msg_pool_swap.go for a single leg.
-	// To keep this edit small, we reuse the existing helper by forking the core; for now, return an error to avoid duplication.
-	return sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "executeSwapLegAndPersist not yet wired")
-}
-
-// executeTakeItemAndAggregate applies one orderbook take into aggregators, updating offers and recording trade.
-func (k Keeper) executeTakeItemAndAggregate(ctx context.Context, taker string, item *whaleswapv1.TakeItem, addIn func(string, sdk.Coin), addOut func(string, sdk.Coin)) error {
-	return cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "executeTakeItemAndAggregate not yet wired")
 }

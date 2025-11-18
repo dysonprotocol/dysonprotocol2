@@ -27,7 +27,7 @@
       - outputsByAddr[taker] += have or base(have) if liquid
       - inputsByAddr[maker] += liquidHave (for burn)
       - later netting + module cover handled at end (see below)
-  - Shared settlement aggregator (unifies PoolSwap and TakeOffer paths):
+  - Shared settlement aggregator (unified implementation in MsgMakeTrade):
     - inputsByAddr: map[address]Coins (non-negative only)
     - outputsByAddr: map[address]Coins (non-negative only)
     - helpers:
@@ -58,9 +58,7 @@
       - wsMoveCoins(ctx, inputsByAddr→[]Input, outputsByAddr→[]Output)
     - Invariants: call AMM and orderbook invariants (reuse existing checks)
     - Response: amount_out = outputsByAddr[trader]
-  - Refactor MsgPoolSwap and MsgTakeOffer to use the same executors and aggregator:
-    - PoolSwap: run swap legs, convert moduleDelta to aggregator entries for module/trader, enforce caps + min_output, then wsMoveCoins
-    - TakeOffer: build maker/taker outputs/inputs as today via executors and aggregator, then wsMoveCoins
+  - **Completed**: MsgPoolSwap and MsgTakeOffer have been removed. MsgMakeTrade is now the unified interface for all trading operations (pool swaps, orderbook takes, and future auction redemptions).
   - Events
     - Keep per-leg EventPoolSwap and EventTradeRecorded
     - Offers keep EventOfferTaken, PFAND events as today
@@ -94,10 +92,10 @@
   - Multi-maker payouts and liquid-have burn path within single settlement
 
 - Migration and rollout
-  - Keep existing MsgPoolSwap and MsgTakeOffer; add MsgMakeTrade
-  - Refactor internals to shared executors/aggregator without breaking existing behavior
-  - Regenerate protos: make proto-gen install
-  - Update docs and CLI help with mixed examples
+  - **Completed**: MsgPoolSwap and MsgTakeOffer have been removed and replaced with MsgMakeTrade
+  - Internals use shared executors/aggregator (trade_helpers.go)
+  - Protos regenerated and installed
+  - Docs and CLI help updated with MakeTrade examples
 
   ### Edge cases and undefined behavior (with fixes)
 
@@ -221,13 +219,15 @@
 
 # New spec
 
-Here’s a precise, implementation-ready spec to (re)build MakeTrade cleanly, using the existing PoolSwap and TakeOffer logic as the source of truth, with a path to unify all three.
+**Implementation Status: COMPLETED**
+
+This spec documents the completed MsgMakeTrade implementation, which has replaced MsgPoolSwap and MsgTakeOffer as the unified trading interface.
 
 ### Goals
 - Implement MsgMakeTrade that can mix pool swap legs and orderbook take items in any order.
 - Aggregate all effects and do one settlement via wsMoveCoins at the end.
 - Enforce per-denom max_input (caps) over aggregated debits; enforce min_output over aggregated credits.
-- Keep PoolSwap and TakeOffer as-is for now (reference), but structure MakeTrade using extracted helpers so all three can converge onto the same core functions next.
+- **Completed**: MsgMakeTrade is now the only trading interface; PoolSwap and TakeOffer have been removed.
 
 ### Message and CLI
 - Protobuf: already defined; keep as is.
@@ -378,7 +378,7 @@ Here’s a precise, implementation-ready spec to (re)build MakeTrade cleanly, us
   - `test_cli_metrics_liquid_backing_smoke.py`: verifies `escrowed_liquid_coins == 900` per base denom after setup and module holds no liquid.
   - PFAND release on close (existing): now passes with invariant redesign.
 
-These functions are shared across MakeTrade, and (in the second phase) will also be used by PoolSwap and TakeOffer by refactoring them to orchestrate the same helpers rather than re-implementing logic.
+These functions are the core implementation of MsgMakeTrade and provide all trading functionality (pool swaps and orderbook takes).
 
 ### Error Text Uniformity (do not change)
 - "operations must be non-empty"
@@ -429,17 +429,16 @@ These functions are shared across MakeTrade, and (in the second phase) will also
 - invariants hold after MakeTrade
 - 50 small ops complete within a tx (large batch gas but not timing out)
 
-### Phase 2 (refactor to unify all three)
-- Update `MsgPoolSwap` handler to:
-  - For each leg: call tradeApplySwapLeg for math and events
-  - Use deltaByDenom → convert to inputs/outputs like MakeTrade
-  - Enforce caps (msg.MaxInput) and min_output; single wsMoveCoins; invariants
-- Update `MsgTakeOffer` handler to:
-  - For each item: call tradeApplyTakeItem and accumulate into inputs/outputs
-  - Net, cover, single wsMoveCoins, burn liquid, invariants
-- Outcome: all three use the same helpers. PoolSwap/TakeOffer will then be thin orchestration wrappers (just like MakeTrade).
-
-This spec preserves original functions as references, while delivering a clean MakeTrade and a clear path to unify PoolSwap/TakeOffer to the same core helpers.
+### Phase 2 (COMPLETED - unification achieved)
+- **Status**: MsgPoolSwap and MsgTakeOffer have been removed entirely
+- MsgMakeTrade is now the sole trading interface
+- All trading logic uses shared helpers in trade_helpers.go:
+  - tradeApplySwapLeg: pool swap execution with v2/v3 math
+  - tradeApplyTakeItem: orderbook take execution with unit math and pfand
+  - tradeNetAndCover: netting and coverage logic
+  - tradeBurnModuleLiquid: liquid denom burning
+  - wsMoveCoins: single aggregated settlement
+- Outcome: unified implementation with no duplication
 
 ## TODO
 [1 tool called]

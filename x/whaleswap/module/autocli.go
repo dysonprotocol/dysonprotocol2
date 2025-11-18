@@ -198,34 +198,11 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "PoolSwap",
-					Use:       "swap --max-input <coin> [--max-input <coin> ...] --legs '<json>' [--min-output <coin> ...]",
-					Short:     "Aggregate multi-leg swaps across pools with end-of-tx settlement",
-					Long: "Execute an aggregated swap defined by arbitrary legs. No pre-escrow occurs; caps in --max-input are enforced only at the end. " +
-						"Legs may reuse pools, form cycles, and are simulated on pool snapshots; fees accrue per pool. Final minimums are checked via --min-output coins.\n\n" +
-						"--legs accepts either a JSON array or multiple flags. Each leg may specify swap_in (exact-in), swap_out (exact-out), or both (rate constraint).\n" +
-						"Example leg: '{\"pool_id\":1,\"swap_in\":{\"denom\":\"udys\",\"amount\":\"100\"}}' or '{\"pool_id\":1,\"swap_out\":{\"denom\":\"ufoo\",\"amount\":\"90\"}}'.",
-					Example: "dysond tx whaleswap swap --max-input 100udys --legs '[{\"pool_id\":1,\"swap_in\":{\"denom\":\"udys\",\"amount\":\"100\"}}]' --min-output 90ufoo\n" +
-						"dysond tx whaleswap swap --max-input 100udys --max-input 50ufoo --legs '[{\"pool_id\":1,\"swap_in\":{\"denom\":\"udys\",\"amount\":\"100\"}},{\"pool_id\":2,\"swap_out\":{\"denom\":\"ubar\",\"amount\":\"120\"}}]'",
-					FlagOptions: map[string]*autocliv1.FlagOptions{
-						"max_input":  {Name: "max-input", Usage: "Per-denom debit cap (repeatable), e.g. 100udys"},
-						"legs":       {Name: "legs", Usage: "JSON array or repeated flag of legs allowing swap_in and/or swap_out"},
-						"min_output": {Name: "min-output", Usage: "Final minimum credits (repeatable), e.g. 90ufoo"},
-					},
-				},
-				{
 					RpcMethod: "MakeOffer",
 					Use:       "make-offer --have=<amountdenom> --want=<amountdenom> [--settlement-mode=<escrow|liquid>]",
 					Short:     "Create an orderbook offer (escrow or liquid mode)",
 					Long:      "Create an offer. ESCROW mode escrows the base 'have' in the module. LIQUID mode locks PFAND per params and settles from maker balance on take.",
 					Example:   "dysond tx whaleswap make-offer --have=100udys --want=50ufoo --settlement-mode=liquid",
-				},
-				{
-					RpcMethod: "TakeOffer",
-					Use:       "take-offer --trades='[{\"offer_id\":1,\"take_units\":\"10\"}]'",
-					Short:     "Take one or more offers (batch)",
-					Long:      "Execute one or more takes in a single transaction. In LIQUID mode, maker must have sufficient base have at take; PFAND is released on full fill.",
-					Example:   "dysond tx whaleswap take-offer --trades='[{\"offer_id\":1,\"take_units\":\"10\"}]'",
 				},
 				{
 					RpcMethod: "CancelOffer",

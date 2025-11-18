@@ -343,11 +343,9 @@
       {"type":"file","name":"dysonprotocol.whaleswap.v1.MakeTrade.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.OpenAuction.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.OpenPosition.json"},
-      {"type":"file","name":"dysonprotocol.whaleswap.v1.PoolSwap.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.RedeemAuction.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.RemoveCollateral.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.RemoveLiquidity.json"},
-      {"type":"file","name":"dysonprotocol.whaleswap.v1.TakeOffer.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.UpdateParams.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.UpdatePoolConfig.json"},
       {"type":"file","name":"ibc.applications.interchain_accounts.controller.v1.RegisterInterchainAccount.json"},
@@ -389,5 +387,5 @@
     ]}
   ]}
 ,
-  {"type":"report","directories":3,"files":383}
+  {"type":"report","directories":3,"files":381}
 ]

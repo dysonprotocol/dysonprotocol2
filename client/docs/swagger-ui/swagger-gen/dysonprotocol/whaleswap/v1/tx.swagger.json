@@ -409,39 +409,6 @@
         ]
       }
     },
-    "dysonprotocol.whaleswap.v1.MsgPoolSwap": {
-      "post": {
-        "summary": "*\nPoolSwap executes one or more exact-in or exact-out pool swap legs with a\nsingle end-of-tx settlement. Applies output-side fees per leg and enforces\naggregate max_input caps and min_output guarantees.",
-        "operationId": "dysonprotocol.whaleswap.v1.MsgPoolSwap",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgPoolSwapResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/grpc.gateway.runtime.Error"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgPoolSwap"
-            }
-          }
-        ],
-        "tags": [
-          "Msg"
-        ]
-      }
-    },
     "dysonprotocol.whaleswap.v1.MsgRedeemAuction": {
       "post": {
         "summary": "*\nRedeemAuction lets the current NFT owner redeem when no bid is active;\nburns the NFT and returns escrow. If owner != original seller and a\nvaluation exists in bid_denom, a trade record is emitted.",
@@ -533,39 +500,6 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgRemoveLiquidity"
-            }
-          }
-        ],
-        "tags": [
-          "Msg"
-        ]
-      }
-    },
-    "dysonprotocol.whaleswap.v1.MsgTakeOffer": {
-      "post": {
-        "summary": "*\nTakeOffer executes one or more orderbook takes with netting and settlement.",
-        "operationId": "dysonprotocol.whaleswap.v1.MsgTakeOffer",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgTakeOfferResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/grpc.gateway.runtime.Error"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgTakeOffer"
             }
           }
         ],
@@ -1190,49 +1124,6 @@
         }
       }
     },
-    "dysonprotocol.whaleswap.v1.MsgPoolSwap": {
-      "type": "object",
-      "properties": {
-        "trader": {
-          "type": "string",
-          "description": "Account initiating the swap; debited/credited on net settlement."
-        },
-        "max_input": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          },
-          "description": "End-of-tx debit caps per denom (vector cap). Missing denom implies 0.\nApplied after aggregating all legs; tx fails if any denom's required debit\nexceeds its cap."
-        },
-        "legs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.SwapLeg"
-          },
-          "description": "Arbitrary set of swap legs; order does not need to be contiguous by denom.\nOutput-side fee is applied per leg based on the output denom."
-        },
-        "min_output": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          },
-          "description": "Final minimum outputs required per denom after aggregation."
-        }
-      },
-      "description": "*\nPoolSwap executes one or more exact-in or exact-out pool swap legs with a\nsingle end-of-tx settlement. Applies output-side fees per leg and enforces\naggregate max_input caps and min_output guarantees.\n\nBehavior:\n- Per-leg execution: for each leg, validates the pool/denoms and computes\n  the out amount using concentrated-liquidity band math (when configured) or\n  constant-product math, applies output-side fee based on the output denom,\n  and updates pool reserves.\n- Aggregate constraints: after all legs, enforces per-denom debit caps\n  (max_input) and minimum outputs (min_output), then performs a single bank\n  move between trader and module for the net debits/credits.\n- Invariants and recording: asserts AMM and module invariants and records a\n  single Trade containing all operations.\n\nValidation:\n- legs must be non-empty; each leg must specify exactly one of swap_in or\n  swap_out with a positive amount.\n- Pool must exist and have exactly two reserves; input/output denoms must be\n  present in the pool.\n- Concentrated-liquidity: resulting price must remain within [min_price,\n  max_price]; exact-out must not exceed band capacity.\n- Constant-product: swaps must not deplete any reserve; exact-out must not\n  exceed capacity.\n- Aggregate: required debits must not exceed max_input caps; final credits\n  must satisfy min_output per denom.\n\nEmits:\n- EventPoolSwap per executed leg (with pool_id, trade_id, operation_index)\n  via recordTradeWithOperations\n- EventTradeRecorded once after all legs are recorded\n\nReturns:\n- amount_out: total coins credited to the trader across all legs."
-    },
-    "dysonprotocol.whaleswap.v1.MsgPoolSwapResponse": {
-      "type": "object",
-      "properties": {
-        "amount_out": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          },
-          "description": "Total coins credited to the trader after aggregation across all legs."
-        }
-      }
-    },
     "dysonprotocol.whaleswap.v1.MsgRedeemAuction": {
       "type": "object",
       "properties": {
@@ -1321,42 +1212,6 @@
             "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
           },
           "description": "Coins returned to the caller proportional to the burned shares."
-        }
-      }
-    },
-    "dysonprotocol.whaleswap.v1.MsgTakeOffer": {
-      "type": "object",
-      "properties": {
-        "taker": {
-          "type": "string",
-          "description": "Account executing the takes; all takes execute as this trader."
-        },
-        "trades": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TakeItem"
-          },
-          "description": "List of take operations to execute; must contain at least one item."
-        }
-      },
-      "description": "*\nTakeOffer executes one or more orderbook takes with netting and settlement.\n\nBehavior:\n- Processes multiple take operations in a single transaction with aggregated\nsettlement.\n- For each take: validates offer exists and is open, parses take_units\n(defaults to remaining), computes exchange amounts (required_want =\ntake_units \u00d7 unit_want, deliver_have = take_units \u00d7 unit_have), aggregates\noutputs by address, updates offer state (closes when fully taken), records\noperations.\n- Post-processing: computes maker wants and taker credits, nets taker credits\nagainst maker wants, covers deficits from taker base balance (uses module\nbacking for remaining solid deficits).\n- Settlement: executes batch coin movements via wsMoveCoins for all\nparticipants.\n- PFAND release: when offers close, locked PFAND flows from module to taker.\n- Trade recording: creates single Trade with all operations, indexed by\ntrader/offer.\n\nValidation:\n- Taker address must be valid.\n- Trades list must be non-empty.\n- Each offer must exist and be in open status.\n- Take_units must be valid integer string (positive, \u2264 remaining); empty\ndefaults to remaining.\n- For LIQUID settlement: maker must have sufficient balance for deliver_have.\n- Module must have sufficient backing for any uncovered solid deficits.\n\nEmits:\n- EventOfferTaken for each take (offer_id, trade_id, units_taken)\n- EventTradeRecorded for the batch (trade_id, trader, num_operations)\n- EventPfandReleased for each closed offer (amount, offer_id, trade_id)\n\nReturns:\n- aggregated sent/received totals across all executed takes."
-    },
-    "dysonprotocol.whaleswap.v1.MsgTakeOfferResponse": {
-      "type": "object",
-      "properties": {
-        "sent": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          },
-          "description": "Total coins the taker sent across executed trades (usually want denom)."
-        },
-        "received": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          },
-          "description": "Total coins the taker received across executed trades (usually have denom)."
         }
       }
     },

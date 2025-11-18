@@ -3073,7 +3073,7 @@
           "title": "Optional note (was field 10 in old schema)"
         }
       },
-      "description": "Trade captures a batch of operations executed atomically in a single message.\nOperations are stored in execution order, preserving the exact sequence from\nthe original message (MsgMakeTrade, MsgPoolSwap, MsgTakeOffer,\nMsgRedeemAuction)."
+      "description": "Trade captures a batch of operations executed atomically in a single message.\nOperations are stored in execution order, preserving the exact sequence from\nthe original message (MsgMakeTrade,\nMsgRedeemAuction)."
     },
     "dysonprotocol.whaleswap.v1.TradeMetrics": {
       "type": "object",

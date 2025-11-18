@@ -159,13 +159,6 @@ service Msg {
   rpc RemoveLiquidity(MsgRemoveLiquidity) returns (MsgRemoveLiquidityResponse);
 
   /**
-   * PoolSwap executes one or more exact-in or exact-out pool swap legs with a
-   * single end-of-tx settlement. Applies output-side fees per leg and enforces
-   * aggregate max_input caps and min_output guarantees.
-   */
-  rpc PoolSwap(MsgPoolSwap) returns (MsgPoolSwapResponse);
-
-  /**
    * MakeTrade combines AMM pool swaps and orderbook takes into a single
    * transaction with end-of-tx settlement.
    */
@@ -177,11 +170,6 @@ service Msg {
    * derived via GCD for partial fills.
    */
   rpc MakeOffer(MsgMakeOffer) returns (MsgMakeOfferResponse);
-
-  /**
-   * TakeOffer executes one or more orderbook takes with netting and settlement.
-   */
-  rpc TakeOffer(MsgTakeOffer) returns (MsgTakeOfferResponse);
 
   /**
    * CancelOffer (maker or authorized third party) cancels an open offer and
@@ -508,81 +496,12 @@ message MsgRemoveLiquidityResponse {
   ];
 }
 
-/**
- * PoolSwap executes one or more exact-in or exact-out pool swap legs with a
- * single end-of-tx settlement. Applies output-side fees per leg and enforces
- * aggregate max_input caps and min_output guarantees.
- *
- * Behavior:
- * - Per-leg execution: for each leg, validates the pool/denoms and computes
- *   the out amount using concentrated-liquidity band math (when configured) or
- *   constant-product math, applies output-side fee based on the output denom,
- *   and updates pool reserves.
- * - Aggregate constraints: after all legs, enforces per-denom debit caps
- *   (max_input) and minimum outputs (min_output), then performs a single bank
- *   move between trader and module for the net debits/credits.
- * - Invariants and recording: asserts AMM and module invariants and records a
- *   single Trade containing all operations.
- *
- * Validation:
- * - legs must be non-empty; each leg must specify exactly one of swap_in or
- *   swap_out with a positive amount.
- * - Pool must exist and have exactly two reserves; input/output denoms must be
- *   present in the pool.
- * - Concentrated-liquidity: resulting price must remain within [min_price,
- *   max_price]; exact-out must not exceed band capacity.
- * - Constant-product: swaps must not deplete any reserve; exact-out must not
- *   exceed capacity.
- * - Aggregate: required debits must not exceed max_input caps; final credits
- *   must satisfy min_output per denom.
- *
- * Emits:
- * - EventPoolSwap per executed leg (with pool_id, trade_id, operation_index)
- *   via recordTradeWithOperations
- * - EventTradeRecorded once after all legs are recorded
- *
- * Returns:
- * - amount_out: total coins credited to the trader across all legs.
- */
-message MsgPoolSwap {
-  option (cosmos.msg.v1.signer) = "trader";
-  // Account initiating the swap; debited/credited on net settlement.
-  string trader = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  // End-of-tx debit caps per denom (vector cap). Missing denom implies 0.
-  // Applied after aggregating all legs; tx fails if any denom's required debit
-  // exceeds its cap.
-  repeated cosmos.base.v1beta1.Coin max_input = 2 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
-    (amino.dont_omitempty) = true,
-    (amino.encoding) = "legacy_coins"
-  ];
-  // Arbitrary set of swap legs; order does not need to be contiguous by denom.
-  // Output-side fee is applied per leg based on the output denom.
-  repeated SwapLeg legs = 3 [ (gogoproto.nullable) = false ];
-  // Final minimum outputs required per denom after aggregation.
-  repeated cosmos.base.v1beta1.Coin min_output = 4 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
-    (amino.dont_omitempty) = true,
-    (amino.encoding) = "legacy_coins"
-  ];
-}
 message SwapLeg {
   uint64 pool_id = 1;
-  // Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set.
-  // Use message-level min_output for rate constraints across legs.
+  // Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set (XOR).
+  // Use message-level max_input and min_output for global constraints across legs.
   cosmos.base.v1beta1.Coin swap_in = 2 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin swap_out = 3 [ (gogoproto.nullable) = false ];
-}
-message MsgPoolSwapResponse {
-  // Total coins credited to the trader after aggregation across all legs.
-  repeated cosmos.base.v1beta1.Coin amount_out = 1 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
-    (amino.dont_omitempty) = true,
-    (amino.encoding) = "legacy_coins"
-  ];
 }
 
 // TradeOperation allows mixing pool swap legs, orderbook takes, and auction
@@ -736,73 +655,12 @@ message MsgMakeOffer {
 }
 message MsgMakeOfferResponse { uint64 offer_id = 1; }
 
-/**
- * TakeOffer executes one or more orderbook takes with netting and settlement.
- *
- * Behavior:
- * - Processes multiple take operations in a single transaction with aggregated
- * settlement.
- * - For each take: validates offer exists and is open, parses take_units
- * (defaults to remaining), computes exchange amounts (required_want =
- * take_units × unit_want, deliver_have = take_units × unit_have), aggregates
- * outputs by address, updates offer state (closes when fully taken), records
- * operations.
- * - Post-processing: computes maker wants and taker credits, nets taker credits
- * against maker wants, covers deficits from taker base balance (uses module
- * backing for remaining solid deficits).
- * - Settlement: executes batch coin movements via wsMoveCoins for all
- * participants.
- * - PFAND release: when offers close, locked PFAND flows from module to taker.
- * - Trade recording: creates single Trade with all operations, indexed by
- * trader/offer.
- *
- * Validation:
- * - Taker address must be valid.
- * - Trades list must be non-empty.
- * - Each offer must exist and be in open status.
- * - Take_units must be valid integer string (positive, ≤ remaining); empty
- * defaults to remaining.
- * - For LIQUID settlement: maker must have sufficient balance for deliver_have.
- * - Module must have sufficient backing for any uncovered solid deficits.
- *
- * Emits:
- * - EventOfferTaken for each take (offer_id, trade_id, units_taken)
- * - EventTradeRecorded for the batch (trade_id, trader, num_operations)
- * - EventPfandReleased for each closed offer (amount, offer_id, trade_id)
- *
- * Returns:
- * - aggregated sent/received totals across all executed takes.
- */
-message MsgTakeOffer {
-  option (cosmos.msg.v1.signer) = "taker";
-  // Account executing the takes; all takes execute as this trader.
-  string taker = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  // List of take operations to execute; must contain at least one item.
-  repeated TakeItem trades = 2 [ (gogoproto.nullable) = false ];
-}
 message TakeItem {
   // ID of the offer to take from; offer must exist and be in open status.
   uint64 offer_id = 1;
   // Units to take (sdk.Int string). If empty, take full remaining. Must be
   // positive and ≤ remaining.
   string take_units = 2;
-}
-message MsgTakeOfferResponse {
-
-  // Total coins the taker sent across executed trades (usually want denom).
-  repeated cosmos.base.v1beta1.Coin sent = 1 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
-    (amino.dont_omitempty) = true,
-    (amino.encoding) = "legacy_coins"
-  ];
-  // Total coins the taker received across executed trades (usually have denom).
-  repeated cosmos.base.v1beta1.Coin received = 2 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
-    (amino.dont_omitempty) = true,
-    (amino.encoding) = "legacy_coins"
-  ];
 }
 
 /**

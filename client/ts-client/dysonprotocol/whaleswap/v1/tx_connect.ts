@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { MsgAddCollateral, MsgAddCollateralResponse, MsgAddLiquidity, MsgAddLiquidityResponse, MsgCancelOffer, MsgCancelOfferResponse, MsgClosePosition, MsgClosePositionResponse, MsgCoverPosition, MsgCoverPositionResponse, MsgCreatePool, MsgCreatePoolResponse, MsgFinalizeLiquidation, MsgFinalizeLiquidationResponse, MsgInitializeLiquidation, MsgInitializeLiquidationResponse, MsgMakeOffer, MsgMakeOfferResponse, MsgMakeTrade, MsgMakeTradeResponse, MsgOpenAuction, MsgOpenAuctionResponse, MsgOpenPosition, MsgOpenPositionResponse, MsgPoolSwap, MsgPoolSwapResponse, MsgRedeemAuction, MsgRedeemAuctionResponse, MsgRemoveCollateral, MsgRemoveCollateralResponse, MsgRemoveLiquidity, MsgRemoveLiquidityResponse, MsgTakeOffer, MsgTakeOfferResponse, MsgUpdateParams, MsgUpdateParamsResponse, MsgUpdatePoolConfig, MsgUpdatePoolConfigResponse } from "./tx_pb.js";
+import { MsgAddCollateral, MsgAddCollateralResponse, MsgAddLiquidity, MsgAddLiquidityResponse, MsgCancelOffer, MsgCancelOfferResponse, MsgClosePosition, MsgClosePositionResponse, MsgCoverPosition, MsgCoverPositionResponse, MsgCreatePool, MsgCreatePoolResponse, MsgFinalizeLiquidation, MsgFinalizeLiquidationResponse, MsgInitializeLiquidation, MsgInitializeLiquidationResponse, MsgMakeOffer, MsgMakeOfferResponse, MsgMakeTrade, MsgMakeTradeResponse, MsgOpenAuction, MsgOpenAuctionResponse, MsgOpenPosition, MsgOpenPositionResponse, MsgRedeemAuction, MsgRedeemAuctionResponse, MsgRemoveCollateral, MsgRemoveCollateralResponse, MsgRemoveLiquidity, MsgRemoveLiquidityResponse, MsgUpdateParams, MsgUpdateParamsResponse, MsgUpdatePoolConfig, MsgUpdatePoolConfigResponse } from "./tx_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -185,20 +185,6 @@ export const Msg = {
     },
     /**
      * *
-     * PoolSwap executes one or more exact-in or exact-out pool swap legs with a
-     * single end-of-tx settlement. Applies output-side fees per leg and enforces
-     * aggregate max_input caps and min_output guarantees.
-     *
-     * @generated from rpc dysonprotocol.whaleswap.v1.Msg.PoolSwap
-     */
-    poolSwap: {
-      name: "PoolSwap",
-      I: MsgPoolSwap,
-      O: MsgPoolSwapResponse,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * *
      * MakeTrade combines AMM pool swaps and orderbook takes into a single
      * transaction with end-of-tx settlement.
      *
@@ -222,18 +208,6 @@ export const Msg = {
       name: "MakeOffer",
       I: MsgMakeOffer,
       O: MsgMakeOfferResponse,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * *
-     * TakeOffer executes one or more orderbook takes with netting and settlement.
-     *
-     * @generated from rpc dysonprotocol.whaleswap.v1.Msg.TakeOffer
-     */
-    takeOffer: {
-      name: "TakeOffer",
-      I: MsgTakeOffer,
-      O: MsgTakeOfferResponse,
       kind: MethodKind.Unary,
     },
     /**
