@@ -12,7 +12,7 @@ import (
 
 // WhaleswapLeverageUpgradeName defines the on-chain upgrade name for the next
 // whaleswap migration (leverage/interest schema overhaul).
-const WhaleswapLeverageUpgradeName = "whaleswap-leverage-interest-v1"
+const WhaleswapLeverageUpgradeName = "whaleswap-v2"
 
 func (app *DysApp) RegisterUpgradeHandlers() {
 	app.Logger().Info("RegisterUpgradeHandlers: installing upgrade handlers")
