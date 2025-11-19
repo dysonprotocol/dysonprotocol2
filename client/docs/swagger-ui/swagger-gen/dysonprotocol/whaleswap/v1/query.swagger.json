@@ -2219,7 +2219,7 @@
         },
         "collateral_returned": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "description": "\u2550\u2550\u2550\u2550\u2550 FINAL COLLATERAL RETURNED \u2550\u2550\u2550\u2550\u2550\nThe amount of collateral returned to the user when the position was fully\nclosed. For partial closes, see\ntotal_collateral_returned_in_partial_closes? No, let's just track total\nreturned. Actually, let's just track the LAST close returned amount, or\ncumulative? The request was \"collateral_returned field\". In the closed\nposition json, it was 0 because all was swapped. If we track cumulative\ncollateral returned, we can see how much came back."
+          "description": "\u2550\u2550\u2550\u2550\u2550 FINAL COLLATERAL RETURNED \u2550\u2550\u2550\u2550\u2550\nThe amount of collateral returned to the user when the position was fully\nclosed. For partial closes, this accumulates the returned amount."
         }
       },
       "description": "LeveragePosition represents an active leverage position for a trader."
@@ -2249,11 +2249,6 @@
         "updated_height": {
           "type": "string",
           "format": "uint64"
-        },
-        "updated_timestamp": {
-          "type": "string",
-          "format": "date-time",
-          "title": "Deprecated for backward-compatible JSON decoding of old genesis"
         },
         "created_height": {
           "type": "string",
@@ -2356,32 +2351,6 @@
         "shares_denom": {
           "type": "string"
         },
-        "min_price": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          },
-          "description": "Deprecated legacy price band fields retained for decoding old genesis\nexports. Migration logic ignores their values and clears them."
-        },
-        "max_price": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
-          }
-        },
-        "block_height": {
-          "type": "string",
-          "format": "uint64",
-          "title": "Deprecated legacy fields for backward-compatible JSON decoding of old\ngenesis"
-        },
-        "created": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updated": {
-          "type": "string",
-          "format": "date-time"
-        },
         "created_height": {
           "type": "string",
           "format": "uint64",
@@ -2437,13 +2406,6 @@
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
           "description": "\u2550\u2550\u2550\u2550\u2550 PER-POOL LEVERAGE RISK PARAMETERS (per-denom) \u2550\u2550\u2550\u2550\u2550\nMinimum collateral ratio required at position open per reserve denom\n(exactly two, canonical order). Each amount is a decimal string (> 1)."
-        },
-        "max_leverage_ratio": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
-          },
-          "description": "Deprecated: maximum leverage ratio per reserve denom.\nThis field is ignored by the keeper; risk is enforced via\nmin_collateral_ratio, liquidation_threshold, and max_borrow_percent.\nKept for backward-compatible JSON/proto decoding of older clients."
         },
         "liquidation_threshold": {
           "type": "array",
@@ -2995,47 +2957,6 @@
         "trade_id": {
           "type": "string",
           "format": "uint64"
-        },
-        "offer_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "\u2550\u2550\u2550\u2550\u2550 DEPRECATED FIELDS (fields 2-10) - for migration compatibility \u2550\u2550\u2550\u2550\u2550\nThese fields are kept for backwards compatibility. Migration logic should\nread these and populate the new fields (20+) below.\nDeprecated: use operations field 23 and trader field 20 instead"
-        },
-        "taker": {
-          "type": "string",
-          "title": "Deprecated: use trader field 20 instead"
-        },
-        "height_deprecated": {
-          "type": "string",
-          "format": "uint64",
-          "title": "Deprecated: use height field 21 instead"
-        },
-        "timestamp_deprecated": {
-          "type": "string",
-          "format": "date-time",
-          "title": "Deprecated: use timestamp field 22 instead"
-        },
-        "sent": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "title": "Deprecated: use total_sent field 24 instead"
-        },
-        "received": {
-          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "title": "Deprecated: use total_received field 25 instead"
-        },
-        "pool_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "Deprecated: use operations field 23 to infer pool swaps"
-        },
-        "auction_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "Deprecated: use operations field 23 to infer auction redemptions"
-        },
-        "note_deprecated": {
-          "type": "string",
-          "title": "Deprecated: use note field 26 instead"
         },
         "trader": {
           "type": "string",

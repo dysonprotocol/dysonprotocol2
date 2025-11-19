@@ -21,14 +21,7 @@ func (app *DysApp) RegisterUpgradeHandlers() {
 	app.UpgradeKeeper.SetUpgradeHandler(
 		WhaleswapLeverageUpgradeName,
 		func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-			app.Logger().Info("Executing whaleswap leverage-interest migration", "name", plan.Name, "height", plan.Height)
-
-			// Run whaleswap state migration
-			if err := app.WhaleswapKeeper.MigrateWhaleswapLeverageInterest(ctx); err != nil {
-				app.Logger().Error("Whaleswap migration failed", "name", plan.Name, "height", plan.Height, "err", err)
-				return fromVM, err
-			}
-			app.Logger().Info("Whaleswap migration completed", "name", plan.Name, "height", plan.Height)
+			app.Logger().Info("Executing whaleswap upgrade", "name", plan.Name, "height", plan.Height)
 
 			// Run module migrations
 			newVM, err := app.ModuleManager.RunMigrations(ctx, app.Configurator(), fromVM)

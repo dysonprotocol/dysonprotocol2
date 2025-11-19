@@ -13,7 +13,6 @@ import (
 
 // InitGenesis initializes state from genesis
 func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
-	gs.Params = types.MigrateParams(gs.Params)
 	// params
 	if err := k.SetParams(ctx, gs.Params); err != nil {
 		panic(err)
@@ -147,84 +146,16 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
 			maxTradeID = t.TradeId
 		}
 		// ONE-TIME MIGRATION: deprecated fields → new fields
-		// Migrate trader (field 3 → field 20)
-		if t.Trader == "" && t.Taker != "" {
-			t.Trader = t.Taker
-		}
-		// Migrate height (field 4 → field 21)
-		if t.Height == 0 && t.HeightDeprecated > 0 {
-			t.Height = t.HeightDeprecated
-		}
-		// Migrate timestamp (field 5 → field 22)
-		if t.Timestamp == nil && t.TimestampDeprecated != nil {
-			t.Timestamp = t.TimestampDeprecated
-		}
-		// Migrate sent (field 6 → field 24)
-		if len(t.TotalSent) == 0 && t.Sent.IsValid() && t.Sent.Amount.IsPositive() {
-			t.TotalSent = sdk.NewCoins(t.Sent)
-		}
-		// Migrate received (field 7 → field 25)
-		if len(t.TotalReceived) == 0 && t.Received.IsValid() && t.Received.Amount.IsPositive() {
-			t.TotalReceived = sdk.NewCoins(t.Received)
-		}
-		// Migrate note (field 10 → field 26)
-		if t.Note == "" && t.NoteDeprecated != "" {
-			t.Note = t.NoteDeprecated
-		}
-		// Reconstruct operations from deprecated fields (offer_id, pool_id, auction_id)
-		if len(t.Operations) == 0 {
-			operations := []whaleswapv1.TradeOperation{}
-			// Create operations based on deprecated context fields
-			// If offer_id is set, create a Take operation
-			if t.OfferId > 0 {
-				takeOp := whaleswapv1.TradeOperation{
-					Op: &whaleswapv1.TradeOperation_Take{
-						Take: &whaleswapv1.TakeItem{OfferId: t.OfferId},
-					},
-				}
-				// Populate sent/received if available
-				if t.Sent.IsValid() {
-					takeOp.Sent = t.Sent
-				}
-				if t.Received.IsValid() {
-					takeOp.Received = t.Received
-				}
-				operations = append(operations, takeOp)
-			}
-			// If pool_id is set, create a Swap operation
-			if t.PoolId > 0 {
-				swapOp := whaleswapv1.TradeOperation{
-					Op: &whaleswapv1.TradeOperation_Swap{
-						Swap: &whaleswapv1.SwapLeg{PoolId: t.PoolId},
-					},
-				}
-				// Populate sent/received if available
-				if t.Sent.IsValid() {
-					swapOp.Sent = t.Sent
-				}
-				if t.Received.IsValid() {
-					swapOp.Received = t.Received
-				}
-				operations = append(operations, swapOp)
-			}
-			// If auction_id is set, create an Auction operation
-			if t.AuctionId > 0 {
-				auctionOp := whaleswapv1.TradeOperation{
-					Op: &whaleswapv1.TradeOperation_Auction{
-						Auction: &whaleswapv1.AuctionRedeem{AuctionId: t.AuctionId},
-					},
-				}
-				// Populate sent/received if available
-				if t.Sent.IsValid() {
-					auctionOp.Sent = t.Sent
-				}
-				if t.Received.IsValid() {
-					auctionOp.Received = t.Received
-				}
-				operations = append(operations, auctionOp)
-			}
-			t.Operations = operations
-		}
+		// Since fields were removed from protobuf, they won't be available on the struct here.
+		// Migration should happen at the JSON decoding level (NormalizeLegacyGenesisJSON).
+		// Here we only validate that the migration was successful.
+
+		// Reconstruct operations from deprecated fields if needed - but fields are gone from struct.
+		// Assuming NormalizeLegacyGenesisJSON handled basic field renames.
+		// If operations are missing but we have context, we can't reconstruct without the fields.
+		// However, since we removed them from proto, we can no longer support migration of
+		// partially-migrated structs in code. The JSON migration MUST have happened before decoding.
+
 		// Validate migrated trade
 		if t.Trader == "" {
 			panic(fmt.Sprintf("genesis: trade %d: trader cannot be empty after migration", t.TradeId))

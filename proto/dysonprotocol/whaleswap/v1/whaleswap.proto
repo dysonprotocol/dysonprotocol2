@@ -26,27 +26,9 @@ message Pool {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
   string shares_denom = 4;
-  reserved 5;
-  reserved "fee_pct";
-  // Deprecated legacy price band fields retained for decoding old genesis
-  // exports. Migration logic ignores their values and clears them.
-  repeated cosmos.base.v1beta1.Coin min_price = 6 [
-    deprecated = true,
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
-  ];
-  repeated cosmos.base.v1beta1.Coin max_price = 7 [
-    deprecated = true,
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
-  ];
-  // Deprecated legacy fields for backward-compatible JSON decoding of old
-  // genesis
-  uint64 block_height = 10 [ deprecated = true ];
-  google.protobuf.Timestamp created = 11
-      [ deprecated = true, (gogoproto.stdtime) = true ];
-  google.protobuf.Timestamp updated = 12
-      [ deprecated = true, (gogoproto.stdtime) = true ];
+  reserved 5, 6, 7, 10, 11, 12, 22;
+  reserved "fee_pct", "min_price", "max_price", "block_height", "created",
+      "updated", "max_leverage_ratio";
 
   // New normalized fields
   uint64 created_height = 28;
@@ -84,16 +66,6 @@ message Pool {
   // Minimum collateral ratio required at position open per reserve denom
   // (exactly two, canonical order). Each amount is a decimal string (> 1).
   repeated cosmos.base.v1beta1.DecCoin min_initial_collateral_ratio = 21 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
-  ];
-
-  // Deprecated: maximum leverage ratio per reserve denom.
-  // This field is ignored by the keeper; risk is enforced via
-  // min_collateral_ratio, liquidation_threshold, and max_borrow_percent.
-  // Kept for backward-compatible JSON/proto decoding of older clients.
-  repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 22 [
-    deprecated = true,
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
   ];
@@ -146,9 +118,8 @@ message OfferData {
   string status = 2; // "open" | "closed" | "cancelled"
   string maker = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   uint64 updated_height = 4;
-  // Deprecated for backward-compatible JSON decoding of old genesis
-  google.protobuf.Timestamp updated_timestamp = 5
-      [ deprecated = true, (gogoproto.stdtime) = true ];
+  reserved 5;
+  reserved "updated_timestamp";
   // New normalized timestamps
   uint64 created_height = 15;
   google.protobuf.Timestamp created_time = 16 [ (gogoproto.stdtime) = true ];
@@ -173,34 +144,9 @@ message OfferData {
 message Trade {
   uint64 trade_id = 1;
 
-  // ═════ DEPRECATED FIELDS (fields 2-10) - for migration compatibility ═════
-  // These fields are kept for backwards compatibility. Migration logic should
-  // read these and populate the new fields (20+) below.
-  // Deprecated: use operations field 23 and trader field 20 instead
-  uint64 offer_id = 2 [ deprecated = true ];
-  // Deprecated: use trader field 20 instead
-  string taker = 3
-      [ deprecated = true, (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  // Deprecated: use height field 21 instead
-  uint64 height_deprecated = 4 [ deprecated = true ];
-  // Deprecated: use timestamp field 22 instead
-  google.protobuf.Timestamp timestamp_deprecated = 5
-      [ deprecated = true, (gogoproto.stdtime) = true ];
-  // Deprecated: use total_sent field 24 instead
-  cosmos.base.v1beta1.Coin sent = 6
-      [ deprecated = true, (gogoproto.nullable) = false ];
-  // Deprecated: use total_received field 25 instead
-  cosmos.base.v1beta1.Coin received = 7
-      [ deprecated = true, (gogoproto.nullable) = false ];
-  // Deprecated: use operations field 23 to infer pool swaps
-  uint64 pool_id = 8 [ deprecated = true ];
-  // Deprecated: use operations field 23 to infer auction redemptions
-  uint64 auction_id = 9 [ deprecated = true ];
-  // Deprecated: use note field 26 instead
-  string note_deprecated = 10 [ deprecated = true ];
-
-  // Reserved field numbers 11-19 for future use
-  reserved 11, 12, 13, 14, 15, 16, 17, 18, 19;
+  reserved 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19;
+  reserved "offer_id", "taker", "height_deprecated", "timestamp_deprecated",
+      "sent", "received", "pool_id", "auction_id", "note_deprecated";
 
   // ═════ NEW FIELDS (fields 20+) ═════
   // Trader address (was taker in old schema, field 3)

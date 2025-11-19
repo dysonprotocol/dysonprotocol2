@@ -157,45 +157,6 @@
                     "trade_id": {
                         "type": "string"
                     },
-                    "offer_id": {
-                        "type": "string",
-                        "description": "\u2550\u2550\u2550\u2550\u2550 DEPRECATED FIELDS (fields 2-10) - for migration compatibility \u2550\u2550\u2550\u2550\u2550 These fields are kept for backwards compatibility. Migration logic should read these and populate the new fields (20+) below. Deprecated: use operations field 23 and trader field 20 instead"
-                    },
-                    "taker": {
-                        "type": "string",
-                        "description": "Deprecated: use trader field 20 instead"
-                    },
-                    "height_deprecated": {
-                        "type": "string",
-                        "description": "Deprecated: use height field 21 instead"
-                    },
-                    "timestamp_deprecated": {
-                        "type": "string",
-                        "description": "Deprecated: use timestamp field 22 instead",
-                        "format": "date-time"
-                    },
-                    "sent": {
-                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false,
-                        "description": "Deprecated: use total_sent field 24 instead"
-                    },
-                    "received": {
-                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-                        "additionalProperties": false,
-                        "description": "Deprecated: use total_received field 25 instead"
-                    },
-                    "pool_id": {
-                        "type": "string",
-                        "description": "Deprecated: use operations field 23 to infer pool swaps"
-                    },
-                    "auction_id": {
-                        "type": "string",
-                        "description": "Deprecated: use operations field 23 to infer auction redemptions"
-                    },
-                    "note_deprecated": {
-                        "type": "string",
-                        "description": "Deprecated: use note field 26 instead"
-                    },
                     "trader": {
                         "type": "string",
                         "description": "\u2550\u2550\u2550\u2550\u2550 NEW FIELDS (fields 20+) \u2550\u2550\u2550\u2550\u2550 Trader address (was taker in old schema, field 3)"

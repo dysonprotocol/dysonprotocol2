@@ -109,21 +109,7 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		pool.Coins = pool.Coins.Add(msg.Amounts...)
 		logger.Info("AddLiquidity unbalanced new reserves", "reserves", pool.Coins)
 
-		// Enforce price band after unbalanced add (if set)
-		if len(pool.MinPrice) == 2 {
-			rBase := pool.Coins.AmountOf(pool.Coins[0].Denom)
-			rQuote := pool.Coins.AmountOf(pool.Coins[1].Denom)
-			minBase := pool.MinPrice.AmountOf(pool.Coins[0].Denom)
-			minQuote := pool.MinPrice.AmountOf(pool.Coins[1].Denom)
-			maxBase := pool.MaxPrice.AmountOf(pool.Coins[0].Denom)
-			maxQuote := pool.MaxPrice.AmountOf(pool.Coins[1].Denom)
-			if rQuote.Mul(minBase).LT(rBase.Mul(minQuote)) {
-				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "resulting price below band after unbalanced add")
-			}
-			if rQuote.Mul(maxBase).GT(rBase.Mul(maxQuote)) {
-				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "resulting price above band after unbalanced add")
-			}
-		}
+
 	} else {
 		// Proportional add: adjust amounts, escrow full, refund excess
 		refund1 := math.NewInt(0)

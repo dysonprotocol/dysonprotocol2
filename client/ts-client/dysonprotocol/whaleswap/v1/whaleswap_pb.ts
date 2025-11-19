@@ -40,42 +40,6 @@ export class Pool extends Message<Pool> {
   sharesDenom = "";
 
   /**
-   * Deprecated legacy price band fields retained for decoding old genesis
-   * exports. Migration logic ignores their values and clears them.
-   *
-   * @generated from field: repeated cosmos.base.v1beta1.Coin min_price = 6 [deprecated = true];
-   * @deprecated
-   */
-  minPrice: Coin[] = [];
-
-  /**
-   * @generated from field: repeated cosmos.base.v1beta1.Coin max_price = 7 [deprecated = true];
-   * @deprecated
-   */
-  maxPrice: Coin[] = [];
-
-  /**
-   * Deprecated legacy fields for backward-compatible JSON decoding of old
-   * genesis
-   *
-   * @generated from field: uint64 block_height = 10 [deprecated = true];
-   * @deprecated
-   */
-  blockHeight = protoInt64.zero;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp created = 11 [deprecated = true];
-   * @deprecated
-   */
-  created?: Timestamp;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp updated = 12 [deprecated = true];
-   * @deprecated
-   */
-  updated?: Timestamp;
-
-  /**
    * New normalized fields
    *
    * @generated from field: uint64 created_height = 28;
@@ -142,17 +106,6 @@ export class Pool extends Message<Pool> {
   minInitialCollateralRatio: DecCoin[] = [];
 
   /**
-   * Deprecated: maximum leverage ratio per reserve denom.
-   * This field is ignored by the keeper; risk is enforced via
-   * min_collateral_ratio, liquidation_threshold, and max_borrow_percent.
-   * Kept for backward-compatible JSON/proto decoding of older clients.
-   *
-   * @generated from field: repeated cosmos.base.v1beta1.DecCoin max_leverage_ratio = 22 [deprecated = true];
-   * @deprecated
-   */
-  maxLeverageRatio: DecCoin[] = [];
-
-  /**
    * Collateral ratio threshold below which position is liquidatable per reserve
    * denom (exactly two, canonical order). Each amount is a decimal string
    * (> 1).
@@ -206,11 +159,6 @@ export class Pool extends Message<Pool> {
     { no: 1, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 2, name: "coins", kind: "message", T: Coin, repeated: true },
     { no: 4, name: "shares_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 6, name: "min_price", kind: "message", T: Coin, repeated: true },
-    { no: 7, name: "max_price", kind: "message", T: Coin, repeated: true },
-    { no: 10, name: "block_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 11, name: "created", kind: "message", T: Timestamp },
-    { no: 12, name: "updated", kind: "message", T: Timestamp },
     { no: 28, name: "created_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 29, name: "created_time", kind: "message", T: Timestamp },
     { no: 30, name: "updated_time", kind: "message", T: Timestamp },
@@ -221,7 +169,6 @@ export class Pool extends Message<Pool> {
     { no: 19, name: "interest_earned", kind: "message", T: Coin, repeated: true },
     { no: 20, name: "total_borrowed", kind: "message", T: Coin, repeated: true },
     { no: 21, name: "min_initial_collateral_ratio", kind: "message", T: DecCoin, repeated: true },
-    { no: 22, name: "max_leverage_ratio", kind: "message", T: DecCoin, repeated: true },
     { no: 23, name: "liquidation_threshold", kind: "message", T: DecCoin, repeated: true },
     { no: 24, name: "max_borrow_percent", kind: "message", T: DecCoin, repeated: true },
     { no: 26, name: "bound_percent", kind: "message", T: DecCoin, repeated: true },
@@ -274,14 +221,6 @@ export class OfferData extends Message<OfferData> {
    * @generated from field: uint64 updated_height = 4;
    */
   updatedHeight = protoInt64.zero;
-
-  /**
-   * Deprecated for backward-compatible JSON decoding of old genesis
-   *
-   * @generated from field: google.protobuf.Timestamp updated_timestamp = 5 [deprecated = true];
-   * @deprecated
-   */
-  updatedTimestamp?: Timestamp;
 
   /**
    * New normalized timestamps
@@ -367,7 +306,6 @@ export class OfferData extends Message<OfferData> {
     { no: 2, name: "status", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "maker", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "updated_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 5, name: "updated_timestamp", kind: "message", T: Timestamp },
     { no: 15, name: "created_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 16, name: "created_time", kind: "message", T: Timestamp },
     { no: 17, name: "updated_time", kind: "message", T: Timestamp },
@@ -412,81 +350,6 @@ export class Trade extends Message<Trade> {
    * @generated from field: uint64 trade_id = 1;
    */
   tradeId = protoInt64.zero;
-
-  /**
-   * ═════ DEPRECATED FIELDS (fields 2-10) - for migration compatibility ═════
-   * These fields are kept for backwards compatibility. Migration logic should
-   * read these and populate the new fields (20+) below.
-   * Deprecated: use operations field 23 and trader field 20 instead
-   *
-   * @generated from field: uint64 offer_id = 2 [deprecated = true];
-   * @deprecated
-   */
-  offerId = protoInt64.zero;
-
-  /**
-   * Deprecated: use trader field 20 instead
-   *
-   * @generated from field: string taker = 3 [deprecated = true];
-   * @deprecated
-   */
-  taker = "";
-
-  /**
-   * Deprecated: use height field 21 instead
-   *
-   * @generated from field: uint64 height_deprecated = 4 [deprecated = true];
-   * @deprecated
-   */
-  heightDeprecated = protoInt64.zero;
-
-  /**
-   * Deprecated: use timestamp field 22 instead
-   *
-   * @generated from field: google.protobuf.Timestamp timestamp_deprecated = 5 [deprecated = true];
-   * @deprecated
-   */
-  timestampDeprecated?: Timestamp;
-
-  /**
-   * Deprecated: use total_sent field 24 instead
-   *
-   * @generated from field: cosmos.base.v1beta1.Coin sent = 6 [deprecated = true];
-   * @deprecated
-   */
-  sent?: Coin;
-
-  /**
-   * Deprecated: use total_received field 25 instead
-   *
-   * @generated from field: cosmos.base.v1beta1.Coin received = 7 [deprecated = true];
-   * @deprecated
-   */
-  received?: Coin;
-
-  /**
-   * Deprecated: use operations field 23 to infer pool swaps
-   *
-   * @generated from field: uint64 pool_id = 8 [deprecated = true];
-   * @deprecated
-   */
-  poolId = protoInt64.zero;
-
-  /**
-   * Deprecated: use operations field 23 to infer auction redemptions
-   *
-   * @generated from field: uint64 auction_id = 9 [deprecated = true];
-   * @deprecated
-   */
-  auctionId = protoInt64.zero;
-
-  /**
-   * Deprecated: use note field 26 instead
-   *
-   * @generated from field: string note_deprecated = 10 [deprecated = true];
-   * @deprecated
-   */
-  noteDeprecated = "";
 
   /**
    * ═════ NEW FIELDS (fields 20+) ═════
@@ -549,15 +412,6 @@ export class Trade extends Message<Trade> {
   static readonly typeName = "dysonprotocol.whaleswap.v1.Trade";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "trade_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 2, name: "offer_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 3, name: "taker", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "height_deprecated", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 5, name: "timestamp_deprecated", kind: "message", T: Timestamp },
-    { no: 6, name: "sent", kind: "message", T: Coin },
-    { no: 7, name: "received", kind: "message", T: Coin },
-    { no: 8, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 9, name: "auction_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-    { no: 10, name: "note_deprecated", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 20, name: "trader", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 21, name: "height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 22, name: "timestamp", kind: "message", T: Timestamp },

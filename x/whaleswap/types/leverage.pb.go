@@ -150,12 +150,7 @@ type LeveragePosition struct {
 	TotalRealizedLoss types.Coin `protobuf:"bytes,31,opt,name=total_realized_loss,json=totalRealizedLoss,proto3" json:"total_realized_loss"`
 	// ═════ FINAL COLLATERAL RETURNED ═════
 	// The amount of collateral returned to the user when the position was fully
-	// closed. For partial closes, see
-	// total_collateral_returned_in_partial_closes? No, let's just track total
-	// returned. Actually, let's just track the LAST close returned amount, or
-	// cumulative? The request was "collateral_returned field". In the closed
-	// position json, it was 0 because all was swapped. If we track cumulative
-	// collateral returned, we can see how much came back.
+	// closed. For partial closes, this accumulates the returned amount.
 	CollateralReturned types.Coin `protobuf:"bytes,32,opt,name=collateral_returned,json=collateralReturned,proto3" json:"collateral_returned"`
 }
 

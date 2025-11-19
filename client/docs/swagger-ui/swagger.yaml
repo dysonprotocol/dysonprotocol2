@@ -6058,12 +6058,6 @@ paths:
                   updated_height:
                     type: string
                     format: uint64
-                  updated_timestamp:
-                    type: string
-                    format: date-time
-                    title: >-
-                      Deprecated for backward-compatible JSON decoding of old
-                      genesis
                   created_height:
                     type: string
                     format: uint64
@@ -6235,12 +6229,6 @@ paths:
                     updated_height:
                       type: string
                       format: uint64
-                    updated_timestamp:
-                      type: string
-                      format: date-time
-                      title: >-
-                        Deprecated for backward-compatible JSON decoding of old
-                        genesis
                     created_height:
                       type: string
                       format: uint64
@@ -6475,12 +6463,6 @@ paths:
                     updated_height:
                       type: string
                       format: uint64
-                    updated_timestamp:
-                      type: string
-                      format: date-time
-                      title: >-
-                        Deprecated for backward-compatible JSON decoding of old
-                        genesis
                     created_height:
                       type: string
                       format: uint64
@@ -6665,12 +6647,6 @@ paths:
                     updated_height:
                       type: string
                       format: uint64
-                    updated_timestamp:
-                      type: string
-                      format: date-time
-                      title: >-
-                        Deprecated for backward-compatible JSON decoding of old
-                        genesis
                     created_height:
                       type: string
                       format: uint64
@@ -6898,12 +6874,6 @@ paths:
                     updated_height:
                       type: string
                       format: uint64
-                    updated_timestamp:
-                      type: string
-                      format: date-time
-                      title: >-
-                        Deprecated for backward-compatible JSON decoding of old
-                        genesis
                     created_height:
                       type: string
                       format: uint64
@@ -7137,12 +7107,6 @@ paths:
                     updated_height:
                       type: string
                       format: uint64
-                    updated_timestamp:
-                      type: string
-                      format: date-time
-                      title: >-
-                        Deprecated for backward-compatible JSON decoding of old
-                        genesis
                     created_height:
                       type: string
                       format: uint64
@@ -7499,60 +7463,6 @@ paths:
                       coins[0].amount.
                   shares_denom:
                     type: string
-                  min_price:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      Deprecated legacy price band fields retained for decoding
-                      old genesis
-
-                      exports. Migration logic ignores their values and clears
-                      them.
-                  max_price:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                  block_height:
-                    type: string
-                    format: uint64
-                    title: >-
-                      Deprecated legacy fields for backward-compatible JSON
-                      decoding of old
-
-                      genesis
-                  created:
-                    type: string
-                    format: date-time
-                  updated:
-                    type: string
-                    format: date-time
                   created_height:
                     type: string
                     format: uint64
@@ -7675,34 +7585,6 @@ paths:
 
                       (exactly two, canonical order). Each amount is a decimal
                       string (> 1).
-                  max_leverage_ratio:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        DecCoin defines a token with a denomination and a
-                        decimal amount.
-
-
-                        NOTE: The amount field is an Dec which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      Deprecated: maximum leverage ratio per reserve denom.
-
-                      This field is ignored by the keeper; risk is enforced via
-
-                      min_collateral_ratio, liquidation_threshold, and
-                      max_borrow_percent.
-
-                      Kept for backward-compatible JSON/proto decoding of older
-                      clients.
                   liquidation_threshold:
                     type: array
                     items:
@@ -7923,62 +7805,6 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    min_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Deprecated legacy price band fields retained for
-                        decoding old genesis
-
-                        exports. Migration logic ignores their values and clears
-                        them.
-                    max_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                    block_height:
-                      type: string
-                      format: uint64
-                      title: >-
-                        Deprecated legacy fields for backward-compatible JSON
-                        decoding of old
-
-                        genesis
-                    created:
-                      type: string
-                      format: date-time
-                    updated:
-                      type: string
-                      format: date-time
                     created_height:
                       type: string
                       format: uint64
@@ -8107,35 +7933,6 @@ paths:
 
                         (exactly two, canonical order). Each amount is a decimal
                         string (> 1).
-                    max_leverage_ratio:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Deprecated: maximum leverage ratio per reserve denom.
-
-                        This field is ignored by the keeper; risk is enforced
-                        via
-
-                        min_collateral_ratio, liquidation_threshold, and
-                        max_borrow_percent.
-
-                        Kept for backward-compatible JSON/proto decoding of
-                        older clients.
                     liquidation_threshold:
                       type: array
                       items:
@@ -8407,62 +8204,6 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    min_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Deprecated legacy price band fields retained for
-                        decoding old genesis
-
-                        exports. Migration logic ignores their values and clears
-                        them.
-                    max_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                    block_height:
-                      type: string
-                      format: uint64
-                      title: >-
-                        Deprecated legacy fields for backward-compatible JSON
-                        decoding of old
-
-                        genesis
-                    created:
-                      type: string
-                      format: date-time
-                    updated:
-                      type: string
-                      format: date-time
                     created_height:
                       type: string
                       format: uint64
@@ -8591,35 +8332,6 @@ paths:
 
                         (exactly two, canonical order). Each amount is a decimal
                         string (> 1).
-                    max_leverage_ratio:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Deprecated: maximum leverage ratio per reserve denom.
-
-                        This field is ignored by the keeper; risk is enforced
-                        via
-
-                        min_collateral_ratio, liquidation_threshold, and
-                        max_borrow_percent.
-
-                        Kept for backward-compatible JSON/proto decoding of
-                        older clients.
                     liquidation_threshold:
                       type: array
                       items:
@@ -8902,62 +8614,6 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    min_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Deprecated legacy price band fields retained for
-                        decoding old genesis
-
-                        exports. Migration logic ignores their values and clears
-                        them.
-                    max_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                    block_height:
-                      type: string
-                      format: uint64
-                      title: >-
-                        Deprecated legacy fields for backward-compatible JSON
-                        decoding of old
-
-                        genesis
-                    created:
-                      type: string
-                      format: date-time
-                    updated:
-                      type: string
-                      format: date-time
                     created_height:
                       type: string
                       format: uint64
@@ -9086,35 +8742,6 @@ paths:
 
                         (exactly two, canonical order). Each amount is a decimal
                         string (> 1).
-                    max_leverage_ratio:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Deprecated: maximum leverage ratio per reserve denom.
-
-                        This field is ignored by the keeper; risk is enforced
-                        via
-
-                        min_collateral_ratio, liquidation_threshold, and
-                        max_borrow_percent.
-
-                        Kept for backward-compatible JSON/proto decoding of
-                        older clients.
                     liquidation_threshold:
                       type: array
                       items:
@@ -9391,62 +9018,6 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    min_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Deprecated legacy price band fields retained for
-                        decoding old genesis
-
-                        exports. Migration logic ignores their values and clears
-                        them.
-                    max_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                    block_height:
-                      type: string
-                      format: uint64
-                      title: >-
-                        Deprecated legacy fields for backward-compatible JSON
-                        decoding of old
-
-                        genesis
-                    created:
-                      type: string
-                      format: date-time
-                    updated:
-                      type: string
-                      format: date-time
                     created_height:
                       type: string
                       format: uint64
@@ -9575,35 +9146,6 @@ paths:
 
                         (exactly two, canonical order). Each amount is a decimal
                         string (> 1).
-                    max_leverage_ratio:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Deprecated: maximum leverage ratio per reserve denom.
-
-                        This field is ignored by the keeper; risk is enforced
-                        via
-
-                        min_collateral_ratio, liquidation_threshold, and
-                        max_borrow_percent.
-
-                        Kept for backward-compatible JSON/proto decoding of
-                        older clients.
                     liquidation_threshold:
                       type: array
                       items:
@@ -9895,62 +9437,6 @@ paths:
                         / coins[0].amount.
                     shares_denom:
                       type: string
-                    min_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Deprecated legacy price band fields retained for
-                        decoding old genesis
-
-                        exports. Migration logic ignores their values and clears
-                        them.
-                    max_price:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          Coin defines a token with a denomination and an
-                          amount.
-
-
-                          NOTE: The amount field is an Int which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                    block_height:
-                      type: string
-                      format: uint64
-                      title: >-
-                        Deprecated legacy fields for backward-compatible JSON
-                        decoding of old
-
-                        genesis
-                    created:
-                      type: string
-                      format: date-time
-                    updated:
-                      type: string
-                      format: date-time
                     created_height:
                       type: string
                       format: uint64
@@ -10079,35 +9565,6 @@ paths:
 
                         (exactly two, canonical order). Each amount is a decimal
                         string (> 1).
-                    max_leverage_ratio:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
-                      description: >-
-                        Deprecated: maximum leverage ratio per reserve denom.
-
-                        This field is ignored by the keeper; risk is enforced
-                        via
-
-                        min_collateral_ratio, liquidation_threshold, and
-                        max_borrow_percent.
-
-                        Kept for backward-compatible JSON/proto decoding of
-                        older clients.
                     liquidation_threshold:
                       type: array
                       items:
@@ -10399,60 +9856,6 @@ paths:
                       coins[0].amount.
                   shares_denom:
                     type: string
-                  min_price:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      Deprecated legacy price band fields retained for decoding
-                      old genesis
-
-                      exports. Migration logic ignores their values and clears
-                      them.
-                  max_price:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                  block_height:
-                    type: string
-                    format: uint64
-                    title: >-
-                      Deprecated legacy fields for backward-compatible JSON
-                      decoding of old
-
-                      genesis
-                  created:
-                    type: string
-                    format: date-time
-                  updated:
-                    type: string
-                    format: date-time
                   created_height:
                     type: string
                     format: uint64
@@ -10575,34 +9978,6 @@ paths:
 
                       (exactly two, canonical order). Each amount is a decimal
                       string (> 1).
-                  max_leverage_ratio:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        DecCoin defines a token with a denomination and a
-                        decimal amount.
-
-
-                        NOTE: The amount field is an Dec which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                    description: >-
-                      Deprecated: maximum leverage ratio per reserve denom.
-
-                      This field is ignored by the keeper; risk is enforced via
-
-                      min_collateral_ratio, liquidation_threshold, and
-                      max_borrow_percent.
-
-                      Kept for backward-compatible JSON/proto decoding of older
-                      clients.
                   liquidation_threshold:
                     type: array
                     items:
@@ -11998,76 +11373,6 @@ paths:
                     trade_id:
                       type: string
                       format: uint64
-                    offer_id:
-                      type: string
-                      format: uint64
-                      title: >-
-                        ═════ DEPRECATED FIELDS (fields 2-10) - for migration
-                        compatibility ═════
-
-                        These fields are kept for backwards compatibility.
-                        Migration logic should
-
-                        read these and populate the new fields (20+) below.
-
-                        Deprecated: use operations field 23 and trader field 20
-                        instead
-                    taker:
-                      type: string
-                      title: 'Deprecated: use trader field 20 instead'
-                    height_deprecated:
-                      type: string
-                      format: uint64
-                      title: 'Deprecated: use height field 21 instead'
-                    timestamp_deprecated:
-                      type: string
-                      format: date-time
-                      title: 'Deprecated: use timestamp field 22 instead'
-                    sent:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                      title: 'Deprecated: use total_sent field 24 instead'
-                    received:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                      title: 'Deprecated: use total_received field 25 instead'
-                    pool_id:
-                      type: string
-                      format: uint64
-                      title: 'Deprecated: use operations field 23 to infer pool swaps'
-                    auction_id:
-                      type: string
-                      format: uint64
-                      title: >-
-                        Deprecated: use operations field 23 to infer auction
-                        redemptions
-                    note_deprecated:
-                      type: string
-                      title: 'Deprecated: use note field 26 instead'
                     trader:
                       type: string
                       title: |-
@@ -12404,76 +11709,6 @@ paths:
                     trade_id:
                       type: string
                       format: uint64
-                    offer_id:
-                      type: string
-                      format: uint64
-                      title: >-
-                        ═════ DEPRECATED FIELDS (fields 2-10) - for migration
-                        compatibility ═════
-
-                        These fields are kept for backwards compatibility.
-                        Migration logic should
-
-                        read these and populate the new fields (20+) below.
-
-                        Deprecated: use operations field 23 and trader field 20
-                        instead
-                    taker:
-                      type: string
-                      title: 'Deprecated: use trader field 20 instead'
-                    height_deprecated:
-                      type: string
-                      format: uint64
-                      title: 'Deprecated: use height field 21 instead'
-                    timestamp_deprecated:
-                      type: string
-                      format: date-time
-                      title: 'Deprecated: use timestamp field 22 instead'
-                    sent:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                      title: 'Deprecated: use total_sent field 24 instead'
-                    received:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                      title: 'Deprecated: use total_received field 25 instead'
-                    pool_id:
-                      type: string
-                      format: uint64
-                      title: 'Deprecated: use operations field 23 to infer pool swaps'
-                    auction_id:
-                      type: string
-                      format: uint64
-                      title: >-
-                        Deprecated: use operations field 23 to infer auction
-                        redemptions
-                    note_deprecated:
-                      type: string
-                      title: 'Deprecated: use note field 26 instead'
                     trader:
                       type: string
                       title: |-
@@ -12802,76 +12037,6 @@ paths:
                     trade_id:
                       type: string
                       format: uint64
-                    offer_id:
-                      type: string
-                      format: uint64
-                      title: >-
-                        ═════ DEPRECATED FIELDS (fields 2-10) - for migration
-                        compatibility ═════
-
-                        These fields are kept for backwards compatibility.
-                        Migration logic should
-
-                        read these and populate the new fields (20+) below.
-
-                        Deprecated: use operations field 23 and trader field 20
-                        instead
-                    taker:
-                      type: string
-                      title: 'Deprecated: use trader field 20 instead'
-                    height_deprecated:
-                      type: string
-                      format: uint64
-                      title: 'Deprecated: use height field 21 instead'
-                    timestamp_deprecated:
-                      type: string
-                      format: date-time
-                      title: 'Deprecated: use timestamp field 22 instead'
-                    sent:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                      title: 'Deprecated: use total_sent field 24 instead'
-                    received:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                      title: 'Deprecated: use total_received field 25 instead'
-                    pool_id:
-                      type: string
-                      format: uint64
-                      title: 'Deprecated: use operations field 23 to infer pool swaps'
-                    auction_id:
-                      type: string
-                      format: uint64
-                      title: >-
-                        Deprecated: use operations field 23 to infer auction
-                        redemptions
-                    note_deprecated:
-                      type: string
-                      title: 'Deprecated: use note field 26 instead'
                     trader:
                       type: string
                       title: |-
@@ -13197,76 +12362,6 @@ paths:
                     trade_id:
                       type: string
                       format: uint64
-                    offer_id:
-                      type: string
-                      format: uint64
-                      title: >-
-                        ═════ DEPRECATED FIELDS (fields 2-10) - for migration
-                        compatibility ═════
-
-                        These fields are kept for backwards compatibility.
-                        Migration logic should
-
-                        read these and populate the new fields (20+) below.
-
-                        Deprecated: use operations field 23 and trader field 20
-                        instead
-                    taker:
-                      type: string
-                      title: 'Deprecated: use trader field 20 instead'
-                    height_deprecated:
-                      type: string
-                      format: uint64
-                      title: 'Deprecated: use height field 21 instead'
-                    timestamp_deprecated:
-                      type: string
-                      format: date-time
-                      title: 'Deprecated: use timestamp field 22 instead'
-                    sent:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                      title: 'Deprecated: use total_sent field 24 instead'
-                    received:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                      title: 'Deprecated: use total_received field 25 instead'
-                    pool_id:
-                      type: string
-                      format: uint64
-                      title: 'Deprecated: use operations field 23 to infer pool swaps'
-                    auction_id:
-                      type: string
-                      format: uint64
-                      title: >-
-                        Deprecated: use operations field 23 to infer auction
-                        redemptions
-                    note_deprecated:
-                      type: string
-                      title: 'Deprecated: use note field 26 instead'
                     trader:
                       type: string
                       title: |-
@@ -13594,76 +12689,6 @@ paths:
                     trade_id:
                       type: string
                       format: uint64
-                    offer_id:
-                      type: string
-                      format: uint64
-                      title: >-
-                        ═════ DEPRECATED FIELDS (fields 2-10) - for migration
-                        compatibility ═════
-
-                        These fields are kept for backwards compatibility.
-                        Migration logic should
-
-                        read these and populate the new fields (20+) below.
-
-                        Deprecated: use operations field 23 and trader field 20
-                        instead
-                    taker:
-                      type: string
-                      title: 'Deprecated: use trader field 20 instead'
-                    height_deprecated:
-                      type: string
-                      format: uint64
-                      title: 'Deprecated: use height field 21 instead'
-                    timestamp_deprecated:
-                      type: string
-                      format: date-time
-                      title: 'Deprecated: use timestamp field 22 instead'
-                    sent:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                      title: 'Deprecated: use total_sent field 24 instead'
-                    received:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                      title: 'Deprecated: use total_received field 25 instead'
-                    pool_id:
-                      type: string
-                      format: uint64
-                      title: 'Deprecated: use operations field 23 to infer pool swaps'
-                    auction_id:
-                      type: string
-                      format: uint64
-                      title: >-
-                        Deprecated: use operations field 23 to infer auction
-                        redemptions
-                    note_deprecated:
-                      type: string
-                      title: 'Deprecated: use note field 26 instead'
                     trader:
                       type: string
                       title: |-
@@ -13982,76 +13007,6 @@ paths:
                   trade_id:
                     type: string
                     format: uint64
-                  offer_id:
-                    type: string
-                    format: uint64
-                    title: >-
-                      ═════ DEPRECATED FIELDS (fields 2-10) - for migration
-                      compatibility ═════
-
-                      These fields are kept for backwards compatibility.
-                      Migration logic should
-
-                      read these and populate the new fields (20+) below.
-
-                      Deprecated: use operations field 23 and trader field 20
-                      instead
-                  taker:
-                    type: string
-                    title: 'Deprecated: use trader field 20 instead'
-                  height_deprecated:
-                    type: string
-                    format: uint64
-                    title: 'Deprecated: use height field 21 instead'
-                  timestamp_deprecated:
-                    type: string
-                    format: date-time
-                    title: 'Deprecated: use timestamp field 22 instead'
-                  sent:
-                    type: object
-                    properties:
-                      denom:
-                        type: string
-                      amount:
-                        type: string
-                    description: >-
-                      Coin defines a token with a denomination and an amount.
-
-
-                      NOTE: The amount field is an Int which implements the
-                      custom method
-
-                      signatures required by gogoproto.
-                    title: 'Deprecated: use total_sent field 24 instead'
-                  received:
-                    type: object
-                    properties:
-                      denom:
-                        type: string
-                      amount:
-                        type: string
-                    description: >-
-                      Coin defines a token with a denomination and an amount.
-
-
-                      NOTE: The amount field is an Int which implements the
-                      custom method
-
-                      signatures required by gogoproto.
-                    title: 'Deprecated: use total_received field 25 instead'
-                  pool_id:
-                    type: string
-                    format: uint64
-                    title: 'Deprecated: use operations field 23 to infer pool swaps'
-                  auction_id:
-                    type: string
-                    format: uint64
-                    title: >-
-                      Deprecated: use operations field 23 to infer auction
-                      redemptions
-                  note_deprecated:
-                    type: string
-                    title: 'Deprecated: use note field 26 instead'
                   trader:
                     type: string
                     title: |-
@@ -51499,10 +50454,6 @@ definitions:
       updated_height:
         type: string
         format: uint64
-      updated_timestamp:
-        type: string
-        format: date-time
-        title: Deprecated for backward-compatible JSON decoding of old genesis
       created_height:
         type: string
         format: uint64
@@ -51665,49 +50616,6 @@ definitions:
           coins[0].amount.
       shares_denom:
         type: string
-      min_price:
-        type: array
-        items:
-          type: object
-          properties:
-            denom:
-              type: string
-            amount:
-              type: string
-          description: |-
-            Coin defines a token with a denomination and an amount.
-
-            NOTE: The amount field is an Int which implements the custom method
-            signatures required by gogoproto.
-        description: |-
-          Deprecated legacy price band fields retained for decoding old genesis
-          exports. Migration logic ignores their values and clears them.
-      max_price:
-        type: array
-        items:
-          type: object
-          properties:
-            denom:
-              type: string
-            amount:
-              type: string
-          description: |-
-            Coin defines a token with a denomination and an amount.
-
-            NOTE: The amount field is an Int which implements the custom method
-            signatures required by gogoproto.
-      block_height:
-        type: string
-        format: uint64
-        title: |-
-          Deprecated legacy fields for backward-compatible JSON decoding of old
-          genesis
-      created:
-        type: string
-        format: date-time
-      updated:
-        type: string
-        format: date-time
       created_height:
         type: string
         format: uint64
@@ -51808,25 +50716,6 @@ definitions:
           ═════ PER-POOL LEVERAGE RISK PARAMETERS (per-denom) ═════
           Minimum collateral ratio required at position open per reserve denom
           (exactly two, canonical order). Each amount is a decimal string (> 1).
-      max_leverage_ratio:
-        type: array
-        items:
-          type: object
-          properties:
-            denom:
-              type: string
-            amount:
-              type: string
-          description: |-
-            DecCoin defines a token with a denomination and a decimal amount.
-
-            NOTE: The amount field is an Dec which implements the custom method
-            signatures required by gogoproto.
-        description: |-
-          Deprecated: maximum leverage ratio per reserve denom.
-          This field is ignored by the keeper; risk is enforced via
-          min_collateral_ratio, liquidation_threshold, and max_borrow_percent.
-          Kept for backward-compatible JSON/proto decoding of older clients.
       liquidation_threshold:
         type: array
         items:
@@ -52883,10 +51772,6 @@ definitions:
           updated_height:
             type: string
             format: uint64
-          updated_timestamp:
-            type: string
-            format: date-time
-            title: Deprecated for backward-compatible JSON decoding of old genesis
           created_height:
             type: string
             format: uint64
@@ -53009,10 +51894,6 @@ definitions:
             updated_height:
               type: string
               format: uint64
-            updated_timestamp:
-              type: string
-              format: date-time
-              title: Deprecated for backward-compatible JSON decoding of old genesis
             created_height:
               type: string
               format: uint64
@@ -53138,10 +52019,6 @@ definitions:
             updated_height:
               type: string
               format: uint64
-            updated_timestamp:
-              type: string
-              format: date-time
-              title: Deprecated for backward-compatible JSON decoding of old genesis
             created_height:
               type: string
               format: uint64
@@ -53292,10 +52169,6 @@ definitions:
             updated_height:
               type: string
               format: uint64
-            updated_timestamp:
-              type: string
-              format: date-time
-              title: Deprecated for backward-compatible JSON decoding of old genesis
             created_height:
               type: string
               format: uint64
@@ -53448,10 +52321,6 @@ definitions:
             updated_height:
               type: string
               format: uint64
-            updated_timestamp:
-              type: string
-              format: date-time
-              title: Deprecated for backward-compatible JSON decoding of old genesis
             created_height:
               type: string
               format: uint64
@@ -53602,10 +52471,6 @@ definitions:
             updated_height:
               type: string
               format: uint64
-            updated_timestamp:
-              type: string
-              format: date-time
-              title: Deprecated for backward-compatible JSON decoding of old genesis
             created_height:
               type: string
               format: uint64
@@ -53831,59 +52696,6 @@ definitions:
               coins[0].amount.
           shares_denom:
             type: string
-          min_price:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-            description: >-
-              Deprecated legacy price band fields retained for decoding old
-              genesis
-
-              exports. Migration logic ignores their values and clears them.
-          max_price:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-          block_height:
-            type: string
-            format: uint64
-            title: >-
-              Deprecated legacy fields for backward-compatible JSON decoding of
-              old
-
-              genesis
-          created:
-            type: string
-            format: date-time
-          updated:
-            type: string
-            format: date-time
           created_height:
             type: string
             format: uint64
@@ -54006,33 +52818,6 @@ definitions:
 
               (exactly two, canonical order). Each amount is a decimal string (>
               1).
-          max_leverage_ratio:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                DecCoin defines a token with a denomination and a decimal
-                amount.
-
-
-                NOTE: The amount field is an Dec which implements the custom
-                method
-
-                signatures required by gogoproto.
-            description: >-
-              Deprecated: maximum leverage ratio per reserve denom.
-
-              This field is ignored by the keeper; risk is enforced via
-
-              min_collateral_ratio, liquidation_threshold, and
-              max_borrow_percent.
-
-              Kept for backward-compatible JSON/proto decoding of older clients.
           liquidation_threshold:
             type: array
             items:
@@ -54199,59 +52984,6 @@ definitions:
               coins[0].amount.
           shares_denom:
             type: string
-          min_price:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-            description: >-
-              Deprecated legacy price band fields retained for decoding old
-              genesis
-
-              exports. Migration logic ignores their values and clears them.
-          max_price:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-          block_height:
-            type: string
-            format: uint64
-            title: >-
-              Deprecated legacy fields for backward-compatible JSON decoding of
-              old
-
-              genesis
-          created:
-            type: string
-            format: date-time
-          updated:
-            type: string
-            format: date-time
           created_height:
             type: string
             format: uint64
@@ -54374,33 +53106,6 @@ definitions:
 
               (exactly two, canonical order). Each amount is a decimal string (>
               1).
-          max_leverage_ratio:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                DecCoin defines a token with a denomination and a decimal
-                amount.
-
-
-                NOTE: The amount field is an Dec which implements the custom
-                method
-
-                signatures required by gogoproto.
-            description: >-
-              Deprecated: maximum leverage ratio per reserve denom.
-
-              This field is ignored by the keeper; risk is enforced via
-
-              min_collateral_ratio, liquidation_threshold, and
-              max_borrow_percent.
-
-              Kept for backward-compatible JSON/proto decoding of older clients.
           liquidation_threshold:
             type: array
             items:
@@ -54568,59 +53273,6 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            min_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                Deprecated legacy price band fields retained for decoding old
-                genesis
-
-                exports. Migration logic ignores their values and clears them.
-            max_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-            block_height:
-              type: string
-              format: uint64
-              title: >-
-                Deprecated legacy fields for backward-compatible JSON decoding
-                of old
-
-                genesis
-            created:
-              type: string
-              format: date-time
-            updated:
-              type: string
-              format: date-time
             created_height:
               type: string
               format: uint64
@@ -54743,34 +53395,6 @@ definitions:
 
                 (exactly two, canonical order). Each amount is a decimal string
                 (> 1).
-            max_leverage_ratio:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  DecCoin defines a token with a denomination and a decimal
-                  amount.
-
-
-                  NOTE: The amount field is an Dec which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                Deprecated: maximum leverage ratio per reserve denom.
-
-                This field is ignored by the keeper; risk is enforced via
-
-                min_collateral_ratio, liquidation_threshold, and
-                max_borrow_percent.
-
-                Kept for backward-compatible JSON/proto decoding of older
-                clients.
             liquidation_threshold:
               type: array
               items:
@@ -54972,59 +53596,6 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            min_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                Deprecated legacy price band fields retained for decoding old
-                genesis
-
-                exports. Migration logic ignores their values and clears them.
-            max_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-            block_height:
-              type: string
-              format: uint64
-              title: >-
-                Deprecated legacy fields for backward-compatible JSON decoding
-                of old
-
-                genesis
-            created:
-              type: string
-              format: date-time
-            updated:
-              type: string
-              format: date-time
             created_height:
               type: string
               format: uint64
@@ -55147,34 +53718,6 @@ definitions:
 
                 (exactly two, canonical order). Each amount is a decimal string
                 (> 1).
-            max_leverage_ratio:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  DecCoin defines a token with a denomination and a decimal
-                  amount.
-
-
-                  NOTE: The amount field is an Dec which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                Deprecated: maximum leverage ratio per reserve denom.
-
-                This field is ignored by the keeper; risk is enforced via
-
-                min_collateral_ratio, liquidation_threshold, and
-                max_borrow_percent.
-
-                Kept for backward-compatible JSON/proto decoding of older
-                clients.
             liquidation_threshold:
               type: array
               items:
@@ -55376,59 +53919,6 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            min_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                Deprecated legacy price band fields retained for decoding old
-                genesis
-
-                exports. Migration logic ignores their values and clears them.
-            max_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-            block_height:
-              type: string
-              format: uint64
-              title: >-
-                Deprecated legacy fields for backward-compatible JSON decoding
-                of old
-
-                genesis
-            created:
-              type: string
-              format: date-time
-            updated:
-              type: string
-              format: date-time
             created_height:
               type: string
               format: uint64
@@ -55551,34 +54041,6 @@ definitions:
 
                 (exactly two, canonical order). Each amount is a decimal string
                 (> 1).
-            max_leverage_ratio:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  DecCoin defines a token with a denomination and a decimal
-                  amount.
-
-
-                  NOTE: The amount field is an Dec which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                Deprecated: maximum leverage ratio per reserve denom.
-
-                This field is ignored by the keeper; risk is enforced via
-
-                min_collateral_ratio, liquidation_threshold, and
-                max_borrow_percent.
-
-                Kept for backward-compatible JSON/proto decoding of older
-                clients.
             liquidation_threshold:
               type: array
               items:
@@ -55780,59 +54242,6 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            min_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                Deprecated legacy price band fields retained for decoding old
-                genesis
-
-                exports. Migration logic ignores their values and clears them.
-            max_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-            block_height:
-              type: string
-              format: uint64
-              title: >-
-                Deprecated legacy fields for backward-compatible JSON decoding
-                of old
-
-                genesis
-            created:
-              type: string
-              format: date-time
-            updated:
-              type: string
-              format: date-time
             created_height:
               type: string
               format: uint64
@@ -55955,34 +54364,6 @@ definitions:
 
                 (exactly two, canonical order). Each amount is a decimal string
                 (> 1).
-            max_leverage_ratio:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  DecCoin defines a token with a denomination and a decimal
-                  amount.
-
-
-                  NOTE: The amount field is an Dec which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                Deprecated: maximum leverage ratio per reserve denom.
-
-                This field is ignored by the keeper; risk is enforced via
-
-                min_collateral_ratio, liquidation_threshold, and
-                max_borrow_percent.
-
-                Kept for backward-compatible JSON/proto decoding of older
-                clients.
             liquidation_threshold:
               type: array
               items:
@@ -56184,59 +54565,6 @@ definitions:
                 coins[0].amount.
             shares_denom:
               type: string
-            min_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                Deprecated legacy price band fields retained for decoding old
-                genesis
-
-                exports. Migration logic ignores their values and clears them.
-            max_price:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  Coin defines a token with a denomination and an amount.
-
-
-                  NOTE: The amount field is an Int which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-            block_height:
-              type: string
-              format: uint64
-              title: >-
-                Deprecated legacy fields for backward-compatible JSON decoding
-                of old
-
-                genesis
-            created:
-              type: string
-              format: date-time
-            updated:
-              type: string
-              format: date-time
             created_height:
               type: string
               format: uint64
@@ -56359,34 +54687,6 @@ definitions:
 
                 (exactly two, canonical order). Each amount is a decimal string
                 (> 1).
-            max_leverage_ratio:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  DecCoin defines a token with a denomination and a decimal
-                  amount.
-
-
-                  NOTE: The amount field is an Dec which implements the custom
-                  method
-
-                  signatures required by gogoproto.
-              description: >-
-                Deprecated: maximum leverage ratio per reserve denom.
-
-                This field is ignored by the keeper; risk is enforced via
-
-                min_collateral_ratio, liquidation_threshold, and
-                max_borrow_percent.
-
-                Kept for backward-compatible JSON/proto decoding of older
-                clients.
             liquidation_threshold:
               type: array
               items:
@@ -57465,73 +55765,6 @@ definitions:
           trade_id:
             type: string
             format: uint64
-          offer_id:
-            type: string
-            format: uint64
-            title: >-
-              ═════ DEPRECATED FIELDS (fields 2-10) - for migration
-              compatibility ═════
-
-              These fields are kept for backwards compatibility. Migration logic
-              should
-
-              read these and populate the new fields (20+) below.
-
-              Deprecated: use operations field 23 and trader field 20 instead
-          taker:
-            type: string
-            title: 'Deprecated: use trader field 20 instead'
-          height_deprecated:
-            type: string
-            format: uint64
-            title: 'Deprecated: use height field 21 instead'
-          timestamp_deprecated:
-            type: string
-            format: date-time
-            title: 'Deprecated: use timestamp field 22 instead'
-          sent:
-            type: object
-            properties:
-              denom:
-                type: string
-              amount:
-                type: string
-            description: >-
-              Coin defines a token with a denomination and an amount.
-
-
-              NOTE: The amount field is an Int which implements the custom
-              method
-
-              signatures required by gogoproto.
-            title: 'Deprecated: use total_sent field 24 instead'
-          received:
-            type: object
-            properties:
-              denom:
-                type: string
-              amount:
-                type: string
-            description: >-
-              Coin defines a token with a denomination and an amount.
-
-
-              NOTE: The amount field is an Int which implements the custom
-              method
-
-              signatures required by gogoproto.
-            title: 'Deprecated: use total_received field 25 instead'
-          pool_id:
-            type: string
-            format: uint64
-            title: 'Deprecated: use operations field 23 to infer pool swaps'
-          auction_id:
-            type: string
-            format: uint64
-            title: 'Deprecated: use operations field 23 to infer auction redemptions'
-          note_deprecated:
-            type: string
-            title: 'Deprecated: use note field 26 instead'
           trader:
             type: string
             title: |-
@@ -57739,73 +55972,6 @@ definitions:
             trade_id:
               type: string
               format: uint64
-            offer_id:
-              type: string
-              format: uint64
-              title: >-
-                ═════ DEPRECATED FIELDS (fields 2-10) - for migration
-                compatibility ═════
-
-                These fields are kept for backwards compatibility. Migration
-                logic should
-
-                read these and populate the new fields (20+) below.
-
-                Deprecated: use operations field 23 and trader field 20 instead
-            taker:
-              type: string
-              title: 'Deprecated: use trader field 20 instead'
-            height_deprecated:
-              type: string
-              format: uint64
-              title: 'Deprecated: use height field 21 instead'
-            timestamp_deprecated:
-              type: string
-              format: date-time
-              title: 'Deprecated: use timestamp field 22 instead'
-            sent:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-              title: 'Deprecated: use total_sent field 24 instead'
-            received:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-              title: 'Deprecated: use total_received field 25 instead'
-            pool_id:
-              type: string
-              format: uint64
-              title: 'Deprecated: use operations field 23 to infer pool swaps'
-            auction_id:
-              type: string
-              format: uint64
-              title: 'Deprecated: use operations field 23 to infer auction redemptions'
-            note_deprecated:
-              type: string
-              title: 'Deprecated: use note field 26 instead'
             trader:
               type: string
               title: |-
@@ -58045,73 +56211,6 @@ definitions:
             trade_id:
               type: string
               format: uint64
-            offer_id:
-              type: string
-              format: uint64
-              title: >-
-                ═════ DEPRECATED FIELDS (fields 2-10) - for migration
-                compatibility ═════
-
-                These fields are kept for backwards compatibility. Migration
-                logic should
-
-                read these and populate the new fields (20+) below.
-
-                Deprecated: use operations field 23 and trader field 20 instead
-            taker:
-              type: string
-              title: 'Deprecated: use trader field 20 instead'
-            height_deprecated:
-              type: string
-              format: uint64
-              title: 'Deprecated: use height field 21 instead'
-            timestamp_deprecated:
-              type: string
-              format: date-time
-              title: 'Deprecated: use timestamp field 22 instead'
-            sent:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-              title: 'Deprecated: use total_sent field 24 instead'
-            received:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-              title: 'Deprecated: use total_received field 25 instead'
-            pool_id:
-              type: string
-              format: uint64
-              title: 'Deprecated: use operations field 23 to infer pool swaps'
-            auction_id:
-              type: string
-              format: uint64
-              title: 'Deprecated: use operations field 23 to infer auction redemptions'
-            note_deprecated:
-              type: string
-              title: 'Deprecated: use note field 26 instead'
             trader:
               type: string
               title: |-
@@ -58351,73 +56450,6 @@ definitions:
             trade_id:
               type: string
               format: uint64
-            offer_id:
-              type: string
-              format: uint64
-              title: >-
-                ═════ DEPRECATED FIELDS (fields 2-10) - for migration
-                compatibility ═════
-
-                These fields are kept for backwards compatibility. Migration
-                logic should
-
-                read these and populate the new fields (20+) below.
-
-                Deprecated: use operations field 23 and trader field 20 instead
-            taker:
-              type: string
-              title: 'Deprecated: use trader field 20 instead'
-            height_deprecated:
-              type: string
-              format: uint64
-              title: 'Deprecated: use height field 21 instead'
-            timestamp_deprecated:
-              type: string
-              format: date-time
-              title: 'Deprecated: use timestamp field 22 instead'
-            sent:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-              title: 'Deprecated: use total_sent field 24 instead'
-            received:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-              title: 'Deprecated: use total_received field 25 instead'
-            pool_id:
-              type: string
-              format: uint64
-              title: 'Deprecated: use operations field 23 to infer pool swaps'
-            auction_id:
-              type: string
-              format: uint64
-              title: 'Deprecated: use operations field 23 to infer auction redemptions'
-            note_deprecated:
-              type: string
-              title: 'Deprecated: use note field 26 instead'
             trader:
               type: string
               title: |-
@@ -58657,73 +56689,6 @@ definitions:
             trade_id:
               type: string
               format: uint64
-            offer_id:
-              type: string
-              format: uint64
-              title: >-
-                ═════ DEPRECATED FIELDS (fields 2-10) - for migration
-                compatibility ═════
-
-                These fields are kept for backwards compatibility. Migration
-                logic should
-
-                read these and populate the new fields (20+) below.
-
-                Deprecated: use operations field 23 and trader field 20 instead
-            taker:
-              type: string
-              title: 'Deprecated: use trader field 20 instead'
-            height_deprecated:
-              type: string
-              format: uint64
-              title: 'Deprecated: use height field 21 instead'
-            timestamp_deprecated:
-              type: string
-              format: date-time
-              title: 'Deprecated: use timestamp field 22 instead'
-            sent:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-              title: 'Deprecated: use total_sent field 24 instead'
-            received:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-              title: 'Deprecated: use total_received field 25 instead'
-            pool_id:
-              type: string
-              format: uint64
-              title: 'Deprecated: use operations field 23 to infer pool swaps'
-            auction_id:
-              type: string
-              format: uint64
-              title: 'Deprecated: use operations field 23 to infer auction redemptions'
-            note_deprecated:
-              type: string
-              title: 'Deprecated: use note field 26 instead'
             trader:
               type: string
               title: |-
@@ -58963,73 +56928,6 @@ definitions:
             trade_id:
               type: string
               format: uint64
-            offer_id:
-              type: string
-              format: uint64
-              title: >-
-                ═════ DEPRECATED FIELDS (fields 2-10) - for migration
-                compatibility ═════
-
-                These fields are kept for backwards compatibility. Migration
-                logic should
-
-                read these and populate the new fields (20+) below.
-
-                Deprecated: use operations field 23 and trader field 20 instead
-            taker:
-              type: string
-              title: 'Deprecated: use trader field 20 instead'
-            height_deprecated:
-              type: string
-              format: uint64
-              title: 'Deprecated: use height field 21 instead'
-            timestamp_deprecated:
-              type: string
-              format: date-time
-              title: 'Deprecated: use timestamp field 22 instead'
-            sent:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-              title: 'Deprecated: use total_sent field 24 instead'
-            received:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                Coin defines a token with a denomination and an amount.
-
-
-                NOTE: The amount field is an Int which implements the custom
-                method
-
-                signatures required by gogoproto.
-              title: 'Deprecated: use total_received field 25 instead'
-            pool_id:
-              type: string
-              format: uint64
-              title: 'Deprecated: use operations field 23 to infer pool swaps'
-            auction_id:
-              type: string
-              format: uint64
-              title: 'Deprecated: use operations field 23 to infer auction redemptions'
-            note_deprecated:
-              type: string
-              title: 'Deprecated: use note field 26 instead'
             trader:
               type: string
               title: |-
@@ -59317,67 +57215,6 @@ definitions:
       trade_id:
         type: string
         format: uint64
-      offer_id:
-        type: string
-        format: uint64
-        title: >-
-          ═════ DEPRECATED FIELDS (fields 2-10) - for migration compatibility
-          ═════
-
-          These fields are kept for backwards compatibility. Migration logic
-          should
-
-          read these and populate the new fields (20+) below.
-
-          Deprecated: use operations field 23 and trader field 20 instead
-      taker:
-        type: string
-        title: 'Deprecated: use trader field 20 instead'
-      height_deprecated:
-        type: string
-        format: uint64
-        title: 'Deprecated: use height field 21 instead'
-      timestamp_deprecated:
-        type: string
-        format: date-time
-        title: 'Deprecated: use timestamp field 22 instead'
-      sent:
-        type: object
-        properties:
-          denom:
-            type: string
-          amount:
-            type: string
-        description: |-
-          Coin defines a token with a denomination and an amount.
-
-          NOTE: The amount field is an Int which implements the custom method
-          signatures required by gogoproto.
-        title: 'Deprecated: use total_sent field 24 instead'
-      received:
-        type: object
-        properties:
-          denom:
-            type: string
-          amount:
-            type: string
-        description: |-
-          Coin defines a token with a denomination and an amount.
-
-          NOTE: The amount field is an Int which implements the custom method
-          signatures required by gogoproto.
-        title: 'Deprecated: use total_received field 25 instead'
-      pool_id:
-        type: string
-        format: uint64
-        title: 'Deprecated: use operations field 23 to infer pool swaps'
-      auction_id:
-        type: string
-        format: uint64
-        title: 'Deprecated: use operations field 23 to infer auction redemptions'
-      note_deprecated:
-        type: string
-        title: 'Deprecated: use note field 26 instead'
       trader:
         type: string
         title: |-

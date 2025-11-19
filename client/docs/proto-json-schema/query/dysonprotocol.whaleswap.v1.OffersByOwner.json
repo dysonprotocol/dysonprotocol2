@@ -126,11 +126,6 @@
                     "updated_height": {
                         "type": "string"
                     },
-                    "updated_timestamp": {
-                        "type": "string",
-                        "description": "Deprecated for backward-compatible JSON decoding of old genesis",
-                        "format": "date-time"
-                    },
                     "created_height": {
                         "type": "string",
                         "description": "New normalized timestamps"
