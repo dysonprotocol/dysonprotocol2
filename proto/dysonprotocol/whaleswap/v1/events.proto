@@ -92,6 +92,7 @@ message EventLeveragePositionClosed {
   cosmos.base.v1beta1.Coin profit = 5 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin accrued_interest = 6
       [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin loss = 7 [ (gogoproto.nullable) = false ];
 }
 
 message EventLeverageCollateralAdded {
@@ -146,6 +147,7 @@ message EventLeveragePositionCovered {
   bool closed = 7;
   cosmos.base.v1beta1.Coin refunded = 8 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin profit = 9 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin loss = 10 [ (gogoproto.nullable) = false ];
 }
 
 message EventLeveragePositionPartiallyClosed {
@@ -162,4 +164,5 @@ message EventLeveragePositionPartiallyClosed {
   cosmos.base.v1beta1.Coin new_held = 10 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin new_collateral = 11 [ (gogoproto.nullable) = false ];
   string new_collateral_ratio = 12 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+  cosmos.base.v1beta1.Coin loss = 13 [ (gogoproto.nullable) = false ];
 }

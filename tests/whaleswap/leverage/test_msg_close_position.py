@@ -354,6 +354,14 @@ def test_close_position_happy_path_long(
     ]
     assert len(interest_attrs) > 0, "accrued_interest attribute not found"
 
+    # Verify loss attribute exists
+    loss_attrs = [
+        attr
+        for attr in close_events[0].get("attributes", [])
+        if attr.get("key") == "loss"
+    ]
+    assert len(loss_attrs) > 0, "loss attribute not found"
+
 
 def test_close_position_block_delay_enforced(
     chainnet, leverage_accounts, leverage_names_and_coins
@@ -1688,17 +1696,17 @@ def test_close_position_profitable_same_denom(
     position_id = position_id_attrs[0].strip('"')
 
     # Price manipulation: swap a large amount of foo -> bar to make bar scarcer (appreciate)
-    swap_leg_json = json.dumps(
-        {"pool_id": int(pool_id), "swap_in": {"denom": foo_name, "amount": "8000"}}
+    swap_op_json = json.dumps(
+        {"swap": {"pool_id": int(pool_id), "swap_in": {"denom": foo_name, "amount": "8000"}}}
     )
     swap_result = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         f"8000{foo_name}",
-        "--legs",
-        swap_leg_json,
+        "--op",
+        swap_op_json,
         "--min-output",
         f"1{bar_name}",
         "--from",

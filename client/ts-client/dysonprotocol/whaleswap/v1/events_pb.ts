@@ -693,6 +693,11 @@ export class EventLeveragePositionClosed extends Message<EventLeveragePositionCl
    */
   accruedInterest?: Coin;
 
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin loss = 7;
+   */
+  loss?: Coin;
+
   constructor(data?: PartialMessage<EventLeveragePositionClosed>) {
     super();
     proto3.util.initPartial(data, this);
@@ -706,6 +711,7 @@ export class EventLeveragePositionClosed extends Message<EventLeveragePositionCl
     { no: 3, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 5, name: "profit", kind: "message", T: Coin },
     { no: 6, name: "accrued_interest", kind: "message", T: Coin },
+    { no: 7, name: "loss", kind: "message", T: Coin },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): EventLeveragePositionClosed {
@@ -1050,6 +1056,11 @@ export class EventLeveragePositionCovered extends Message<EventLeveragePositionC
    */
   profit?: Coin;
 
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin loss = 10;
+   */
+  loss?: Coin;
+
   constructor(data?: PartialMessage<EventLeveragePositionCovered>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1067,6 +1078,7 @@ export class EventLeveragePositionCovered extends Message<EventLeveragePositionC
     { no: 7, name: "closed", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 8, name: "refunded", kind: "message", T: Coin },
     { no: 9, name: "profit", kind: "message", T: Coin },
+    { no: 10, name: "loss", kind: "message", T: Coin },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): EventLeveragePositionCovered {
@@ -1150,6 +1162,11 @@ export class EventLeveragePositionPartiallyClosed extends Message<EventLeverageP
    */
   newCollateralRatio = "";
 
+  /**
+   * @generated from field: cosmos.base.v1beta1.Coin loss = 13;
+   */
+  loss?: Coin;
+
   constructor(data?: PartialMessage<EventLeveragePositionPartiallyClosed>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1170,6 +1187,7 @@ export class EventLeveragePositionPartiallyClosed extends Message<EventLeverageP
     { no: 10, name: "new_held", kind: "message", T: Coin },
     { no: 11, name: "new_collateral", kind: "message", T: Coin },
     { no: 12, name: "new_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 13, name: "loss", kind: "message", T: Coin },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): EventLeveragePositionPartiallyClosed {

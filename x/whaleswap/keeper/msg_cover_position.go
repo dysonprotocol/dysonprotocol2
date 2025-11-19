@@ -216,6 +216,9 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 			logger.Info("CoverPosition sent profit from proceeds", "profit", profit.String())
 		}
 
+		// Loss is always zero in cover position (user provides payment to cover any shortfall)
+		loss := sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
+
 		// Return full collateral to user
 		if pos.Collateral.Amount.IsPositive() {
 			if err := k.sendFromModule(ctx, userAddr, sdk.NewCoins(pos.Collateral)); err != nil {
@@ -253,6 +256,7 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 			Closed:             true,
 			Refunded:           refund,
 			Profit:             profit,
+			Loss:               loss,
 		}); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to emit cover event")
 		}
@@ -263,6 +267,7 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 			PoolId:          pos.PoolId,
 			Profit:          profit,
 			AccruedInterest: interestCoin,
+			Loss:            loss,
 		}); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to emit close event")
 		}

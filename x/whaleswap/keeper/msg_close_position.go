@@ -464,6 +464,7 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 			NewHeld:            pos.Held,
 			NewCollateral:      pos.Collateral,
 			NewCollateralRatio: currentCR.String(),
+			Loss:               loss,
 		}); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to emit partial close event")
 		}
@@ -474,6 +475,7 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 			PoolId:          pos.PoolId,
 			Profit:          profit,
 			AccruedInterest: actualInterestPaidCoin,
+			Loss:            loss,
 		}); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to emit full close event")
 		}
