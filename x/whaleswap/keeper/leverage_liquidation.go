@@ -63,24 +63,32 @@ func (k Keeper) ClearLiquidationPending(pos *whaleswapv1.LeveragePosition) {
 	pos.LiquidationInitializedBlockHeight = 0
 }
 
-// CanCloseBefore checks if 1 block has passed since creation.
+// CanCloseBefore checks if sufficient blocks have passed since creation per params.
 func (k Keeper) CanCloseBefore(ctx context.Context, pos *whaleswapv1.LeveragePosition) bool {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	return uint64(sdkCtx.BlockHeight()) > pos.CreatedHeight
+	params := k.GetParams(ctx)
+	currentHeight := uint64(sdkCtx.BlockHeight())
+	requiredHeight := pos.CreatedHeight + params.BlockDelayBeforeClose
+	return currentHeight >= requiredHeight
 }
 
-// CanFinalizeLiquidationBefore checks if 1 block has passed since initialize.
+// CanFinalizeLiquidationBefore checks if sufficient blocks have passed since initialize per params.
 func (k Keeper) CanFinalizeLiquidationBefore(ctx context.Context, pos *whaleswapv1.LeveragePosition) bool {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	return uint64(sdkCtx.BlockHeight()) > pos.LiquidationInitializedBlockHeight
+	params := k.GetParams(ctx)
+	currentHeight := uint64(sdkCtx.BlockHeight())
+	requiredHeight := pos.LiquidationInitializedBlockHeight + params.BlockDelayBeforeLiquidation
+	return currentHeight >= requiredHeight
 }
 
-// BlocksUntilCloseable returns blocks until owner can close position.
+// BlocksUntilCloseable returns blocks until owner can close position per params.
 func (k Keeper) BlocksUntilCloseable(ctx context.Context, pos *whaleswapv1.LeveragePosition) uint64 {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	params := k.GetParams(ctx)
 	currentHeight := uint64(sdkCtx.BlockHeight())
-	if currentHeight > pos.CreatedHeight {
+	requiredHeight := pos.CreatedHeight + params.BlockDelayBeforeClose
+	if currentHeight >= requiredHeight {
 		return 0
 	}
-	return pos.CreatedHeight + 1 - currentHeight
+	return requiredHeight - currentHeight
 }

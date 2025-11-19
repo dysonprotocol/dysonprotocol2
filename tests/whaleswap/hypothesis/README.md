@@ -56,7 +56,7 @@ pytest tests/whaleswap/hypothesis/ -v --maxfail=1
 
 ## Test Coverage
 
-### Current Tests
+### AMM & Orderbook Tests
 
 1. **test_make_trade_multiple_swaps_same_pool**: Multiple swaps on same pool in one MakeTrade
    - Targets bug from deleted `test_cli_make_trade_reused_pool_two_legs.py`
@@ -69,6 +69,38 @@ pytest tests/whaleswap/hypothesis/ -v --maxfail=1
 3. **test_make_trade_mixed_operations**: Mix of swaps and takes in one MakeTrade
    - **Highest risk scenario** for accounting bugs
    - 0-2 swaps + 0-2 takes (at least 1 operation)
+
+### Leveraged Positions Tests
+
+4. **test_leverage_sanity_open_close_basic**: Sanity test with known-good params
+   - Validates infrastructure before hypothesis tests
+   - Fixed parameters: 100k pool, 3k collateral, 1k borrow
+
+5. **test_open_close_position_random_amounts**: Full position lifecycle with random amounts
+   - Pool reserves: 50k-500k
+   - Collateral: 2k-50k, Borrow: 500-20k
+   - Validates open → close with profit/loss accounting
+
+6. **test_partial_close_position_random_fractions**: Partial closes with random fractions
+   - Close fractions: 10%-90%
+   - Tests partial → full close sequence
+   - Validates remaining position health
+
+7. **test_multiple_positions_same_pool**: Multiple positions on same pool
+   - 2-4 positions with independent tracking
+   - Validates borrow cap enforcement
+   - Tests closing one position doesn't affect others
+
+8. **test_position_edge_cases**: Boundary conditions
+   - min_collateral: CR exactly at minimum (1.5x)
+   - max_borrow: At pool's max_borrow_percent limit
+   - tiny_amounts: Minimum viable position sizes
+
+9. **test_pool_creation_random_params**: Pool parameter fuzzing
+   - Fee rates: 0.1%-10%
+   - Interest rates: 0%-30%
+   - Min CR: 1.1x-5.0x
+   - Validates wide parameter ranges
 
 ### Invariants Checked
 
@@ -170,4 +202,52 @@ Adjust in strategy definitions:
 - **No time progression**: Can't test time-dependent logic (auctions, valuations)
 - **Single block**: Can't test multi-block scenarios
 - **Setup overhead**: Each test regenerates names (but this is actually good for isolation)
+
+## Leveraged Positions Testing
+
+### Block Delay Workaround
+
+**Problem**: By default, `block_delay_before_close` and `block_delay_before_liquidation` are set to `1`, requiring at least one block to pass before positions can be closed or liquidated. In query exec, blocks don't advance, making same-transaction testing impossible.
+
+**Solution**: Use `MsgUpdateParams` via `MsgSudo` to set both delays to `0` at the start of each test.
+
+```python
+# First message in every leverage test
+messages.append({
+    "@type": "/dysonprotocol.whaleswap.v1.MsgUpdateParams",
+    "authority": gov_addr,
+    "params": {
+        # ... other params ...
+        "block_delay_before_close": "0",
+        "block_delay_before_liquidation": "0",
+    },
+})
+```
+
+**Why This Works**:
+- Params validation was modified to allow `0` for testing
+- Production deployments use governance to set `>= 1`
+- Query exec can now open and close positions in same transaction
+
+### Running Leverage Tests
+
+```bash
+# Run sanity test first
+pytest tests/whaleswap/hypothesis/test_leverage_positions_hypothesis.py::test_leverage_sanity_open_close_basic -v
+
+# Run all leverage tests
+pytest tests/whaleswap/hypothesis/test_leverage_positions_hypothesis.py -v
+
+# Run with more examples (bug hunting)
+pytest tests/whaleswap/hypothesis/test_leverage_positions_hypothesis.py -v --hypothesis-seed=12345
+```
+
+### Leverage Test Invariants
+
+- **Position Health**: CR >= min_collateral_ratio when open
+- **Pool Accounting**: total_borrowed == sum(position.borrowed)
+- **Collateral Return**: Correct profit/loss calculations
+- **Module Balance**: Escrowed collateral + pool reserves balanced
+- **Partial Close**: Remaining position stays healthy
+- **Borrow Caps**: max_borrow_percent enforced across positions
 

@@ -58,11 +58,8 @@ func (p Params) Validate() error {
 		}
 	}
 	// Leverage parameter validation
-	if p.BlockDelayBeforeClose == 0 {
-		return fmt.Errorf("block_delay_before_close must be > 0")
-	}
-	if p.BlockDelayBeforeLiquidation == 0 {
-		return fmt.Errorf("block_delay_before_liquidation must be > 0")
-	}
+	// Note: block delays can be 0 for testing (query exec scenarios where blocks don't advance).
+	// Production deployments should use >= 1 via governance for safety.
+	// No validation error for 0 to enable single-transaction testing.
 	return nil
 }

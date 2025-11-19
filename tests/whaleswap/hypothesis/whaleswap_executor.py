@@ -42,6 +42,48 @@ import json
 import re
 
 
+def query_balance(address, denom):
+    """Query balance for an address and denom."""
+    result = _query(
+        {
+            "@type": "/cosmos.bank.v1beta1.QueryBalanceRequest",
+            "address": address,
+            "denom": denom,
+        }
+    )
+    balance_obj = result.get("balance", {})
+    return int(balance_obj.get("amount", "0"))
+
+
+def set_zero_block_delays(authority):
+    """
+    Set block delays to 0 for fast testing in query exec.
+
+    This allows positions to be opened and closed in the same transaction
+    without waiting for blocks to advance. Essential for hypothesis testing.
+
+    Args:
+        authority: Gov module address
+
+    Returns:
+        MsgUpdateParams message dict
+    """
+    return {
+        "@type": "/dysonprotocol.whaleswap.v1.MsgUpdateParams",
+        "authority": authority,
+        "params": {
+            "pfand_per_offer": {"denom": "udys", "amount": "1"},
+            "valuation_fee_pct": "0",
+            "valuation_period": "3600s",
+            "bid_timeout": "5s",
+            "minimum_bid_percent_increase": "0",
+            "max_note_length": 128,
+            "block_delay_before_close": "0",
+            "block_delay_before_liquidation": "0",
+        },
+    }
+
+
 def dys_eval_template_substitution(json_str, template_vars):
     """
     Substitute {{ expression }} templates in JSON string using dys_eval.
@@ -333,6 +375,39 @@ def query_auctions_by_seller(seller):
     return result.get("auctions", [])
 
 
+def query_position(position_id):
+    """Query single position by ID."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryPositionRequest",
+            "position_id": position_id,
+        }
+    )
+    return result.get("position", {})
+
+
+def query_positions_by_user(user):
+    """Query positions by user address."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryPositionsByUserRequest",
+            "user": user,
+        }
+    )
+    return result.get("positions", [])
+
+
+def query_positions_by_pool(pool_id):
+    """Query positions for a pool."""
+    result = _query(
+        {
+            "@type": "/dysonprotocol.whaleswap.v1.QueryPositionsByPoolRequest",
+            "pool_id": pool_id,
+        }
+    )
+    return result.get("positions", [])
+
+
 def capture_balances(denoms, accounts):
     """Capture account balances."""
     account_balances = {}
@@ -465,13 +540,74 @@ def execute_messages_sequentially(messages, denoms, accounts, authority):
     # Capture post-state
     post_balances = capture_balances(denoms, accounts)
 
+    # Query final state for invariant checking
+    queries = {}
+
+    # Extract pool_id and position_id from template_vars
+    pool_id = None
+    position_id = None
+
+    for key, value in template_vars.items():
+        if isinstance(value, dict):
+            if "pool_id" in value:
+                pool_id = value["pool_id"]
+            if "position_id" in value:
+                position_id = value["position_id"]
+
+    # Query pool if we have pool_id
+    if pool_id:
+        pool_query = _query(
+            {
+                "@type": "/dysonprotocol.whaleswap.v1.QueryPoolRequest",
+                "pool_id": str(pool_id),
+            }
+        )
+        queries["pool"] = pool_query.get("pool", {})
+
+        # Query positions by pool
+        positions_query = _query(
+            {
+                "@type": "/dysonprotocol.whaleswap.v1.QueryPositionsByPoolRequest",
+                "pool_id": str(pool_id),
+                "pagination": {"limit": "100"},
+            }
+        )
+        queries["positions_by_pool"] = positions_query.get("positions", [])
+
+    # Query module address dynamically using auth module
+    module_addr_result = _query(
+        {
+            "@type": "/cosmos.auth.v1beta1.QueryModuleAccountByNameRequest",
+            "name": "whaleswap",
+        }
+    )
+    module_addr = (
+        module_addr_result.get("account", {}).get("base_account", {}).get("address", "")
+    )
+
+    # Query balances for accounts and module
+    if len(accounts) > 0:
+        alice_addr = accounts[0]
+        queries["alice_balance_base"] = query_balance(alice_addr, denoms[0])
+        queries["alice_balance_quote"] = query_balance(alice_addr, denoms[1])
+
+    # Query module balances
+    if module_addr:
+        queries["module_balance_base"] = query_balance(module_addr, denoms[0])
+        queries["module_balance_quote"] = query_balance(module_addr, denoms[1])
+    else:
+        # Fallback to zero if module address not found
+        queries["module_balance_base"] = 0
+        queries["module_balance_quote"] = 0
+
     return {
         "success": True,
         "pre_balances": pre_balances,
         "post_balances": post_balances,
         "message_count": len(messages),
-        "message_results": message_results,
+        "msg_results": message_results,
         "template_vars": template_vars,
+        "queries": queries,
     }
 
 
@@ -518,3 +654,73 @@ def create_and_query_pools(
         "pair": pair_res.get("pools", []),
         "denom": denom_res.get("pools", []),
     }
+
+
+def check_position_invariants(pool_id, user_addr):
+    """
+    Check position-specific invariants after operations.
+
+    Invariants:
+    1. Pool total_borrowed == sum of all open position borrowed amounts
+    2. All open positions have CR >= min_collateral_ratio
+    3. All open positions have positive held and borrowed amounts
+    4. Closed positions have zero borrowed and held
+
+    Args:
+        pool_id: Pool ID to check
+        user_addr: User address to check positions for
+
+    Returns:
+        List of error strings (empty if all invariants pass)
+    """
+    errors = []
+
+    # Query pool state
+    pool = query_pool(pool_id)
+    if not pool:
+        errors.append(f"Pool {pool_id} not found")
+        return errors
+
+    # Query all positions for this pool
+    positions = query_positions_by_pool(pool_id)
+
+    # Calculate total borrowed from open positions
+    total_borrowed_from_positions = {}
+    for pos in positions:
+        if pos.get("status") == "POSITION_STATUS_OPEN":
+            borrowed = pos.get("borrowed", {})
+            denom = borrowed.get("denom", "")
+            amount = int(borrowed.get("amount", "0"))
+
+            if denom:
+                total_borrowed_from_positions[denom] = (
+                    total_borrowed_from_positions.get(denom, 0) + amount
+                )
+
+            # Check position has positive amounts
+            held = pos.get("held", {})
+            held_amt = int(held.get("amount", "0"))
+            if held_amt <= 0:
+                errors.append(
+                    f"Position {pos.get('position_id')} has non-positive held: {held_amt}"
+                )
+
+            if amount <= 0:
+                errors.append(
+                    f"Position {pos.get('position_id')} has non-positive borrowed: {amount}"
+                )
+
+    # Check pool total_borrowed matches sum of positions
+    pool_total_borrowed = pool.get("total_borrowed", [])
+    for coin in pool_total_borrowed:
+        denom = coin.get("denom", "")
+        pool_amt = int(coin.get("amount", "0"))
+        pos_amt = total_borrowed_from_positions.get(denom, 0)
+
+        if pool_amt != pos_amt:
+            errors.append(
+                f"Pool total_borrowed mismatch for {denom}: "
+                f"pool={pool_amt}, positions={pos_amt}"
+            )
+
+    return errors
