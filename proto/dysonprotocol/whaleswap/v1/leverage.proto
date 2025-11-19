@@ -50,12 +50,9 @@ message LeveragePosition {
   google.protobuf.Timestamp updated_time = 14 [ (gogoproto.stdtime) = true ];
 
   // ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
-  // Annual interest rates per reserve denom (exactly two, canonical order).
-  // Each amount is a LegacyDec string representing APR (per-year accrual).
-  repeated cosmos.base.v1beta1.DecCoin interest_rate = 22 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
-  ];
+  // Annual interest rate for the borrowed denom (APR as LegacyDec string).
+  cosmos.base.v1beta1.DecCoin interest_rate = 22
+      [ (gogoproto.nullable) = false ];
   // Minimum collateral ratio used for health/liquidation checks (cosmos.Dec
   // string).
   string min_collateral_ratio = 23 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
@@ -65,6 +62,11 @@ message LeveragePosition {
   // Opening principal snapshot for analytics/limits (borrowed denom).
   cosmos.base.v1beta1.Coin initial_borrowed = 25
       [ (gogoproto.nullable) = false ];
+  // Opening principal snapshot for analytics/limits (held denom).
+  cosmos.base.v1beta1.Coin initial_held = 33 [ (gogoproto.nullable) = false ];
+  // Opening principal snapshot for analytics/limits (collateral denom).
+  cosmos.base.v1beta1.Coin initial_collateral = 34
+      [ (gogoproto.nullable) = false ];
   // Lifetime interest paid by the user (borrowed denom).
   cosmos.base.v1beta1.Coin total_interest_paid = 26
       [ (gogoproto.nullable) = false ];
@@ -73,8 +75,8 @@ message LeveragePosition {
       [ (gogoproto.stdtime) = true ];
   // Fractional interest remainder (<1 borrowed coin) preserved between
   // settlements.
-  string accrued_interest_remainder = 28
-      [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+  cosmos.base.v1beta1.DecCoin accrued_interest_remainder = 28
+      [ (gogoproto.nullable) = false ];
 
   // Trade IDs associated with this position over its lifetime.
   //

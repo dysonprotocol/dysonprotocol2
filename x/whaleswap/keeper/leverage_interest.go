@@ -13,17 +13,16 @@ import (
 const secondsPerYear = 365.25 * 24 * 60 * 60
 
 func getAccruedInterestRemainder(pos *whaleswapv1.LeveragePosition) (math.LegacyDec, error) {
-	if pos.AccruedInterestRemainder == "" {
-		return math.LegacyZeroDec(), nil
-	}
-	rem, err := math.LegacyNewDecFromStr(pos.AccruedInterestRemainder)
-	if err != nil {
-		return math.LegacyZeroDec(), fmt.Errorf("invalid accrued_interest_remainder: %w", err)
-	}
-	if rem.IsNegative() || rem.GTE(math.LegacyOneDec()) {
+	// Validate the DecCoin remainder
+	if pos.AccruedInterestRemainder.IsNegative() || pos.AccruedInterestRemainder.Amount.GTE(math.LegacyOneDec()) {
 		return math.LegacyZeroDec(), fmt.Errorf("accrued_interest_remainder must be in [0,1)")
 	}
-	return rem, nil
+	// Ensure denom matches borrowed denom
+	if pos.AccruedInterestRemainder.Denom != pos.Borrowed.Denom {
+		return math.LegacyZeroDec(), fmt.Errorf("accrued_interest_remainder denom %s does not match borrowed denom %s",
+			pos.AccruedInterestRemainder.Denom, pos.Borrowed.Denom)
+	}
+	return pos.AccruedInterestRemainder.Amount, nil
 }
 
 // CalculateInterest computes accrued interest on borrowed amount.
@@ -51,11 +50,13 @@ func (k Keeper) InterestStatus(ctx context.Context, pos *whaleswapv1.LeveragePos
 	if pos == nil {
 		return math.LegacyDec{}, 0, fmt.Errorf("position cannot be nil")
 	}
-	if len(pos.InterestRate) != 2 {
-		return math.LegacyDec{}, 0, fmt.Errorf("position interest_rate must have exactly 2 entries")
+	// Validate interest rate denom matches borrowed denom
+	if pos.InterestRate.Denom != pos.Borrowed.Denom {
+		return math.LegacyDec{}, 0, fmt.Errorf("interest_rate denom %s does not match borrowed denom %s",
+			pos.InterestRate.Denom, pos.Borrowed.Denom)
 	}
 
-	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
+	rate := pos.InterestRate.Amount
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	remainder, err := getAccruedInterestRemainder(pos)
@@ -79,7 +80,7 @@ func (k Keeper) InterestStatus(ctx context.Context, pos *whaleswapv1.LeveragePos
 	}
 
 	fresh := math.LegacyZeroDec()
-	if elapsed > 0 && pos.Borrowed.Amount.IsPositive() {
+	if elapsed > 0 && pos.Borrowed.IsPositive() {
 		if calc, calcErr := k.CalculateInterest(pos.Borrowed.Amount, rate, int64(elapsed)); calcErr != nil {
 			return math.LegacyDec{}, 0, calcErr
 		} else {
@@ -103,7 +104,7 @@ func (k Keeper) SettleInterest(ctx context.Context, pos *whaleswapv1.LeveragePos
 	interestInt := interestDec.TruncateInt()
 	denom := pos.Borrowed.Denom
 	pos.AccruedInterest = sdk.NewCoin(denom, interestInt)
-	pos.AccruedInterestRemainder = interestDec.Sub(math.LegacyNewDecFromInt(interestInt)).String()
+	pos.AccruedInterestRemainder = sdk.NewDecCoinFromDec(denom, interestDec.Sub(math.LegacyNewDecFromInt(interestInt)))
 
 	now := sdk.UnwrapSDKContext(ctx).BlockTime()
 	pos.LastInterestSettlementTime = &now
@@ -115,8 +116,8 @@ func resetInterestRemainderIfNoDebt(pos *whaleswapv1.LeveragePosition) {
 	if pos == nil {
 		return
 	}
-	if pos.Borrowed.Amount.IsZero() && pos.AccruedInterest.Amount.IsZero() {
-		pos.AccruedInterestRemainder = math.LegacyZeroDec().String()
+	if pos.Borrowed.IsZero() && pos.AccruedInterest.IsZero() {
+		pos.AccruedInterestRemainder = sdk.NewDecCoinFromDec(pos.Borrowed.Denom, math.LegacyZeroDec())
 	}
 }
 

@@ -99,45 +99,39 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		heldRemainingAmt := remainingFraction.MulInt(pos.Held.Amount).TruncateInt()
 		collateralRemainingAmt := remainingFraction.MulInt(pos.Collateral.Amount).TruncateInt()
 
-		// Validate that partial close won't create inconsistent state
-		// If any critical field would be fully closed due to rounding, reject partial close
-		if principalRemainingAmt.IsZero() && pos.Borrowed.IsPositive() {
-			return nil, cosmossdkerrors.Wrap(
-				sdkerrors.ErrInvalidRequest,
-				"partial close would round principal to zero; use fraction=1 for full close",
-			)
-		}
-		if heldRemainingAmt.IsZero() && pos.Held.IsPositive() {
-			return nil, cosmossdkerrors.Wrap(
-				sdkerrors.ErrInvalidRequest,
-				"partial close would round held to zero; use fraction=1 for full close",
-			)
-		}
-		if collateralRemainingAmt.IsZero() && pos.Collateral.IsPositive() {
-			return nil, cosmossdkerrors.Wrap(
-				sdkerrors.ErrInvalidRequest,
-				"partial close would round collateral to zero; use fraction=1 for full close",
-			)
-		}
+		// If partial close would round critical fields to zero, treat as full close
+		if (principalRemainingAmt.IsZero() && pos.Borrowed.IsPositive()) ||
+			(heldRemainingAmt.IsZero() && pos.Held.IsPositive()) ||
+			(collateralRemainingAmt.IsZero() && pos.Collateral.IsPositive()) {
+			// Convert to full close by setting fraction to 1
+			fraction = math.LegacyOneDec()
+			isPartialClose = false
 
-		// Amount to close = total - remaining (captures any rounding dust)
-		principalRemainingCoin := sdk.NewCoin(pos.Borrowed.Denom, principalRemainingAmt)
-		interestRemainingCoin := sdk.NewCoin(interestCoin.Denom, interestRemainingAmt)
-		heldRemainingCoin := sdk.NewCoin(pos.Held.Denom, heldRemainingAmt)
-		collateralRemainingCoin := sdk.NewCoin(pos.Collateral.Denom, collateralRemainingAmt)
+			// Use full close amounts
+			principalToRepay = pos.Borrowed
+			interestToRepay = interestCoin
+			heldToSwap = pos.Held
+			collateralToReturn = pos.Collateral
+		} else {
+			// Amount to close = total - remaining (captures any rounding dust)
+			principalRemainingCoin := sdk.NewCoin(pos.Borrowed.Denom, principalRemainingAmt)
+			interestRemainingCoin := sdk.NewCoin(interestCoin.Denom, interestRemainingAmt)
+			heldRemainingCoin := sdk.NewCoin(pos.Held.Denom, heldRemainingAmt)
+			collateralRemainingCoin := sdk.NewCoin(pos.Collateral.Denom, collateralRemainingAmt)
 
-		principalToRepay = pos.Borrowed.Sub(principalRemainingCoin)
-		interestToRepay = interestCoin.Sub(interestRemainingCoin)
-		heldToSwap = pos.Held.Sub(heldRemainingCoin)
-		collateralToReturn = pos.Collateral.Sub(collateralRemainingCoin)
+			principalToRepay = pos.Borrowed.Sub(principalRemainingCoin)
+			interestToRepay = interestCoin.Sub(interestRemainingCoin)
+			heldToSwap = pos.Held.Sub(heldRemainingCoin)
+			collateralToReturn = pos.Collateral.Sub(collateralRemainingCoin)
 
-		// Validate that remaining position would still be healthy
-		// Total debt = borrowed + accrued interest (after settling current interest and paying partial)
-		totalRemainingDebtCoin := principalRemainingCoin.Add(interestRemainingCoin)
-		if totalRemainingDebtCoin.IsPositive() {
-			collateralForRatio := sdk.NewCoin(pos.Borrowed.Denom, collateralRemainingCoin.Amount)
-			if _, err := k.ensureHealthyCollateralRatio(&pos, collateralForRatio, totalRemainingDebtCoin); err != nil {
-				return nil, cosmossdkerrors.Wrap(err, "partial close would leave position unhealthy")
+			// Validate that remaining position would still be healthy
+			// Total debt = borrowed + accrued interest (after settling current interest and paying partial)
+			totalRemainingDebtCoin := principalRemainingCoin.Add(interestRemainingCoin)
+			if totalRemainingDebtCoin.IsPositive() {
+				collateralForRatio := sdk.NewCoin(pos.Borrowed.Denom, collateralRemainingCoin.Amount)
+				if _, err := k.ensureHealthyCollateralRatio(&pos, collateralForRatio, totalRemainingDebtCoin); err != nil {
+					return nil, cosmossdkerrors.Wrap(err, "partial close would leave position unhealthy")
+				}
 			}
 		}
 	} else {

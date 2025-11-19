@@ -75,7 +75,7 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves")
 	}
 	// Validate collateral
-	if !msg.Collateral.IsValid() || !msg.Collateral.Amount.IsPositive() {
+	if !msg.Collateral.IsValid() || !msg.Collateral.IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid collateral")
 	}
 	if !k.isDenomInPool(&pool, msg.Collateral.Denom) {
@@ -83,7 +83,7 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	}
 
 	// Validate borrow
-	if !msg.Borrow.IsValid() || !msg.Borrow.Amount.IsPositive() {
+	if !msg.Borrow.IsValid() || !msg.Borrow.IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid borrow")
 	}
 	if !k.isDenomInPool(&pool, msg.Borrow.Denom) {
@@ -103,7 +103,7 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	// Find pool amounts for the specific denoms being borrowed and held using AmountOf
 	borrowPoolAmount := pool.Coins.AmountOf(borrowDenom)
 	heldPoolAmount := pool.Coins.AmountOf(heldDenom)
-	if !borrowPoolAmount.IsPositive() || !heldPoolAmount.IsPositive() {
+	if !sdk.NewCoin(borrowDenom, borrowPoolAmount).IsPositive() || !sdk.NewCoin(heldDenom, heldPoolAmount).IsPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves for price computation")
 	}
 	priceHeldPerBorrow := math.LegacyNewDecFromInt(heldPoolAmount).Quo(math.LegacyNewDecFromInt(borrowPoolAmount))
@@ -233,24 +233,13 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 
 	// Persist final position after swap and collateral escrow
 	// Snapshot interest_rate, min_collateral_ratio, liquidation_threshold at open per updated design
-	// Prepare per-position snapshots
-	// Always persist exactly two entries for interest_rate in canonical pool order to avoid nil/empty cases later.
-	var snapIR sdk.DecCoins
-	baseDenom := pool.Coins[0].Denom
-	quoteDenom := pool.Coins[1].Denom
+	// Use single DecCoin for interest_rate of the borrowed denom
+	var snapIR sdk.DecCoin
 	if len(pool.InterestRate) == 2 {
 		ir := sdk.NewDecCoins(pool.InterestRate...).Sort()
-		ir1 := ir.AmountOf(baseDenom)
-		ir2 := ir.AmountOf(quoteDenom)
-		snapIR = sdk.DecCoins{
-			sdk.NewDecCoinFromDec(baseDenom, ir1),
-			sdk.NewDecCoinFromDec(quoteDenom, ir2),
-		}
+		snapIR = sdk.NewDecCoinFromDec(borrowDenom, ir.AmountOf(borrowDenom))
 	} else {
-		snapIR = sdk.DecCoins{
-			sdk.NewDecCoinFromDec(baseDenom, math.LegacyNewDec(0)),
-			sdk.NewDecCoinFromDec(quoteDenom, math.LegacyNewDec(0)),
-		}
+		snapIR = sdk.NewDecCoinFromDec(borrowDenom, math.LegacyNewDec(0))
 	}
 	pos := whaleswapv1.LeveragePosition{
 		PositionId:                 posID,
@@ -266,11 +255,13 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		UpdatedTime:                &now,
 		LiquidationStatus:          whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE,
 		AccruedInterest:            sdk.NewCoin(borrowDenom, math.ZeroInt()),
-		AccruedInterestRemainder:   math.LegacyZeroDec().String(),
+		AccruedInterestRemainder:   sdk.NewDecCoinFromDec(borrowDenom, math.LegacyZeroDec()),
 		InterestRate:               snapIR,
 		MinCollateralRatio:         minCR.String(),
 		LiquidationThreshold:       pool.LiquidationThreshold.AmountOf(borrowDenom).String(),
 		InitialBorrowed:            borrowed,
+		InitialHeld:                sdk.NewCoin(heldDenom, heldAmt),
+		InitialCollateral:          msg.Collateral,
 		TotalInterestPaid:          sdk.NewCoin(borrowDenom, math.ZeroInt()),
 		LastInterestSettlementTime: &now,
 		TradeIds:                   []uint64{mtResp.TradeId},

@@ -2094,6 +2094,18 @@
       },
       "title": "AuctionRedeem operation for recording auction redemption in Trade history"
     },
+    "dysonprotocol.whaleswap.v1.DecCoinValue": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "DecCoinValue represents a decimal coin value that serializes as {denom,\namount} object."
+    },
     "dysonprotocol.whaleswap.v1.InterestView": {
       "type": "object",
       "properties": {
@@ -2170,11 +2182,8 @@
           "format": "date-time"
         },
         "interest_rate": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
-          },
-          "description": "\u2550\u2550\u2550\u2550\u2550 PER-POSITION SNAPSHOTS (sticky to this position) \u2550\u2550\u2550\u2550\u2550\nAnnual interest rates per reserve denom (exactly two, canonical order).\nEach amount is a LegacyDec string representing APR (per-year accrual)."
+          "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin",
+          "description": "\u2550\u2550\u2550\u2550\u2550 PER-POSITION SNAPSHOTS (sticky to this position) \u2550\u2550\u2550\u2550\u2550\nAnnual interest rate for the borrowed denom (APR as LegacyDec string)."
         },
         "min_collateral_ratio": {
           "type": "string",
@@ -2188,6 +2197,14 @@
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
           "description": "Opening principal snapshot for analytics/limits (borrowed denom)."
         },
+        "initial_held": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Opening principal snapshot for analytics/limits (held denom)."
+        },
+        "initial_collateral": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Opening principal snapshot for analytics/limits (collateral denom)."
+        },
         "total_interest_paid": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
           "description": "Lifetime interest paid by the user (borrowed denom)."
@@ -2198,7 +2215,7 @@
           "description": "Timestamp of the last time interest was settled into accrued_interest."
         },
         "accrued_interest_remainder": {
-          "type": "string",
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.DecCoinValue",
           "description": "Fractional interest remainder (<1 borrowed coin) preserved between\nsettlements."
         },
         "trade_ids": {

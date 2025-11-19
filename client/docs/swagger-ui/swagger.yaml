@@ -10278,32 +10278,21 @@ paths:
                       type: string
                       format: date-time
                     interest_rate:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
                       description: >-
-                        ═════ PER-POSITION SNAPSHOTS (sticky to this position)
-                        ═════
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
 
-                        Annual interest rates per reserve denom (exactly two,
-                        canonical order).
 
-                        Each amount is a LegacyDec string representing APR
-                        (per-year accrual).
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
                     min_collateral_ratio:
                       type: string
                       description: >-
@@ -10317,6 +10306,36 @@ paths:
                         Liquidation threshold used for liquidation checks
                         (cosmos.Dec string).
                     initial_borrowed:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    initial_held:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    initial_collateral:
                       type: object
                       properties:
                         denom:
@@ -10353,12 +10372,17 @@ paths:
                         Timestamp of the last time interest was settled into
                         accrued_interest.
                     accrued_interest_remainder:
-                      type: string
                       description: >-
                         Fractional interest remainder (<1 borrowed coin)
                         preserved between
 
                         settlements.
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
                     trade_ids:
                       type: array
                       items:
@@ -10694,32 +10718,21 @@ paths:
                       type: string
                       format: date-time
                     interest_rate:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          denom:
-                            type: string
-                          amount:
-                            type: string
-                        description: >-
-                          DecCoin defines a token with a denomination and a
-                          decimal amount.
-
-
-                          NOTE: The amount field is an Dec which implements the
-                          custom method
-
-                          signatures required by gogoproto.
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
                       description: >-
-                        ═════ PER-POSITION SNAPSHOTS (sticky to this position)
-                        ═════
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
 
-                        Annual interest rates per reserve denom (exactly two,
-                        canonical order).
 
-                        Each amount is a LegacyDec string representing APR
-                        (per-year accrual).
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
                     min_collateral_ratio:
                       type: string
                       description: >-
@@ -10733,6 +10746,36 @@ paths:
                         Liquidation threshold used for liquidation checks
                         (cosmos.Dec string).
                     initial_borrowed:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    initial_held:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    initial_collateral:
                       type: object
                       properties:
                         denom:
@@ -10769,12 +10812,17 @@ paths:
                         Timestamp of the last time interest was settled into
                         accrued_interest.
                     accrued_interest_remainder:
-                      type: string
                       description: >-
                         Fractional interest remainder (<1 borrowed coin)
                         preserved between
 
                         settlements.
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
                     trade_ids:
                       type: array
                       items:
@@ -11085,32 +11133,21 @@ paths:
                     type: string
                     format: date-time
                   interest_rate:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
-                      description: >-
-                        DecCoin defines a token with a denomination and a
-                        decimal amount.
-
-
-                        NOTE: The amount field is an Dec which implements the
-                        custom method
-
-                        signatures required by gogoproto.
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
                     description: >-
-                      ═════ PER-POSITION SNAPSHOTS (sticky to this position)
-                      ═════
+                      DecCoin defines a token with a denomination and a decimal
+                      amount.
 
-                      Annual interest rates per reserve denom (exactly two,
-                      canonical order).
 
-                      Each amount is a LegacyDec string representing APR
-                      (per-year accrual).
+                      NOTE: The amount field is an Dec which implements the
+                      custom method
+
+                      signatures required by gogoproto.
                   min_collateral_ratio:
                     type: string
                     description: >-
@@ -11124,6 +11161,36 @@ paths:
                       Liquidation threshold used for liquidation checks
                       (cosmos.Dec string).
                   initial_borrowed:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                  initial_held:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                  initial_collateral:
                     type: object
                     properties:
                       denom:
@@ -11160,12 +11227,17 @@ paths:
                       Timestamp of the last time interest was settled into
                       accrued_interest.
                   accrued_interest_remainder:
-                    type: string
                     description: >-
                       Fractional interest remainder (<1 borrowed coin) preserved
                       between
 
                       settlements.
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
                   trade_ids:
                     type: array
                     items:
@@ -36184,9 +36256,11 @@ paths:
               - `payment` must be positive and its denom must equal the borrowed
               denom.
 
-              - Position must have a two-entry interest_rate snapshot; payment
-              must fully
-                cover accrued interest.
+              - Position must have an interest_rate snapshot for the borrowed
+              denom;
+
+              payment must fully cover accrued interest.
+
               - Auto-close path respects the close block delay and requires the
               unwind swap
                 to produce borrowed output.
@@ -36651,7 +36725,8 @@ paths:
               - Block delay must have passed (current_height >
               initialized_height).
 
-              - Position must have a two-entry interest_rate snapshot.
+              - Position must have an interest_rate snapshot for the borrowed
+              denom.
 
               - Pool must exist.
 
@@ -36765,7 +36840,8 @@ paths:
 
               - Position must exist; pool must exist.
 
-              - Position must have a two-entry interest_rate snapshot.
+              - Position must have an interest_rate snapshot for the borrowed
+              denom.
 
               - Pool must have a two-entry liquidation_threshold; borrowed denom
               entry must
@@ -50192,6 +50268,16 @@ definitions:
         type: string
         format: uint64
     title: AuctionRedeem operation for recording auction redemption in Trade history
+  dysonprotocol.whaleswap.v1.DecCoinValue:
+    type: object
+    properties:
+      denom:
+        type: string
+      amount:
+        type: string
+    description: |-
+      DecCoinValue represents a decimal coin value that serializes as {denom,
+      amount} object.
   dysonprotocol.whaleswap.v1.InterestView:
     type: object
     properties:
@@ -50308,26 +50394,17 @@ definitions:
         type: string
         format: date-time
       interest_rate:
-        type: array
-        items:
-          type: object
-          properties:
-            denom:
-              type: string
-            amount:
-              type: string
-          description: |-
-            DecCoin defines a token with a denomination and a decimal amount.
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          DecCoin defines a token with a denomination and a decimal amount.
 
-            NOTE: The amount field is an Dec which implements the custom method
-            signatures required by gogoproto.
-        description: >-
-          ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
-
-          Annual interest rates per reserve denom (exactly two, canonical
-          order).
-
-          Each amount is a LegacyDec string representing APR (per-year accrual).
+          NOTE: The amount field is an Dec which implements the custom method
+          signatures required by gogoproto.
       min_collateral_ratio:
         type: string
         description: >-
@@ -50339,6 +50416,30 @@ definitions:
         type: string
         description: Liquidation threshold used for liquidation checks (cosmos.Dec string).
       initial_borrowed:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      initial_held:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      initial_collateral:
         type: object
         properties:
           denom:
@@ -50367,10 +50468,15 @@ definitions:
         format: date-time
         description: Timestamp of the last time interest was settled into accrued_interest.
       accrued_interest_remainder:
-        type: string
         description: |-
           Fractional interest remainder (<1 borrowed coin) preserved between
           settlements.
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
       trade_ids:
         type: array
         items:
@@ -54958,31 +55064,20 @@ definitions:
             type: string
             format: date-time
           interest_rate:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
-              description: >-
-                DecCoin defines a token with a denomination and a decimal
-                amount.
-
-
-                NOTE: The amount field is an Dec which implements the custom
-                method
-
-                signatures required by gogoproto.
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
             description: >-
-              ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
+              DecCoin defines a token with a denomination and a decimal amount.
 
-              Annual interest rates per reserve denom (exactly two, canonical
-              order).
 
-              Each amount is a LegacyDec string representing APR (per-year
-              accrual).
+              NOTE: The amount field is an Dec which implements the custom
+              method
+
+              signatures required by gogoproto.
           min_collateral_ratio:
             type: string
             description: >-
@@ -54996,6 +55091,36 @@ definitions:
               Liquidation threshold used for liquidation checks (cosmos.Dec
               string).
           initial_borrowed:
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+          initial_held:
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+          initial_collateral:
             type: object
             properties:
               denom:
@@ -55032,10 +55157,15 @@ definitions:
               Timestamp of the last time interest was settled into
               accrued_interest.
           accrued_interest_remainder:
-            type: string
             description: |-
               Fractional interest remainder (<1 borrowed coin) preserved between
               settlements.
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
           trade_ids:
             type: array
             items:
@@ -55270,31 +55400,21 @@ definitions:
               type: string
               format: date-time
             interest_rate:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  DecCoin defines a token with a denomination and a decimal
-                  amount.
-
-
-                  NOTE: The amount field is an Dec which implements the custom
-                  method
-
-                  signatures required by gogoproto.
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
               description: >-
-                ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
+                DecCoin defines a token with a denomination and a decimal
+                amount.
 
-                Annual interest rates per reserve denom (exactly two, canonical
-                order).
 
-                Each amount is a LegacyDec string representing APR (per-year
-                accrual).
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
             min_collateral_ratio:
               type: string
               description: >-
@@ -55308,6 +55428,36 @@ definitions:
                 Liquidation threshold used for liquidation checks (cosmos.Dec
                 string).
             initial_borrowed:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            initial_held:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            initial_collateral:
               type: object
               properties:
                 denom:
@@ -55344,12 +55494,17 @@ definitions:
                 Timestamp of the last time interest was settled into
                 accrued_interest.
             accrued_interest_remainder:
-              type: string
               description: >-
                 Fractional interest remainder (<1 borrowed coin) preserved
                 between
 
                 settlements.
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
             trade_ids:
               type: array
               items:
@@ -55567,31 +55722,21 @@ definitions:
               type: string
               format: date-time
             interest_rate:
-              type: array
-              items:
-                type: object
-                properties:
-                  denom:
-                    type: string
-                  amount:
-                    type: string
-                description: >-
-                  DecCoin defines a token with a denomination and a decimal
-                  amount.
-
-
-                  NOTE: The amount field is an Dec which implements the custom
-                  method
-
-                  signatures required by gogoproto.
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
               description: >-
-                ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
+                DecCoin defines a token with a denomination and a decimal
+                amount.
 
-                Annual interest rates per reserve denom (exactly two, canonical
-                order).
 
-                Each amount is a LegacyDec string representing APR (per-year
-                accrual).
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
             min_collateral_ratio:
               type: string
               description: >-
@@ -55605,6 +55750,36 @@ definitions:
                 Liquidation threshold used for liquidation checks (cosmos.Dec
                 string).
             initial_borrowed:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            initial_held:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            initial_collateral:
               type: object
               properties:
                 denom:
@@ -55641,12 +55816,17 @@ definitions:
                 Timestamp of the last time interest was settled into
                 accrued_interest.
             accrued_interest_remainder:
-              type: string
               description: >-
                 Fractional interest remainder (<1 borrowed coin) preserved
                 between
 
                 settlements.
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
             trade_ids:
               type: array
               items:
@@ -79425,9 +79605,10 @@ definitions:
 
       - `payment` must be positive and its denom must equal the borrowed denom.
 
-      - Position must have a two-entry interest_rate snapshot; payment must
-      fully
-        cover accrued interest.
+      - Position must have an interest_rate snapshot for the borrowed denom;
+
+      payment must fully cover accrued interest.
+
       - Auto-close path respects the close block delay and requires the unwind
       swap
         to produce borrowed output.
@@ -79728,7 +79909,7 @@ definitions:
 
       - Block delay must have passed (current_height > initialized_height).
 
-      - Position must have a two-entry interest_rate snapshot.
+      - Position must have an interest_rate snapshot for the borrowed denom.
 
       - Pool must exist.
 
@@ -79820,7 +80001,7 @@ definitions:
 
       - Position must exist; pool must exist.
 
-      - Position must have a two-entry interest_rate snapshot.
+      - Position must have an interest_rate snapshot for the borrowed denom.
 
       - Pool must have a two-entry liquidation_threshold; borrowed denom entry
       must

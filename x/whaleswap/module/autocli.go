@@ -137,6 +137,36 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Long:      "List the lifetime whaleswap metrics for every tracked address. Use pagination flags to limit results; this endpoint can be expensive on large datasets.",
 					Example:   "dysond query whaleswap address-metrics-all --limit 50",
 				},
+				{
+					RpcMethod: "Position",
+					Use:       "position --position-id=<id>",
+					Short:     "Get a leverage position by ID",
+					Long:      "Fetch a single leverage position by its numeric ID, including current health metrics and interest calculations.",
+					Example:   "dysond query whaleswap position --position-id=1",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"position_id": {Name: "position-id", Usage: "Position ID"},
+					},
+				},
+				{
+					RpcMethod: "PositionsByAddress",
+					Use:       "positions-by-address --address=<addr>",
+					Short:     "List leverage positions by owner address",
+					Long:      "List all leverage positions owned by an address. Optionally filter by borrowed denom, collateral denom, pool ID, or status.",
+					Example:   "dysond query whaleswap positions-by-address --address=$(dysond keys show alice -a)",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"address": {Name: "address", Usage: "Owner address"},
+					},
+				},
+				{
+					RpcMethod: "PositionsByPool",
+					Use:       "positions-by-pool --pool-id=<id>",
+					Short:     "List leverage positions by pool ID",
+					Long:      "List all leverage positions against a specific pool. Optionally filter by status.",
+					Example:   "dysond query whaleswap positions-by-pool --pool-id=1",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"pool_id": {Name: "pool-id", Usage: "Pool ID"},
+					},
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{

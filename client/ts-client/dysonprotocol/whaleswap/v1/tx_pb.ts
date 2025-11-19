@@ -2104,8 +2104,8 @@ export class MsgRemoveCollateralResponse extends Message<MsgRemoveCollateralResp
  * Validation:
  * - Position must exist and be owned by `user`.
  * - `payment` must be positive and its denom must equal the borrowed denom.
- * - Position must have a two-entry interest_rate snapshot; payment must fully
- *   cover accrued interest.
+ * - Position must have an interest_rate snapshot for the borrowed denom;
+ * payment must fully cover accrued interest.
  * - Auto-close path respects the close block delay and requires the unwind swap
  *   to produce borrowed output.
  *
@@ -2284,7 +2284,7 @@ export class MsgCoverPositionResponse extends Message<MsgCoverPositionResponse> 
  *
  * Validation:
  * - Position must exist; pool must exist.
- * - Position must have a two-entry interest_rate snapshot.
+ * - Position must have an interest_rate snapshot for the borrowed denom.
  * - Pool must have a two-entry liquidation_threshold; borrowed denom entry must
  *   be > 1.
  * - Position must be liquidatable at evaluation time (CR < threshold).
@@ -2430,7 +2430,7 @@ export class MsgInitializeLiquidationResponse extends Message<MsgInitializeLiqui
  * Validation:
  * - Position must exist with LIQUIDATION_STATUS_INITIALIZED.
  * - Block delay must have passed (current_height > initialized_height).
- * - Position must have a two-entry interest_rate snapshot.
+ * - Position must have an interest_rate snapshot for the borrowed denom.
  * - Pool must exist.
  *
  * Emits:

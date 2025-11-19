@@ -144,6 +144,20 @@
                 "title": "Dec Coin",
                 "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
             },
+            "dysonprotocol.whaleswap.v1.DecCoinValue": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Dec Coin Value",
+                "description": "DecCoinValue represents a decimal coin value that serializes as {denom, amount} object."
+            },
             "dysonprotocol.whaleswap.v1.LeveragePosition": {
                 "properties": {
                     "position_id": {
@@ -233,12 +247,9 @@
                         "format": "date-time"
                     },
                     "interest_rate": {
-                        "items": {
-                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
-                        },
+                        "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin",
                         "additionalProperties": false,
-                        "type": "array",
-                        "description": "\u2550\u2550\u2550\u2550\u2550 PER-POSITION SNAPSHOTS (sticky to this position) \u2550\u2550\u2550\u2550\u2550 Annual interest rates per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string representing APR (per-year accrual)."
+                        "description": "\u2550\u2550\u2550\u2550\u2550 PER-POSITION SNAPSHOTS (sticky to this position) \u2550\u2550\u2550\u2550\u2550 Annual interest rate for the borrowed denom (APR as LegacyDec string)."
                     },
                     "min_collateral_ratio": {
                         "type": "string",
@@ -253,6 +264,16 @@
                         "additionalProperties": false,
                         "description": "Opening principal snapshot for analytics/limits (borrowed denom)."
                     },
+                    "initial_held": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Opening principal snapshot for analytics/limits (held denom)."
+                    },
+                    "initial_collateral": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Opening principal snapshot for analytics/limits (collateral denom)."
+                    },
                     "total_interest_paid": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false,
@@ -264,7 +285,8 @@
                         "format": "date-time"
                     },
                     "accrued_interest_remainder": {
-                        "type": "string",
+                        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.DecCoinValue",
+                        "additionalProperties": false,
                         "description": "Fractional interest remainder (<1 borrowed coin) preserved between settlements."
                     },
                     "trade_ids": {

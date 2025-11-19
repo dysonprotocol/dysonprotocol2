@@ -44,7 +44,7 @@ func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequ
 	if err != nil {
 		return nil, err
 	}
-	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
+	rate := pos.InterestRate.Amount
 
 	// Get Pool for real-time price info
 	pool, err := k.PoolsMap.Get(ctx, pos.PoolId)

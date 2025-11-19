@@ -35,7 +35,7 @@ import (
  * Validation:
  * - Position must exist with LIQUIDATION_STATUS_INITIALIZED.
  * - Block delay must have passed (current_height > initialized_height).
- * - Position must have a two-entry interest_rate snapshot.
+	 * - Position must have an interest_rate snapshot for the borrowed denom.
  * - Pool must exist.
  *
  * Emits:
@@ -48,7 +48,7 @@ import (
  *
  * Errors are returned on validation failures or event emission failures;
  * no panics.
- */
+*/
 func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFinalizeLiquidation) (*whaleswapv1.MsgFinalizeLiquidationResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := k.Logger(sdkCtx)

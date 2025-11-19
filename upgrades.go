@@ -27,6 +27,13 @@ func (app *DysApp) RegisterUpgradeHandlers() {
 				app.Logger().Error("Upgrade handler failed", "name", plan.Name, "height", plan.Height, "err", err)
 				return newVM, err
 			}
+
+			// Execute whaleswap leverage interest migration
+			if err := app.WhaleswapKeeper.MigrateWhaleswapLeverageInterest(ctx); err != nil {
+				app.Logger().Error("Whaleswap leverage interest migration failed", "err", err)
+				return newVM, err
+			}
+
 			app.Logger().Info("Upgrade handler completed", "name", plan.Name, "height", plan.Height)
 			return newVM, nil
 		},
