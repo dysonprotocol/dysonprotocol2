@@ -7814,16 +7814,19 @@ paths:
                       entries in canonical pool order matching coins[0].denom
                       and coins[1].denom.
 
-                      Fee is applied to the OUTPUT denom of each swap leg: for
-                      exact-in, the
+                      Fee is applied to the INPUT denom of each swap leg: for
+                      exact-in and
 
-                      computed gross output is reduced by fee; for exact-out,
-                      the required gross
+                      exact-out, the effective input participating in the AMM
+                      curve is
 
-                      output is inflated so net (after fee) meets the target.
-                      Fees accrue to
+                      dx_effective = dx * (1 - fee_rate[input_denom]). The
+                      difference
 
-                      fees_earned in the output denom.
+                      dx - dx_effective is the swap fee charged in the input
+                      denom and accrued to
+
+                      fees_earned.
                 description: >-
                   Pool describes AMM pool state.
 
@@ -8244,16 +8247,19 @@ paths:
                         entries in canonical pool order matching coins[0].denom
                         and coins[1].denom.
 
-                        Fee is applied to the OUTPUT denom of each swap leg: for
-                        exact-in, the
+                        Fee is applied to the INPUT denom of each swap leg: for
+                        exact-in and
 
-                        computed gross output is reduced by fee; for exact-out,
-                        the required gross
+                        exact-out, the effective input participating in the AMM
+                        curve is
 
-                        output is inflated so net (after fee) meets the target.
-                        Fees accrue to
+                        dx_effective = dx * (1 - fee_rate[input_denom]). The
+                        difference
 
-                        fees_earned in the output denom.
+                        dx - dx_effective is the swap fee charged in the input
+                        denom and accrued to
+
+                        fees_earned.
                   description: >-
                     Pool describes AMM pool state.
 
@@ -8725,16 +8731,19 @@ paths:
                         entries in canonical pool order matching coins[0].denom
                         and coins[1].denom.
 
-                        Fee is applied to the OUTPUT denom of each swap leg: for
-                        exact-in, the
+                        Fee is applied to the INPUT denom of each swap leg: for
+                        exact-in and
 
-                        computed gross output is reduced by fee; for exact-out,
-                        the required gross
+                        exact-out, the effective input participating in the AMM
+                        curve is
 
-                        output is inflated so net (after fee) meets the target.
-                        Fees accrue to
+                        dx_effective = dx * (1 - fee_rate[input_denom]). The
+                        difference
 
-                        fees_earned in the output denom.
+                        dx - dx_effective is the swap fee charged in the input
+                        denom and accrued to
+
+                        fees_earned.
                   description: >-
                     Pool describes AMM pool state.
 
@@ -9217,16 +9226,19 @@ paths:
                         entries in canonical pool order matching coins[0].denom
                         and coins[1].denom.
 
-                        Fee is applied to the OUTPUT denom of each swap leg: for
-                        exact-in, the
+                        Fee is applied to the INPUT denom of each swap leg: for
+                        exact-in and
 
-                        computed gross output is reduced by fee; for exact-out,
-                        the required gross
+                        exact-out, the effective input participating in the AMM
+                        curve is
 
-                        output is inflated so net (after fee) meets the target.
-                        Fees accrue to
+                        dx_effective = dx * (1 - fee_rate[input_denom]). The
+                        difference
 
-                        fees_earned in the output denom.
+                        dx - dx_effective is the swap fee charged in the input
+                        denom and accrued to
+
+                        fees_earned.
                   description: >-
                     Pool describes AMM pool state.
 
@@ -9703,16 +9715,19 @@ paths:
                         entries in canonical pool order matching coins[0].denom
                         and coins[1].denom.
 
-                        Fee is applied to the OUTPUT denom of each swap leg: for
-                        exact-in, the
+                        Fee is applied to the INPUT denom of each swap leg: for
+                        exact-in and
 
-                        computed gross output is reduced by fee; for exact-out,
-                        the required gross
+                        exact-out, the effective input participating in the AMM
+                        curve is
 
-                        output is inflated so net (after fee) meets the target.
-                        Fees accrue to
+                        dx_effective = dx * (1 - fee_rate[input_denom]). The
+                        difference
 
-                        fees_earned in the output denom.
+                        dx - dx_effective is the swap fee charged in the input
+                        denom and accrued to
+
+                        fees_earned.
                   description: >-
                     Pool describes AMM pool state.
 
@@ -10204,16 +10219,19 @@ paths:
                         entries in canonical pool order matching coins[0].denom
                         and coins[1].denom.
 
-                        Fee is applied to the OUTPUT denom of each swap leg: for
-                        exact-in, the
+                        Fee is applied to the INPUT denom of each swap leg: for
+                        exact-in and
 
-                        computed gross output is reduced by fee; for exact-out,
-                        the required gross
+                        exact-out, the effective input participating in the AMM
+                        curve is
 
-                        output is inflated so net (after fee) meets the target.
-                        Fees accrue to
+                        dx_effective = dx * (1 - fee_rate[input_denom]). The
+                        difference
 
-                        fees_earned in the output denom.
+                        dx - dx_effective is the swap fee charged in the input
+                        denom and accrued to
+
+                        fees_earned.
                   description: >-
                     Pool describes AMM pool state.
 
@@ -10696,16 +10714,19 @@ paths:
                       entries in canonical pool order matching coins[0].denom
                       and coins[1].denom.
 
-                      Fee is applied to the OUTPUT denom of each swap leg: for
-                      exact-in, the
+                      Fee is applied to the INPUT denom of each swap leg: for
+                      exact-in and
 
-                      computed gross output is reduced by fee; for exact-out,
-                      the required gross
+                      exact-out, the effective input participating in the AMM
+                      curve is
 
-                      output is inflated so net (after fee) meets the target.
-                      Fees accrue to
+                      dx_effective = dx * (1 - fee_rate[input_denom]). The
+                      difference
 
-                      fees_earned in the output denom.
+                      dx - dx_effective is the swap fee charged in the input
+                      denom and accrued to
+
+                      fees_earned.
                 description: >-
                   Pool describes AMM pool state.
 
@@ -11037,6 +11058,21 @@ paths:
                         closes)
 
                         - Losses realized during liquidation flows (if any)
+                    collateral_returned:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
                   description: >-
                     LeveragePosition represents an active leverage position for
                     a trader.
@@ -11438,6 +11474,21 @@ paths:
                         closes)
 
                         - Losses realized during liquidation flows (if any)
+                    collateral_returned:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
                   description: >-
                     LeveragePosition represents an active leverage position for
                     a trader.
@@ -11813,6 +11864,21 @@ paths:
                       closes)
 
                       - Losses realized during liquidation flows (if any)
+                  collateral_returned:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
                 description: >-
                   LeveragePosition represents an active leverage position for a
                   trader.
@@ -12122,6 +12188,22 @@ paths:
                               the custom method
 
                               signatures required by gogoproto.
+                          fees_paid:
+                            type: object
+                            properties:
+                              denom:
+                                type: string
+                              amount:
+                                type: string
+                            description: >-
+                              Coin defines a token with a denomination and an
+                              amount.
+
+
+                              NOTE: The amount field is an Int which implements
+                              the custom method
+
+                              signatures required by gogoproto.
                         description: >-
                           TradeOperation allows mixing pool swap legs, orderbook
                           takes, and auction
@@ -12194,7 +12276,8 @@ paths:
                     Operations are stored in execution order, preserving the
                     exact sequence from
 
-                    the original message (MsgMakeTrade,
+                    the original message (MsgMakeTrade, MsgPoolSwap,
+                    MsgTakeOffer,
 
                     MsgRedeemAuction).
                 title: List of trades matching the denom filters
@@ -12511,6 +12594,22 @@ paths:
                               the custom method
 
                               signatures required by gogoproto.
+                          fees_paid:
+                            type: object
+                            properties:
+                              denom:
+                                type: string
+                              amount:
+                                type: string
+                            description: >-
+                              Coin defines a token with a denomination and an
+                              amount.
+
+
+                              NOTE: The amount field is an Int which implements
+                              the custom method
+
+                              signatures required by gogoproto.
                         description: >-
                           TradeOperation allows mixing pool swap legs, orderbook
                           takes, and auction
@@ -12583,7 +12682,8 @@ paths:
                     Operations are stored in execution order, preserving the
                     exact sequence from
 
-                    the original message (MsgMakeTrade,
+                    the original message (MsgMakeTrade, MsgPoolSwap,
+                    MsgTakeOffer,
 
                     MsgRedeemAuction).
                 title: >-
@@ -12892,6 +12992,22 @@ paths:
                               the custom method
 
                               signatures required by gogoproto.
+                          fees_paid:
+                            type: object
+                            properties:
+                              denom:
+                                type: string
+                              amount:
+                                type: string
+                            description: >-
+                              Coin defines a token with a denomination and an
+                              amount.
+
+
+                              NOTE: The amount field is an Int which implements
+                              the custom method
+
+                              signatures required by gogoproto.
                         description: >-
                           TradeOperation allows mixing pool swap legs, orderbook
                           takes, and auction
@@ -12964,7 +13080,8 @@ paths:
                     Operations are stored in execution order, preserving the
                     exact sequence from
 
-                    the original message (MsgMakeTrade,
+                    the original message (MsgMakeTrade, MsgPoolSwap,
+                    MsgTakeOffer,
 
                     MsgRedeemAuction).
                 title: List of trades involving the specified offer
@@ -13270,6 +13387,22 @@ paths:
                               the custom method
 
                               signatures required by gogoproto.
+                          fees_paid:
+                            type: object
+                            properties:
+                              denom:
+                                type: string
+                              amount:
+                                type: string
+                            description: >-
+                              Coin defines a token with a denomination and an
+                              amount.
+
+
+                              NOTE: The amount field is an Int which implements
+                              the custom method
+
+                              signatures required by gogoproto.
                         description: >-
                           TradeOperation allows mixing pool swap legs, orderbook
                           takes, and auction
@@ -13342,7 +13475,8 @@ paths:
                     Operations are stored in execution order, preserving the
                     exact sequence from
 
-                    the original message (MsgMakeTrade,
+                    the original message (MsgMakeTrade, MsgPoolSwap,
+                    MsgTakeOffer,
 
                     MsgRedeemAuction).
                 title: List of trades involving the specified AMM pool
@@ -13650,6 +13784,22 @@ paths:
                               the custom method
 
                               signatures required by gogoproto.
+                          fees_paid:
+                            type: object
+                            properties:
+                              denom:
+                                type: string
+                              amount:
+                                type: string
+                            description: >-
+                              Coin defines a token with a denomination and an
+                              amount.
+
+
+                              NOTE: The amount field is an Int which implements
+                              the custom method
+
+                              signatures required by gogoproto.
                         description: >-
                           TradeOperation allows mixing pool swap legs, orderbook
                           takes, and auction
@@ -13722,7 +13872,8 @@ paths:
                     Operations are stored in execution order, preserving the
                     exact sequence from
 
-                    the original message (MsgMakeTrade,
+                    the original message (MsgMakeTrade, MsgPoolSwap,
+                    MsgTakeOffer,
 
                     MsgRedeemAuction).
                 title: List of trades executed by the specified taker
@@ -14019,6 +14170,22 @@ paths:
                             the custom method
 
                             signatures required by gogoproto.
+                        fees_paid:
+                          type: object
+                          properties:
+                            denom:
+                              type: string
+                            amount:
+                              type: string
+                          description: >-
+                            Coin defines a token with a denomination and an
+                            amount.
+
+
+                            NOTE: The amount field is an Int which implements
+                            the custom method
+
+                            signatures required by gogoproto.
                       description: >-
                         TradeOperation allows mixing pool swap legs, orderbook
                         takes, and auction
@@ -14089,7 +14256,7 @@ paths:
                   Operations are stored in execution order, preserving the exact
                   sequence from
 
-                  the original message (MsgMakeTrade,
+                  the original message (MsgMakeTrade, MsgPoolSwap, MsgTakeOffer,
 
                   MsgRedeemAuction).
                 title: The requested trade data
@@ -38034,6 +38201,21 @@ paths:
                         custom method
 
                         signatures required by gogoproto.
+                    fees_paid:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
                   description: >-
                     TradeOperation allows mixing pool swap legs, orderbook
                     takes, and auction
@@ -51284,6 +51466,18 @@ definitions:
           denominated in the borrowed denom. Includes:
           - Losses realized in ClosePosition (full and partial closes)
           - Losses realized during liquidation flows (if any)
+      collateral_returned:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
     description: LeveragePosition represents an active leverage position for a trader.
   dysonprotocol.whaleswap.v1.LiquidationStatus:
     type: string
@@ -51724,14 +51918,16 @@ definitions:
           entries in canonical pool order matching coins[0].denom and
           coins[1].denom.
 
-          Fee is applied to the OUTPUT denom of each swap leg: for exact-in, the
+          Fee is applied to the INPUT denom of each swap leg: for exact-in and
 
-          computed gross output is reduced by fee; for exact-out, the required
-          gross
+          exact-out, the effective input participating in the AMM curve is
 
-          output is inflated so net (after fee) meets the target. Fees accrue to
+          dx_effective = dx * (1 - fee_rate[input_denom]). The difference
 
-          fees_earned in the output denom.
+          dx - dx_effective is the swap fee charged in the input denom and
+          accrued to
+
+          fees_earned.
     description: |-
       Pool describes AMM pool state.
 
@@ -53948,16 +54144,17 @@ definitions:
               entries in canonical pool order matching coins[0].denom and
               coins[1].denom.
 
-              Fee is applied to the OUTPUT denom of each swap leg: for exact-in,
-              the
+              Fee is applied to the INPUT denom of each swap leg: for exact-in
+              and
 
-              computed gross output is reduced by fee; for exact-out, the
-              required gross
+              exact-out, the effective input participating in the AMM curve is
 
-              output is inflated so net (after fee) meets the target. Fees
-              accrue to
+              dx_effective = dx * (1 - fee_rate[input_denom]). The difference
 
-              fees_earned in the output denom.
+              dx - dx_effective is the swap fee charged in the input denom and
+              accrued to
+
+              fees_earned.
         description: |-
           Pool describes AMM pool state.
 
@@ -54315,16 +54512,17 @@ definitions:
               entries in canonical pool order matching coins[0].denom and
               coins[1].denom.
 
-              Fee is applied to the OUTPUT denom of each swap leg: for exact-in,
-              the
+              Fee is applied to the INPUT denom of each swap leg: for exact-in
+              and
 
-              computed gross output is reduced by fee; for exact-out, the
-              required gross
+              exact-out, the effective input participating in the AMM curve is
 
-              output is inflated so net (after fee) meets the target. Fees
-              accrue to
+              dx_effective = dx * (1 - fee_rate[input_denom]). The difference
 
-              fees_earned in the output denom.
+              dx - dx_effective is the swap fee charged in the input denom and
+              accrued to
+
+              fees_earned.
         description: |-
           Pool describes AMM pool state.
 
@@ -54684,16 +54882,17 @@ definitions:
                 entries in canonical pool order matching coins[0].denom and
                 coins[1].denom.
 
-                Fee is applied to the OUTPUT denom of each swap leg: for
-                exact-in, the
+                Fee is applied to the INPUT denom of each swap leg: for exact-in
+                and
 
-                computed gross output is reduced by fee; for exact-out, the
-                required gross
+                exact-out, the effective input participating in the AMM curve is
 
-                output is inflated so net (after fee) meets the target. Fees
-                accrue to
+                dx_effective = dx * (1 - fee_rate[input_denom]). The difference
 
-                fees_earned in the output denom.
+                dx - dx_effective is the swap fee charged in the input denom and
+                accrued to
+
+                fees_earned.
           description: >-
             Pool describes AMM pool state.
 
@@ -55087,16 +55286,17 @@ definitions:
                 entries in canonical pool order matching coins[0].denom and
                 coins[1].denom.
 
-                Fee is applied to the OUTPUT denom of each swap leg: for
-                exact-in, the
+                Fee is applied to the INPUT denom of each swap leg: for exact-in
+                and
 
-                computed gross output is reduced by fee; for exact-out, the
-                required gross
+                exact-out, the effective input participating in the AMM curve is
 
-                output is inflated so net (after fee) meets the target. Fees
-                accrue to
+                dx_effective = dx * (1 - fee_rate[input_denom]). The difference
 
-                fees_earned in the output denom.
+                dx - dx_effective is the swap fee charged in the input denom and
+                accrued to
+
+                fees_earned.
           description: >-
             Pool describes AMM pool state.
 
@@ -55490,16 +55690,17 @@ definitions:
                 entries in canonical pool order matching coins[0].denom and
                 coins[1].denom.
 
-                Fee is applied to the OUTPUT denom of each swap leg: for
-                exact-in, the
+                Fee is applied to the INPUT denom of each swap leg: for exact-in
+                and
 
-                computed gross output is reduced by fee; for exact-out, the
-                required gross
+                exact-out, the effective input participating in the AMM curve is
 
-                output is inflated so net (after fee) meets the target. Fees
-                accrue to
+                dx_effective = dx * (1 - fee_rate[input_denom]). The difference
 
-                fees_earned in the output denom.
+                dx - dx_effective is the swap fee charged in the input denom and
+                accrued to
+
+                fees_earned.
           description: >-
             Pool describes AMM pool state.
 
@@ -55893,16 +56094,17 @@ definitions:
                 entries in canonical pool order matching coins[0].denom and
                 coins[1].denom.
 
-                Fee is applied to the OUTPUT denom of each swap leg: for
-                exact-in, the
+                Fee is applied to the INPUT denom of each swap leg: for exact-in
+                and
 
-                computed gross output is reduced by fee; for exact-out, the
-                required gross
+                exact-out, the effective input participating in the AMM curve is
 
-                output is inflated so net (after fee) meets the target. Fees
-                accrue to
+                dx_effective = dx * (1 - fee_rate[input_denom]). The difference
 
-                fees_earned in the output denom.
+                dx - dx_effective is the swap fee charged in the input denom and
+                accrued to
+
+                fees_earned.
           description: >-
             Pool describes AMM pool state.
 
@@ -56296,16 +56498,17 @@ definitions:
                 entries in canonical pool order matching coins[0].denom and
                 coins[1].denom.
 
-                Fee is applied to the OUTPUT denom of each swap leg: for
-                exact-in, the
+                Fee is applied to the INPUT denom of each swap leg: for exact-in
+                and
 
-                computed gross output is reduced by fee; for exact-out, the
-                required gross
+                exact-out, the effective input participating in the AMM curve is
 
-                output is inflated so net (after fee) meets the target. Fees
-                accrue to
+                dx_effective = dx * (1 - fee_rate[input_denom]). The difference
 
-                fees_earned in the output denom.
+                dx - dx_effective is the swap fee charged in the input denom and
+                accrued to
+
+                fees_earned.
           description: >-
             Pool describes AMM pool state.
 
@@ -56589,6 +56792,21 @@ definitions:
               denominated in the borrowed denom. Includes:
               - Losses realized in ClosePosition (full and partial closes)
               - Losses realized during liquidation flows (if any)
+          collateral_returned:
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
         description: LeveragePosition represents an active leverage position for a trader.
       health_status:
         title: Health Information
@@ -56895,6 +57113,21 @@ definitions:
                 denominated in the borrowed denom. Includes:
                 - Losses realized in ClosePosition (full and partial closes)
                 - Losses realized during liquidation flows (if any)
+            collateral_returned:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
           description: >-
             LeveragePosition represents an active leverage position for a
             trader.
@@ -57177,6 +57410,21 @@ definitions:
                 denominated in the borrowed denom. Includes:
                 - Losses realized in ClosePosition (full and partial closes)
                 - Losses realized during liquidation flows (if any)
+            collateral_returned:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
           description: >-
             LeveragePosition represents an active leverage position for a
             trader.
@@ -57394,6 +57642,21 @@ definitions:
                     method
 
                     signatures required by gogoproto.
+                fees_paid:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    Coin defines a token with a denomination and an amount.
+
+
+                    NOTE: The amount field is an Int which implements the custom
+                    method
+
+                    signatures required by gogoproto.
               description: >-
                 TradeOperation allows mixing pool swap legs, orderbook takes,
                 and auction
@@ -57461,7 +57724,7 @@ definitions:
           Operations are stored in execution order, preserving the exact
           sequence from
 
-          the original message (MsgMakeTrade,
+          the original message (MsgMakeTrade, MsgPoolSwap, MsgTakeOffer,
 
           MsgRedeemAuction).
         title: The requested trade data
@@ -57655,6 +57918,21 @@ definitions:
                       custom method
 
                       signatures required by gogoproto.
+                  fees_paid:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
                 description: >-
                   TradeOperation allows mixing pool swap legs, orderbook takes,
                   and auction
@@ -57725,7 +58003,7 @@ definitions:
             Operations are stored in execution order, preserving the exact
             sequence from
 
-            the original message (MsgMakeTrade,
+            the original message (MsgMakeTrade, MsgPoolSwap, MsgTakeOffer,
 
             MsgRedeemAuction).
         title: List of trades involving auction redemptions for the specified auction
@@ -57946,6 +58224,21 @@ definitions:
                       custom method
 
                       signatures required by gogoproto.
+                  fees_paid:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
                 description: >-
                   TradeOperation allows mixing pool swap legs, orderbook takes,
                   and auction
@@ -58016,7 +58309,7 @@ definitions:
             Operations are stored in execution order, preserving the exact
             sequence from
 
-            the original message (MsgMakeTrade,
+            the original message (MsgMakeTrade, MsgPoolSwap, MsgTakeOffer,
 
             MsgRedeemAuction).
         title: List of trades involving the specified offer
@@ -58237,6 +58530,21 @@ definitions:
                       custom method
 
                       signatures required by gogoproto.
+                  fees_paid:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
                 description: >-
                   TradeOperation allows mixing pool swap legs, orderbook takes,
                   and auction
@@ -58307,7 +58615,7 @@ definitions:
             Operations are stored in execution order, preserving the exact
             sequence from
 
-            the original message (MsgMakeTrade,
+            the original message (MsgMakeTrade, MsgPoolSwap, MsgTakeOffer,
 
             MsgRedeemAuction).
         title: List of trades involving the specified AMM pool
@@ -58528,6 +58836,21 @@ definitions:
                       custom method
 
                       signatures required by gogoproto.
+                  fees_paid:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
                 description: >-
                   TradeOperation allows mixing pool swap legs, orderbook takes,
                   and auction
@@ -58598,7 +58921,7 @@ definitions:
             Operations are stored in execution order, preserving the exact
             sequence from
 
-            the original message (MsgMakeTrade,
+            the original message (MsgMakeTrade, MsgPoolSwap, MsgTakeOffer,
 
             MsgRedeemAuction).
         title: List of trades executed by the specified taker
@@ -58819,6 +59142,21 @@ definitions:
                       custom method
 
                       signatures required by gogoproto.
+                  fees_paid:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
                 description: >-
                   TradeOperation allows mixing pool swap legs, orderbook takes,
                   and auction
@@ -58889,7 +59227,7 @@ definitions:
             Operations are stored in execution order, preserving the exact
             sequence from
 
-            the original message (MsgMakeTrade,
+            the original message (MsgMakeTrade, MsgPoolSwap, MsgTakeOffer,
 
             MsgRedeemAuction).
         title: List of trades matching the denom filters
@@ -59150,6 +59488,21 @@ definitions:
                 method
 
                 signatures required by gogoproto.
+            fees_paid:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
           description: >-
             TradeOperation allows mixing pool swap legs, orderbook takes, and
             auction
@@ -59205,7 +59558,7 @@ definitions:
       Operations are stored in execution order, preserving the exact sequence
       from
 
-      the original message (MsgMakeTrade,
+      the original message (MsgMakeTrade, MsgPoolSwap, MsgTakeOffer,
 
       MsgRedeemAuction).
   dysonprotocol.whaleswap.v1.TradeMetrics:
@@ -59370,6 +59723,18 @@ definitions:
           signatures required by gogoproto.
         title: 'Execution results (populated when recording Trade):'
       received:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      fees_paid:
         type: object
         properties:
           denom:
@@ -81852,6 +82217,21 @@ definitions:
                 signatures required by gogoproto.
               title: 'Execution results (populated when recording Trade):'
             received:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            fees_paid:
               type: object
               properties:
                 denom:

@@ -2216,6 +2216,10 @@
         "total_realized_loss": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
           "title": "Cumulative realized loss from this position over its lifetime,\ndenominated in the borrowed denom. Includes:\n- Losses realized in ClosePosition (full and partial closes)\n- Losses realized during liquidation flows (if any)"
+        },
+        "collateral_returned": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "\u2550\u2550\u2550\u2550\u2550 FINAL COLLATERAL RETURNED \u2550\u2550\u2550\u2550\u2550\nThe amount of collateral returned to the user when the position was fully\nclosed. For partial closes, see\ntotal_collateral_returned_in_partial_closes? No, let's just track total\nreturned. Actually, let's just track the LAST close returned amount, or\ncumulative? The request was \"collateral_returned field\". In the closed\nposition json, it was 0 because all was swapped. If we track cumulative\ncollateral returned, we can see how much came back."
         }
       },
       "description": "LeveragePosition represents an active leverage position for a trader."
@@ -2467,7 +2471,7 @@
           "items": {
             "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
           },
-          "description": "fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two\nentries in canonical pool order matching coins[0].denom and coins[1].denom.\nFee is applied to the OUTPUT denom of each swap leg: for exact-in, the\ncomputed gross output is reduced by fee; for exact-out, the required gross\noutput is inflated so net (after fee) meets the target. Fees accrue to\nfees_earned in the output denom."
+          "description": "fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two\nentries in canonical pool order matching coins[0].denom and coins[1].denom.\nFee is applied to the INPUT denom of each swap leg: for exact-in and\nexact-out, the effective input participating in the AMM curve is\ndx_effective = dx * (1 - fee_rate[input_denom]). The difference\ndx - dx_effective is the swap fee charged in the input denom and accrued to\nfees_earned."
         }
       },
       "description": "Pool describes AMM pool state.\n\nNotes:\n- coin_a.denom < coin_b.denom lexicographically (canonical order)\n- fee_rate is a per-denom decimal rate in [0,1) as DecCoins\n- coin_a.amount/coin_b.amount are sdk.Int strings.\n- The instantaneous price used by price-based queries is derived from\n  reserves as P = coin_b / coin_a, consistent with the notes above."
@@ -2964,7 +2968,7 @@
         },
         "swap_in": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "description": "Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set.\nUse message-level min_output for rate constraints across legs."
+          "description": "Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set\n(XOR). Use message-level max_input and min_output for global constraints\nacross legs."
         },
         "swap_out": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
@@ -3073,7 +3077,7 @@
           "title": "Optional note (was field 10 in old schema)"
         }
       },
-      "description": "Trade captures a batch of operations executed atomically in a single message.\nOperations are stored in execution order, preserving the exact sequence from\nthe original message (MsgMakeTrade,\nMsgRedeemAuction)."
+      "description": "Trade captures a batch of operations executed atomically in a single message.\nOperations are stored in execution order, preserving the exact sequence from\nthe original message (MsgMakeTrade, MsgPoolSwap, MsgTakeOffer,\nMsgRedeemAuction)."
     },
     "dysonprotocol.whaleswap.v1.TradeMetrics": {
       "type": "object",
@@ -3138,6 +3142,10 @@
         },
         "received": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "fees_paid": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Fees paid for swap operations in the INPUT denom (populated for swaps,\nzero for takes/auctions)."
         }
       },
       "description": "TradeOperation allows mixing pool swap legs, orderbook takes, and auction\nredemptions. When stored in Trade.operations, sent/received fields are\npopulated with execution results. When used in MsgMakeTrade.operations,\nsent/received are empty (populated during execution)."

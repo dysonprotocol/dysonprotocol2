@@ -498,8 +498,9 @@ message MsgRemoveLiquidityResponse {
 
 message SwapLeg {
   uint64 pool_id = 1;
-  // Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set (XOR).
-  // Use message-level max_input and min_output for global constraints across legs.
+  // Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set
+  // (XOR). Use message-level max_input and min_output for global constraints
+  // across legs.
   cosmos.base.v1beta1.Coin swap_in = 2 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin swap_out = 3 [ (gogoproto.nullable) = false ];
 }
@@ -517,6 +518,9 @@ message TradeOperation {
   // Execution results (populated when recording Trade):
   cosmos.base.v1beta1.Coin sent = 10 [ (gogoproto.nullable) = false ];
   cosmos.base.v1beta1.Coin received = 11 [ (gogoproto.nullable) = false ];
+  // Fees paid for swap operations in the INPUT denom (populated for swaps,
+  // zero for takes/auctions).
+  cosmos.base.v1beta1.Coin fees_paid = 12 [ (gogoproto.nullable) = false ];
 }
 
 // AuctionRedeem operation for recording auction redemption in Trade history

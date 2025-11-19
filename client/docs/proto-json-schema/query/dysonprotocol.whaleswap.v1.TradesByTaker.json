@@ -126,7 +126,7 @@
                     "swap_in": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false,
-                        "description": "Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set. Use message-level min_output for rate constraints across legs."
+                        "description": "Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set (XOR). Use message-level max_input and min_output for global constraints across legs."
                     },
                     "swap_out": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
@@ -265,6 +265,11 @@
                     "received": {
                         "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
                         "additionalProperties": false
+                    },
+                    "fees_paid": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Fees paid for swap operations in the INPUT denom (populated for swaps, zero for takes/auctions)."
                     }
                 },
                 "additionalProperties": false,

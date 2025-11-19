@@ -574,8 +574,9 @@ export class SwapLeg extends Message<SwapLeg> {
   poolId = protoInt64.zero;
 
   /**
-   * Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set.
-   * Use message-level min_output for rate constraints across legs.
+   * Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set
+   * (XOR). Use message-level max_input and min_output for global constraints
+   * across legs.
    *
    * @generated from field: cosmos.base.v1beta1.Coin swap_in = 2;
    */
@@ -660,6 +661,14 @@ export class TradeOperation extends Message<TradeOperation> {
    */
   received?: Coin;
 
+  /**
+   * Fees paid for swap operations in the INPUT denom (populated for swaps,
+   * zero for takes/auctions).
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin fees_paid = 12;
+   */
+  feesPaid?: Coin;
+
   constructor(data?: PartialMessage<TradeOperation>) {
     super();
     proto3.util.initPartial(data, this);
@@ -673,6 +682,7 @@ export class TradeOperation extends Message<TradeOperation> {
     { no: 3, name: "auction", kind: "message", T: AuctionRedeem, oneof: "op" },
     { no: 10, name: "sent", kind: "message", T: Coin },
     { no: 11, name: "received", kind: "message", T: Coin },
+    { no: 12, name: "fees_paid", kind: "message", T: Coin },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): TradeOperation {

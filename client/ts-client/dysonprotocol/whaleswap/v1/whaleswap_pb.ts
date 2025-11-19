@@ -185,10 +185,11 @@ export class Pool extends Message<Pool> {
   /**
    * fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two
    * entries in canonical pool order matching coins[0].denom and coins[1].denom.
-   * Fee is applied to the OUTPUT denom of each swap leg: for exact-in, the
-   * computed gross output is reduced by fee; for exact-out, the required gross
-   * output is inflated so net (after fee) meets the target. Fees accrue to
-   * fees_earned in the output denom.
+   * Fee is applied to the INPUT denom of each swap leg: for exact-in and
+   * exact-out, the effective input participating in the AMM curve is
+   * dx_effective = dx * (1 - fee_rate[input_denom]). The difference
+   * dx - dx_effective is the swap fee charged in the input denom and accrued to
+   * fees_earned.
    *
    * @generated from field: repeated cosmos.base.v1beta1.DecCoin fee_rate = 25;
    */

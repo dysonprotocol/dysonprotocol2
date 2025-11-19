@@ -68,11 +68,16 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 		targetOutAmt = leg.SwapOut.Amount
 	}
 
-	// Select per-denom fee based on the output denom (fee applied to outputs)
-	fee := pool.FeeRate.AmountOf(pool.Coins[outputIdx].Denom)
+	// Select per-denom fee based on the INPUT denom (fee applied to input).
+	// Fee is always charged in the swap input denom.
+	fee := pool.FeeRate.AmountOf(pool.Coins[inputIdx].Denom)
 
 	rIn := math.LegacyNewDecFromInt(pool.Coins[inputIdx].Amount)
 	rOut := math.LegacyNewDecFromInt(pool.Coins[outputIdx].Amount)
+
+	// Initialize fees_paid with zero in the input denom; updated below.
+	inputDenom := pool.Coins[inputIdx].Denom
+	feesPaidCoin := sdk.NewCoin(inputDenom, math.ZeroInt())
 
 	if hasIn {
 		// exact-in with input-side fee based on output denom.
@@ -89,9 +94,10 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap output too small")
 		}
 		// Input-side fee (kept in pool reserves) for metrics accounting.
-		feeInInt := math.LegacyNewDecFromInt(actualInCoin.Amount).Mul(fee).TruncateInt()
-		if feeInInt.IsPositive() {
-			pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(actualInCoin.Denom, feeInInt))
+		feeAmt := math.LegacyNewDecFromInt(actualInCoin.Amount).Mul(fee).TruncateInt()
+		if feeAmt.IsPositive() {
+			feesPaidCoin = sdk.NewCoin(inputDenom, feeAmt)
+			pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(feesPaidCoin)
 		}
 		newIn := pool.Coins[inputIdx].Amount.Add(actualInCoin.Amount)
 		newOut := pool.Coins[outputIdx].Amount.Sub(outAmt)
@@ -162,12 +168,16 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 				return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "cannot satisfy exact-out with given reserves and fee")
 			}
 		}
-		outAmt = outAct
+		// Strictly enforce exact output for exact-out swaps.
+		// Any excess input calculated (gross) that yields excess output is retained by the pool.
+		outAmt = targetOutAmt
+
 		// Record actual input and input-side fee.
 		actualInCoin = sdk.NewCoin(pool.Coins[inputIdx].Denom, gross)
-		feeInInt := math.LegacyNewDecFromInt(gross).Mul(fee).TruncateInt()
-		if feeInInt.IsPositive() {
-			pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(sdk.NewCoin(actualInCoin.Denom, feeInInt))
+		feeAmt := math.LegacyNewDecFromInt(gross).Mul(fee).TruncateInt()
+		if feeAmt.IsPositive() {
+			feesPaidCoin = sdk.NewCoin(inputDenom, feeAmt)
+			pool.FeesEarned = sdk.NewCoins(pool.FeesEarned...).Add(feesPaidCoin)
 		}
 		newIn := pool.Coins[inputIdx].Amount.Add(gross)
 		newOut := pool.Coins[outputIdx].Amount.Sub(outAmt)
@@ -196,14 +206,15 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 	}
 	// EventPoolSwap emitted by recordTradeWithOperations (with trade_id and operation_index)
 
-	// Build operation record with execution results
+	// Build operation record with execution results (fees_paid is in input denom).
 	op := whaleswapv1.TradeOperation{
 		Op:       &whaleswapv1.TradeOperation_Swap{Swap: leg},
 		Sent:     actualInCoin,
 		Received: sdk.NewCoin(outDenom, outAmt),
+		FeesPaid: feesPaidCoin,
 	}
 
-	logger.Info("tradeApplySwapLeg completed", "sent", actualInCoin, "received", sdk.NewCoin(outDenom, outAmt))
+	logger.Info("tradeApplySwapLeg completed", "sent", actualInCoin, "received", sdk.NewCoin(outDenom, outAmt), "fees_paid", feesPaidCoin)
 	return op, actualInCoin, sdk.NewCoin(outDenom, outAmt), nil
 }
 

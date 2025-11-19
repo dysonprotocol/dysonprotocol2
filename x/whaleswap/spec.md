@@ -163,8 +163,9 @@ Swaps (any user)
     - TakeItem: orderbook take (deprecated standalone MsgTakeOffer)
     - RedeemItem: auction redemption (future)
   - Apply math based on pool mode per swap leg:
-    - Mode A (v2): constant product with fee on input.
-      - k = R1*R2; effective_in = dx * (1 - fee_rate_out).
+    - Mode A (v2): constant product with fee on the swap INPUT denom.
+      - Let fee_rate_in be the fee rate for the sold/input denom.
+      - k = R1*R2; effective_in = dx * (1 - fee_rate_in).
       - out = R2 - ceil(k / (R1 + effective_in)) (or symmetric for coin2 input).
       - Update reserves; enforce price band if configured.
     - Mode B (v3-style): concentrated liquidity within [sa, sb].

@@ -223,7 +223,10 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 				return nil, cosmossdkerrors.Wrap(err, "failed to move collateral to borrow vault for swap")
 			}
 
-			// Swap collateral to borrowed denom
+			// Swap collateral to borrowed denom using Exact Output for the shortfall.
+			// Because slippage or fees might require slightly more input than a naive calculation,
+			// we authorize up to the full collateral amount as MaxInput.
+			// MakeTrade will pull only the required input from the vault.
 			collateralSwapMt := &whaleswapv1.MsgMakeTrade{
 				Trader:    borrowVault,
 				MaxInput:  sdk.NewCoins(collateralToReturn),
@@ -231,8 +234,8 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 				Operations: []whaleswapv1.TradeOperation{
 					{Op: &whaleswapv1.TradeOperation_Swap{
 						Swap: &whaleswapv1.SwapLeg{
-							PoolId: pos.PoolId,
-							SwapIn: collateralToReturn,
+							PoolId:  pos.PoolId,
+							SwapOut: shortfallCoin, // Exact Output: buy exactly the shortfall
 						},
 					}},
 				},
@@ -249,9 +252,19 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "collateral swap produced no %s output", pos.Borrowed.Denom)
 			}
 
+			// The actual input consumed by MakeTrade is reflected in TraderInputs.
+			// Since we moved 'collateralToReturn' to the vault, and MakeTrade consumed some of it,
+			// the difference is what remains in the vault (to be returned to the user).
+			collateralConsumed := collSwapResp.TraderInputs.AmountOf(pos.Collateral.Denom)
+			if collateralConsumed.GT(collateralToReturn.Amount) {
+				// Should be prevented by MaxInput, but good to check
+				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "collateral swap consumed more than available")
+			}
+
 			totalProceeds = proceedsCoin.Add(collateralProceedsCoin)
 
 			// Critical check: reject if still underwater after swapping collateral
+			// (Though ExactOut should guarantee we got shortfallCoin, barring rounding issues)
 			if totalProceeds.IsLT(requiredRepayment) {
 				return nil, cosmossdkerrors.Wrapf(
 					whaleswapv1.ErrInsufficientCollateral,
@@ -262,18 +275,32 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 				)
 			}
 
-			// Collateral was entirely swapped
-			collateralUsed = collateralToReturn
+			// Collateral used is what was swapped
+			collateralUsed = sdk.NewCoin(pos.Collateral.Denom, collateralConsumed)
 			collateralSwapped = true
-			// Calculate profit from total proceeds (may be positive if collateral swap yielded excess)
-			profit = totalProceeds.Sub(requiredRepayment)
-			if profit.IsPositive() {
-				loss = sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
+			// Calculate excess proceeds (usually dust if ExactOut worked perfectly)
+			excess := totalProceeds.Sub(requiredRepayment)
+
+			// In cross-denom case, we had a shortfall (loss) that we covered with collateral.
+			// We should net any excess proceeds against that loss rather than calling it profit.
+			if excess.IsPositive() {
+				if excess.Amount.GTE(loss.Amount) {
+					// Excess covers the entire shortfall (unlikely with ExactOut, but possible)
+					profit = excess.Sub(loss)
+					loss = sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
+				} else {
+					// Excess partially reduces the shortfall
+					loss = loss.Sub(excess)
+					profit = sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
+				}
+			} else {
+				profit = sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
+				// loss remains as the shortfall amount
 			}
 
 			sdkCtx.Logger().Info("ClosePosition: cross-denom collateral swap executed",
 				"held_proceeds", proceedsCoin,
-				"collateral_swapped", collateralToReturn,
+				"collateral_swapped", collateralUsed,
 				"collateral_proceeds", collateralProceedsCoin,
 				"total_proceeds", totalProceeds,
 				"repayment", requiredRepayment,
@@ -296,6 +323,15 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 			return nil, cosmossdkerrors.Wrap(err, "failed to transfer proceeds to module")
 		}
 
+		// Also move any REMAINING collateral (that wasn't swapped) back to module so we can return it to user
+		collateralRemainingInVault := collateralToReturn.Sub(collateralUsed)
+		if collateralRemainingInVault.IsPositive() {
+			if err := k.moveModuleToModule(ctx, whaleswap.LeverageBorrowVaultModuleName, whaleswap.ModuleName, sdk.NewCoins(collateralRemainingInVault)); err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "failed to transfer remaining collateral from vault")
+			}
+			collateralReturned = collateralRemainingInVault
+		}
+
 		// Restore pool reserves with full repayment (all funds now in module)
 		pool.Coins = pool.Coins.Add(requiredRepayment)
 		if err := k.updatePool(ctx, &pool); err != nil {
@@ -308,6 +344,14 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 				return nil, cosmossdkerrors.Wrap(err, "failed to return profit")
 			}
 		}
+
+		// Return remaining collateral to user
+		if collateralReturned.IsPositive() {
+			if err := k.sendFromModule(ctx, userAddr, sdk.NewCoins(collateralReturned)); err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "failed to return remaining collateral")
+			}
+		}
+
 	} else {
 		// Same-denom case: swap proceeds in vault, collateral (if needed) already in module
 		// Move swap proceeds from vault to module
@@ -376,6 +420,8 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 		pos.LiquidationStatus = whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE
 		pos.LiquidationInitializedBlockHeight = 0
 		positionClosed = true
+		// Persist the final returned collateral amount for historical record
+		pos.CollateralReturned = collateralReturned
 	}
 
 	if err := k.savePosition(ctx, pos, originalStatus); err != nil {

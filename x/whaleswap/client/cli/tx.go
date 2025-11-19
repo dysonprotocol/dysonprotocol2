@@ -277,14 +277,14 @@ func CmdCreatePool() *cobra.Command {
 			}
 
 			msg := &whaleswaptypes.MsgCreatePool{
-				Creator:                  clientCtx.GetFromAddress().String(),
-				Coins:                    coinList,
-				FeeRate:                  feeRate,
+				Creator:                   clientCtx.GetFromAddress().String(),
+				Coins:                     coinList,
+				FeeRate:                   feeRate,
 				MinInitialCollateralRatio: minCollateralRatio,
-				InterestRate:             interestRate,
-				MaxBorrowPercent:         maxBorrowPercent,
-				LiquidationThreshold:     liquidationThreshold,
-				BoundPercent:             boundPercent,
+				InterestRate:              interestRate,
+				MaxBorrowPercent:          maxBorrowPercent,
+				LiquidationThreshold:      liquidationThreshold,
+				BoundPercent:              boundPercent,
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -500,14 +500,14 @@ func CmdUpdatePoolConfig() *cobra.Command {
 			}
 
 			msg := &whaleswaptypes.MsgUpdatePoolConfig{
-				Signer:                   clientCtx.GetFromAddress().String(),
-				PoolId:                   poolID,
-				FeeRate:                  feeRate,
-				InterestRate:             interestRate,
-				MaxBorrowPercent:         maxBorrowPercent,
-				LiquidationThreshold:     liquidationThreshold,
+				Signer:                    clientCtx.GetFromAddress().String(),
+				PoolId:                    poolID,
+				FeeRate:                   feeRate,
+				InterestRate:              interestRate,
+				MaxBorrowPercent:          maxBorrowPercent,
+				LiquidationThreshold:      liquidationThreshold,
 				MinInitialCollateralRatio: minCollateralRatio,
-				BoundPercent:             boundPercent,
+				BoundPercent:              boundPercent,
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},

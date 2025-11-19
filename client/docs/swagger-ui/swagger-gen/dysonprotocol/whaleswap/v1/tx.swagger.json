@@ -1350,7 +1350,7 @@
         },
         "swap_in": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
-          "description": "Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set.\nUse message-level min_output for rate constraints across legs."
+          "description": "Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set\n(XOR). Use message-level max_input and min_output for global constraints\nacross legs."
         },
         "swap_out": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
@@ -1389,6 +1389,10 @@
         },
         "received": {
           "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+        },
+        "fees_paid": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "Fees paid for swap operations in the INPUT denom (populated for swaps,\nzero for takes/auctions)."
         }
       },
       "description": "TradeOperation allows mixing pool swap legs, orderbook takes, and auction\nredemptions. When stored in Trade.operations, sent/received fields are\npopulated with execution results. When used in MsgMakeTrade.operations,\nsent/received are empty (populated during execution)."

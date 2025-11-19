@@ -238,6 +238,20 @@ export class LeveragePosition extends Message<LeveragePosition> {
    */
   totalRealizedLoss?: Coin;
 
+  /**
+   * ═════ FINAL COLLATERAL RETURNED ═════
+   * The amount of collateral returned to the user when the position was fully
+   * closed. For partial closes, see
+   * total_collateral_returned_in_partial_closes? No, let's just track total
+   * returned. Actually, let's just track the LAST close returned amount, or
+   * cumulative? The request was "collateral_returned field". In the closed
+   * position json, it was 0 because all was swapped. If we track cumulative
+   * collateral returned, we can see how much came back.
+   *
+   * @generated from field: cosmos.base.v1beta1.Coin collateral_returned = 32;
+   */
+  collateralReturned?: Coin;
+
   constructor(data?: PartialMessage<LeveragePosition>) {
     super();
     proto3.util.initPartial(data, this);
@@ -270,6 +284,7 @@ export class LeveragePosition extends Message<LeveragePosition> {
     { no: 29, name: "trade_ids", kind: "scalar", T: 4 /* ScalarType.UINT64 */, repeated: true },
     { no: 30, name: "total_realized_profit", kind: "message", T: Coin },
     { no: 31, name: "total_realized_loss", kind: "message", T: Coin },
+    { no: 32, name: "collateral_returned", kind: "message", T: Coin },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LeveragePosition {
