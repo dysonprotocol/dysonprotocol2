@@ -59,10 +59,10 @@ def test_pool_swap_v2_single_pool(chainnet, generate_account, faucet, register_n
     swap = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         "100udys",
-        "--legs",
+        "--op",
         legs,
         "--min-output",
         f"1{name}",

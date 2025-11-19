@@ -72,52 +72,6 @@ proto3.util.setEnumType(PositionStatus, "dysonprotocol.whaleswap.v1.PositionStat
 ]);
 
 /**
- * DecCoinValue represents a decimal coin value that serializes as {denom,
- * amount} object.
- *
- * @generated from message dysonprotocol.whaleswap.v1.DecCoinValue
- */
-export class DecCoinValue extends Message<DecCoinValue> {
-  /**
-   * @generated from field: string denom = 1;
-   */
-  denom = "";
-
-  /**
-   * @generated from field: string amount = 2;
-   */
-  amount = "";
-
-  constructor(data?: PartialMessage<DecCoinValue>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "dysonprotocol.whaleswap.v1.DecCoinValue";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "amount", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DecCoinValue {
-    return new DecCoinValue().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DecCoinValue {
-    return new DecCoinValue().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DecCoinValue {
-    return new DecCoinValue().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: DecCoinValue | PlainMessage<DecCoinValue> | undefined, b: DecCoinValue | PlainMessage<DecCoinValue> | undefined): boolean {
-    return proto3.util.equals(DecCoinValue, a, b);
-  }
-}
-
-/**
  * LeveragePosition represents an active leverage position for a trader.
  *
  * @generated from message dysonprotocol.whaleswap.v1.LeveragePosition
@@ -257,9 +211,9 @@ export class LeveragePosition extends Message<LeveragePosition> {
    * Fractional interest remainder (<1 borrowed coin) preserved between
    * settlements.
    *
-   * @generated from field: dysonprotocol.whaleswap.v1.DecCoinValue accrued_interest_remainder = 28;
+   * @generated from field: cosmos.base.v1beta1.DecCoin accrued_interest_remainder = 28;
    */
-  accruedInterestRemainder?: DecCoinValue;
+  accruedInterestRemainder?: DecCoin;
 
   /**
    * Trade IDs associated with this position over its lifetime.
@@ -336,7 +290,7 @@ export class LeveragePosition extends Message<LeveragePosition> {
     { no: 34, name: "initial_collateral", kind: "message", T: Coin },
     { no: 26, name: "total_interest_paid", kind: "message", T: Coin },
     { no: 27, name: "last_interest_settlement_time", kind: "message", T: Timestamp },
-    { no: 28, name: "accrued_interest_remainder", kind: "message", T: DecCoinValue },
+    { no: 28, name: "accrued_interest_remainder", kind: "message", T: DecCoin },
     { no: 29, name: "trade_ids", kind: "scalar", T: 4 /* ScalarType.UINT64 */, repeated: true },
     { no: 30, name: "total_realized_profit", kind: "message", T: Coin },
     { no: 31, name: "total_realized_loss", kind: "message", T: Coin },

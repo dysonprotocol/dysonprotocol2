@@ -10372,17 +10372,21 @@ paths:
                         Timestamp of the last time interest was settled into
                         accrued_interest.
                     accrued_interest_remainder:
-                      description: >-
-                        Fractional interest remainder (<1 borrowed coin)
-                        preserved between
-
-                        settlements.
                       type: object
                       properties:
                         denom:
                           type: string
                         amount:
                           type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
                     trade_ids:
                       type: array
                       items:
@@ -10812,17 +10816,21 @@ paths:
                         Timestamp of the last time interest was settled into
                         accrued_interest.
                     accrued_interest_remainder:
-                      description: >-
-                        Fractional interest remainder (<1 borrowed coin)
-                        preserved between
-
-                        settlements.
                       type: object
                       properties:
                         denom:
                           type: string
                         amount:
                           type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
                     trade_ids:
                       type: array
                       items:
@@ -11227,17 +11235,21 @@ paths:
                       Timestamp of the last time interest was settled into
                       accrued_interest.
                   accrued_interest_remainder:
-                    description: >-
-                      Fractional interest remainder (<1 borrowed coin) preserved
-                      between
-
-                      settlements.
                     type: object
                     properties:
                       denom:
                         type: string
                       amount:
                         type: string
+                    description: >-
+                      DecCoin defines a token with a denomination and a decimal
+                      amount.
+
+
+                      NOTE: The amount field is an Dec which implements the
+                      custom method
+
+                      signatures required by gogoproto.
                   trade_ids:
                     type: array
                     items:
@@ -50268,16 +50280,6 @@ definitions:
         type: string
         format: uint64
     title: AuctionRedeem operation for recording auction redemption in Trade history
-  dysonprotocol.whaleswap.v1.DecCoinValue:
-    type: object
-    properties:
-      denom:
-        type: string
-      amount:
-        type: string
-    description: |-
-      DecCoinValue represents a decimal coin value that serializes as {denom,
-      amount} object.
   dysonprotocol.whaleswap.v1.InterestView:
     type: object
     properties:
@@ -50468,15 +50470,17 @@ definitions:
         format: date-time
         description: Timestamp of the last time interest was settled into accrued_interest.
       accrued_interest_remainder:
-        description: |-
-          Fractional interest remainder (<1 borrowed coin) preserved between
-          settlements.
         type: object
         properties:
           denom:
             type: string
           amount:
             type: string
+        description: |-
+          DecCoin defines a token with a denomination and a decimal amount.
+
+          NOTE: The amount field is an Dec which implements the custom method
+          signatures required by gogoproto.
       trade_ids:
         type: array
         items:
@@ -55157,15 +55161,20 @@ definitions:
               Timestamp of the last time interest was settled into
               accrued_interest.
           accrued_interest_remainder:
-            description: |-
-              Fractional interest remainder (<1 borrowed coin) preserved between
-              settlements.
             type: object
             properties:
               denom:
                 type: string
               amount:
                 type: string
+            description: >-
+              DecCoin defines a token with a denomination and a decimal amount.
+
+
+              NOTE: The amount field is an Dec which implements the custom
+              method
+
+              signatures required by gogoproto.
           trade_ids:
             type: array
             items:
@@ -55494,17 +55503,21 @@ definitions:
                 Timestamp of the last time interest was settled into
                 accrued_interest.
             accrued_interest_remainder:
-              description: >-
-                Fractional interest remainder (<1 borrowed coin) preserved
-                between
-
-                settlements.
               type: object
               properties:
                 denom:
                   type: string
                 amount:
                   type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
             trade_ids:
               type: array
               items:
@@ -55816,17 +55829,21 @@ definitions:
                 Timestamp of the last time interest was settled into
                 accrued_interest.
             accrued_interest_remainder:
-              description: >-
-                Fractional interest remainder (<1 borrowed coin) preserved
-                between
-
-                settlements.
               type: object
               properties:
                 denom:
                   type: string
                 amount:
                   type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
             trade_ids:
               type: array
               items:

@@ -144,20 +144,6 @@
                 "title": "Dec Coin",
                 "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
             },
-            "dysonprotocol.whaleswap.v1.DecCoinValue": {
-                "properties": {
-                    "denom": {
-                        "type": "string"
-                    },
-                    "amount": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "type": "object",
-                "title": "Dec Coin Value",
-                "description": "DecCoinValue represents a decimal coin value that serializes as {denom, amount} object."
-            },
             "dysonprotocol.whaleswap.v1.LeveragePosition": {
                 "properties": {
                     "position_id": {
@@ -285,7 +271,7 @@
                         "format": "date-time"
                     },
                     "accrued_interest_remainder": {
-                        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.DecCoinValue",
+                        "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin",
                         "additionalProperties": false,
                         "description": "Fractional interest remainder (<1 borrowed coin) preserved between settlements."
                     },
