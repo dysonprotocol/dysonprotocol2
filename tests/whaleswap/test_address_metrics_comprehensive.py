@@ -71,14 +71,16 @@ def demo_trade_metrics(alice_addr, foo_name, bar_name):
     })
     pool_id = pool_result["results"][0]["pool_id"]
     
-    # Execute a trade (pool swap)
+    # Execute a trade (make-trade)
     trade_result = _sudo({
-        "@type": "/dysonprotocol.whaleswap.v1.MsgPoolSwap",
+        "@type": "/dysonprotocol.whaleswap.v1.MsgMakeTrade",
         "trader": alice_addr,
         "max_input": [{"denom": foo_name, "amount": "100"}],
-        "legs": [{
-            "pool_id": pool_id,
-            "swap_in": {"denom": foo_name, "amount": "100"}
+        "operations": [{
+            "swap": {
+                "pool_id": pool_id,
+                "swap_in": {"denom": foo_name, "amount": "100"}
+            }
         }],
         "min_output": []
     })
@@ -115,27 +117,27 @@ def demo_trade_metrics(alice_addr, foo_name, bar_name):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(
-        result, dict
-    ), f"Expected dict. Got: {json.dumps(query_result, indent=2)}"
-    assert (
-        query_result.get("exception") is None
-    ), f"Script failed: {json.dumps(query_result.get('exception'), indent=2)}"
+    assert isinstance(result, dict), (
+        f"Expected dict. Got: {json.dumps(query_result, indent=2)}"
+    )
+    assert query_result.get("exception") is None, (
+        f"Script failed: {json.dumps(query_result.get('exception'), indent=2)}"
+    )
 
     demo_result = result["result"]["result"]
     metrics = demo_result["metrics"]["metrics"]
 
     # Validate trading metrics were tracked
-    assert (
-        metrics["address"] == alice_addr
-    ), f"Address mismatch: {metrics['address']} != {alice_addr}"
+    assert metrics["address"] == alice_addr, (
+        f"Address mismatch: {metrics['address']} != {alice_addr}"
+    )
     assert int(metrics.get("total_trades", 0)) == 1, f"Should have 1 trade: {metrics}"
-    assert (
-        int(metrics.get("total_trade_ops", 0)) == 1
-    ), f"Should have 1 operation: {metrics}"
-    assert (
-        int(metrics.get("pools_created", 0)) == 1
-    ), f"Should have created 1 pool: {metrics}"
+    assert int(metrics.get("total_trade_ops", 0)) == 1, (
+        f"Should have 1 operation: {metrics}"
+    )
+    assert int(metrics.get("pools_created", 0)) == 1, (
+        f"Should have created 1 pool: {metrics}"
+    )
 
 
 @pytest.mark.usefixtures("faucet")
@@ -238,16 +240,16 @@ def test_address_metrics_leverage_coverage(chainnet, generate_account, register_
         for e in tx_open.get("events", [])
         if e.get("type") == "dysonprotocol.whaleswap.v1.EventLeveragePositionOpened"
     ]
-    assert (
-        position_events
-    ), f"Missing EventLeveragePositionOpened: {json.dumps(tx_open, indent=2)}"
+    assert position_events, (
+        f"Missing EventLeveragePositionOpened: {json.dumps(tx_open, indent=2)}"
+    )
     position_attrs = {
         a.get("key"): a.get("value") for a in position_events[0].get("attributes", [])
     }
     position_id = position_attrs.get("position_id")
-    assert (
-        position_id
-    ), f"position_id missing: {json.dumps(position_events[0], indent=2)}"
+    assert position_id, (
+        f"position_id missing: {json.dumps(position_events[0], indent=2)}"
+    )
     position_id = position_id.strip('"')
 
     # Query metrics after position opened
@@ -275,20 +277,20 @@ def test_address_metrics_leverage_coverage(chainnet, generate_account, register_
     )
 
     # Validate position opened was tracked
-    assert (
-        int(metrics_after_open["metrics"].get("positions_opened", 0)) == 1
-    ), f"Should have 1 position opened: {metrics_after_open}"
-    assert (
-        int(metrics_after_open["metrics"].get("positions_closed", 0)) == 0
-    ), f"Should have 0 positions closed yet: {metrics_after_open}"
+    assert int(metrics_after_open["metrics"].get("positions_opened", 0)) == 1, (
+        f"Should have 1 position opened: {metrics_after_open}"
+    )
+    assert int(metrics_after_open["metrics"].get("positions_closed", 0)) == 0, (
+        f"Should have 0 positions closed yet: {metrics_after_open}"
+    )
 
     # Validate position closed was tracked
-    assert (
-        int(metrics_after_close["metrics"].get("positions_opened", 0)) == 1
-    ), f"Should still show 1 opened: {metrics_after_close}"
-    assert (
-        int(metrics_after_close["metrics"].get("positions_closed", 0)) == 1
-    ), f"Should have 1 closed: {metrics_after_close}"
+    assert int(metrics_after_close["metrics"].get("positions_opened", 0)) == 1, (
+        f"Should still show 1 opened: {metrics_after_close}"
+    )
+    assert int(metrics_after_close["metrics"].get("positions_closed", 0)) == 1, (
+        f"Should have 1 closed: {metrics_after_close}"
+    )
 
 
 def test_address_metrics_orderbook_coverage(
@@ -333,12 +335,16 @@ def demo_orderbook_metrics(alice_addr, bob_addr, foo_name, bar_name):
     
     # Take half the offer
     take_result = _sudo({
-        "@type": "/dysonprotocol.whaleswap.v1.MsgTakeOffer",
-        "taker": bob_addr,
-        "trades": [{
-            "offer_id": offer_id,
-            "take_units": "1"
-        }]
+        "@type": "/dysonprotocol.whaleswap.v1.MsgMakeTrade",
+        "trader": bob_addr,
+        "max_input": [{"denom": bar_name, "amount": "50"}],
+        "operations": [{
+            "take": {
+                "offer_id": offer_id,
+                "take_units": "1"
+            }
+        }],
+        "min_output": []
     })
     
     # Query metrics after partial take
@@ -349,12 +355,16 @@ def demo_orderbook_metrics(alice_addr, bob_addr, foo_name, bar_name):
     
     # Take remaining to close offer
     take_full_result = _sudo({
-        "@type": "/dysonprotocol.whaleswap.v1.MsgTakeOffer",
-        "taker": bob_addr,
-        "trades": [{
-            "offer_id": offer_id,
-            "take_units": ""
-        }]
+        "@type": "/dysonprotocol.whaleswap.v1.MsgMakeTrade",
+        "trader": bob_addr,
+        "max_input": [{"denom": bar_name, "amount": "50"}],
+        "operations": [{
+            "take": {
+                "offer_id": offer_id,
+                "take_units": ""
+            }
+        }],
+        "min_output": []
     })
     
     # Query metrics after offer closed
@@ -418,53 +428,53 @@ def demo_orderbook_metrics(alice_addr, bob_addr, foo_name, bar_name):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(
-        result, dict
-    ), f"Expected dict. Got: {json.dumps(query_result, indent=2)}"
-    assert (
-        query_result.get("exception") is None
-    ), f"Script failed: {json.dumps(query_result.get('exception'), indent=2)}"
+    assert isinstance(result, dict), (
+        f"Expected dict. Got: {json.dumps(query_result, indent=2)}"
+    )
+    assert query_result.get("exception") is None, (
+        f"Script failed: {json.dumps(query_result.get('exception'), indent=2)}"
+    )
 
     demo_result = result["result"]["result"]
 
     # Validate offer created metrics
     metrics_created = demo_result["metrics_created"]["metrics"]
-    assert (
-        int(metrics_created.get("offers_created", 0)) == 1
-    ), f"Should have 1 offer created: {metrics_created}"
-    assert (
-        int(metrics_created.get("offers_closed", 0)) == 0
-    ), f"Should have 0 closed: {metrics_created}"
-    assert (
-        int(metrics_created.get("offers_cancelled", 0)) == 0
-    ), f"Should have 0 cancelled: {metrics_created}"
+    assert int(metrics_created.get("offers_created", 0)) == 1, (
+        f"Should have 1 offer created: {metrics_created}"
+    )
+    assert int(metrics_created.get("offers_closed", 0)) == 0, (
+        f"Should have 0 closed: {metrics_created}"
+    )
+    assert int(metrics_created.get("offers_cancelled", 0)) == 0, (
+        f"Should have 0 cancelled: {metrics_created}"
+    )
 
     # Validate offer closed metrics
     metrics_closed = demo_result["metrics_closed"]["metrics"]
-    assert (
-        int(metrics_closed.get("offers_created", 0)) == 1
-    ), f"Should still show 1 created: {metrics_closed}"
-    assert (
-        int(metrics_closed.get("offers_closed", 0)) == 1
-    ), f"Should have 1 closed: {metrics_closed}"
+    assert int(metrics_closed.get("offers_created", 0)) == 1, (
+        f"Should still show 1 created: {metrics_closed}"
+    )
+    assert int(metrics_closed.get("offers_closed", 0)) == 1, (
+        f"Should have 1 closed: {metrics_closed}"
+    )
 
     # Validate maker volume tracked (with metadata filtering)
     maker_vol = metrics_closed.get("maker_volume", [])
-    assert isinstance(
-        maker_vol, list
-    ), f"Maker volume should be list: {type(maker_vol)}"
+    assert isinstance(maker_vol, list), (
+        f"Maker volume should be list: {type(maker_vol)}"
+    )
 
     # Validate cancelled metrics
     metrics_cancelled = demo_result["metrics_cancelled"]["metrics"]
-    assert (
-        int(metrics_cancelled.get("offers_created", 0)) == 2
-    ), f"Should have 2 offers created: {metrics_cancelled}"
-    assert (
-        int(metrics_cancelled.get("offers_closed", 0)) == 1
-    ), f"Should have 1 closed: {metrics_cancelled}"
-    assert (
-        int(metrics_cancelled.get("offers_cancelled", 0)) == 1
-    ), f"Should have 1 cancelled: {metrics_cancelled}"
+    assert int(metrics_cancelled.get("offers_created", 0)) == 2, (
+        f"Should have 2 offers created: {metrics_cancelled}"
+    )
+    assert int(metrics_cancelled.get("offers_closed", 0)) == 1, (
+        f"Should have 1 closed: {metrics_cancelled}"
+    )
+    assert int(metrics_cancelled.get("offers_cancelled", 0)) == 1, (
+        f"Should have 1 cancelled: {metrics_cancelled}"
+    )
 
 
 def test_address_metrics_liquidity_coverage(
@@ -580,12 +590,12 @@ def demo_liquidity_metrics(alice_addr, foo_name, bar_name):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(
-        result, dict
-    ), f"Expected dict. Got: {json.dumps(query_result, indent=2)}"
-    assert (
-        query_result.get("exception") is None
-    ), f"Script failed: {json.dumps(query_result.get('exception'), indent=2)}"
+    assert isinstance(result, dict), (
+        f"Expected dict. Got: {json.dumps(query_result, indent=2)}"
+    )
+    assert query_result.get("exception") is None, (
+        f"Script failed: {json.dumps(query_result.get('exception'), indent=2)}"
+    )
 
     demo_result = result["result"]["result"]
     metrics_add = demo_result["metrics_add"]["metrics"]
@@ -593,19 +603,19 @@ def demo_liquidity_metrics(alice_addr, foo_name, bar_name):
 
     # Validate liquidity operations tracked
     # Pool creation counts as liquidity add (initial liquidity) + explicit add = 2 total
-    assert (
-        int(metrics_add.get("liquidity_adds", 0)) == 2
-    ), f"Should have 2 liquidity adds (pool creation + explicit add): {metrics_add}"
-    assert (
-        int(metrics_add.get("liquidity_removes", 0)) == 0
-    ), f"Should have 0 removes: {metrics_add}"
+    assert int(metrics_add.get("liquidity_adds", 0)) == 2, (
+        f"Should have 2 liquidity adds (pool creation + explicit add): {metrics_add}"
+    )
+    assert int(metrics_add.get("liquidity_removes", 0)) == 0, (
+        f"Should have 0 removes: {metrics_add}"
+    )
 
-    assert (
-        int(metrics_remove.get("liquidity_adds", 0)) == 2
-    ), f"Should still have 2 adds: {metrics_remove}"
-    assert (
-        int(metrics_remove.get("liquidity_removes", 0)) == 1
-    ), f"Should have 1 remove: {metrics_remove}"
+    assert int(metrics_remove.get("liquidity_adds", 0)) == 2, (
+        f"Should still have 2 adds: {metrics_remove}"
+    )
+    assert int(metrics_remove.get("liquidity_removes", 0)) == 1, (
+        f"Should have 1 remove: {metrics_remove}"
+    )
 
 
 def test_address_metrics_auction_coverage(
@@ -668,20 +678,20 @@ def demo_auction_metrics(alice_addr, foo_name, bar_name):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(
-        result, dict
-    ), f"Expected dict. Got: {json.dumps(query_result, indent=2)}"
-    assert (
-        query_result.get("exception") is None
-    ), f"Script failed: {json.dumps(query_result.get('exception'), indent=2)}"
+    assert isinstance(result, dict), (
+        f"Expected dict. Got: {json.dumps(query_result, indent=2)}"
+    )
+    assert query_result.get("exception") is None, (
+        f"Script failed: {json.dumps(query_result.get('exception'), indent=2)}"
+    )
 
     demo_result = result["result"]["result"]
     metrics = demo_result["metrics"]["metrics"]
 
     # Validate auction metrics tracked
-    assert (
-        int(metrics.get("auctions_created", 0)) == 1
-    ), f"Should have 1 auction created: {metrics}"
+    assert int(metrics.get("auctions_created", 0)) == 1, (
+        f"Should have 1 auction created: {metrics}"
+    )
 
 
 def test_address_metrics_multiple_addresses(
@@ -737,12 +747,14 @@ def demo_multi_address(alice_addr, bob_addr, foo_name, bar_name):
     
     # Bob makes a trade
     bob_trade = _sudo({
-        "@type": "/dysonprotocol.whaleswap.v1.MsgPoolSwap",
+        "@type": "/dysonprotocol.whaleswap.v1.MsgMakeTrade",
         "trader": bob_addr,
         "max_input": [{"denom": foo_name, "amount": "100"}],
-        "legs": [{
-            "pool_id": pool_id,
-            "swap_in": {"denom": foo_name, "amount": "100"}
+        "operations": [{
+            "swap": {
+                "pool_id": pool_id,
+                "swap_in": {"denom": foo_name, "amount": "100"}
+            }
         }],
         "min_output": []
     })
@@ -789,32 +801,32 @@ def demo_multi_address(alice_addr, bob_addr, foo_name, bar_name):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(
-        result, dict
-    ), f"Expected dict. Got: {json.dumps(query_result, indent=2)}"
-    assert (
-        query_result.get("exception") is None
-    ), f"Script failed: {json.dumps(query_result.get('exception'), indent=2)}"
+    assert isinstance(result, dict), (
+        f"Expected dict. Got: {json.dumps(query_result, indent=2)}"
+    )
+    assert query_result.get("exception") is None, (
+        f"Script failed: {json.dumps(query_result.get('exception'), indent=2)}"
+    )
 
     demo_result = result["result"]["result"]
     alice_metrics = demo_result["alice"]["metrics"]
     bob_metrics = demo_result["bob"]["metrics"]
 
     # Alice should have pool creation but no trades
-    assert (
-        int(alice_metrics.get("pools_created", 0)) == 1
-    ), f"Alice should have created 1 pool: {alice_metrics}"
-    assert (
-        int(alice_metrics.get("total_trades", 0)) == 0
-    ), f"Alice should have 0 trades: {alice_metrics}"
+    assert int(alice_metrics.get("pools_created", 0)) == 1, (
+        f"Alice should have created 1 pool: {alice_metrics}"
+    )
+    assert int(alice_metrics.get("total_trades", 0)) == 0, (
+        f"Alice should have 0 trades: {alice_metrics}"
+    )
 
     # Bob should have trade but no pool creation
-    assert (
-        int(bob_metrics.get("pools_created", 0)) == 0
-    ), f"Bob should have created 0 pools: {bob_metrics}"
-    assert (
-        int(bob_metrics.get("total_trades", 0)) == 1
-    ), f"Bob should have 1 trade: {bob_metrics}"
-    assert (
-        int(bob_metrics.get("total_trade_ops", 0)) == 1
-    ), f"Bob should have 1 operation: {bob_metrics}"
+    assert int(bob_metrics.get("pools_created", 0)) == 0, (
+        f"Bob should have created 0 pools: {bob_metrics}"
+    )
+    assert int(bob_metrics.get("total_trades", 0)) == 1, (
+        f"Bob should have 1 trade: {bob_metrics}"
+    )
+    assert int(bob_metrics.get("total_trade_ops", 0)) == 1, (
+        f"Bob should have 1 operation: {bob_metrics}"
+    )

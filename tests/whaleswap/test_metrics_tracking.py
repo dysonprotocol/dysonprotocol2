@@ -85,9 +85,9 @@ def test_metrics_pool_and_liquidity_ops(chainnet, generate_account, register_nam
     metrics_1 = dysond(
         "query", "whaleswap", "address-metrics", f"--address={alice_addr}"
     )
-    assert (
-        int(metrics_1["metrics"].get("pools_created", 0)) == 1
-    ), f"Should have 1 pool: {metrics_1}"
+    assert int(metrics_1["metrics"].get("pools_created", 0)) == 1, (
+        f"Should have 1 pool: {metrics_1}"
+    )
 
     # Add liquidity
     tx_add = dysond(
@@ -109,9 +109,9 @@ def test_metrics_pool_and_liquidity_ops(chainnet, generate_account, register_nam
     metrics_2 = dysond(
         "query", "whaleswap", "address-metrics", f"--address={alice_addr}"
     )
-    assert (
-        int(metrics_2["metrics"].get("liquidity_adds", 0)) == 2
-    ), f"Should have 2 adds (pool creation + explicit add): {metrics_2}"
+    assert int(metrics_2["metrics"].get("liquidity_adds", 0)) == 2, (
+        f"Should have 2 adds (pool creation + explicit add): {metrics_2}"
+    )
 
     # Remove liquidity
     tx_remove = dysond(
@@ -131,12 +131,12 @@ def test_metrics_pool_and_liquidity_ops(chainnet, generate_account, register_nam
     metrics_3 = dysond(
         "query", "whaleswap", "address-metrics", f"--address={alice_addr}"
     )
-    assert (
-        int(metrics_3["metrics"].get("liquidity_adds", 0)) == 2
-    ), f"Should still have 2 adds: {metrics_3}"
-    assert (
-        int(metrics_3["metrics"].get("liquidity_removes", 0)) == 1
-    ), f"Should have 1 remove: {metrics_3}"
+    assert int(metrics_3["metrics"].get("liquidity_adds", 0)) == 2, (
+        f"Should still have 2 adds: {metrics_3}"
+    )
+    assert int(metrics_3["metrics"].get("liquidity_removes", 0)) == 1, (
+        f"Should have 1 remove: {metrics_3}"
+    )
 
 
 @pytest.mark.usefixtures("faucet")
@@ -212,17 +212,19 @@ def test_metrics_offers_lifecycle(chainnet, generate_account, register_name):
     metrics_1 = dysond(
         "query", "whaleswap", "address-metrics", f"--address={alice_addr}"
     )
-    assert (
-        int(metrics_1["metrics"].get("offers_created", 0)) == 1
-    ), f"Should have 1 offer: {metrics_1}"
+    assert int(metrics_1["metrics"].get("offers_created", 0)) == 1, (
+        f"Should have 1 offer: {metrics_1}"
+    )
 
-    # Take offer to close it
+    # Take offer to close it - Bob needs to provide the exact amount the offer wants
     tx_take = dysond(
         "tx",
         "whaleswap",
-        "take-offer",
-        "--trades",
-        f"offer_id={int(offer_id)},take_units=",
+        "make-trade",
+        "--max-input",
+        f"50{bar_name}",  # Provide the exact amount the offer wants (50 bar_name)
+        "--op",
+        json.dumps({"take": {"offer_id": int(offer_id), "take_units": ""}}),
         "--from",
         bob_name,
     )
@@ -232,12 +234,12 @@ def test_metrics_offers_lifecycle(chainnet, generate_account, register_name):
     metrics_2 = dysond(
         "query", "whaleswap", "address-metrics", f"--address={alice_addr}"
     )
-    assert (
-        int(metrics_2["metrics"].get("offers_created", 0)) == 1
-    ), f"Should still show 1 created: {metrics_2}"
-    assert (
-        int(metrics_2["metrics"].get("offers_closed", 0)) == 1
-    ), f"Should have 1 closed: {metrics_2}"
+    assert int(metrics_2["metrics"].get("offers_created", 0)) == 1, (
+        f"Should still show 1 created: {metrics_2}"
+    )
+    assert int(metrics_2["metrics"].get("offers_closed", 0)) == 1, (
+        f"Should have 1 closed: {metrics_2}"
+    )
 
     # Create another offer and cancel it
     tx_offer_2 = dysond(
@@ -282,15 +284,15 @@ def test_metrics_offers_lifecycle(chainnet, generate_account, register_name):
     metrics_3 = dysond(
         "query", "whaleswap", "address-metrics", f"--address={alice_addr}"
     )
-    assert (
-        int(metrics_3["metrics"].get("offers_created", 0)) == 2
-    ), f"Should have 2 created: {metrics_3}"
-    assert (
-        int(metrics_3["metrics"].get("offers_closed", 0)) == 1
-    ), f"Should have 1 closed: {metrics_3}"
-    assert (
-        int(metrics_3["metrics"].get("offers_cancelled", 0)) == 1
-    ), f"Should have 1 cancelled: {metrics_3}"
+    assert int(metrics_3["metrics"].get("offers_created", 0)) == 2, (
+        f"Should have 2 created: {metrics_3}"
+    )
+    assert int(metrics_3["metrics"].get("offers_closed", 0)) == 1, (
+        f"Should have 1 closed: {metrics_3}"
+    )
+    assert int(metrics_3["metrics"].get("offers_cancelled", 0)) == 1, (
+        f"Should have 1 cancelled: {metrics_3}"
+    )
 
 
 @pytest.mark.usefixtures("faucet")
@@ -338,6 +340,6 @@ def test_metrics_auction_tracking(chainnet, generate_account, register_name):
 
     # Query metrics
     metrics = dysond("query", "whaleswap", "address-metrics", f"--address={alice_addr}")
-    assert (
-        int(metrics["metrics"].get("auctions_created", 0)) == 1
-    ), f"Should have 1 auction: {metrics}"
+    assert int(metrics["metrics"].get("auctions_created", 0)) == 1, (
+        f"Should have 1 auction: {metrics}"
+    )

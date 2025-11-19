@@ -62,27 +62,24 @@ def test_both_constraints_rate_ok(chainnet, generate_account, faucet, register_n
 
     # Provide exact-in leg and require out >= 5foo via --min-output
     leg = json.dumps(
-        {
-            "pool_id": pid,
-            "swap_in": {"denom": "udys", "amount": "100"},
-        }
+        {"swap": {"pool_id": pid, "swap_in": {"denom": "udys", "amount": "100"}}}
     )
     tx2 = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         "100udys",
-        "--legs",
+        "--op",
         leg,
         "--min-output",
         f"5{foo}",
         "--from",
         trader,
     )
-    assert (
-        tx2.get("code", 1) == 0
-    ), f"both-constraints swap failed: {json.dumps(tx2, indent=2)}"
+    assert tx2.get("code", 1) == 0, (
+        f"both-constraints swap failed: {json.dumps(tx2, indent=2)}"
+    )
     evs2 = [
         e
         for e in tx2.get("events", [])

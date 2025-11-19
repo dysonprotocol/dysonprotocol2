@@ -69,23 +69,25 @@ def test_exact_out_v2_success(chainnet, generate_account, faucet, register_name)
     foo_before = by_before.get(foo, 0)
 
     # Exact-out leg: request 10 foo, pay in udys automatically computed; cap udys generously
-    leg = json.dumps({"pool_id": pid, "swap_out": {"denom": foo, "amount": "10"}})
+    leg = json.dumps(
+        {"swap": {"pool_id": pid, "swap_out": {"denom": foo, "amount": "10"}}}
+    )
     tx2 = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         "1000udys",
-        "--legs",
+        "--op",
         leg,
         "--min-output",
         f"10{foo}",
         "--from",
         trader,
     )
-    assert (
-        tx2.get("code", 1) == 0
-    ), f"exact-out swap failed: {json.dumps(tx2, indent=2)}"
+    assert tx2.get("code", 1) == 0, (
+        f"exact-out swap failed: {json.dumps(tx2, indent=2)}"
+    )
 
     # Validate via events and balances
     evs2 = [
@@ -99,6 +101,6 @@ def test_exact_out_v2_success(chainnet, generate_account, faucet, register_name)
         b.get("denom"): int(b.get("amount")) for b in bal_after.get("balances", [])
     }
     foo_after = by_after.get(foo, 0)
-    assert (
-        foo_after - foo_before >= 10
-    ), f"foo did not increase by >=10: before={foo_before} after={foo_after} tx={json.dumps(tx2, indent=2)}"
+    assert foo_after - foo_before >= 10, (
+        f"foo did not increase by >=10: before={foo_before} after={foo_after} tx={json.dumps(tx2, indent=2)}"
+    )

@@ -110,8 +110,12 @@ def test_route_two_leg_across_two_pools(
     [trader, trader_addr] = generate_account("route2_trader")
     faucet(trader_addr, amount=1_000_000)
 
-    leg1 = json.dumps({"pool_id": p1, "swap_in": {"denom": "udys", "amount": "150"}})
-    leg2 = json.dumps({"pool_id": p2, "swap_in": {"denom": b, "amount": "50"}})
+    leg1 = json.dumps(
+        {"swap": {"pool_id": p1, "swap_in": {"denom": "udys", "amount": "150"}}}
+    )
+    leg2 = json.dumps(
+        {"swap": {"pool_id": p2, "swap_in": {"denom": b, "amount": "50"}}}
+    )
     # Balance before (denom c)
     bal_before = dysond("query", "bank", "balances", trader_addr)
     by_before = {
@@ -122,14 +126,14 @@ def test_route_two_leg_across_two_pools(
     tx = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         "200udys",
         "--max-input",
         f"200{b}",
-        "--legs",
+        "--op",
         leg1,
-        "--legs",
+        "--op",
         leg2,
         "--min-output",
         f"1{c}",
@@ -152,9 +156,9 @@ def test_route_two_leg_across_two_pools(
         b.get("denom"): int(b.get("amount")) for b in bal_after.get("balances", [])
     }
     c_after = by_after.get(c, 0)
-    assert (
-        c_after > c_before
-    ), f"no {c} received: before={c_before} after={c_after} tx={json.dumps(tx, indent=2)}"
+    assert c_after > c_before, (
+        f"no {c} received: before={c_before} after={c_after} tx={json.dumps(tx, indent=2)}"
+    )
 
     # Each pool should record at least one trade
     q1 = dysond(
@@ -175,9 +179,9 @@ def test_route_two_leg_across_two_pools(
         "--page-limit",
         "1",
     )
-    assert q1.get(
-        "trades", []
-    ), f"no trades found for pool1: {json.dumps(q1, indent=2)}"
-    assert q2.get(
-        "trades", []
-    ), f"no trades found for pool2: {json.dumps(q2, indent=2)}"
+    assert q1.get("trades", []), (
+        f"no trades found for pool1: {json.dumps(q1, indent=2)}"
+    )
+    assert q2.get("trades", []), (
+        f"no trades found for pool2: {json.dumps(q2, indent=2)}"
+    )

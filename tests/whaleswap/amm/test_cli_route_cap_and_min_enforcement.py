@@ -72,7 +72,9 @@ def test_cap_enforced(chainnet, generate_account, faucet, register_name):
     [trader, trader_addr] = generate_account("amm_cap_trader")
     faucet(trader_addr, amount=1_000_000)
 
-    leg = json.dumps({"pool_id": pid, "swap_in": {"denom": a, "amount": "101"}})
+    leg = json.dumps(
+        {"swap": {"pool_id": pid, "swap_in": {"denom": a, "amount": "101"}}}
+    )
     tx = dysond(
         "tx",
         "whaleswap",
@@ -100,7 +102,9 @@ def test_min_output_enforced(chainnet, generate_account, faucet, register_name):
     [trader, trader_addr] = generate_account("amm_min_trader")
     faucet(trader_addr, amount=1_000_000)
 
-    leg = json.dumps({"pool_id": pid, "swap_in": {"denom": a, "amount": "10"}})
+    leg = json.dumps(
+        {"swap": {"pool_id": pid, "swap_in": {"denom": a, "amount": "10"}}}
+    )
     tx = dysond(
         "tx",
         "whaleswap",
@@ -114,6 +118,6 @@ def test_min_output_enforced(chainnet, generate_account, faucet, register_name):
         "--from",
         trader,
     )
-    assert (
-        tx.get("code", 0) != 0
-    ), f"expected min-output failure: {json.dumps(tx, indent=2)}"
+    assert tx.get("code", 0) != 0, (
+        f"expected min-output failure: {json.dumps(tx, indent=2)}"
+    )

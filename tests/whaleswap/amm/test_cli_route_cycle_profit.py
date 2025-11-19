@@ -79,25 +79,31 @@ def test_route_cycle_profit_no_inputs(
 
     # Record trader balances before
     before = dysond("query", "bank", "balances", trader_addr)
-    assert isinstance(before, dict) and isinstance(
-        before["balances"], list
-    ), json.dumps(before, indent=2)
+    assert isinstance(before, dict) and isinstance(before["balances"], list), (
+        json.dumps(before, indent=2)
+    )
     pre = {row["denom"]: int(row["amount"]) for row in before["balances"]}
 
     # Legs for circular route; no inputs provided
-    leg_ab = json.dumps({"pool_id": ab_id, "swap_in": {"denom": A, "amount": "10"}})
-    leg_bc = json.dumps({"pool_id": bc_id, "swap_in": {"denom": B, "amount": "10"}})
-    leg_ca = json.dumps({"pool_id": ca_id, "swap_in": {"denom": C, "amount": "10"}})
+    leg_ab = json.dumps(
+        {"swap": {"pool_id": ab_id, "swap_in": {"denom": A, "amount": "10"}}}
+    )
+    leg_bc = json.dumps(
+        {"swap": {"pool_id": bc_id, "swap_in": {"denom": B, "amount": "10"}}}
+    )
+    leg_ca = json.dumps(
+        {"swap": {"pool_id": ca_id, "swap_in": {"denom": C, "amount": "10"}}}
+    )
 
     tx = dysond(
         "tx",
         "whaleswap",
-        "swap",
-        "--legs",
+        "make-trade",
+        "--op",
         leg_ab,
-        "--legs",
+        "--op",
         leg_bc,
-        "--legs",
+        "--op",
         leg_ca,
         "--min-output",
         f"1{A}",
@@ -113,13 +119,13 @@ def test_route_cycle_profit_no_inputs(
     assert et in ev and len(ev[et]) == 3, json.dumps(ev, indent=2)
     et = "dysonprotocol.whaleswap.v1.EventTradeRecorded"
     # Now 1 Trade with 3 operations, not 3 Trades
-    assert (
-        et in ev and len(ev[et]) == 1
-    ), f"expected 1 EventTradeRecorded: {json.dumps(ev, indent=2)}"
+    assert et in ev and len(ev[et]) == 1, (
+        f"expected 1 EventTradeRecorded: {json.dumps(ev, indent=2)}"
+    )
     attrs = ev[et][0]
-    assert (
-        int(attrs.get("num_operations", 0)) == 3
-    ), f"expected 3 operations: {json.dumps(attrs, indent=2)}"
+    assert int(attrs.get("num_operations", 0)) == 3, (
+        f"expected 3 operations: {json.dumps(attrs, indent=2)}"
+    )
 
     # Exact net flows from transfer events
     debits, credits = sum_transfers_for_addr(tx, trader_addr)
@@ -143,6 +149,6 @@ def test_route_cycle_profit_no_inputs(
     for d in targets:
         delta = post_z[d] - pre_z[d]
         exp = cred_map[d]
-        assert (
-            delta == exp
-        ), f"{d} delta mismatch: got {delta}, expected {exp}; transfers={json.dumps([debits, credits], indent=2)}"
+        assert delta == exp, (
+            f"{d} delta mismatch: got {delta}, expected {exp}; transfers={json.dumps([debits, credits], indent=2)}"
+        )

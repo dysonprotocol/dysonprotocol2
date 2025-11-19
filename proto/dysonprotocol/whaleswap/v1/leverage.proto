@@ -50,9 +50,12 @@ message LeveragePosition {
   google.protobuf.Timestamp updated_time = 14 [ (gogoproto.stdtime) = true ];
 
   // ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
-  // Annual interest rate for the borrowed denom (APR as LegacyDec string).
-  cosmos.base.v1beta1.DecCoin interest_rate = 22
-      [ (gogoproto.nullable) = false ];
+  // Annual interest rates per reserve denom (exactly two, canonical order).
+  // Each amount is a LegacyDec string representing APR (per-year accrual).
+  repeated cosmos.base.v1beta1.DecCoin interest_rate = 22 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
   // Minimum collateral ratio used for health/liquidation checks (cosmos.Dec
   // string).
   string min_collateral_ratio = 23 [ (cosmos_proto.scalar) = "cosmos.Dec" ];

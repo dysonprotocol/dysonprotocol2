@@ -245,9 +245,12 @@
                         "format": "date-time"
                     },
                     "interest_rate": {
-                        "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin",
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
                         "additionalProperties": false,
-                        "description": "\u2550\u2550\u2550\u2550\u2550 PER-POSITION SNAPSHOTS (sticky to this position) \u2550\u2550\u2550\u2550\u2550 Annual interest rate for the borrowed denom (APR as LegacyDec string)."
+                        "type": "array",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 PER-POSITION SNAPSHOTS (sticky to this position) \u2550\u2550\u2550\u2550\u2550 Annual interest rates per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string representing APR (per-year accrual)."
                     },
                     "min_collateral_ratio": {
                         "type": "string",

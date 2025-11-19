@@ -1,4 +1,5 @@
 import sys
+import logging
 import shlex
 import subprocess
 import tempfile
@@ -172,19 +173,21 @@ def make_run_command(dysond_bin, node_home):
                 if "--timeout" not in args:
                     commands += ["--timeout", "100s"]
                 for i in range(20, 0, -1):
-                    print(f"Waiting for tx confirmation... {i} attempts left")
-                    print(f"Commands: {shlex.join(commands)}")
+                    logging.getLogger().debug(
+                        f"Waiting for tx confirmation... {i} attempts left"
+                    )
+                    logging.getLogger().debug(f"Commands: {shlex.join(commands)}")
                     try:
                         out = subprocess.run(
                             commands, capture_output=True, text=True, timeout=1
                         )
                     except subprocess.TimeoutExpired as e:
-                        print(f"Timeout expired: {e}")
+                        logging.getLogger().debug(f"Timeout expired: {e}")
                         continue
                     stdout = out.stdout
                     stderr = out.stderr
-                    print(f"Stdout: {stdout}")
-                    print(f"Stderr: {stderr}")
+                    logging.getLogger().debug(f"Stdout: {stdout}")
+                    logging.getLogger().debug(f"Stderr: {stderr}")
                     try:
                         # find the first and last curly braces in stdout
                         first_brace = stdout.find("{")
@@ -199,7 +202,7 @@ def make_run_command(dysond_bin, node_home):
                             return json_out
                         continue
                     except json.JSONDecodeError as e:
-                        print(
+                        logging.getLogger().debug(
                             f"Error parsing tx response: {e}\nOUT: {out.stdout}\nERR: {out.stderr}"
                         )
                         if "timed out waiting for transaction" in out.stderr:
@@ -222,7 +225,7 @@ def make_run_command(dysond_bin, node_home):
                 if "--gas" not in args:  #
                     commands += ["--gas", "20000000"]
                 # Run the tx command
-                print(f"Running command: {shlex.join(commands)}")
+                logging.getLogger().debug(f"Running command: {shlex.join(commands)}")
                 original_out = subprocess.run(commands, capture_output=True, text=True)
 
                 try:
@@ -268,7 +271,7 @@ def make_run_command(dysond_bin, node_home):
         for attempt in range(10):
             # Otherwise, just run the command and return the output
             try:
-                print(f"Running command: {shlex.join(commands)}")
+                logging.getLogger().debug(f"Running command: {shlex.join(commands)}")
                 out = subprocess.run(commands, capture_output=True, text=True)
                 return_out = out.stdout + "\n" + out.stderr
                 first_brace = return_out.find("{")
@@ -282,7 +285,7 @@ def make_run_command(dysond_bin, node_home):
                 except json.JSONDecodeError:
                     return return_out
             except Exception as e:
-                print(f"Error running command: {commands}\n{e}")
+                logging.getLogger().debug(f"Error running command: {commands}\n{e}")
                 if "account sequence mismatch" in str(e):
                     time.sleep(0.1 * attempt)
                     continue

@@ -81,12 +81,12 @@ def test_ring_trade_banded_auction(
     p3 = q_v3["pool"]
     # Coins are in canonical order; expect exactly 100 each
     c3 = {c["denom"]: c["amount"] for c in p3.get("coins", [])}
-    assert (
-        c3.get(a) == "100"
-    ), f"v3 pool A reserve mismatch. Full: {json.dumps(q_v3, indent=2)}"
-    assert (
-        c3.get(b) == "100"
-    ), f"v3 pool B reserve mismatch. Full: {json.dumps(q_v3, indent=2)}"
+    assert c3.get(a) == "100", (
+        f"v3 pool A reserve mismatch. Full: {json.dumps(q_v3, indent=2)}"
+    )
+    assert c3.get(b) == "100", (
+        f"v3 pool B reserve mismatch. Full: {json.dumps(q_v3, indent=2)}"
+    )
     expected_bounds = [
         f"0.250000000000000000{a}",
         f"0.750000000000000000{b}",
@@ -124,22 +124,22 @@ def test_ring_trade_banded_auction(
     assert "pool" in q_v2, f"missing pool in query: {json.dumps(q_v2, indent=2)}"
     p2 = q_v2["pool"]
     c2 = {c["denom"]: c["amount"] for c in p2.get("coins", [])}
-    assert (
-        c2.get(a) == "100"
-    ), f"v2 pool A reserve mismatch. Full: {json.dumps(q_v2, indent=2)}"
-    assert (
-        c2.get(c) == "100"
-    ), f"v2 pool C reserve mismatch. Full: {json.dumps(q_v2, indent=2)}"
+    assert c2.get(a) == "100", (
+        f"v2 pool A reserve mismatch. Full: {json.dumps(q_v2, indent=2)}"
+    )
+    assert c2.get(c) == "100", (
+        f"v2 pool C reserve mismatch. Full: {json.dumps(q_v2, indent=2)}"
+    )
 
     # Intentional failure: PoolSwap exact-out near band without cap for A (defaults 0) => should fail on cap
-    leg_fail = {"pool_id": pid_v3, "swap_out": {"denom": b, "amount": "1"}}
+    leg_fail = {"swap": {"pool_id": pid_v3, "swap_out": {"denom": b, "amount": "1"}}}
 
     with pytest.raises(Exception, match="debit exceeds cap"):
         dysond(
             "tx",
             "whaleswap",
-            "swap",
-            "--legs",
+            "make-trade",
+            "--op",
             json.dumps(leg_fail),
             "--from",
             taker,
@@ -166,9 +166,9 @@ def test_ring_trade_banded_auction(
     send_a_liq = dysond(
         "tx", "bank", "send", owner, maker_liq_addr, f"20{a}", "--from", owner
     )
-    assert (
-        send_a_liq.get("code", 1) == 0
-    ), f"send a to maker_liq failed: {json.dumps(send_a_liq, indent=2)}"
+    assert send_a_liq.get("code", 1) == 0, (
+        f"send a to maker_liq failed: {json.dumps(send_a_liq, indent=2)}"
+    )
 
     make1 = dysond(
         "tx",
@@ -181,9 +181,9 @@ def test_ring_trade_banded_auction(
         "--from",
         maker_solid,
     )
-    assert (
-        make1.get("code", 1) == 0
-    ), f"make-offer solid failed: {json.dumps(make1, indent=2)}"
+    assert make1.get("code", 1) == 0, (
+        f"make-offer solid failed: {json.dumps(make1, indent=2)}"
+    )
     ev_m1 = [
         e
         for e in make1.get("events", [])
@@ -201,18 +201,18 @@ def test_ring_trade_banded_auction(
     q_o1 = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id1))
     assert "offer" in q_o1, f"missing offer in query: {json.dumps(q_o1, indent=2)}"
     o1 = q_o1["offer"]
-    assert (
-        o1.get("remaining_have", {}).get("denom") == b
-    ), f"offer1 have denom mismatch: {json.dumps(q_o1, indent=2)}"
-    assert (
-        o1.get("remaining_have", {}).get("amount") == "20"
-    ), f"offer1 have amount mismatch: {json.dumps(q_o1, indent=2)}"
-    assert (
-        o1.get("remaining_want", {}).get("denom") == c
-    ), f"offer1 want denom mismatch: {json.dumps(q_o1, indent=2)}"
-    assert (
-        o1.get("remaining_want", {}).get("amount") == "10"
-    ), f"offer1 want amount mismatch: {json.dumps(q_o1, indent=2)}"
+    assert o1.get("remaining_have", {}).get("denom") == b, (
+        f"offer1 have denom mismatch: {json.dumps(q_o1, indent=2)}"
+    )
+    assert o1.get("remaining_have", {}).get("amount") == "20", (
+        f"offer1 have amount mismatch: {json.dumps(q_o1, indent=2)}"
+    )
+    assert o1.get("remaining_want", {}).get("denom") == c, (
+        f"offer1 want denom mismatch: {json.dumps(q_o1, indent=2)}"
+    )
+    assert o1.get("remaining_want", {}).get("amount") == "10", (
+        f"offer1 want amount mismatch: {json.dumps(q_o1, indent=2)}"
+    )
 
     make2 = dysond(
         "tx",
@@ -227,9 +227,9 @@ def test_ring_trade_banded_auction(
         "--from",
         maker_liq,
     )
-    assert (
-        make2.get("code", 1) == 0
-    ), f"make-offer liquid failed: {json.dumps(make2, indent=2)}"
+    assert make2.get("code", 1) == 0, (
+        f"make-offer liquid failed: {json.dumps(make2, indent=2)}"
+    )
     ev_m2 = [
         e
         for e in make2.get("events", [])
@@ -247,18 +247,18 @@ def test_ring_trade_banded_auction(
     q_o2 = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id2))
     assert "offer" in q_o2, f"missing offer in query: {json.dumps(q_o2, indent=2)}"
     o2 = q_o2["offer"]
-    assert (
-        o2.get("remaining_have", {}).get("denom") == a
-    ), f"offer2 have denom mismatch: {json.dumps(q_o2, indent=2)}"
-    assert (
-        o2.get("remaining_have", {}).get("amount") == "20"
-    ), f"offer2 have amount mismatch: {json.dumps(q_o2, indent=2)}"
-    assert (
-        o2.get("remaining_want", {}).get("denom") == b
-    ), f"offer2 want denom mismatch: {json.dumps(q_o2, indent=2)}"
-    assert (
-        o2.get("remaining_want", {}).get("amount") == "20"
-    ), f"offer2 want amount mismatch: {json.dumps(q_o2, indent=2)}"
+    assert o2.get("remaining_have", {}).get("denom") == a, (
+        f"offer2 have denom mismatch: {json.dumps(q_o2, indent=2)}"
+    )
+    assert o2.get("remaining_have", {}).get("amount") == "20", (
+        f"offer2 have amount mismatch: {json.dumps(q_o2, indent=2)}"
+    )
+    assert o2.get("remaining_want", {}).get("denom") == b, (
+        f"offer2 want denom mismatch: {json.dumps(q_o2, indent=2)}"
+    )
+    assert o2.get("remaining_want", {}).get("amount") == "20", (
+        f"offer2 want amount mismatch: {json.dumps(q_o2, indent=2)}"
+    )
 
     # Mixed MakeTrade: v3 exact-out B, take liquid offer fully, take solid partially, v2 exact-in C->A
     op1 = {"swap": {"pool_id": pid_v3, "swap_out": {"denom": b, "amount": "1"}}}
@@ -291,9 +291,9 @@ def test_ring_trade_banded_auction(
         "--gas",
         "2000000",  # make-trade with multiple ops requires explicit gas
     )
-    assert (
-        tx_mt.get("code", 1) == 0
-    ), f"make-trade failed: {json.dumps(tx_mt, indent=2)}"
+    assert tx_mt.get("code", 1) == 0, (
+        f"make-trade failed: {json.dumps(tx_mt, indent=2)}"
+    )
     ev_tr = [
         e
         for e in tx_mt.get("events", [])
@@ -305,34 +305,34 @@ def test_ring_trade_banded_auction(
     q_o1_after = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id1))
     o1a = q_o1_after.get("offer", {})
     # Expect partial fill: remaining 10 B -> 5 C, status open
-    assert (
-        o1a.get("remaining_have", {}).get("denom") == b
-    ), f"offer1 after have denom: {json.dumps(q_o1_after, indent=2)}"
-    assert (
-        o1a.get("remaining_have", {}).get("amount") == "10"
-    ), f"offer1 after have amount: {json.dumps(q_o1_after, indent=2)}"
-    assert (
-        o1a.get("remaining_want", {}).get("denom") == c
-    ), f"offer1 after want denom: {json.dumps(q_o1_after, indent=2)}"
-    assert (
-        o1a.get("remaining_want", {}).get("amount") == "5"
-    ), f"offer1 after want amount: {json.dumps(q_o1_after, indent=2)}"
-    assert (
-        o1a.get("status") == "open"
-    ), f"offer1 after status: {json.dumps(q_o1_after, indent=2)}"
+    assert o1a.get("remaining_have", {}).get("denom") == b, (
+        f"offer1 after have denom: {json.dumps(q_o1_after, indent=2)}"
+    )
+    assert o1a.get("remaining_have", {}).get("amount") == "10", (
+        f"offer1 after have amount: {json.dumps(q_o1_after, indent=2)}"
+    )
+    assert o1a.get("remaining_want", {}).get("denom") == c, (
+        f"offer1 after want denom: {json.dumps(q_o1_after, indent=2)}"
+    )
+    assert o1a.get("remaining_want", {}).get("amount") == "5", (
+        f"offer1 after want amount: {json.dumps(q_o1_after, indent=2)}"
+    )
+    assert o1a.get("status") == "open", (
+        f"offer1 after status: {json.dumps(q_o1_after, indent=2)}"
+    )
 
     q_o2_after = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id2))
     o2a = q_o2_after.get("offer", {})
     # Expect full close: zero remain, status closed
-    assert (
-        o2a.get("remaining_have", {}).get("amount") == "0"
-    ), f"offer2 after have not zero: {json.dumps(q_o2_after, indent=2)}"
-    assert (
-        o2a.get("remaining_want", {}).get("amount") == "0"
-    ), f"offer2 after want not zero: {json.dumps(q_o2_after, indent=2)}"
-    assert (
-        o2a.get("status") == "closed"
-    ), f"offer2 after status: {json.dumps(q_o2_after, indent=2)}"
+    assert o2a.get("remaining_have", {}).get("amount") == "0", (
+        f"offer2 after have not zero: {json.dumps(q_o2_after, indent=2)}"
+    )
+    assert o2a.get("remaining_want", {}).get("amount") == "0", (
+        f"offer2 after want not zero: {json.dumps(q_o2_after, indent=2)}"
+    )
+    assert o2a.get("status") == "closed", (
+        f"offer2 after status: {json.dumps(q_o2_after, indent=2)}"
+    )
 
     # Post-trade: assert exact pool reserves after ops
     q_v3_after = dysond("query", "whaleswap", "pool", "--pool-id", str(pid_v3))
@@ -341,18 +341,18 @@ def test_ring_trade_banded_auction(
     p2a = q_v2_after.get("pool", {})
     m3 = {c["denom"]: c["amount"] for c in p3a.get("coins", [])}
     m2 = {c["denom"]: c["amount"] for c in p2a.get("coins", [])}
-    assert (
-        m3.get(a) == "102"
-    ), f"post-trade v3 pool A reserve mismatch: {json.dumps(q_v3_after, indent=2)}"
-    assert (
-        m3.get(b) == "99"
-    ), f"post-trade v3 pool B reserve mismatch: {json.dumps(q_v3_after, indent=2)}"
-    assert (
-        m2.get(a) == "96"
-    ), f"post-trade v2 pool A reserve mismatch: {json.dumps(q_v2_after, indent=2)}"
-    assert (
-        m2.get(c) == "105"
-    ), f"post-trade v2 pool C reserve mismatch: {json.dumps(q_v2_after, indent=2)}"
+    assert m3.get(a) == "102", (
+        f"post-trade v3 pool A reserve mismatch: {json.dumps(q_v3_after, indent=2)}"
+    )
+    assert m3.get(b) == "99", (
+        f"post-trade v3 pool B reserve mismatch: {json.dumps(q_v3_after, indent=2)}"
+    )
+    assert m2.get(a) == "96", (
+        f"post-trade v2 pool A reserve mismatch: {json.dumps(q_v2_after, indent=2)}"
+    )
+    assert m2.get(c) == "105", (
+        f"post-trade v2 pool C reserve mismatch: {json.dumps(q_v2_after, indent=2)}"
+    )
 
     # Auction flow: open -> bidder accepts -> bidder redeems → records auction trade
     [seller_name, seller_addr] = generate_account("ring_auc_seller")
@@ -370,9 +370,9 @@ def test_ring_trade_banded_auction(
         "--from",
         seller_name,
     )
-    assert (
-        open_res.get("code", 1) == 0
-    ), f"open-auction failed: {json.dumps(open_res, indent=2)}"
+    assert open_res.get("code", 1) == 0, (
+        f"open-auction failed: {json.dumps(open_res, indent=2)}"
+    )
     ev_ac = [
         e
         for e in open_res.get("events", [])
@@ -399,9 +399,9 @@ def test_ring_trade_banded_auction(
         "--from",
         env["owner_name"],
     )
-    assert (
-        fund_bidder.get("code", 1) == 0
-    ), f"fund bidder failed: {json.dumps(fund_bidder, indent=2)}"
+    assert fund_bidder.get("code", 1) == 0, (
+        f"fund bidder failed: {json.dumps(fund_bidder, indent=2)}"
+    )
     pb = dysond(
         "tx",
         "nameservice",
@@ -448,11 +448,11 @@ def test_ring_trade_banded_auction(
         "5",
     )
     trs = q.get("trades", [])
-    assert (
-        len(trs) == 1
-    ), f"expected 1 auction trade, got {len(trs)}: {json.dumps(q, indent=2)}"
+    assert len(trs) == 1, (
+        f"expected 1 auction trade, got {len(trs)}: {json.dumps(q, indent=2)}"
+    )
 
     # Verify it's for the right bidder
-    assert (
-        trs[0].get("trader") == bidder_addr
-    ), f"trader mismatch: {json.dumps(trs[0], indent=2)}"
+    assert trs[0].get("trader") == bidder_addr, (
+        f"trader mismatch: {json.dumps(trs[0], indent=2)}"
+    )

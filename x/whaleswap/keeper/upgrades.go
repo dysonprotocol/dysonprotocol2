@@ -76,29 +76,30 @@ func (k Keeper) migrateLeveragePosition(ctx context.Context, pos *whaleswapv1.Le
 
 // migrateInterestRate handles the conversion from old repeated DecCoin format to new single DecCoin format
 func (k Keeper) migrateInterestRate(ctx context.Context, pos *whaleswapv1.LeveragePosition) error {
-	// If already migrated (single DecCoin with proper denom), skip
-	if pos.InterestRate.Denom == pos.Borrowed.Denom {
-		return nil
+	// Check if we already have the interest rate for the borrowed denom
+	for _, ir := range pos.InterestRate {
+		if ir.Denom == pos.Borrowed.Denom {
+			return nil // Already has the correct rate
+		}
 	}
 
 	// For existing positions, we need to determine the appropriate interest rate
-	// Since we don't have access to the old repeated field, we'll use a default approach:
-	// - Get the current pool configuration to find the interest rate for the borrowed denom
-	// - If pool data is not available, use zero rate as fallback
+	// Get the current pool configuration to find the interest rate for the borrowed denom
+	// If pool data is not available, use zero rate as fallback
 
 	pool, err := k.PoolsMap.Get(ctx, pos.PoolId)
 	if err == nil && len(pool.InterestRate) > 0 {
 		// Find the interest rate for the borrowed denom from the pool
 		for _, rate := range pool.InterestRate {
 			if rate.Denom == pos.Borrowed.Denom {
-				pos.InterestRate = rate
+				pos.InterestRate = sdk.NewDecCoins(rate)
 				return nil
 			}
 		}
 	}
 
 	// Fallback: use zero interest rate if pool data is not available
-	pos.InterestRate = sdk.NewDecCoinFromDec(pos.Borrowed.Denom, math.LegacyZeroDec())
+	pos.InterestRate = sdk.NewDecCoins(sdk.NewDecCoinFromDec(pos.Borrowed.Denom, math.LegacyZeroDec()))
 	return nil
 }
 

@@ -44,10 +44,11 @@ def test_trades_by_pool_lists_swaps_pagination(
         "--from",
         creator_name,
     )
-    assert (
-        create.get("code", 1) == 0
-    ), f"create-pool failed: {json.dumps(create, indent=2)}"
+    assert create.get("code", 1) == 0, (
+        f"create-pool failed: {json.dumps(create, indent=2)}"
+    )
 
+    # Extract pool_id from the create-pool transaction
     pools = dysond("query", "whaleswap", "pools")
     ids = [int(p.get("pool_id")) for p in pools.get("pools", [])]
     assert ids, f"no pools found after create: {json.dumps(pools, indent=2)}"
@@ -63,14 +64,16 @@ def test_trades_by_pool_lists_swaps_pagination(
     # parse amount/denom explicitly
     amt1 = "".join([c for c in in1 if c.isdigit()])
     den1 = in1[len(amt1) :]
-    legs1 = json.dumps({"pool_id": pool_id, "swap_in": {"denom": den1, "amount": amt1}})
+    legs1 = json.dumps(
+        {"swap": {"pool_id": pool_id, "swap_in": {"denom": den1, "amount": amt1}}}
+    )
     swap1 = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         in1,
-        "--legs",
+        "--op",
         legs1,
         "--min-output",
         f"1{out1}",
@@ -84,14 +87,16 @@ def test_trades_by_pool_lists_swaps_pagination(
     out2 = "udys"
     amt2 = "".join([c for c in in2 if c.isdigit()])
     den2 = in2[len(amt2) :]
-    legs2 = json.dumps({"pool_id": pool_id, "swap_in": {"denom": den2, "amount": amt2}})
+    legs2 = json.dumps(
+        {"swap": {"pool_id": pool_id, "swap_in": {"denom": den2, "amount": amt2}}}
+    )
     swap2 = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         in2,
-        "--legs",
+        "--op",
         legs2,
         "--min-output",
         f"1{out2}",
@@ -145,44 +150,44 @@ def test_trades_by_pool_lists_swaps_pagination(
         # Validate new Trade structure
         assert "trader" in tr, f"missing trader: {json.dumps(tr, indent=2)}"
         assert "operations" in tr, f"missing operations: {json.dumps(tr, indent=2)}"
-        assert (
-            tr.get("trader") == taker_addr
-        ), f"trader mismatch: {json.dumps(tr, indent=2)}"
+        assert tr.get("trader") == taker_addr, (
+            f"trader mismatch: {json.dumps(tr, indent=2)}"
+        )
 
         # Extract pool_id from operations (amino encoding: Op.value.swap)
         ops = tr.get("operations", [])
-        assert (
-            len(ops) == 1
-        ), f"expected 1 operation per PoolSwap trade: {json.dumps(tr, indent=2)}"
+        assert len(ops) == 1, (
+            f"expected 1 operation per PoolSwap trade: {json.dumps(tr, indent=2)}"
+        )
         op_val = ops[0].get("Op", {}).get("value", {})
-        assert (
-            "swap" in op_val
-        ), f"operation missing swap: {json.dumps(ops[0], indent=2)}"
-        assert (
-            int(op_val["swap"]["pool_id"]) == pool_id
-        ), f"pool_id mismatch: {json.dumps(op_val, indent=2)}"
+        assert "swap" in op_val, (
+            f"operation missing swap: {json.dumps(ops[0], indent=2)}"
+        )
+        assert int(op_val["swap"]["pool_id"]) == pool_id, (
+            f"pool_id mismatch: {json.dumps(op_val, indent=2)}"
+        )
 
         # Validate totals (now arrays)
         total_sent = tr.get("total_sent", [])
         total_recv = tr.get("total_received", [])
-        assert (
-            len(total_sent) == 1
-        ), f"expected 1 total_sent: {json.dumps(tr, indent=2)}"
-        assert (
-            len(total_recv) == 1
-        ), f"expected 1 total_received: {json.dumps(tr, indent=2)}"
+        assert len(total_sent) == 1, (
+            f"expected 1 total_sent: {json.dumps(tr, indent=2)}"
+        )
+        assert len(total_recv) == 1, (
+            f"expected 1 total_received: {json.dumps(tr, indent=2)}"
+        )
 
         sent = total_sent[0]
         recv = total_recv[0]
         # Sent must match exactly the provided input
         exp_sent = expected[idx]["sent"]
-        assert (
-            f"{sent.get('amount')}{sent.get('denom')}" == exp_sent
-        ), f"sent coin mismatch: got={sent} exp={exp_sent} full={json.dumps(tr, indent=2)}"
+        assert f"{sent.get('amount')}{sent.get('denom')}" == exp_sent, (
+            f"sent coin mismatch: got={sent} exp={exp_sent} full={json.dumps(tr, indent=2)}"
+        )
         # Received denom must match requested out-denom and amount must be positive
-        assert (
-            recv.get("denom") == expected[idx]["out_denom"]
-        ), f"received denom mismatch: {json.dumps(tr, indent=2)}"
-        assert (
-            int(recv.get("amount")) > 0
-        ), f"received amount must be > 0: {json.dumps(tr, indent=2)}"
+        assert recv.get("denom") == expected[idx]["out_denom"], (
+            f"received denom mismatch: {json.dumps(tr, indent=2)}"
+        )
+        assert int(recv.get("amount")) > 0, (
+            f"received amount must be > 0: {json.dumps(tr, indent=2)}"
+        )

@@ -44,7 +44,14 @@ func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequ
 	if err != nil {
 		return nil, err
 	}
-	rate := pos.InterestRate.Amount
+	// Find the interest rate for the borrowed denom
+	var rate math.LegacyDec
+	for _, ir := range pos.InterestRate {
+		if ir.Denom == pos.Borrowed.Denom {
+			rate = ir.Amount
+			break
+		}
+	}
 
 	// Get Pool for real-time price info
 	pool, err := k.PoolsMap.Get(ctx, pos.PoolId)

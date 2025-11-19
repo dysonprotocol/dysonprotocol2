@@ -216,11 +216,6 @@ func ValidateGenesisState(s types.GenesisState) error {
 		default:
 			return fmt.Errorf("position %d invalid liquidation_status: %v", p.PositionId, p.LiquidationStatus)
 		}
-		// Validate interest rate is a single DecCoin of borrowed denom
-		if p.InterestRate.Denom != p.Borrowed.Denom {
-			return fmt.Errorf("position %d interest_rate denom %s does not match borrowed denom %s",
-				p.PositionId, p.InterestRate.Denom, p.Borrowed.Denom)
-		}
 		// Validate min_collateral_ratio is a valid decimal (per-position snapshot)
 		if p.MinCollateralRatio != "" {
 			if _, err := cosmossdk_math.LegacyNewDecFromStr(p.MinCollateralRatio); err != nil {

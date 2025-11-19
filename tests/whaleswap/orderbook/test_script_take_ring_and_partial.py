@@ -140,10 +140,21 @@ def test_ob_script_take_ring_solid(chainnet, generate_account, faucet, register_
 from dys import _msg, _query, get_script_address
 
 def ob_take(trades):
+    # Convert old MsgTakeOffer format to new MsgMakeTrade format
+    operations = []
+    for trade in trades:
+        operations.append({
+            "take": {
+                "offer_id": trade["offer_id"]
+            }
+        })
+    
     msg = {
-        "@type": "/dysonprotocol.whaleswap.v1.MsgTakeOffer",
-        "taker": get_script_address(),
-        "trades": trades,
+        "@type": "/dysonprotocol.whaleswap.v1.MsgMakeTrade",
+        "trader": get_script_address(),
+        "max_input": [],  # Take operations handle funds automatically
+        "operations": operations,
+        "min_output": []
     }
     _msg(msg)
     return {"ok": True, "taker": get_script_address(), "n": len(trades)}
@@ -237,9 +248,16 @@ from dys import _msg, _query, get_script_address
 
 def ob_take_partial_and_query(offer_id, take_units, have_denom):
     _msg({
-        "@type": "/dysonprotocol.whaleswap.v1.MsgTakeOffer",
-        "taker": get_script_address(),
-        "trades": [{"offer_id": int(offer_id), "take_units": str(int(take_units))}],
+        "@type": "/dysonprotocol.whaleswap.v1.MsgMakeTrade",
+        "trader": get_script_address(),
+        "max_input": [],  # Take operations handle funds automatically
+        "operations": [{
+            "take": {
+                "offer_id": int(offer_id),
+                "take_units": str(int(take_units))
+            }
+        }],
+        "min_output": []
     })
     bal = _query({
         "@type": "/cosmos.bank.v1beta1.QueryBalanceRequest",
@@ -266,9 +284,9 @@ def ob_take_partial_and_query(offer_id, take_units, have_denom):
         "--gas",
         "auto",
     )
-    assert (
-        take.get("code", 1) == 0
-    ), f"script partial take failed: {json.dumps(take, indent=2)}"
+    assert take.get("code", 1) == 0, (
+        f"script partial take failed: {json.dumps(take, indent=2)}"
+    )
     result = _extract_exec_result(take)
     assert (
         isinstance(result, dict)

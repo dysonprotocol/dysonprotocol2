@@ -54,7 +54,7 @@ def test_pool_swap_v2_single_pool(chainnet, generate_account, faucet, register_n
     faucet(trader_addr, amount=1_000_000)
 
     legs = json.dumps(
-        {"pool_id": pool_id, "swap_in": {"denom": "udys", "amount": "100"}}
+        {"swap": {"pool_id": pool_id, "swap_in": {"denom": "udys", "amount": "100"}}}
     )
     swap = dysond(
         "tx",
@@ -79,6 +79,6 @@ def test_pool_swap_v2_single_pool(chainnet, generate_account, faucet, register_n
     other = [c for c in coins if c["denom"] == name][0]
     r1 = int(udys["amount"])
     r2 = int(other["amount"])
-    assert (
-        r1 > 0 and r2 > 0
-    ), f"reserves not positive after swap: {json.dumps(after, indent=2)}"
+    assert r1 > 0 and r2 > 0, (
+        f"reserves not positive after swap: {json.dumps(after, indent=2)}"
+    )

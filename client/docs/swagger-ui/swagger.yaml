@@ -10278,21 +10278,32 @@ paths:
                       type: string
                       format: date-time
                     interest_rate:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
                       description: >-
-                        DecCoin defines a token with a denomination and a
-                        decimal amount.
+                        ═════ PER-POSITION SNAPSHOTS (sticky to this position)
+                        ═════
 
+                        Annual interest rates per reserve denom (exactly two,
+                        canonical order).
 
-                        NOTE: The amount field is an Dec which implements the
-                        custom method
-
-                        signatures required by gogoproto.
+                        Each amount is a LegacyDec string representing APR
+                        (per-year accrual).
                     min_collateral_ratio:
                       type: string
                       description: >-
@@ -10722,21 +10733,32 @@ paths:
                       type: string
                       format: date-time
                     interest_rate:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                        amount:
-                          type: string
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          DecCoin defines a token with a denomination and a
+                          decimal amount.
+
+
+                          NOTE: The amount field is an Dec which implements the
+                          custom method
+
+                          signatures required by gogoproto.
                       description: >-
-                        DecCoin defines a token with a denomination and a
-                        decimal amount.
+                        ═════ PER-POSITION SNAPSHOTS (sticky to this position)
+                        ═════
 
+                        Annual interest rates per reserve denom (exactly two,
+                        canonical order).
 
-                        NOTE: The amount field is an Dec which implements the
-                        custom method
-
-                        signatures required by gogoproto.
+                        Each amount is a LegacyDec string representing APR
+                        (per-year accrual).
                     min_collateral_ratio:
                       type: string
                       description: >-
@@ -11141,21 +11163,32 @@ paths:
                     type: string
                     format: date-time
                   interest_rate:
-                    type: object
-                    properties:
-                      denom:
-                        type: string
-                      amount:
-                        type: string
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
                     description: >-
-                      DecCoin defines a token with a denomination and a decimal
-                      amount.
+                      ═════ PER-POSITION SNAPSHOTS (sticky to this position)
+                      ═════
 
+                      Annual interest rates per reserve denom (exactly two,
+                      canonical order).
 
-                      NOTE: The amount field is an Dec which implements the
-                      custom method
-
-                      signatures required by gogoproto.
+                      Each amount is a LegacyDec string representing APR
+                      (per-year accrual).
                   min_collateral_ratio:
                     type: string
                     description: >-
@@ -50396,17 +50429,26 @@ definitions:
         type: string
         format: date-time
       interest_rate:
-        type: object
-        properties:
-          denom:
-            type: string
-          amount:
-            type: string
-        description: |-
-          DecCoin defines a token with a denomination and a decimal amount.
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
 
-          NOTE: The amount field is an Dec which implements the custom method
-          signatures required by gogoproto.
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        description: >-
+          ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
+
+          Annual interest rates per reserve denom (exactly two, canonical
+          order).
+
+          Each amount is a LegacyDec string representing APR (per-year accrual).
       min_collateral_ratio:
         type: string
         description: >-
@@ -55068,20 +55110,31 @@ definitions:
             type: string
             format: date-time
           interest_rate:
-            type: object
-            properties:
-              denom:
-                type: string
-              amount:
-                type: string
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
             description: >-
-              DecCoin defines a token with a denomination and a decimal amount.
+              ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
 
+              Annual interest rates per reserve denom (exactly two, canonical
+              order).
 
-              NOTE: The amount field is an Dec which implements the custom
-              method
-
-              signatures required by gogoproto.
+              Each amount is a LegacyDec string representing APR (per-year
+              accrual).
           min_collateral_ratio:
             type: string
             description: >-
@@ -55409,21 +55462,31 @@ definitions:
               type: string
               format: date-time
             interest_rate:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
               description: >-
-                DecCoin defines a token with a denomination and a decimal
-                amount.
+                ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
 
+                Annual interest rates per reserve denom (exactly two, canonical
+                order).
 
-                NOTE: The amount field is an Dec which implements the custom
-                method
-
-                signatures required by gogoproto.
+                Each amount is a LegacyDec string representing APR (per-year
+                accrual).
             min_collateral_ratio:
               type: string
               description: >-
@@ -55735,21 +55798,31 @@ definitions:
               type: string
               format: date-time
             interest_rate:
-              type: object
-              properties:
-                denom:
-                  type: string
-                amount:
-                  type: string
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
               description: >-
-                DecCoin defines a token with a denomination and a decimal
-                amount.
+                ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
 
+                Annual interest rates per reserve denom (exactly two, canonical
+                order).
 
-                NOTE: The amount field is an Dec which implements the custom
-                method
-
-                signatures required by gogoproto.
+                Each amount is a LegacyDec string representing APR (per-year
+                accrual).
             min_collateral_ratio:
               type: string
               description: >-

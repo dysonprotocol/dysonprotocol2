@@ -151,11 +151,12 @@ export class LeveragePosition extends Message<LeveragePosition> {
 
   /**
    * ═════ PER-POSITION SNAPSHOTS (sticky to this position) ═════
-   * Annual interest rate for the borrowed denom (APR as LegacyDec string).
+   * Annual interest rates per reserve denom (exactly two, canonical order).
+   * Each amount is a LegacyDec string representing APR (per-year accrual).
    *
-   * @generated from field: cosmos.base.v1beta1.DecCoin interest_rate = 22;
+   * @generated from field: repeated cosmos.base.v1beta1.DecCoin interest_rate = 22;
    */
-  interestRate?: DecCoin;
+  interestRate: DecCoin[] = [];
 
   /**
    * Minimum collateral ratio used for health/liquidation checks (cosmos.Dec
@@ -282,7 +283,7 @@ export class LeveragePosition extends Message<LeveragePosition> {
     { no: 12, name: "accrued_interest", kind: "message", T: Coin },
     { no: 13, name: "updated_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 14, name: "updated_time", kind: "message", T: Timestamp },
-    { no: 22, name: "interest_rate", kind: "message", T: DecCoin },
+    { no: 22, name: "interest_rate", kind: "message", T: DecCoin, repeated: true },
     { no: 23, name: "min_collateral_ratio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 24, name: "liquidation_threshold", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 25, name: "initial_borrowed", kind: "message", T: Coin },
