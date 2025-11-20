@@ -376,33 +376,33 @@ def demo_offers_best_ordering(alice_addr, foo_name, bar_name):
     assert len(offers) >= 3, f"Should have at least 3 offers, got {len(offers)}"
 
     # Verify all created offers are in results
-    offer_ids = [str(offer["offer_id"]) for offer in offers]
-    assert (
-        str(demo_result["offer1_id"]) in offer_ids
-    ), f"Offer 1 {demo_result['offer1_id']} should be in results. Offer IDs: {offer_ids}"
-    assert (
-        str(demo_result["offer2_id"]) in offer_ids
-    ), f"Offer 2 {demo_result['offer2_id']} should be in results. Offer IDs: {offer_ids}"
-    assert (
-        str(demo_result["offer3_id"]) in offer_ids
-    ), f"Offer 3 {demo_result['offer3_id']} should be in results. Offer IDs: {offer_ids}"
+    offer_map = {str(offer["offer_id"]): offer for offer in offers}
+    created_offer_ids = [
+        str(demo_result["offer1_id"]),
+        str(demo_result["offer2_id"]),
+        str(demo_result["offer3_id"]),
+    ]
+    matched_offers = []
+    for offer_id in created_offer_ids:
+        assert (
+            offer_id in offer_map
+        ), f"Offer {offer_id} should be in results. Offer IDs: {list(offer_map.keys())}"
+        matched_offers.append(offer_map[offer_id])
 
-    # Verify offers are sorted by price
+    # Verify created offers are sorted by price (ascending = best for takers).
     # Price = want_amount / have_amount
-    # Note: The implementation currently returns offers in descending order,
-    # but the documentation says ascending. This may be a bug in the implementation.
     prices = []
-    for offer in offers:
+    for offer in matched_offers:
         have_amount = int(offer["remaining_have"]["amount"])
         want_amount = int(offer["remaining_want"]["amount"])
         price = want_amount / have_amount
         prices.append(price)
 
-    # Verify prices are in descending order (actual behavior)
-    # TODO: If ascending is the expected behavior per documentation, this is a bug
-    assert prices == sorted(
-        prices, reverse=True
-    ), f"Offers are currently sorted by price descending. Prices: {prices}, Expected descending: {sorted(prices, reverse=True)}, Offers: {json.dumps(offers, indent=2)}"
+    expected_prices = sorted(prices)
+    assert prices == expected_prices, (
+        "OffersBest should return created offers sorted by ascending price. "
+        f"Prices: {prices}, Expected: {expected_prices}, Filtered Offers: {json.dumps(matched_offers, indent=2)}"
+    )
 
 
 def test_offers_best_empty_have_denom(chainnet):

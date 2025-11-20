@@ -1,0 +1,69 @@
+package keeper
+
+import (
+	"context"
+
+	cosmossdkerrors "cosmossdk.io/errors"
+	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
+// Metrics computes comprehensive module metrics including escrow balances and trade statistics.
+//
+// Semantics:
+//   - Aggregates escrow balances: AMM pool reserves, offer-locked coins, PFAND requirements.
+//   - Counts auctions across all records by summing sell amounts.
+//   - Calculates total fees earned across all pools.
+//   - Counts total trades by iterating the trades map.
+//   - Returns consolidated TradeMetrics for monitoring and invariants checking.
+//
+// Validation:
+//   - No validation required (empty request accepted).
+//
+// Returns:
+//   - *whaleswapv1.QueryMetricsResponse with complete TradeMetrics breakdown.
+//
+// Errors are returned on tally computation failures; no panics.
+func (k Keeper) Metrics(ctx context.Context, _ *whaleswapv1.QueryMetricsRequest) (*whaleswapv1.QueryMetricsResponse, error) {
+	amm, err := k.tallyAMMReserves(ctx)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "tally amm")
+	}
+	escrowOffers, err := k.tallyEscrowRequired(ctx)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "tally escrow offers")
+	}
+	pfand, err := k.tallyPfandRequired(ctx)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "tally pfand")
+	}
+	// Auctions: sum sell across all auctions
+	auctionCoins := sdk.NewCoins()
+	_ = k.AuctionsMap.Walk(ctx, nil, func(_ uint64, a whaleswapv1.AuctionRecord) (bool, error) {
+		auctionCoins = auctionCoins.Add(a.Sell)
+		return false, nil
+	})
+	// Fees earned: sum across pools
+	fees := sdk.NewCoins()
+	_ = k.PoolsMap.Walk(ctx, nil, func(_ uint64, p whaleswapv1.Pool) (bool, error) {
+		if len(p.FeesEarned) > 0 {
+			fees = fees.Add(p.FeesEarned...)
+		}
+		return false, nil
+	})
+	// num_trades by iterating trades map (sequence may include gaps)
+	var numTrades uint64
+	_ = k.TradesMap.Walk(ctx, nil, func(_ uint64, _ whaleswapv1.Trade) (bool, error) {
+		numTrades++
+		return false, nil
+	})
+	m := &whaleswapv1.TradeMetrics{
+		NumTrades:            numTrades,
+		EscrowedPoolCoins:    amm,
+		EscrowedOfferCoins:   escrowOffers,
+		EscrowedPfand:        pfand,
+		EscrowedAuctionCoins: auctionCoins,
+		FeesEarned:           fees,
+	}
+	return &whaleswapv1.QueryMetricsResponse{Metrics: m}, nil
+}

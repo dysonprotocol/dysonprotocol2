@@ -270,3 +270,21 @@ func (k Keeper) incrementAuctionCreated(ctx context.Context, seller string, sell
 
 	return k.saveMetrics(ctx, metrics)
 }
+
+// shouldTrackDenom returns true if the denom should be tracked in metrics.
+// Tracks denoms with metadata to prevent spam.
+func (k Keeper) shouldTrackDenom(ctx context.Context, denom string) bool {
+	_, found := k.bank.GetDenomMetaData(ctx, denom)
+	return found
+}
+
+// filterCoinsWithMetadata returns only coins that have denom metadata registered.
+func (k Keeper) filterCoinsWithMetadata(ctx context.Context, coins sdk.Coins) sdk.Coins {
+	filtered := sdk.NewCoins()
+	for _, coin := range coins {
+		if k.shouldTrackDenom(ctx, coin.Denom) {
+			filtered = filtered.Add(coin)
+		}
+	}
+	return filtered
+}

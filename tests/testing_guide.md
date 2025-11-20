@@ -163,12 +163,28 @@ def test_function(param1, param2):
 ### Function-Level Test Mapping
 
 - Every Go function (exported or private) must have coverage in pytest; use the same mirroring pattern for both.
-- For each function, add a pytest file that mirrors its package path and function name using `./tests/{go_dir}/test_{go_filename}_{function}.py`.
+- For each function, add a pytest file that mirrors its package path and function name using `./tests/{go_dir}/test_{FunctionName}.py`.
+- **Naming Convention**: Test files use only the function name (capitalized), not the Go filename. Since Go makes all functions visible at the package level, the filename is not needed for identification.
 - These mapping files focus on a single Go function and must assert the entire non-error path along with any explicitly documented edge conditions.
 - Multiple pytest test functions may live in the same mapping file, but they all exercise different angles of the same Go function's contract.
 - **Focus and Simplicity**: Coverage tests should focus exclusively on the specific function being tested. Keep tests as concise and simple as possible. Avoid unnecessary complexity, multi-step workflows, or testing unrelated functionality. Each test should directly exercise a specific code path in the target function.
-- Example: `x/whaleswap/keeper/invariants.go` with `AssertAMMInvariants` requires `./tests/whaleswap/keeper/test_invariants_AssertAMMInvariants.py`, and that test suite must cover the complete successful flow of `AssertAMMInvariants`.
-- When you discover a bug in the Go implementation, first capture the failing scenario in the mapped pytest file, mark it with `pytest.mark.xfail(strict=True, reason="bug: <details>")`, and leave it failing until the underlying code is fixed.
+- Example: `x/whaleswap/keeper/invariants.go` with `AssertAMMInvariants` requires `./tests/whaleswap/keeper/test_AssertAMMInvariants.py`, and that test suite must cover the complete successful flow of `AssertAMMInvariants`.
+- **Bug Detection and Documentation**: Always actively look for implementation bugs while writing tests. When analyzing code paths, watch for:
+  - Incorrect error handling (e.g., wrapping `nil` errors, ignoring errors)
+  - Logic errors (e.g., wrong comparisons, missing validations, incorrect calculations)
+  - Edge cases not properly handled (e.g., zero values, empty collections, boundary conditions)
+  - Inconsistent state management (e.g., not updating related state, missing event emissions)
+  - Type mismatches or incorrect conversions
+- When you discover a bug in the Go implementation:
+  1. **Document in Go source**: Add a comment directly above the buggy code explaining the issue:
+     ```go
+     // BUG: Wrapping nil error causes function to return success instead of error
+     // When k.OffersMap.Get succeeds, err is nil, so Wrapf(nil, ...) returns nil
+     // This causes the function to return nil, nil (success) instead of an error
+     ```
+  2. **Capture in test**: Create a failing test in the mapped pytest file that demonstrates the bug
+  3. **Mark as expected failure**: Use `pytest.mark.xfail(strict=True, reason="bug: <detailed description>")` to mark the test
+  4. **Fix the bug**: Once the bug is fixed in the Go code, remove the `xfail` marker and verify the test passes
 - When analyzing coverage, if you identify unreachable code branches, document them in the Go source with `// UNREACHABLE: {detailed reason}` comments explaining exactly why they cannot execute (see [Handling Unreachable Code](#handling-unreachable-code) in Coverage Analysis section).
 
 ---
@@ -1007,8 +1023,31 @@ Coverage: 66.7% (12/18 statements)
 **Strategy**:
 1. Identify uncovered lines in coverage reports
 2. Determine what conditions trigger those paths
-3. Write tests that exercise those paths
-4. Verify coverage improved
+3. **Actively look for bugs** while analyzing code paths (see [Bug Detection and Documentation](#function-level-test-mapping) section)
+4. Write tests that exercise those paths
+5. Verify coverage improved
+
+**Bug Detection During Coverage Analysis**:
+- While reading code to understand uncovered paths, actively look for implementation bugs
+- Common bug patterns to watch for:
+  - **Error handling bugs**: Functions that ignore errors, wrap `nil` errors, or return success when they should fail
+  - **Logic bugs**: Incorrect comparisons (`>` instead of `>=`), missing null checks, wrong variable usage
+  - **State management bugs**: Not updating related state, missing event emissions, incorrect state transitions
+  - **Type conversion bugs**: Incorrect type conversions, loss of precision, wrong decimal handling
+  - **Edge case bugs**: Zero values, empty collections, boundary conditions not handled
+- When a bug is found:
+  1. Add a `// BUG:` comment in the Go source explaining the issue
+  2. Write a test that demonstrates the bug (it should fail with the current implementation)
+  3. Mark the test with `pytest.mark.xfail(strict=True, reason="bug: <details>")`
+  4. Fix the bug in the Go code
+  5. Remove the `xfail` marker and verify the test passes
+- **Example bug comment format**:
+  ```go
+  // BUG: Missing price conversion for cross-denom collateral
+  // When collateral denom != borrowed denom, collateralValue must be converted
+  // to borrowed denom using current pool price. Currently, collateralValue is
+  // used directly, causing incorrect CR calculation for cross-denom positions.
+  ```
 
 **Test Simplicity Principles**:
 - **Focus on the target function only**: Tests should exercise only the specific function being covered. Avoid testing unrelated functionality or complex multi-step workflows unless they are directly required to trigger the target function's code paths.
