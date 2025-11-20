@@ -130,14 +130,20 @@ install: verify-requirements dysvm-assets
 ###                                Testing                                  ###
 ###############################################################################
 
+# CLEAN_COVERAGE: Set to non-empty (e.g., CLEAN_COVERAGE=1) to remove existing
+# coverage files before running tests. By default, coverage files are preserved.
+CLEAN_COVERAGE ?=
+
 test: install
 	@echo "--> running pytest"
 	@TMP_ROOT=$$(mktemp -d /tmp/dyson-test.XXXXXX); \
 	echo "Using temporary directory: $$TMP_ROOT"; \
 	if [ -n "$(COVERAGE_PACKAGES)" ]; then \
 		GOCOVERDIR="$(CURDIR)/coverage"; \
-		echo "Removing $$GOCOVERDIR"; \
-		rm -rf "$$GOCOVERDIR"; \
+		if [ -n "$(CLEAN_COVERAGE)" ]; then \
+			echo "Removing $$GOCOVERDIR"; \
+			rm -rf "$$GOCOVERDIR"; \
+		fi; \
 		echo "Creating $$GOCOVERDIR"; \
 		mkdir -p "$$GOCOVERDIR"; \
 		echo "Exporting GOCOVERDIR=$$GOCOVERDIR"; \
@@ -161,6 +167,11 @@ test: install
 	rm -rf $$TMP_ROOT; \
 	exit $$TEST_EXIT_CODE; \
 
+clean-coverage:
+	@echo "Removing coverage directory..."
+	@rm -rf "$(CURDIR)/coverage"
+	@rm -f coverage.out coverage.txt coverage.html
+	@echo "Coverage files removed."
 
 ###############################################################################
 ###                                Scripts                                  ###
@@ -291,4 +302,4 @@ dysvm-clean:
 	@$(DYSVM_SCRIPTS_DIR)/dysvm-clean.sh
 
 
-.PHONY:  build install test init localnet start watch dashboard proto-all proto-gen proto-format proto-lint proto-update proto-build-image proto-clean-image dysvm dysvm-patch dysvm-build dysvm-embed dysvm-clean verify-requirements dysvm-assets
+.PHONY:  build install test clean-coverage init localnet start watch dashboard proto-all proto-gen proto-format proto-lint proto-update proto-build-image proto-clean-image dysvm dysvm-patch dysvm-build dysvm-embed dysvm-clean verify-requirements dysvm-assets

@@ -160,17 +160,10 @@ func (k Keeper) Offers(ctx context.Context, req *whaleswapv1.QueryOffersRequest)
 			k.OffersByHave,
 			req.Pagination,
 			func(key collections.Pair[string, uint64], id uint64) (bool, error) {
-				if k1, _ := key.K1(), key.K2(); k1 != have {
-					return false, nil
-				}
-				if want == "" {
-					return true, nil
-				}
-				v, err := k.OffersMap.Get(ctx, id)
-				if err != nil {
-					return false, cosmossdkerrors.Wrapf(err, "offer not found: %d", id)
-				}
-				return v.RemainingWant.Denom == want, nil
+				// Case 2 only executes when have != "" && want == ""
+				// (Case 1 matches when both are non-empty), so want is always empty here.
+				k1, _ := key.K1(), key.K2()
+				return k1 == have, nil
 			},
 			func(_ collections.Pair[string, uint64], id uint64) (*whaleswapv1.OfferData, error) {
 				v, err := k.OffersMap.Get(ctx, id)
@@ -193,17 +186,10 @@ func (k Keeper) Offers(ctx context.Context, req *whaleswapv1.QueryOffersRequest)
 			k.OffersByWant,
 			req.Pagination,
 			func(key collections.Pair[string, uint64], id uint64) (bool, error) {
-				if k1, _ := key.K1(), key.K2(); k1 != want {
-					return false, nil
-				}
-				if have == "" {
-					return true, nil
-				}
-				v, err := k.OffersMap.Get(ctx, id)
-				if err != nil {
-					return false, cosmossdkerrors.Wrapf(err, "offer not found: %d", id)
-				}
-				return v.RemainingHave.Denom == have, nil
+				// Case 3 only executes when want != "" && have == ""
+				// (Cases 1 and 2 match when have is non-empty), so have is always empty here.
+				k1, _ := key.K1(), key.K2()
+				return k1 == want, nil
 			},
 			func(_ collections.Pair[string, uint64], id uint64) (*whaleswapv1.OfferData, error) {
 				v, err := k.OffersMap.Get(ctx, id)

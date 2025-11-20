@@ -160,6 +160,17 @@ def test_function(param1, param2):
     assert demo_result["result"]["field1"] == expected_value, f"Field1 mismatch: expected {expected_value}, got {demo_result['result']['field1']}"
 ```
 
+### Function-Level Test Mapping
+
+- Every Go function (exported or private) must have coverage in pytest; use the same mirroring pattern for both.
+- For each function, add a pytest file that mirrors its package path and function name using `./tests/{go_dir}/test_{go_filename}_{function}.py`.
+- These mapping files focus on a single Go function and must assert the entire non-error path along with any explicitly documented edge conditions.
+- Multiple pytest test functions may live in the same mapping file, but they all exercise different angles of the same Go function's contract.
+- **Focus and Simplicity**: Coverage tests should focus exclusively on the specific function being tested. Keep tests as concise and simple as possible. Avoid unnecessary complexity, multi-step workflows, or testing unrelated functionality. Each test should directly exercise a specific code path in the target function.
+- Example: `x/whaleswap/keeper/invariants.go` with `AssertAMMInvariants` requires `./tests/whaleswap/keeper/test_invariants_AssertAMMInvariants.py`, and that test suite must cover the complete successful flow of `AssertAMMInvariants`.
+- When you discover a bug in the Go implementation, first capture the failing scenario in the mapped pytest file, mark it with `pytest.mark.xfail(strict=True, reason="bug: <details>")`, and leave it failing until the underlying code is fixed.
+- When analyzing coverage, if you identify unreachable code branches, document them in the Go source with `// UNREACHABLE: {detailed reason}` comments explaining exactly why they cannot execute (see [Handling Unreachable Code](#handling-unreachable-code) in Coverage Analysis section).
+
 ---
 
 ## Key Testing Patterns
@@ -936,10 +947,15 @@ position_id = 1  # With comment explaining why
 ### Running Tests with Coverage
 
 ```bash
-make test COVERAGE_PACKAGES="dysonprotocol.com/x/whaleswap/keeper" PYTEST_ARGS="tests/whaleswap/leverage/ -x --ff --showlocals"
+make test COVERAGE_PACKAGES="dysonprotocol.com/x/whaleswap/keeper" PYTEST_ARGS="..."
 ```
 
-**⚠️ Important**: Never use pipe (`|`) after the `make test` command. Piping can hide important error output and interfere with test execution. Always run `make test` directly without any pipes.
+**⚠️ Important**: Never use pipe (`| tail` or `| grep` or `| tee`) after the `make test` command. Piping can hide important error output and interfere with test execution. Always run `make test` and redirect the output to a file.
+Then search the file for errors and logs without having to run it second time.
+Example:
+```
+make test PYTEST_ARGS="tests/whaleswap/{filename...} --tb=auto --showlocals --ff -x" 2>&1 | tee /tmp/dyson_test_log.txt
+```
 
 **Flags**:
 - `COVERAGE_PACKAGES`: Go packages to measure
@@ -958,6 +974,8 @@ coverage/x/whaleswap/keeper/
 ├── msg_close_position.go.txt
 └── ...
 ```
+
+Use `tree ./coverage/x` to review all generated coverage files at a glance.
 
 **Example Coverage Report**:
 ```
@@ -989,6 +1007,30 @@ Coverage: 66.7% (12/18 statements)
 2. Determine what conditions trigger those paths
 3. Write tests that exercise those paths
 4. Verify coverage improved
+
+**Test Simplicity Principles**:
+- **Focus on the target function only**: Tests should exercise only the specific function being covered. Avoid testing unrelated functionality or complex multi-step workflows unless they are directly required to trigger the target function's code paths.
+- **Minimal setup**: Use only the minimum setup required to test the function. Create only the necessary state (pools, positions, etc.) needed to exercise the code path being tested.
+- **Concise assertions**: Keep assertions focused on validating the specific behavior being tested. Avoid over-validating or checking unrelated state.
+- **One path per test**: Each test function should exercise a single code path or validation branch. This makes it clear what each test covers and easier to identify failures.
+- **Avoid unnecessary complexity**: Don't add complexity to test edge cases that are difficult to trigger (e.g., internal error paths that rarely occur). Focus on covering the validation paths and non-error paths.
+
+**Handling Unreachable Code**:
+- When analyzing coverage, you may discover code branches that are unreachable due to control flow logic
+- Before marking code as unreachable, carefully analyze the control flow to confirm it truly cannot execute
+- If code is confirmed unreachable, add a comment explaining exactly why:
+  ```go
+  // UNREACHABLE: Case 2 only executes when have != "" && want == ""
+  // (Case 1 matches when both are non-empty), so want is always empty here.
+  // This branch and the code below will never execute.
+  ```
+- The comment should:
+  - Start with `// UNREACHABLE:` for easy searching
+  - Explain the control flow conditions that prevent execution
+  - Reference which earlier cases/conditions make this branch impossible
+  - Be detailed enough for future maintainers to understand without re-analyzing
+- Consider removing unreachable code entirely if it's dead code, or keep it with comments if it serves as documentation
+- Example analysis: If Case 1 executes when `have != "" && want != ""`, and Case 2 executes when `have != ""` but Case 1 didn't match, then Case 2 can only execute when `want == ""`. Any code checking `if want != ""` in Case 2 is unreachable.
 
 **Example**: To cover error paths:
 ```python

@@ -44,7 +44,7 @@ func (k Keeper) CancelOffer(ctx context.Context, msg *whaleswapv1.MsgCancelOffer
 		return nil, cosmossdkerrors.Wrapf(err, "offer not found: %d", msg.OfferId)
 	}
 	if offer.Status != whaleswapv1.OfferStatusOpen {
-		return nil, cosmossdkerrors.Wrapf(err, "offer not open: %s", offer.Status)
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "offer not open: %s", offer.Status)
 	}
 	closerBz, err := k.accKeeper.AddressCodec().StringToBytes(msg.Closer)
 	if err != nil {
