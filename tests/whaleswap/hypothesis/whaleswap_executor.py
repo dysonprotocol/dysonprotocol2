@@ -294,7 +294,7 @@ def create_and_query_trades(
     """
     # Execute messages with template substitution support
     seq_res = execute_messages_sequentially(messages, denoms, accounts, authority)
-    ok = bool(seq_res and seq_res.get("message_results"))
+    ok = bool(seq_res and seq_res.get("msg_results"))
 
     # Prefer pool_id from template_vars (MsgCreatePool response)
     pool_id = None
@@ -466,7 +466,9 @@ def execute_messages_with_conditional_close(messages, denoms, accounts, authorit
     The last message (final close) is only executed if the position is still active after the partial close.
     """
     # Execute messages up to the partial close (all but the last message)
-    partial_result = execute_messages_sequentially(messages[:-1], denoms, accounts, authority)
+    partial_result = execute_messages_sequentially(
+        messages[:-1], denoms, accounts, authority
+    )
 
     # Extract position_id from template_vars
     position_id = None
@@ -493,7 +495,9 @@ def execute_messages_with_conditional_close(messages, denoms, accounts, authorit
             final_message = json.loads(final_json)
 
         # Execute final close
-        final_sudo_result = execute_messages_with_sudo([final_message], denoms, accounts, authority)
+        final_sudo_result = execute_messages_with_sudo(
+            [final_message], denoms, accounts, authority
+        )
 
         # Merge results
         partial_result["msg_results"].append(final_sudo_result["sudo_result"])
@@ -541,6 +545,7 @@ def execute_messages_sequentially(messages, denoms, accounts, authority):
 
     message_results = []
     template_vars = {}
+    all_messages_succeeded = True
 
     for i, msg_template in enumerate(messages):
         print(
@@ -573,8 +578,10 @@ def execute_messages_sequentially(messages, denoms, accounts, authority):
         # Store result for return
         message_results.append(result)
 
-        # Store response in deterministic key for future reference
-        if result and "results" in result and result["results"]:
+        # Check if this message succeeded
+        message_succeeded = bool(result and "results" in result and result["results"])
+
+        if message_succeeded:
             msg_result = result["results"][0]
             print(f"SEQUENTIAL_DEBUG: Message {i} result: {msg_result}")
 
@@ -588,7 +595,8 @@ def execute_messages_sequentially(messages, denoms, accounts, authority):
                 f"SEQUENTIAL_DEBUG: Stored template_vars for msg_{i}: {template_vars[f'msg_{i}']}"
             )
         else:
-            print(f"SEQUENTIAL_DEBUG: No results in response for message {i}")
+            print(f"SEQUENTIAL_DEBUG: Message {i} failed - no results in response")
+            all_messages_succeeded = False
 
     # Capture post-state
     post_balances = capture_balances(denoms, accounts)
@@ -654,7 +662,7 @@ def execute_messages_sequentially(messages, denoms, accounts, authority):
         queries["module_balance_quote"] = 0
 
     return {
-        "success": True,
+        "success": all_messages_succeeded,
         "pre_balances": pre_balances,
         "post_balances": post_balances,
         "message_count": len(messages),

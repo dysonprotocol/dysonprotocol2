@@ -493,7 +493,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
     with open(export1_path) as f:
         genesis1 = json.load(f)
 
-    print(f"✓ Successfully exported genesis (chain_id: {genesis1.get('chain_id')})")
+    print(f"✓ Exported genesis (chain_id: {genesis1.get('chain_id')})")
 
     # Debug: Check if SDK and IBC modules have their required state
     app_state = genesis1.get("app_state", {})
@@ -689,7 +689,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
     with open(export2_path) as f:
         genesis2 = json.load(f)
 
-    print(f"✓ Successfully re-exported genesis")
+    print(f"✓ Re-exported genesis")
 
     # Compare only the Dyson-specific modules (./x/*)
     # Standard Cosmos SDK modules (bank, mint, slashing, etc.) may have normal variations
@@ -1142,68 +1142,6 @@ def ibc_setup(
                 ibc_proc.wait(timeout=3)
             except (ProcessLookupError, OSError, subprocess.TimeoutExpired):
                 print(f"Warning: Could not force kill IBC process {ibc_proc.pid}")
-
-
-# -----------------------------------------------------------------------------
-# Auto-patch the crontask_guide notebook before any docs tests run
-# -----------------------------------------------------------------------------
-import json
-
-
-@pytest.fixture(scope="session", autouse=True)
-def _patch_crontask_notebook():
-    """Ensure the notebook waits for both SCHEDULED and PENDING statuses.
-
-    The notebooks/crontask_guide.ipynb was originally written to poll only for
-    tasks in the PENDING state. Recent refactors changed the state flow so that
-    tasks remain in SCHEDULED until execution, causing a KeyError when the
-    notebook tries to access msg_results too early. We patch the affected cell
-    at test-time to wait for either SCHEDULED or PENDING before proceeding.
-    """
-    nb_path = Path(__file__).parent.parent / "notebooks" / "crontask_guide.ipynb"
-    if not nb_path.exists():
-        return  # Nothing to patch
-
-    try:
-        with nb_path.open("r", encoding="utf-8") as fh:
-            nb_data = json.load(fh)
-    except Exception as exc:
-        print(f"[Notebook patch] Failed to load notebook JSON: {exc}")
-        return
-
-    changed = False
-
-    for cell in nb_data.get("cells", []):
-        if cell.get("cell_type") != "code":
-            continue
-
-        new_source = []
-        for line in cell.get("source", []):
-            if "task_status = 'PENDING'" in line:
-                line = line.replace(
-                    "task_status = 'PENDING'", "task_status = 'SCHEDULED'"
-                )
-                changed = True
-            if "while task_status == 'PENDING':" in line:
-                line = line.replace(
-                    "while task_status == 'PENDING':",
-                    "while task_status in ('SCHEDULED', 'PENDING'):",
-                )
-                changed = True
-            new_source.append(line)
-        if changed:
-            cell["source"] = new_source
-
-    if changed:
-        try:
-            # Write back the patched notebook JSON
-            with nb_path.open("w", encoding="utf-8") as fh:
-                json.dump(nb_data, fh, indent=1)
-            print(
-                "[Notebook patch] Patched notebooks/crontask_guide.ipynb for updated status handling."
-            )
-        except Exception as exc:
-            print(f"[Notebook patch] Failed to write patched notebook: {exc}")
 
 
 # -----------------------------------------------------------------------------

@@ -53,9 +53,11 @@ def test_partial_fill_exact_units(chainnet, generate_account, faucet, register_n
     take = dysond(
         "tx",
         "whaleswap",
-        "take-offer",
-        "--trades",
-        f"offer_id={offer_id},take_units=2",
+        "make-trade",
+        "--max-input",
+        "2udys",
+        "--op",
+        json.dumps({"take": {"offer_id": offer_id, "take_units": "2"}}),
         "--from",
         taker_name,
     )
@@ -128,9 +130,11 @@ def test_take_units_overflow_fails(chainnet, generate_account, faucet, register_
     take = dysond(
         "tx",
         "whaleswap",
-        "take-offer",
-        "--trades",
-        f"offer_id={offer_id},take_units=3",
+        "make-trade",
+        "--max-input",
+        "100udys",
+        "--op",
+        json.dumps({"take": {"offer_id": offer_id, "take_units": "3"}}),
         "--from",
         taker_name,
     )

@@ -334,6 +334,16 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 	logger.Info("x/whaleswap tradeNetAndCover starting", "trader_bech", traderBech, "inputs_by_addr_count", len(inputsByAddr), "outputs_by_addr_count", len(outputsByAddr))
 
 	moduleBech := k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String()
+	// Track denoms that already have non-module, non-trader inputs (liquid makers funding base-have themselves).
+	liquidInputs := sdk.NewCoins()
+	for addr, coins := range inputsByAddr {
+		if addr == moduleBech || addr == traderBech {
+			continue
+		}
+		for _, c := range coins {
+			liquidInputs = liquidInputs.Add(c)
+		}
+	}
 	// maker wants (solid) - exclude trader
 	makerWants := sdk.NewCoins()
 	for addr, coins := range outputsByAddr {
@@ -370,8 +380,10 @@ func (k Keeper) tradeNetAndCover(ctx context.Context, traderBech string, inputsB
 				}
 			}
 			// Do NOT reduce module inputs here; module inputs (escrow/pfand/amm) must persist to fund obligations.
-			// Reduce makers' wants by the same nettable amount across all makers ONLY if module isn't funding this denom
-			if inputsByAddr[moduleBech].AmountOf(denom).IsZero() {
+			// Reduce makers' wants by the same nettable amount across all makers ONLY if module isn't funding
+			// and there are no liquid maker inputs supplying this denom. Liquid makers keep explicit outputs so
+			// their debits remain balanced against their own base-have inputs.
+			if inputsByAddr[moduleBech].AmountOf(denom).IsZero() && !liquidInputs.AmountOf(denom).IsPositive() {
 				remain := nettable
 				for addr, coins := range outputsByAddr {
 					if addr == traderBech || addr == moduleBech {

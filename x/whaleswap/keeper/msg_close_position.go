@@ -243,6 +243,18 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 			}
 			collSwapResp, collSwapErr := k.MakeTrade(ctx, collateralSwapMt)
 			if collSwapErr != nil {
+				// If MakeTrade failed due to insufficient funds (debit cap exceeded),
+				// convert to ErrInsufficientCollateral since this indicates the collateral
+				// is insufficient to cover the shortfall after swapping.
+				if cosmossdkerrors.IsOf(collSwapErr, sdkerrors.ErrInsufficientFunds) {
+					return nil, cosmossdkerrors.Wrapf(
+						whaleswapv1.ErrInsufficientCollateral,
+						"position underwater: shortfall=%s requires borrow-denom proceeds but collateral cap is %s; MakeTrade error: %v",
+						shortfallCoin.String(),
+						collateralToReturn.String(),
+						collSwapErr,
+					)
+				}
 				return nil, cosmossdkerrors.Wrap(collSwapErr, "failed to swap collateral for shortfall coverage")
 			}
 			pos.TradeIds = append(pos.TradeIds, collSwapResp.TradeId)

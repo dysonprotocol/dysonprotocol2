@@ -1,4 +1,5 @@
 import json
+import pytest
 
 
 def test_ring_coincidence_of_wants(chainnet, generate_account, faucet, register_name):
@@ -118,13 +119,15 @@ def test_ring_coincidence_of_wants(chainnet, generate_account, faucet, register_
     take_tx = dysond(
         "tx",
         "whaleswap",
-        "take-offer",
-        "--trades",
-        f"offer_id={offer_a}",
-        "--trades",
-        f"offer_id={offer_b}",
-        "--trades",
-        f"offer_id={offer_c}",
+        "make-trade",
+        "--max-input",
+        "0udys",
+        "--op",
+        json.dumps({"take": {"offer_id": offer_a, "take_units": ""}}),
+        "--op",
+        json.dumps({"take": {"offer_id": offer_b, "take_units": ""}}),
+        "--op",
+        json.dumps({"take": {"offer_id": offer_c, "take_units": ""}}),
         "--from",
         taker_name,
     )
@@ -265,13 +268,15 @@ def test_ring_with_liquid_and_pfand(chainnet, generate_account, faucet, register
     take_tx = dysond(
         "tx",
         "whaleswap",
-        "take-offer",
-        "--trades",
-        f"offer_id={offer_a}",
-        "--trades",
-        f"offer_id={offer_b}",
-        "--trades",
-        f"offer_id={offer_c}",
+        "make-trade",
+        "--max-input",
+        "0udys",
+        "--op",
+        json.dumps({"take": {"offer_id": offer_a, "take_units": ""}}),
+        "--op",
+        json.dumps({"take": {"offer_id": offer_b, "take_units": ""}}),
+        "--op",
+        json.dumps({"take": {"offer_id": offer_c, "take_units": ""}}),
         "--from",
         taker_name,
     )

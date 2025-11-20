@@ -54,9 +54,11 @@ def test_take_offer_closes_offer(chainnet, generate_account, faucet, register_na
     take = dysond(
         "tx",
         "whaleswap",
-        "take-offer",
-        "--trades",
-        f"offer_id={offer_id}",
+        "make-trade",
+        "--max-input",
+        "50udys",
+        "--op",
+        json.dumps({"take": {"offer_id": offer_id, "take_units": ""}}),
         "--from",
         taker_name,
     )

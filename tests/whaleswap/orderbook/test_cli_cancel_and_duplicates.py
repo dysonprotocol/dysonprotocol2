@@ -128,11 +128,13 @@ def test_duplicate_offer_id_batch_fails(
     take = dysond(
         "tx",
         "whaleswap",
-        "take-offer",
-        "--trades",
-        f"offer_id={offer_id}",
-        "--trades",
-        f"offer_id={offer_id}",
+        "make-trade",
+        "--max-input",
+        "0udys",
+        "--op",
+        json.dumps({"take": {"offer_id": offer_id, "take_units": ""}}),
+        "--op",
+        json.dumps({"take": {"offer_id": offer_id, "take_units": ""}}),
         "--from",
         taker_name,
     )

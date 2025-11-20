@@ -160,9 +160,11 @@ def test_metrics_offer_lifecycle(chainnet, leverage_accounts, leverage_names_and
     take_result = dysond(
         "tx",
         "whaleswap",
-        "take-offer",
-        "--trades",
-        f"offer_id={offer_id},take_units=",
+        "make-trade",
+        "--max-input",
+        f"60{bar}",
+        "--op",
+        json.dumps({"take": {"offer_id": int(offer_id), "take_units": ""}}),
         "--from",
         bob["name"],
     )

@@ -9,9 +9,11 @@ def test_take_nonexistent_offer_fails(chainnet, generate_account, faucet):
     res = dysond(
         "tx",
         "whaleswap",
-        "take-offer",
-        "--trades",
-        f"offer_id={bogus_id}",
+        "make-trade",
+        "--max-input",
+        "0udys",
+        "--op",
+        json.dumps({"take": {"offer_id": bogus_id, "take_units": ""}}),
         "--from",
         taker_name,
     )

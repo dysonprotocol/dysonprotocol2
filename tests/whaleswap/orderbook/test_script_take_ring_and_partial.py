@@ -250,7 +250,7 @@ def ob_take_partial_and_query(offer_id, take_units, have_denom):
     _msg({
         "@type": "/dysonprotocol.whaleswap.v1.MsgMakeTrade",
         "trader": get_script_address(),
-        "max_input": [],  # Take operations handle funds automatically
+        "max_input": [{"denom": "udys", "amount": "1000"}],
         "operations": [{
             "take": {
                 "offer_id": int(offer_id),
