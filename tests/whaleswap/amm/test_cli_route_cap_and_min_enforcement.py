@@ -78,11 +78,13 @@ def test_cap_enforced(chainnet, generate_account, faucet, register_name):
     tx = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         f"100{a}",
-        "--legs",
-        leg,
+        "--op",
+        json.dumps(
+            {"swap": {"pool_id": pid, "swap_in": {"denom": a, "amount": "101"}}}
+        ),
         "--min-output",
         f"1{b}",
         "--from",
@@ -108,10 +110,10 @@ def test_min_output_enforced(chainnet, generate_account, faucet, register_name):
     tx = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         f"10{a}",
-        "--legs",
+        "--op",
         leg,
         "--min-output",
         f"1000000{b}",

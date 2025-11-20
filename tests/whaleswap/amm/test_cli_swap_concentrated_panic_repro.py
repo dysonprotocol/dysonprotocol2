@@ -60,15 +60,15 @@ def test_concentrated_swap_does_not_panic(
 
     # Aggressive swap that could previously push reserve to zero and trigger panic
     legs = json.dumps(
-        {"pool_id": pool_id, "swap_in": {"denom": "udys", "amount": "900"}}
+        {"swap": {"pool_id": pool_id, "swap_in": {"denom": "udys", "amount": "900"}}}
     )
     swap = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         "900udys",
-        "--legs",
+        "--op",
         legs,
         "--min-output",
         f"1{custom}",

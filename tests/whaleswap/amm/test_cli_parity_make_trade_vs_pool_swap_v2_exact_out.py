@@ -86,11 +86,11 @@ def test_parity_make_trade_vs_pool_swap_v2_exact_out(chainnet, ws_setup_env):
     ps = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         f"50{a}",
-        "--legs",
-        json.dumps(leg_swap),
+        "--op",
+        json.dumps({"swap": leg_swap}),
         "--from",
         taker,
     )
@@ -158,9 +158,9 @@ def test_parity_make_trade_vs_pool_swap_v2_exact_out(chainnet, ws_setup_env):
         ]
     )
 
-    assert (
-        out_b_ps == 9 and out_b_mt == 9
-    ), f"expected credit 9{b}, got pool={out_b_ps}, make={out_b_mt}"
-    assert (
-        in_a_ps == in_a_mt
-    ), f"in parity mismatch: pool={in_a_ps}{a} make={in_a_mt}{a}"
+    assert out_b_ps == 9 and out_b_mt == 9, (
+        f"expected credit 9{b}, got pool={out_b_ps}, make={out_b_mt}"
+    )
+    assert in_a_ps == in_a_mt, (
+        f"in parity mismatch: pool={in_a_ps}{a} make={in_a_mt}{a}"
+    )

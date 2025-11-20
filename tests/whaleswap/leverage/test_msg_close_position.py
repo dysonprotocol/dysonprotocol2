@@ -936,15 +936,15 @@ def test_close_position_cross_denom_underwater_rejected(
     # Dump massive amount of bar into pool to crash bar price
     # This makes the held bar worth much less in foo terms
     swap_leg_json = json.dumps(
-        {"pool_id": int(pool_id), "swap_in": {"denom": bar_name, "amount": "5000"}}
+        {"swap": {"pool_id": int(pool_id), "swap_in": {"denom": bar_name, "amount": "5000"}}}
     )
     swap_result = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         f"5000{bar_name}",
-        "--legs",
+        "--op",
         swap_leg_json,
         "--min-output",
         f"1{foo_name}",
@@ -1131,15 +1131,15 @@ def test_close_position_same_denom_collateral_sufficient_underwater(
     # Manipulate pool severely to crash bar price (dump massive bar into pool)
     # This makes the held bar worth much less when swapping back to foo
     swap_leg_json = json.dumps(
-        {"pool_id": int(pool_id), "swap_in": {"denom": bar_name, "amount": "12000"}}
+        {"swap": {"pool_id": int(pool_id), "swap_in": {"denom": bar_name, "amount": "12000"}}}
     )
     swap_result = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         f"12000{bar_name}",
-        "--legs",
+        "--op",
         swap_leg_json,
         "--min-output",
         f"1{foo_name}",
@@ -1308,17 +1308,19 @@ def test_close_position_cross_denom_swap_still_underwater(
     swap_in_amount = "120000"
     swap_leg_json = json.dumps(
         {
-            "pool_id": int(pool_id),
-            "swap_in": {"denom": bar_name, "amount": swap_in_amount},
+            "swap": {
+                "pool_id": int(pool_id),
+                "swap_in": {"denom": bar_name, "amount": swap_in_amount},
+            }
         }
     )
     swap_result = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         f"{swap_in_amount}{bar_name}",
-        "--legs",
+        "--op",
         swap_leg_json,
         "--min-output",
         f"1{foo_name}",
@@ -1436,15 +1438,15 @@ def test_close_position_same_denom_collateral_covers_shortfall(
     # Manipulate pool moderately to crash bar price (not as severe as pool loss test)
     # This makes held bar worth less, but collateral should cover shortfall
     swap_leg_json = json.dumps(
-        {"pool_id": int(pool_id), "swap_in": {"denom": bar_name, "amount": "5000"}}
+        {"swap": {"pool_id": int(pool_id), "swap_in": {"denom": bar_name, "amount": "5000"}}}
     )
     swap_result = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         f"5000{bar_name}",
-        "--legs",
+        "--op",
         swap_leg_json,
         "--min-output",
         f"1{foo_name}",

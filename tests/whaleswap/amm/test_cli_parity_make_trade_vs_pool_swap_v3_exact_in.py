@@ -67,11 +67,11 @@ def test_parity_make_trade_vs_pool_swap_v3_exact_in(chainnet, ws_setup_env):
     ps = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         f"50{a}",
-        "--legs",
-        json.dumps(leg_swap),
+        "--op",
+        json.dumps({"swap": leg_swap}),
         "--from",
         taker,
     )

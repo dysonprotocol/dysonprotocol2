@@ -129,23 +129,23 @@ def test_route_two_pools(chainnet, generate_account, faucet, register_name):
     ), f"send B->trader failed: {json.dumps(send_b, indent=2)}"
 
     # Route: A->B via ab_id, then B->C via bc_id
-    # Provide legs as multiple flags since CLI flag is singular
-    leg1 = json.dumps(
-        {"pool_id": ab_id, "swap_in": {"denom": denom_a, "amount": "100"}}
+    # Provide operations as multiple --op flags
+    op1 = json.dumps(
+        {"swap": {"pool_id": ab_id, "swap_in": {"denom": denom_a, "amount": "100"}}}
     )
-    leg2 = json.dumps({"pool_id": bc_id, "swap_in": {"denom": denom_b, "amount": "50"}})
+    op2 = json.dumps({"swap": {"pool_id": bc_id, "swap_in": {"denom": denom_b, "amount": "50"}}})
     tx = dysond(
         "tx",
         "whaleswap",
-        "swap",
+        "make-trade",
         "--max-input",
         f"100{denom_a}",
         "--max-input",
         f"50{denom_b}",
-        "--legs",
-        leg1,
-        "--legs",
-        leg2,
+        "--op",
+        op1,
+        "--op",
+        op2,
         "--min-output",
         f"1{denom_c}",
         "--from",
