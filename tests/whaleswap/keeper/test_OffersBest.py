@@ -376,18 +376,20 @@ def demo_offers_best_ordering(alice_addr, foo_name, bar_name):
     assert len(offers) >= 3, f"Should have at least 3 offers, got {len(offers)}"
 
     # Verify all created offers are in results
-    offer_map = {str(offer["offer_id"]): offer for offer in offers}
-    created_offer_ids = [
+    created_offer_ids = {
         str(demo_result["offer1_id"]),
         str(demo_result["offer2_id"]),
         str(demo_result["offer3_id"]),
-    ]
+    }
     matched_offers = []
-    for offer_id in created_offer_ids:
-        assert (
-            offer_id in offer_map
-        ), f"Offer {offer_id} should be in results. Offer IDs: {list(offer_map.keys())}"
-        matched_offers.append(offer_map[offer_id])
+    for offer in offers:
+        offer_id = str(offer["offer_id"])
+        if offer_id in created_offer_ids:
+            matched_offers.append(offer)
+            created_offer_ids.remove(offer_id)
+    assert (
+        not created_offer_ids
+    ), f"Missing offers in best response: {created_offer_ids}. Offers: {json.dumps(offers, indent=2)}"
 
     # Verify created offers are sorted by price (ascending = best for takers).
     # Price = want_amount / have_amount
