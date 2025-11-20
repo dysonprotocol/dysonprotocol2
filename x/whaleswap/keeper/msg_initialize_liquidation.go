@@ -63,9 +63,38 @@ func (k Keeper) InitializeLiquidation(ctx context.Context, msg *whaleswapv1.MsgI
 	if err != nil {
 		return nil, err
 	}
+
+	// Get pool for price conversion if collateral and borrow denoms differ
+	pool, err := k.PoolsMap.Get(ctx, pos.PoolId)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "pool %d not found", pos.PoolId)
+	}
+
+	// Compute collateral ratio (CR)
+	// If collateral denom != borrowed denom, we must normalize collateral value to borrowed denom
+	// using current pool price.
+	// ValueInBorrow = CollateralAmt * (BorrowReserve / CollateralReserve)
 	collateralValue := math.LegacyNewDecFromInt(pos.Collateral.Amount)
+
+	if pos.Collateral.Denom != pos.Borrowed.Denom {
+		borrowReserve := pool.Coins.AmountOf(pos.Borrowed.Denom)
+		collateralReserve := pool.Coins.AmountOf(pos.Collateral.Denom)
+
+		if borrowReserve.IsPositive() && collateralReserve.IsPositive() {
+			priceCollateralInBorrow := math.LegacyNewDecFromInt(borrowReserve).Quo(math.LegacyNewDecFromInt(collateralReserve))
+			collateralValue = collateralValue.Mul(priceCollateralInBorrow)
+		} else {
+			// If reserves are empty, price is undefined/zero? Or infinite?
+			// Treat as zero value for safety.
+			collateralValue = math.LegacyZeroDec()
+		}
+	}
+
 	debtValue := math.LegacyNewDecFromInt(pos.Borrowed.Amount).Add(interest)
-	cr, _ := k.ComputeCollateralRatio(collateralValue, debtValue)
+	cr, err := k.ComputeCollateralRatio(collateralValue, debtValue)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to compute collateral ratio")
+	}
 	logger.Info("InitializeLiquidation: computed",
 		"elapsed_sec", elapsed,
 		"interest", interest.String(),

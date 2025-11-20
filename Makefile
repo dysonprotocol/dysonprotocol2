@@ -131,10 +131,10 @@ install: verify-requirements dysvm-assets
 ###############################################################################
 
 # CLEAN_COVERAGE: Set to non-empty (e.g., CLEAN_COVERAGE=1) to remove existing
-# coverage files before running tests. By default, coverage files are preserved.
-CLEAN_COVERAGE ?=
+# coverage files before running tests. By default, coverage files are cleaned up.
+CLEAN_COVERAGE ?= 1
 
-test: install
+test:
 	@echo "--> running pytest"
 	@TMP_ROOT=$$(mktemp -d /tmp/dyson-test.XXXXXX); \
 	echo "Using temporary directory: $$TMP_ROOT"; \

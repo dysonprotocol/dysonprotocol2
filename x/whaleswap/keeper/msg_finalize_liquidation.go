@@ -139,7 +139,15 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 
 	// Update pool: add repayment to reserves, update borrowed, track interest
 	pool.Coins = pool.Coins.Add(repaymentCoin)
-	totalBorrowed := sdk.NewCoins(pool.TotalBorrowed...).Sub(pos.Borrowed)
+	totalBorrowed, hasNeg := sdk.NewCoins(pool.TotalBorrowed...).SafeSub(pos.Borrowed)
+	if hasNeg {
+		return nil, cosmossdkerrors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"pool total borrowed %s would be negative after subtracting position borrowed %s",
+			sdk.NewCoins(pool.TotalBorrowed...).String(),
+			pos.Borrowed.String(),
+		)
+	}
 	beforePoolBorrowed := sdk.NewCoins(pool.TotalBorrowed...)
 	pool.TotalBorrowed = totalBorrowed
 	pool.InterestEarned = sdk.NewCoins(pool.InterestEarned...).Add(interestCoin)

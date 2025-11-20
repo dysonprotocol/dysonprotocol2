@@ -962,6 +962,8 @@ make test PYTEST_ARGS="tests/whaleswap/{filename...} --tb=auto --showlocals --ff
 - `-x`: Stop on first failure
 - `--ff`: Run failed tests first
 - `--showlocals`: Show local variables on failure
+- `-v` or `-vv`: Verbose output (show test names, more detail)
+- `-k EXPRESSION`: Run tests matching the expression (e.g., `-k "test_close_position"`)
 
 ### Reading Coverage Reports
 
