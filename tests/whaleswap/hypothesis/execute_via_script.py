@@ -53,6 +53,7 @@ def execute_via_script(dysond, executor_script_path, gov_addr, function_name, ar
             "borrow would exceed cap",  # Alternative phrasing of borrow cap error
             "insufficient collateral",  # Collateral ratio below minimum
             "debit exceeds cap",  # Trader's net debit exceeds MaxInput caps
+            "insufficient funds",  # User doesn't have enough tokens
         ]
 
         for expected_error in expected_errors:

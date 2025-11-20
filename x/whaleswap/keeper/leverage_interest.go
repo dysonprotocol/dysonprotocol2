@@ -51,19 +51,7 @@ func (k Keeper) InterestStatus(ctx context.Context, pos *whaleswapv1.LeveragePos
 		return math.LegacyDec{}, 0, fmt.Errorf("position cannot be nil")
 	}
 	// Find the interest rate for the borrowed denom
-	var rate math.LegacyDec
-	found := false
-	for _, ir := range pos.InterestRate {
-		if ir.Denom == pos.Borrowed.Denom {
-			rate = ir.Amount
-			found = true
-			break
-		}
-	}
-	if !found {
-		return math.LegacyDec{}, 0, fmt.Errorf("interest_rate for borrowed denom %s not found",
-			pos.Borrowed.Denom)
-	}
+	rate := pos.InterestRate.AmountOf(pos.Borrowed.Denom)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	remainder, err := getAccruedInterestRemainder(pos)

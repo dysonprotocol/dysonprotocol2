@@ -460,6 +460,59 @@ def execute_messages_with_sudo(messages, denoms, accounts, authority):
     }
 
 
+def execute_messages_with_conditional_close(messages, denoms, accounts, authority):
+    """
+    Execute messages sequentially with special handling for position lifecycle testing.
+    The last message (final close) is only executed if the position is still active after the partial close.
+    """
+    # Execute messages up to the partial close (all but the last message)
+    partial_result = execute_messages_sequentially(messages[:-1], denoms, accounts, authority)
+
+    # Extract position_id from template_vars
+    position_id = None
+    template_vars = partial_result.get("template_vars", {})
+    for key, value in template_vars.items():
+        if isinstance(value, dict) and "position_id" in value:
+            position_id = value["position_id"]
+            break
+
+    # Query position status
+    position_active = False
+    if position_id:
+        position_query = query_position(position_id)
+        status = position_query.get("status", "")
+        position_active = status == "POSITION_STATUS_OPEN"
+
+    # If position is still active, execute the final close
+    if position_active:
+        final_message = messages[-1]
+        # Apply template substitution to final message
+        if template_vars:
+            final_json = json.dumps(final_message)
+            final_json = dys_eval_template_substitution(final_json, template_vars)
+            final_message = json.loads(final_json)
+
+        # Execute final close
+        final_sudo_result = execute_messages_with_sudo([final_message], denoms, accounts, authority)
+
+        # Merge results
+        partial_result["msg_results"].append(final_sudo_result["sudo_result"])
+        partial_result["message_count"] += 1
+
+        # Re-query final state
+        pool_id = None
+        for key, value in template_vars.items():
+            if isinstance(value, dict) and "pool_id" in value:
+                pool_id = value["pool_id"]
+                break
+
+        if pool_id:
+            final_queries = query_final_state(pool_id, position_id, accounts[0], denoms)
+            partial_result["queries"] = final_queries
+
+    return partial_result
+
+
 def execute_messages_sequentially(messages, denoms, accounts, authority):
     """
     Execute messages sequentially, using results from previous messages to substitute
@@ -653,6 +706,49 @@ def create_and_query_pools(
         "message_count": len(messages),
         "pair": pair_res.get("pools", []),
         "denom": denom_res.get("pools", []),
+    }
+
+
+def query_final_state(pool_id, position_id, alice_addr, denoms):
+    """
+    Query final state for test verification.
+    """
+    base_denom, quote_denom = denoms[0], denoms[1]
+
+    # Query pool
+    pool = query_pool(pool_id)
+
+    # Query positions by pool
+    positions_by_pool = query_positions_by_pool(pool_id)
+
+    # Query balances
+    alice_balance_base = query_balance(alice_addr, base_denom)
+    alice_balance_quote = query_balance(alice_addr, quote_denom)
+
+    # Query module balances
+    module_addr_result = _query(
+        {
+            "@type": "/cosmos.auth.v1beta1.QueryModuleAccountByNameRequest",
+            "name": "whaleswap",
+        }
+    )
+    module_addr = (
+        module_addr_result.get("account", {}).get("base_account", {}).get("address", "")
+    )
+
+    module_balance_base = 0
+    module_balance_quote = 0
+    if module_addr:
+        module_balance_base = query_balance(module_addr, base_denom)
+        module_balance_quote = query_balance(module_addr, quote_denom)
+
+    return {
+        "pool": pool,
+        "positions_by_pool": positions_by_pool,
+        "alice_balance_base": alice_balance_base,
+        "alice_balance_quote": alice_balance_quote,
+        "module_balance_base": module_balance_base,
+        "module_balance_quote": module_balance_quote,
     }
 
 

@@ -344,7 +344,7 @@ def test_position_lifecycle_edge_cases(
 
 
 @pytest.mark.hypothesis
-@settings(max_examples=20, deadline=60000)
+@settings(max_examples=200, deadline=60000)
 @given(
     # Minimal test - focus on dust amounts and extreme ratios
     pool_reserve_base=st.integers(min_value=1, max_value=1000),
