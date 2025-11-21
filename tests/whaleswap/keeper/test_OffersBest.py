@@ -375,35 +375,51 @@ def demo_offers_best_ordering(alice_addr, foo_name, bar_name):
     assert isinstance(offers, list), f"Offers should be list, got {type(offers)}"
     assert len(offers) >= 3, f"Should have at least 3 offers, got {len(offers)}"
 
+    # Verify all offers returned are sorted by price (ascending = best for takers)
+    # Price = want_amount / have_amount
+    all_prices = []
+    for offer in offers:
+        have_amount = int(offer["remaining_have"]["amount"])
+        want_amount = int(offer["remaining_want"]["amount"])
+        price = want_amount / have_amount
+        all_prices.append(price)
+
+    # Verify all offers are sorted by price
+    sorted_all_prices = sorted(all_prices)
+    assert all_prices == sorted_all_prices, (
+        "OffersBest should return all offers sorted by ascending price. "
+        f"Prices: {all_prices}, Expected: {sorted_all_prices}"
+    )
+
     # Verify all created offers are in results
-    created_offer_ids = {
+    created_offer_ids = [
         str(demo_result["offer1_id"]),
         str(demo_result["offer2_id"]),
         str(demo_result["offer3_id"]),
-    }
-    matched_offers = []
-    for offer in offers:
-        offer_id = str(offer["offer_id"])
-        if offer_id in created_offer_ids:
-            matched_offers.append(offer)
-            created_offer_ids.remove(offer_id)
-    assert (
-        not created_offer_ids
-    ), f"Missing offers in best response: {created_offer_ids}. Offers: {json.dumps(offers, indent=2)}"
+    ]
+    offer_map = {str(offer["offer_id"]): offer for offer in offers}
+    ordered_offer_ids = [
+        str(offer["offer_id"])
+        for offer in offers
+        if str(offer["offer_id"]) in created_offer_ids
+    ]
+    assert len(ordered_offer_ids) == len(
+        created_offer_ids
+    ), f"Missing offers in best response. Expected: {created_offer_ids}, Ordered IDs: {ordered_offer_ids}, Offers: {json.dumps(offers, indent=2)}"
 
-    # Verify created offers are sorted by price (ascending = best for takers).
-    # Price = want_amount / have_amount
-    prices = []
+    # Verify created offers are in correct order (should be sorted since all offers are sorted)
+    matched_offers = [offer_map[offer_id] for offer_id in ordered_offer_ids]
+    created_prices = []
     for offer in matched_offers:
         have_amount = int(offer["remaining_have"]["amount"])
         want_amount = int(offer["remaining_want"]["amount"])
         price = want_amount / have_amount
-        prices.append(price)
+        created_prices.append(price)
 
-    expected_prices = sorted(prices)
-    assert prices == expected_prices, (
-        "OffersBest should return created offers sorted by ascending price. "
-        f"Prices: {prices}, Expected: {expected_prices}, Filtered Offers: {json.dumps(matched_offers, indent=2)}"
+    expected_created_prices = sorted(created_prices)
+    assert created_prices == expected_created_prices, (
+        "Created offers should be in sorted order within the sorted response. "
+        f"Prices: {created_prices}, Expected: {expected_created_prices}"
     )
 
 

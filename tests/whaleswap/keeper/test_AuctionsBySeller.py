@@ -16,46 +16,68 @@ def test_auctions_by_seller_success(
     """Test AuctionsBySeller query with valid seller address."""
     dysond = chainnet[0]
     alice_addr = leverage_accounts["alice"]["addr"]
-    alice_name = leverage_accounts["alice"]["name"]
     foo_name = leverage_names_and_coins["foo_name"]
     bar_name = leverage_names_and_coins["bar_name"]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
 
-    # Create auction using multi-block transaction
-    tx_auction = dysond(
-        "tx",
-        "whaleswap",
-        "open-auction",
-        "--bid-denom",
-        bar_name,
-        "--sell",
-        f"500{foo_name}",
-        "--from",
-        alice_name,
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_auctions_by_seller(alice_addr, foo_name, bar_name):
+    auction_result = _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgOpenAuction",
+        "seller": alice_addr,
+        "sell": {"denom": foo_name, "amount": "500"},
+        "bid_denom": bar_name
+    })
+    auction_id = auction_result["results"][0]["auction_id"]
+
+    auctions_response = _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QueryAuctionsBySellerRequest",
+        "seller": alice_addr
+    })
+    return {"auction_id": auction_id, "auctions_response": auctions_response}
+"""
+
+    kwargs = json.dumps(
+        {"alice_addr": alice_addr, "foo_name": foo_name, "bar_name": bar_name}
     )
-    assert (
-        tx_auction.get("code", 1) == 0
-    ), f"Open auction failed: {json.dumps(tx_auction, indent=2)}"
 
-    # Extract auction_id from events
-    auction_events = [
-        e
-        for e in tx_auction.get("events", [])
-        if e.get("type") == "dysonprotocol.whaleswap.v1.EventAuctionCreated"
-    ]
-    assert (
-        auction_events
-    ), f"Missing EventAuctionCreated: {json.dumps(tx_auction, indent=2)}"
-    auction_attrs = {
-        a.get("key"): a.get("value") for a in auction_events[0].get("attributes", [])
-    }
-    auction_id = auction_attrs.get("auction_id")
-    assert auction_id, f"auction_id missing: {json.dumps(auction_events[0], indent=2)}"
-    auction_id = auction_id.strip('"')
-
-    # Query auctions by seller using CLI
-    auctions_response = dysond(
-        "query", "whaleswap", "auctions-by-seller", "--seller", alice_addr
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_auctions_by_seller",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
     )
+
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}; full={json.dumps(query_result, indent=2)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    auction_id = demo_result["auction_id"]
+    auctions_response = demo_result["auctions_response"]
 
     # Validate response structure (Type)
     assert isinstance(
@@ -85,34 +107,90 @@ def test_auctions_by_seller_success(
 
     # Validate pagination (Type)
     pagination = auctions_response["pagination"]
-    assert isinstance(pagination, dict), f"Pagination should be dict, got {type(pagination)}"
+    assert isinstance(
+        pagination, dict
+    ), f"Pagination should be dict, got {type(pagination)}"
 
 
 def test_auctions_by_seller_empty_seller(chainnet):
     """Test AuctionsBySeller query with empty seller address."""
     dysond = chainnet[0]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
 
-    # Query auctions by seller with empty seller (should fail)
-    # Note: CLI validates empty address before reaching Go code
-    result = dysond("query", "whaleswap", "auctions-by-seller", "--seller", "")
+    extra_code = """
+from dys import _query
 
-    # Should return error (CLI validates before Go code)
-    assert isinstance(result, str), f"Expected error string, got {type(result)}: {result}"
-    # CLI validates empty address before reaching Go code, so we get CLI error
+def demo_auctions_by_seller_empty():
+    return _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QueryAuctionsBySellerRequest",
+        "seller": ""
+    })
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_auctions_by_seller_empty",
+        "--extra-code",
+        extra_code,
+    )
+
     assert (
-        "empty address string is not allowed" in result.lower()
-    ), f"Expected CLI validation error for empty address. Got: {result}"
+        query_result.get("exception") is not None
+    ), f"Expected exception for empty seller. Full result: {json.dumps(query_result, indent=2)}"
+    exception_str = json.dumps(query_result.get("exception"), indent=2).lower()
+    assert (
+        "seller required" in exception_str
+    ), f"Error should mention seller required. Exception: {exception_str}"
 
 
 def test_auctions_by_seller_no_auctions(chainnet, generate_account, faucet):
     """Test AuctionsBySeller query for seller with no auctions."""
     dysond = chainnet[0]
-    seller_name, seller_addr = generate_account("no_auctions_seller", faucet_amount=1_000_000)
-
-    # Query auctions by seller who has no auctions
-    auctions_response = dysond(
-        "query", "whaleswap", "auctions-by-seller", "--seller", seller_addr
+    seller_name, seller_addr = generate_account(
+        "no_auctions_seller", faucet_amount=1_000_000
     )
+
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = f"""
+from dys import _query
+
+def demo_auctions_by_seller_empty():
+    auctions_response = _query({{
+        "@type": "/dysonprotocol.whaleswap.v1.QueryAuctionsBySellerRequest",
+        "seller": "{seller_addr}"
+    }})
+    return auctions_response
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_auctions_by_seller_empty",
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed_result = deep_parse(query_result)
+    assert isinstance(parsed_result, dict)
+    assert "result" in parsed_result
+    assert "result" in parsed_result["result"]
+    auctions_response = parsed_result["result"]["result"]
 
     # Validate response structure (Type)
     assert isinstance(
@@ -133,5 +211,6 @@ def test_auctions_by_seller_no_auctions(chainnet, generate_account, faucet):
 
     # Validate pagination (Type)
     pagination = auctions_response["pagination"]
-    assert isinstance(pagination, dict), f"Pagination should be dict, got {type(pagination)}"
-
+    assert isinstance(
+        pagination, dict
+    ), f"Pagination should be dict, got {type(pagination)}"

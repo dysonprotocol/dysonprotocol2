@@ -353,15 +353,24 @@ def demo_cancel_third_party_eligible(alice_addr, bob_addr, foo_name, bar_name, g
     
     offer_id = offer_result["results"][0]["offer_id"]
     
+    # Query alice's balance
+    balance_query = _query({
+        "@type": "/cosmos.bank.v1beta1.QueryBalanceRequest",
+        "address": alice_addr,
+        "denom": foo_name
+    })
+    balance_amt = int(balance_query["balance"]["amount"])
+    
     # Drain alice's balance below unit_have (send to bob)
     # For have=10000, want=5000: gcd=5000, unit_have = 10000/5000 = 2
     # Need balance < 2, so drain to leave 1
-    # alice has ~400000 after distribution, drain 399999 to leave 1
+    # Drain balance - 1 to leave exactly 1 unit
+    drain_amount = str(balance_amt - 1)
     _sudo({
         "@type": "/cosmos.bank.v1beta1.MsgSend",
         "from_address": alice_addr,
         "to_address": bob_addr,
-        "amount": [{"denom": foo_name, "amount": "399999"}]
+        "amount": [{"denom": foo_name, "amount": drain_amount}]
     })
     
     # Cancel as third party (bob) - should succeed because maker balance < unit_have
@@ -589,6 +598,14 @@ def demo_cancel_pfand_release(alice_addr, bob_addr, foo_name, bar_name, gov_addr
     
     offer_id = offer_result["results"][0]["offer_id"]
     
+    # Query alice's balance
+    balance_query = _query({
+        "@type": "/cosmos.bank.v1beta1.QueryBalanceRequest",
+        "address": alice_addr,
+        "denom": foo_name
+    })
+    balance_amt = int(balance_query["balance"]["amount"])
+    
     # Get bob's udys balance before cancel (PFAND goes to closer)
     balance_before = _query({
         "@type": "/cosmos.bank.v1beta1.QueryBalanceRequest",
@@ -599,12 +616,13 @@ def demo_cancel_pfand_release(alice_addr, bob_addr, foo_name, bar_name, gov_addr
     # Cancel as bob (third party, but eligible because we'll drain alice's balance)
     # For have=10000, want=5000: gcd=5000, unit_have = 10000/5000 = 2
     # Need balance < 2, so drain to leave 1
-    # Drain 399999 to leave 1
+    # Drain balance - 1 to leave exactly 1 unit
+    drain_amount = str(balance_amt - 1)
     _sudo({
         "@type": "/cosmos.bank.v1beta1.MsgSend",
         "from_address": alice_addr,
         "to_address": bob_addr,
-        "amount": [{"denom": foo_name, "amount": "399999"}]
+        "amount": [{"denom": foo_name, "amount": drain_amount}]
     })
     
     # Cancel offer (should release PFAND to bob)

@@ -22,6 +22,12 @@ func (k Keeper) obPairKey(denomA, denomB string) string {
 	return low + "|" + high
 }
 
+// shouldReversePairOrder indicates whether the canonical pair key (low|high)
+// differs from the requested have/want orientation (i.e. have > want).
+func shouldReversePairOrder(haveDenom, wantDenom string) bool {
+	return haveDenom > wantDenom
+}
+
 // obPriceKeyFromAmounts computes the price key string using the same orientation
 // as existing indexing code. The price is derived from have/want amounts but
 // normalized to the low|high orientation to maintain a single ordered book.

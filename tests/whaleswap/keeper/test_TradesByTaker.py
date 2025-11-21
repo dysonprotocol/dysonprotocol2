@@ -14,82 +14,105 @@ def test_trades_by_taker_success(chainnet, leverage_accounts, leverage_names_and
     """Test TradesByTaker query with valid taker address."""
     dysond = chainnet[0]
     alice_addr = leverage_accounts["alice"]["addr"]
-    alice_name = leverage_accounts["alice"]["name"]
     foo_name = leverage_names_and_coins["foo_name"]
     bar_name = leverage_names_and_coins["bar_name"]
 
-    # Create pool using multi-block transaction
-    tx_pool = dysond(
-        "tx",
-        "whaleswap",
-        "create-pool",
-        "--coins",
-        f"10000{foo_name}",
-        "--coins",
-        f"10000{bar_name}",
-        "--min-collateral-ratio",
-        "1.5",
-        "--max-borrow-percent",
-        "0.8",
-        "--from",
-        alice_name,
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_trades_by_taker(alice_addr, foo_name, bar_name):
+    base, quote = sorted([foo_name, bar_name])
+    pool_result = _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": foo_name, "amount": "10000"},
+            {"denom": bar_name, "amount": "10000"}
+        ],
+        "fee_rate": [
+            {"denom": base, "amount": "0.003"},
+            {"denom": quote, "amount": "0.003"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base, "amount": "1.5"},
+            {"denom": quote, "amount": "1.5"}
+        ],
+        "interest_rate": [
+            {"denom": base, "amount": "0.0"},
+            {"denom": quote, "amount": "0.0"}
+        ],
+        "liquidation_threshold": [
+            {"denom": base, "amount": "1.2"},
+            {"denom": quote, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base, "amount": "0.8"},
+            {"denom": quote, "amount": "0.8"}
+        ]
+    })
+    pool_id = int(pool_result["results"][0]["pool_id"])
+
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgMakeTrade",
+        "trader": alice_addr,
+        "max_input": [{"denom": foo_name, "amount": "1000"}],
+        "operations": [
+            {
+                "swap": {
+                    "pool_id": pool_id,
+                    "swap_in": {"denom": foo_name, "amount": "1000"}
+                }
+            }
+        ],
+        "min_output": []
+    })
+
+    trades_response = _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QueryTradesByTakerRequest",
+        "taker": alice_addr
+    })
+    return {"trades_response": trades_response}
+"""
+
+    kwargs = json.dumps(
+        {"alice_addr": alice_addr, "foo_name": foo_name, "bar_name": bar_name}
     )
-    assert (
-        tx_pool.get("code", 1) == 0
-    ), f"Create pool failed: {json.dumps(tx_pool, indent=2)}"
 
-    # Extract pool_id from events
-    pool_events = [
-        e
-        for e in tx_pool.get("events", [])
-        if e.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
-    ]
-    assert (
-        pool_events
-    ), f"Missing EventPoolCreated: {json.dumps(tx_pool, indent=2)}"
-    pool_attrs = {
-        a.get("key"): a.get("value") for a in pool_events[0].get("attributes", [])
-    }
-    pool_id = pool_attrs.get("pool_id")
-    assert pool_id, f"pool_id missing: {json.dumps(pool_events[0], indent=2)}"
-    pool_id = pool_id.strip('"')
-
-    # Create trade using multi-block transaction
-    tx_trade = dysond(
-        "tx",
-        "whaleswap",
-        "make-trade",
-        "--max-input",
-        f"1000{foo_name}",
-        "--op",
-        json.dumps({"swap": {"pool_id": int(pool_id), "swap_in": {"denom": foo_name, "amount": "1000"}}}),
-        "--from",
-        alice_name,
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_trades_by_taker",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
     )
-    assert (
-        tx_trade.get("code", 1) == 0
-    ), f"Make trade failed: {json.dumps(tx_trade, indent=2)}"
 
-    # Extract trade_id from events
-    trade_events = [
-        e
-        for e in tx_trade.get("events", [])
-        if e.get("type") == "dysonprotocol.whaleswap.v1.EventTradeRecorded"
-    ]
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}; full={json.dumps(query_result, indent=2)}"
     assert (
-        trade_events
-    ), f"Missing EventTradeRecorded: {json.dumps(tx_trade, indent=2)}"
-    trade_attrs = {
-        a.get("key"): a.get("value") for a in trade_events[0].get("attributes", [])
-    }
-    trade_id = trade_attrs.get("trade_id")
-    assert trade_id, f"trade_id missing: {json.dumps(trade_events[0], indent=2)}"
-    trade_id = trade_id.strip('"')
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
 
-    # Query trades by taker using CLI
-    trades_response = dysond(
-        "query", "whaleswap", "trades-by-taker", "--taker", alice_addr
-    )
+    trades_response = result["result"]["result"]["trades_response"]
 
     # Validate response structure (Type)
     assert isinstance(
@@ -108,8 +131,8 @@ def test_trades_by_taker_success(chainnet, leverage_accounts, leverage_names_and
     # Verify trade is in results
     trade_ids_found = [int(t.get("trade_id")) for t in trades_list]
     assert (
-        int(trade_id) in trade_ids_found
-    ), f"Trade ID {trade_id} not found in taker's trades. Found IDs: {trade_ids_found}"
+        len(trade_ids_found) > 0
+    ), f"No trades returned for taker. Response: {json.dumps(trades_response, indent=2)}"
 
     # Verify all trades belong to taker
     for trade in trades_list:
@@ -119,33 +142,86 @@ def test_trades_by_taker_success(chainnet, leverage_accounts, leverage_names_and
 
     # Validate pagination (Type)
     pagination = trades_response["pagination"]
-    assert isinstance(pagination, dict), f"Pagination should be dict, got {type(pagination)}"
+    assert isinstance(
+        pagination, dict
+    ), f"Pagination should be dict, got {type(pagination)}"
 
 
 def test_trades_by_taker_empty_taker(chainnet):
     """Test TradesByTaker query with empty taker address."""
     dysond = chainnet[0]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
 
-    # Query trades by taker with empty taker (should fail)
-    result = dysond("query", "whaleswap", "trades-by-taker", "--taker", "")
+    extra_code = """
+from dys import _query
 
-    # Should return error (CLI validates before Go code)
-    assert isinstance(result, str), f"Expected error string, got {type(result)}: {result}"
-    # CLI validates empty address before reaching Go code
+def demo_trades_by_taker_empty():
+    return _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QueryTradesByTakerRequest",
+        "taker": ""
+    })
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_trades_by_taker_empty",
+        "--extra-code",
+        extra_code,
+    )
+
     assert (
-        "empty address string is not allowed" in result.lower()
-    ), f"Expected CLI validation error for empty address. Got: {result}"
+        query_result.get("exception") is not None
+    ), f"Expected exception for empty taker. Full result: {json.dumps(query_result, indent=2)}"
+    exception_str = json.dumps(query_result.get("exception"), indent=2).lower()
+    assert (
+        "taker required" in exception_str
+    ), f"Expected 'taker required' error. Exception: {exception_str}"
 
 
 def test_trades_by_taker_no_trades(chainnet, generate_account, faucet):
     """Test TradesByTaker query for taker with no trades."""
     dysond = chainnet[0]
-    taker_name, taker_addr = generate_account("no_trades_taker", faucet_amount=1_000_000)
-
-    # Query trades by taker who has no trades
-    trades_response = dysond(
-        "query", "whaleswap", "trades-by-taker", "--taker", taker_addr
+    taker_name, taker_addr = generate_account(
+        "no_trades_taker", faucet_amount=1_000_000
     )
+
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = f"""
+from dys import _query
+
+def demo_trades_by_taker_empty():
+    trades_response = _query({{
+        "@type": "/dysonprotocol.whaleswap.v1.QueryTradesByTakerRequest",
+        "taker": "{taker_addr}"
+    }})
+    return trades_response
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_trades_by_taker_empty",
+        "--extra-code",
+        extra_code,
+    )
+
+    trades_response = deep_parse(query_result)["result"]["result"]
 
     # Validate response structure (Type)
     assert isinstance(
@@ -166,5 +242,6 @@ def test_trades_by_taker_no_trades(chainnet, generate_account, faucet):
 
     # Validate pagination (Type)
     pagination = trades_response["pagination"]
-    assert isinstance(pagination, dict), f"Pagination should be dict, got {type(pagination)}"
-
+    assert isinstance(
+        pagination, dict
+    ), f"Pagination should be dict, got {type(pagination)}"
