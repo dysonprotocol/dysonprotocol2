@@ -8,6 +8,9 @@ import (
 	"dysonprotocol.com/dysvm"
 	scripttypes "dysonprotocol.com/x/script/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // UpdateScript updates the script code at the given address and increments its version.
@@ -20,8 +23,10 @@ import (
 //   - Creates new scripts with empty code if they don't exist.
 //
 // Validation:
+//   - Message must not be nil.
 //   - Address must be a valid bech32 address.
 //   - Code must be valid Python syntax with some restrictions.
+//   - Context must contain a valid SDK context (UnwrapSDKContext can panic if not).
 //
 // State Updates:
 //   - Stores/updates script in ScriptMap with incremented version.
@@ -33,8 +38,17 @@ import (
 // Returns:
 //   - *scripttypes.MsgUpdateScriptResponse with the updated script version.
 //
-// Errors are returned on invalid address, formatting failures, storage errors, or event emission failures; no panics.
+// Errors are returned on nil message, invalid address, formatting failures, storage errors, or event emission failures.
 func (k Keeper) UpdateScript(ctx context.Context, msg *scripttypes.MsgUpdateScript) (*scripttypes.MsgUpdateScriptResponse, error) {
+	if msg == nil {
+		return nil, status.Error(codes.InvalidArgument, "message cannot be nil")
+	}
+
+	// Validate address is a valid bech32 address
+	_, err := k.addressCodec.StringToBytes(msg.Address)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "invalid script address: %s", msg.Address)
+	}
 
 	var script scripttypes.Script
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -67,9 +81,19 @@ func (k Keeper) UpdateScript(ctx context.Context, msg *scripttypes.MsgUpdateScri
 	}
 
 	script.Code = formattedCode
+
+	// Check for version overflow
+	if script.Version == ^uint64(0) {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "script version overflow: cannot increment version beyond maximum")
+	}
 	script.Version = script.Version + 1
+
 	// Set update metadata
-	script.UpdateHeight = uint64(sdkCtx.BlockHeight())
+	blockHeight := sdkCtx.BlockHeight()
+	if blockHeight < 0 {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid block height: %d", blockHeight)
+	}
+	script.UpdateHeight = uint64(blockHeight)
 	k.Logger(sdkCtx).Info("updating script", "script", script.Address, "version", script.Version)
 	err = k.ScriptMap.Set(ctx, msg.Address, script)
 	if err != nil {

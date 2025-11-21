@@ -34,13 +34,22 @@ func ConvertRPCPath(in string) string {
 	if in == "/dysonprotocol.script.v1.RunScript" {
 		return "/dysonprotocol.script.v1.Query/Run"
 	}
+	if in == "/dysonprotocol.script.v1.WebRequest" {
+		return "/dysonprotocol.script.v1.Query/Web"
+	}
 	return in
 }
 
 func GetResponseTypeURL(reqTypeURL string) string {
+	// Special cases for types that don't follow the Request/Response pattern
+	if reqTypeURL == "/dysonprotocol.script.v1.RunScript" {
+		return "/dysonprotocol.script.v1.ResponseRunScript"
+	}
+	if reqTypeURL == "/dysonprotocol.script.v1.WebRequest" {
+		return "/dysonprotocol.script.v1.WebResponse"
+	}
 	// replace Request with Response
 	return strings.Replace(reqTypeURL, "Request", "Response", 1)
-
 }
 
 func (k Keeper) HandleJSONAnyQuery(ctx context.Context, req *QueryRequest) (string, error) {

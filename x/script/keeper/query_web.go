@@ -4,6 +4,8 @@ import (
 	"context"
 
 	scripttypes "dysonprotocol.com/x/script/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Web queries the WSGI web application function of a script. This is used in the REST API and
@@ -25,6 +27,10 @@ import (
 //
 // Errors are returned on script resolution failures, execution errors, or invalid requests; no panics.
 func (k Keeper) Web(ctx context.Context, req *scripttypes.WebRequest) (*scripttypes.WebResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
+	}
+
 	// Calls RunWeb which handles name resolution via nameservice keeper
 	out, err := k.RunWeb(ctx, req.ScriptAddress, req.ScriptName, req.Httprequest)
 	if err != nil {

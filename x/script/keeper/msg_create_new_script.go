@@ -11,6 +11,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/authz"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // CreateNewScript creates a new script with a deterministic address and grants update permissions.
@@ -39,6 +41,10 @@ import (
 //
 // Errors are returned on invalid creator address, formatting failures, address conflicts, or grant creation failures; no panics.
 func (k Keeper) CreateNewScript(ctx context.Context, msg *scripttypes.MsgCreateNewScript) (*scripttypes.MsgCreateNewScriptResponse, error) {
+	if msg == nil {
+		return nil, status.Error(codes.InvalidArgument, "message cannot be nil")
+	}
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.GasMeter().ConsumeGas(1_000_000, "script create new script base cost")
 

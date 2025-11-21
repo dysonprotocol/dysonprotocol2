@@ -89,6 +89,9 @@ import (
 //	# Verify the signed transaction
 //	dysond query script verify-tx --tx-json "$(cat signed_tx.json)" -o json
 func (k Keeper) VerifyTx(ctx context.Context, req *scripttypes.QueryVerifyTxRequest) (*scripttypes.QueryVerifyTxResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
+	}
 	if req.TxJson == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty transaction JSON")
 	}

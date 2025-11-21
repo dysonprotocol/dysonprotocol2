@@ -124,7 +124,7 @@ func (k Keeper) RunWeb(ctx context.Context, scriptAddress string, scriptName str
 
 	scriptJSON, err := k.cdc.MarshalInterfaceJSON(&script)
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrap(err, "failed to marshal script to JSON")
 	}
 	headerInfo := header.Info{
 		Height:  cacheCtx.BlockHeight(),
@@ -136,7 +136,7 @@ func (k Keeper) RunWeb(ctx context.Context, scriptAddress string, scriptName str
 
 	headerInfoJSON, err := json.Marshal(headerInfo)
 	if err != nil {
-		return "", err
+		return "", cosmossdkerrors.Wrap(err, "failed to marshal header info to JSON")
 	}
 
 	// For RunWeb, initialize depth if not present (similar to execScript)

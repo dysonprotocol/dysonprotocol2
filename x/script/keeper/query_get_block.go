@@ -5,6 +5,8 @@ import (
 
 	scripttypes "dysonprotocol.com/x/script/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // GetBlock returns the current block information.
@@ -16,13 +18,18 @@ import (
 //   - Useful for time-sensitive operations and block-aware logic.
 //
 // Validation:
-//   - No validation required - reads from current context.
+//   - Request must not be nil.
+//   - Context must contain a valid SDK context (UnwrapSDKContext can panic if not).
 //
 // Returns:
 //   - *scripttypes.QueryGetBlockResponse with complete block information.
 //
-// Errors are returned on context extraction failures; no panics.
+// Errors are returned on invalid requests. Panics can occur if context doesn't contain SDK context
+// or if proposer address is malformed (should not happen in normal operation).
 func (k Keeper) GetBlock(ctx context.Context, req *scripttypes.QueryGetBlockRequest) (*scripttypes.QueryGetBlockResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
+	}
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	// Get block header from context

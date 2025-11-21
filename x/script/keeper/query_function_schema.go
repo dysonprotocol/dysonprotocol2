@@ -35,6 +35,9 @@ import (
 //
 // Errors are returned on invalid parameters, script resolution failures, or schema extraction errors; no panics.
 func (k Keeper) FunctionSchema(ctx context.Context, req *scripttypes.QueryFunctionSchemaRequest) (*scripttypes.QueryFunctionSchemaResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
+	}
 	if req.ExecutorAddress == "" {
 		return nil, status.Error(codes.InvalidArgument, "executor address is required")
 	}
@@ -83,7 +86,7 @@ func (k Keeper) FunctionSchema(ctx context.Context, req *scripttypes.QueryFuncti
 	// Start ephemeral RPC server
 	port, srv, err := k.NewRPCServer(sdkCtx, resolvedAddress, k.App)
 	if err != nil {
-		return nil, err
+		return nil, cosmossdkerrors.Wrap(err, "failed to start RPC server")
 	}
 	defer func() {
 		if derr := srv.Shutdown(context.Background()); derr != nil {
@@ -94,7 +97,7 @@ func (k Keeper) FunctionSchema(ctx context.Context, req *scripttypes.QueryFuncti
 	// Marshal script and header info
 	scriptJSON, err := k.cdc.MarshalInterfaceJSON(&script)
 	if err != nil {
-		return nil, err
+		return nil, cosmossdkerrors.Wrap(err, "failed to marshal script to JSON")
 	}
 
 	bh := sdkCtx.BlockHeader()
@@ -107,13 +110,13 @@ func (k Keeper) FunctionSchema(ctx context.Context, req *scripttypes.QueryFuncti
 	}
 	headerJSON, err := json.Marshal(headerInfo)
 	if err != nil {
-		return nil, err
+		return nil, cosmossdkerrors.Wrap(err, "failed to marshal header info to JSON")
 	}
 
 	// Call VM to extract schema
 	schemaJSON, runErr := dysvm.ExtractFunctionSchema(ctx, string(scriptJSON), string(headerJSON), port, req.ExecutorAddress, req.ScriptName)
 	if runErr != nil {
-		return nil, cosmossdkerrors.Wrapf(runErr, "failed to extract function schema: %s, %s", runErr.Error(), schemaJSON)
+		return nil, cosmossdkerrors.Wrapf(runErr, "failed to extract function schema: %s", schemaJSON)
 	}
 
 	return &scripttypes.QueryFunctionSchemaResponse{SchemaJson: schemaJSON}, nil

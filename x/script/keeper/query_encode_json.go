@@ -2,10 +2,12 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
+	cosmossdkerrors "cosmossdk.io/errors"
 	scripttypes "dysonprotocol.com/x/script/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // EncodeJson encodes a JSON string to protobuf bytes for message construction.
@@ -24,22 +26,25 @@ import (
 //
 // Errors are returned on invalid JSON, unknown message types, or size limit violations; no panics.
 func (k Keeper) EncodeJson(ctx context.Context, req *scripttypes.QueryEncodeJsonRequest) (*scripttypes.QueryEncodeJsonResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
+	}
 
 	// too long return err
 	if len(req.Json) > 10_000 {
-		return nil, fmt.Errorf("json too long")
+		return nil, status.Error(codes.InvalidArgument, "json too long")
 	}
 
 	var msg sdk.Msg
 
 	err := k.cdc.UnmarshalInterfaceJSON([]byte(req.Json), &msg)
 	if err != nil {
-		return nil, err
+		return nil, cosmossdkerrors.Wrapf(err, "failed to unmarshal JSON to message")
 	}
 
 	bz, err := k.cdc.Marshal(msg)
 	if err != nil {
-		return nil, err
+		return nil, cosmossdkerrors.Wrapf(err, "failed to marshal message to protobuf")
 	}
 
 	return &scripttypes.QueryEncodeJsonResponse{

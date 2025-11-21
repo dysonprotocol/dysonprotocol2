@@ -6,6 +6,8 @@ import (
 	cosmossdkerrors "cosmossdk.io/errors"
 	scripttypes "dysonprotocol.com/x/script/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // UpdateParams updates the module parameters via governance proposal.
@@ -27,6 +29,10 @@ import (
 //
 // Errors are returned on invalid authority, parameter validation failures, or storage errors; no panics.
 func (k Keeper) UpdateParams(ctx context.Context, msg *scripttypes.MsgUpdateParams) (*scripttypes.MsgUpdateParamsResponse, error) {
+	if msg == nil {
+		return nil, status.Error(codes.InvalidArgument, "message cannot be nil")
+	}
+
 	// Validate authority
 	if k.authority != msg.Authority {
 		return nil, cosmossdkerrors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, msg.Authority)

@@ -8,6 +8,8 @@ import (
 	scripttypes "dysonprotocol.com/x/script/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Sudo executes arbitrary messages with authority override and no signer validation.
@@ -29,8 +31,13 @@ import (
 // Returns:
 //   - *scripttypes.MsgSudoResponse with results from all executed messages.
 //
-// Errors are returned on invalid authority, message unpacking failures, or any message execution failure; no panics.
+// Errors are returned on nil message, invalid authority, message unpacking failures, or any message execution failure.
+// Note: sdk.UnwrapSDKContext can panic if ctx is not an SDK context.
 func (k Keeper) Sudo(ctx context.Context, msg *scripttypes.MsgSudo) (*scripttypes.MsgSudoResponse, error) {
+	if msg == nil {
+		return nil, status.Error(codes.InvalidArgument, "message cannot be nil")
+	}
+
 	// Validate authority
 	if k.authority != msg.Authority {
 		return nil, cosmossdkerrors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, msg.Authority)
@@ -69,15 +76,15 @@ func (k Keeper) Sudo(ctx context.Context, msg *scripttypes.MsgSudo) (*scripttype
 		return nil, cosmossdkerrors.Wrap(err, "failed to pack sudo results")
 	}
 
-	// All succeeded: commit cached state and emit aggregated events to parent
-	write()
-
 	// Convert to response format
 	anyResults, err := script.GetAnyMessages(results)
 	if err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to convert results to Any")
 	}
 	resp.Results = anyResults
+
+	// All succeeded: commit cached state and emit aggregated events to parent
+	write()
 
 	return resp, nil
 }

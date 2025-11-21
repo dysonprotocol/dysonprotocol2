@@ -4,6 +4,8 @@ import (
 	"context"
 
 	scripttypes "dysonprotocol.com/x/script/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Params queries the parameters of the script module.
@@ -15,8 +17,11 @@ import (
 // Returns:
 //   - *scripttypes.QueryParamsResponse with current module parameters.
 //
-// Errors are returned on parameter retrieval failures; no panics.
 func (k Keeper) Params(ctx context.Context, req *scripttypes.QueryParamsRequest) (*scripttypes.QueryParamsResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
+	}
+
 	params := k.GetParams(ctx)
 	return &scripttypes.QueryParamsResponse{Params: params}, nil
 }

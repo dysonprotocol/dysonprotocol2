@@ -27,6 +27,9 @@ import (
 //
 // Errors are returned on empty parameters, resolution failures, or storage errors; no panics.
 func (k Keeper) ScriptInfo(ctx context.Context, req *scripttypes.QueryScriptInfoRequest) (*scripttypes.QueryScriptInfoResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
+	}
 	if req.Address == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty script address")
 	}

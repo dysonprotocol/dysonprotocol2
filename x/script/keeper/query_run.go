@@ -30,6 +30,9 @@ import (
 //
 // Errors are returned on invalid parameters, script resolution failures, or execution errors; no panics.
 func (k Keeper) Run(ctx context.Context, req *scripttypes.RunScript) (*scripttypes.ResponseRunScript, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
+	}
 	// Validate request
 	if req.ExecutorAddress == "" {
 		return nil, status.Error(codes.InvalidArgument, "executor address is required")

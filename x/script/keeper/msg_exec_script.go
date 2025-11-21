@@ -9,6 +9,8 @@ import (
 	scripttypes "dysonprotocol.com/x/script/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // ExecScript executes a script function with arguments and handles attached messages.
@@ -41,12 +43,21 @@ import (
 //
 // Errors are returned on invalid parameters, resolution failures, execution errors, or message failures; no panics.
 func (k Keeper) ExecScript(ctx context.Context, msg *scripttypes.MsgExec) (*scripttypes.MsgExecResponse, error) {
+	if msg == nil {
+		return nil, status.Error(codes.InvalidArgument, "message cannot be nil")
+	}
+
+	// Validate executor address is a valid bech32 address
+	_, err := k.addressCodec.StringToBytes(msg.ExecutorAddress)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "invalid executor address: %s", msg.ExecutorAddress)
+	}
+
 	resp := &scripttypes.MsgExecResponse{}
 	var scriptObj scripttypes.Script
 
 	// Handle script address and name resolution
 	var addr string
-	var err error
 
 	// Validate that at least one of script_address or script_name is provided
 	if msg.ScriptAddress == "" && msg.ScriptName == "" {
@@ -55,7 +66,11 @@ func (k Keeper) ExecScript(ctx context.Context, msg *scripttypes.MsgExec) (*scri
 
 	// Case 1: Both address and name provided - validate they resolve to the same address
 	if msg.ScriptAddress != "" && msg.ScriptName != "" {
-		// script_address should be a bech32 address (no resolution needed)
+		// Validate script_address is a valid bech32 address
+		_, err = k.addressCodec.StringToBytes(msg.ScriptAddress)
+		if err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "invalid script address: %s", msg.ScriptAddress)
+		}
 		scriptAddr := msg.ScriptAddress
 
 		// Resolve the name to an address
@@ -79,7 +94,11 @@ func (k Keeper) ExecScript(ctx context.Context, msg *scripttypes.MsgExec) (*scri
 			return nil, cosmossdkerrors.Wrap(err, fmt.Sprintf("failed to resolve script_name: '%s'", msg.ScriptName))
 		}
 	} else {
-		// Case 3: Only address provided - use as bech32 address directly (no resolution)
+		// Case 3: Only address provided - validate bech32 format
+		_, err = k.addressCodec.StringToBytes(msg.ScriptAddress)
+		if err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "invalid script address: %s", msg.ScriptAddress)
+		}
 		addr = msg.ScriptAddress
 	}
 
@@ -118,11 +137,13 @@ func (k Keeper) ExecScript(ctx context.Context, msg *scripttypes.MsgExec) (*scri
 	cacheCtx, write := sdkCtx.CacheContext()
 
 	// Execute the function
-	execErr := func() error {
+	execErr := func() (err error) {
 		// Add panic recovery
 		defer func() {
 			if r := recover(); r != nil {
-				err = fmt.Errorf("panic during script execution: %v", r)
+				// Log the panic
+				k.Logger(sdkCtx).Error("panic during script execution", "panic", r)
+				err = fmt.Errorf("panic during ExecScript")
 			}
 		}()
 

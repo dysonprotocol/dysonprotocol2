@@ -1,4 +1,4 @@
-module cosmossdk.io/x/nft
+module dysonprotocol.com/x/nft
 
 go 1.23.2
 

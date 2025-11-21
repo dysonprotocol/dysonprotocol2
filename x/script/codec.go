@@ -90,6 +90,7 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		&scripttypes.QueryVerifyTxRequest{}, &scripttypes.QueryVerifyTxResponse{},
 		&scripttypes.QueryParamsRequest{}, &scripttypes.QueryParamsResponse{},
 		&scripttypes.QueryGetBlockRequest{}, &scripttypes.QueryGetBlockResponse{},
+		&scripttypes.QueryFunctionSchemaRequest{}, &scripttypes.QueryFunctionSchemaResponse{},
 		&scripttypes.RunScript{}, &scripttypes.ResponseRunScript{},
 
 		// script web service
