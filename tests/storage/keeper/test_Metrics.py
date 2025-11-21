@@ -78,6 +78,9 @@ def demo_metrics_with_storage(owner_addr, test_index, test_data):
         query_result.get("exception") is None
     ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
 
+    assert isinstance(result, dict), f"Result should be dict, got {type(result)}"
+    assert "result" in result
+
     demo_result = result["result"]["result"]
     metrics_response = demo_result["metrics_response"]
 
@@ -150,6 +153,9 @@ def demo_metrics_empty(owner_addr):
     assert (
         query_result.get("exception") is None
     ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    assert isinstance(result, dict), f"Result should be dict, got {type(result)}"
+    assert "result" in result
 
     demo_result = result["result"]["result"]
     metrics_response = demo_result["metrics_response"]
@@ -262,6 +268,9 @@ def demo_metrics_name_resolution(owner_addr, ns_name, test_index, test_data):
         query_result.get("exception") is None
     ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
 
+    assert isinstance(result, dict), f"Result should be dict, got {type(result)}"
+    assert "result" in result
+
     demo_result = result["result"]["result"]
     metrics_response = demo_result["metrics_response"]
 
@@ -316,6 +325,10 @@ def demo_metrics_invalid_owner(invalid_owner):
     )
 
     result = deep_parse(query_result)
+    assert isinstance(result, dict), f"Result should be dict, got {type(result)}"
+    assert (
+        "result" in result
+    ), f"Result missing 'result' key. Keys: {list(result.keys())}"
     demo_result = result["result"]["result"]
 
     # Should have error
@@ -324,8 +337,8 @@ def demo_metrics_invalid_owner(invalid_owner):
     ), f"Expected error for invalid owner, got: {json.dumps(demo_result, indent=2)}"
     error_str = str(demo_result["error"]).lower()
     assert (
-        "failed to resolve owner" in error_str or "invalid" in error_str
-    ), f"Expected resolution error, got: {demo_result['error']}"
+        "failed to resolve owner" in error_str
+    ), f"Expected resolution error containing 'failed to resolve owner', got: {demo_result['error']}"
 
 
 def test_metrics_stake_calculation(chainnet, generate_account):
@@ -404,6 +417,9 @@ def demo_metrics_stake_calculation(owner_addr, test_index, test_data):
         query_result.get("exception") is None
     ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
 
+    assert isinstance(result, dict), f"Result should be dict, got {type(result)}"
+    assert "result" in result
+
     demo_result = result["result"]["result"]
     metrics_response = demo_result["metrics_response"]
     stake_multiple = demo_result["stake_multiple"]
@@ -449,7 +465,7 @@ def _sudo(msg_dict):
 def demo_metrics_current_stake(owner_addr, validator_addr):
     # Delegate tokens using _sudo
     _sudo({
-        "@type": "/cosmos.staking.v1.MsgDelegate",
+        "@type": "/cosmos.staking.v1beta1.MsgDelegate",
         "delegator_address": owner_addr,
         "validator_address": validator_addr,
         "amount": {"denom": "udys", "amount": "1000000"}
@@ -491,6 +507,8 @@ def demo_metrics_current_stake(owner_addr, validator_addr):
     assert (
         query_result.get("exception") is None
     ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+    assert isinstance(result, dict), f"Result should be dict, got {type(result)}"
+    assert "result" in result
 
     demo_result = result["result"]["result"]
     metrics_response = demo_result["metrics_response"]

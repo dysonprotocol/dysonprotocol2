@@ -92,8 +92,12 @@ func (k Keeper) StorageSet(ctx context.Context, msg *storagetypes.MsgStorageSet)
 	// If err is ErrNotFound, oldDataSize remains 0
 
 	// Stake validation: check if owner has sufficient delegated stake
-	// Only validate if storage_stake_multiple is not "0" (which disables validation)
-	if params.StorageStakeMultiple != "0" {
+	// Only validate if storage_stake_multiple is non-zero (zero values like "0", "0.0" disable validation)
+	stakeMultiple, err := math.LegacyNewDecFromStr(params.StorageStakeMultiple)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to parse storage_stake_multiple for validation check")
+	}
+	if !stakeMultiple.IsZero() {
 		// Get current total bytes for this owner
 		currentMetrics, err := k.GetStorageMetrics(ctx, msg.Owner)
 		if err != nil {
@@ -118,7 +122,11 @@ func (k Keeper) StorageSet(ctx context.Context, msg *storagetypes.MsgStorageSet)
 		// Parse required stake as integer for comparison
 		requiredStake, ok := math.NewIntFromString(requiredStakeStr)
 		if !ok {
-			return nil, cosmossdkerrors.Wrap(err, "failed to parse required stake amount")
+			return nil, status.Errorf(
+				codes.InvalidArgument,
+				"failed to parse required stake amount: invalid integer string '%s'",
+				requiredStakeStr,
+			)
 		}
 
 		// Check if current stake is sufficient

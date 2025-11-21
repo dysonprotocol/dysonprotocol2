@@ -115,6 +115,8 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		// storage
 		&storagetypes.QueryStorageGetRequest{}, &storagetypes.QueryStorageGetResponse{},
 		&storagetypes.QueryStorageListRequest{}, &storagetypes.QueryStorageListResponse{},
+		&storagetypes.QueryParamsRequest{}, &storagetypes.QueryParamsResponse{},
+		&storagetypes.QueryMetricsRequest{}, &storagetypes.QueryMetricsResponse{},
 
 		// auth
 		&authtypes.QueryAccountsRequest{}, &authtypes.QueryAccountsResponse{},
