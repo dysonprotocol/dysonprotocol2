@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"cosmossdk.io/collections"
+	cosmossdkerrors "cosmossdk.io/errors"
 	"dysonprotocol.com/x/nameservice/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 )
@@ -58,7 +59,7 @@ func (k Keeper) BidsByBidder(c context.Context, req *types.QueryBidsByBidderRequ
 				"bid_id", id,
 				"bidder", req.Bidder,
 				"error", gErr)
-			return nil, status.Error(codes.Internal, "failed to retrieve bid record")
+			return nil, cosmossdkerrors.Wrapf(gErr, "failed to get bid record for bidder %s", req.Bidder)
 		}
 		if wantFilter {
 			if _, ok := statusSet[rec.Status]; !ok {

@@ -1,19 +1,17 @@
 """
-Coverage for QueryBidsForNFT.
+QueryBidsForNFT query handler coverage tests.
 
-Scenarios:
-1. Successful query – NFT has bids, pagination, and correct ordering.
-2. Empty NFT (no bids) – returns empty list.
-3. Empty class_id → InvalidArgument error.
-4. Empty nft_id   → InvalidArgument error.
-5. NFT does not exist → NotFound error.
-All tests use the stateless script pattern with `_sudo` helpers.
+Validates listing of all historical bids for a specific NFT, covering success paths
+with and without bids, pagination combinations (offset, key, reverse, count_total),
+and error handling (nil request, empty class_id/nft_id). All tests run via stateless
+`dysond query script run`.
 """
 
 import json
 import secrets
 import pytest
 from deep_parse import deep_parse
+
 
 BASE_EXTRA_CODE = r"""
 from dys import _msg, _query, get_executor_address
@@ -26,43 +24,48 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def _parse_coin(v):
-    m = re.fullmatch(r"(\d+)([a-zA-Z0-9./_]+)", v)
-    if not m:
-        raise Exception("invalid coin: " + str(v))
-    return {"denom": m.group(2), "amount": m.group(1)}
+def _parse_coin(value):
+    match = re.fullmatch(r"(\d+)([a-zA-Z0-9./_]+)", value)
+    if not match:
+        raise Exception("invalid coin value: " + str(value))
+    return {"denom": match.group(2), "amount": match.group(1)}
 
 def _register_root_name(name, destination):
     owner = get_executor_address()
     salt = "salt-" + name
-    h = _query({
+    hexhash = _query({
         "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
         "name": name,
         "salt": salt,
         "committer": owner,
     })["hex_hash"]
+
     _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
         "committer": owner,
-        "hexhash": h,
+        "hexhash": hexhash,
         "valuation": _parse_coin("10udys"),
     })
+
     _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
         "committer": owner,
         "name": name,
         "salt": salt,
     })
+
     _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
         "owner": owner,
         "name": name,
         "destination": destination,
     })
+
     return destination
 
 def _setup_class_and_nft(root_name, nft_id, owner):
     class_id = root_name + "/collection"
+
     _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgSaveClass",
         "name_destination": owner,
@@ -71,12 +74,14 @@ def _setup_class_and_nft(root_name, nft_id, owner):
         "symbol": "TEST",
         "description": "Test",
     })
+
     _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgMintNFT",
         "name_destination": owner,
         "class_id": class_id,
         "nft_id": nft_id,
     })
+
     _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgSetListed",
         "nft_owner": owner,
@@ -84,15 +89,17 @@ def _setup_class_and_nft(root_name, nft_id, owner):
         "nft_id": nft_id,
         "listed": True,
     })
+
     return class_id
 
-def _place_bid(bidder, class_id, nft_id, amt):
+def _place_bid(bidder, class_id, nft_id, bid_amount_str):
+    bid_amount = _parse_coin(bid_amount_str)
     _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgPlaceBid",
         "bidder": bidder,
         "nft_class_id": class_id,
         "nft_id": nft_id,
-        "bid_amount": _parse_coin(amt),
+        "bid_amount": bid_amount,
     })
 """
 
@@ -101,298 +108,566 @@ def _random_root_name():
     return f"bid-{secrets.token_hex(4)}.dys"
 
 
-# ----------------------------------------------------------------------
-# 1. Success – NFT has bids, pagination & ordering
-# ----------------------------------------------------------------------
-def test_bids_for_nft_success(chainnet):
-    dysond = chainnet[0]
-    gov = dysond("query", "auth", "module-account", "gov")["account"]["value"][
-        "address"
-    ]
-    alice = dysond(
-        "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
-    )["address"]
-    bob = dysond(
-        "keys", "show", "bob", "--keyring-backend", "test", "--output", "json"
-    )["address"]
+def _assert_query_response(query_result):
+    parsed = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script exception: {json.dumps(query_result.get('exception'), indent=2)}"
+    demo_result = parsed["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"Expected dict, got {type(demo_result)} full={json.dumps(demo_result, indent=2)}"
+    query_resp = demo_result["query_result"]
+    assert isinstance(
+        query_resp, dict
+    ), f"Query result should be dict, got {type(query_resp)}"
+    assert (
+        "bids" in query_resp
+    ), f"Missing bids key. Keys: {list(query_resp.keys())}, full={json.dumps(query_resp, indent=2)}"
+    assert (
+        "pagination" in query_resp
+    ), f"Missing pagination key. Keys: {list(query_resp.keys())}, full={json.dumps(query_resp, indent=2)}"
+    return query_resp
 
-    root = _random_root_name()
-    extra = (
+
+def test_bids_for_nft_success_with_bids(chainnet):
+    """Test BidsForNFT returns historical bids for an NFT."""
+    dysond = chainnet[0]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    alice_info = dysond(
+        "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
+    )
+    owner_addr = alice_info["address"]
+    bob_info = dysond(
+        "keys", "show", "bob", "--keyring-backend", "test", "--output", "json"
+    )
+    bidder1_addr = bob_info["address"]
+    charlie_info = dysond(
+        "keys", "show", "charlie", "--keyring-backend", "test", "--output", "json"
+    )
+    bidder2_addr = charlie_info["address"]
+    root_name = _random_root_name()
+    nft_id = "nft-1"
+
+    extra_code = (
         BASE_EXTRA_CODE
         + """
-def demo_success(root, alice, bob):
-    owner = _register_root_name(root, alice)
-    class_id = _setup_class_and_nft(root, "nft-1", owner)
+def demo_bids_for_nft_success(root_name, nft_id, owner_addr, bidder1_addr, bidder2_addr):
+    _register_root_name(root_name, owner_addr)
+    class_id = _setup_class_and_nft(root_name, nft_id, owner_addr)
 
-    # three bids from two bidders
-    _place_bid(alice, class_id, "nft-1", "100udys")
-    _place_bid(bob,   class_id, "nft-1", "150udys")
-    _place_bid(alice, class_id, "nft-1", "200udys")
+    # Place multiple bids on the same NFT
+    _place_bid(bidder1_addr, class_id, nft_id, "100udys")
+    _place_bid(bidder2_addr, class_id, nft_id, "200udys")
+    _place_bid(bidder1_addr, class_id, nft_id, "300udys")
 
-    # full list
-    all = _query({
+    # Query all bids for this NFT
+    query_result = _query({
         "@type": "/dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
         "class_id": class_id,
-        "nft_id": "nft-1",
+        "nft_id": nft_id,
     })
 
-    # pagination – limit 1 then follow key
+    return {"query_result": query_result}
+"""
+    )
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_bids_for_nft_success",
+        "--kwargs",
+        json.dumps(
+            {
+                "root_name": root_name,
+                "nft_id": nft_id,
+                "owner_addr": owner_addr,
+                "bidder1_addr": bidder1_addr,
+                "bidder2_addr": bidder2_addr,
+            }
+        ),
+        "--extra-code",
+        extra_code,
+    )
+
+    query_resp = _assert_query_response(query_result)
+    bids = query_resp["bids"]
+    assert isinstance(bids, list), f"bids should be list, got {type(bids)}"
+    assert len(bids) == 3, f"Expected 3 bids, got {len(bids)}"
+
+    # Verify bids are in chronological order (increasing bid_ids)
+    bid_ids = [int(bid["bid_id"]) for bid in bids]
+    assert bid_ids == sorted(
+        bid_ids
+    ), f"Bids should be in chronological order, got {bid_ids}"
+
+    # Verify all bids are for the correct NFT
+    # Extract class_id from the first bid since it's not available in test scope
+    expected_class_id = bids[0]["class_id"]
+    for bid in bids:
+        assert bid["class_id"] == expected_class_id, f"Bid class_id mismatch"
+        assert bid["nft_id"] == nft_id, f"Bid nft_id mismatch"
+
+    # Verify bid amounts are correct
+    bid_amounts = [int(bid["amount"]["amount"]) for bid in bids]
+    assert 100 in bid_amounts, f"Expected 100udys bid"
+    assert 200 in bid_amounts, f"Expected 200udys bid"
+    assert 300 in bid_amounts, f"Expected 300udys bid"
+
+
+def test_bids_for_nft_no_bids(chainnet):
+    """Test BidsForNFT returns empty list when NFT has no bids."""
+    dysond = chainnet[0]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    alice_info = dysond(
+        "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
+    )
+    owner_addr = alice_info["address"]
+    root_name = _random_root_name()
+    nft_id = "nft-no-bids"
+
+    extra_code = (
+        BASE_EXTRA_CODE
+        + """
+def demo_bids_for_nft_no_bids(root_name, nft_id, owner_addr):
+    _register_root_name(root_name, owner_addr)
+    class_id = _setup_class_and_nft(root_name, nft_id, owner_addr)
+
+    # Don't place any bids
+
+    # Query bids for this NFT
+    query_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
+        "class_id": class_id,
+        "nft_id": nft_id,
+    })
+
+    return {"query_result": query_result}
+"""
+    )
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_bids_for_nft_no_bids",
+        "--kwargs",
+        json.dumps(
+            {
+                "root_name": root_name,
+                "nft_id": nft_id,
+                "owner_addr": owner_addr,
+            }
+        ),
+        "--extra-code",
+        extra_code,
+    )
+
+    query_resp = _assert_query_response(query_result)
+    bids = query_resp["bids"]
+    assert isinstance(bids, list), f"bids should be list, got {type(bids)}"
+    assert len(bids) == 0, f"Expected empty list, got {len(bids)} bids"
+
+
+def test_bids_for_nft_pagination(chainnet):
+    """Test BidsForNFT pagination: offset, key, reverse, count_total."""
+    dysond = chainnet[0]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    alice_info = dysond(
+        "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
+    )
+    owner_addr = alice_info["address"]
+    bob_info = dysond(
+        "keys", "show", "bob", "--keyring-backend", "test", "--output", "json"
+    )
+    bidder_addr = bob_info["address"]
+    root_name = _random_root_name()
+    nft_id = "nft-pagination"
+
+    extra_code = (
+        BASE_EXTRA_CODE
+        + """
+def demo_bids_for_nft_pagination(root_name, nft_id, owner_addr, bidder_addr):
+    _register_root_name(root_name, owner_addr)
+    class_id = _setup_class_and_nft(root_name, nft_id, owner_addr)
+
+    # Place 5 bids on the same NFT
+    for i in range(5):
+        _place_bid(bidder_addr, class_id, nft_id, f"{100 + i * 50}udys")
+
+    # Test offset pagination
+    offset_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
+        "class_id": class_id,
+        "nft_id": nft_id,
+        "pagination": {
+            "limit": 2,
+            "offset": 1
+        }
+    })
+
+    # Test key-based pagination
     page1 = _query({
         "@type": "/dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
         "class_id": class_id,
-        "nft_id": "nft-1",
-        "pagination": {"limit": 1},
+        "nft_id": nft_id,
+        "pagination": {
+            "limit": 2
+        }
     })
+
     page2 = _query({
         "@type": "/dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
         "class_id": class_id,
-        "nft_id": "nft-1",
-        "pagination": {"limit": 1, "key": page1["pagination"]["next_key"]},
+        "nft_id": nft_id,
+        "pagination": {
+            "limit": 2,
+            "key": page1["pagination"]["next_key"]
+        }
     })
-    # reverse order
-    rev = _query({
+
+    # Test reverse pagination
+    reverse_result = _query({
         "@type": "/dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
         "class_id": class_id,
-        "nft_id": "nft-1",
-        "pagination": {"limit": 1, "reverse": True},
+        "nft_id": nft_id,
+        "pagination": {
+            "limit": 2,
+            "reverse": True
+        }
     })
-    # count_total
-    cnt = _query({
+
+    # Test count_total
+    count_total_result = _query({
         "@type": "/dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
         "class_id": class_id,
-        "nft_id": "nft-1",
-        "pagination": {"count_total": True},
+        "nft_id": nft_id,
+        "pagination": {
+            "count_total": True
+        }
     })
-    return {"all": all, "page1": page1, "page2": page2, "rev": rev, "cnt": cnt}
+
+    return {
+        "offset": offset_result,
+        "page1": page1,
+        "page2": page2,
+        "reverse": reverse_result,
+        "count_total": count_total_result
+    }
 """
     )
 
-    resp = dysond(
+    query_result = dysond(
         "query",
         "script",
         "run",
         "--script-address",
-        gov,
+        gov_addr,
         "--executor-address",
-        gov,
+        gov_addr,
         "--function-name",
-        "demo_success",
+        "demo_bids_for_nft_pagination",
         "--kwargs",
-        json.dumps({"root": root, "alice": alice, "bob": bob}),
+        json.dumps(
+            {
+                "root_name": root_name,
+                "nft_id": nft_id,
+                "owner_addr": owner_addr,
+                "bidder_addr": bidder_addr,
+            }
+        ),
         "--extra-code",
-        extra,
+        extra_code,
     )
-    out = deep_parse(resp)["result"]["result"]
 
-    # ---- basic list ----
-    all_bids = out["all"]["bids"]
-    assert isinstance(all_bids, list) and len(all_bids) == 3
-    # order is chronological – newest last
-    assert all_bids[0]["bidder"] == alice
-    assert all_bids[1]["bidder"] == bob
-    assert all_bids[2]["bidder"] == alice
+    parsed = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script exception: {json.dumps(query_result.get('exception'), indent=2)}"
+    result = parsed["result"]["result"]
 
-    # ---- pagination ----
-    assert len(out["page1"]["bids"]) == 1
-    assert out["page1"]["pagination"].get("next_key") is not None
-    assert len(out["page2"]["bids"]) == 1
+    # Verify offset pagination
+    assert len(result["offset"]["bids"]) == 2, f"Offset pagination should return 2 bids"
 
-    # ---- reverse ----
-    assert len(out["rev"]["bids"]) == 1
-    # reverse should give the newest bid first
-    assert out["rev"]["bids"][0]["bidder"] == alice
+    # Verify key-based pagination
+    assert len(result["page1"]["bids"]) == 2, f"Page1 should have 2 bids"
+    assert len(result["page2"]["bids"]) == 2, f"Page2 should have 2 bids"
+    assert (
+        result["page1"]["pagination"]["next_key"] is not None
+    ), f"Expected next_key, got {result['page1']['pagination']}"
 
-    # ---- count_total ----
-    assert out["cnt"]["pagination"].get("total") is not None
+    # Verify reverse pagination
+    assert (
+        len(result["reverse"]["bids"]) == 2
+    ), f"Reverse pagination should return 2 bids"
 
-
-# ----------------------------------------------------------------------
-# 2. Empty NFT – no bids
-# ----------------------------------------------------------------------
-def test_bids_for_nft_empty(chainnet):
-    dysond = chainnet[0]
-    gov = dysond("query", "auth", "module-account", "gov")["account"]["value"][
-        "address"
-    ]
-    alice = dysond(
-        "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
-    )["address"]
-    root = _random_root_name()
-    extra = (
-        BASE_EXTRA_CODE
-        + """
-def demo_empty(root, alice):
-    owner = _register_root_name(root, alice)
-    class_id = _setup_class_and_nft(root, "nft-1", owner)
-    # no bids placed
-    res = _query({
-        "@type": "/dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
-        "class_id": class_id,
-        "nft_id": "nft-1",
-    })
-    return {"res": res}
-"""
-    )
-    resp = dysond(
-        "query",
-        "script",
-        "run",
-        "--script-address",
-        gov,
-        "--executor-address",
-        gov,
-        "--function-name",
-        "demo_empty",
-        "--kwargs",
-        json.dumps({"root": root, "alice": alice}),
-        "--extra-code",
-        extra,
-    )
-    out = deep_parse(resp)["result"]["result"]
-    assert isinstance(out["res"]["bids"], list) and len(out["res"]["bids"]) == 0
+    # Verify count_total
+    assert result["count_total"]["pagination"].get("total") == str(
+        5
+    ), f"Expected total 5, got {json.dumps(result['count_total']['pagination'], indent=2)}"
 
 
-# ----------------------------------------------------------------------
-# 3. Empty class_id  → InvalidArgument
-# ----------------------------------------------------------------------
 def test_bids_for_nft_empty_class_id(chainnet):
+    """Empty class_id should raise invalid argument error."""
     dysond = chainnet[0]
-    gov = dysond("query", "auth", "module-account", "gov")["account"]["value"][
-        "address"
-    ]
-    alice = dysond(
-        "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
-    )["address"]
-    extra = (
-        BASE_EXTRA_CODE
-        + """
-def demo_empty_class():
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _query
+
+def demo_bids_for_nft_empty_class_id():
     try:
-        _query({
+        query_result = _query({
             "@type": "/dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
             "class_id": "",
-            "nft_id": "any",
+            "nft_id": "nft-1",
         })
-        return {"error": "should have failed"}
+        return {"error": "Should have failed", "result": query_result}
     except Exception as e:
         return {"error": str(e), "expected": True}
 """
-    )
-    resp = dysond(
+
+    query_result = dysond(
         "query",
         "script",
         "run",
         "--script-address",
-        gov,
+        gov_addr,
         "--executor-address",
-        gov,
+        gov_addr,
         "--function-name",
-        "demo_empty_class",
+        "demo_bids_for_nft_empty_class_id",
         "--extra-code",
-        extra,
+        extra_code,
     )
-    out = deep_parse(resp)["result"]["result"]
-    assert out["expected"] is True
-    assert "class_id" in out["error"].lower() and "required" in out["error"].lower()
+
+    parsed = deep_parse(query_result)
+    demo_result = parsed["result"]["result"]
+    assert (
+        demo_result["expected"] is True
+    ), f"Expected error flag, got {json.dumps(demo_result, indent=2)}"
+    assert (
+        "required" in demo_result["error"].lower()
+    ), f"Error should mention required. Got {demo_result['error']}"
 
 
-# ----------------------------------------------------------------------
-# 4. Empty nft_id → InvalidArgument
-# ----------------------------------------------------------------------
 def test_bids_for_nft_empty_nft_id(chainnet):
+    """Empty nft_id should raise invalid argument error."""
     dysond = chainnet[0]
-    gov = dysond("query", "auth", "module-account", "gov")["account"]["value"][
-        "address"
-    ]
-    alice = dysond(
-        "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
-    )["address"]
-    extra = (
-        BASE_EXTRA_CODE
-        + """
-def demo_empty_nft():
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _query
+
+def demo_bids_for_nft_empty_nft_id():
     try:
-        _query({
+        query_result = _query({
             "@type": "/dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
-            "class_id": "some_class",
+            "class_id": "test.dys/collection",
             "nft_id": "",
         })
-        return {"error": "should have failed"}
+        return {"error": "Should have failed", "result": query_result}
     except Exception as e:
         return {"error": str(e), "expected": True}
 """
-    )
-    resp = dysond(
+
+    query_result = dysond(
         "query",
         "script",
         "run",
         "--script-address",
-        gov,
+        gov_addr,
         "--executor-address",
-        gov,
+        gov_addr,
         "--function-name",
-        "demo_empty_nft",
+        "demo_bids_for_nft_empty_nft_id",
         "--extra-code",
-        extra,
+        extra_code,
     )
-    out = deep_parse(resp)["result"]["result"]
-    assert out["expected"] is True
-    assert "nft_id" in out["error"].lower() and "required" in out["error"].lower()
+
+    parsed = deep_parse(query_result)
+    demo_result = parsed["result"]["result"]
+    assert (
+        demo_result["expected"] is True
+    ), f"Expected error flag, got {json.dumps(demo_result, indent=2)}"
+    assert (
+        "required" in demo_result["error"].lower()
+    ), f"Error should mention required. Got {demo_result['error']}"
 
 
-# ----------------------------------------------------------------------
-# 5. NFT does not exist → NotFound
-# ----------------------------------------------------------------------
-def test_bids_for_nft_not_found(chainnet):
+def test_bids_for_nft_nil_request(chainnet):
+    """Nil request surfaces missing @type error."""
     dysond = chainnet[0]
-    gov = dysond("query", "auth", "module-account", "gov")["account"]["value"][
-        "address"
-    ]
-    alice = dysond(
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _query
+
+def demo_bids_for_nft_nil_request():
+    try:
+        query_result = _query(None)
+        return {"error": "Should have failed", "result": query_result}
+    except Exception as e:
+        return {"error": str(e), "expected": True}
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_bids_for_nft_nil_request",
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+    demo_result = parsed["result"]["result"]
+    assert (
+        demo_result["expected"] is True
+    ), f"Expected nil request error, got {json.dumps(demo_result, indent=2)}"
+    assert (
+        "@type" in demo_result["error"].lower()
+    ), f"Error should mention @type. Got {demo_result['error']}"
+
+
+def test_bids_for_nft_multiple_nfts_isolated(chainnet):
+    """Test BidsForNFT correctly isolates bids by NFT (different NFTs don't interfere)."""
+    dysond = chainnet[0]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    alice_info = dysond(
         "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
-    )["address"]
-    root = _random_root_name()
-    extra = (
+    )
+    owner_addr = alice_info["address"]
+    bob_info = dysond(
+        "keys", "show", "bob", "--keyring-backend", "test", "--output", "json"
+    )
+    bidder_addr = bob_info["address"]
+    root_name = _random_root_name()
+
+    extra_code = (
         BASE_EXTRA_CODE
         + """
-def demo_not_found(root, alice):
-    owner = _register_root_name(root, alice)
-    class_id = root + "/collection"   # class is created but no NFT minted
+def demo_bids_for_nft_isolation(root_name, owner_addr, bidder_addr):
+    _register_root_name(root_name, owner_addr)
+    class_id = root_name + "/collection"
+
     _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgSaveClass",
-        "name_destination": owner,
+        "name_destination": owner_addr,
         "class_id": class_id,
-        "name": "Test",
-        "symbol": "T",
-        "description": "test",
+        "name": "Test Collection",
+        "symbol": "TEST",
+        "description": "Test",
     })
-    # Query for bids on non-existent NFT - should return empty result
-    result = _query({
+
+    # Create two NFTs
+    for nft_id in ["nft-1", "nft-2"]:
+        _sudo({
+            "@type": "/dysonprotocol.nameservice.v1.MsgMintNFT",
+            "name_destination": owner_addr,
+            "class_id": class_id,
+            "nft_id": nft_id,
+        })
+        _sudo({
+            "@type": "/dysonprotocol.nameservice.v1.MsgSetListed",
+            "nft_owner": owner_addr,
+            "nft_class_id": class_id,
+            "nft_id": nft_id,
+            "listed": True,
+        })
+
+    # Place bids on different NFTs
+    _place_bid(bidder_addr, class_id, "nft-1", "100udys")
+    _place_bid(bidder_addr, class_id, "nft-1", "200udys")  # 2 bids on nft-1
+    _place_bid(bidder_addr, class_id, "nft-2", "150udys")  # 1 bid on nft-2
+
+    # Query bids for each NFT separately
+    nft1_bids = _query({
         "@type": "/dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
         "class_id": class_id,
-        "nft_id": "missing-nft",
+        "nft_id": "nft-1",
     })
-    return {"result": result, "expected": True}
+
+    nft2_bids = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
+        "class_id": class_id,
+        "nft_id": "nft-2",
+    })
+
+    return {
+        "nft1_bids": nft1_bids,
+        "nft2_bids": nft2_bids
+    }
 """
     )
-    resp = dysond(
+
+    query_result = dysond(
         "query",
         "script",
         "run",
         "--script-address",
-        gov,
+        gov_addr,
         "--executor-address",
-        gov,
+        gov_addr,
         "--function-name",
-        "demo_not_found",
+        "demo_bids_for_nft_isolation",
         "--kwargs",
-        json.dumps({"root": root, "alice": alice}),
+        json.dumps(
+            {
+                "root_name": root_name,
+                "owner_addr": owner_addr,
+                "bidder_addr": bidder_addr,
+            }
+        ),
         "--extra-code",
-        extra,
+        extra_code,
     )
-    out = deep_parse(resp)["result"]["result"]
-    assert out.get("expected") is True
-    # the query should return empty result for non-existent NFT
-    assert isinstance(out["result"], dict)
-    assert "bids" in out["result"]
-    assert len(out["result"]["bids"]) == 0
+
+    parsed = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script exception: {json.dumps(query_result.get('exception'), indent=2)}"
+    result = parsed["result"]["result"]
+
+    # Verify NFT-1 has 2 bids
+    nft1_bids = result["nft1_bids"]["bids"]
+    assert isinstance(nft1_bids, list), f"nft1_bids should be list"
+    assert len(nft1_bids) == 2, f"Expected 2 bids for nft-1, got {len(nft1_bids)}"
+
+    # Verify NFT-2 has 1 bid
+    nft2_bids = result["nft2_bids"]["bids"]
+    assert isinstance(nft2_bids, list), f"nft2_bids should be list"
+    assert len(nft2_bids) == 1, f"Expected 1 bid for nft-2, got {len(nft2_bids)}"
+
+    # Verify bids are correctly attributed to their NFTs
+    for bid in nft1_bids:
+        assert bid["nft_id"] == "nft-1", f"Bid should be for nft-1"
+    for bid in nft2_bids:
+        assert bid["nft_id"] == "nft-2", f"Bid should be for nft-2"

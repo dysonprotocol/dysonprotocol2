@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"cosmossdk.io/collections"
+	cosmossdkerrors "cosmossdk.io/errors"
 	"dysonprotocol.com/x/nameservice/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 )
@@ -36,12 +37,17 @@ func (k Keeper) BidsForNFT(c context.Context, req *types.QueryBidsForNFTRequest)
 	records := make([]*types.BidRecord, 0, len(ids))
 	for _, id := range ids {
 		rec, gErr := k.bids.Get(c, id)
-		if gErr == nil {
-			// preserve chronological order because ids are increasing
-			r := rec
-			records = append(records, &r)
+		if gErr != nil {
+			k.Logger.Error("BidsForNFT: Failed to get bid record",
+				"bid_id", id,
+				"class_id", req.ClassId,
+				"nft_id", req.NftId,
+				"error", gErr)
+			return nil, cosmossdkerrors.Wrapf(gErr, "failed to get bid record for NFT %s/%s", req.ClassId, req.NftId)
 		}
+		// preserve chronological order because ids are increasing
+		r := rec
+		records = append(records, &r)
 	}
 	return &types.QueryBidsForNFTResponse{Bids: records, Pagination: pageRes}, nil
 }
-

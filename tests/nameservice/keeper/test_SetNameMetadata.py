@@ -412,6 +412,120 @@ def demo_unauthorized(name, owner, unauthorized_owner, metadata):
     )
 
 
+def test_set_name_metadata_metadata_too_large(chainnet):
+    """Test name metadata setting with metadata exceeding 1KB limit."""
+    dysond = chainnet[0]
+    # Use a funded address from genesis
+    owner_addr = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    # Create metadata larger than 1KB (1024 bytes limit)
+    large_metadata = "x" * 1025  # 1025 characters
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def _register_root_name(name, owner):
+    # Get a valid commitment hash using ComputeHash
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": "test_salt_123",
+        "committer": owner
+    })
+
+    hexhash = hash_result["hex_hash"]
+
+    # Register a root name via reveal
+    commit_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+
+    reveal_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": "test_salt_123"
+    })
+
+    return {
+        "commit_result": commit_result,
+        "reveal_result": reveal_result
+    }
+
+def demo_metadata_too_large(name, owner, metadata):
+    # First register the name
+    register_result = _register_root_name(name, owner)
+
+    # Then try to set metadata that's too large - should fail
+    sudo_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetNameMetadata",
+        "owner": owner,
+        "name": name,
+        "metadata": metadata
+    })
+
+    return {
+        "register_result": register_result,
+        "sudo_result": sudo_result
+    }
+"""
+
+    kwargs = json.dumps(
+        {
+            "name": "test.dys",
+            "owner": owner_addr,
+            "metadata": large_metadata,
+        }
+    )
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_metadata_too_large",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    # Parse and validate error
+    result = deep_parse(query_result)
+    assert isinstance(result, dict), (
+        f"deep_parse should return dict. Got: {type(result)}"
+    )
+
+    assert "exception" in result, (
+        f"result should have exception. Keys: {list(result.keys())}"
+    )
+
+    exception = result["exception"]
+    assert exception["class"] == "DysRuntimeError", (
+        f"should be DysRuntimeError, got {exception['class']}"
+    )
+    assert "invalid NFT data" in exception["msg"], (
+        f"error should mention invalid NFT data, got: {exception['msg']}"
+    )
+
+
 def test_set_name_metadata_nil_request(chainnet):
     """Test name metadata setting with nil request."""
     dysond = chainnet[0]
@@ -432,7 +546,7 @@ def _sudo(msg_dict):
 def demo_nil_request():
     # Try to call with nil message - should fail at framework level
     sudo_result = _sudo(None)
-    
+
     return {
         "sudo_result": sudo_result
     }

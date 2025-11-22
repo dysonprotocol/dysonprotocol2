@@ -58,4 +58,3 @@ func (k Keeper) DenomByName(c context.Context, req *types.QueryDenomByNameReques
 	}
 	return &types.QueryDenomByNameResponse{Denoms: results, Pagination: pageRes}, nil
 }
-

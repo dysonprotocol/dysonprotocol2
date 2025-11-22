@@ -11,7 +11,10 @@ import (
 
 // SetNameMetadata allows the owner of a name (NFT in nameservice.dys) to set the metadata string
 func (k Keeper) SetNameMetadata(ctx context.Context, msg *nameservicev1.MsgSetNameMetadata) (*nameservicev1.MsgSetNameMetadataResponse, error) {
-	// Ensure the name NFT exists
+	// BUG: Redundant NFT existence check - GetNFTData() below also checks NFT existence
+	// This creates a potential race condition if NFT is deleted between the two checks.
+	// The GetNFTData() call already handles the "not found" case with proper error wrapping,
+	// so this early check is unnecessary and could cause inconsistent behavior.
 	_, found := k.nftKeeper.GetNFT(ctx, NamesClassID, msg.Name)
 	if !found {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrNotFound, "name not found")
