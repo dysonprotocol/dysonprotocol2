@@ -13,8 +13,8 @@
   "paths": {
     "/dysonprotocol/nameservice/v1/bids/by_bidder/{bidder}": {
       "get": {
-        "summary": "QueryBidsByBidder lists bids placed by a bidder across NFTs",
-        "operationId": "dysonprotocol.nameservice.v1.QueryQueryBidsByBidderRequest",
+        "summary": "BidsByBidder lists bids placed by a bidder across NFTs",
+        "operationId": "dysonprotocol.nameservice.v1.QueryBidsByBidderRequest",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -101,8 +101,8 @@
     },
     "/dysonprotocol/nameservice/v1/bids/for_nft/{class_id}/{nft_id}": {
       "get": {
-        "summary": "QueryBidsForNFT lists all bids for a given NFT",
-        "operationId": "dysonprotocol.nameservice.v1.QueryQueryBidsForNFTRequest",
+        "summary": "BidsForNFT lists all bids for a given NFT",
+        "operationId": "dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -217,8 +217,8 @@
     },
     "/dysonprotocol/nameservice/v1/denoms_by_name/{name}": {
       "get": {
-        "summary": "QueryDenomByName lists denoms under a given root name along with details",
-        "operationId": "dysonprotocol.nameservice.v1.QueryQueryDenomByNameRequest",
+        "summary": "DenomByName lists denoms under a given root name along with details",
+        "operationId": "dysonprotocol.nameservice.v1.QueryDenomByNameRequest",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -289,8 +289,8 @@
     },
     "/dysonprotocol/nameservice/v1/names_by_destination/{destination}": {
       "get": {
-        "summary": "QueryNamesByDestination queries all names pointing to a destination address",
-        "operationId": "dysonprotocol.nameservice.v1.QueryQueryNamesByDestinationRequest",
+        "summary": "NamesByDestination queries all names pointing to a destination address",
+        "operationId": "dysonprotocol.nameservice.v1.QueryNamesByDestinationRequest",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -354,8 +354,8 @@
     },
     "/dysonprotocol/nameservice/v1/nftclasses_by_name/{name}": {
       "get": {
-        "summary": "QueryNFTClassesByName lists NFT class IDs under a given root name",
-        "operationId": "dysonprotocol.nameservice.v1.QueryQueryNFTClassesByNameRequest",
+        "summary": "NFTClassesByName lists NFT class IDs under a given root name",
+        "operationId": "dysonprotocol.nameservice.v1.QueryNFTClassesByNameRequest",
         "responses": {
           "200": {
             "description": "A successful response.",

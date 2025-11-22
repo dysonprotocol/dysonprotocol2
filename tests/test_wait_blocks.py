@@ -3,7 +3,7 @@ Test demonstrating how to wait for a specific number of blocks to be produced.
 """
 import pytest
 import time
-from utils import poll_until_condition
+from tests import utils
 
 
 def test_wait_for_blocks(chainnet):
@@ -27,7 +27,7 @@ def test_wait_for_blocks(chainnet):
         current_height = int(status_data.get("sync_info", {}).get("latest_block_height", 0))
         return current_height >= target_height
     
-    poll_until_condition(
+    utils.poll_until_condition(
         check_height_reached,
         timeout=5, # Do not change this!!!!
         poll_interval=0.1, # Do not change this!!!!

@@ -7,7 +7,7 @@ from typing import List
 
 import pytest
 
-from utils import poll_until_condition
+from tests import utils
 
 
 # -----------------------------------------------------------------------------
@@ -126,7 +126,9 @@ def _update_allowed_denoms_via_gov(
             "PROPOSAL_STATUS_FAILED",
         )
 
-    poll_until_condition(_passed, timeout=60, error_message="gov proposal timeout")
+    utils.poll_until_condition(
+        _passed, timeout=60, error_message="gov proposal timeout"
+    )
 
     final = dysond_bin("query", "gov", "proposal", proposal_id)["proposal"]["status"]
     assert final == "PROPOSAL_STATUS_PASSED", f"Gov proposal failed with status {final}"

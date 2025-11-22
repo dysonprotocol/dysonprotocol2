@@ -49,56 +49,56 @@ export const Query = {
       kind: MethodKind.Unary,
     },
     /**
-     * QueryNamesByDestination queries all names pointing to a destination address
+     * NamesByDestination queries all names pointing to a destination address
      *
-     * @generated from rpc dysonprotocol.nameservice.v1.Query.QueryNamesByDestination
+     * @generated from rpc dysonprotocol.nameservice.v1.Query.NamesByDestination
      */
-    queryNamesByDestination: {
-      name: "QueryNamesByDestination",
+    namesByDestination: {
+      name: "NamesByDestination",
       I: QueryNamesByDestinationRequest,
       O: QueryNamesByDestinationResponse,
       kind: MethodKind.Unary,
     },
     /**
-     * QueryNFTClassesByName lists NFT class IDs under a given root name
+     * NFTClassesByName lists NFT class IDs under a given root name
      *
-     * @generated from rpc dysonprotocol.nameservice.v1.Query.QueryNFTClassesByName
+     * @generated from rpc dysonprotocol.nameservice.v1.Query.NFTClassesByName
      */
-    queryNFTClassesByName: {
-      name: "QueryNFTClassesByName",
+    nFTClassesByName: {
+      name: "NFTClassesByName",
       I: QueryNFTClassesByNameRequest,
       O: QueryNFTClassesByNameResponse,
       kind: MethodKind.Unary,
     },
     /**
-     * QueryDenomByName lists denoms under a given root name along with details
+     * DenomByName lists denoms under a given root name along with details
      *
-     * @generated from rpc dysonprotocol.nameservice.v1.Query.QueryDenomByName
+     * @generated from rpc dysonprotocol.nameservice.v1.Query.DenomByName
      */
-    queryDenomByName: {
-      name: "QueryDenomByName",
+    denomByName: {
+      name: "DenomByName",
       I: QueryDenomByNameRequest,
       O: QueryDenomByNameResponse,
       kind: MethodKind.Unary,
     },
     /**
-     * QueryBidsByBidder lists bids placed by a bidder across NFTs
+     * BidsByBidder lists bids placed by a bidder across NFTs
      *
-     * @generated from rpc dysonprotocol.nameservice.v1.Query.QueryBidsByBidder
+     * @generated from rpc dysonprotocol.nameservice.v1.Query.BidsByBidder
      */
-    queryBidsByBidder: {
-      name: "QueryBidsByBidder",
+    bidsByBidder: {
+      name: "BidsByBidder",
       I: QueryBidsByBidderRequest,
       O: QueryBidsByBidderResponse,
       kind: MethodKind.Unary,
     },
     /**
-     * QueryBidsForNFT lists all bids for a given NFT
+     * BidsForNFT lists all bids for a given NFT
      *
-     * @generated from rpc dysonprotocol.nameservice.v1.Query.QueryBidsForNFT
+     * @generated from rpc dysonprotocol.nameservice.v1.Query.BidsForNFT
      */
-    queryBidsForNFT: {
-      name: "QueryBidsForNFT",
+    bidsForNFT: {
+      name: "BidsForNFT",
       I: QueryBidsForNFTRequest,
       O: QueryBidsForNFTResponse,
       kind: MethodKind.Unary,

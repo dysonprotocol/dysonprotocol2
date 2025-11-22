@@ -1,6 +1,5 @@
 import pytest
 import secrets
-from tests.conftest import poll_until_condition
 
 
 def test_max_valuation_fee_pct(chainnet, generate_account, faucet, register_name):

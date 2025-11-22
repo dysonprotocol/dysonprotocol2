@@ -10,7 +10,7 @@ Without the module input, the invariant check fails with a balance mismatch.
 """
 
 import json
-from utils import poll_until_condition
+from tests import utils
 from tests.whaleswap.amm.normalize_events import normalize_events
 
 
@@ -117,7 +117,7 @@ def test_make_trade_pfand_release_accounting(
             "PROPOSAL_STATUS_FAILED",
         ]
 
-    poll_until_condition(
+    utils.poll_until_condition(
         _final, timeout=60, poll_interval=2, error_message="Proposal did not finalize"
     )
 

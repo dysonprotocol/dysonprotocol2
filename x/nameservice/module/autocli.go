@@ -13,7 +13,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			EnhanceCustomCommand: true,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
-					RpcMethod: "QueryDenomByName",
+					RpcMethod: "DenomByName",
 					Use:       "denoms-by-name",
 					Short:     "List denoms by root name, optional subdenom prefix",
 					FlagOptions: map[string]*autocliv1.FlagOptions{
@@ -30,7 +30,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "QueryNFTClassesByName",
+					RpcMethod: "NFTClassesByName",
 					Use:       "nftclasses-by-name",
 					Short:     "List NFT class IDs by root name, optional subclass prefix",
 					FlagOptions: map[string]*autocliv1.FlagOptions{

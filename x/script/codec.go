@@ -112,6 +112,9 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		&nameservicetypes.QueryResolveNameRequest{}, &nameservicetypes.QueryResolveNameResponse{},
 		&nameservicetypes.QueryParamsRequest{}, &nameservicetypes.QueryParamsResponse{},
 		&nameservicetypes.QueryComputeHashRequest{}, &nameservicetypes.QueryComputeHashResponse{},
+		&nameservicetypes.QueryNamesByDestinationRequest{}, &nameservicetypes.QueryNamesByDestinationResponse{},
+		&nameservicetypes.QueryNFTClassesByNameRequest{}, &nameservicetypes.QueryNFTClassesByNameResponse{},
+		&nameservicetypes.QueryDenomByNameRequest{}, &nameservicetypes.QueryDenomByNameResponse{},
 
 		// storage
 		&storagetypes.QueryStorageGetRequest{}, &storagetypes.QueryStorageGetResponse{},

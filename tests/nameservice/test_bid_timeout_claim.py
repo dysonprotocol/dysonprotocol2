@@ -1,6 +1,6 @@
 import pytest
 import json
-from utils import poll_until_condition
+from tests import utils
 import tempfile
 
 # Helper: Poll until a governance proposal reaches a final state
@@ -18,7 +18,7 @@ def poll_until_proposal_passes(dysond_bin, proposal_id: str, timeout: int = 60):
             "PROPOSAL_STATUS_FAILED",
         ]
 
-    poll_until_condition(
+    utils.poll_until_condition(
         has_proposal_reached_final_state,
         timeout=timeout,
         error_message="Timeout waiting for proposal to reach final state",
@@ -267,7 +267,7 @@ def test_claim_after_timeout_succeeds(
         # Wait for at least 1 block to pass to ensure timeout has elapsed
         return (current_block - bid_block) >= 1
 
-    poll_until_condition(
+    utils.poll_until_condition(
         timeout_elapsed, timeout=10, error_message="Bid timeout did not elapse"
     )
 

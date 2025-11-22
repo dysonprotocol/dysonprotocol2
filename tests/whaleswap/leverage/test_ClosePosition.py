@@ -9,6 +9,7 @@ import json
 import pytest
 from pathlib import Path
 from deep_parse import deep_parse
+from tests import utils
 
 
 def test_cover_position_note_propagates(
@@ -1865,9 +1866,7 @@ def test_close_position_same_denom_insufficient_underwater_rejected(
         )
         return current_height >= target_height
 
-    from utils import poll_until_condition
-
-    poll_until_condition(
+    utils.poll_until_condition(
         check_height_reached,
         timeout=15,
         poll_interval=0.1,

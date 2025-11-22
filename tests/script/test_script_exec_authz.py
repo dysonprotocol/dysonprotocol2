@@ -2,8 +2,8 @@
 import json
 import pytest
 import tempfile
-from utils import poll_until_condition
 from datetime import datetime, timedelta, timezone
+from tests import utils
 
 
 def test_exec_authorization_with_function_names(chainnet, generate_account, faucet):

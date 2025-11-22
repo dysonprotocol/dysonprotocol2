@@ -9,7 +9,7 @@ initialization attempts.
 
 import json
 
-from utils import extract_script_result, poll_until_condition
+from tests import utils
 
 
 SCRIPT_CODE = """
@@ -179,7 +179,7 @@ def test_finalize_liquidation_success(
     ), f"Initialize liquidation failed: {json.dumps(init_exec, indent=2)}"
 
     init_tx = dysond("query", "wait-tx", init_exec["txhash"])
-    init_result = extract_script_result(init_tx)
+    init_result = utils.extract_script_result(init_tx)
     assert (
         init_result["status"] == "initialized"
     ), f"Unexpected script status: {json.dumps(init_result, indent=2)}"
@@ -204,7 +204,7 @@ def test_finalize_liquidation_success(
     init_height = int(status_before["sync_info"]["latest_block_height"])
     target_height = init_height + 1
 
-    poll_until_condition(
+    utils.poll_until_condition(
         lambda: int(dysond("status")["sync_info"]["latest_block_height"])
         >= target_height,
         timeout=5,
@@ -237,7 +237,7 @@ def test_finalize_liquidation_success(
     ), f"Finalize liquidation failed: {json.dumps(finalize_exec, indent=2)}"
 
     finalize_tx = dysond("query", "wait-tx", finalize_exec["txhash"])
-    finalize_result = extract_script_result(finalize_tx)
+    finalize_result = utils.extract_script_result(finalize_tx)
     assert (
         finalize_result["status"] == "finalized"
     ), f"Unexpected finalize status: {json.dumps(finalize_result, indent=2)}"

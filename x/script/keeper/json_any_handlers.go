@@ -13,7 +13,10 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 )
 
-var rpcRe = regexp.MustCompile(`^(\/.+\.Query)([^/]+)Request$`)
+// rpcRe matches type URLs like "/package.QueryMethodNameRequest" and extracts:
+// Group 1: "/package" (package name without ".Query")
+// Group 2: "MethodName" (method name segment that follows ".Query")
+var rpcRe = regexp.MustCompile(`^(\/.+?)\.Query(.+?)Request$`)
 
 // MsgRequest defines a request to execute a message
 type MsgRequest struct {
@@ -29,7 +32,10 @@ type QueryRequest struct {
 
 func ConvertRPCPath(in string) string {
 	if m := rpcRe.FindStringSubmatch(in); m != nil {
-		return m[1] + "/" + m[2]
+		// m[1] is the package (e.g., "/dysonprotocol.nameservice.v1")
+		// m[2] is the method name segment from the type URL (e.g., "NamesByDestination" or "ResolveName")
+		// Reconstruct as "/package.Query/MethodName"
+		return m[1] + ".Query/" + m[2]
 	}
 	if in == "/dysonprotocol.script.v1.RunScript" {
 		return "/dysonprotocol.script.v1.Query/Run"

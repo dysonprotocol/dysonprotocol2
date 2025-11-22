@@ -4,7 +4,7 @@ import pytest
 import tempfile
 from typing import Dict, Any
 from tests.conftest import dedent
-from utils import poll_until_condition
+from tests import utils
 
 
 def test_create_new_script(chainnet, generate_account, faucet):

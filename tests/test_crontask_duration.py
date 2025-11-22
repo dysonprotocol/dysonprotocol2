@@ -1,7 +1,7 @@
 import json
 import pytest
 import time
-from utils import poll_until_condition
+from tests import utils
 from typing import Dict, Any, List
 
 
@@ -271,7 +271,7 @@ def test_task_execution(chainnet, generate_account, faucet):
         return task["status"] == "DONE"
 
     # Wait for task to be executed with polling
-    poll_until_condition(
+    utils.poll_until_condition(
         check_func=check_task_executed,
         timeout=10,  # Maximum 10 seconds to wait
         poll_interval=0.2,  # Check every 200ms
@@ -334,7 +334,7 @@ def test_task_status_change(chainnet, generate_account, faucet):
         return task["status"] != "SCHEDULED"
 
     # Wait for status to change with polling
-    poll_until_condition(
+    utils.poll_until_condition(
         check_func=check_task_status_changed,
         timeout=10,  # Maximum 10 seconds to wait
         poll_interval=0.2,  # Check every 200ms
@@ -397,7 +397,7 @@ def test_task_failure(chainnet, generate_account, faucet):
         return task["status"] == "FAILED"
 
     # Wait for task to fail with polling
-    poll_until_condition(
+    utils.poll_until_condition(
         check_func=check_task_failed,
         timeout=10,  # Maximum 10 seconds to wait
         poll_interval=0.2,  # Check every 200ms

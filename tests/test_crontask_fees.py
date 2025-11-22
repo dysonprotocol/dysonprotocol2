@@ -2,7 +2,7 @@ import pytest
 import json
 import time
 import datetime
-from test_crontask_cli import TASK_SCHEDULED_DELAY, TASK_WAIT_TIMEOUT
+from tests.test_crontask_cli import TASK_SCHEDULED_DELAY, TASK_WAIT_TIMEOUT
 from typing import Dict, Any, List
 from tests.utils import poll_until_condition
 

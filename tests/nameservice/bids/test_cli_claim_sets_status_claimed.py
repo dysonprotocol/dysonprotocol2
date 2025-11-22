@@ -1,5 +1,5 @@
 import json
-from utils import poll_until_condition
+from tests import utils
 
 
 def _setup_class_and_nft(dysond_bin, generate_account, faucet, register_name):
@@ -115,7 +115,7 @@ def test_cli_claim_sets_status_claimed(
         st = dysond_bin("status")
         return int(st["sync_info"]["latest_block_height"]) > int(res["height"])
 
-    poll_until_condition(
+    utils.poll_until_condition(
         _after_one_block, timeout=10, error_message="timeout not elapsed"
     )
 

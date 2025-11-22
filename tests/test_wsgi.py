@@ -4,7 +4,7 @@ import time
 import requests
 from datetime import datetime, timedelta
 import subprocess
-from utils import poll_until_condition
+from tests import utils
 from pathlib import Path
 
 
@@ -66,7 +66,7 @@ def test_simple_wsgi_example(chainnet, generate_account, faucet, api_address):
         return ready
 
     # Poll until the endpoint is ready
-    poll_until_condition(
+    utils.poll_until_condition(
         check_url_ready,
         timeout=20,
         error_message=f"Endpoint {script_url} not ready after 10 seconds",

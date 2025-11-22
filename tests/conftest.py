@@ -16,7 +16,7 @@ import io
 import signal
 import atexit
 from typing import Dict
-from utils import poll_until_condition
+from tests import utils
 import secrets  # new
 import ast
 import warnings
@@ -429,7 +429,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
         except Exception as e:
             return False
 
-    poll_until_condition(
+    utils.poll_until_condition(
         _ready, timeout=20, poll_interval=1, error_message="Node did not produce blocks"
     )
 
@@ -778,7 +778,7 @@ def node_ready(chainnet):
             print(f"Error getting status: {e}")
             return False
 
-    poll_until_condition(
+    utils.poll_until_condition(
         _ready,
         timeout=5,
         poll_interval=0.3,
@@ -1018,7 +1018,7 @@ def ibc_setup(
         return ibc_proc.poll() is not None
 
     try:
-        poll_until_condition(
+        utils.poll_until_condition(
             _ibc_setup_ready,
             timeout=45,
             poll_interval=1,
@@ -1116,7 +1116,7 @@ def ibc_setup(
         )
         return a_open and b_open
 
-    poll_until_condition(
+    utils.poll_until_condition(
         _transfer_open_on_both,
         timeout=30,
         poll_interval=1,
@@ -1203,7 +1203,7 @@ def update_crontask_params(chainnet):
             return True
         return False
 
-    poll_until_condition(
+    utils.poll_until_condition(
         _updated,
         timeout=10,
         poll_interval=0.5,
