@@ -33,37 +33,35 @@ service Query {
     option (google.api.http).get = "/dysonprotocol/nameservice/v1/params";
   }
 
-  // QueryNamesByDestination queries all names pointing to a destination address
-  rpc QueryNamesByDestination(QueryNamesByDestinationRequest)
+  // NamesByDestination queries all names pointing to a destination address
+  rpc NamesByDestination(QueryNamesByDestinationRequest)
       returns (QueryNamesByDestinationResponse) {
     option (google.api.http).get =
         "/dysonprotocol/nameservice/v1/names_by_destination/{destination}";
   }
 
-  // QueryNFTClassesByName lists NFT class IDs under a given root name
-  rpc QueryNFTClassesByName(QueryNFTClassesByNameRequest)
+  // NFTClassesByName lists NFT class IDs under a given root name
+  rpc NFTClassesByName(QueryNFTClassesByNameRequest)
       returns (QueryNFTClassesByNameResponse) {
     option (google.api.http).get =
         "/dysonprotocol/nameservice/v1/nftclasses_by_name/{name}";
   }
 
-  // QueryDenomByName lists denoms under a given root name along with details
-  rpc QueryDenomByName(QueryDenomByNameRequest)
-      returns (QueryDenomByNameResponse) {
+  // DenomByName lists denoms under a given root name along with details
+  rpc DenomByName(QueryDenomByNameRequest) returns (QueryDenomByNameResponse) {
     option (google.api.http).get =
         "/dysonprotocol/nameservice/v1/denoms_by_name/{name}";
   }
 
-  // QueryBidsByBidder lists bids placed by a bidder across NFTs
-  rpc QueryBidsByBidder(QueryBidsByBidderRequest)
+  // BidsByBidder lists bids placed by a bidder across NFTs
+  rpc BidsByBidder(QueryBidsByBidderRequest)
       returns (QueryBidsByBidderResponse) {
     option (google.api.http).get =
         "/dysonprotocol/nameservice/v1/bids/by_bidder/{bidder}";
   }
 
-  // QueryBidsForNFT lists all bids for a given NFT
-  rpc QueryBidsForNFT(QueryBidsForNFTRequest)
-      returns (QueryBidsForNFTResponse) {
+  // BidsForNFT lists all bids for a given NFT
+  rpc BidsForNFT(QueryBidsForNFTRequest) returns (QueryBidsForNFTResponse) {
     option (google.api.http).get =
         "/dysonprotocol/nameservice/v1/bids/for_nft/{class_id}/{nft_id}";
   }

@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Query_ComputeHash_FullMethodName             = "/dysonprotocol.nameservice.v1.Query/ComputeHash"
-	Query_ResolveName_FullMethodName             = "/dysonprotocol.nameservice.v1.Query/ResolveName"
-	Query_Params_FullMethodName                  = "/dysonprotocol.nameservice.v1.Query/Params"
-	Query_QueryNamesByDestination_FullMethodName = "/dysonprotocol.nameservice.v1.Query/QueryNamesByDestination"
-	Query_QueryNFTClassesByName_FullMethodName   = "/dysonprotocol.nameservice.v1.Query/QueryNFTClassesByName"
-	Query_QueryDenomByName_FullMethodName        = "/dysonprotocol.nameservice.v1.Query/QueryDenomByName"
-	Query_QueryBidsByBidder_FullMethodName       = "/dysonprotocol.nameservice.v1.Query/QueryBidsByBidder"
-	Query_QueryBidsForNFT_FullMethodName         = "/dysonprotocol.nameservice.v1.Query/QueryBidsForNFT"
+	Query_ComputeHash_FullMethodName        = "/dysonprotocol.nameservice.v1.Query/ComputeHash"
+	Query_ResolveName_FullMethodName        = "/dysonprotocol.nameservice.v1.Query/ResolveName"
+	Query_Params_FullMethodName             = "/dysonprotocol.nameservice.v1.Query/Params"
+	Query_NamesByDestination_FullMethodName = "/dysonprotocol.nameservice.v1.Query/NamesByDestination"
+	Query_NFTClassesByName_FullMethodName   = "/dysonprotocol.nameservice.v1.Query/NFTClassesByName"
+	Query_DenomByName_FullMethodName        = "/dysonprotocol.nameservice.v1.Query/DenomByName"
+	Query_BidsByBidder_FullMethodName       = "/dysonprotocol.nameservice.v1.Query/BidsByBidder"
+	Query_BidsForNFT_FullMethodName         = "/dysonprotocol.nameservice.v1.Query/BidsForNFT"
 )
 
 // QueryClient is the client API for Query service.
@@ -42,16 +42,16 @@ type QueryClient interface {
 	ResolveName(ctx context.Context, in *QueryResolveNameRequest, opts ...grpc.CallOption) (*QueryResolveNameResponse, error)
 	// Params queries the nameservice module parameters
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	// QueryNamesByDestination queries all names pointing to a destination address
-	QueryNamesByDestination(ctx context.Context, in *QueryNamesByDestinationRequest, opts ...grpc.CallOption) (*QueryNamesByDestinationResponse, error)
-	// QueryNFTClassesByName lists NFT class IDs under a given root name
-	QueryNFTClassesByName(ctx context.Context, in *QueryNFTClassesByNameRequest, opts ...grpc.CallOption) (*QueryNFTClassesByNameResponse, error)
-	// QueryDenomByName lists denoms under a given root name along with details
-	QueryDenomByName(ctx context.Context, in *QueryDenomByNameRequest, opts ...grpc.CallOption) (*QueryDenomByNameResponse, error)
-	// QueryBidsByBidder lists bids placed by a bidder across NFTs
-	QueryBidsByBidder(ctx context.Context, in *QueryBidsByBidderRequest, opts ...grpc.CallOption) (*QueryBidsByBidderResponse, error)
-	// QueryBidsForNFT lists all bids for a given NFT
-	QueryBidsForNFT(ctx context.Context, in *QueryBidsForNFTRequest, opts ...grpc.CallOption) (*QueryBidsForNFTResponse, error)
+	// NamesByDestination queries all names pointing to a destination address
+	NamesByDestination(ctx context.Context, in *QueryNamesByDestinationRequest, opts ...grpc.CallOption) (*QueryNamesByDestinationResponse, error)
+	// NFTClassesByName lists NFT class IDs under a given root name
+	NFTClassesByName(ctx context.Context, in *QueryNFTClassesByNameRequest, opts ...grpc.CallOption) (*QueryNFTClassesByNameResponse, error)
+	// DenomByName lists denoms under a given root name along with details
+	DenomByName(ctx context.Context, in *QueryDenomByNameRequest, opts ...grpc.CallOption) (*QueryDenomByNameResponse, error)
+	// BidsByBidder lists bids placed by a bidder across NFTs
+	BidsByBidder(ctx context.Context, in *QueryBidsByBidderRequest, opts ...grpc.CallOption) (*QueryBidsByBidderResponse, error)
+	// BidsForNFT lists all bids for a given NFT
+	BidsForNFT(ctx context.Context, in *QueryBidsForNFTRequest, opts ...grpc.CallOption) (*QueryBidsForNFTResponse, error)
 }
 
 type queryClient struct {
@@ -92,50 +92,50 @@ func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts .
 	return out, nil
 }
 
-func (c *queryClient) QueryNamesByDestination(ctx context.Context, in *QueryNamesByDestinationRequest, opts ...grpc.CallOption) (*QueryNamesByDestinationResponse, error) {
+func (c *queryClient) NamesByDestination(ctx context.Context, in *QueryNamesByDestinationRequest, opts ...grpc.CallOption) (*QueryNamesByDestinationResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(QueryNamesByDestinationResponse)
-	err := c.cc.Invoke(ctx, Query_QueryNamesByDestination_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Query_NamesByDestination_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) QueryNFTClassesByName(ctx context.Context, in *QueryNFTClassesByNameRequest, opts ...grpc.CallOption) (*QueryNFTClassesByNameResponse, error) {
+func (c *queryClient) NFTClassesByName(ctx context.Context, in *QueryNFTClassesByNameRequest, opts ...grpc.CallOption) (*QueryNFTClassesByNameResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(QueryNFTClassesByNameResponse)
-	err := c.cc.Invoke(ctx, Query_QueryNFTClassesByName_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Query_NFTClassesByName_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) QueryDenomByName(ctx context.Context, in *QueryDenomByNameRequest, opts ...grpc.CallOption) (*QueryDenomByNameResponse, error) {
+func (c *queryClient) DenomByName(ctx context.Context, in *QueryDenomByNameRequest, opts ...grpc.CallOption) (*QueryDenomByNameResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(QueryDenomByNameResponse)
-	err := c.cc.Invoke(ctx, Query_QueryDenomByName_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Query_DenomByName_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) QueryBidsByBidder(ctx context.Context, in *QueryBidsByBidderRequest, opts ...grpc.CallOption) (*QueryBidsByBidderResponse, error) {
+func (c *queryClient) BidsByBidder(ctx context.Context, in *QueryBidsByBidderRequest, opts ...grpc.CallOption) (*QueryBidsByBidderResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(QueryBidsByBidderResponse)
-	err := c.cc.Invoke(ctx, Query_QueryBidsByBidder_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Query_BidsByBidder_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) QueryBidsForNFT(ctx context.Context, in *QueryBidsForNFTRequest, opts ...grpc.CallOption) (*QueryBidsForNFTResponse, error) {
+func (c *queryClient) BidsForNFT(ctx context.Context, in *QueryBidsForNFTRequest, opts ...grpc.CallOption) (*QueryBidsForNFTResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(QueryBidsForNFTResponse)
-	err := c.cc.Invoke(ctx, Query_QueryBidsForNFT_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Query_BidsForNFT_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -155,16 +155,16 @@ type QueryServer interface {
 	ResolveName(context.Context, *QueryResolveNameRequest) (*QueryResolveNameResponse, error)
 	// Params queries the nameservice module parameters
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	// QueryNamesByDestination queries all names pointing to a destination address
-	QueryNamesByDestination(context.Context, *QueryNamesByDestinationRequest) (*QueryNamesByDestinationResponse, error)
-	// QueryNFTClassesByName lists NFT class IDs under a given root name
-	QueryNFTClassesByName(context.Context, *QueryNFTClassesByNameRequest) (*QueryNFTClassesByNameResponse, error)
-	// QueryDenomByName lists denoms under a given root name along with details
-	QueryDenomByName(context.Context, *QueryDenomByNameRequest) (*QueryDenomByNameResponse, error)
-	// QueryBidsByBidder lists bids placed by a bidder across NFTs
-	QueryBidsByBidder(context.Context, *QueryBidsByBidderRequest) (*QueryBidsByBidderResponse, error)
-	// QueryBidsForNFT lists all bids for a given NFT
-	QueryBidsForNFT(context.Context, *QueryBidsForNFTRequest) (*QueryBidsForNFTResponse, error)
+	// NamesByDestination queries all names pointing to a destination address
+	NamesByDestination(context.Context, *QueryNamesByDestinationRequest) (*QueryNamesByDestinationResponse, error)
+	// NFTClassesByName lists NFT class IDs under a given root name
+	NFTClassesByName(context.Context, *QueryNFTClassesByNameRequest) (*QueryNFTClassesByNameResponse, error)
+	// DenomByName lists denoms under a given root name along with details
+	DenomByName(context.Context, *QueryDenomByNameRequest) (*QueryDenomByNameResponse, error)
+	// BidsByBidder lists bids placed by a bidder across NFTs
+	BidsByBidder(context.Context, *QueryBidsByBidderRequest) (*QueryBidsByBidderResponse, error)
+	// BidsForNFT lists all bids for a given NFT
+	BidsForNFT(context.Context, *QueryBidsForNFTRequest) (*QueryBidsForNFTResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -184,20 +184,20 @@ func (UnimplementedQueryServer) ResolveName(context.Context, *QueryResolveNameRe
 func (UnimplementedQueryServer) Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
 }
-func (UnimplementedQueryServer) QueryNamesByDestination(context.Context, *QueryNamesByDestinationRequest) (*QueryNamesByDestinationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method QueryNamesByDestination not implemented")
+func (UnimplementedQueryServer) NamesByDestination(context.Context, *QueryNamesByDestinationRequest) (*QueryNamesByDestinationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NamesByDestination not implemented")
 }
-func (UnimplementedQueryServer) QueryNFTClassesByName(context.Context, *QueryNFTClassesByNameRequest) (*QueryNFTClassesByNameResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method QueryNFTClassesByName not implemented")
+func (UnimplementedQueryServer) NFTClassesByName(context.Context, *QueryNFTClassesByNameRequest) (*QueryNFTClassesByNameResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NFTClassesByName not implemented")
 }
-func (UnimplementedQueryServer) QueryDenomByName(context.Context, *QueryDenomByNameRequest) (*QueryDenomByNameResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method QueryDenomByName not implemented")
+func (UnimplementedQueryServer) DenomByName(context.Context, *QueryDenomByNameRequest) (*QueryDenomByNameResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DenomByName not implemented")
 }
-func (UnimplementedQueryServer) QueryBidsByBidder(context.Context, *QueryBidsByBidderRequest) (*QueryBidsByBidderResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method QueryBidsByBidder not implemented")
+func (UnimplementedQueryServer) BidsByBidder(context.Context, *QueryBidsByBidderRequest) (*QueryBidsByBidderResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BidsByBidder not implemented")
 }
-func (UnimplementedQueryServer) QueryBidsForNFT(context.Context, *QueryBidsForNFTRequest) (*QueryBidsForNFTResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method QueryBidsForNFT not implemented")
+func (UnimplementedQueryServer) BidsForNFT(context.Context, *QueryBidsForNFTRequest) (*QueryBidsForNFTResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BidsForNFT not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 func (UnimplementedQueryServer) testEmbeddedByValue()               {}
@@ -274,92 +274,92 @@ func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_QueryNamesByDestination_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Query_NamesByDestination_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryNamesByDestinationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).QueryNamesByDestination(ctx, in)
+		return srv.(QueryServer).NamesByDestination(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_QueryNamesByDestination_FullMethodName,
+		FullMethod: Query_NamesByDestination_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).QueryNamesByDestination(ctx, req.(*QueryNamesByDestinationRequest))
+		return srv.(QueryServer).NamesByDestination(ctx, req.(*QueryNamesByDestinationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_QueryNFTClassesByName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Query_NFTClassesByName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryNFTClassesByNameRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).QueryNFTClassesByName(ctx, in)
+		return srv.(QueryServer).NFTClassesByName(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_QueryNFTClassesByName_FullMethodName,
+		FullMethod: Query_NFTClassesByName_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).QueryNFTClassesByName(ctx, req.(*QueryNFTClassesByNameRequest))
+		return srv.(QueryServer).NFTClassesByName(ctx, req.(*QueryNFTClassesByNameRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_QueryDenomByName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Query_DenomByName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryDenomByNameRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).QueryDenomByName(ctx, in)
+		return srv.(QueryServer).DenomByName(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_QueryDenomByName_FullMethodName,
+		FullMethod: Query_DenomByName_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).QueryDenomByName(ctx, req.(*QueryDenomByNameRequest))
+		return srv.(QueryServer).DenomByName(ctx, req.(*QueryDenomByNameRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_QueryBidsByBidder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Query_BidsByBidder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryBidsByBidderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).QueryBidsByBidder(ctx, in)
+		return srv.(QueryServer).BidsByBidder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_QueryBidsByBidder_FullMethodName,
+		FullMethod: Query_BidsByBidder_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).QueryBidsByBidder(ctx, req.(*QueryBidsByBidderRequest))
+		return srv.(QueryServer).BidsByBidder(ctx, req.(*QueryBidsByBidderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_QueryBidsForNFT_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Query_BidsForNFT_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryBidsForNFTRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).QueryBidsForNFT(ctx, in)
+		return srv.(QueryServer).BidsForNFT(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_QueryBidsForNFT_FullMethodName,
+		FullMethod: Query_BidsForNFT_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).QueryBidsForNFT(ctx, req.(*QueryBidsForNFTRequest))
+		return srv.(QueryServer).BidsForNFT(ctx, req.(*QueryBidsForNFTRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -384,24 +384,24 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_Params_Handler,
 		},
 		{
-			MethodName: "QueryNamesByDestination",
-			Handler:    _Query_QueryNamesByDestination_Handler,
+			MethodName: "NamesByDestination",
+			Handler:    _Query_NamesByDestination_Handler,
 		},
 		{
-			MethodName: "QueryNFTClassesByName",
-			Handler:    _Query_QueryNFTClassesByName_Handler,
+			MethodName: "NFTClassesByName",
+			Handler:    _Query_NFTClassesByName_Handler,
 		},
 		{
-			MethodName: "QueryDenomByName",
-			Handler:    _Query_QueryDenomByName_Handler,
+			MethodName: "DenomByName",
+			Handler:    _Query_DenomByName_Handler,
 		},
 		{
-			MethodName: "QueryBidsByBidder",
-			Handler:    _Query_QueryBidsByBidder_Handler,
+			MethodName: "BidsByBidder",
+			Handler:    _Query_BidsByBidder_Handler,
 		},
 		{
-			MethodName: "QueryBidsForNFT",
-			Handler:    _Query_QueryBidsForNFT_Handler,
+			MethodName: "BidsForNFT",
+			Handler:    _Query_BidsForNFT_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
