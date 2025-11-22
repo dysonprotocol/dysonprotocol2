@@ -263,9 +263,13 @@ func (k Keeper) RejectBid(ctx context.Context, msg *nameservicev1.MsgRejectBid) 
 		if gErr == nil {
 			rec.Status = nameservicev1.BidStatus_BID_REJECTED
 			rec.RejectionFee = totalFeeCoins
-			_ = k.bids.Set(ctx, bidID, rec)
+			if err := k.bids.Set(ctx, bidID, rec); err != nil {
+				return nil, cosmossdkerrors.Wrap(err, "failed to update bid status")
+			}
 		}
-		_ = k.activeBidForNFT.Remove(ctx, collections.Join(msg.NftClassId, msg.NftId))
+		if err := k.activeBidForNFT.Remove(ctx, collections.Join(msg.NftClassId, msg.NftId)); err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "failed to remove active bid index")
+		}
 	}
 
 	// Emit an event
@@ -287,6 +291,7 @@ func (k Keeper) RejectBid(ctx context.Context, msg *nameservicev1.MsgRejectBid) 
 		"new_expiry", newExpiryTime.Format(time.RFC3339),
 		"total_fees", totalFeeCoins.String())
 
-	// TODO: after protobuf regeneration, include RejectionFee in response
-	return &nameservicev1.MsgRejectBidResponse{}, nil
+	return &nameservicev1.MsgRejectBidResponse{
+		RejectionFee: totalFeeCoins,
+	}, nil
 }

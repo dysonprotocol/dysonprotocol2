@@ -103,10 +103,16 @@ func (k Keeper) Reveal(ctx context.Context, msg *nameservicev1.MsgReveal) (*name
 	// Calculate and charge the annual fee based on the valuation
 	var fee sdk.Coins
 
-	// Get the annual fee percentage from the NFT class metadata
-	feePercentStr, err := k.GetNamesClassValuationFeePct(ctx)
+	// Get the NFT class data for fee calculation and expiry
+	classData, err := k.GetNFTClassData(ctx, NamesClassID)
 	if err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "failed to get annual percentage for fee calculation")
+		return nil, cosmossdkerrors.Wrap(err, "failed to get nameservice NFT class data for fee calculation")
+	}
+
+	// Get the annual fee percentage from the class data
+	feePercentStr := classData.ValuationFeePct
+	if feePercentStr == "" {
+		feePercentStr = "0"
 	}
 
 	// Convert the percentage string to a decimal
@@ -141,10 +147,6 @@ func (k Keeper) Reveal(ctx context.Context, msg *nameservicev1.MsgReveal) (*name
 	}
 
 	// Create NFT data with expiry based on class valuation_period
-	classData, err := k.GetNFTClassData(ctx, NamesClassID)
-	if err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "failed to get class data for expiry")
-	}
 	period := classData.ValuationPeriod
 	if period <= 0 {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "valuation_period not set for class %s", NamesClassID)

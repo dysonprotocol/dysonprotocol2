@@ -14,7 +14,7 @@ build_tags = netgo
 
 # Coverage: if COVERAGE_PACKAGES is non-empty, coverage is enabled
 # Comma-separated list of packages to include in coverage (can be overridden)
-COVERAGE_PACKAGES ?=
+COVERAGE_PACKAGES ?= dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper
 ifeq ($(LEDGER_ENABLED),true)
   ifeq ($(OS),Windows_NT)
     GCCEXE = $(shell where gcc.exe 2> NUL)
@@ -134,7 +134,7 @@ install: verify-requirements dysvm-assets
 # coverage files before running tests. By default, coverage files are cleaned up.
 CLEAN_COVERAGE ?= 1
 
-test:
+test: install
 	@echo "--> running pytest"
 	@TMP_ROOT=$$(mktemp -d /tmp/dyson-test.XXXXXX); \
 	echo "Using temporary directory: $$TMP_ROOT"; \

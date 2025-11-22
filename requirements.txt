@@ -168,7 +168,6 @@ pytest==7.4.3
     #   pytest-html
     #   pytest-metadata
     #   pytest-playwright
-    #   pytest-random-order
     #   pytest-timeout
     #   pytest-xdist
 pytest-base-url==2.1.0
@@ -180,8 +179,6 @@ pytest-html==4.1.1
 pytest-metadata==3.1.1
     # via pytest-html
 pytest-playwright==0.7.1
-    # via -r requirements.in
-pytest-random-order==1.2.0
     # via -r requirements.in
 pytest-timeout==2.2.0
     # via -r requirements.in

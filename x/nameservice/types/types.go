@@ -16,7 +16,8 @@ var (
 	NameRegex = regexp.MustCompile(NameRegexString)
 
 	// ExternalNameRegex defines the regex for valid external domain names
-	// Must be lowercase alphanumeric with dashes, following domain/subdomain format
+	// Must be lowercase alphanumeric with dashes, optionally following domain/subdomain format
+	// Single words without dots are allowed (e.g., "example", "myapp")
 	// No consecutive dashes allowed
 	ExternalNameRegex = regexp.MustCompile(`^[a-z]([a-z0-9]|-[a-z0-9])*(\.[a-z0-9]([a-z0-9]|-[a-z0-9])*)*$`)
 )

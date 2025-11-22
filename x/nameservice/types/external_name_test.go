@@ -17,9 +17,10 @@ func TestExternalNameRegex(t *testing.T) {
 		{"multiple subdomains", "www.sub.example.com", true},
 		{"domain with numbers", "site1.example2.org", true},
 		{"domain with dashes", "my-site.example-domain.com", true},
-		
+		{"no dots (single word)", "example", true}, // External names can be single words
+		{"single letter", "a", true},               // Minimal valid external name
+
 		// Invalid cases
-		{"no dots", "example", false},
 		{"starts with dot", ".com", false},
 		{"ends with dot", "example.", false},
 		{"starts with dash", "-example.com", false},

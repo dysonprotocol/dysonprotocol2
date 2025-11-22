@@ -28,7 +28,7 @@ func (k Keeper) CreateExternalName(ctx context.Context, msg *nameservicev1.MsgCr
 
 	// Validate name format using ExternalNameRegex
 	if !nameservicev1.ExternalNameRegex.MatchString(msg.Name) {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid external name format: must follow domain/subdomain format (e.g., example.com, sub.domain.org)")
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid external name format: must be lowercase alphanumeric with optional dashes (e.g., example.com, sub.domain.org, example)")
 	}
 
 	// Check if name is already registered

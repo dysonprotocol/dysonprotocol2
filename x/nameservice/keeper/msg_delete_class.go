@@ -43,6 +43,7 @@ func (k Keeper) DeleteClass(ctx context.Context, msg *nameservicev1.MsgDeleteCla
 		&nameservicev1.EventClassDeleted{ClassId: msg.ClassId},
 	); evErr != nil {
 		k.Logger.Error("failed to emit class deleted event", "error", evErr)
+		return nil, cosmossdkerrors.Wrap(evErr, "failed to emit class deleted event")
 	}
 
 	k.Logger.Info("Successfully deleted NFT class",

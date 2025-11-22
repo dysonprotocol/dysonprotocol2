@@ -166,33 +166,3 @@ func (k Keeper) Renew(ctx context.Context, msg *nameservicev1.MsgRenew) (*namese
 		Expiry: newExpiry,
 	}, nil
 }
-
-// GetNamesClassValuationFeePct returns the valuation fee percentage from the NFT class metadata
-func (k Keeper) GetNamesClassValuationFeePct(ctx context.Context) (string, error) {
-	// Ensure the class exists before trying to access its data
-	if !k.nftKeeper.HasClass(ctx, NamesClassID) {
-		// Try to create the class if it doesn't exist
-		if err := k.EnsureNamesClassExists(ctx); err != nil {
-			return "", cosmossdkerrors.Wrap(err, "failed to get nameservice NFT class")
-		}
-
-		// Check again after creation
-		if !k.nftKeeper.HasClass(ctx, NamesClassID) {
-			return "", cosmossdkerrors.Wrap(sdkerrors.ErrNotFound, "nameservice NFT class not found")
-		}
-	}
-
-	// Extract the NFT class data using the centralized GetNFTClassData method
-	nftClassData, err := k.GetNFTClassData(ctx, NamesClassID)
-	if err != nil {
-		return "", cosmossdkerrors.Wrap(err, "nameservice NFT class data error")
-	}
-
-	// If valuation_fee_pct is empty, default to 0
-	if nftClassData.ValuationFeePct == "" {
-		return "0", nil
-	}
-
-	// Return the valuation fee percentage from the class data
-	return nftClassData.ValuationFeePct, nil
-}

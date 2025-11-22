@@ -68,6 +68,7 @@ func (k Keeper) SaveClass(ctx context.Context, msg *nameservicev1.MsgSaveClass) 
 			},
 		); evErr != nil {
 			k.Logger.Error("failed to emit class updated event", "error", evErr)
+			return nil, cosmossdkerrors.Wrap(evErr, "failed to emit class updated event")
 		}
 
 		k.Logger.Info("Successfully updated NFT class",
@@ -122,6 +123,7 @@ func (k Keeper) SaveClass(ctx context.Context, msg *nameservicev1.MsgSaveClass) 
 		&nameservicev1.EventClassSaved{ClassId: msg.ClassId},
 	); evErr != nil {
 		k.Logger.Error("failed to emit class saved event", "error", evErr)
+		return nil, cosmossdkerrors.Wrap(evErr, "failed to emit class saved event")
 	}
 
 	k.Logger.Info("Successfully created NFT class",
