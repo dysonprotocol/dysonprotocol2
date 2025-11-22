@@ -3212,10 +3212,6 @@ paths:
               - BID_REJECTED
               - BID_CLAIMED
           collectionFormat: multi
-        - name: include_nft_status
-          in: query
-          required: false
-          type: boolean
         - name: pagination.key
           in: query
           required: false

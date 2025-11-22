@@ -641,13 +641,6 @@ export class QueryBidsByBidderRequest extends Message<QueryBidsByBidderRequest> 
   statusFilter: BidStatus[] = [];
 
   /**
-   * optional, default true
-   *
-   * @generated from field: bool include_nft_status = 3;
-   */
-  includeNftStatus = false;
-
-  /**
    * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 4;
    */
   pagination?: PageRequest;
@@ -662,7 +655,6 @@ export class QueryBidsByBidderRequest extends Message<QueryBidsByBidderRequest> 
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "bidder", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "status_filter", kind: "enum", T: proto3.getEnumType(BidStatus), repeated: true },
-    { no: 3, name: "include_nft_status", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 4, name: "pagination", kind: "message", T: PageRequest },
   ]);
 

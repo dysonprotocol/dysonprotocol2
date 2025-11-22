@@ -29,10 +29,6 @@
                         "title": "Bid Status",
                         "description": "BidStatus indicates the lifecycle state of a bid"
                     },
-                    "include_nft_status": {
-                        "type": "boolean",
-                        "description": "optional, default true"
-                    },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
                         "additionalProperties": false

@@ -116,6 +116,7 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		&nameservicetypes.QueryNFTClassesByNameRequest{}, &nameservicetypes.QueryNFTClassesByNameResponse{},
 		&nameservicetypes.QueryDenomByNameRequest{}, &nameservicetypes.QueryDenomByNameResponse{},
 		&nameservicetypes.QueryBidsByBidderRequest{}, &nameservicetypes.QueryBidsByBidderResponse{},
+		&nameservicetypes.QueryBidsForNFTRequest{}, &nameservicetypes.QueryBidsForNFTResponse{},
 
 		// storage
 		&storagetypes.QueryStorageGetRequest{}, &storagetypes.QueryStorageGetResponse{},

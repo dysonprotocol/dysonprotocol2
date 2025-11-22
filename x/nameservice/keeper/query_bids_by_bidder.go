@@ -43,7 +43,6 @@ func (k Keeper) BidsByBidder(c context.Context, req *types.QueryBidsByBidderRequ
 
 	// Build response records
 	results := make([]*types.BidWithNFTStatus, 0, len(ids))
-	includeStatus := true // always include for now (proto3 bool lacks presence)
 
 	// Cache per-NFT latest status to avoid repeated keeper calls
 	type nftKey struct{ classID, nftID string }
@@ -55,7 +54,11 @@ func (k Keeper) BidsByBidder(c context.Context, req *types.QueryBidsByBidderRequ
 	for _, id := range ids {
 		rec, gErr := k.bids.Get(c, id)
 		if gErr != nil {
-			continue
+			k.Logger.Error("BidsByBidder: Failed to get bid record",
+				"bid_id", id,
+				"bidder", req.Bidder,
+				"error", gErr)
+			return nil, status.Error(codes.Internal, "failed to retrieve bid record")
 		}
 		if wantFilter {
 			if _, ok := statusSet[rec.Status]; !ok {
@@ -63,30 +66,49 @@ func (k Keeper) BidsByBidder(c context.Context, req *types.QueryBidsByBidderRequ
 			}
 		}
 
+		key := nftKey{classID: rec.ClassId, nftID: rec.NftId}
 		var owner string
 		var data types.NFTData
-		if includeStatus {
-			key := nftKey{classID: rec.ClassId, nftID: rec.NftId}
-			if cached, ok := nftStatus[key]; ok {
-				owner = cached.owner
-				data = cached.data
-			} else {
-				o := k.nftKeeper.GetOwner(c, rec.ClassId, rec.NftId)
-				owner = o.String()
-				d, _ := k.GetNFTData(c, rec.ClassId, rec.NftId)
-				data = d
-				nftStatus[key] = struct {
-					owner string
-					data  types.NFTData
-				}{owner: owner, data: data}
+		if cached, ok := nftStatus[key]; ok {
+			owner = cached.owner
+			data = cached.data
+		} else {
+			if !k.nftKeeper.HasNFT(c, rec.ClassId, rec.NftId) {
+				k.Logger.Error("BidsByBidder: NFT not found for bid",
+					"bid_id", id,
+					"class_id", rec.ClassId,
+					"nft_id", rec.NftId,
+					"bidder", req.Bidder)
+				return nil, status.Error(codes.NotFound, "NFT not found for bid")
 			}
+			o := k.nftKeeper.GetOwner(c, rec.ClassId, rec.NftId)
+			owner = o.String()
+			d, err := k.GetNFTData(c, rec.ClassId, rec.NftId)
+			if err != nil {
+				k.Logger.Error("BidsByBidder: Failed to get NFT data for bid",
+					"bid_id", id,
+					"class_id", rec.ClassId,
+					"nft_id", rec.NftId,
+					"bidder", req.Bidder,
+					"error", err)
+				return nil, status.Error(codes.Internal, "failed to retrieve NFT data for bid")
+			}
+			data = d
+			nftStatus[key] = struct {
+				owner string
+				data  types.NFTData
+			}{owner: owner, data: data}
 		}
 
-		isCurrent := includeStatus && (data.CurrentBidder == rec.Bidder)
+		// Fixed: IsCurrentHighest calculation now correctly checks bid status
+		// A bid is current highest only if:
+		// 1. The bid status is BID_ACTIVE, AND
+		// 2. The bidder matches the current highest bidder
+		// This ensures outbid bids always have IsCurrentHighest=false
+		isCurrent := rec.Status == types.BidStatus_BID_ACTIVE && data.CurrentBidder == rec.Bidder
 		b := &types.BidWithNFTStatus{Bid: rec, NftOwner: owner, Nft: data, IsCurrentHighest: isCurrent}
 		results = append(results, b)
 	}
 
 	return &types.QueryBidsByBidderResponse{Bids: results, Pagination: pageRes}, nil
 }
-
