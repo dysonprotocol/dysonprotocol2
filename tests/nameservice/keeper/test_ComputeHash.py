@@ -13,13 +13,14 @@ import pytest
 from deep_parse import deep_parse
 
 
-def test_compute_hash_success(chainnet, generate_account):
+def test_compute_hash_success(chainnet):
     """Test ComputeHash query successfully computes hash for valid inputs."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    alice_name, alice_addr = generate_account("alice", faucet_amount=1_000_000)
+    # Use hardcoded test address
+    alice_addr = "dys216vwht46aw58efaxx"
 
     name = "testname.dys"
     salt = "randomsalt123"

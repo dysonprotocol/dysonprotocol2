@@ -50,4 +50,3 @@ func (k Keeper) BurnNFT(ctx context.Context, msg *nameservicev1.MsgBurnNFT) (*na
 
 	return &nameservicev1.MsgBurnNFTResponse{}, nil
 }
-
