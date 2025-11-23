@@ -12,10 +12,10 @@ import pytest
 from deep_parse import deep_parse
 
 
-def test_metrics_success_with_storage(chainnet, generate_account):
+def test_metrics_success_with_storage(chainnet):
     """Test Metrics query with owner that has storage entries."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account("metrics_test", faucet_amount=1_000_000)
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -110,12 +110,10 @@ def demo_metrics_with_storage(owner_addr, test_index, test_data):
     ), f"Total bytes mismatch: expected {expected_bytes}, got {metrics_response['total_bytes']}"
 
 
-def test_metrics_empty_address(chainnet, generate_account):
+def test_metrics_empty_address(chainnet):
     """Test Metrics query with owner that has no storage entries."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "metrics_empty", faucet_amount=1_000_000
-    )
+    owner_addr = "dys216vwmdkmdkcsz2qrh"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -185,33 +183,17 @@ def demo_metrics_empty(owner_addr):
     ), f"Min stake should be 0 for 0 bytes, got {metrics_response['min_stake_amount']}"
 
 
-def test_metrics_name_resolution(chainnet, generate_account, register_name):
+def test_metrics_name_resolution(chainnet):
     """Test Metrics query with nameservice name resolution."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account("metrics_name", faucet_amount=1_000_000)
-
-    # Register nameservice name (needs to persist for resolution)
-    ns_name = register_name(dysond, owner_name, owner_addr)
-    set_dest = dysond(
-        "tx",
-        "nameservice",
-        "set-destination",
-        "--name",
-        ns_name,
-        "--destination",
-        owner_addr,
-        "--from",
-        owner_name,
-    )
-    assert (
-        set_dest.get("code", 1) == 0
-    ), f"set-destination failed: {json.dumps(set_dest, indent=2)}"
+    owner_addr = "dys216vwht46aw58efaxx"
 
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
     extra_code = """
 from dys import _msg, _query, get_executor_address
+import re
 
 def _sudo(msg_dict):
     return _msg({
@@ -220,7 +202,49 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_metrics_name_resolution(owner_addr, ns_name, test_index, test_data):
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {"denom": m.group(2), "amount": m.group(1)}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    })
+
+    return name
+
+def demo_metrics_name_resolution(owner_addr, test_index, test_data):
+    # Register name and set destination
+    ns_name = _register_name("test-metrics-name.dys", owner_addr)
+
     # Set storage entry
     _sudo({
         "@type": "/dysonprotocol.storage.v1.MsgStorageSet",
@@ -228,7 +252,7 @@ def demo_metrics_name_resolution(owner_addr, ns_name, test_index, test_data):
         "index": test_index,
         "data": test_data
     })
-    
+
     # Query metrics using nameservice name
     metrics_response = _query({
         "@type": "/dysonprotocol.storage.v1.QueryMetricsRequest",
@@ -241,7 +265,6 @@ def demo_metrics_name_resolution(owner_addr, ns_name, test_index, test_data):
     kwargs = json.dumps(
         {
             "owner_addr": owner_addr,
-            "ns_name": ns_name,
             "test_index": "test/name_metrics",
             "test_data": '{"test": "name"}',
         }
@@ -341,12 +364,10 @@ def demo_metrics_invalid_owner(invalid_owner):
     ), f"Expected resolution error containing 'failed to resolve owner', got: {demo_result['error']}"
 
 
-def test_metrics_stake_calculation(chainnet, generate_account):
+def test_metrics_stake_calculation(chainnet):
     """Test Metrics query calculates min_stake_amount correctly."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "metrics_stake", faucet_amount=1_000_000
-    )
+    owner_addr = "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -443,12 +464,10 @@ def demo_metrics_stake_calculation(owner_addr, test_index, test_data):
     ), f"Min stake mismatch: expected {expected_min_stake} (total_bytes={total_bytes} * multiplier={stake_multiple}), got {min_stake}"
 
 
-def test_metrics_current_stake(chainnet, generate_account):
+def test_metrics_current_stake(chainnet):
     """Test Metrics query retrieves current stake amount from staking module."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "metrics_current_stake", faucet_amount=2_000_000
-    )
+    owner_addr = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 

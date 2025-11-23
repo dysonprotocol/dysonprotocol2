@@ -145,20 +145,14 @@ def demo_pools_by_pair(alice_addr, foo_name, bar_name):
     ), f"Pool missing quote denom {quote}. Denoms: {pool_denoms}"
 
 
-def test_pools_by_pair_no_match(chainnet, leverage_accounts, register_name):
+def test_pools_by_pair_no_match(chainnet):
     """Test PoolsByPair query with no matching pools."""
     dysond = chainnet[0]
-    alice_name = leverage_accounts["alice"]["name"]
-    alice_addr = leverage_accounts["alice"]["addr"]
-
-    # Register names that won't be used in any pool
-    unused_name1 = register_name(dysond, alice_name, alice_addr, valuation="10udys")
-    unused_name2 = register_name(dysond, alice_name, alice_addr, valuation="10udys")
-
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    base, quote = sorted([unused_name1, unused_name2])
+    # Use names that definitely don't exist as pools
+    base, quote = "nonexistent1.dys", "nonexistent2.dys"
 
     extra_code = f"""
 from dys import _query

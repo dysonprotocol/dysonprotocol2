@@ -10,21 +10,19 @@ import json
 from deep_parse import deep_parse
 
 
-def test_delete_class_success(chainnet, generate_account, register_name):
+def test_delete_class_success(chainnet):
     """Test successful NFT class deletion by authorized owner."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    # Create account and register name for class creation
-    owner_name, owner_addr = generate_account("delete_owner", faucet_amount=1_000_000)
-    root_name = register_name(dysond, owner_name, owner_addr, valuation="10udys")
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
 
     # Create a class ID under the registered name
-    class_id = f"{root_name}/testclass"
-
     extra_code = """
 from dys import _msg, _query, get_executor_address
+import re
 
 def _sudo(msg_dict):
     return _msg({
@@ -33,7 +31,49 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_delete_class_success(class_id, root_name, owner_addr):
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {"denom": m.group(2), "amount": m.group(1)}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    })
+
+    return name
+
+def demo_delete_class_success(owner_addr):
+    # Register name and set destination
+    root_name = _register_name("test-delete.dys", owner_addr)
+    class_id = f"{root_name}/testclass"
     # Debug: Check name resolution first
     name_resolution = _query({
         "@type": "/dysonprotocol.nameservice.v1.QueryResolveNameRequest",
@@ -92,11 +132,7 @@ def demo_delete_class_success(class_id, root_name, owner_addr):
     }
 """
 
-    kwargs = json.dumps({
-        "class_id": class_id,
-        "root_name": root_name,
-        "owner_addr": owner_addr
-    })
+    kwargs = json.dumps({"owner_addr": owner_addr})
 
     query_result = dysond(
         "query",

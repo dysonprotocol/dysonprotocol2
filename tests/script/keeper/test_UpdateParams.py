@@ -98,12 +98,8 @@ def demo_update_params_success(gov_addr):
     ), f"Update result missing 'results' key. Keys: {list(update_result.keys())}"
 
     results = update_result["results"]
-    assert isinstance(
-        results, list
-    ), f"Results should be list, got {type(results)}"
-    assert (
-        len(results) == 1
-    ), f"Results should have 1 item, got {len(results)}"
+    assert isinstance(results, list), f"Results should be list, got {type(results)}"
+    assert len(results) == 1, f"Results should have 1 item, got {len(results)}"
 
     result_item = results[0]
     assert isinstance(
@@ -207,12 +203,12 @@ def demo_update_params_invalid_authority(gov_addr):
     ), f"Error message should mention authority, got: {error_msg}"
 
 
-def test_update_params_wrong_authority(chainnet, generate_account):
+def test_update_params_wrong_authority(chainnet):
     """Test UpdateParams fails when authority doesn't match gov module."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
-    wrong_addr_name, wrong_addr = generate_account("wrong_authority", faucet_amount=1_000_000)
+    wrong_addr = "dys216vwht46aw58efaxx"
 
     extra_code = """
 from dys import _msg, get_executor_address
@@ -278,4 +274,3 @@ def demo_update_params_wrong_authority(gov_addr, wrong_addr):
     assert (
         "authority" in error_msg_lower
     ), f"Error message should mention authority, got: {error_msg}"
-

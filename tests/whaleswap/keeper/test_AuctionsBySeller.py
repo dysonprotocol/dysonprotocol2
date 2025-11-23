@@ -151,12 +151,10 @@ def demo_auctions_by_seller_empty():
     ), f"Error should mention seller required. Exception: {exception_str}"
 
 
-def test_auctions_by_seller_no_auctions(chainnet, generate_account, faucet):
+def test_auctions_by_seller_no_auctions(chainnet):
     """Test AuctionsBySeller query for seller with no auctions."""
     dysond = chainnet[0]
-    seller_name, seller_addr = generate_account(
-        "no_auctions_seller", faucet_amount=1_000_000
-    )
+    seller_addr = "dys216vwht46aw58efaxx"
 
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]

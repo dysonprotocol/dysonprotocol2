@@ -12,18 +12,18 @@ import pytest
 from deep_parse import deep_parse
 
 
-def test_mint_success(chainnet, generate_account, register_name):
+def test_mint_success(chainnet):
     """Test Mint successfully mints a new NFT."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    # Create account and register name for class creation
-    owner_name, owner_addr = generate_account("mint_owner", faucet_amount=1_000_000)
-    class_name = register_name(dysond, owner_name, owner_addr, valuation="10udys")
+    # Use hardcoded addresses
+    owner_addr = "dys216vwht46aw58efaxx"
 
     extra_code = """
 from dys import _msg, _query, get_executor_address
+import re
 
 def _sudo(msg_dict):
     return _msg({
@@ -32,7 +32,49 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_mint_success(gov_addr, class_name, owner_addr):
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {"denom": m.group(2), "amount": m.group(1)}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    })
+
+    return name
+
+def demo_mint_success(owner_addr):
+    # Register name and set destination
+    class_name = _register_name("test-mint-collection.dys", owner_addr)
+
     # Create NFT class first
     save_class_result = _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgSaveClass",
@@ -94,8 +136,6 @@ def demo_mint_success(gov_addr, class_name, owner_addr):
 
     kwargs = json.dumps(
         {
-            "gov_addr": gov_addr,
-            "class_name": class_name,
             "owner_addr": owner_addr,
         }
     )
@@ -149,8 +189,8 @@ def demo_mint_success(gov_addr, class_name, owner_addr):
     nft = nft_query["nft"]
     assert isinstance(nft, dict), f"NFT should be dict, got {type(nft)}"
     assert (
-        nft["class_id"] == class_name
-    ), f"NFT class_id mismatch: expected {class_name}, got {nft['class_id']}"
+        nft["class_id"] == demo_result["class_id"]
+    ), f"NFT class_id mismatch: expected {demo_result['class_id']}, got {nft['class_id']}"
     assert (
         nft["id"] == "test-nft-1"
     ), f"NFT id mismatch: expected 'test-nft-1', got {nft['id']}"
@@ -248,24 +288,26 @@ def demo_mint_class_not_exists(gov_addr):
     ), f"Mint should have failed for nonexistent class. Result: {json.dumps(demo_result, indent=2)}"
     error_lower = demo_result["error"].lower()
     # Check for class-related error (either "class not found" or "class not exists")
-    has_class_error = "class" in error_lower and ("not found" in error_lower or "not exists" in error_lower)
+    has_class_error = "class" in error_lower and (
+        "not found" in error_lower or "not exists" in error_lower
+    )
     assert (
         has_class_error is True
     ), f"Error should mention class not found or class not exists. Error: {demo_result['error']}"
 
 
-def test_mint_nft_already_exists(chainnet, generate_account, register_name):
+def test_mint_nft_already_exists(chainnet):
     """Test Mint fails when NFT already exists."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    # Create account and register name for class creation
-    owner_name, owner_addr = generate_account("mint_duplicate_owner", faucet_amount=1_000_000)
-    class_name = register_name(dysond, owner_name, owner_addr, valuation="10udys")
+    # Use hardcoded addresses
+    owner_addr = "dys216vwht46aw58efaxx"
 
     extra_code = """
-from dys import _msg, get_executor_address
+from dys import _msg, _query, get_executor_address
+import re
 
 def _sudo(msg_dict):
     return _msg({
@@ -274,7 +316,49 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_mint_nft_already_exists(gov_addr, class_name, owner_addr):
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {"denom": m.group(2), "amount": m.group(1)}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    })
+
+    return name
+
+def demo_mint_nft_already_exists(owner_addr):
+    # Register name and set destination
+    class_name = _register_name("test-mint-duplicate.dys", owner_addr)
+
     # Create NFT class first
     save_class_result = _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgSaveClass",
@@ -312,8 +396,6 @@ def demo_mint_nft_already_exists(gov_addr, class_name, owner_addr):
 
     kwargs = json.dumps(
         {
-            "gov_addr": gov_addr,
-            "class_name": class_name,
             "owner_addr": owner_addr,
         }
     )
@@ -341,24 +423,26 @@ def demo_mint_nft_already_exists(gov_addr, class_name, owner_addr):
     ), f"Mint should have failed for duplicate NFT. Result: {json.dumps(demo_result, indent=2)}"
     error_lower = demo_result["error"].lower()
     # Check for NFT exists error (either "already exists" or "nft exists")
-    has_nft_exists_error = ("already exists" in error_lower) or ("nft exists" in error_lower)
+    has_nft_exists_error = ("already exists" in error_lower) or (
+        "nft exists" in error_lower
+    )
     assert (
         has_nft_exists_error is True
     ), f"Error should mention already exists or nft exists. Error: {demo_result['error']}"
 
 
-def test_mint_event_emission(chainnet, generate_account, register_name):
+def test_mint_event_emission(chainnet):
     """Test Mint emits EventMint event."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    # Create account and register name for class creation
-    owner_name, owner_addr = generate_account("mint_event_owner", faucet_amount=1_000_000)
-    class_name = register_name(dysond, owner_name, owner_addr, valuation="10udys")
+    # Use hardcoded addresses
+    owner_addr = "dys216vwht46aw58efaxx"
 
     extra_code = """
 from dys import _msg, _query, get_executor_address
+import re
 
 def _sudo(msg_dict):
     return _msg({
@@ -367,7 +451,49 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_mint_event_emission(gov_addr, class_name, owner_addr):
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {"denom": m.group(2), "amount": m.group(1)}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    })
+
+    return name
+
+def demo_mint_event_emission(owner_addr):
+    # Register name and set destination
+    class_name = _register_name("test-mint-event.dys", owner_addr)
+
     # Create NFT class first
     save_class_result = _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgSaveClass",
@@ -401,8 +527,6 @@ def demo_mint_event_emission(gov_addr, class_name, owner_addr):
 
     kwargs = json.dumps(
         {
-            "gov_addr": gov_addr,
-            "class_name": class_name,
             "owner_addr": owner_addr,
         }
     )
@@ -444,18 +568,18 @@ def demo_mint_event_emission(gov_addr, class_name, owner_addr):
     # but that's not directly accessible in the script result structure.
 
 
-def test_mint_total_supply_increment(chainnet, generate_account, register_name):
+def test_mint_total_supply_increment(chainnet):
     """Test Mint increments total supply correctly."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    # Create account and register name for class creation
-    owner_name, owner_addr = generate_account("mint_supply_owner", faucet_amount=1_000_000)
-    class_name = register_name(dysond, owner_name, owner_addr, valuation="10udys")
+    # Use hardcoded addresses
+    owner_addr = "dys216vwht46aw58efaxx"
 
     extra_code = """
 from dys import _msg, _query, get_executor_address
+import re
 
 def _sudo(msg_dict):
     return _msg({
@@ -464,7 +588,49 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_mint_total_supply_increment(gov_addr, class_name, owner_addr):
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {"denom": m.group(2), "amount": m.group(1)}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    })
+
+    return name
+
+def demo_mint_total_supply_increment(owner_addr):
+    # Register name and set destination
+    class_name = _register_name("test-mint-supply.dys", owner_addr)
+
     # Create NFT class first
     save_class_result = _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgSaveClass",
@@ -524,8 +690,6 @@ def demo_mint_total_supply_increment(gov_addr, class_name, owner_addr):
 
     kwargs = json.dumps(
         {
-            "gov_addr": gov_addr,
-            "class_name": class_name,
             "owner_addr": owner_addr,
         }
     )
@@ -600,4 +764,3 @@ def demo_mint_total_supply_increment(gov_addr, class_name, owner_addr):
     assert (
         int(supply_after_second["amount"]) == 2
     ), f"Supply after second mint should be 2, got {supply_after_second['amount']}"
-

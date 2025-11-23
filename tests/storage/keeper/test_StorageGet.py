@@ -11,12 +11,10 @@ import pytest
 from deep_parse import deep_parse
 
 
-def test_storage_get_success(chainnet, generate_account):
+def test_storage_get_success(chainnet):
     """Test StorageGet query with valid owner and index."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_get_test", faucet_amount=1_000_000
-    )
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -115,12 +113,10 @@ def demo_storage_get(owner_addr, test_index, test_data):
     ), f"Data mismatch: expected {expected_data_parsed}, got {entry_data_parsed}"
 
 
-def test_storage_get_with_extract(chainnet, generate_account):
+def test_storage_get_with_extract(chainnet):
     """Test StorageGet query with GJSON extract path."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_get_extract", faucet_amount=1_000_000
-    )
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -202,12 +198,10 @@ def demo_storage_get_extract(owner_addr, test_index, test_data, extract_path):
     ), f"Extracted data mismatch: expected '\"alice\"', got {entry['data']}"
 
 
-def test_storage_get_extract_not_found(chainnet, generate_account):
+def test_storage_get_extract_not_found(chainnet):
     """Test StorageGet query with extract path that doesn't exist."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_get_extract_err", faucet_amount=1_000_000
-    )
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -286,12 +280,10 @@ def demo_storage_get_extract_not_found(owner_addr, test_index, test_data, extrac
     ), f"Expected 'not found' in error, got: {demo_result['error']}"
 
 
-def test_storage_get_not_found(chainnet, generate_account):
+def test_storage_get_not_found(chainnet):
     """Test StorageGet query with non-existent entry."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_get_notfound", faucet_amount=1_000_000
-    )
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -346,12 +338,10 @@ def demo_storage_get_not_found(owner_addr, test_index):
     ), f"Expected 'exist' in error message, got: {demo_result['error']}"
 
 
-def test_storage_get_extract_too_long(chainnet, generate_account):
+def test_storage_get_extract_too_long(chainnet):
     """Test StorageGet query with extract path exceeding 100 character limit."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_get_long_extract", faucet_amount=1_000_000
-    )
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -410,34 +400,16 @@ def demo_storage_get_extract_too_long(owner_addr, test_index, long_extract):
     ), f"Expected extract path length error, got: {demo_result['error']}"
 
 
-def test_storage_get_name_resolution(chainnet, generate_account, register_name):
+def test_storage_get_name_resolution(chainnet):
     """Test StorageGet query with nameservice name resolution."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_get_name", faucet_amount=1_000_000
-    )
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    # Register nameservice name (this needs to persist, so use tx)
-    ns_name = register_name(dysond, owner_name, owner_addr)
-    set_dest = dysond(
-        "tx",
-        "nameservice",
-        "set-destination",
-        "--name",
-        ns_name,
-        "--destination",
-        owner_addr,
-        "--from",
-        owner_name,
-    )
-    assert (
-        set_dest.get("code", 1) == 0
-    ), f"set-destination failed: {json.dumps(set_dest, indent=2)}"
-
     extra_code = """
 from dys import _msg, _query, get_executor_address
+import re
 
 def _sudo(msg_dict):
     return _msg({
@@ -446,7 +418,48 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_storage_get_name_resolution(owner_addr, ns_name, test_index, test_data):
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {"denom": m.group(2), "amount": m.group(1)}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    })
+
+    return name
+
+def demo_storage_get_name_resolution(owner_addr, test_index, test_data):
+    # Register name and set destination
+    ns_name = _register_name("test-storage-name.dys", owner_addr)
     # Set storage entry
     _sudo({
         "@type": "/dysonprotocol.storage.v1.MsgStorageSet",
@@ -461,8 +474,8 @@ def demo_storage_get_name_resolution(owner_addr, ns_name, test_index, test_data)
         "owner": ns_name,
         "index": test_index
     })
-    
-    return {"get_response": get_response}
+
+    return {"ns_name": ns_name, "get_response": get_response}
 """
 
     test_index = "test/name_resolution"
@@ -470,7 +483,6 @@ def demo_storage_get_name_resolution(owner_addr, ns_name, test_index, test_data)
     kwargs = json.dumps(
         {
             "owner_addr": owner_addr,
-            "ns_name": ns_name,
             "test_index": test_index,
             "test_data": test_data,
         }
@@ -574,12 +586,10 @@ def demo_storage_get_invalid_owner(invalid_owner, test_index):
     ), f"Expected resolution error, got: {demo_result['error']}"
 
 
-def test_storage_get_index_normalization(chainnet, generate_account):
+def test_storage_get_index_normalization(chainnet):
     """Test StorageGet query normalizes index by removing owner prefix."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_get_norm", faucet_amount=1_000_000
-    )
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 

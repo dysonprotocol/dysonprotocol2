@@ -93,12 +93,8 @@ def demo_sudo_success(gov_addr):
     ), f"Sudo result missing 'results' key. Keys: {list(sudo_result.keys())}"
 
     results = sudo_result["results"]
-    assert isinstance(
-        results, list
-    ), f"Results should be list, got {type(results)}"
-    assert (
-        len(results) == 1
-    ), f"Results should have 1 item, got {len(results)}"
+    assert isinstance(results, list), f"Results should be list, got {type(results)}"
+    assert len(results) == 1, f"Results should have 1 item, got {len(results)}"
 
     result_item = results[0]
     assert isinstance(
@@ -112,9 +108,7 @@ def demo_sudo_success(gov_addr):
     ), f"Expected MsgUpdateParamsResponse, got {result_item['@type']}"
 
     params = demo_result["params"]
-    assert isinstance(
-        params, dict
-    ), f"Params should be dict, got {type(params)}"
+    assert isinstance(params, dict), f"Params should be dict, got {type(params)}"
     assert (
         "params" in params
     ), f"Params missing 'params' key. Keys: {list(params.keys())}"
@@ -192,12 +186,12 @@ def demo_sudo_invalid_authority(gov_addr):
     ), f"Error message should mention authority, got: {error_msg}"
 
 
-def test_sudo_wrong_authority(chainnet, generate_account):
+def test_sudo_wrong_authority(chainnet):
     """Test Sudo fails when authority doesn't match gov module."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
-    wrong_addr_name, wrong_addr = generate_account("wrong_authority", faucet_amount=1_000_000)
+    wrong_addr = "dys216vwht46aw58efaxx"
 
     extra_code = """
 from dys import _msg, get_executor_address
@@ -406,12 +400,8 @@ def demo_sudo_multiple_messages(gov_addr):
     ), f"Sudo result missing 'results' key. Keys: {list(sudo_result.keys())}"
 
     results = sudo_result["results"]
-    assert isinstance(
-        results, list
-    ), f"Results should be list, got {type(results)}"
-    assert (
-        len(results) == 2
-    ), f"Results should have 2 items, got {len(results)}"
+    assert isinstance(results, list), f"Results should be list, got {type(results)}"
+    assert len(results) == 2, f"Results should have 2 items, got {len(results)}"
 
     for i, result_item in enumerate(results):
         assert isinstance(
@@ -423,4 +413,3 @@ def demo_sudo_multiple_messages(gov_addr):
         assert (
             result_item["@type"] == "/dysonprotocol.script.v1.MsgUpdateParamsResponse"
         ), f"Expected MsgUpdateParamsResponse for item {i}, got {result_item['@type']}"
-

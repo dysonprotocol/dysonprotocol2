@@ -10,14 +10,14 @@ import pytest
 from deep_parse import deep_parse
 
 
-def test_address_metrics_success_zero_state(chainnet, generate_account):
+def test_address_metrics_success_zero_state(chainnet):
     """Test AddressMetrics with valid address returning zero-value metrics."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    # Generate fresh address with no activity
-    _, fresh_addr = generate_account("metrics_fresh", faucet_amount=0)
+    # Use hardcoded address with no activity
+    fresh_addr = "dys216vwht46aw58efaxx"
 
     extra_code = """
 from dys import _query

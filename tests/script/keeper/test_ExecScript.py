@@ -446,33 +446,14 @@ def demo_exec_script_create_empty(gov_addr, script_addr):
     ), f"Script address mismatch. Expected: {new_script_address}, Got: {script_data['address']}"
 
 
-def test_exec_script_script_name_resolution(chainnet, generate_account, register_name):
+def test_exec_script_script_name_resolution(chainnet):
     """Test ExecScript resolves script_name to address and executes script."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    # Generate an account and register a name for the script
-    script_owner_name, script_owner_addr = generate_account(
-        "script_owner", faucet_amount=1_000_000
-    )
-    script_name = register_name(dysond, script_owner_name, script_owner_addr, "10udys")
-
-    # Set destination so name resolves to script_owner_addr
-    set_dest = dysond(
-        "tx",
-        "nameservice",
-        "set-destination",
-        "--name",
-        script_name,
-        "--destination",
-        script_owner_addr,
-        "--from",
-        script_owner_name,
-    )
-    assert (
-        set_dest.get("code", 1) == 0
-    ), f"set-destination failed: {json.dumps(set_dest, indent=2)}"
+    # Use hardcoded addresses for stateless testing
+    script_owner_addr = "dys216vwht46aw58efaxx"
 
     extra_code = f"""
 import json
@@ -485,7 +466,10 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     }})
 
-def demo_exec_script_name_resolution(gov_addr, script_owner_addr, script_name):
+def demo_exec_script_name_resolution(gov_addr, script_owner_addr):
+    # Register name and set destination
+    script_name = _register_name("test-script-name.dys", script_owner_addr)
+
     # Update/create script at script_owner_addr (where script_name resolves to)
     script_code = "def multiply(x, y):\\n    return x * y"
     
@@ -582,42 +566,19 @@ def demo_exec_script_name_resolution(gov_addr, script_owner_addr, script_name):
     ), f"Script address mismatch. Expected: {script_owner_addr}, Got: {demo_result['script_address']}"
 
 
-def test_exec_script_address_name_mismatch(chainnet, generate_account, register_name):
+def test_exec_script_address_name_mismatch(chainnet):
     """Test ExecScript fails when script_address and script_name don't match."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    # Generate an account and register a name
-    script_owner_name, script_owner_addr = generate_account(
-        "script_owner2", faucet_amount=1_000_000
-    )
-    script_name = register_name(dysond, script_owner_name, script_owner_addr, "10udys")
-
-    # Set destination so name resolves to script_owner_addr
-    set_dest = dysond(
-        "tx",
-        "nameservice",
-        "set-destination",
-        "--name",
-        script_name,
-        "--destination",
-        script_owner_addr,
-        "--from",
-        script_owner_name,
-    )
-    assert (
-        set_dest.get("code", 1) == 0
-    ), f"set-destination failed: {json.dumps(set_dest, indent=2)}"
-
-    # Generate a different address
-    address_result = dysond(
-        "q", "auth", "address-bytes-to-string", "0xabcdef", "-o", "json"
-    )
-    different_address = address_result["address_string"]
+    # Use hardcoded addresses
+    script_owner_addr = "dys216vwht46aw58efaxx"
+    different_address = "dys216vwmdkmdkcsz2qrh"
 
     extra_code = f"""
-from dys import _msg, get_executor_address
+from dys import _msg, _query, get_executor_address
+import re
 
 def _sudo(msg_dict):
     return _msg({{
@@ -626,7 +587,49 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     }})
 
-def demo_exec_script_mismatch(gov_addr, script_name, different_addr):
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {{"denom": m.group(2), "amount": m.group(1)}}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({{
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    }})["hex_hash"]
+
+    _sudo({{
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    }})
+
+    _sudo({{
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    }})
+
+    _sudo({{
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    }})
+
+    return name
+
+def demo_exec_script_mismatch(gov_addr, script_owner_addr, different_addr):
+    # Register name and set destination so name resolves to script_owner_addr
+    script_name = _register_name("test-script-mismatch.dys", script_owner_addr)
+
     # Try to execute with mismatched script_address and script_name
     exec_result = _sudo({{
         "@type": "/dysonprotocol.script.v1.MsgExec",
@@ -643,7 +646,7 @@ def demo_exec_script_mismatch(gov_addr, script_name, different_addr):
     kwargs = json.dumps(
         {
             "gov_addr": gov_addr,
-            "script_name": script_name,
+            "script_owner_addr": script_owner_addr,
             "different_addr": different_address,
         }
     )

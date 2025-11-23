@@ -11,12 +11,10 @@ import pytest
 from deep_parse import deep_parse
 
 
-def test_storage_set_metrics_update_entry_update(chainnet, generate_account):
+def test_storage_set_metrics_update_entry_update(chainnet):
     """Test StorageSet updates total_bytes correctly when updating an existing entry."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_set_metrics_update", faucet_amount=1_000_000
-    )
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -108,18 +106,14 @@ def demo_storage_set_metrics_update(owner_addr, index, initial_data, updated_dat
     metrics2 = demo_result["metrics2"]
 
     # Verify initial metrics
-    assert isinstance(
-        metrics1, dict
-    ), f"Metrics1 should be dict, got {type(metrics1)}"
+    assert isinstance(metrics1, dict), f"Metrics1 should be dict, got {type(metrics1)}"
     assert (
         "total_bytes" in metrics1
     ), f"Metrics1 missing 'total_bytes' key. Keys: {list(metrics1.keys())}"
     initial_total_bytes = metrics1["total_bytes"]
 
     # Verify updated metrics
-    assert isinstance(
-        metrics2, dict
-    ), f"Metrics2 should be dict, got {type(metrics2)}"
+    assert isinstance(metrics2, dict), f"Metrics2 should be dict, got {type(metrics2)}"
     assert (
         "total_bytes" in metrics2
     ), f"Metrics2 missing 'total_bytes' key. Keys: {list(metrics2.keys())}"
@@ -138,18 +132,16 @@ def demo_storage_set_metrics_update(owner_addr, index, initial_data, updated_dat
     ), f"Metrics delta mismatch: expected {expected_delta} (updated_size {updated_size} - initial_size {initial_size}), got {actual_delta} (updated_total_bytes {updated_total_bytes} - initial_total_bytes {initial_total_bytes})"
 
 
-def test_storage_set_stake_validation_calculates_total_bytes(chainnet, generate_account):
+def test_storage_set_stake_validation_calculates_total_bytes(chainnet):
     """Test StorageSet stake validation calculates new total bytes correctly.
-    
+
     This test verifies that when StorageSet calculates stake requirements,
     it correctly computes the new total bytes by subtracting old entry size
     and adding new entry size. This calculation happens regardless of whether
     stake validation is enabled or disabled.
     """
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_set_stake_calc", faucet_amount=1_000_000
-    )
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -252,25 +244,19 @@ def demo_storage_set_stake_calc(owner_addr, index1, data1, index2, data2):
     assert isinstance(
         metrics_before, dict
     ), f"Metrics_before should be dict, got {type(metrics_before)}"
-    assert (
-        "total_bytes" in metrics_before
-    ), f"Metrics_before missing 'total_bytes' key"
+    assert "total_bytes" in metrics_before, f"Metrics_before missing 'total_bytes' key"
     total_bytes_before = int(metrics_before["total_bytes"])
 
     assert isinstance(
         metrics_after1, dict
     ), f"Metrics_after1 should be dict, got {type(metrics_after1)}"
-    assert (
-        "total_bytes" in metrics_after1
-    ), f"Metrics_after1 missing 'total_bytes' key"
+    assert "total_bytes" in metrics_after1, f"Metrics_after1 missing 'total_bytes' key"
     total_bytes_after1 = int(metrics_after1["total_bytes"])
 
     assert isinstance(
         metrics_after2, dict
     ), f"Metrics_after2 should be dict, got {type(metrics_after2)}"
-    assert (
-        "total_bytes" in metrics_after2
-    ), f"Metrics_after2 missing 'total_bytes' key"
+    assert "total_bytes" in metrics_after2, f"Metrics_after2 missing 'total_bytes' key"
     total_bytes_after2 = int(metrics_after2["total_bytes"])
 
     data1_size = demo_result["data1_size"]
@@ -293,4 +279,3 @@ def demo_storage_set_stake_calc(owner_addr, index1, data1, index2, data2):
     assert (
         total_bytes_after2 == expected_total
     ), f"Final total mismatch: expected {expected_total}, got {total_bytes_after2}"
-

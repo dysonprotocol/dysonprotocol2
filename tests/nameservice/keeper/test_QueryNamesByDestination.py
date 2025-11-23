@@ -16,13 +16,13 @@ import re
 from deep_parse import deep_parse
 
 
-def test_query_names_by_destination_success(chainnet, generate_account):
+def test_query_names_by_destination_success(chainnet):
     """Test QueryNamesByDestination successfully returns names for a destination."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    alice_name, alice_addr = generate_account("alice", faucet_amount=1_000_000)
+    alice_addr = "dys216vwht46aw58efaxx"
 
     # Create multiple names pointing to alice_addr
     names = []
@@ -153,13 +153,13 @@ def demo_query_names_by_destination(names, alice_addr):
         ), f"Name {name} not found in query result. Got: {names_list}"
 
 
-def test_query_names_by_destination_no_names(chainnet, generate_account):
+def test_query_names_by_destination_no_names(chainnet):
     """Test QueryNamesByDestination returns empty list for destination with no names."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    alice_name, alice_addr = generate_account("alice", faucet_amount=1_000_000)
+    alice_addr = "dys216vwht46aw58efaxx"
 
     extra_code = f"""
 from dys import _query
@@ -206,13 +206,13 @@ def demo_query_names_by_destination_no_names(alice_addr):
     assert len(names_list) == 0, f"Expected empty list, got {len(names_list)} names"
 
 
-def test_query_names_by_destination_pagination_offset(chainnet, generate_account):
+def test_query_names_by_destination_pagination_offset(chainnet):
     """Test QueryNamesByDestination pagination with offset."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    alice_name, alice_addr = generate_account("alice", faucet_amount=1_000_000)
+    alice_addr = "dys216vwht46aw58efaxx"
 
     # Create 5 names
     names = []
@@ -424,13 +424,13 @@ def demo_query_names_invalid_destination():
     ), f"Error message should mention 'valid'. Got: {error_msg}"
 
 
-def test_query_names_by_destination_name_as_destination(chainnet, generate_account):
+def test_query_names_by_destination_name_as_destination(chainnet):
     """Test QueryNamesByDestination with destination as existing name (not Bech32 address)."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    alice_name, alice_addr = generate_account("alice", faucet_amount=1_000_000)
+    alice_addr = "dys216vwht46aw58efaxx"
 
     # Create two names: source_name and dest_name
     source_name = f"test-source-{secrets.token_hex(4)}.dys"
@@ -532,15 +532,13 @@ def demo_query_names_name_as_destination(source_name, dest_name):
     ), f"Source name {source_name} not found in result: {names_list}"
 
 
-def test_query_names_by_destination_pagination_comprehensive(
-    chainnet, generate_account
-):
+def test_query_names_by_destination_pagination_comprehensive(chainnet):
     """Test QueryNamesByDestination comprehensive pagination: offset, key, reverse, count_total."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    alice_name, alice_addr = generate_account("alice", faucet_amount=1_000_000)
+    alice_addr = "dys216vwht46aw58efaxx"
 
     # Create 5 names pointing to alice_addr
     names = []

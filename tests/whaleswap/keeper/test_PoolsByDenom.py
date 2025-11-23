@@ -83,8 +83,12 @@ def demo_pools_by_denom():
     assert isinstance(
         result, dict
     ), f"deep_parse should return dict. Got: {type(result)}; full={json.dumps(query_result, indent=2)}"
-    assert result is not None, f"deep_parse returned None. Full query_result: {json.dumps(query_result, indent=2)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert (
+        result is not None
+    ), f"deep_parse returned None. Full query_result: {json.dumps(query_result, indent=2)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
     assert (
@@ -108,29 +112,32 @@ def demo_pools_by_denom():
     assert isinstance(
         pools_list, list
     ), f"Pools should be list, got {type(pools_list)}. Full response: {json.dumps(pools_resp, indent=2)}"
-    assert len(pools_list) > 0, f"Expected at least one pool. Got: {json.dumps(pools_resp, indent=2)}"
+    assert (
+        len(pools_list) > 0
+    ), f"Expected at least one pool. Got: {json.dumps(pools_resp, indent=2)}"
 
     # Verify the created pool is in the list
     pool_ids = [int(p["pool_id"]) for p in pools_list]
-    assert int(pool_id) in pool_ids, f"Created pool {pool_id} not found in pools list. Pool IDs: {pool_ids}"
+    assert (
+        int(pool_id) in pool_ids
+    ), f"Created pool {pool_id} not found in pools list. Pool IDs: {pool_ids}"
 
     # Verify pool contains the queried denom
     pool = next(p for p in pools_list if int(p["pool_id"]) == int(pool_id))
     pool_denoms = [c["denom"] for c in pool["coins"]]
-    assert foo_name in pool_denoms, f"Pool missing queried denom {foo_name}. Denoms: {pool_denoms}"
+    assert (
+        foo_name in pool_denoms
+    ), f"Pool missing queried denom {foo_name}. Denoms: {pool_denoms}"
 
 
-def test_pools_by_denom_no_match(chainnet, leverage_accounts, register_name):
+def test_pools_by_denom_no_match(chainnet):
     """Test PoolsByDenom query with denom not in any pools."""
     dysond = chainnet[0]
-    alice_name = leverage_accounts["alice"]["name"]
-    alice_addr = leverage_accounts["alice"]["addr"]
-
-    # Register name that won't be used in any pool
-    unused_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
-
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
+
+    # Use a denom that definitely doesn't exist in any pool
+    unused_name = "nonexistent.dys"
 
     extra_code = f"""
 from dys import _query
@@ -166,13 +173,17 @@ def demo_pools_by_denom_no_match():
     pools_resp = demo_result
 
     # Validate response structure
-    assert isinstance(pools_resp, dict), f"PoolsByDenom response should be dict, got {type(pools_resp)}"
+    assert isinstance(
+        pools_resp, dict
+    ), f"PoolsByDenom response should be dict, got {type(pools_resp)}"
     assert "pagination" in pools_resp, f"PoolsByDenom response missing 'pagination' key"
 
     # Validate empty pools list
     pools_list = pools_resp.get("pools", [])
     assert isinstance(pools_list, list), f"Pools should be list, got {type(pools_list)}"
-    assert len(pools_list) == 0, f"Expected empty pools list. Got: {json.dumps(pools_resp, indent=2)}"
+    assert (
+        len(pools_list) == 0
+    ), f"Expected empty pools list. Got: {json.dumps(pools_resp, indent=2)}"
 
 
 def test_pools_by_denom_empty_denom(chainnet):
@@ -217,7 +228,9 @@ def demo_empty_denom():
     ), f"Error should mention denom required. Exception: {exception_str}"
 
 
-def test_pools_by_denom_first_position(chainnet, leverage_accounts, leverage_names_and_coins):
+def test_pools_by_denom_first_position(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
     """Test PoolsByDenom matches denom in first coin position."""
     dysond = chainnet[0]
     alice_name = leverage_accounts["alice"]["name"]
@@ -285,10 +298,14 @@ def demo_pools_by_denom_first():
     pools_list = pools_resp.get("pools", [])
 
     # Should find the pool
-    assert len(pools_list) > 0, f"Expected pool with denom {first_denom} in first position. Got: {json.dumps(pools_resp, indent=2)}"
+    assert (
+        len(pools_list) > 0
+    ), f"Expected pool with denom {first_denom} in first position. Got: {json.dumps(pools_resp, indent=2)}"
 
 
-def test_pools_by_denom_second_position(chainnet, leverage_accounts, leverage_names_and_coins):
+def test_pools_by_denom_second_position(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
     """Test PoolsByDenom matches denom in second coin position."""
     dysond = chainnet[0]
     alice_name = leverage_accounts["alice"]["name"]
@@ -356,5 +373,6 @@ def demo_pools_by_denom_second():
     pools_list = pools_resp.get("pools", [])
 
     # Should find the pool
-    assert len(pools_list) > 0, f"Expected pool with denom {second_denom} in second position. Got: {json.dumps(pools_resp, indent=2)}"
-
+    assert (
+        len(pools_list) > 0
+    ), f"Expected pool with denom {second_denom} in second position. Got: {json.dumps(pools_resp, indent=2)}"

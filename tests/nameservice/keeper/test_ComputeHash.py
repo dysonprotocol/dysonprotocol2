@@ -91,13 +91,14 @@ def demo_compute_hash(name, salt, committer):
     ), f"Hex hash should contain only hex characters, got {hex_hash}"
 
 
-def test_compute_hash_empty_name(chainnet, generate_account):
+def test_compute_hash_empty_name(chainnet):
     """Test ComputeHash query returns error for empty name."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    alice_name, alice_addr = generate_account("alice", faucet_amount=1_000_000)
+    # Use hardcoded test address
+    alice_addr = "dys216vwht46aw58efaxx"
 
     salt = "randomsalt123"
     committer = alice_addr
@@ -147,13 +148,14 @@ def demo_compute_hash_empty_name(salt, committer):
     ), f"Error message should mention 'name cannot be empty'. Got: {error_msg}"
 
 
-def test_compute_hash_empty_salt(chainnet, generate_account):
+def test_compute_hash_empty_salt(chainnet):
     """Test ComputeHash query returns error for empty salt."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    alice_name, alice_addr = generate_account("alice", faucet_amount=1_000_000)
+    # Use hardcoded test address
+    alice_addr = "dys216vwht46aw58efaxx"
 
     name = "testname.dys"
     committer = alice_addr
@@ -260,13 +262,14 @@ def demo_compute_hash_empty_committer(name, salt):
     ), f"Error message should mention 'empty'. Got: {error_msg}"
 
 
-def test_compute_hash_deterministic(chainnet, generate_account):
+def test_compute_hash_deterministic(chainnet):
     """Test ComputeHash returns the same hash for the same inputs."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    alice_name, alice_addr = generate_account("alice", faucet_amount=1_000_000)
+    # Use hardcoded test address
+    alice_addr = "dys216vwht46aw58efaxx"
 
     name = "testname.dys"
     salt = "randomsalt123"

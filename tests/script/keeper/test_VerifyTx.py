@@ -12,12 +12,16 @@ import tempfile
 from deep_parse import deep_parse
 
 
-def test_verify_tx_success(chainnet, generate_account):
+def test_verify_tx_success(chainnet):
     """Test VerifyTx query successfully verifies a valid signed transaction."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
-    [alice_name, alice_address] = generate_account("alice")
+
+    # Use existing alice key
+    alice_name = "alice"
+    alice_key_info = dysond("keys", "show", alice_name)
+    alice_address = alice_key_info["address"]
 
     # Create a signed transaction using CLI (offline, no state changes)
     with tempfile.NamedTemporaryFile(
@@ -125,20 +129,22 @@ def demo_verify_tx():
         ), f"Verify result missing 'signer' key. Keys: {list(verify_result.keys())}"
 
         signer = verify_result["signer"]
-        assert isinstance(
-            signer, str
-        ), f"Signer should be string, got {type(signer)}"
+        assert isinstance(signer, str), f"Signer should be string, got {type(signer)}"
         assert (
             signer == alice_address
         ), f"Expected signer '{alice_address}', got '{signer}'"
 
 
-def test_verify_tx_invalid_signature(chainnet, generate_account):
+def test_verify_tx_invalid_signature(chainnet):
     """Test VerifyTx query handles invalid signature."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
-    [alice_name, alice_address] = generate_account("alice")
+
+    # Use existing alice key
+    alice_name = "alice"
+    alice_key_info = dysond("keys", "show", alice_name)
+    alice_address = alice_key_info["address"]
 
     # Create a signed transaction, then tamper with the signature
     with tempfile.NamedTemporaryFile(
@@ -300,9 +306,7 @@ def demo_verify_invalid_json():
         "error" in demo_result
     ), f"Result missing 'error' key. Keys: {list(demo_result.keys())}"
     error_str = demo_result["error"]
-    assert isinstance(
-        error_str, str
-    ), f"Error should be string, got {type(error_str)}"
+    assert isinstance(error_str, str), f"Error should be string, got {type(error_str)}"
     assert (
         "failed to decode" in error_str.lower()
     ), f"Expected 'failed to decode' in error message, got: {error_str}"
@@ -358,9 +362,7 @@ def demo_verify_empty_json():
         "error" in demo_result
     ), f"Result missing 'error' key. Keys: {list(demo_result.keys())}"
     error_str = demo_result["error"]
-    assert isinstance(
-        error_str, str
-    ), f"Error should be string, got {type(error_str)}"
+    assert isinstance(error_str, str), f"Error should be string, got {type(error_str)}"
     assert (
         "empty" in error_str.lower()
     ), f"Expected 'empty' in error message, got: {error_str}"
@@ -418,9 +420,7 @@ def demo_verify_oversized():
         "error" in demo_result
     ), f"Result missing 'error' key. Keys: {list(demo_result.keys())}"
     error_str = demo_result["error"]
-    assert isinstance(
-        error_str, str
-    ), f"Error should be string, got {type(error_str)}"
+    assert isinstance(error_str, str), f"Error should be string, got {type(error_str)}"
     assert (
         "too large" in error_str.lower()
     ), f"Expected 'too large' in error message, got: {error_str}"
@@ -469,4 +469,3 @@ def demo_verify_nil_request():
     assert (
         demo_result["expected"] is True
     ), f"Expected error handling, but got: {json.dumps(demo_result, indent=2)}"
-

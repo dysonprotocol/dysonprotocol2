@@ -11,18 +11,18 @@ import pytest
 from deep_parse import deep_parse
 
 
-def test_burn_nft_success(chainnet, generate_account, register_name):
+def test_burn_nft_success(chainnet):
     """Test successful NFT burning by authorized owner."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    # Create account and register name for class creation
-    owner_name, owner_addr = generate_account("burn_owner", faucet_amount=1_000_000)
-    class_name = register_name(dysond, owner_name, owner_addr, valuation="10udys")
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
 
     extra_code = """
 from dys import _msg, _query, get_executor_address
+import re
 
 def _sudo(msg_dict):
     return _msg({
@@ -31,7 +31,48 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_burn_nft_success(class_name, owner_addr):
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {"denom": m.group(2), "amount": m.group(1)}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    })
+
+    return name
+
+def demo_burn_nft_success(owner_addr):
+    # Register name and set destination
+    class_name = _register_name("test-burn-success.dys", owner_addr)
     # Create NFT class first
     save_class_result = _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgSaveClass",
@@ -92,7 +133,6 @@ def demo_burn_nft_success(class_name, owner_addr):
 
     kwargs = json.dumps(
         {
-            "class_name": class_name,
             "owner_addr": owner_addr,
         }
     )
@@ -115,74 +155,72 @@ def demo_burn_nft_success(class_name, owner_addr):
 
     # Parse and validate response
     result = deep_parse(query_result)
-    assert isinstance(result, dict), (
-        f"deep_parse should return dict. Got: {type(result)}"
-    )
-    assert "result" in result, (
-        f"result missing 'result' key. Keys: {list(result.keys())}"
-    )
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), (
-        f"demo_result should be dict, got {type(demo_result)}"
-    )
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
 
     # Validate class and NFT setup
-    assert demo_result["class_name"] == class_name
+    assert demo_result["class_name"] == "test-burn-success.dys"
     assert demo_result["nft_id"] == "test-nft-to-burn"
     assert demo_result["owner_addr"] == owner_addr
 
     # Validate NFT existed before burning
     nft_before_burn = demo_result["nft_before_burn"]
-    assert isinstance(nft_before_burn, dict), (
-        f"nft_before_burn should be dict, got {type(nft_before_burn)}"
-    )
-    assert "nft" in nft_before_burn, (
-        f"nft_before_burn should contain nft key, got {list(nft_before_burn.keys())}"
-    )
-    assert nft_before_burn["nft"]["class_id"] == class_name
+    assert isinstance(
+        nft_before_burn, dict
+    ), f"nft_before_burn should be dict, got {type(nft_before_burn)}"
+    assert (
+        "nft" in nft_before_burn
+    ), f"nft_before_burn should contain nft key, got {list(nft_before_burn.keys())}"
+    assert nft_before_burn["nft"]["class_id"] == "test-burn-success.dys"
     assert nft_before_burn["nft"]["id"] == "test-nft-to-burn"
     assert nft_before_burn["nft"]["uri"] == "https://example.com/nft-to-burn"
 
     # Validate burn result
     burn_result = demo_result["burn_result"]
-    assert isinstance(burn_result, dict), (
-        f"burn_result should be dict, got {type(burn_result)}"
-    )
-    assert burn_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse", (
-        f"burn should return sudo response, got {burn_result.get('@type')}"
-    )
-    assert "results" in burn_result, (
-        f"burn should have results, got {list(burn_result.keys())}"
-    )
-    assert len(burn_result["results"]) == 1, (
-        f"burn should have one result, got {len(burn_result['results'])}"
-    )
+    assert isinstance(
+        burn_result, dict
+    ), f"burn_result should be dict, got {type(burn_result)}"
+    assert (
+        burn_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
+    ), f"burn should return sudo response, got {burn_result.get('@type')}"
+    assert (
+        "results" in burn_result
+    ), f"burn should have results, got {list(burn_result.keys())}"
+    assert (
+        len(burn_result["results"]) == 1
+    ), f"burn should have one result, got {len(burn_result['results'])}"
     assert (
         burn_result["results"][0]["@type"]
         == "/dysonprotocol.nameservice.v1.MsgBurnNFTResponse"
-    ), (
-        f"burn should return burn NFT response, got {burn_result['results'][0].get('@type')}"
-    )
+    ), f"burn should return burn NFT response, got {burn_result['results'][0].get('@type')}"
 
     # Validate NFT no longer exists after burning
-    assert not demo_result["nft_after_burn_exists"], (
-        f"NFT should not exist after burning, but it does"
-    )
+    assert not demo_result[
+        "nft_after_burn_exists"
+    ], f"NFT should not exist after burning, but it does"
 
 
-def test_burn_nft_not_found(chainnet, generate_account, register_name):
+def test_burn_nft_not_found(chainnet):
     """Test burning non-existent NFT."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    # Create account and register name for class creation
-    owner_name, owner_addr = generate_account("burn_owner_nf", faucet_amount=1_000_000)
-    class_name = register_name(dysond, owner_name, owner_addr, valuation="10udys")
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
 
     extra_code = """
-from dys import _msg, get_executor_address
+from dys import _msg, _query, get_executor_address
+import re
 
 def _sudo(msg_dict):
     return _msg({
@@ -191,7 +229,48 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_burn_nft_not_found(class_name, owner_addr):
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {"denom": m.group(2), "amount": m.group(1)}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    })
+
+    return name
+
+def demo_burn_nft_not_found(owner_addr):
+    # Register name and set destination
+    class_name = _register_name("test-burn-not-found.dys", owner_addr)
     # Try to burn non-existent NFT - should fail
     burn_result = _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgBurnNFT",
@@ -207,7 +286,6 @@ def demo_burn_nft_not_found(class_name, owner_addr):
 
     kwargs = json.dumps(
         {
-            "class_name": class_name,
             "owner_addr": owner_addr,
         }
     )
@@ -230,38 +308,36 @@ def demo_burn_nft_not_found(class_name, owner_addr):
 
     # Parse and validate error
     result = deep_parse(query_result)
-    assert isinstance(result, dict), (
-        f"deep_parse should return dict. Got: {type(result)}"
-    )
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
 
-    assert "exception" in result, (
-        f"result should have exception. Keys: {list(result.keys())}"
-    )
+    assert (
+        "exception" in result
+    ), f"result should have exception. Keys: {list(result.keys())}"
 
     exception = result["exception"]
-    assert exception["class"] == "DysRuntimeError", (
-        f"should be DysRuntimeError, got {exception['class']}"
-    )
-    assert "NFT not found" in exception["msg"], (
-        f"error should mention NFT not found, got: {exception['msg']}"
-    )
+    assert (
+        exception["class"] == "DysRuntimeError"
+    ), f"should be DysRuntimeError, got {exception['class']}"
+    assert (
+        "NFT not found" in exception["msg"]
+    ), f"error should mention NFT not found, got: {exception['msg']}"
 
 
-def test_burn_nft_unauthorized(chainnet, generate_account, register_name):
+def test_burn_nft_unauthorized(chainnet):
     """Test burning NFT with unauthorized name_destination."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    # Create accounts and register names
-    owner_name, owner_addr = generate_account("burn_owner_auth", faucet_amount=1_000_000)
-    class_name = register_name(dysond, owner_name, owner_addr, valuation="10udys")
-
-    # Create another account that doesn't own the class
-    unauthorized_name, unauthorized_addr = generate_account("unauthorized", faucet_amount=1_000_000)
+    # Use hardcoded test addresses
+    owner_addr = "dys216vwht46aw58efaxx"
+    unauthorized_addr = "dys216vwmdkmdkcsz2qrh"
 
     extra_code = """
 from dys import _msg, _query, get_executor_address
+import re
 
 def _sudo(msg_dict):
     return _msg({
@@ -270,7 +346,49 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_burn_nft_unauthorized(class_name, owner_addr, unauthorized_addr):
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {"denom": m.group(2), "amount": m.group(1)}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    })
+
+    return name
+
+def demo_burn_nft_unauthorized(owner_addr, unauthorized_addr):
+    # Register names for both owner and unauthorized user
+    class_name = _register_name("test-burn-unauth.dys", owner_addr)
+    _register_name("unauth-burn-name.dys", unauthorized_addr)
     # Create NFT class
     save_class_result = _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgSaveClass",
@@ -307,7 +425,6 @@ def demo_burn_nft_unauthorized(class_name, owner_addr, unauthorized_addr):
 
     kwargs = json.dumps(
         {
-            "class_name": class_name,
             "owner_addr": owner_addr,
             "unauthorized_addr": unauthorized_addr,
         }
@@ -331,38 +448,36 @@ def demo_burn_nft_unauthorized(class_name, owner_addr, unauthorized_addr):
 
     # Parse and validate error
     result = deep_parse(query_result)
-    assert isinstance(result, dict), (
-        f"deep_parse should return dict. Got: {type(result)}"
-    )
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
 
-    assert "exception" in result, (
-        f"result should have exception. Keys: {list(result.keys())}"
-    )
+    assert (
+        "exception" in result
+    ), f"result should have exception. Keys: {list(result.keys())}"
 
     exception = result["exception"]
-    assert exception["class"] == "DysRuntimeError", (
-        f"should be DysRuntimeError, got {exception['class']}"
-    )
-    assert "you do not control destination" in exception["msg"], (
-        f"error should mention authorization failure, got: {exception['msg']}"
-    )
+    assert (
+        exception["class"] == "DysRuntimeError"
+    ), f"should be DysRuntimeError, got {exception['class']}"
+    assert (
+        "you do not control destination" in exception["msg"]
+    ), f"error should mention authorization failure, got: {exception['msg']}"
 
 
-def test_burn_nft_invalid_class(chainnet, generate_account, register_name):
+def test_burn_nft_invalid_class(chainnet):
     """Test burning NFT from class not controlled by name_destination."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    # Create two different accounts and names
-    owner1_name, owner1_addr = generate_account("burn_owner1", faucet_amount=1_000_000)
-    class1_name = register_name(dysond, owner1_name, owner1_addr, valuation="10udys")
-
-    owner2_name, owner2_addr = generate_account("burn_owner2", faucet_amount=1_000_000)
-    class2_name = register_name(dysond, owner2_name, owner2_addr, valuation="10udys")
+    # Use hardcoded test addresses
+    owner1_addr = "dys216vwht46aw58efaxx"
+    owner2_addr = "dys216vwmdkmdkcsz2qrh"
 
     extra_code = """
 from dys import _msg, _query, get_executor_address
+import re
 
 def _sudo(msg_dict):
     return _msg({
@@ -371,7 +486,49 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_burn_nft_invalid_class(class1_name, owner1_addr, class2_name, owner2_addr):
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {"denom": m.group(2), "amount": m.group(1)}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    })
+
+    return name
+
+def demo_burn_nft_invalid_class(owner1_addr, owner2_addr):
+    # Register names for both owners
+    class1_name = _register_name("test-burn-cross1.dys", owner1_addr)
+    class2_name = _register_name("test-burn-cross2.dys", owner2_addr)
     # Create first NFT class and mint NFT
     save_class1_result = _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgSaveClass",
@@ -406,9 +563,7 @@ def demo_burn_nft_invalid_class(class1_name, owner1_addr, class2_name, owner2_ad
 
     kwargs = json.dumps(
         {
-            "class1_name": class1_name,
             "owner1_addr": owner1_addr,
-            "class2_name": class2_name,
             "owner2_addr": owner2_addr,
         }
     )
@@ -431,18 +586,18 @@ def demo_burn_nft_invalid_class(class1_name, owner1_addr, class2_name, owner2_ad
 
     # Parse and validate error
     result = deep_parse(query_result)
-    assert isinstance(result, dict), (
-        f"deep_parse should return dict. Got: {type(result)}"
-    )
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
 
-    assert "exception" in result, (
-        f"result should have exception. Keys: {list(result.keys())}"
-    )
+    assert (
+        "exception" in result
+    ), f"result should have exception. Keys: {list(result.keys())}"
 
     exception = result["exception"]
-    assert exception["class"] == "DysRuntimeError", (
-        f"should be DysRuntimeError, got {exception['class']}"
-    )
-    assert "you do not control destination" in exception["msg"], (
-        f"error should mention authorization failure, got: {exception['msg']}"
-    )
+    assert (
+        exception["class"] == "DysRuntimeError"
+    ), f"should be DysRuntimeError, got {exception['class']}"
+    assert (
+        "you do not control destination" in exception["msg"]
+    ), f"error should mention authorization failure, got: {exception['msg']}"

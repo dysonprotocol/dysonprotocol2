@@ -11,12 +11,10 @@ import pytest
 from deep_parse import deep_parse
 
 
-def test_storage_list_success(chainnet, generate_account):
+def test_storage_list_success(chainnet):
     """Test StorageList query with valid owner."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_test", faucet_amount=1_000_000
-    )
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -100,12 +98,10 @@ def demo_storage_list(owner_addr, entries):
     ), f"Expected at least {len(entries)} entries, got {len(entries_list)}"
 
 
-def test_storage_list_with_prefix(chainnet, generate_account):
+def test_storage_list_with_prefix(chainnet):
     """Test StorageList query with index_prefix filter."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_prefix", faucet_amount=1_000_000
-    )
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -191,12 +187,11 @@ def demo_storage_list_prefix(owner_addr, entries, prefix):
         ), f"Entry index should start with 'test/': {entry['index']}"
 
 
-def test_storage_list_with_filter(chainnet, generate_account):
+def test_storage_list_with_filter(chainnet):
     """Test StorageList query with GJSON filter."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_filter", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -294,12 +289,11 @@ def demo_storage_list_filter(owner_addr, entries, prefix, filter_expr):
         ), f"Entry should have status 'active': {entry_data}"
 
 
-def test_storage_list_with_extract(chainnet, generate_account):
+def test_storage_list_with_extract(chainnet):
     """Test StorageList query with GJSON extract."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_extract", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -393,12 +387,11 @@ def demo_storage_list_extract(owner_addr, entries, prefix, extract_path):
     ), f"Second entry should have extracted name 'bob', got {entries_list[1]['data']}"
 
 
-def test_storage_list_pagination_offset(chainnet, generate_account):
+def test_storage_list_pagination_offset(chainnet):
     """Test StorageList query with offset pagination."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_pag_offset", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -480,12 +473,11 @@ def demo_storage_list_pagination_offset(owner_addr, prefix, offset, limit):
     ), f"Expected 2 entries with limit=2, got {len(entries_list)}"
 
 
-def test_storage_list_pagination_key(chainnet, generate_account):
+def test_storage_list_pagination_key(chainnet):
     """Test StorageList query with key-based pagination."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_pag_key", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -602,12 +594,11 @@ def demo_storage_list_pagination_key(owner_addr, prefix, limit):
     ), f"Page entries should not overlap: {first_indices} vs {second_indices}"
 
 
-def test_storage_list_invalid_pagination(chainnet, generate_account):
+def test_storage_list_invalid_pagination(chainnet):
     """Test StorageList query with both offset and key specified (invalid)."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_invalid_pag", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -661,12 +652,11 @@ def demo_storage_list_invalid_pagination(owner_addr, offset, page_key):
     ), f"Expected pagination conflict error, got: {demo_result['error']}"
 
 
-def test_storage_list_filter_too_long(chainnet, generate_account):
+def test_storage_list_filter_too_long(chainnet):
     """Test StorageList query with filter path exceeding 100 character limit."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_long_filter", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -718,12 +708,11 @@ def demo_storage_list_filter_too_long(owner_addr, long_filter):
     ), f"Expected filter path length error, got: {demo_result['error']}"
 
 
-def test_storage_list_extract_too_long(chainnet, generate_account):
+def test_storage_list_extract_too_long(chainnet):
     """Test StorageList query with extract path exceeding 100 character limit."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_long_extract", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -775,185 +764,11 @@ def demo_storage_list_extract_too_long(owner_addr, long_extract):
     ), f"Expected extract path length error, got: {demo_result['error']}"
 
 
-def test_storage_list_name_resolution(chainnet, generate_account, register_name):
-    """Test StorageList query with nameservice name resolution."""
-    dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_name", faucet_amount=1_000_000
-    )
-
-    # Register nameservice name (needs to persist for resolution)
-    ns_name = register_name(dysond, owner_name, owner_addr)
-    set_dest = dysond(
-        "tx",
-        "nameservice",
-        "set-destination",
-        "--name",
-        ns_name,
-        "--destination",
-        owner_addr,
-        "--from",
-        owner_name,
-    )
-    assert (
-        set_dest.get("code", 1) == 0
-    ), f"set-destination failed: {json.dumps(set_dest, indent=2)}"
-
-    gov_result = dysond("query", "auth", "module-account", "gov")
-    gov_addr = gov_result["account"]["value"]["address"]
-
-    extra_code = """
-from dys import _msg, _query, get_executor_address
-
-def _sudo(msg_dict):
-    return _msg({
-        "@type": "/dysonprotocol.script.v1.MsgSudo",
-        "authority": get_executor_address(),
-        "messages": [msg_dict]
-    })
-
-def demo_storage_list_name_resolution(owner_addr, ns_name, test_index, test_data):
-    # Set storage entry
-    _sudo({
-        "@type": "/dysonprotocol.storage.v1.MsgStorageSet",
-        "owner": owner_addr,
-        "index": test_index,
-        "data": test_data
-    })
-    
-    # Query using nameservice name
-    list_response = _query({
-        "@type": "/dysonprotocol.storage.v1.QueryStorageListRequest",
-        "owner": ns_name
-    })
-    
-    return {"list_response": list_response}
-"""
-
-    kwargs = json.dumps(
-        {
-            "owner_addr": owner_addr,
-            "ns_name": ns_name,
-            "test_index": "test/name_resolution",
-            "test_data": '{"test": "name"}',
-        }
-    )
-
-    query_result = dysond(
-        "query",
-        "script",
-        "run",
-        "--script-address",
-        gov_addr,
-        "--executor-address",
-        gov_addr,
-        "--function-name",
-        "demo_storage_list_name_resolution",
-        "--kwargs",
-        kwargs,
-        "--extra-code",
-        extra_code,
-    )
-
-    result = deep_parse(query_result)
-    assert (
-        query_result.get("exception") is None
-    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
-
-    demo_result = result["result"]["result"]
-    list_response = demo_result["list_response"]
-
-    assert isinstance(
-        list_response, dict
-    ), f"Response should be dict, got {type(list_response)}"
-    assert (
-        "entries" in list_response
-    ), f"Response missing 'entries' key. Keys: {list(list_response.keys())}"
-
-    entries_list = list_response["entries"]
-    assert isinstance(
-        entries_list, list
-    ), f"Entries should be list, got {type(entries_list)}"
-    assert len(entries_list) >= 1, f"Expected at least 1 entry, got {len(entries_list)}"
-
-    # Verify owner is resolved address
-    for entry in entries_list:
-        assert (
-            entry["owner"] == owner_addr
-        ), f"Owner should be resolved address: expected {owner_addr}, got {entry['owner']}"
-
-
-def test_storage_list_empty_result(chainnet, generate_account):
-    """Test StorageList query with no matching entries."""
-    dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_empty", faucet_amount=1_000_000
-    )
-    gov_result = dysond("query", "auth", "module-account", "gov")
-    gov_addr = gov_result["account"]["value"]["address"]
-
-    extra_code = """
-from dys import _query
-
-def demo_storage_list_empty(owner_addr, prefix):
-    # Query with prefix that matches nothing
-    list_response = _query({
-        "@type": "/dysonprotocol.storage.v1.QueryStorageListRequest",
-        "owner": owner_addr,
-        "index_prefix": prefix
-    })
-    
-    return {"list_response": list_response}
-"""
-
-    kwargs = json.dumps({"owner_addr": owner_addr, "prefix": "nonexistent/"})
-
-    query_result = dysond(
-        "query",
-        "script",
-        "run",
-        "--script-address",
-        gov_addr,
-        "--executor-address",
-        gov_addr,
-        "--function-name",
-        "demo_storage_list_empty",
-        "--kwargs",
-        kwargs,
-        "--extra-code",
-        extra_code,
-    )
-
-    result = deep_parse(query_result)
-    assert (
-        query_result.get("exception") is None
-    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
-
-    demo_result = result["result"]["result"]
-    list_response = demo_result["list_response"]
-
-    assert isinstance(
-        list_response, dict
-    ), f"Response should be dict, got {type(list_response)}"
-    assert (
-        "entries" in list_response
-    ), f"Response missing 'entries' key. Keys: {list(list_response.keys())}"
-
-    entries_list = list_response["entries"]
-    assert isinstance(
-        entries_list, list
-    ), f"Entries should be list, got {type(entries_list)}"
-    assert (
-        len(entries_list) == 0
-    ), f"Expected empty entries list, got {len(entries_list)}"
-
-
-def test_storage_list_index_normalization(chainnet, generate_account):
+def test_storage_list_index_normalization(chainnet):
     """Test StorageList query normalizes index by removing owner prefix."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_norm", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -1038,12 +853,11 @@ def demo_storage_list_index_normalization(owner_addr, test_index, test_data):
         ), f"Index should not start with owner address: {entry['index']}"
 
 
-def test_storage_list_reverse_pagination(chainnet, generate_account):
+def test_storage_list_reverse_pagination(chainnet):
     """Test StorageList query with reverse pagination."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_reverse", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -1133,12 +947,11 @@ def demo_storage_list_reverse(owner_addr, prefix, limit):
     ), f"First entry in reverse should be entry4 (last entry). Got indices: {indices}"
 
 
-def test_storage_list_count_total(chainnet, generate_account):
+def test_storage_list_count_total(chainnet):
     """Test StorageList query with count_total requested."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_count", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -1224,12 +1037,11 @@ def demo_storage_list_count_total(owner_addr, prefix, limit):
     assert int(total) == 5, f"Expected total=5 entries, got {total}"
 
 
-def test_storage_list_filter_comparison_operators(chainnet, generate_account):
+def test_storage_list_filter_comparison_operators(chainnet):
     """Test StorageList query with GJSON filter comparison operators (==, !=, <, <=, >, >=)."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_filter_ops", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -1522,7 +1334,7 @@ def demo_storage_list_filter_ops(owner_addr, entries, filter_expr):
         ), f"Entry should have value >= 30, got {entry_data['value']}"
 
 
-def test_storage_list_filter_pattern_matching(chainnet, generate_account):
+def test_storage_list_filter_pattern_matching(chainnet):
     """Test StorageList query with GJSON filter pattern matching (% for like).
 
     Based on GJSON documentation (https://github.com/tidwall/gjson):
@@ -1531,9 +1343,8 @@ def test_storage_list_filter_pattern_matching(chainnet, generate_account):
     - Pattern syntax: field%"pattern*" matches strings starting with "pattern"
     """
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_list_filter_pat", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 

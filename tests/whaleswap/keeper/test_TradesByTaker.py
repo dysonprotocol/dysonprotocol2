@@ -186,12 +186,10 @@ def demo_trades_by_taker_empty():
     ), f"Expected 'taker required' error. Exception: {exception_str}"
 
 
-def test_trades_by_taker_no_trades(chainnet, generate_account, faucet):
+def test_trades_by_taker_no_trades(chainnet):
     """Test TradesByTaker query for taker with no trades."""
     dysond = chainnet[0]
-    taker_name, taker_addr = generate_account(
-        "no_trades_taker", faucet_amount=1_000_000
-    )
+    taker_addr = "dys216vwht46aw58efaxx"
 
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]

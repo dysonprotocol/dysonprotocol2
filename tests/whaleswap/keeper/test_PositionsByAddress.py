@@ -181,12 +181,10 @@ def demo_positions_by_address_empty():
     ), f"Expected 'address required' error. Exception: {json.dumps(query_result.get('exception'), indent=2)}"
 
 
-def test_positions_by_address_no_positions(chainnet, generate_account, faucet):
+def test_positions_by_address_no_positions(chainnet):
     """Test PositionsByAddress query for address with no positions."""
     dysond = chainnet[0]
-    taker_name, taker_addr = generate_account(
-        "no_positions_taker", faucet_amount=1_000_000
-    )
+    taker_addr = "dys216vwht46aw58efaxx"
 
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]

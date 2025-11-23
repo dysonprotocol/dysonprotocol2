@@ -11,12 +11,10 @@ import pytest
 from deep_parse import deep_parse
 
 
-def test_storage_delete_success_single(chainnet, generate_account):
+def test_storage_delete_success_single(chainnet):
     """Test StorageDelete deletes single entry successfully."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_delete_single", faucet_amount=1_000_000
-    )
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -150,12 +148,11 @@ def demo_storage_delete_single(owner_addr, test_index, test_data):
     ), f"Entry should not exist after deletion"
 
 
-def test_storage_delete_success_multiple(chainnet, generate_account):
+def test_storage_delete_success_multiple(chainnet):
     """Test StorageDelete deletes multiple entries successfully."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_delete_multiple", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -256,12 +253,11 @@ def demo_storage_delete_multiple(owner_addr, entries):
     ), f"Expected no entries to still exist, got {still_exist}"
 
 
-def test_storage_delete_nonexistent_entry(chainnet, generate_account):
+def test_storage_delete_nonexistent_entry(chainnet):
     """Test StorageDelete handles non-existent entry gracefully (skipped, not error)."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_delete_nonexist", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -324,12 +320,11 @@ def demo_storage_delete_nonexistent(owner_addr, test_index):
     ), f"Expected 'no entries were deleted' error, got: {demo_result['error']}"
 
 
-def test_storage_delete_partial(chainnet, generate_account):
+def test_storage_delete_partial(chainnet):
     """Test StorageDelete handles partial deletion (some exist, some don't)."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_delete_partial", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -416,12 +411,11 @@ def demo_storage_delete_partial(owner_addr, existing_index, existing_data, nonex
     ), f"Expected deleted index {existing_index}, got {deleted_indexes[0]}"
 
 
-def test_storage_delete_empty_indexes(chainnet, generate_account):
+def test_storage_delete_empty_indexes(chainnet):
     """Test StorageDelete error path: empty indexes list."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_delete_empty", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -481,12 +475,11 @@ def demo_storage_delete_empty(owner_addr):
     ), f"Expected 'must specify at least one index' error, got: {demo_result['error']}"
 
 
-def test_storage_delete_no_entries_deleted(chainnet, generate_account):
+def test_storage_delete_no_entries_deleted(chainnet):
     """Test StorageDelete error path: no entries deleted (all non-existent)."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_delete_none", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -547,12 +540,11 @@ def demo_storage_delete_none(owner_addr, indexes):
     ), f"Expected 'no entries were deleted' error, got: {demo_result['error']}"
 
 
-def test_storage_delete_metrics_update(chainnet, generate_account):
+def test_storage_delete_metrics_update(chainnet):
     """Test StorageDelete metrics update: decrements total_bytes correctly."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_delete_metrics", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -656,12 +648,11 @@ def demo_storage_delete_metrics(owner_addr, test_index, test_data):
     ), f"Expected total_bytes after deletion to be 0, got {total_bytes_after}"
 
 
-def test_storage_delete_event_emission(chainnet, generate_account):
+def test_storage_delete_event_emission(chainnet):
     """Test StorageDelete event emission: EventStorageDelete emitted."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_delete_event", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -746,12 +737,11 @@ def demo_storage_delete_event(owner_addr, test_index, test_data):
     ), f"Expected deleted index {test_index}, got {deleted_indexes[0]}"
 
 
-def test_storage_delete_response_fields(chainnet, generate_account):
+def test_storage_delete_response_fields(chainnet):
     """Test StorageDelete response: returns list of successfully deleted indexes."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_delete_response", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -861,9 +851,7 @@ def demo_storage_delete_invalid_owner(invalid_owner, test_index):
         return {"error": str(e)}
 """
 
-    kwargs = json.dumps(
-        {"invalid_owner": "invalid_address", "test_index": "test/key"}
-    )
+    kwargs = json.dumps({"invalid_owner": "invalid_address", "test_index": "test/key"})
 
     query_result = dysond(
         "query",
@@ -904,15 +892,12 @@ def demo_storage_delete_invalid_owner(invalid_owner, test_index):
     ), f"Expected invalid address error (invalid/bech32/decode), got: {demo_result['error']}"
 
 
-def test_storage_delete_ownership_mismatch(chainnet, generate_account):
+def test_storage_delete_ownership_mismatch(chainnet):
     """Test StorageDelete error path: ownership mismatch (entry owned by different address)."""
     dysond = chainnet[0]
-    [owner1_name, owner1_addr] = generate_account(
-        "storage_delete_owner1", faucet_amount=1_000_000
-    )
-    [owner2_name, owner2_addr] = generate_account(
-        "storage_delete_owner2", faucet_amount=1_000_000
-    )
+    # Use hardcoded test addresses
+    owner1_addr = "dys216vwht46aw58efaxx"
+    owner2_addr = "dys216vwmdkmdkcsz2qrh"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -1002,12 +987,11 @@ def demo_storage_delete_ownership_mismatch(owner1_addr, owner2_addr, test_index,
     ), f"Expected ownership/permission error (no entries/cannot delete/permission), got: {demo_result['error']}"
 
 
-def test_storage_delete_multiple_metrics_update(chainnet, generate_account):
+def test_storage_delete_multiple_metrics_update(chainnet):
     """Test StorageDelete metrics update: handles multiple deletions correctly."""
     dysond = chainnet[0]
-    [owner_name, owner_addr] = generate_account(
-        "storage_delete_multi_metrics", faucet_amount=1_000_000
-    )
+    # Use hardcoded test address
+    owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
@@ -1117,7 +1101,6 @@ def demo_storage_delete_multiple_metrics(owner_addr, entries):
     delete_result = demo_result["delete_result"]
     delete_response = delete_result["results"][0]
     deleted_indexes = delete_response["deleted_indexes"]
-    assert (
-        len(deleted_indexes) == len(entries)
+    assert len(deleted_indexes) == len(
+        entries
     ), f"Expected {len(entries)} deleted indexes, got {len(deleted_indexes)}"
-
