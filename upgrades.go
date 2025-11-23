@@ -28,6 +28,20 @@ func (app *DysApp) RegisterUpgradeHandlers() {
 				return newVM, err
 			}
 
+			// Rebuild whaleswap invariants so new pools can be created safely.
+			if report, err := app.WhaleswapKeeper.RebuildModuleInvariants(ctx); err != nil {
+				app.Logger().Error("Whaleswap invariant rebuild failed", "err", err)
+				return newVM, err
+			} else {
+				app.Logger().Info(
+					"Whaleswap invariants rebuilt",
+					"fees_cleared", report.FeesCleared.String(),
+					"burned", report.Burned.String(),
+					"expected_balances", report.Expected.String(),
+					"actual_balances", report.Actual.String(),
+				)
+			}
+
 			app.Logger().Info("Upgrade handler completed", "name", plan.Name, "height", plan.Height)
 			return newVM, nil
 		},

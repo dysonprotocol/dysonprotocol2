@@ -12,6 +12,14 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+// InvariantsRebuildReport captures the actions taken while reconciling module balances.
+type InvariantsRebuildReport struct {
+	FeesCleared sdk.Coins
+	Burned      sdk.Coins
+	Expected    sdk.Coins
+	Actual      sdk.Coins
+}
+
 // AssertInvariants checks orderbook escrow and pfand invariants.
 // - Sum(escrowed have by open normal offers) == module balances per denom
 // - Sum(pfand_locked by open liquid offers) == module pfand balance (per denom)
@@ -118,6 +126,143 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+// RebuildModuleInvariants normalizes whaleswap bookkeeping by clearing stale fee ledgers,
+// burning surplus balances, and ensuring the module account exactly matches on-chain state.
+// It must be invoked from an upgrade handler while the chain is halted.
+func (k Keeper) RebuildModuleInvariants(ctx context.Context) (InvariantsRebuildReport, error) {
+	report := InvariantsRebuildReport{
+		FeesCleared: sdk.NewCoins(),
+		Burned:      sdk.NewCoins(),
+		Expected:    sdk.NewCoins(),
+		Actual:      sdk.NewCoins(),
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(sdkCtx)
+
+	// Zero-out per-pool fee ledgers; they were accumulated under the broken invariant tracking.
+	if err := k.PoolsMap.Walk(ctx, nil, func(id uint64, pool whaleswapv1.Pool) (bool, error) {
+		if len(pool.FeesEarned) == 0 {
+			return false, nil
+		}
+		report.FeesCleared = report.FeesCleared.Add(pool.FeesEarned...)
+		pool.FeesEarned = sdk.NewCoins()
+		if err := k.PoolsMap.Set(ctx, id, pool); err != nil {
+			return true, cosmossdkerrors.Wrapf(err, "clear fees_earned for pool %d", id)
+		}
+		return false, nil
+	}); err != nil {
+		return report, err
+	}
+
+	// Recompute expected requirements from live state.
+	ammRequired, err := k.tallyAMMReserves(ctx)
+	if err != nil {
+		return report, err
+	}
+	escrowRequired, err := k.tallyEscrowRequired(ctx)
+	if err != nil {
+		return report, err
+	}
+	pfandRequired, err := k.tallyPfandRequired(ctx)
+	if err != nil {
+		return report, err
+	}
+	auctionRequired, err := k.tallyAuctionRequired(ctx)
+	if err != nil {
+		return report, err
+	}
+	leverageCollateral, _, _, err := k.tallyLeveragePositions(ctx)
+	if err != nil {
+		return report, err
+	}
+
+	expectedMap := map[string]math.Int{}
+	accumulate := func(coins sdk.Coins) {
+		for _, c := range coins {
+			if !c.Amount.IsPositive() {
+				continue
+			}
+			if cur, ok := expectedMap[c.Denom]; ok {
+				expectedMap[c.Denom] = cur.Add(c.Amount)
+			} else {
+				expectedMap[c.Denom] = c.Amount
+			}
+		}
+	}
+	accumulate(ammRequired)
+	accumulate(escrowRequired)
+	accumulate(pfandRequired)
+	accumulate(auctionRequired)
+	accumulate(leverageCollateral)
+
+	toCoins := func(m map[string]math.Int) sdk.Coins {
+		out := sdk.NewCoins()
+		for denom, amt := range m {
+			if amt.IsPositive() {
+				out = out.Add(sdk.NewCoin(denom, amt))
+			}
+		}
+		return out
+	}
+	report.Expected = toCoins(expectedMap)
+
+	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
+	actual := k.bank.SpendableCoins(ctx, moduleAddr)
+	report.Actual = actual
+
+	denomSet := map[string]struct{}{}
+	for denom := range expectedMap {
+		denomSet[denom] = struct{}{}
+	}
+	for _, coin := range actual {
+		denomSet[coin.Denom] = struct{}{}
+	}
+
+	burn := sdk.NewCoins()
+	deficit := sdk.NewCoins()
+	for denom := range denomSet {
+		expAmt, has := expectedMap[denom]
+		if !has {
+			expAmt = math.NewInt(0)
+		}
+		actAmt := actual.AmountOf(denom)
+		switch {
+		case actAmt.GT(expAmt):
+			burn = burn.Add(sdk.NewCoin(denom, actAmt.Sub(expAmt)))
+		case expAmt.GT(actAmt):
+			deficit = deficit.Add(sdk.NewCoin(denom, expAmt.Sub(actAmt)))
+		}
+	}
+
+	if !deficit.Empty() {
+		return report, cosmossdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "whaleswap module deficit detected: %s", deficit.String())
+	}
+
+	if !burn.Empty() {
+		if err := k.bank.BurnCoins(ctx, whaleswap.ModuleName, burn); err != nil {
+			return report, cosmossdkerrors.Wrap(err, "burn whaleswap excess balances")
+		}
+		report.Burned = burn
+		logger.Info("burned whaleswap excess balances", "coins", burn.String())
+		report.Actual = k.bank.SpendableCoins(ctx, moduleAddr)
+	} else {
+		report.Burned = sdk.NewCoins()
+	}
+
+	if err := k.AssertInvariants(ctx); err != nil {
+		return report, err
+	}
+
+	logger.Info("reconciled whaleswap module balances",
+		"expected", report.Expected.String(),
+		"actual", report.Actual.String(),
+		"fees_cleared", report.FeesCleared.String(),
+		"burned", report.Burned.String(),
+	)
+	return report, nil
 }
 
 // tallyLeveragePositions aggregates leverage-related coin components across all open positions.
