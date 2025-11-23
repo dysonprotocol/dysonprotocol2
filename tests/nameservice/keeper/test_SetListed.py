@@ -246,13 +246,14 @@ def test_set_listed_success_listed_true(chainnet):
     assert len(set_listed_result["results"]) == 1, f"sudo should have one result, got {len(set_listed_result['results'])}"
     assert set_listed_result["results"][0]["@type"] == "/dysonprotocol.nameservice.v1.MsgSetListedResponse", f"sudo should return set listed response, got {set_listed_result['results'][0].get('@type')}"
 
-    # Validate NFT query shows listed status
+    # Validate NFT query shows NFT exists
     nft_query = demo_result["nft_query"]
     assert isinstance(nft_query, dict), f"nft_query should be dict, got {type(nft_query)}"
     assert "nft" in nft_query, f"nft_query should have nft, got {list(nft_query.keys())}"
 
-    nft_data = nft_query["nft"]["data"]["value"]
-    # Note: listed status might be in NFT data or derived from class always_listed
+    nft = nft_query["nft"]
+    assert nft["id"] == "nft1", f"nft ID should match, got {nft['id']}"
+    assert nft["class_id"] == "test-setlisted.dys", f"nft class_id should match, got {nft['class_id']}"
 
 
 def test_set_listed_success_listed_false(chainnet):

@@ -329,6 +329,135 @@ Let's confirm that the destination was correctly set by checking the NFT's URI f
     }
 
 
+## Reverse Name Resolution
+
+The Nameservice module provides a powerful reverse resolution feature that allows you to find all names pointing to a specific destination address.
+
+### Query Names by Destination
+
+The `names-by-destination` query returns all names that resolve to a given destination address. The destination can be either:
+- A Bech32 address (like `dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej`)
+- An existing registered name (like `alice.dys`)
+
+This enables powerful use cases like:
+- Finding all aliases for an account
+- Discovering service endpoints
+- Analyzing name ownership patterns
+
+
+```python
+# Query all names pointing to Alice's address
+! dysond query nameservice names-by-destination "$alice_address" -o json | jq
+```
+
+    {
+      "names": [
+        "alice.dys"
+      ],
+      "pagination": {
+        "total": "1"
+      }
+    }
+
+
+### Advanced Usage with Pagination
+
+For destinations with many names, use pagination to handle large result sets efficiently.
+
+
+```python
+# Query with pagination (limit 2, offset 0)
+! dysond query nameservice names-by-destination "$alice_address" \
+    --limit 2 \
+    --offset 0 \
+    -o json | jq
+```
+
+    {
+      "names": [
+        "alice.dys",
+        "alice-alias.dys"
+      ],
+      "pagination": {
+        "next_key": "base64encodedkey",
+        "total": "5"
+      }
+    }
+
+# Query next page using key-based pagination
+! dysond query nameservice names-by-destination "$alice_address" \
+    --limit 2 \
+    --key "base64encodedkey" \
+    -o json | jq
+```
+
+### Names Pointing to Other Names
+
+A powerful feature is that destinations can be names themselves, creating chains of resolution:
+
+
+```python
+# Set up a chain: service-alias -> alice.dys -> alice_address
+
+# First register service-alias
+service_alias = "service-alias.dys"
+# ... commit/reveal process ...
+
+# Point service-alias to alice.dys (another name)
+! dysond tx nameservice set-destination \
+    --name "$service_alias" \
+    --destination "$name" \
+    --from alice \
+    -y
+
+# Now query names pointing to alice.dys
+! dysond query nameservice names-by-destination "$name" -o json | jq
+```
+
+    {
+      "names": [
+        "service-alias.dys"
+      ],
+      "pagination": {
+        "total": "1"
+      }
+    }
+
+# Query names pointing to alice_address (includes both direct and indirect names)
+! dysond query nameservice names-by-destination "$alice_address" -o json | jq
+```
+
+    {
+      "names": [
+        "alice.dys",
+        "service-alias.dys"
+      ],
+      "pagination": {
+        "total": "2"
+      }
+    }
+```
+
+
+## Name Resolution vs Reverse Resolution
+
+The Nameservice module supports both forward and reverse name resolution:
+
+### Forward Resolution (Name → Address)
+```bash
+dysond query nameservice resolve "$name"
+# Returns: destination address
+```
+
+### Reverse Resolution (Address → Names)
+```bash
+dysond query nameservice names-by-destination "$address"
+# Returns: list of all names pointing to this address
+```
+
+This bidirectional resolution enables comprehensive name management and service discovery capabilities.
+
+
 # Update your script to serve the DWapp
 Use the following command to update the script to serve the DWapp.
 
@@ -1069,6 +1198,63 @@ print("NFT class with new extra data:")
     }
 
 
+## NFT Burning
+
+Class owners can permanently destroy NFTs in their collections using the BurnNFT operation. This provides namespace administrators with control over their digital assets.
+
+### Burning an NFT
+
+Only the destination of the class (the account that controls the root name) can burn NFTs within that class. This gives class owners broad authority over their namespace, including the ability to remove any NFT from their collections.
+
+
+```python
+# Burn the NFT we created earlier
+[txhash] = ! dysond tx nameservice burn-nft \
+    --class-id="$name" \
+    --nft-id="$nft_id" \
+    --name-destination="$alice_address" \
+    --from=alice \
+    -y -o json | jq -r .txhash ; sleep 0.01
+
+print(f"Transaction hash: {txhash}")
+tx_result = ! dysond query wait-tx $txhash -o json
+tx_result = json.loads("".join(tx_result))
+
+print(f"Tx error code: {tx_result['code']}")
+assert tx_result['code'] == 0, f"Tx failed with code {tx_result['code']}, {tx_result['raw_log']}"
+
+for event in tx_result['events']:
+    if 'dysonprotocol' in event['type']:
+        print(json.dumps(event, indent=2))
+
+# Verify the NFT is gone
+! dysond query nft nft "$name" "$nft_id" 2>/dev/null || echo "NFT successfully burned - no longer exists"
+```
+
+    Transaction hash: 3A1B2C3D4E5F6789...
+
+    Tx error code: 0
+    {
+      "type": "dysonprotocol.nameservice.v1.EventNFTBurned",
+      "attributes": [
+        {
+          "key": "class_id",
+          "value": "\"alice-ly0wx.dys\"",
+          "index": true
+        },
+        {
+          "key": "nft_id",
+          "value": "\"nft1\"",
+          "index": true
+        }
+      ]
+    }
+
+    NFT successfully burned - no longer exists
+
+Burned NFTs are permanently removed from the blockchain and cannot be recovered.
+
+
 ## Custom Coin Operations
 
 Dyson Protocol allows name owners to mint custom coins using their registered names as denominations.
@@ -1448,6 +1634,66 @@ assert nft_owner == bob_address, "Expected 'alice' in output, got: " + nft_owner
     dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el
 
 
+## Denom Metadata Management
+
+The Nameservice module provides governance-controlled denom metadata management for custom tokens created through name-based denominations.
+
+### Setting Denom Metadata
+
+Governance can set comprehensive metadata for custom denominations, including display names, symbols, descriptions, and denomination units. This enables rich token metadata for name-based coins.
+
+```python
+# Set comprehensive metadata for a custom denom
+denom_metadata = {
+    "base": name,  # The full denom name (e.g., "alice-token.dys")
+    "display": base_name,  # Display name (e.g., "alice-token")
+    "symbol": symbol_name,  # Symbol (e.g., "ALICE-TOKEN")
+    "name": "Alice's Custom Token",  # Human-readable name
+    "description": "A custom token created by Alice using Dyson Protocol nameservice",
+    "uri": "https://alice-tokens.example.com/metadata",
+    "uri_hash": "",
+    "denom_units": [
+        {
+            "denom": name,  # Base unit (full denom)
+            "exponent": 0,
+            "aliases": []
+        },
+        {
+            "denom": base_name,  # Display unit
+            "exponent": 6,  # 6 decimal places
+            "aliases": []
+        }
+    ]
+}
+
+# Only governance can set denom metadata
+[txhash] = ! dysond tx nameservice set-denom-metadata \
+    --authority "$gov_addr" \
+    --metadata "$denom_metadata" \
+    --from gov \
+    -y -o json | jq -r .txhash
+
+print(f"Transaction hash: {txhash}")
+tx_result = ! dysond query wait-tx $txhash -o json
+tx_result = json.loads("".join(tx_result))
+
+assert tx_result['code'] == 0, f"Tx failed: {tx_result['raw_log']}"
+
+# Verify metadata was set
+! dysond query bank denom-metadata "$name" -o json | jq
+```
+
+The denom metadata includes:
+- **Base**: The full denomination string (required)
+- **Display**: Human-readable display name
+- **Symbol**: Token symbol for exchanges
+- **Name**: Full token name
+- **Description**: Detailed token description
+- **URI**: Link to additional metadata or logo
+- **Denom Units**: Conversion rates between base and display units
+
+This metadata enhances the usability of custom tokens by providing rich information for wallets, exchanges, and dApps.
+
 ## Conclusion
 
 This guide has demonstrated the key features of the Dyson Protocol Nameservice Module. We've covered:
@@ -1457,6 +1703,7 @@ This guide has demonstrated the key features of the Dyson Protocol Nameservice M
 3. Creating NFT collections and minting NFTs
 4. Managing metadata for NFTs and collections
 5. Minting custom coins with name-based denominations
-6. Trading names through a bidding system
+6. Setting comprehensive denom metadata for custom tokens
+7. Trading names through a bidding system
 
 These capabilities enable a powerful decentralized namespace system that integrates with NFTs and custom tokens, forming a foundation for various applications on the Dyson Protocol blockchain.

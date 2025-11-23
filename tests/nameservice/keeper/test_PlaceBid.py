@@ -119,36 +119,39 @@ def _set_nft_valuation(class_id, nft_id, owner, valuation):
     })
 
 
-def demo_place_bid_success(bidder_addr, owner_addr, class_id="test-placebid.dys", nft_id="nft1", bid_amount="15udys"):
-    # Setup: Create NFT class and mint NFT
-    _create_nft_class_and_mint_nft(class_id, nft_id, owner_addr)
-
-    # Set NFT as listed
-    _set_nft_listed(class_id, nft_id, owner_addr, True)
-
-    # Set a valuation
-    _set_nft_valuation(class_id, nft_id, owner_addr, "10udys")
-
-    # Place bid
-    result = _sudo({
-        "@type": "/dysonprotocol.nameservice.v1.MsgPlaceBid",
-        "bidder": bidder_addr,
-        "nft_class_id": class_id,
-        "nft_id": nft_id,
-        "bid_amount": _parse_coin(bid_amount),
+def _setup_class_and_nft(root_name, nft_id, owner):
+    class_id = root_name
+    # Create NFT class
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSaveClass",
+        "name_destination": owner,
+        "class_id": class_id,
+        "name": root_name,
+        "symbol": "TEST",
+        "description": "Test class for PlaceBid",
+        "uri": "",
+        "uri_hash": "",
     })
 
-    # Query the bid
-    bid_query = _query({
-        "@type": "/dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
+    # Now mint the NFT
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgMintNFT",
+        "name_destination": owner,
         "class_id": class_id,
         "nft_id": nft_id,
+        "uri": "",
+        "uri_hash": "",
     })
 
-    return {
-        "place_bid_result": result,
-        "bid_query": bid_query,
-    }
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetListed",
+        "nft_owner": owner,
+        "nft_class_id": class_id,
+        "nft_id": nft_id,
+        "listed": True,
+    })
+
+    return class_id
 
 
 def demo_place_bid_nft_not_listed(bidder_addr, owner_addr):
@@ -257,18 +260,79 @@ def demo_place_bid_outbid_existing(bidder_addr, owner_addr, competitor_addr):
 """
 
 
+def _random_root_name():
+    return f"placebid-{secrets.token_hex(4)}.dys"
+
+
+def _assert_query_response(query_result):
+    parsed = deep_parse(query_result)
+    assert query_result.get("exception") is None, (
+        f"Script exception: {json.dumps(query_result.get('exception'), indent=2)}"
+    )
+    demo_result = parsed["result"]["result"]
+    assert isinstance(demo_result, dict), (
+        f"Expected dict, got {type(demo_result)} full={json.dumps(demo_result, indent=2)}"
+    )
+    return demo_result
+
+
 def test_place_bid_success(chainnet):
     """Test successful bid placement on a listed NFT."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    bidder_addr = get_test_address(dysond, "0x111111")
-    owner_addr = get_test_address(dysond, "0x222222")
+    # Use existing test keys
+    alice_info = dysond("keys", "show", "alice", "--keyring-backend", "test", "--output", "json")
+    owner_addr = alice_info["address"]
+    bob_info = dysond("keys", "show", "bob", "--keyring-backend", "test", "--output", "json")
+    bidder_addr = bob_info["address"]
+    root_name = _random_root_name()
+    nft_id = "nft1"
 
-    extra_code = BASE_EXTRA_CODE
+    extra_code = (
+        BASE_EXTRA_CODE
+        + """
+def demo_place_bid_success(root_name, nft_id, owner_addr, bidder_addr):
+    _register_root_name(root_name, owner_addr)
+    class_id = _setup_class_and_nft(root_name, nft_id, owner_addr)
 
-    kwargs = json.dumps({"bidder_addr": bidder_addr, "owner_addr": owner_addr})
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetValuation",
+        "owner": owner_addr,
+        "nft_class_id": class_id,
+        "nft_id": nft_id,
+        "valuation": _parse_coin("10udys"),
+        "max_valuation_fee_pct": "1.0",
+    })
+
+    place_bid_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgPlaceBid",
+        "bidder": bidder_addr,
+        "nft_class_id": class_id,
+        "nft_id": nft_id,
+        "bid_amount": _parse_coin("15udys"),
+    })
+
+    bid_query = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryBidsForNFTRequest",
+        "class_id": class_id,
+        "nft_id": nft_id,
+    })
+
+    return {
+        "place_bid_result": place_bid_result,
+        "bid_query": bid_query,
+    }
+"""
+    )
+
+    kwargs = json.dumps({
+        "root_name": root_name,
+        "nft_id": nft_id,
+        "owner_addr": owner_addr,
+        "bidder_addr": bidder_addr
+    })
 
     query_result = dysond(
         "query",
@@ -286,12 +350,7 @@ def test_place_bid_success(chainnet):
         extra_code,
     )
 
-    result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
-
-    demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"demo_result should be dict, got {type(demo_result)}"
+    demo_result = _assert_query_response(query_result)
 
     # Validate place bid result
     place_bid_result = demo_result["place_bid_result"]
@@ -308,8 +367,8 @@ def test_place_bid_success(chainnet):
 
     bid = bid_query["bids"][0]
     assert bid["bidder"] == bidder_addr, f"bidder should match, got {bid['bidder']}"
-    assert bid["bid_amount"]["denom"] == "udys", f"bid denom should be udys, got {bid['bid_amount']['denom']}"
-    assert bid["bid_amount"]["amount"] == "15", f"bid amount should be 15, got {bid['bid_amount']['amount']}"
+    assert bid["amount"]["denom"] == "udys", f"bid denom should be udys, got {bid['amount']['denom']}"
+    assert bid["amount"]["amount"] == "15", f"bid amount should be 15, got {bid['amount']['amount']}"
 
 
 def test_place_bid_nft_not_listed(chainnet):
