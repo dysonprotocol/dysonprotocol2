@@ -306,6 +306,209 @@ export class QueryTasksResponse extends Message<QueryTasksResponse> {
 
 /**
  *
+ * QueryTasksByAddressResponse is the response type for the Query/TasksByAddress
+ * RPC method.
+ *
+ * @generated from message dysonprotocol.crontask.v1.QueryTasksByAddressResponse
+ */
+export class QueryTasksByAddressResponse extends Message<QueryTasksByAddressResponse> {
+  /**
+   * List of tasks created by the specified address, ordered by task ID.
+   *
+   * @generated from field: repeated dysonprotocol.crontask.v1.Task tasks = 1;
+   */
+  tasks: Task[] = [];
+
+  /**
+   * Pagination metadata for result set navigation.
+   *
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryTasksByAddressResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.crontask.v1.QueryTasksByAddressResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "tasks", kind: "message", T: Task, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryTasksByAddressResponse {
+    return new QueryTasksByAddressResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryTasksByAddressResponse {
+    return new QueryTasksByAddressResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryTasksByAddressResponse {
+    return new QueryTasksByAddressResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryTasksByAddressResponse | PlainMessage<QueryTasksByAddressResponse> | undefined, b: QueryTasksByAddressResponse | PlainMessage<QueryTasksByAddressResponse> | undefined): boolean {
+    return proto3.util.equals(QueryTasksByAddressResponse, a, b);
+  }
+}
+
+/**
+ *
+ * QueryTasksByStatusTimestampResponse is the response type for the
+ * Query/TasksByStatusTimestamp RPC method.
+ *
+ * @generated from message dysonprotocol.crontask.v1.QueryTasksByStatusTimestampResponse
+ */
+export class QueryTasksByStatusTimestampResponse extends Message<QueryTasksByStatusTimestampResponse> {
+  /**
+   * List of tasks with the specified status, ordered by scheduled timestamp.
+   *
+   * @generated from field: repeated dysonprotocol.crontask.v1.Task tasks = 1;
+   */
+  tasks: Task[] = [];
+
+  /**
+   * Pagination metadata for result set navigation.
+   *
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryTasksByStatusTimestampResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.crontask.v1.QueryTasksByStatusTimestampResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "tasks", kind: "message", T: Task, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryTasksByStatusTimestampResponse {
+    return new QueryTasksByStatusTimestampResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryTasksByStatusTimestampResponse {
+    return new QueryTasksByStatusTimestampResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryTasksByStatusTimestampResponse {
+    return new QueryTasksByStatusTimestampResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryTasksByStatusTimestampResponse | PlainMessage<QueryTasksByStatusTimestampResponse> | undefined, b: QueryTasksByStatusTimestampResponse | PlainMessage<QueryTasksByStatusTimestampResponse> | undefined): boolean {
+    return proto3.util.equals(QueryTasksByStatusTimestampResponse, a, b);
+  }
+}
+
+/**
+ *
+ * QueryTasksByStatusGasPriceResponse is the response type for the
+ * Query/TasksByStatusGasPrice RPC method.
+ *
+ * @generated from message dysonprotocol.crontask.v1.QueryTasksByStatusGasPriceResponse
+ */
+export class QueryTasksByStatusGasPriceResponse extends Message<QueryTasksByStatusGasPriceResponse> {
+  /**
+   * List of tasks with the specified status, ordered by gas price.
+   *
+   * @generated from field: repeated dysonprotocol.crontask.v1.Task tasks = 1;
+   */
+  tasks: Task[] = [];
+
+  /**
+   * Pagination metadata for result set navigation.
+   *
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryTasksByStatusGasPriceResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.crontask.v1.QueryTasksByStatusGasPriceResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "tasks", kind: "message", T: Task, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryTasksByStatusGasPriceResponse {
+    return new QueryTasksByStatusGasPriceResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryTasksByStatusGasPriceResponse {
+    return new QueryTasksByStatusGasPriceResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryTasksByStatusGasPriceResponse {
+    return new QueryTasksByStatusGasPriceResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryTasksByStatusGasPriceResponse | PlainMessage<QueryTasksByStatusGasPriceResponse> | undefined, b: QueryTasksByStatusGasPriceResponse | PlainMessage<QueryTasksByStatusGasPriceResponse> | undefined): boolean {
+    return proto3.util.equals(QueryTasksByStatusGasPriceResponse, a, b);
+  }
+}
+
+/**
+ *
+ * QueryTasksAllResponse is the response type for the Query/TasksAll RPC method.
+ *
+ * @generated from message dysonprotocol.crontask.v1.QueryTasksAllResponse
+ */
+export class QueryTasksAllResponse extends Message<QueryTasksAllResponse> {
+  /**
+   * List of all tasks in the system, ordered by task ID ascending.
+   *
+   * @generated from field: repeated dysonprotocol.crontask.v1.Task tasks = 1;
+   */
+  tasks: Task[] = [];
+
+  /**
+   * Pagination metadata for result set navigation.
+   *
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QueryTasksAllResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.crontask.v1.QueryTasksAllResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "tasks", kind: "message", T: Task, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryTasksAllResponse {
+    return new QueryTasksAllResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryTasksAllResponse {
+    return new QueryTasksAllResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryTasksAllResponse {
+    return new QueryTasksAllResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QueryTasksAllResponse | PlainMessage<QueryTasksAllResponse> | undefined, b: QueryTasksAllResponse | PlainMessage<QueryTasksAllResponse> | undefined): boolean {
+    return proto3.util.equals(QueryTasksAllResponse, a, b);
+  }
+}
+
+/**
+ *
  * QueryParamsRequest is the request type for the Query/Params RPC method.
  * Empty request body as parameters are retrieved from module state.
  *
@@ -462,11 +665,11 @@ export class QueryMetricsResponse extends Message<QueryMetricsResponse> {
 
 /**
  *
- * QueryAllTasksRequest is the request type for the Query/TasksAll RPC method.
+ * QueryTasksAllRequest is the request type for the Query/TasksAll RPC method.
  *
- * @generated from message dysonprotocol.crontask.v1.QueryAllTasksRequest
+ * @generated from message dysonprotocol.crontask.v1.QueryTasksAllRequest
  */
-export class QueryAllTasksRequest extends Message<QueryAllTasksRequest> {
+export class QueryTasksAllRequest extends Message<QueryTasksAllRequest> {
   /**
    * Standard pagination parameters; results ordered by task ID ascending.
    *
@@ -474,31 +677,31 @@ export class QueryAllTasksRequest extends Message<QueryAllTasksRequest> {
    */
   pagination?: PageRequest;
 
-  constructor(data?: PartialMessage<QueryAllTasksRequest>) {
+  constructor(data?: PartialMessage<QueryTasksAllRequest>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "dysonprotocol.crontask.v1.QueryAllTasksRequest";
+  static readonly typeName = "dysonprotocol.crontask.v1.QueryTasksAllRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "pagination", kind: "message", T: PageRequest },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryAllTasksRequest {
-    return new QueryAllTasksRequest().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryTasksAllRequest {
+    return new QueryTasksAllRequest().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryAllTasksRequest {
-    return new QueryAllTasksRequest().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryTasksAllRequest {
+    return new QueryTasksAllRequest().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryAllTasksRequest {
-    return new QueryAllTasksRequest().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryTasksAllRequest {
+    return new QueryTasksAllRequest().fromJsonString(jsonString, options);
   }
 
-  static equals(a: QueryAllTasksRequest | PlainMessage<QueryAllTasksRequest> | undefined, b: QueryAllTasksRequest | PlainMessage<QueryAllTasksRequest> | undefined): boolean {
-    return proto3.util.equals(QueryAllTasksRequest, a, b);
+  static equals(a: QueryTasksAllRequest | PlainMessage<QueryTasksAllRequest> | undefined, b: QueryTasksAllRequest | PlainMessage<QueryTasksAllRequest> | undefined): boolean {
+    return proto3.util.equals(QueryTasksAllRequest, a, b);
   }
 }
 
@@ -734,6 +937,110 @@ export class QuerySubscriptionsResponse extends Message<QuerySubscriptionsRespon
 
   static equals(a: QuerySubscriptionsResponse | PlainMessage<QuerySubscriptionsResponse> | undefined, b: QuerySubscriptionsResponse | PlainMessage<QuerySubscriptionsResponse> | undefined): boolean {
     return proto3.util.equals(QuerySubscriptionsResponse, a, b);
+  }
+}
+
+/**
+ *
+ * QuerySubscriptionsByCreatorResponse is the response type for the
+ * Query/SubscriptionsByCreator RPC method.
+ *
+ * @generated from message dysonprotocol.crontask.v1.QuerySubscriptionsByCreatorResponse
+ */
+export class QuerySubscriptionsByCreatorResponse extends Message<QuerySubscriptionsByCreatorResponse> {
+  /**
+   * List of subscriptions created by the specified address, ordered by
+   * subscription ID.
+   *
+   * @generated from field: repeated dysonprotocol.crontask.v1.Subscription subscriptions = 1;
+   */
+  subscriptions: Subscription[] = [];
+
+  /**
+   * Pagination metadata for result set navigation.
+   *
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QuerySubscriptionsByCreatorResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.crontask.v1.QuerySubscriptionsByCreatorResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "subscriptions", kind: "message", T: Subscription, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QuerySubscriptionsByCreatorResponse {
+    return new QuerySubscriptionsByCreatorResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QuerySubscriptionsByCreatorResponse {
+    return new QuerySubscriptionsByCreatorResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QuerySubscriptionsByCreatorResponse {
+    return new QuerySubscriptionsByCreatorResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QuerySubscriptionsByCreatorResponse | PlainMessage<QuerySubscriptionsByCreatorResponse> | undefined, b: QuerySubscriptionsByCreatorResponse | PlainMessage<QuerySubscriptionsByCreatorResponse> | undefined): boolean {
+    return proto3.util.equals(QuerySubscriptionsByCreatorResponse, a, b);
+  }
+}
+
+/**
+ *
+ * QuerySubscriptionsAllResponse is the response type for the
+ * Query/SubscriptionsAll RPC method.
+ *
+ * @generated from message dysonprotocol.crontask.v1.QuerySubscriptionsAllResponse
+ */
+export class QuerySubscriptionsAllResponse extends Message<QuerySubscriptionsAllResponse> {
+  /**
+   * List of all subscriptions in the system, ordered by subscription ID
+   * ascending.
+   *
+   * @generated from field: repeated dysonprotocol.crontask.v1.Subscription subscriptions = 1;
+   */
+  subscriptions: Subscription[] = [];
+
+  /**
+   * Pagination metadata for result set navigation.
+   *
+   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
+   */
+  pagination?: PageResponse;
+
+  constructor(data?: PartialMessage<QuerySubscriptionsAllResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.crontask.v1.QuerySubscriptionsAllResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "subscriptions", kind: "message", T: Subscription, repeated: true },
+    { no: 2, name: "pagination", kind: "message", T: PageResponse },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QuerySubscriptionsAllResponse {
+    return new QuerySubscriptionsAllResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QuerySubscriptionsAllResponse {
+    return new QuerySubscriptionsAllResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QuerySubscriptionsAllResponse {
+    return new QuerySubscriptionsAllResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QuerySubscriptionsAllResponse | PlainMessage<QuerySubscriptionsAllResponse> | undefined, b: QuerySubscriptionsAllResponse | PlainMessage<QuerySubscriptionsAllResponse> | undefined): boolean {
+    return proto3.util.equals(QuerySubscriptionsAllResponse, a, b);
   }
 }
 

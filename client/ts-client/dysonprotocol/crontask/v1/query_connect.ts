@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { QueryAllTasksRequest, QueryMetricsRequest, QueryMetricsResponse, QueryParamsRequest, QueryParamsResponse, QuerySubscriptionByIDRequest, QuerySubscriptionByIDResponse, QuerySubscriptionsAllRequest, QuerySubscriptionsByCreatorRequest, QuerySubscriptionsResponse, QueryTaskByIDRequest, QueryTaskByIDResponse, QueryTasksByAddressRequest, QueryTasksByStatusGasPriceRequest, QueryTasksByStatusTimestampRequest, QueryTasksResponse } from "./query_pb.js";
+import { QueryMetricsRequest, QueryMetricsResponse, QueryParamsRequest, QueryParamsResponse, QuerySubscriptionByIDRequest, QuerySubscriptionByIDResponse, QuerySubscriptionsAllRequest, QuerySubscriptionsAllResponse, QuerySubscriptionsByCreatorRequest, QuerySubscriptionsByCreatorResponse, QueryTaskByIDRequest, QueryTaskByIDResponse, QueryTasksAllRequest, QueryTasksAllResponse, QueryTasksByAddressRequest, QueryTasksByAddressResponse, QueryTasksByStatusGasPriceRequest, QueryTasksByStatusGasPriceResponse, QueryTasksByStatusTimestampRequest, QueryTasksByStatusTimestampResponse } from "./query_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -43,7 +43,7 @@ export const Query = {
     tasksByAddress: {
       name: "TasksByAddress",
       I: QueryTasksByAddressRequest,
-      O: QueryTasksResponse,
+      O: QueryTasksByAddressResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -60,7 +60,7 @@ export const Query = {
     tasksByStatusTimestamp: {
       name: "TasksByStatusTimestamp",
       I: QueryTasksByStatusTimestampRequest,
-      O: QueryTasksResponse,
+      O: QueryTasksByStatusTimestampResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -78,7 +78,7 @@ export const Query = {
     tasksByStatusGasPrice: {
       name: "TasksByStatusGasPrice",
       I: QueryTasksByStatusGasPriceRequest,
-      O: QueryTasksResponse,
+      O: QueryTasksByStatusGasPriceResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -93,8 +93,8 @@ export const Query = {
      */
     tasksAll: {
       name: "TasksAll",
-      I: QueryAllTasksRequest,
-      O: QueryTasksResponse,
+      I: QueryTasksAllRequest,
+      O: QueryTasksAllResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -159,7 +159,7 @@ export const Query = {
     subscriptionsByCreator: {
       name: "SubscriptionsByCreator",
       I: QuerySubscriptionsByCreatorRequest,
-      O: QuerySubscriptionsResponse,
+      O: QuerySubscriptionsByCreatorResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -175,7 +175,7 @@ export const Query = {
     subscriptionsAll: {
       name: "SubscriptionsAll",
       I: QuerySubscriptionsAllRequest,
-      O: QuerySubscriptionsResponse,
+      O: QuerySubscriptionsAllResponse,
       kind: MethodKind.Unary,
     },
   }

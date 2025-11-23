@@ -50,9 +50,9 @@
     },
     "response": {
         "$schema": "http://json-schema.org/draft-04/schema#",
-        "$ref": "#/definitions/dysonprotocol.crontask.v1.QuerySubscriptionsResponse",
+        "$ref": "#/definitions/dysonprotocol.crontask.v1.QuerySubscriptionsAllResponse",
         "definitions": {
-            "dysonprotocol.crontask.v1.QuerySubscriptionsResponse": {
+            "dysonprotocol.crontask.v1.QuerySubscriptionsAllResponse": {
                 "properties": {
                     "subscriptions": {
                         "items": {
@@ -60,7 +60,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "List of subscriptions matching the query criteria, ordered according to the specific query endpoint (e.g., by ID or creator)."
+                        "description": "List of all subscriptions in the system, ordered by subscription ID ascending."
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
@@ -70,8 +70,8 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Subscriptions Response",
-                "description": "QuerySubscriptionsResponse is the response type for subscription queries with multiple results."
+                "title": "Query Subscriptions All Response",
+                "description": "QuerySubscriptionsAllResponse is the response type for the Query/SubscriptionsAll RPC method."
             },
             "cosmos.base.query.v1beta1.PageResponse": {
                 "properties": {

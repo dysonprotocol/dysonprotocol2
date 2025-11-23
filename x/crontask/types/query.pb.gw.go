@@ -308,7 +308,7 @@ var (
 )
 
 func request_Query_TasksAll_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryAllTasksRequest
+	var protoReq QueryTasksAllRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -324,7 +324,7 @@ func request_Query_TasksAll_0(ctx context.Context, marshaler runtime.Marshaler, 
 }
 
 func local_request_Query_TasksAll_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryAllTasksRequest
+	var protoReq QueryTasksAllRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {

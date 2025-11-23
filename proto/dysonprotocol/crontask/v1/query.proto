@@ -34,7 +34,8 @@ service Query {
    * by task ID. Uses indexed queries for efficient lookup. Supports standard
    * pagination with customizable page size and navigation.
    */
-  rpc TasksByAddress(QueryTasksByAddressRequest) returns (QueryTasksResponse) {
+  rpc TasksByAddress(QueryTasksByAddressRequest)
+      returns (QueryTasksByAddressResponse) {
     option (google.api.http) = {
       get : "/dysonprotocol/crontask/v1/tasks/creator/{creator}"
     };
@@ -49,7 +50,7 @@ service Query {
    * status filtering. Supports pagination with reverse ordering capability.
    */
   rpc TasksByStatusTimestamp(QueryTasksByStatusTimestampRequest)
-      returns (QueryTasksResponse) {
+      returns (QueryTasksByStatusTimestampResponse) {
     option (google.api.http) = {
       get : "/dysonprotocol/crontask/v1/tasks/status/{status}"
     };
@@ -65,7 +66,7 @@ service Query {
    * capability.
    */
   rpc TasksByStatusGasPrice(QueryTasksByStatusGasPriceRequest)
-      returns (QueryTasksResponse) {
+      returns (QueryTasksByStatusGasPriceResponse) {
     option (google.api.http) = {
       get : "/dysonprotocol/crontask/v1/tasks/status/{status}/by_gas"
     };
@@ -78,7 +79,7 @@ service Query {
    * ascending. Uses direct store iteration for comprehensive task listing.
    * Supports standard pagination for large result sets.
    */
-  rpc TasksAll(QueryAllTasksRequest) returns (QueryTasksResponse) {
+  rpc TasksAll(QueryTasksAllRequest) returns (QueryTasksAllResponse) {
     option (google.api.http) = {
       get : "/dysonprotocol/crontask/v1/tasks"
     };
@@ -133,7 +134,7 @@ service Query {
    * for efficient creator-based lookups. Supports standard pagination.
    */
   rpc SubscriptionsByCreator(QuerySubscriptionsByCreatorRequest)
-      returns (QuerySubscriptionsResponse) {
+      returns (QuerySubscriptionsByCreatorResponse) {
     option (google.api.http) = {
       get : "/dysonprotocol/crontask/v1/subscriptions/creator/{creator}"
     };
@@ -147,7 +148,7 @@ service Query {
    * subscription listing. Supports standard pagination for large result sets.
    */
   rpc SubscriptionsAll(QuerySubscriptionsAllRequest)
-      returns (QuerySubscriptionsResponse) {
+      returns (QuerySubscriptionsAllResponse) {
     option (google.api.http) = {
       get : "/dysonprotocol/crontask/v1/subscriptions"
     };
@@ -222,6 +223,49 @@ message QueryTasksResponse {
 }
 
 /*
+ * QueryTasksByAddressResponse is the response type for the Query/TasksByAddress
+ * RPC method.
+ */
+message QueryTasksByAddressResponse {
+  // List of tasks created by the specified address, ordered by task ID.
+  repeated Task tasks = 1;
+  // Pagination metadata for result set navigation.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+/*
+ * QueryTasksByStatusTimestampResponse is the response type for the
+ * Query/TasksByStatusTimestamp RPC method.
+ */
+message QueryTasksByStatusTimestampResponse {
+  // List of tasks with the specified status, ordered by scheduled timestamp.
+  repeated Task tasks = 1;
+  // Pagination metadata for result set navigation.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+/*
+ * QueryTasksByStatusGasPriceResponse is the response type for the
+ * Query/TasksByStatusGasPrice RPC method.
+ */
+message QueryTasksByStatusGasPriceResponse {
+  // List of tasks with the specified status, ordered by gas price.
+  repeated Task tasks = 1;
+  // Pagination metadata for result set navigation.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+/*
+ * QueryTasksAllResponse is the response type for the Query/TasksAll RPC method.
+ */
+message QueryTasksAllResponse {
+  // List of all tasks in the system, ordered by task ID ascending.
+  repeated Task tasks = 1;
+  // Pagination metadata for result set navigation.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+/*
  * QueryParamsRequest is the request type for the Query/Params RPC method.
  * Empty request body as parameters are retrieved from module state.
  */
@@ -254,9 +298,9 @@ message QueryMetricsResponse {
 // Request messages for new query endpoints
 
 /*
- * QueryAllTasksRequest is the request type for the Query/TasksAll RPC method.
+ * QueryTasksAllRequest is the request type for the Query/TasksAll RPC method.
  */
-message QueryAllTasksRequest {
+message QueryTasksAllRequest {
   // Standard pagination parameters; results ordered by task ID ascending.
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
 }
@@ -308,6 +352,30 @@ message QuerySubscriptionsAllRequest {
 message QuerySubscriptionsResponse {
   // List of subscriptions matching the query criteria, ordered according to the
   // specific query endpoint (e.g., by ID or creator).
+  repeated Subscription subscriptions = 1;
+  // Pagination metadata for result set navigation.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+/*
+ * QuerySubscriptionsByCreatorResponse is the response type for the
+ * Query/SubscriptionsByCreator RPC method.
+ */
+message QuerySubscriptionsByCreatorResponse {
+  // List of subscriptions created by the specified address, ordered by
+  // subscription ID.
+  repeated Subscription subscriptions = 1;
+  // Pagination metadata for result set navigation.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+/*
+ * QuerySubscriptionsAllResponse is the response type for the
+ * Query/SubscriptionsAll RPC method.
+ */
+message QuerySubscriptionsAllResponse {
+  // List of all subscriptions in the system, ordered by subscription ID
+  // ascending.
   repeated Subscription subscriptions = 1;
   // Pagination metadata for result set navigation.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;

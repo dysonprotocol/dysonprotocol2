@@ -2,15 +2,8 @@ package keeper
 
 import (
 	"context"
-	"encoding/binary"
-	"fmt"
 
-	errorsmod "cosmossdk.io/errors"
-	"cosmossdk.io/store/prefix"
 	crontasktypes "dysonprotocol.com/x/crontask/types"
-	"github.com/cosmos/cosmos-sdk/types/query"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // isValidStatus checks if the provided status is a valid task status

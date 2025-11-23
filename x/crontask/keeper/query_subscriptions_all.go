@@ -11,7 +11,7 @@ import (
 )
 
 // EventSubscriptionsAll returns all subscriptions
-func (q queryServer) SubscriptionsAll(ctx context.Context, req *crontasktypes.QuerySubscriptionsAllRequest) (*crontasktypes.QuerySubscriptionsResponse, error) {
+func (q queryServer) SubscriptionsAll(ctx context.Context, req *crontasktypes.QuerySubscriptionsAllRequest) (*crontasktypes.QuerySubscriptionsAllResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -29,5 +29,5 @@ func (q queryServer) SubscriptionsAll(ctx context.Context, req *crontasktypes.Qu
 		return nil, errorsmod.Wrapf(err, "failed to paginate subscriptions")
 	}
 
-	return &crontasktypes.QuerySubscriptionsResponse{Subscriptions: subs, Pagination: pageRes}, nil
+	return &crontasktypes.QuerySubscriptionsAllResponse{Subscriptions: subs, Pagination: pageRes}, nil
 }

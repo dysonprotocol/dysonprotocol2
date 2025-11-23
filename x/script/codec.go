@@ -98,15 +98,15 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 
 		// crontask queries
 		&crontasktypes.QueryTaskByIDRequest{}, &crontasktypes.QueryTaskByIDResponse{},
-		&crontasktypes.QueryTasksByAddressRequest{}, &crontasktypes.QueryTasksResponse{},
-		&crontasktypes.QueryTasksByStatusTimestampRequest{}, &crontasktypes.QueryTasksResponse{},
-		&crontasktypes.QueryTasksByStatusGasPriceRequest{}, &crontasktypes.QueryTasksResponse{},
-		&crontasktypes.QueryAllTasksRequest{}, &crontasktypes.QueryTasksResponse{},
+		&crontasktypes.QueryTasksByAddressRequest{}, &crontasktypes.QueryTasksByAddressResponse{},
+		&crontasktypes.QueryTasksByStatusTimestampRequest{}, &crontasktypes.QueryTasksByStatusTimestampResponse{},
+		&crontasktypes.QueryTasksByStatusGasPriceRequest{}, &crontasktypes.QueryTasksByStatusGasPriceResponse{},
+		&crontasktypes.QueryTasksAllRequest{}, &crontasktypes.QueryTasksAllResponse{},
 		&crontasktypes.QueryParamsRequest{}, &crontasktypes.QueryParamsResponse{},
 		&crontasktypes.QueryMetricsRequest{}, &crontasktypes.QueryMetricsResponse{},
 		&crontasktypes.QuerySubscriptionByIDRequest{}, &crontasktypes.QuerySubscriptionByIDResponse{},
-		&crontasktypes.QuerySubscriptionsByCreatorRequest{}, &crontasktypes.QuerySubscriptionsResponse{},
-		&crontasktypes.QuerySubscriptionsAllRequest{}, &crontasktypes.QuerySubscriptionsResponse{},
+		&crontasktypes.QuerySubscriptionsByCreatorRequest{}, &crontasktypes.QuerySubscriptionsByCreatorResponse{},
+		&crontasktypes.QuerySubscriptionsAllRequest{}, &crontasktypes.QuerySubscriptionsAllResponse{},
 
 		// nameservice
 		&nameservicetypes.QueryResolveNameRequest{}, &nameservicetypes.QueryResolveNameResponse{},

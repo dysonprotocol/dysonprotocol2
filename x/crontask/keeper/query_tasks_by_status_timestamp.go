@@ -11,7 +11,7 @@ import (
 )
 
 // TasksByStatusTimestamp returns tasks filtered by status and ordered by timestamp
-func (q queryServer) TasksByStatusTimestamp(ctx context.Context, req *crontasktypes.QueryTasksByStatusTimestampRequest) (*crontasktypes.QueryTasksResponse, error) {
+func (q queryServer) TasksByStatusTimestamp(ctx context.Context, req *crontasktypes.QueryTasksByStatusTimestampRequest) (*crontasktypes.QueryTasksByStatusTimestampResponse, error) {
 	if req.Pagination == nil {
 		req.Pagination = &query.PageRequest{}
 	}
@@ -37,5 +37,5 @@ func (q queryServer) TasksByStatusTimestamp(ctx context.Context, req *crontaskty
 		return nil, errorsmod.Wrapf(err, "failed to get tasks by status timestamp")
 	}
 
-	return &crontasktypes.QueryTasksResponse{Tasks: tasks, Pagination: pageRes}, nil
+	return &crontasktypes.QueryTasksByStatusTimestampResponse{Tasks: tasks, Pagination: pageRes}, nil
 }

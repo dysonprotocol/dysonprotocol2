@@ -12,7 +12,7 @@ import (
 )
 
 // TasksByAddress returns all tasks created by a specific address
-func (q queryServer) TasksByAddress(ctx context.Context, req *crontasktypes.QueryTasksByAddressRequest) (*crontasktypes.QueryTasksResponse, error) {
+func (q queryServer) TasksByAddress(ctx context.Context, req *crontasktypes.QueryTasksByAddressRequest) (*crontasktypes.QueryTasksByAddressResponse, error) {
 	store := prefix.NewStore(q.k.kvStore(ctx), append(indexAddrPrefix, []byte(req.Creator)...))
 
 	tasks := make([]*crontasktypes.Task, 0)
@@ -29,5 +29,5 @@ func (q queryServer) TasksByAddress(ctx context.Context, req *crontasktypes.Quer
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &crontasktypes.QueryTasksResponse{Tasks: tasks, Pagination: pageRes}, nil
+	return &crontasktypes.QueryTasksByAddressResponse{Tasks: tasks, Pagination: pageRes}, nil
 }

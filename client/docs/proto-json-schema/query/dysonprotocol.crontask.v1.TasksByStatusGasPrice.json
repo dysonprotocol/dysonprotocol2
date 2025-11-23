@@ -54,9 +54,9 @@
     },
     "response": {
         "$schema": "http://json-schema.org/draft-04/schema#",
-        "$ref": "#/definitions/dysonprotocol.crontask.v1.QueryTasksResponse",
+        "$ref": "#/definitions/dysonprotocol.crontask.v1.QueryTasksByStatusGasPriceResponse",
         "definitions": {
-            "dysonprotocol.crontask.v1.QueryTasksResponse": {
+            "dysonprotocol.crontask.v1.QueryTasksByStatusGasPriceResponse": {
                 "properties": {
                     "tasks": {
                         "items": {
@@ -64,7 +64,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "List of tasks matching the query criteria, ordered according to the specific query endpoint (e.g., by ID, status, gas price)."
+                        "description": "List of tasks with the specified status, ordered by gas price."
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
@@ -74,8 +74,8 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Tasks Response",
-                "description": "QueryTasksResponse is the response type for task queries with multiple results."
+                "title": "Query Tasks By Status Gas Price Response",
+                "description": "QueryTasksByStatusGasPriceResponse is the response type for the Query/TasksByStatusGasPrice RPC method."
             },
             "cosmos.base.query.v1beta1.PageResponse": {
                 "properties": {

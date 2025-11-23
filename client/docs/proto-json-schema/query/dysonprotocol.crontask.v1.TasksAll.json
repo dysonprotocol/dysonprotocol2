@@ -1,9 +1,9 @@
 {
     "request": {
         "$schema": "http://json-schema.org/draft-04/schema#",
-        "$ref": "#/definitions/dysonprotocol.crontask.v1.QueryAllTasksRequest",
+        "$ref": "#/definitions/dysonprotocol.crontask.v1.QueryTasksAllRequest",
         "definitions": {
-            "dysonprotocol.crontask.v1.QueryAllTasksRequest": {
+            "dysonprotocol.crontask.v1.QueryTasksAllRequest": {
                 "properties": {
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
@@ -14,7 +14,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Request messages for new query endpoints",
-                "description": "Request messages for new query endpoints  QueryAllTasksRequest is the request type for the Query/TasksAll RPC method."
+                "description": "Request messages for new query endpoints  QueryTasksAllRequest is the request type for the Query/TasksAll RPC method."
             },
             "cosmos.base.query.v1beta1.PageRequest": {
                 "properties": {
@@ -50,9 +50,9 @@
     },
     "response": {
         "$schema": "http://json-schema.org/draft-04/schema#",
-        "$ref": "#/definitions/dysonprotocol.crontask.v1.QueryTasksResponse",
+        "$ref": "#/definitions/dysonprotocol.crontask.v1.QueryTasksAllResponse",
         "definitions": {
-            "dysonprotocol.crontask.v1.QueryTasksResponse": {
+            "dysonprotocol.crontask.v1.QueryTasksAllResponse": {
                 "properties": {
                     "tasks": {
                         "items": {
@@ -60,7 +60,7 @@
                         },
                         "additionalProperties": false,
                         "type": "array",
-                        "description": "List of tasks matching the query criteria, ordered according to the specific query endpoint (e.g., by ID, status, gas price)."
+                        "description": "List of all tasks in the system, ordered by task ID ascending."
                     },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
@@ -70,8 +70,8 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "title": "Query Tasks Response",
-                "description": "QueryTasksResponse is the response type for task queries with multiple results."
+                "title": "Query Tasks All Response",
+                "description": "QueryTasksAllResponse is the response type for the Query/TasksAll RPC method."
             },
             "cosmos.base.query.v1beta1.PageResponse": {
                 "properties": {

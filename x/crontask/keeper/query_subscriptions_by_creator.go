@@ -11,7 +11,7 @@ import (
 )
 
 // EventSubscriptionsByCreator returns subscriptions filtered by creator
-func (q queryServer) SubscriptionsByCreator(ctx context.Context, req *crontasktypes.QuerySubscriptionsByCreatorRequest) (*crontasktypes.QuerySubscriptionsResponse, error) {
+func (q queryServer) SubscriptionsByCreator(ctx context.Context, req *crontasktypes.QuerySubscriptionsByCreatorRequest) (*crontasktypes.QuerySubscriptionsByCreatorResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -33,7 +33,7 @@ func (q queryServer) SubscriptionsByCreator(ctx context.Context, req *crontaskty
 		return nil, errorsmod.Wrapf(err, "failed to paginate subscriptions by creator")
 	}
 
-	return &crontasktypes.QuerySubscriptionsResponse{
+	return &crontasktypes.QuerySubscriptionsByCreatorResponse{
 		Subscriptions: subs,
 		Pagination:    pageRes,
 	}, nil

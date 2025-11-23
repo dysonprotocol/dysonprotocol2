@@ -356,6 +356,229 @@ func (m *QueryTasksResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
+// QueryTasksByAddressResponse is the response type for the Query/TasksByAddress
+// RPC method.
+type QueryTasksByAddressResponse struct {
+	// List of tasks created by the specified address, ordered by task ID.
+	Tasks []*Task `protobuf:"bytes,1,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	// Pagination metadata for result set navigation.
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryTasksByAddressResponse) Reset()         { *m = QueryTasksByAddressResponse{} }
+func (m *QueryTasksByAddressResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryTasksByAddressResponse) ProtoMessage()    {}
+func (*QueryTasksByAddressResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_31d3eefc3a09d7ff, []int{6}
+}
+func (m *QueryTasksByAddressResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTasksByAddressResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTasksByAddressResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTasksByAddressResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTasksByAddressResponse.Merge(m, src)
+}
+func (m *QueryTasksByAddressResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTasksByAddressResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTasksByAddressResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTasksByAddressResponse proto.InternalMessageInfo
+
+func (m *QueryTasksByAddressResponse) GetTasks() []*Task {
+	if m != nil {
+		return m.Tasks
+	}
+	return nil
+}
+
+func (m *QueryTasksByAddressResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QueryTasksByStatusTimestampResponse is the response type for the
+// Query/TasksByStatusTimestamp RPC method.
+type QueryTasksByStatusTimestampResponse struct {
+	// List of tasks with the specified status, ordered by scheduled timestamp.
+	Tasks []*Task `protobuf:"bytes,1,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	// Pagination metadata for result set navigation.
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryTasksByStatusTimestampResponse) Reset()         { *m = QueryTasksByStatusTimestampResponse{} }
+func (m *QueryTasksByStatusTimestampResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryTasksByStatusTimestampResponse) ProtoMessage()    {}
+func (*QueryTasksByStatusTimestampResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_31d3eefc3a09d7ff, []int{7}
+}
+func (m *QueryTasksByStatusTimestampResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTasksByStatusTimestampResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTasksByStatusTimestampResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTasksByStatusTimestampResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTasksByStatusTimestampResponse.Merge(m, src)
+}
+func (m *QueryTasksByStatusTimestampResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTasksByStatusTimestampResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTasksByStatusTimestampResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTasksByStatusTimestampResponse proto.InternalMessageInfo
+
+func (m *QueryTasksByStatusTimestampResponse) GetTasks() []*Task {
+	if m != nil {
+		return m.Tasks
+	}
+	return nil
+}
+
+func (m *QueryTasksByStatusTimestampResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QueryTasksByStatusGasPriceResponse is the response type for the
+// Query/TasksByStatusGasPrice RPC method.
+type QueryTasksByStatusGasPriceResponse struct {
+	// List of tasks with the specified status, ordered by gas price.
+	Tasks []*Task `protobuf:"bytes,1,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	// Pagination metadata for result set navigation.
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryTasksByStatusGasPriceResponse) Reset()         { *m = QueryTasksByStatusGasPriceResponse{} }
+func (m *QueryTasksByStatusGasPriceResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryTasksByStatusGasPriceResponse) ProtoMessage()    {}
+func (*QueryTasksByStatusGasPriceResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_31d3eefc3a09d7ff, []int{8}
+}
+func (m *QueryTasksByStatusGasPriceResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTasksByStatusGasPriceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTasksByStatusGasPriceResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTasksByStatusGasPriceResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTasksByStatusGasPriceResponse.Merge(m, src)
+}
+func (m *QueryTasksByStatusGasPriceResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTasksByStatusGasPriceResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTasksByStatusGasPriceResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTasksByStatusGasPriceResponse proto.InternalMessageInfo
+
+func (m *QueryTasksByStatusGasPriceResponse) GetTasks() []*Task {
+	if m != nil {
+		return m.Tasks
+	}
+	return nil
+}
+
+func (m *QueryTasksByStatusGasPriceResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QueryTasksAllResponse is the response type for the Query/TasksAll RPC method.
+type QueryTasksAllResponse struct {
+	// List of all tasks in the system, ordered by task ID ascending.
+	Tasks []*Task `protobuf:"bytes,1,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	// Pagination metadata for result set navigation.
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryTasksAllResponse) Reset()         { *m = QueryTasksAllResponse{} }
+func (m *QueryTasksAllResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryTasksAllResponse) ProtoMessage()    {}
+func (*QueryTasksAllResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_31d3eefc3a09d7ff, []int{9}
+}
+func (m *QueryTasksAllResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTasksAllResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTasksAllResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTasksAllResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTasksAllResponse.Merge(m, src)
+}
+func (m *QueryTasksAllResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTasksAllResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTasksAllResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTasksAllResponse proto.InternalMessageInfo
+
+func (m *QueryTasksAllResponse) GetTasks() []*Task {
+	if m != nil {
+		return m.Tasks
+	}
+	return nil
+}
+
+func (m *QueryTasksAllResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
 // QueryParamsRequest is the request type for the Query/Params RPC method.
 // Empty request body as parameters are retrieved from module state.
 type QueryParamsRequest struct {
@@ -365,7 +588,7 @@ func (m *QueryParamsRequest) Reset()         { *m = QueryParamsRequest{} }
 func (m *QueryParamsRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryParamsRequest) ProtoMessage()    {}
 func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_31d3eefc3a09d7ff, []int{6}
+	return fileDescriptor_31d3eefc3a09d7ff, []int{10}
 }
 func (m *QueryParamsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -405,7 +628,7 @@ func (m *QueryParamsResponse) Reset()         { *m = QueryParamsResponse{} }
 func (m *QueryParamsResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryParamsResponse) ProtoMessage()    {}
 func (*QueryParamsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_31d3eefc3a09d7ff, []int{7}
+	return fileDescriptor_31d3eefc3a09d7ff, []int{11}
 }
 func (m *QueryParamsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -450,7 +673,7 @@ func (m *QueryMetricsRequest) Reset()         { *m = QueryMetricsRequest{} }
 func (m *QueryMetricsRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryMetricsRequest) ProtoMessage()    {}
 func (*QueryMetricsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_31d3eefc3a09d7ff, []int{8}
+	return fileDescriptor_31d3eefc3a09d7ff, []int{12}
 }
 func (m *QueryMetricsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -490,7 +713,7 @@ func (m *QueryMetricsResponse) Reset()         { *m = QueryMetricsResponse{} }
 func (m *QueryMetricsResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryMetricsResponse) ProtoMessage()    {}
 func (*QueryMetricsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_31d3eefc3a09d7ff, []int{9}
+	return fileDescriptor_31d3eefc3a09d7ff, []int{13}
 }
 func (m *QueryMetricsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -526,24 +749,24 @@ func (m *QueryMetricsResponse) GetMetrics() *Metrics {
 	return nil
 }
 
-// QueryAllTasksRequest is the request type for the Query/TasksAll RPC method.
-type QueryAllTasksRequest struct {
+// QueryTasksAllRequest is the request type for the Query/TasksAll RPC method.
+type QueryTasksAllRequest struct {
 	// Standard pagination parameters; results ordered by task ID ascending.
 	Pagination *query.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
-func (m *QueryAllTasksRequest) Reset()         { *m = QueryAllTasksRequest{} }
-func (m *QueryAllTasksRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryAllTasksRequest) ProtoMessage()    {}
-func (*QueryAllTasksRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_31d3eefc3a09d7ff, []int{10}
+func (m *QueryTasksAllRequest) Reset()         { *m = QueryTasksAllRequest{} }
+func (m *QueryTasksAllRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryTasksAllRequest) ProtoMessage()    {}
+func (*QueryTasksAllRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_31d3eefc3a09d7ff, []int{14}
 }
-func (m *QueryAllTasksRequest) XXX_Unmarshal(b []byte) error {
+func (m *QueryTasksAllRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryAllTasksRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryTasksAllRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryAllTasksRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryTasksAllRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -553,19 +776,19 @@ func (m *QueryAllTasksRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return b[:n], nil
 	}
 }
-func (m *QueryAllTasksRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryAllTasksRequest.Merge(m, src)
+func (m *QueryTasksAllRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTasksAllRequest.Merge(m, src)
 }
-func (m *QueryAllTasksRequest) XXX_Size() int {
+func (m *QueryTasksAllRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryAllTasksRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryAllTasksRequest.DiscardUnknown(m)
+func (m *QueryTasksAllRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTasksAllRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryAllTasksRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryTasksAllRequest proto.InternalMessageInfo
 
-func (m *QueryAllTasksRequest) GetPagination() *query.PageRequest {
+func (m *QueryTasksAllRequest) GetPagination() *query.PageRequest {
 	if m != nil {
 		return m.Pagination
 	}
@@ -583,7 +806,7 @@ func (m *QuerySubscriptionByIDRequest) Reset()         { *m = QuerySubscriptionB
 func (m *QuerySubscriptionByIDRequest) String() string { return proto.CompactTextString(m) }
 func (*QuerySubscriptionByIDRequest) ProtoMessage()    {}
 func (*QuerySubscriptionByIDRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_31d3eefc3a09d7ff, []int{11}
+	return fileDescriptor_31d3eefc3a09d7ff, []int{15}
 }
 func (m *QuerySubscriptionByIDRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -631,7 +854,7 @@ func (m *QuerySubscriptionByIDResponse) Reset()         { *m = QuerySubscription
 func (m *QuerySubscriptionByIDResponse) String() string { return proto.CompactTextString(m) }
 func (*QuerySubscriptionByIDResponse) ProtoMessage()    {}
 func (*QuerySubscriptionByIDResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_31d3eefc3a09d7ff, []int{12}
+	return fileDescriptor_31d3eefc3a09d7ff, []int{16}
 }
 func (m *QuerySubscriptionByIDResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -681,7 +904,7 @@ func (m *QuerySubscriptionsByCreatorRequest) Reset()         { *m = QuerySubscri
 func (m *QuerySubscriptionsByCreatorRequest) String() string { return proto.CompactTextString(m) }
 func (*QuerySubscriptionsByCreatorRequest) ProtoMessage()    {}
 func (*QuerySubscriptionsByCreatorRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_31d3eefc3a09d7ff, []int{13}
+	return fileDescriptor_31d3eefc3a09d7ff, []int{17}
 }
 func (m *QuerySubscriptionsByCreatorRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -736,7 +959,7 @@ func (m *QuerySubscriptionsAllRequest) Reset()         { *m = QuerySubscriptions
 func (m *QuerySubscriptionsAllRequest) String() string { return proto.CompactTextString(m) }
 func (*QuerySubscriptionsAllRequest) ProtoMessage()    {}
 func (*QuerySubscriptionsAllRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_31d3eefc3a09d7ff, []int{14}
+	return fileDescriptor_31d3eefc3a09d7ff, []int{18}
 }
 func (m *QuerySubscriptionsAllRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -786,7 +1009,7 @@ func (m *QuerySubscriptionsResponse) Reset()         { *m = QuerySubscriptionsRe
 func (m *QuerySubscriptionsResponse) String() string { return proto.CompactTextString(m) }
 func (*QuerySubscriptionsResponse) ProtoMessage()    {}
 func (*QuerySubscriptionsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_31d3eefc3a09d7ff, []int{15}
+	return fileDescriptor_31d3eefc3a09d7ff, []int{19}
 }
 func (m *QuerySubscriptionsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -829,6 +1052,120 @@ func (m *QuerySubscriptionsResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
+// QuerySubscriptionsByCreatorResponse is the response type for the
+// Query/SubscriptionsByCreator RPC method.
+type QuerySubscriptionsByCreatorResponse struct {
+	// List of subscriptions created by the specified address, ordered by
+	// subscription ID.
+	Subscriptions []*Subscription `protobuf:"bytes,1,rep,name=subscriptions,proto3" json:"subscriptions,omitempty"`
+	// Pagination metadata for result set navigation.
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QuerySubscriptionsByCreatorResponse) Reset()         { *m = QuerySubscriptionsByCreatorResponse{} }
+func (m *QuerySubscriptionsByCreatorResponse) String() string { return proto.CompactTextString(m) }
+func (*QuerySubscriptionsByCreatorResponse) ProtoMessage()    {}
+func (*QuerySubscriptionsByCreatorResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_31d3eefc3a09d7ff, []int{20}
+}
+func (m *QuerySubscriptionsByCreatorResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QuerySubscriptionsByCreatorResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QuerySubscriptionsByCreatorResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QuerySubscriptionsByCreatorResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QuerySubscriptionsByCreatorResponse.Merge(m, src)
+}
+func (m *QuerySubscriptionsByCreatorResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QuerySubscriptionsByCreatorResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QuerySubscriptionsByCreatorResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QuerySubscriptionsByCreatorResponse proto.InternalMessageInfo
+
+func (m *QuerySubscriptionsByCreatorResponse) GetSubscriptions() []*Subscription {
+	if m != nil {
+		return m.Subscriptions
+	}
+	return nil
+}
+
+func (m *QuerySubscriptionsByCreatorResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QuerySubscriptionsAllResponse is the response type for the
+// Query/SubscriptionsAll RPC method.
+type QuerySubscriptionsAllResponse struct {
+	// List of all subscriptions in the system, ordered by subscription ID
+	// ascending.
+	Subscriptions []*Subscription `protobuf:"bytes,1,rep,name=subscriptions,proto3" json:"subscriptions,omitempty"`
+	// Pagination metadata for result set navigation.
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QuerySubscriptionsAllResponse) Reset()         { *m = QuerySubscriptionsAllResponse{} }
+func (m *QuerySubscriptionsAllResponse) String() string { return proto.CompactTextString(m) }
+func (*QuerySubscriptionsAllResponse) ProtoMessage()    {}
+func (*QuerySubscriptionsAllResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_31d3eefc3a09d7ff, []int{21}
+}
+func (m *QuerySubscriptionsAllResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QuerySubscriptionsAllResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QuerySubscriptionsAllResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QuerySubscriptionsAllResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QuerySubscriptionsAllResponse.Merge(m, src)
+}
+func (m *QuerySubscriptionsAllResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QuerySubscriptionsAllResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QuerySubscriptionsAllResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QuerySubscriptionsAllResponse proto.InternalMessageInfo
+
+func (m *QuerySubscriptionsAllResponse) GetSubscriptions() []*Subscription {
+	if m != nil {
+		return m.Subscriptions
+	}
+	return nil
+}
+
+func (m *QuerySubscriptionsAllResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*QueryTaskByIDRequest)(nil), "dysonprotocol.crontask.v1.QueryTaskByIDRequest")
 	proto.RegisterType((*QueryTaskByIDResponse)(nil), "dysonprotocol.crontask.v1.QueryTaskByIDResponse")
@@ -836,16 +1173,22 @@ func init() {
 	proto.RegisterType((*QueryTasksByStatusTimestampRequest)(nil), "dysonprotocol.crontask.v1.QueryTasksByStatusTimestampRequest")
 	proto.RegisterType((*QueryTasksByStatusGasPriceRequest)(nil), "dysonprotocol.crontask.v1.QueryTasksByStatusGasPriceRequest")
 	proto.RegisterType((*QueryTasksResponse)(nil), "dysonprotocol.crontask.v1.QueryTasksResponse")
+	proto.RegisterType((*QueryTasksByAddressResponse)(nil), "dysonprotocol.crontask.v1.QueryTasksByAddressResponse")
+	proto.RegisterType((*QueryTasksByStatusTimestampResponse)(nil), "dysonprotocol.crontask.v1.QueryTasksByStatusTimestampResponse")
+	proto.RegisterType((*QueryTasksByStatusGasPriceResponse)(nil), "dysonprotocol.crontask.v1.QueryTasksByStatusGasPriceResponse")
+	proto.RegisterType((*QueryTasksAllResponse)(nil), "dysonprotocol.crontask.v1.QueryTasksAllResponse")
 	proto.RegisterType((*QueryParamsRequest)(nil), "dysonprotocol.crontask.v1.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "dysonprotocol.crontask.v1.QueryParamsResponse")
 	proto.RegisterType((*QueryMetricsRequest)(nil), "dysonprotocol.crontask.v1.QueryMetricsRequest")
 	proto.RegisterType((*QueryMetricsResponse)(nil), "dysonprotocol.crontask.v1.QueryMetricsResponse")
-	proto.RegisterType((*QueryAllTasksRequest)(nil), "dysonprotocol.crontask.v1.QueryAllTasksRequest")
+	proto.RegisterType((*QueryTasksAllRequest)(nil), "dysonprotocol.crontask.v1.QueryTasksAllRequest")
 	proto.RegisterType((*QuerySubscriptionByIDRequest)(nil), "dysonprotocol.crontask.v1.QuerySubscriptionByIDRequest")
 	proto.RegisterType((*QuerySubscriptionByIDResponse)(nil), "dysonprotocol.crontask.v1.QuerySubscriptionByIDResponse")
 	proto.RegisterType((*QuerySubscriptionsByCreatorRequest)(nil), "dysonprotocol.crontask.v1.QuerySubscriptionsByCreatorRequest")
 	proto.RegisterType((*QuerySubscriptionsAllRequest)(nil), "dysonprotocol.crontask.v1.QuerySubscriptionsAllRequest")
 	proto.RegisterType((*QuerySubscriptionsResponse)(nil), "dysonprotocol.crontask.v1.QuerySubscriptionsResponse")
+	proto.RegisterType((*QuerySubscriptionsByCreatorResponse)(nil), "dysonprotocol.crontask.v1.QuerySubscriptionsByCreatorResponse")
+	proto.RegisterType((*QuerySubscriptionsAllResponse)(nil), "dysonprotocol.crontask.v1.QuerySubscriptionsAllResponse")
 }
 
 func init() {
@@ -853,68 +1196,73 @@ func init() {
 }
 
 var fileDescriptor_31d3eefc3a09d7ff = []byte{
-	// 963 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x97, 0xcd, 0x4f, 0x3b, 0x45,
-	0x18, 0xc7, 0x99, 0xdf, 0x4b, 0xab, 0xa3, 0xa2, 0x8e, 0x05, 0xf9, 0x6d, 0xb0, 0xc2, 0xfa, 0x42,
-	0x6d, 0x60, 0x87, 0x16, 0x09, 0x2f, 0xa9, 0x31, 0x54, 0x23, 0x21, 0x4a, 0x52, 0x0b, 0x27, 0x0f,
-	0x92, 0xe9, 0x76, 0xdd, 0x6c, 0x68, 0x77, 0x96, 0x9d, 0x2d, 0xb1, 0x21, 0xbd, 0xa8, 0x07, 0x8f,
-	0x46, 0x89, 0xf1, 0xa8, 0xff, 0x82, 0xe1, 0x0f, 0xf0, 0x62, 0xa2, 0x37, 0x82, 0x17, 0x8f, 0x06,
-	0xfc, 0x43, 0xcc, 0xce, 0xcc, 0xb6, 0xbb, 0xa5, 0xed, 0xee, 0x22, 0x31, 0x5e, 0x60, 0x77, 0xf6,
-	0x79, 0xf9, 0x3c, 0xf3, 0xcc, 0x3c, 0xdf, 0x14, 0xbe, 0xd1, 0xec, 0x32, 0x6a, 0x3b, 0x2e, 0xf5,
-	0xa8, 0x4e, 0x5b, 0x58, 0x77, 0xa9, 0xed, 0x11, 0x76, 0x8c, 0x4f, 0x4b, 0xf8, 0xa4, 0x63, 0xb8,
-	0x5d, 0x8d, 0x7f, 0x42, 0x4f, 0x22, 0x66, 0x5a, 0x60, 0xa6, 0x9d, 0x96, 0x94, 0x79, 0x93, 0x52,
-	0xb3, 0x65, 0x60, 0xe2, 0x58, 0x98, 0xd8, 0x36, 0xf5, 0x88, 0x67, 0x51, 0x9b, 0x09, 0x47, 0xa5,
-	0xa8, 0x53, 0xd6, 0xa6, 0x0c, 0x37, 0x08, 0x33, 0x44, 0x44, 0x7c, 0x5a, 0x6a, 0x18, 0x1e, 0x29,
-	0x61, 0x87, 0x98, 0x96, 0xcd, 0x8d, 0xa5, 0xed, 0x13, 0x61, 0x7b, 0xc4, 0xdf, 0xb0, 0x78, 0x91,
-	0x9f, 0xf2, 0xe1, 0x30, 0x41, 0x00, 0x9d, 0x5a, 0x81, 0x6b, 0x61, 0x7c, 0x19, 0x7d, 0x56, 0x61,
-	0xb9, 0x3c, 0xde, 0x92, 0x75, 0x1a, 0x4c, 0x77, 0x2d, 0x27, 0x84, 0x94, 0x33, 0xa9, 0x49, 0x05,
-	0x8f, 0xff, 0x24, 0x57, 0x5f, 0x24, 0x6d, 0xcb, 0xa6, 0x98, 0xff, 0x15, 0x4b, 0x2a, 0x86, 0xb9,
-	0x8f, 0xfd, 0xea, 0x0e, 0x09, 0x3b, 0xae, 0x76, 0xf7, 0xde, 0xaf, 0x1b, 0x27, 0x1d, 0x83, 0x79,
-	0xe8, 0x65, 0x98, 0xf5, 0xc3, 0x1f, 0x59, 0xcd, 0x39, 0xb0, 0x00, 0x0a, 0x8f, 0xea, 0x19, 0xff,
-	0x75, 0xaf, 0xa9, 0x7e, 0x04, 0x67, 0x86, 0x1c, 0x98, 0x43, 0x6d, 0x66, 0xa0, 0x35, 0xf8, 0xc8,
-	0x37, 0xe1, 0xe6, 0xcf, 0x94, 0x5f, 0xd5, 0xc6, 0xee, 0xbc, 0xe6, 0xbb, 0xd6, 0xb9, 0xb1, 0xfa,
-	0x03, 0x80, 0x4a, 0x3f, 0x1c, 0xab, 0x76, 0x77, 0x9a, 0x4d, 0xd7, 0x60, 0x2c, 0xa0, 0x28, 0xc3,
-	0xac, 0xee, 0x1a, 0xc4, 0xa3, 0x2e, 0x0f, 0xfb, 0x74, 0x75, 0xee, 0xea, 0x62, 0x25, 0x27, 0x77,
-	0x58, 0xda, 0x1e, 0x78, 0xae, 0x65, 0x9b, 0xf5, 0xc0, 0x10, 0x7d, 0x00, 0xe1, 0xa0, 0x43, 0x73,
-	0x0f, 0x38, 0xcd, 0x9b, 0x9a, 0xf4, 0xf1, 0xfb, 0xa0, 0x89, 0x03, 0x22, 0xbb, 0xa1, 0xd5, 0x88,
-	0x69, 0xc8, 0x7c, 0xf5, 0x90, 0xa7, 0xfa, 0x15, 0x80, 0x6a, 0x18, 0xed, 0xc0, 0x23, 0x5e, 0x87,
-	0x1d, 0x5a, 0x6d, 0x83, 0x79, 0xa4, 0xed, 0x04, 0x88, 0xb3, 0x30, 0xc3, 0xf8, 0x17, 0x41, 0x58,
-	0x97, 0x6f, 0x43, 0x18, 0x0f, 0xef, 0x8c, 0xf1, 0x25, 0x80, 0x8b, 0xb7, 0x31, 0x76, 0x09, 0xab,
-	0xb9, 0x96, 0x6e, 0xfc, 0x57, 0x14, 0xe7, 0x00, 0xa2, 0x01, 0x45, 0xbf, 0xe7, 0xeb, 0xf0, 0xb1,
-	0xdf, 0x46, 0x3f, 0xeb, 0xc3, 0x24, 0x4d, 0x17, 0xd6, 0x68, 0x77, 0x44, 0x8b, 0x96, 0x62, 0xa9,
-	0x44, 0xce, 0x08, 0x56, 0x4e, 0x52, 0xd5, 0x88, 0x4b, 0xda, 0xc1, 0xa9, 0x51, 0x6b, 0xf0, 0xa5,
-	0xc8, 0xaa, 0x84, 0xdd, 0x82, 0x19, 0x87, 0xaf, 0xc8, 0x23, 0xba, 0x38, 0x81, 0x56, 0xba, 0x4a,
-	0x07, 0x75, 0x46, 0x46, 0xdc, 0x37, 0x3c, 0xd7, 0xd2, 0xfb, 0x89, 0x0e, 0xe5, 0xe5, 0xe9, 0x2f,
-	0xcb, 0x4c, 0x15, 0x98, 0x6d, 0x8b, 0x25, 0x99, 0x4a, 0x9d, 0x90, 0x2a, 0x70, 0x0e, 0x5c, 0xd4,
-	0x4f, 0x65, 0xd4, 0x9d, 0x56, 0x4b, 0xee, 0xb6, 0xe8, 0x71, 0xb4, 0x97, 0xe0, 0xce, 0xbd, 0xdc,
-	0x85, 0xf3, 0x3c, 0xfe, 0x41, 0x68, 0x6c, 0x84, 0xaf, 0xfe, 0x12, 0x7c, 0x3e, 0x3c, 0x51, 0x06,
-	0x23, 0x60, 0x3a, 0xbc, 0xbc, 0xd7, 0x54, 0x5b, 0xf0, 0x95, 0x31, 0x81, 0xe4, 0x3e, 0x7c, 0x08,
-	0x9f, 0x0d, 0xbb, 0x48, 0xe6, 0xa5, 0x09, 0x9b, 0x11, 0x0e, 0x55, 0x8f, 0x38, 0xab, 0x3f, 0x06,
-	0xf7, 0x31, 0x6c, 0xc3, 0xaa, 0xdd, 0xf7, 0xc4, 0xbd, 0xff, 0x3f, 0x8c, 0x8c, 0xcf, 0x46, 0xec,
-	0x2c, 0xdb, 0x69, 0xb5, 0xee, 0xbb, 0x83, 0x17, 0xc1, 0xd4, 0x8c, 0x24, 0xea, 0x6f, 0xfb, 0x3e,
-	0x7c, 0x2e, 0xbc, 0x73, 0xc1, 0xed, 0x4c, 0xbc, 0xef, 0x51, 0xef, 0x7b, 0xbb, 0xad, 0xe5, 0xaf,
-	0xa7, 0xe1, 0x63, 0x8e, 0x8d, 0x7e, 0x02, 0xf0, 0xa9, 0x40, 0x40, 0x10, 0x9e, 0xc0, 0x35, 0x4a,
-	0x9b, 0x94, 0xd5, 0xe4, 0x0e, 0x82, 0x42, 0x2d, 0x7f, 0xf1, 0xc7, 0xdf, 0xdf, 0x3d, 0x58, 0x46,
-	0x45, 0x3c, 0x5e, 0x45, 0xf9, 0x68, 0xc2, 0x67, 0x52, 0xf5, 0x7a, 0xe8, 0x67, 0x00, 0xa7, 0xa3,
-	0xaa, 0x84, 0xd6, 0x93, 0x24, 0xbe, 0xa5, 0x62, 0xca, 0x4a, 0x22, 0xb7, 0x3e, 0xec, 0x36, 0x87,
-	0x7d, 0x1b, 0x95, 0x63, 0x61, 0xe5, 0xf9, 0xc5, 0x67, 0xf2, 0xa1, 0x87, 0x7e, 0x01, 0x70, 0x76,
-	0xb4, 0x5e, 0xa1, 0x77, 0x12, 0xc2, 0x8f, 0xd6, 0xb9, 0xb4, 0x45, 0x6c, 0xf2, 0x22, 0xca, 0x68,
-	0x35, 0xb6, 0x08, 0xa1, 0x54, 0xf8, 0x4c, 0xfc, 0xef, 0xa1, 0x5f, 0x01, 0x9c, 0x19, 0xa9, 0x75,
-	0xa8, 0x92, 0xaa, 0x82, 0x21, 0x89, 0x4c, 0x5b, 0xc0, 0xbb, 0xbc, 0x80, 0x2d, 0xb4, 0x91, 0xb6,
-	0x00, 0xdc, 0xe8, 0x1e, 0x99, 0x84, 0xa1, 0x73, 0x79, 0xc6, 0xfd, 0x01, 0x10, 0x7f, 0xc6, 0x87,
-	0x86, 0x7d, 0x5a, 0xda, 0x02, 0xa7, 0x55, 0xd1, 0x42, 0x1c, 0x2d, 0xfa, 0x16, 0xc0, 0x8c, 0x50,
-	0x37, 0x14, 0x9b, 0x23, 0x22, 0xab, 0x8a, 0x96, 0xd4, 0x5c, 0x32, 0xbd, 0xc5, 0x99, 0x5e, 0x43,
-	0x8b, 0x13, 0x98, 0x84, 0xbe, 0xa2, 0xef, 0x01, 0xcc, 0x4a, 0x1d, 0x44, 0xb1, 0x69, 0xa2, 0x22,
-	0xac, 0xe0, 0xc4, 0xf6, 0x92, 0xab, 0xc8, 0xb9, 0x5e, 0x47, 0xea, 0x04, 0x2e, 0xa9, 0xc5, 0xe8,
-	0x77, 0x00, 0x5f, 0x18, 0x96, 0x37, 0xb4, 0x11, 0x97, 0x71, 0x8c, 0xb2, 0x2a, 0x9b, 0xe9, 0x1d,
-	0x25, 0x73, 0x95, 0x33, 0x57, 0xd0, 0x36, 0x4e, 0xf6, 0x33, 0xc0, 0x3f, 0x8e, 0x51, 0x0d, 0xef,
-	0xa1, 0x2b, 0x00, 0x67, 0x47, 0x6b, 0x67, 0xfc, 0x6c, 0x98, 0xa8, 0xb9, 0xca, 0x7a, 0x2a, 0xf7,
-	0x7f, 0x51, 0xd4, 0xed, 0x81, 0x77, 0x31, 0xd4, 0x20, 0x7e, 0xdb, 0x52, 0x35, 0x28, 0x24, 0xd0,
-	0x77, 0x2d, 0x64, 0x95, 0x17, 0x52, 0x44, 0x85, 0xa4, 0x85, 0x54, 0x2b, 0xbf, 0x5d, 0xe7, 0xc1,
-	0xe5, 0x75, 0x1e, 0xfc, 0x75, 0x9d, 0x07, 0xdf, 0xdc, 0xe4, 0xa7, 0x2e, 0x6f, 0xf2, 0x53, 0x7f,
-	0xde, 0xe4, 0xa7, 0x3e, 0x51, 0x87, 0x08, 0x68, 0x1b, 0x7f, 0x3e, 0x08, 0xe4, 0x75, 0x1d, 0x83,
-	0x35, 0x32, 0xfc, 0xf3, 0xda, 0x3f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xbc, 0xca, 0x3e, 0xd4, 0x05,
-	0x0f, 0x00, 0x00,
+	// 1043 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x98, 0x4f, 0x6f, 0x1b, 0x45,
+	0x14, 0xc0, 0x33, 0xfd, 0xe3, 0xc0, 0x03, 0x02, 0x0c, 0x49, 0x48, 0x97, 0x62, 0x9a, 0x2d, 0x90,
+	0x10, 0xb5, 0x3b, 0x89, 0x4b, 0x69, 0x5a, 0xa5, 0xa0, 0x1a, 0x44, 0x14, 0x41, 0xa5, 0xe0, 0xe4,
+	0xc4, 0x81, 0x68, 0x6d, 0x2f, 0xd6, 0xaa, 0xf6, 0x8e, 0xbb, 0xb3, 0x89, 0xb0, 0xa2, 0x5c, 0x80,
+	0x0f, 0x80, 0x00, 0x51, 0x2e, 0x48, 0x20, 0xc1, 0x37, 0xa8, 0xd4, 0x03, 0xe2, 0xc0, 0x0d, 0x6e,
+	0x01, 0x84, 0x84, 0xc4, 0x05, 0x25, 0x7c, 0x10, 0xb4, 0x33, 0x6f, 0xed, 0x59, 0x67, 0xbd, 0xbb,
+	0xb6, 0x00, 0xf9, 0x92, 0xec, 0xce, 0xbe, 0x3f, 0xbf, 0x37, 0x6f, 0xe6, 0xbd, 0x27, 0xc3, 0x0b,
+	0xf5, 0x8e, 0xe0, 0x5e, 0xdb, 0xe7, 0x01, 0xaf, 0xf1, 0x26, 0xab, 0xf9, 0xdc, 0x0b, 0x6c, 0x71,
+	0x87, 0xed, 0xad, 0xb0, 0xbb, 0xbb, 0x8e, 0xdf, 0xb1, 0xe4, 0x27, 0x7a, 0x2e, 0x26, 0x66, 0x45,
+	0x62, 0xd6, 0xde, 0x8a, 0x71, 0xbe, 0xc1, 0x79, 0xa3, 0xe9, 0x30, 0xbb, 0xed, 0x32, 0xdb, 0xf3,
+	0x78, 0x60, 0x07, 0x2e, 0xf7, 0x84, 0x52, 0x34, 0x96, 0x6a, 0x5c, 0xb4, 0xb8, 0x60, 0x55, 0x5b,
+	0x38, 0xca, 0x22, 0xdb, 0x5b, 0xa9, 0x3a, 0x81, 0xbd, 0xc2, 0xda, 0x76, 0xc3, 0xf5, 0xa4, 0x30,
+	0xca, 0x9e, 0x53, 0xb2, 0x3b, 0xf2, 0x8d, 0xa9, 0x17, 0xfc, 0x54, 0xd4, 0xcd, 0x44, 0x06, 0x6a,
+	0xdc, 0x8d, 0x54, 0x17, 0x07, 0x87, 0xd1, 0x65, 0x55, 0x92, 0x97, 0x06, 0x4b, 0x8a, 0xdd, 0xaa,
+	0xa8, 0xf9, 0x6e, 0x5b, 0x43, 0x9a, 0x6e, 0xf0, 0x06, 0x57, 0x3c, 0xe1, 0x13, 0xae, 0x3e, 0x69,
+	0xb7, 0x5c, 0x8f, 0x33, 0xf9, 0x57, 0x2d, 0x99, 0x0c, 0xa6, 0xdf, 0x09, 0xa3, 0xdb, 0xb6, 0xc5,
+	0x9d, 0x72, 0x67, 0xe3, 0x8d, 0x8a, 0x73, 0x77, 0xd7, 0x11, 0x01, 0x7d, 0x1a, 0x26, 0x43, 0xf3,
+	0x3b, 0x6e, 0x7d, 0x8e, 0x5c, 0x20, 0x8b, 0x67, 0x2a, 0x85, 0xf0, 0x75, 0xa3, 0x6e, 0xbe, 0x0d,
+	0x33, 0x7d, 0x0a, 0xa2, 0xcd, 0x3d, 0xe1, 0xd0, 0x2b, 0x70, 0x26, 0x14, 0x91, 0xe2, 0x8f, 0x94,
+	0x9e, 0xb3, 0x06, 0xee, 0xbc, 0x15, 0xaa, 0x56, 0xa4, 0xb0, 0xf9, 0x25, 0x01, 0xa3, 0x6b, 0x4e,
+	0x94, 0x3b, 0xb7, 0xea, 0x75, 0xdf, 0x11, 0x22, 0xa2, 0x28, 0xc1, 0x64, 0xcd, 0x77, 0xec, 0x80,
+	0xfb, 0xd2, 0xec, 0xc3, 0xe5, 0xb9, 0x5f, 0xef, 0x5f, 0x9e, 0xc6, 0x1d, 0x46, 0xd9, 0xad, 0xc0,
+	0x77, 0xbd, 0x46, 0x25, 0x12, 0xa4, 0x6f, 0x02, 0xf4, 0x32, 0x34, 0x77, 0x4a, 0xd2, 0xbc, 0x68,
+	0xa1, 0x4e, 0x98, 0x07, 0x4b, 0x1d, 0x10, 0xcc, 0x86, 0xb5, 0x69, 0x37, 0x1c, 0xf4, 0x57, 0xd1,
+	0x34, 0xcd, 0x8f, 0x09, 0x98, 0x3a, 0xda, 0x56, 0x60, 0x07, 0xbb, 0x62, 0xdb, 0x6d, 0x39, 0x22,
+	0xb0, 0x5b, 0xed, 0x08, 0x71, 0x16, 0x0a, 0x42, 0x7e, 0x51, 0x84, 0x15, 0x7c, 0xeb, 0xc3, 0x38,
+	0x3d, 0x32, 0xc6, 0x47, 0x04, 0xe6, 0x4f, 0x62, 0xac, 0xdb, 0x62, 0xd3, 0x77, 0x6b, 0xce, 0xff,
+	0x45, 0xf1, 0x39, 0x01, 0xda, 0xa3, 0xe8, 0xe6, 0xfc, 0x2a, 0x9c, 0x0d, 0xd3, 0x18, 0x7a, 0x3d,
+	0x9d, 0x27, 0xe9, 0x4a, 0x9a, 0xae, 0x27, 0xa4, 0x68, 0x21, 0x93, 0x4a, 0xf9, 0x8c, 0x61, 0x7d,
+	0x45, 0xe0, 0x99, 0xc4, 0xe3, 0x33, 0x26, 0x7c, 0xdf, 0x11, 0xb8, 0x98, 0x7a, 0x86, 0xc6, 0x84,
+	0xf3, 0xdb, 0xc4, 0xb3, 0xde, 0x3b, 0x64, 0x63, 0x82, 0x79, 0x8f, 0x68, 0xc5, 0x47, 0xdc, 0x6a,
+	0x36, 0xc7, 0x86, 0x6c, 0x1a, 0xaf, 0xc7, 0xa6, 0xed, 0xdb, 0xad, 0xa8, 0x7c, 0x99, 0x9b, 0xf0,
+	0x54, 0x6c, 0x15, 0x61, 0xaf, 0x43, 0xa1, 0x2d, 0x57, 0xb0, 0x56, 0xce, 0xa7, 0xd0, 0xa2, 0x2a,
+	0x2a, 0x98, 0x33, 0x68, 0xf1, 0xb6, 0x13, 0xf8, 0x6e, 0xad, 0xeb, 0x68, 0x1b, 0xab, 0x78, 0x77,
+	0x19, 0x3d, 0xad, 0xc1, 0x64, 0x4b, 0x2d, 0xa1, 0x2b, 0x33, 0xc5, 0x55, 0xa4, 0x1c, 0xa9, 0x98,
+	0xef, 0x69, 0xbd, 0x41, 0xed, 0xb6, 0x2a, 0x36, 0xf1, 0xa2, 0x42, 0x46, 0x2e, 0x2a, 0xeb, 0x70,
+	0x5e, 0xda, 0xdf, 0xd2, 0xfa, 0x97, 0xde, 0x83, 0x16, 0xe0, 0x71, 0xbd, 0xb5, 0xf5, 0x7a, 0xd1,
+	0x94, 0xbe, 0xbc, 0x51, 0x37, 0x9b, 0xf0, 0xec, 0x00, 0x43, 0xb8, 0x0f, 0x6f, 0xc1, 0xa3, 0xba,
+	0x0a, 0x32, 0x2f, 0xa4, 0x6c, 0x86, 0x6e, 0xaa, 0x12, 0x53, 0x36, 0xbf, 0x8e, 0x2e, 0x8b, 0x2e,
+	0x23, 0xca, 0x9d, 0xd7, 0x55, 0x03, 0x1a, 0x87, 0xde, 0xf5, 0x7e, 0xc2, 0xce, 0xfe, 0x17, 0x19,
+	0xbc, 0x1f, 0xb5, 0xef, 0x98, 0xa3, 0xee, 0xb6, 0xdf, 0x86, 0xc7, 0xf4, 0x9d, 0x8b, 0x6e, 0x67,
+	0xee, 0x7d, 0x8f, 0x6b, 0xff, 0x7b, 0xb7, 0xf5, 0x87, 0xa8, 0x2c, 0x0f, 0xca, 0xe0, 0x98, 0xf3,
+	0x3f, 0x20, 0x09, 0x07, 0x3e, 0x56, 0x0f, 0xc7, 0x94, 0xbc, 0xf4, 0xe3, 0x14, 0x9c, 0x95, 0xe4,
+	0xf4, 0x1b, 0x02, 0x0f, 0x45, 0x33, 0x24, 0x65, 0x29, 0x5c, 0x49, 0xe3, 0xa9, 0xb1, 0x9c, 0x5f,
+	0x41, 0x51, 0x98, 0xa5, 0x0f, 0x7f, 0xfb, 0xfb, 0xb3, 0x53, 0x97, 0xe8, 0x12, 0x1b, 0x3c, 0x48,
+	0xcb, 0xa6, 0xc0, 0xf6, 0x71, 0xf0, 0x3d, 0xa0, 0xdf, 0x13, 0x98, 0x8a, 0x4f, 0x16, 0xf4, 0x6a,
+	0x1e, 0xc7, 0x27, 0x06, 0x59, 0xe3, 0x95, 0x61, 0xd5, 0x90, 0xfa, 0x86, 0xa4, 0x7e, 0x99, 0x96,
+	0x32, 0xa9, 0xb1, 0x84, 0xb0, 0x7d, 0x7c, 0x38, 0xa0, 0xbf, 0x10, 0x98, 0x4d, 0x9e, 0x3b, 0xe8,
+	0xcd, 0x9c, 0x38, 0xc9, 0x33, 0xaf, 0xf1, 0xea, 0xa8, 0xea, 0x18, 0xd5, 0xaa, 0x8c, 0xaa, 0x44,
+	0x97, 0x33, 0xa3, 0x52, 0x63, 0x2c, 0xdb, 0x57, 0xff, 0x0f, 0xe8, 0xef, 0x04, 0x66, 0x12, 0x67,
+	0x14, 0xba, 0x36, 0x14, 0x53, 0xdf, 0xfc, 0x6c, 0xdc, 0x1c, 0x51, 0x1b, 0x03, 0x7a, 0x4d, 0x06,
+	0x74, 0x9d, 0x5e, 0x1b, 0x36, 0x20, 0x56, 0xed, 0xec, 0x34, 0x6c, 0x41, 0xef, 0xe1, 0x6d, 0x08,
+	0x2f, 0x71, 0xbe, 0xdb, 0xa0, 0x95, 0xf3, 0x7c, 0xb7, 0x41, 0xaf, 0x0f, 0xe6, 0xa2, 0x04, 0x36,
+	0xe9, 0x85, 0x2c, 0x60, 0xfa, 0x29, 0x81, 0x82, 0x1a, 0x42, 0xe8, 0xe5, 0x2c, 0x37, 0xb1, 0xe9,
+	0xc7, 0xb0, 0xf2, 0x8a, 0x23, 0xd3, 0x4b, 0x92, 0xe9, 0x22, 0x9d, 0x4f, 0x61, 0x52, 0x63, 0x10,
+	0xfd, 0x82, 0xc0, 0x24, 0x8e, 0x2b, 0x34, 0xd3, 0x4d, 0x7c, 0x56, 0x32, 0x58, 0x6e, 0x79, 0xe4,
+	0x5a, 0x92, 0x5c, 0xcf, 0x53, 0x33, 0x85, 0x0b, 0x47, 0x26, 0xfa, 0x33, 0x81, 0x27, 0xfa, 0xa7,
+	0x10, 0x7a, 0x2d, 0xcb, 0xe3, 0x80, 0x01, 0xc8, 0x58, 0x1d, 0x5e, 0x11, 0x99, 0xcb, 0x92, 0x79,
+	0x8d, 0xde, 0x60, 0xf9, 0x7e, 0x36, 0x08, 0x4f, 0x64, 0x7c, 0xd4, 0x3a, 0xa0, 0x7f, 0x12, 0x98,
+	0x4d, 0x6e, 0x90, 0xd9, 0xf5, 0x23, 0x75, 0x34, 0xca, 0xae, 0x1f, 0xe9, 0x7d, 0x79, 0x84, 0xe8,
+	0x4e, 0x56, 0xc7, 0x07, 0x7d, 0x99, 0x92, 0x37, 0x6f, 0xa8, 0x4c, 0xe9, 0x37, 0x70, 0x75, 0x78,
+	0x45, 0x8c, 0x65, 0x59, 0xc6, 0xb2, 0x44, 0x17, 0xf3, 0xc6, 0x52, 0x5e, 0xfb, 0xe9, 0xa8, 0x48,
+	0x0e, 0x8f, 0x8a, 0xe4, 0xaf, 0xa3, 0x22, 0xf9, 0xe4, 0xb8, 0x38, 0x71, 0x78, 0x5c, 0x9c, 0xf8,
+	0xe3, 0xb8, 0x38, 0xf1, 0xae, 0xd9, 0x07, 0xc1, 0x5b, 0xec, 0x83, 0x9e, 0xa1, 0xa0, 0xd3, 0x76,
+	0x44, 0xb5, 0x20, 0x3f, 0x5f, 0xf9, 0x27, 0x00, 0x00, 0xff, 0xff, 0xbe, 0x88, 0x41, 0xa2, 0x41,
+	0x13, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -929,29 +1277,25 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	//
 	// TaskByID returns a task by its ID.
 	//
 	// Returns the complete task record for the specified task ID, including all
 	// scheduling information, messages, and execution status. Uses direct key
 	// lookup for optimal performance.
 	TaskByID(ctx context.Context, in *QueryTaskByIDRequest, opts ...grpc.CallOption) (*QueryTaskByIDResponse, error)
-	//
 	// TasksByAddress returns all tasks created by a specific address.
 	//
 	// Returns paginated list of tasks created by the specified address, ordered
 	// by task ID. Uses indexed queries for efficient lookup. Supports standard
 	// pagination with customizable page size and navigation.
-	TasksByAddress(ctx context.Context, in *QueryTasksByAddressRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
-	//
+	TasksByAddress(ctx context.Context, in *QueryTasksByAddressRequest, opts ...grpc.CallOption) (*QueryTasksByAddressResponse, error)
 	// TasksByStatusTimestamp returns tasks filtered by status and ordered by
 	// timestamp.
 	//
 	// Returns paginated list of tasks with the specified status, ordered by
 	// scheduled timestamp (earliest first). Uses indexed queries for efficient
 	// status filtering. Supports pagination with reverse ordering capability.
-	TasksByStatusTimestamp(ctx context.Context, in *QueryTasksByStatusTimestampRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
-	//
+	TasksByStatusTimestamp(ctx context.Context, in *QueryTasksByStatusTimestampRequest, opts ...grpc.CallOption) (*QueryTasksByStatusTimestampResponse, error)
 	// TasksByStatusGasPrice returns tasks filtered by status and ordered by gas
 	// price.
 	//
@@ -959,15 +1303,13 @@ type QueryClient interface {
 	// price (lowest first). Uses indexed queries for efficient status filtering
 	// and gas price ordering. Supports pagination with reverse ordering
 	// capability.
-	TasksByStatusGasPrice(ctx context.Context, in *QueryTasksByStatusGasPriceRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
-	//
+	TasksByStatusGasPrice(ctx context.Context, in *QueryTasksByStatusGasPriceRequest, opts ...grpc.CallOption) (*QueryTasksByStatusGasPriceResponse, error)
 	// TasksAll returns all tasks ordered by ID.
 	//
 	// Returns paginated list of all tasks in the system, ordered by task ID
 	// ascending. Uses direct store iteration for comprehensive task listing.
 	// Supports standard pagination for large result sets.
-	TasksAll(ctx context.Context, in *QueryAllTasksRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
-	//
+	TasksAll(ctx context.Context, in *QueryTasksAllRequest, opts ...grpc.CallOption) (*QueryTasksAllResponse, error)
 	// Params returns the module parameters.
 	//
 	// Returns the current crontask module configuration including scheduling
@@ -975,34 +1317,30 @@ type QueryClient interface {
 	// Parameters control task creation, execution limits, and subscription
 	// behavior.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	//
 	// Metrics returns last-block crontask metrics.
 	//
 	// Returns operational metrics from the most recent block including task
 	// execution counts, gas usage statistics, subscription activity, and system
 	// performance indicators. Metrics are updated at the end of each block.
 	Metrics(ctx context.Context, in *QueryMetricsRequest, opts ...grpc.CallOption) (*QueryMetricsResponse, error)
-	//
 	// SubscriptionByID returns a subscription by id.
 	//
 	// Returns the complete subscription record for the specified subscription ID,
 	// including filter criteria, script configuration, execution parameters, and
 	// current status. Uses direct key lookup for optimal performance.
 	SubscriptionByID(ctx context.Context, in *QuerySubscriptionByIDRequest, opts ...grpc.CallOption) (*QuerySubscriptionByIDResponse, error)
-	//
 	// SubscriptionsByCreator returns subscriptions for a creator.
 	//
 	// Returns paginated list of subscriptions created by the specified address,
 	// ordered by subscription ID. Uses collection filtering with indexed queries
 	// for efficient creator-based lookups. Supports standard pagination.
-	SubscriptionsByCreator(ctx context.Context, in *QuerySubscriptionsByCreatorRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error)
-	//
+	SubscriptionsByCreator(ctx context.Context, in *QuerySubscriptionsByCreatorRequest, opts ...grpc.CallOption) (*QuerySubscriptionsByCreatorResponse, error)
 	// SubscriptionsAll returns all subscriptions.
 	//
 	// Returns paginated list of all subscriptions in the system, ordered by
 	// subscription ID ascending. Uses collection pagination for comprehensive
 	// subscription listing. Supports standard pagination for large result sets.
-	SubscriptionsAll(ctx context.Context, in *QuerySubscriptionsAllRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error)
+	SubscriptionsAll(ctx context.Context, in *QuerySubscriptionsAllRequest, opts ...grpc.CallOption) (*QuerySubscriptionsAllResponse, error)
 }
 
 type queryClient struct {
@@ -1022,8 +1360,8 @@ func (c *queryClient) TaskByID(ctx context.Context, in *QueryTaskByIDRequest, op
 	return out, nil
 }
 
-func (c *queryClient) TasksByAddress(ctx context.Context, in *QueryTasksByAddressRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error) {
-	out := new(QueryTasksResponse)
+func (c *queryClient) TasksByAddress(ctx context.Context, in *QueryTasksByAddressRequest, opts ...grpc.CallOption) (*QueryTasksByAddressResponse, error) {
+	out := new(QueryTasksByAddressResponse)
 	err := c.cc.Invoke(ctx, "/dysonprotocol.crontask.v1.Query/TasksByAddress", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1031,8 +1369,8 @@ func (c *queryClient) TasksByAddress(ctx context.Context, in *QueryTasksByAddres
 	return out, nil
 }
 
-func (c *queryClient) TasksByStatusTimestamp(ctx context.Context, in *QueryTasksByStatusTimestampRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error) {
-	out := new(QueryTasksResponse)
+func (c *queryClient) TasksByStatusTimestamp(ctx context.Context, in *QueryTasksByStatusTimestampRequest, opts ...grpc.CallOption) (*QueryTasksByStatusTimestampResponse, error) {
+	out := new(QueryTasksByStatusTimestampResponse)
 	err := c.cc.Invoke(ctx, "/dysonprotocol.crontask.v1.Query/TasksByStatusTimestamp", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1040,8 +1378,8 @@ func (c *queryClient) TasksByStatusTimestamp(ctx context.Context, in *QueryTasks
 	return out, nil
 }
 
-func (c *queryClient) TasksByStatusGasPrice(ctx context.Context, in *QueryTasksByStatusGasPriceRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error) {
-	out := new(QueryTasksResponse)
+func (c *queryClient) TasksByStatusGasPrice(ctx context.Context, in *QueryTasksByStatusGasPriceRequest, opts ...grpc.CallOption) (*QueryTasksByStatusGasPriceResponse, error) {
+	out := new(QueryTasksByStatusGasPriceResponse)
 	err := c.cc.Invoke(ctx, "/dysonprotocol.crontask.v1.Query/TasksByStatusGasPrice", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1049,8 +1387,8 @@ func (c *queryClient) TasksByStatusGasPrice(ctx context.Context, in *QueryTasksB
 	return out, nil
 }
 
-func (c *queryClient) TasksAll(ctx context.Context, in *QueryAllTasksRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error) {
-	out := new(QueryTasksResponse)
+func (c *queryClient) TasksAll(ctx context.Context, in *QueryTasksAllRequest, opts ...grpc.CallOption) (*QueryTasksAllResponse, error) {
+	out := new(QueryTasksAllResponse)
 	err := c.cc.Invoke(ctx, "/dysonprotocol.crontask.v1.Query/TasksAll", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1085,8 +1423,8 @@ func (c *queryClient) SubscriptionByID(ctx context.Context, in *QuerySubscriptio
 	return out, nil
 }
 
-func (c *queryClient) SubscriptionsByCreator(ctx context.Context, in *QuerySubscriptionsByCreatorRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error) {
-	out := new(QuerySubscriptionsResponse)
+func (c *queryClient) SubscriptionsByCreator(ctx context.Context, in *QuerySubscriptionsByCreatorRequest, opts ...grpc.CallOption) (*QuerySubscriptionsByCreatorResponse, error) {
+	out := new(QuerySubscriptionsByCreatorResponse)
 	err := c.cc.Invoke(ctx, "/dysonprotocol.crontask.v1.Query/SubscriptionsByCreator", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1094,8 +1432,8 @@ func (c *queryClient) SubscriptionsByCreator(ctx context.Context, in *QuerySubsc
 	return out, nil
 }
 
-func (c *queryClient) SubscriptionsAll(ctx context.Context, in *QuerySubscriptionsAllRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error) {
-	out := new(QuerySubscriptionsResponse)
+func (c *queryClient) SubscriptionsAll(ctx context.Context, in *QuerySubscriptionsAllRequest, opts ...grpc.CallOption) (*QuerySubscriptionsAllResponse, error) {
+	out := new(QuerySubscriptionsAllResponse)
 	err := c.cc.Invoke(ctx, "/dysonprotocol.crontask.v1.Query/SubscriptionsAll", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1105,29 +1443,25 @@ func (c *queryClient) SubscriptionsAll(ctx context.Context, in *QuerySubscriptio
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	//
 	// TaskByID returns a task by its ID.
 	//
 	// Returns the complete task record for the specified task ID, including all
 	// scheduling information, messages, and execution status. Uses direct key
 	// lookup for optimal performance.
 	TaskByID(context.Context, *QueryTaskByIDRequest) (*QueryTaskByIDResponse, error)
-	//
 	// TasksByAddress returns all tasks created by a specific address.
 	//
 	// Returns paginated list of tasks created by the specified address, ordered
 	// by task ID. Uses indexed queries for efficient lookup. Supports standard
 	// pagination with customizable page size and navigation.
-	TasksByAddress(context.Context, *QueryTasksByAddressRequest) (*QueryTasksResponse, error)
-	//
+	TasksByAddress(context.Context, *QueryTasksByAddressRequest) (*QueryTasksByAddressResponse, error)
 	// TasksByStatusTimestamp returns tasks filtered by status and ordered by
 	// timestamp.
 	//
 	// Returns paginated list of tasks with the specified status, ordered by
 	// scheduled timestamp (earliest first). Uses indexed queries for efficient
 	// status filtering. Supports pagination with reverse ordering capability.
-	TasksByStatusTimestamp(context.Context, *QueryTasksByStatusTimestampRequest) (*QueryTasksResponse, error)
-	//
+	TasksByStatusTimestamp(context.Context, *QueryTasksByStatusTimestampRequest) (*QueryTasksByStatusTimestampResponse, error)
 	// TasksByStatusGasPrice returns tasks filtered by status and ordered by gas
 	// price.
 	//
@@ -1135,15 +1469,13 @@ type QueryServer interface {
 	// price (lowest first). Uses indexed queries for efficient status filtering
 	// and gas price ordering. Supports pagination with reverse ordering
 	// capability.
-	TasksByStatusGasPrice(context.Context, *QueryTasksByStatusGasPriceRequest) (*QueryTasksResponse, error)
-	//
+	TasksByStatusGasPrice(context.Context, *QueryTasksByStatusGasPriceRequest) (*QueryTasksByStatusGasPriceResponse, error)
 	// TasksAll returns all tasks ordered by ID.
 	//
 	// Returns paginated list of all tasks in the system, ordered by task ID
 	// ascending. Uses direct store iteration for comprehensive task listing.
 	// Supports standard pagination for large result sets.
-	TasksAll(context.Context, *QueryAllTasksRequest) (*QueryTasksResponse, error)
-	//
+	TasksAll(context.Context, *QueryTasksAllRequest) (*QueryTasksAllResponse, error)
 	// Params returns the module parameters.
 	//
 	// Returns the current crontask module configuration including scheduling
@@ -1151,34 +1483,30 @@ type QueryServer interface {
 	// Parameters control task creation, execution limits, and subscription
 	// behavior.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	//
 	// Metrics returns last-block crontask metrics.
 	//
 	// Returns operational metrics from the most recent block including task
 	// execution counts, gas usage statistics, subscription activity, and system
 	// performance indicators. Metrics are updated at the end of each block.
 	Metrics(context.Context, *QueryMetricsRequest) (*QueryMetricsResponse, error)
-	//
 	// SubscriptionByID returns a subscription by id.
 	//
 	// Returns the complete subscription record for the specified subscription ID,
 	// including filter criteria, script configuration, execution parameters, and
 	// current status. Uses direct key lookup for optimal performance.
 	SubscriptionByID(context.Context, *QuerySubscriptionByIDRequest) (*QuerySubscriptionByIDResponse, error)
-	//
 	// SubscriptionsByCreator returns subscriptions for a creator.
 	//
 	// Returns paginated list of subscriptions created by the specified address,
 	// ordered by subscription ID. Uses collection filtering with indexed queries
 	// for efficient creator-based lookups. Supports standard pagination.
-	SubscriptionsByCreator(context.Context, *QuerySubscriptionsByCreatorRequest) (*QuerySubscriptionsResponse, error)
-	//
+	SubscriptionsByCreator(context.Context, *QuerySubscriptionsByCreatorRequest) (*QuerySubscriptionsByCreatorResponse, error)
 	// SubscriptionsAll returns all subscriptions.
 	//
 	// Returns paginated list of all subscriptions in the system, ordered by
 	// subscription ID ascending. Uses collection pagination for comprehensive
 	// subscription listing. Supports standard pagination for large result sets.
-	SubscriptionsAll(context.Context, *QuerySubscriptionsAllRequest) (*QuerySubscriptionsResponse, error)
+	SubscriptionsAll(context.Context, *QuerySubscriptionsAllRequest) (*QuerySubscriptionsAllResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -1188,16 +1516,16 @@ type UnimplementedQueryServer struct {
 func (*UnimplementedQueryServer) TaskByID(ctx context.Context, req *QueryTaskByIDRequest) (*QueryTaskByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TaskByID not implemented")
 }
-func (*UnimplementedQueryServer) TasksByAddress(ctx context.Context, req *QueryTasksByAddressRequest) (*QueryTasksResponse, error) {
+func (*UnimplementedQueryServer) TasksByAddress(ctx context.Context, req *QueryTasksByAddressRequest) (*QueryTasksByAddressResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TasksByAddress not implemented")
 }
-func (*UnimplementedQueryServer) TasksByStatusTimestamp(ctx context.Context, req *QueryTasksByStatusTimestampRequest) (*QueryTasksResponse, error) {
+func (*UnimplementedQueryServer) TasksByStatusTimestamp(ctx context.Context, req *QueryTasksByStatusTimestampRequest) (*QueryTasksByStatusTimestampResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TasksByStatusTimestamp not implemented")
 }
-func (*UnimplementedQueryServer) TasksByStatusGasPrice(ctx context.Context, req *QueryTasksByStatusGasPriceRequest) (*QueryTasksResponse, error) {
+func (*UnimplementedQueryServer) TasksByStatusGasPrice(ctx context.Context, req *QueryTasksByStatusGasPriceRequest) (*QueryTasksByStatusGasPriceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TasksByStatusGasPrice not implemented")
 }
-func (*UnimplementedQueryServer) TasksAll(ctx context.Context, req *QueryAllTasksRequest) (*QueryTasksResponse, error) {
+func (*UnimplementedQueryServer) TasksAll(ctx context.Context, req *QueryTasksAllRequest) (*QueryTasksAllResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TasksAll not implemented")
 }
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
@@ -1209,10 +1537,10 @@ func (*UnimplementedQueryServer) Metrics(ctx context.Context, req *QueryMetricsR
 func (*UnimplementedQueryServer) SubscriptionByID(ctx context.Context, req *QuerySubscriptionByIDRequest) (*QuerySubscriptionByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubscriptionByID not implemented")
 }
-func (*UnimplementedQueryServer) SubscriptionsByCreator(ctx context.Context, req *QuerySubscriptionsByCreatorRequest) (*QuerySubscriptionsResponse, error) {
+func (*UnimplementedQueryServer) SubscriptionsByCreator(ctx context.Context, req *QuerySubscriptionsByCreatorRequest) (*QuerySubscriptionsByCreatorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubscriptionsByCreator not implemented")
 }
-func (*UnimplementedQueryServer) SubscriptionsAll(ctx context.Context, req *QuerySubscriptionsAllRequest) (*QuerySubscriptionsResponse, error) {
+func (*UnimplementedQueryServer) SubscriptionsAll(ctx context.Context, req *QuerySubscriptionsAllRequest) (*QuerySubscriptionsAllResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubscriptionsAll not implemented")
 }
 
@@ -1293,7 +1621,7 @@ func _Query_TasksByStatusGasPrice_Handler(srv interface{}, ctx context.Context, 
 }
 
 func _Query_TasksAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryAllTasksRequest)
+	in := new(QueryTasksAllRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1305,7 +1633,7 @@ func _Query_TasksAll_Handler(srv interface{}, ctx context.Context, dec func(inte
 		FullMethod: "/dysonprotocol.crontask.v1.Query/TasksAll",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).TasksAll(ctx, req.(*QueryAllTasksRequest))
+		return srv.(QueryServer).TasksAll(ctx, req.(*QueryTasksAllRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1688,6 +2016,202 @@ func (m *QueryTasksResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryTasksByAddressResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTasksByAddressResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTasksByAddressResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Tasks) > 0 {
+		for iNdEx := len(m.Tasks) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Tasks[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTasksByStatusTimestampResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTasksByStatusTimestampResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTasksByStatusTimestampResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Tasks) > 0 {
+		for iNdEx := len(m.Tasks) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Tasks[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTasksByStatusGasPriceResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTasksByStatusGasPriceResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTasksByStatusGasPriceResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Tasks) > 0 {
+		for iNdEx := len(m.Tasks) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Tasks[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTasksAllResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTasksAllResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTasksAllResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Tasks) > 0 {
+		for iNdEx := len(m.Tasks) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Tasks[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *QueryParamsRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1804,7 +2328,7 @@ func (m *QueryMetricsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryAllTasksRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryTasksAllRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1814,12 +2338,12 @@ func (m *QueryAllTasksRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryAllTasksRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryTasksAllRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryAllTasksRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryTasksAllRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -2028,6 +2552,104 @@ func (m *QuerySubscriptionsResponse) MarshalToSizedBuffer(dAtA []byte) (int, err
 	return len(dAtA) - i, nil
 }
 
+func (m *QuerySubscriptionsByCreatorResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QuerySubscriptionsByCreatorResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QuerySubscriptionsByCreatorResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Subscriptions) > 0 {
+		for iNdEx := len(m.Subscriptions) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Subscriptions[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QuerySubscriptionsAllResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QuerySubscriptionsAllResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QuerySubscriptionsAllResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Subscriptions) > 0 {
+		for iNdEx := len(m.Subscriptions) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Subscriptions[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -2134,6 +2756,82 @@ func (m *QueryTasksResponse) Size() (n int) {
 	return n
 }
 
+func (m *QueryTasksByAddressResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Tasks) > 0 {
+		for _, e := range m.Tasks {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryTasksByStatusTimestampResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Tasks) > 0 {
+		for _, e := range m.Tasks {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryTasksByStatusGasPriceResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Tasks) > 0 {
+		for _, e := range m.Tasks {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryTasksAllResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Tasks) > 0 {
+		for _, e := range m.Tasks {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
 func (m *QueryParamsRequest) Size() (n int) {
 	if m == nil {
 		return 0
@@ -2178,7 +2876,7 @@ func (m *QueryMetricsResponse) Size() (n int) {
 	return n
 }
 
-func (m *QueryAllTasksRequest) Size() (n int) {
+func (m *QueryTasksAllRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2247,6 +2945,44 @@ func (m *QuerySubscriptionsAllRequest) Size() (n int) {
 }
 
 func (m *QuerySubscriptionsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Subscriptions) > 0 {
+		for _, e := range m.Subscriptions {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QuerySubscriptionsByCreatorResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Subscriptions) > 0 {
+		for _, e := range m.Subscriptions {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QuerySubscriptionsAllResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2900,6 +3636,486 @@ func (m *QueryTasksResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *QueryTasksByAddressResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTasksByAddressResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTasksByAddressResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Tasks", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Tasks = append(m.Tasks, &Task{})
+			if err := m.Tasks[len(m.Tasks)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTasksByStatusTimestampResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTasksByStatusTimestampResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTasksByStatusTimestampResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Tasks", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Tasks = append(m.Tasks, &Task{})
+			if err := m.Tasks[len(m.Tasks)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTasksByStatusGasPriceResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTasksByStatusGasPriceResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTasksByStatusGasPriceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Tasks", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Tasks = append(m.Tasks, &Task{})
+			if err := m.Tasks[len(m.Tasks)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTasksAllResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTasksAllResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTasksAllResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Tasks", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Tasks = append(m.Tasks, &Task{})
+			if err := m.Tasks[len(m.Tasks)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3172,7 +4388,7 @@ func (m *QueryMetricsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryAllTasksRequest) Unmarshal(dAtA []byte) error {
+func (m *QueryTasksAllRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3195,10 +4411,10 @@ func (m *QueryAllTasksRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryAllTasksRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryTasksAllRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryAllTasksRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryTasksAllRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3644,6 +4860,246 @@ func (m *QuerySubscriptionsResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: QuerySubscriptionsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Subscriptions", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Subscriptions = append(m.Subscriptions, &Subscription{})
+			if err := m.Subscriptions[len(m.Subscriptions)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QuerySubscriptionsByCreatorResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QuerySubscriptionsByCreatorResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QuerySubscriptionsByCreatorResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Subscriptions", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Subscriptions = append(m.Subscriptions, &Subscription{})
+			if err := m.Subscriptions[len(m.Subscriptions)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QuerySubscriptionsAllResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QuerySubscriptionsAllResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QuerySubscriptionsAllResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:

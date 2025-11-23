@@ -11,7 +11,7 @@ import (
 )
 
 // TasksAll returns all tasks ordered by task ID (ascending)
-func (q queryServer) TasksAll(ctx context.Context, req *crontasktypes.QueryAllTasksRequest) (*crontasktypes.QueryTasksResponse, error) {
+func (q queryServer) TasksAll(ctx context.Context, req *crontasktypes.QueryTasksAllRequest) (*crontasktypes.QueryTasksAllResponse, error) {
 	// The `Tasks` collection is stored under a single-byte prefix 0 (see keeper.TasksKey).
 	// We create a prefixed store so that Paginate only iterates over task entries.
 	store := prefix.NewStore(q.k.kvStore(ctx), []byte{0})
@@ -35,5 +35,5 @@ func (q queryServer) TasksAll(ctx context.Context, req *crontasktypes.QueryAllTa
 		return nil, errorsmod.Wrapf(err, "failed to get tasks all")
 	}
 
-	return &crontasktypes.QueryTasksResponse{Tasks: tasks, Pagination: pageRes}, nil
+	return &crontasktypes.QueryTasksAllResponse{Tasks: tasks, Pagination: pageRes}, nil
 }

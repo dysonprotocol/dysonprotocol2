@@ -48,14 +48,14 @@ type QueryClient interface {
 	// Returns paginated list of tasks created by the specified address, ordered
 	// by task ID. Uses indexed queries for efficient lookup. Supports standard
 	// pagination with customizable page size and navigation.
-	TasksByAddress(ctx context.Context, in *QueryTasksByAddressRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
+	TasksByAddress(ctx context.Context, in *QueryTasksByAddressRequest, opts ...grpc.CallOption) (*QueryTasksByAddressResponse, error)
 	// TasksByStatusTimestamp returns tasks filtered by status and ordered by
 	// timestamp.
 	//
 	// Returns paginated list of tasks with the specified status, ordered by
 	// scheduled timestamp (earliest first). Uses indexed queries for efficient
 	// status filtering. Supports pagination with reverse ordering capability.
-	TasksByStatusTimestamp(ctx context.Context, in *QueryTasksByStatusTimestampRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
+	TasksByStatusTimestamp(ctx context.Context, in *QueryTasksByStatusTimestampRequest, opts ...grpc.CallOption) (*QueryTasksByStatusTimestampResponse, error)
 	// TasksByStatusGasPrice returns tasks filtered by status and ordered by gas
 	// price.
 	//
@@ -63,13 +63,13 @@ type QueryClient interface {
 	// price (lowest first). Uses indexed queries for efficient status filtering
 	// and gas price ordering. Supports pagination with reverse ordering
 	// capability.
-	TasksByStatusGasPrice(ctx context.Context, in *QueryTasksByStatusGasPriceRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
+	TasksByStatusGasPrice(ctx context.Context, in *QueryTasksByStatusGasPriceRequest, opts ...grpc.CallOption) (*QueryTasksByStatusGasPriceResponse, error)
 	// TasksAll returns all tasks ordered by ID.
 	//
 	// Returns paginated list of all tasks in the system, ordered by task ID
 	// ascending. Uses direct store iteration for comprehensive task listing.
 	// Supports standard pagination for large result sets.
-	TasksAll(ctx context.Context, in *QueryAllTasksRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
+	TasksAll(ctx context.Context, in *QueryTasksAllRequest, opts ...grpc.CallOption) (*QueryTasksAllResponse, error)
 	// Params returns the module parameters.
 	//
 	// Returns the current crontask module configuration including scheduling
@@ -94,13 +94,13 @@ type QueryClient interface {
 	// Returns paginated list of subscriptions created by the specified address,
 	// ordered by subscription ID. Uses collection filtering with indexed queries
 	// for efficient creator-based lookups. Supports standard pagination.
-	SubscriptionsByCreator(ctx context.Context, in *QuerySubscriptionsByCreatorRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error)
+	SubscriptionsByCreator(ctx context.Context, in *QuerySubscriptionsByCreatorRequest, opts ...grpc.CallOption) (*QuerySubscriptionsByCreatorResponse, error)
 	// SubscriptionsAll returns all subscriptions.
 	//
 	// Returns paginated list of all subscriptions in the system, ordered by
 	// subscription ID ascending. Uses collection pagination for comprehensive
 	// subscription listing. Supports standard pagination for large result sets.
-	SubscriptionsAll(ctx context.Context, in *QuerySubscriptionsAllRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error)
+	SubscriptionsAll(ctx context.Context, in *QuerySubscriptionsAllRequest, opts ...grpc.CallOption) (*QuerySubscriptionsAllResponse, error)
 }
 
 type queryClient struct {
@@ -121,9 +121,9 @@ func (c *queryClient) TaskByID(ctx context.Context, in *QueryTaskByIDRequest, op
 	return out, nil
 }
 
-func (c *queryClient) TasksByAddress(ctx context.Context, in *QueryTasksByAddressRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error) {
+func (c *queryClient) TasksByAddress(ctx context.Context, in *QueryTasksByAddressRequest, opts ...grpc.CallOption) (*QueryTasksByAddressResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryTasksResponse)
+	out := new(QueryTasksByAddressResponse)
 	err := c.cc.Invoke(ctx, Query_TasksByAddress_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -131,9 +131,9 @@ func (c *queryClient) TasksByAddress(ctx context.Context, in *QueryTasksByAddres
 	return out, nil
 }
 
-func (c *queryClient) TasksByStatusTimestamp(ctx context.Context, in *QueryTasksByStatusTimestampRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error) {
+func (c *queryClient) TasksByStatusTimestamp(ctx context.Context, in *QueryTasksByStatusTimestampRequest, opts ...grpc.CallOption) (*QueryTasksByStatusTimestampResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryTasksResponse)
+	out := new(QueryTasksByStatusTimestampResponse)
 	err := c.cc.Invoke(ctx, Query_TasksByStatusTimestamp_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -141,9 +141,9 @@ func (c *queryClient) TasksByStatusTimestamp(ctx context.Context, in *QueryTasks
 	return out, nil
 }
 
-func (c *queryClient) TasksByStatusGasPrice(ctx context.Context, in *QueryTasksByStatusGasPriceRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error) {
+func (c *queryClient) TasksByStatusGasPrice(ctx context.Context, in *QueryTasksByStatusGasPriceRequest, opts ...grpc.CallOption) (*QueryTasksByStatusGasPriceResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryTasksResponse)
+	out := new(QueryTasksByStatusGasPriceResponse)
 	err := c.cc.Invoke(ctx, Query_TasksByStatusGasPrice_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -151,9 +151,9 @@ func (c *queryClient) TasksByStatusGasPrice(ctx context.Context, in *QueryTasksB
 	return out, nil
 }
 
-func (c *queryClient) TasksAll(ctx context.Context, in *QueryAllTasksRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error) {
+func (c *queryClient) TasksAll(ctx context.Context, in *QueryTasksAllRequest, opts ...grpc.CallOption) (*QueryTasksAllResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryTasksResponse)
+	out := new(QueryTasksAllResponse)
 	err := c.cc.Invoke(ctx, Query_TasksAll_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -191,9 +191,9 @@ func (c *queryClient) SubscriptionByID(ctx context.Context, in *QuerySubscriptio
 	return out, nil
 }
 
-func (c *queryClient) SubscriptionsByCreator(ctx context.Context, in *QuerySubscriptionsByCreatorRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error) {
+func (c *queryClient) SubscriptionsByCreator(ctx context.Context, in *QuerySubscriptionsByCreatorRequest, opts ...grpc.CallOption) (*QuerySubscriptionsByCreatorResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QuerySubscriptionsResponse)
+	out := new(QuerySubscriptionsByCreatorResponse)
 	err := c.cc.Invoke(ctx, Query_SubscriptionsByCreator_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -201,9 +201,9 @@ func (c *queryClient) SubscriptionsByCreator(ctx context.Context, in *QuerySubsc
 	return out, nil
 }
 
-func (c *queryClient) SubscriptionsAll(ctx context.Context, in *QuerySubscriptionsAllRequest, opts ...grpc.CallOption) (*QuerySubscriptionsResponse, error) {
+func (c *queryClient) SubscriptionsAll(ctx context.Context, in *QuerySubscriptionsAllRequest, opts ...grpc.CallOption) (*QuerySubscriptionsAllResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QuerySubscriptionsResponse)
+	out := new(QuerySubscriptionsAllResponse)
 	err := c.cc.Invoke(ctx, Query_SubscriptionsAll_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -228,14 +228,14 @@ type QueryServer interface {
 	// Returns paginated list of tasks created by the specified address, ordered
 	// by task ID. Uses indexed queries for efficient lookup. Supports standard
 	// pagination with customizable page size and navigation.
-	TasksByAddress(context.Context, *QueryTasksByAddressRequest) (*QueryTasksResponse, error)
+	TasksByAddress(context.Context, *QueryTasksByAddressRequest) (*QueryTasksByAddressResponse, error)
 	// TasksByStatusTimestamp returns tasks filtered by status and ordered by
 	// timestamp.
 	//
 	// Returns paginated list of tasks with the specified status, ordered by
 	// scheduled timestamp (earliest first). Uses indexed queries for efficient
 	// status filtering. Supports pagination with reverse ordering capability.
-	TasksByStatusTimestamp(context.Context, *QueryTasksByStatusTimestampRequest) (*QueryTasksResponse, error)
+	TasksByStatusTimestamp(context.Context, *QueryTasksByStatusTimestampRequest) (*QueryTasksByStatusTimestampResponse, error)
 	// TasksByStatusGasPrice returns tasks filtered by status and ordered by gas
 	// price.
 	//
@@ -243,13 +243,13 @@ type QueryServer interface {
 	// price (lowest first). Uses indexed queries for efficient status filtering
 	// and gas price ordering. Supports pagination with reverse ordering
 	// capability.
-	TasksByStatusGasPrice(context.Context, *QueryTasksByStatusGasPriceRequest) (*QueryTasksResponse, error)
+	TasksByStatusGasPrice(context.Context, *QueryTasksByStatusGasPriceRequest) (*QueryTasksByStatusGasPriceResponse, error)
 	// TasksAll returns all tasks ordered by ID.
 	//
 	// Returns paginated list of all tasks in the system, ordered by task ID
 	// ascending. Uses direct store iteration for comprehensive task listing.
 	// Supports standard pagination for large result sets.
-	TasksAll(context.Context, *QueryAllTasksRequest) (*QueryTasksResponse, error)
+	TasksAll(context.Context, *QueryTasksAllRequest) (*QueryTasksAllResponse, error)
 	// Params returns the module parameters.
 	//
 	// Returns the current crontask module configuration including scheduling
@@ -274,13 +274,13 @@ type QueryServer interface {
 	// Returns paginated list of subscriptions created by the specified address,
 	// ordered by subscription ID. Uses collection filtering with indexed queries
 	// for efficient creator-based lookups. Supports standard pagination.
-	SubscriptionsByCreator(context.Context, *QuerySubscriptionsByCreatorRequest) (*QuerySubscriptionsResponse, error)
+	SubscriptionsByCreator(context.Context, *QuerySubscriptionsByCreatorRequest) (*QuerySubscriptionsByCreatorResponse, error)
 	// SubscriptionsAll returns all subscriptions.
 	//
 	// Returns paginated list of all subscriptions in the system, ordered by
 	// subscription ID ascending. Uses collection pagination for comprehensive
 	// subscription listing. Supports standard pagination for large result sets.
-	SubscriptionsAll(context.Context, *QuerySubscriptionsAllRequest) (*QuerySubscriptionsResponse, error)
+	SubscriptionsAll(context.Context, *QuerySubscriptionsAllRequest) (*QuerySubscriptionsAllResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -294,16 +294,16 @@ type UnimplementedQueryServer struct{}
 func (UnimplementedQueryServer) TaskByID(context.Context, *QueryTaskByIDRequest) (*QueryTaskByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TaskByID not implemented")
 }
-func (UnimplementedQueryServer) TasksByAddress(context.Context, *QueryTasksByAddressRequest) (*QueryTasksResponse, error) {
+func (UnimplementedQueryServer) TasksByAddress(context.Context, *QueryTasksByAddressRequest) (*QueryTasksByAddressResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TasksByAddress not implemented")
 }
-func (UnimplementedQueryServer) TasksByStatusTimestamp(context.Context, *QueryTasksByStatusTimestampRequest) (*QueryTasksResponse, error) {
+func (UnimplementedQueryServer) TasksByStatusTimestamp(context.Context, *QueryTasksByStatusTimestampRequest) (*QueryTasksByStatusTimestampResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TasksByStatusTimestamp not implemented")
 }
-func (UnimplementedQueryServer) TasksByStatusGasPrice(context.Context, *QueryTasksByStatusGasPriceRequest) (*QueryTasksResponse, error) {
+func (UnimplementedQueryServer) TasksByStatusGasPrice(context.Context, *QueryTasksByStatusGasPriceRequest) (*QueryTasksByStatusGasPriceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TasksByStatusGasPrice not implemented")
 }
-func (UnimplementedQueryServer) TasksAll(context.Context, *QueryAllTasksRequest) (*QueryTasksResponse, error) {
+func (UnimplementedQueryServer) TasksAll(context.Context, *QueryTasksAllRequest) (*QueryTasksAllResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TasksAll not implemented")
 }
 func (UnimplementedQueryServer) Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error) {
@@ -315,10 +315,10 @@ func (UnimplementedQueryServer) Metrics(context.Context, *QueryMetricsRequest) (
 func (UnimplementedQueryServer) SubscriptionByID(context.Context, *QuerySubscriptionByIDRequest) (*QuerySubscriptionByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubscriptionByID not implemented")
 }
-func (UnimplementedQueryServer) SubscriptionsByCreator(context.Context, *QuerySubscriptionsByCreatorRequest) (*QuerySubscriptionsResponse, error) {
+func (UnimplementedQueryServer) SubscriptionsByCreator(context.Context, *QuerySubscriptionsByCreatorRequest) (*QuerySubscriptionsByCreatorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubscriptionsByCreator not implemented")
 }
-func (UnimplementedQueryServer) SubscriptionsAll(context.Context, *QuerySubscriptionsAllRequest) (*QuerySubscriptionsResponse, error) {
+func (UnimplementedQueryServer) SubscriptionsAll(context.Context, *QuerySubscriptionsAllRequest) (*QuerySubscriptionsAllResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubscriptionsAll not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
@@ -415,7 +415,7 @@ func _Query_TasksByStatusGasPrice_Handler(srv interface{}, ctx context.Context, 
 }
 
 func _Query_TasksAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryAllTasksRequest)
+	in := new(QueryTasksAllRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -427,7 +427,7 @@ func _Query_TasksAll_Handler(srv interface{}, ctx context.Context, dec func(inte
 		FullMethod: Query_TasksAll_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).TasksAll(ctx, req.(*QueryAllTasksRequest))
+		return srv.(QueryServer).TasksAll(ctx, req.(*QueryTasksAllRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

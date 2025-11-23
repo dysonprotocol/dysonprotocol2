@@ -11,7 +11,7 @@ import (
 )
 
 // TasksByStatusGasPrice returns tasks filtered by status and ordered by gas price
-func (q queryServer) TasksByStatusGasPrice(ctx context.Context, req *crontasktypes.QueryTasksByStatusGasPriceRequest) (*crontasktypes.QueryTasksResponse, error) {
+func (q queryServer) TasksByStatusGasPrice(ctx context.Context, req *crontasktypes.QueryTasksByStatusGasPriceRequest) (*crontasktypes.QueryTasksByStatusGasPriceResponse, error) {
 	if req.Pagination == nil {
 		req.Pagination = &query.PageRequest{}
 	}
@@ -36,5 +36,5 @@ func (q queryServer) TasksByStatusGasPrice(ctx context.Context, req *crontasktyp
 		return nil, errorsmod.Wrapf(err, "failed to get tasks by status gas price")
 	}
 
-	return &crontasktypes.QueryTasksResponse{Tasks: tasks, Pagination: pageRes}, nil
+	return &crontasktypes.QueryTasksByStatusGasPriceResponse{Tasks: tasks, Pagination: pageRes}, nil
 }

@@ -1481,10 +1481,10 @@ paths:
                     Subscription defines an event-triggered action to execute a
                     script
                 description: >-
-                  List of subscriptions matching the query criteria, ordered
-                  according to the
+                  List of all subscriptions in the system, ordered by
+                  subscription ID
 
-                  specific query endpoint (e.g., by ID or creator).
+                  ascending.
               pagination:
                 description: Pagination metadata for result set navigation.
                 type: object
@@ -1504,11 +1504,9 @@ paths:
                       PageRequest.count_total
 
                       was set, its value is undefined otherwise
-            description: >-
-              QuerySubscriptionsResponse is the response type for subscription
-              queries with
-
-              multiple results.
+            description: |-
+              QuerySubscriptionsAllResponse is the response type for the
+              Query/SubscriptionsAll RPC method.
         default:
           description: An unexpected error response.
           schema:
@@ -1672,10 +1670,10 @@ paths:
                     Subscription defines an event-triggered action to execute a
                     script
                 description: >-
-                  List of subscriptions matching the query criteria, ordered
-                  according to the
+                  List of subscriptions created by the specified address,
+                  ordered by
 
-                  specific query endpoint (e.g., by ID or creator).
+                  subscription ID.
               pagination:
                 description: Pagination metadata for result set navigation.
                 type: object
@@ -1695,11 +1693,9 @@ paths:
                       PageRequest.count_total
 
                       was set, its value is undefined otherwise
-            description: >-
-              QuerySubscriptionsResponse is the response type for subscription
-              queries with
-
-              multiple results.
+            description: |-
+              QuerySubscriptionsByCreatorResponse is the response type for the
+              Query/SubscriptionsByCreator RPC method.
         default:
           description: An unexpected error response.
           schema:
@@ -2047,11 +2043,7 @@ paths:
                         Block height when the task was executed (only for DONE /
                         FAILED)
                   title: Task represents a scheduled task in the crontask system
-                description: >-
-                  List of tasks matching the query criteria, ordered according
-                  to the
-
-                  specific query endpoint (e.g., by ID, status, gas price).
+                description: List of all tasks in the system, ordered by task ID ascending.
               pagination:
                 description: Pagination metadata for result set navigation.
                 type: object
@@ -2072,10 +2064,8 @@ paths:
 
                       was set, its value is undefined otherwise
             description: >-
-              QueryTasksResponse is the response type for task queries with
-              multiple
-
-              results.
+              QueryTasksAllResponse is the response type for the Query/TasksAll
+              RPC method.
         default:
           description: An unexpected error response.
           schema:
@@ -2269,10 +2259,8 @@ paths:
                         FAILED)
                   title: Task represents a scheduled task in the crontask system
                 description: >-
-                  List of tasks matching the query criteria, ordered according
-                  to the
-
-                  specific query endpoint (e.g., by ID, status, gas price).
+                  List of tasks created by the specified address, ordered by
+                  task ID.
               pagination:
                 description: Pagination metadata for result set navigation.
                 type: object
@@ -2293,10 +2281,10 @@ paths:
 
                       was set, its value is undefined otherwise
             description: >-
-              QueryTasksResponse is the response type for task queries with
-              multiple
+              QueryTasksByAddressResponse is the response type for the
+              Query/TasksByAddress
 
-              results.
+              RPC method.
         default:
           description: An unexpected error response.
           schema:
@@ -2494,10 +2482,8 @@ paths:
                         FAILED)
                   title: Task represents a scheduled task in the crontask system
                 description: >-
-                  List of tasks matching the query criteria, ordered according
-                  to the
-
-                  specific query endpoint (e.g., by ID, status, gas price).
+                  List of tasks with the specified status, ordered by scheduled
+                  timestamp.
               pagination:
                 description: Pagination metadata for result set navigation.
                 type: object
@@ -2517,11 +2503,9 @@ paths:
                       PageRequest.count_total
 
                       was set, its value is undefined otherwise
-            description: >-
-              QueryTasksResponse is the response type for task queries with
-              multiple
-
-              results.
+            description: |-
+              QueryTasksByStatusTimestampResponse is the response type for the
+              Query/TasksByStatusTimestamp RPC method.
         default:
           description: An unexpected error response.
           schema:
@@ -2728,11 +2712,7 @@ paths:
                         Block height when the task was executed (only for DONE /
                         FAILED)
                   title: Task represents a scheduled task in the crontask system
-                description: >-
-                  List of tasks matching the query criteria, ordered according
-                  to the
-
-                  specific query endpoint (e.g., by ID, status, gas price).
+                description: List of tasks with the specified status, ordered by gas price.
               pagination:
                 description: Pagination metadata for result set navigation.
                 type: object
@@ -2752,11 +2732,9 @@ paths:
                       PageRequest.count_total
 
                       was set, its value is undefined otherwise
-            description: >-
-              QueryTasksResponse is the response type for task queries with
-              multiple
-
-              results.
+            description: |-
+              QueryTasksByStatusGasPriceResponse is the response type for the
+              Query/TasksByStatusGasPrice RPC method.
         default:
           description: An unexpected error response.
           schema:
@@ -48399,7 +48377,7 @@ definitions:
     description: |-
       QuerySubscriptionByIDResponse is the response type for the
       Query/SubscriptionByID RPC method.
-  dysonprotocol.crontask.v1.QuerySubscriptionsResponse:
+  dysonprotocol.crontask.v1.QuerySubscriptionsAllResponse:
     type: object
     properties:
       subscriptions:
@@ -48491,11 +48469,9 @@ definitions:
 
                 signatures required by gogoproto.
           title: Subscription defines an event-triggered action to execute a script
-        description: >-
-          List of subscriptions matching the query criteria, ordered according
-          to the
-
-          specific query endpoint (e.g., by ID or creator).
+        description: |-
+          List of all subscriptions in the system, ordered by subscription ID
+          ascending.
       pagination:
         description: Pagination metadata for result set navigation.
         type: object
@@ -48515,11 +48491,126 @@ definitions:
               PageRequest.count_total
 
               was set, its value is undefined otherwise
-    description: >-
-      QuerySubscriptionsResponse is the response type for subscription queries
-      with
+    description: |-
+      QuerySubscriptionsAllResponse is the response type for the
+      Query/SubscriptionsAll RPC method.
+  dysonprotocol.crontask.v1.QuerySubscriptionsByCreatorResponse:
+    type: object
+    properties:
+      subscriptions:
+        type: array
+        items:
+          type: object
+          properties:
+            subscription_id:
+              type: string
+              format: uint64
+              title: unique id
+            creator:
+              type: string
+              title: creator account that owns this subscription
+            filter:
+              type: string
+              title: >-
+                GJSON filter to match events across the normalized block event
+                array
+            script_address:
+              type: string
+              title: target script address
+            function:
+              type: string
+              title: function name to invoke
+            args:
+              type: string
+              title: positional args as JSON list string
+            kwargs:
+              type: string
+              title: keyword args as JSON dict string
+            task_gas_limit:
+              type: string
+              format: uint64
+              title: gas limit for the created crontask
+            task_gas_fee:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
 
-      multiple results.
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              title: >-
+                fee for the created crontask; also charged at subscription
+                creation/renewal
+            status:
+              type: string
+              title: 'status: enabled|disabled|error|expired'
+            status_message:
+              type: string
+              title: status message
+            expiry_timestamp:
+              type: string
+              format: int64
+              title: Subscription expiry timestamp (unix seconds)
+            trigger_count:
+              type: string
+              format: uint64
+              title: total number of triggers so far (field name per requirement)
+            task_scheduled_timestamp:
+              type: string
+              format: int64
+              title: Overrides for created crontasks
+            task_expiry_timestamp:
+              type: string
+              format: int64
+            task_gas_price:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+          title: Subscription defines an event-triggered action to execute a script
+        description: |-
+          List of subscriptions created by the specified address, ordered by
+          subscription ID.
+      pagination:
+        description: Pagination metadata for result set navigation.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    description: |-
+      QuerySubscriptionsByCreatorResponse is the response type for the
+      Query/SubscriptionsByCreator RPC method.
   dysonprotocol.crontask.v1.QueryTaskByIDResponse:
     type: object
     properties:
@@ -48644,7 +48735,7 @@ definitions:
     description: >-
       QueryTaskByIDResponse is the response type for the Query/TaskByID RPC
       method.
-  dysonprotocol.crontask.v1.QueryTasksResponse:
+  dysonprotocol.crontask.v1.QueryTasksAllResponse:
     type: object
     properties:
       tasks:
@@ -48767,9 +48858,301 @@ definitions:
               format: int64
               title: Block height when the task was executed (only for DONE / FAILED)
           title: Task represents a scheduled task in the crontask system
-        description: |-
-          List of tasks matching the query criteria, ordered according to the
-          specific query endpoint (e.g., by ID, status, gas price).
+        description: List of all tasks in the system, ordered by task ID ascending.
+      pagination:
+        description: Pagination metadata for result set navigation.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    description: >-
+      QueryTasksAllResponse is the response type for the Query/TasksAll RPC
+      method.
+  dysonprotocol.crontask.v1.QueryTasksByAddressResponse:
+    type: object
+    properties:
+      tasks:
+        type: array
+        items:
+          type: object
+          properties:
+            task_id:
+              type: string
+              format: uint64
+              title: The unique identifier for the task
+            creator:
+              type: string
+              title: Address of the creator of the task
+            scheduled_timestamp:
+              type: string
+              format: int64
+              title: Unix timestamp when the task is scheduled to execute
+            expiry_timestamp:
+              type: string
+              format: int64
+              title: Unix timestamp after which the task will expire if not executed
+            task_gas_limit:
+              type: string
+              format: uint64
+              title: Maximum gas limit for the task execution
+            task_gas_price:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+              title: >-
+                Gas price for the task execution which is calculated
+                automatically
+
+                from task_gas_fee / task_gas_limit
+            task_gas_fee:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              title: Gas fee for the task execution
+            msgs:
+              type: array
+              items:
+                type: object
+                properties:
+                  type_url:
+                    type: string
+                  value:
+                    type: string
+                    format: byte
+                    description: >-
+                      Must be a valid serialized protocol buffer of the above
+                      specified type.
+              title: Messages to execute as part of the task
+            msg_results:
+              type: array
+              items:
+                type: object
+                properties:
+                  type_url:
+                    type: string
+                  value:
+                    type: string
+                    format: byte
+                    description: >-
+                      Must be a valid serialized protocol buffer of the above
+                      specified type.
+              title: Results of message execution
+            status:
+              type: string
+              title: >-
+                Current status of the task: Scheduled, Pending, Done, Failed,
+                Expired
+            creation_time:
+              type: string
+              format: int64
+              title: Block timestamp when the task was created
+            error_log:
+              type: string
+              title: Error message if task execution failed
+            task_gas_consumed:
+              type: string
+              format: uint64
+              title: Actual gas consumed during task execution
+            execution_timestamp:
+              type: string
+              format: int64
+              title: >-
+                Block timestamp when the task was executed (only for DONE /
+                FAILED)
+            creation_block_height:
+              type: string
+              format: int64
+              title: Block height when the task was created
+            execution_block_height:
+              type: string
+              format: int64
+              title: Block height when the task was executed (only for DONE / FAILED)
+          title: Task represents a scheduled task in the crontask system
+        description: List of tasks created by the specified address, ordered by task ID.
+      pagination:
+        description: Pagination metadata for result set navigation.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    description: >-
+      QueryTasksByAddressResponse is the response type for the
+      Query/TasksByAddress
+
+      RPC method.
+  dysonprotocol.crontask.v1.QueryTasksByStatusGasPriceResponse:
+    type: object
+    properties:
+      tasks:
+        type: array
+        items:
+          type: object
+          properties:
+            task_id:
+              type: string
+              format: uint64
+              title: The unique identifier for the task
+            creator:
+              type: string
+              title: Address of the creator of the task
+            scheduled_timestamp:
+              type: string
+              format: int64
+              title: Unix timestamp when the task is scheduled to execute
+            expiry_timestamp:
+              type: string
+              format: int64
+              title: Unix timestamp after which the task will expire if not executed
+            task_gas_limit:
+              type: string
+              format: uint64
+              title: Maximum gas limit for the task execution
+            task_gas_price:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+              title: >-
+                Gas price for the task execution which is calculated
+                automatically
+
+                from task_gas_fee / task_gas_limit
+            task_gas_fee:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              title: Gas fee for the task execution
+            msgs:
+              type: array
+              items:
+                type: object
+                properties:
+                  type_url:
+                    type: string
+                  value:
+                    type: string
+                    format: byte
+                    description: >-
+                      Must be a valid serialized protocol buffer of the above
+                      specified type.
+              title: Messages to execute as part of the task
+            msg_results:
+              type: array
+              items:
+                type: object
+                properties:
+                  type_url:
+                    type: string
+                  value:
+                    type: string
+                    format: byte
+                    description: >-
+                      Must be a valid serialized protocol buffer of the above
+                      specified type.
+              title: Results of message execution
+            status:
+              type: string
+              title: >-
+                Current status of the task: Scheduled, Pending, Done, Failed,
+                Expired
+            creation_time:
+              type: string
+              format: int64
+              title: Block timestamp when the task was created
+            error_log:
+              type: string
+              title: Error message if task execution failed
+            task_gas_consumed:
+              type: string
+              format: uint64
+              title: Actual gas consumed during task execution
+            execution_timestamp:
+              type: string
+              format: int64
+              title: >-
+                Block timestamp when the task was executed (only for DONE /
+                FAILED)
+            creation_block_height:
+              type: string
+              format: int64
+              title: Block height when the task was created
+            execution_block_height:
+              type: string
+              format: int64
+              title: Block height when the task was executed (only for DONE / FAILED)
+          title: Task represents a scheduled task in the crontask system
+        description: List of tasks with the specified status, ordered by gas price.
       pagination:
         description: Pagination metadata for result set navigation.
         type: object
@@ -48790,8 +49173,156 @@ definitions:
 
               was set, its value is undefined otherwise
     description: |-
-      QueryTasksResponse is the response type for task queries with multiple
-      results.
+      QueryTasksByStatusGasPriceResponse is the response type for the
+      Query/TasksByStatusGasPrice RPC method.
+  dysonprotocol.crontask.v1.QueryTasksByStatusTimestampResponse:
+    type: object
+    properties:
+      tasks:
+        type: array
+        items:
+          type: object
+          properties:
+            task_id:
+              type: string
+              format: uint64
+              title: The unique identifier for the task
+            creator:
+              type: string
+              title: Address of the creator of the task
+            scheduled_timestamp:
+              type: string
+              format: int64
+              title: Unix timestamp when the task is scheduled to execute
+            expiry_timestamp:
+              type: string
+              format: int64
+              title: Unix timestamp after which the task will expire if not executed
+            task_gas_limit:
+              type: string
+              format: uint64
+              title: Maximum gas limit for the task execution
+            task_gas_price:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+              title: >-
+                Gas price for the task execution which is calculated
+                automatically
+
+                from task_gas_fee / task_gas_limit
+            task_gas_fee:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              title: Gas fee for the task execution
+            msgs:
+              type: array
+              items:
+                type: object
+                properties:
+                  type_url:
+                    type: string
+                  value:
+                    type: string
+                    format: byte
+                    description: >-
+                      Must be a valid serialized protocol buffer of the above
+                      specified type.
+              title: Messages to execute as part of the task
+            msg_results:
+              type: array
+              items:
+                type: object
+                properties:
+                  type_url:
+                    type: string
+                  value:
+                    type: string
+                    format: byte
+                    description: >-
+                      Must be a valid serialized protocol buffer of the above
+                      specified type.
+              title: Results of message execution
+            status:
+              type: string
+              title: >-
+                Current status of the task: Scheduled, Pending, Done, Failed,
+                Expired
+            creation_time:
+              type: string
+              format: int64
+              title: Block timestamp when the task was created
+            error_log:
+              type: string
+              title: Error message if task execution failed
+            task_gas_consumed:
+              type: string
+              format: uint64
+              title: Actual gas consumed during task execution
+            execution_timestamp:
+              type: string
+              format: int64
+              title: >-
+                Block timestamp when the task was executed (only for DONE /
+                FAILED)
+            creation_block_height:
+              type: string
+              format: int64
+              title: Block height when the task was created
+            execution_block_height:
+              type: string
+              format: int64
+              title: Block height when the task was executed (only for DONE / FAILED)
+          title: Task represents a scheduled task in the crontask system
+        description: >-
+          List of tasks with the specified status, ordered by scheduled
+          timestamp.
+      pagination:
+        description: Pagination metadata for result set navigation.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    description: |-
+      QueryTasksByStatusTimestampResponse is the response type for the
+      Query/TasksByStatusTimestamp RPC method.
   dysonprotocol.crontask.v1.Subscription:
     type: object
     properties:
