@@ -756,3 +756,287 @@ def demo_move_nft_unauthorized(owner_addr, unauthorized_addr, recipient_addr):
     assert (
         "you do not control destination" in exception["msg"]
     ), f"error should mention authorization failure, got: {exception['msg']}"
+
+
+def test_move_nft_from_module_account_unauthorized(chainnet):
+    """Test moving NFT owned by module account with unauthorized signer."""
+    dysond = chainnet[0]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    # Use hardcoded test addresses
+    owner_addr = "dys216vwht46aw58efaxx"
+    unauthorized_addr = "dys216vwmdkmdkcsz2qrh"
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+import re
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {"denom": m.group(2), "amount": m.group(1)}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    })
+
+    return name
+
+def demo_move_nft_from_module_account_unauthorized(owner_addr, unauthorized_addr, module_addr):
+    # Register name and set destination to module account
+    class_name = _register_name("test-move-from-module.dys", module_addr)
+
+    # Create NFT class
+    save_class_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSaveClass",
+        "class_id": class_name,
+        "name": "Test Collection",
+        "symbol": "TEST",
+        "description": "Test NFT Collection",
+        "uri": "https://example.com/collection",
+        "name_destination": module_addr
+    })
+
+    # Mint NFT - this will be owned by the module account
+    nft_id = "test-nft-module-owned"
+    mint_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgMintNFT",
+        "class_id": class_name,
+        "nft_id": nft_id,
+        "uri": "https://example.com/nft-module-owned",
+        "name_destination": module_addr
+    })
+
+    # Try to move NFT owned by module account with unauthorized signer - should fail
+    move_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgMoveNft",
+        "class_id": class_name,
+        "nft_id": nft_id,
+        "name_destination": unauthorized_addr,  # Unauthorized signer
+        "to_address": owner_addr
+    })
+
+    return {
+        "move_result": move_result
+    }
+"""
+
+    kwargs = json.dumps(
+        {
+            "owner_addr": owner_addr,
+            "unauthorized_addr": unauthorized_addr,
+            "module_addr": gov_addr,
+        }
+    )
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_move_nft_from_module_account_unauthorized",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    # Parse and validate error
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+
+    assert (
+        "exception" in result
+    ), f"result should have exception. Keys: {list(result.keys())}"
+
+    exception = result["exception"]
+    assert (
+        exception["class"] == "DysRuntimeError"
+    ), f"should be DysRuntimeError, got {exception['class']}"
+    assert (
+        "current NFT owner is a module account" in exception["msg"]
+    ), f"error should mention module account ownership, got: {exception['msg']}"
+
+
+def test_move_nft_to_module_account_unauthorized(chainnet):
+    """Test moving NFT to module account with unauthorized signer."""
+    dysond = chainnet[0]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    # Use hardcoded test addresses
+    owner_addr = "dys216vwht46aw58efaxx"
+    unauthorized_addr = "dys216vwmdkmdkcsz2qrh"
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+import re
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {"denom": m.group(2), "amount": m.group(1)}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    })["hex_hash"]
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    })
+
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    })
+
+    return name
+
+def demo_move_nft_to_module_account_unauthorized(owner_addr, unauthorized_addr, module_addr):
+    # Register name and set destination to owner
+    class_name = _register_name("test-move-to-module.dys", owner_addr)
+
+    # Create NFT class
+    save_class_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSaveClass",
+        "class_id": class_name,
+        "name": "Test Collection",
+        "symbol": "TEST",
+        "description": "Test NFT Collection",
+        "uri": "https://example.com/collection",
+        "name_destination": owner_addr
+    })
+
+    # Mint NFT
+    nft_id = "test-nft-to-module"
+    mint_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgMintNFT",
+        "class_id": class_name,
+        "nft_id": nft_id,
+        "uri": "https://example.com/nft-to-module",
+        "name_destination": owner_addr
+    })
+
+    # Try to move NFT to module account with unauthorized signer - should fail
+    move_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgMoveNft",
+        "class_id": class_name,
+        "nft_id": nft_id,
+        "name_destination": unauthorized_addr,  # Unauthorized signer
+        "to_address": module_addr
+    })
+
+    return {
+        "move_result": move_result
+    }
+"""
+
+    kwargs = json.dumps(
+        {
+            "owner_addr": owner_addr,
+            "unauthorized_addr": unauthorized_addr,
+            "module_addr": gov_addr,
+        }
+    )
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_move_nft_to_module_account_unauthorized",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    # Parse and validate error
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+
+    assert (
+        "exception" in result
+    ), f"result should have exception. Keys: {list(result.keys())}"
+
+    exception = result["exception"]
+    assert (
+        exception["class"] == "DysRuntimeError"
+    ), f"should be DysRuntimeError, got {exception['class']}"
+    assert (
+        "to_address is a module account" in exception["msg"]
+    ), f"error should mention module account destination, got: {exception['msg']}"
