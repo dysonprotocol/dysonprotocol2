@@ -3,20 +3,20 @@ package keeper
 import (
 	"context"
 
+	cosmossdkerrors "cosmossdk.io/errors"
 	crontasktypes "dysonprotocol.com/x/crontask/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // UpdateParams updates the parameters of the x/crontask module via governance proposal.
 //
 // Semantics:
 //   - Updates all module parameters in a single governance operation.
-//   - Authority is typically the x/gov module account.
+//   - Authority must match the module's configured authority address.
 //   - Parameters control task scheduling limits, gas constraints, and subscription rules.
 //
 // Validation:
-//   - Authority must be valid (typically x/gov module account).
+//   - Authority must match the module's configured authority address.
 //   - All parameter values must pass individual validation (Validate method).
 //
 // State Updates:
@@ -31,18 +31,25 @@ import (
 // Errors are returned on invalid authority, parameter validation failures,
 // or storage errors; no panics.
 func (k Keeper) UpdateParams(ctx context.Context, msg *crontasktypes.MsgUpdateParams) (*crontasktypes.MsgUpdateParamsResponse, error) {
-	// NOTE: For the lightweight test network we accept any signer; in production
-	// you would enforce the authority check below.
-	_ = authtypes.NewModuleAddress(govtypes.ModuleName).String()
-
-	// Validate sent params
-	if err := msg.Params.Validate(); err != nil {
-		return nil, err
+	// Check authority - this should be the governance module account or a dedicated module admin
+	expectedAuthority := k.GetAuthority()
+	if msg.Authority != expectedAuthority {
+		return nil, cosmossdkerrors.Wrapf(
+			sdkerrors.ErrUnauthorized,
+			"invalid authority; expected %s, got %s",
+			expectedAuthority,
+			msg.Authority,
+		)
 	}
 
-	// Persist params
+	// Validate the parameters
+	if err := msg.Params.Validate(); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "invalid parameters")
+	}
+
+	// Set the parameters
 	if err := k.SetParams(ctx, msg.Params); err != nil {
-		return nil, err
+		return nil, cosmossdkerrors.Wrap(err, "failed to update parameters")
 	}
 
 	return &crontasktypes.MsgUpdateParamsResponse{}, nil

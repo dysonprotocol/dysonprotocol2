@@ -49,3 +49,8 @@ func (k Keeper) GetModuleParams(ctx context.Context) crontasktypes.Params {
 		MaxScheduledTime: k.config.MaxScheduledTime,
 	}
 }
+
+// GetAuthority returns the module's authority
+func (k Keeper) GetAuthority() string {
+	return k.authority
+}

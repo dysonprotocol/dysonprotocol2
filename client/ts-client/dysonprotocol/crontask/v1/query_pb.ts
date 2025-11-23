@@ -254,58 +254,6 @@ export class QueryTasksByStatusGasPriceRequest extends Message<QueryTasksByStatu
 
 /**
  *
- * QueryTasksResponse is the response type for task queries with multiple
- * results.
- *
- * @generated from message dysonprotocol.crontask.v1.QueryTasksResponse
- */
-export class QueryTasksResponse extends Message<QueryTasksResponse> {
-  /**
-   * List of tasks matching the query criteria, ordered according to the
-   * specific query endpoint (e.g., by ID, status, gas price).
-   *
-   * @generated from field: repeated dysonprotocol.crontask.v1.Task tasks = 1;
-   */
-  tasks: Task[] = [];
-
-  /**
-   * Pagination metadata for result set navigation.
-   *
-   * @generated from field: cosmos.base.query.v1beta1.PageResponse pagination = 2;
-   */
-  pagination?: PageResponse;
-
-  constructor(data?: PartialMessage<QueryTasksResponse>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "dysonprotocol.crontask.v1.QueryTasksResponse";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "tasks", kind: "message", T: Task, repeated: true },
-    { no: 2, name: "pagination", kind: "message", T: PageResponse },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryTasksResponse {
-    return new QueryTasksResponse().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QueryTasksResponse {
-    return new QueryTasksResponse().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QueryTasksResponse {
-    return new QueryTasksResponse().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: QueryTasksResponse | PlainMessage<QueryTasksResponse> | undefined, b: QueryTasksResponse | PlainMessage<QueryTasksResponse> | undefined): boolean {
-    return proto3.util.equals(QueryTasksResponse, a, b);
-  }
-}
-
-/**
- *
  * QueryTasksByAddressResponse is the response type for the Query/TasksByAddress
  * RPC method.
  *

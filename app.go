@@ -690,6 +690,7 @@ func NewDysApp(
 		app.StakingKeeper,
 		app.MsgServiceRouter(),
 		*crontaskv1.DefaultConfig(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		logger,
 	)
 

@@ -28,6 +28,14 @@ export class Module extends Message<Module> {
    */
   maxMetadataLen = protoInt64.zero;
 
+  /**
+   * authority defines the custom module authority. If not set, defaults to the
+   * governance module.
+   *
+   * @generated from field: string authority = 3;
+   */
+  authority = "";
+
   constructor(data?: PartialMessage<Module>) {
     super();
     proto3.util.initPartial(data, this);
@@ -38,6 +46,7 @@ export class Module extends Message<Module> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "max_execution_period", kind: "message", T: Duration },
     { no: 2, name: "max_metadata_len", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 3, name: "authority", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Module {

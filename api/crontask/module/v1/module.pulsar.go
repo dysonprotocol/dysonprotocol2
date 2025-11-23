@@ -20,6 +20,7 @@ var (
 	md_Module                      protoreflect.MessageDescriptor
 	fd_Module_max_execution_period protoreflect.FieldDescriptor
 	fd_Module_max_metadata_len     protoreflect.FieldDescriptor
+	fd_Module_authority            protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -27,6 +28,7 @@ func init() {
 	md_Module = File_dysonprotocol_crontask_module_v1_module_proto.Messages().ByName("Module")
 	fd_Module_max_execution_period = md_Module.Fields().ByName("max_execution_period")
 	fd_Module_max_metadata_len = md_Module.Fields().ByName("max_metadata_len")
+	fd_Module_authority = md_Module.Fields().ByName("authority")
 }
 
 var _ protoreflect.Message = (*fastReflection_Module)(nil)
@@ -106,6 +108,12 @@ func (x *fastReflection_Module) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
+	if x.Authority != "" {
+		value := protoreflect.ValueOfString(x.Authority)
+		if !f(fd_Module_authority, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -125,6 +133,8 @@ func (x *fastReflection_Module) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.MaxExecutionPeriod != nil
 	case "dysonprotocol.crontask.module.v1.Module.max_metadata_len":
 		return x.MaxMetadataLen != uint64(0)
+	case "dysonprotocol.crontask.module.v1.Module.authority":
+		return x.Authority != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.crontask.module.v1.Module"))
@@ -145,6 +155,8 @@ func (x *fastReflection_Module) Clear(fd protoreflect.FieldDescriptor) {
 		x.MaxExecutionPeriod = nil
 	case "dysonprotocol.crontask.module.v1.Module.max_metadata_len":
 		x.MaxMetadataLen = uint64(0)
+	case "dysonprotocol.crontask.module.v1.Module.authority":
+		x.Authority = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.crontask.module.v1.Module"))
@@ -167,6 +179,9 @@ func (x *fastReflection_Module) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "dysonprotocol.crontask.module.v1.Module.max_metadata_len":
 		value := x.MaxMetadataLen
 		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.crontask.module.v1.Module.authority":
+		value := x.Authority
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.crontask.module.v1.Module"))
@@ -191,6 +206,8 @@ func (x *fastReflection_Module) Set(fd protoreflect.FieldDescriptor, value proto
 		x.MaxExecutionPeriod = value.Message().Interface().(*durationpb.Duration)
 	case "dysonprotocol.crontask.module.v1.Module.max_metadata_len":
 		x.MaxMetadataLen = value.Uint()
+	case "dysonprotocol.crontask.module.v1.Module.authority":
+		x.Authority = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.crontask.module.v1.Module"))
@@ -218,6 +235,8 @@ func (x *fastReflection_Module) Mutable(fd protoreflect.FieldDescriptor) protore
 		return protoreflect.ValueOfMessage(x.MaxExecutionPeriod.ProtoReflect())
 	case "dysonprotocol.crontask.module.v1.Module.max_metadata_len":
 		panic(fmt.Errorf("field max_metadata_len of message dysonprotocol.crontask.module.v1.Module is not mutable"))
+	case "dysonprotocol.crontask.module.v1.Module.authority":
+		panic(fmt.Errorf("field authority of message dysonprotocol.crontask.module.v1.Module is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.crontask.module.v1.Module"))
@@ -236,6 +255,8 @@ func (x *fastReflection_Module) NewField(fd protoreflect.FieldDescriptor) protor
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	case "dysonprotocol.crontask.module.v1.Module.max_metadata_len":
 		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.crontask.module.v1.Module.authority":
+		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.crontask.module.v1.Module"))
@@ -312,6 +333,10 @@ func (x *fastReflection_Module) ProtoMethods() *protoiface.Methods {
 		if x.MaxMetadataLen != 0 {
 			n += 1 + runtime.Sov(uint64(x.MaxMetadataLen))
 		}
+		l = len(x.Authority)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -340,6 +365,13 @@ func (x *fastReflection_Module) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Authority) > 0 {
+			i -= len(x.Authority)
+			copy(dAtA[i:], x.Authority)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Authority)))
+			i--
+			dAtA[i] = 0x1a
 		}
 		if x.MaxMetadataLen != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxMetadataLen))
@@ -464,6 +496,38 @@ func (x *fastReflection_Module) ProtoMethods() *protoiface.Methods {
 						break
 					}
 				}
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Authority = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -524,6 +588,9 @@ type Module struct {
 	// MaxMetadataLen defines the max chars allowed in metadata field
 	// Defaults to 255 if not explicitly set.
 	MaxMetadataLen uint64 `protobuf:"varint,2,opt,name=max_metadata_len,json=maxMetadataLen,proto3" json:"max_metadata_len,omitempty"`
+	// authority defines the custom module authority. If not set, defaults to the
+	// governance module.
+	Authority string `protobuf:"bytes,3,opt,name=authority,proto3" json:"authority,omitempty"`
 }
 
 func (x *Module) Reset() {
@@ -560,6 +627,13 @@ func (x *Module) GetMaxMetadataLen() uint64 {
 	return 0
 }
 
+func (x *Module) GetAuthority() string {
+	if x != nil {
+		return x.Authority
+	}
+	return ""
+}
+
 var File_dysonprotocol_crontask_module_v1_module_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_crontask_module_v1_module_proto_rawDesc = []byte{
@@ -574,7 +648,7 @@ var file_dysonprotocol_crontask_module_v1_module_proto_rawDesc = []byte{
 	0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1e, 0x67, 0x6f, 0x6f, 0x67, 0x6c,
 	0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x64, 0x75, 0x72, 0x61, 0x74,
 	0x69, 0x6f, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f,
-	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xb4, 0x01, 0x0a,
+	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xd2, 0x01, 0x0a,
 	0x06, 0x4d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x12, 0x5a, 0x0a, 0x14, 0x6d, 0x61, 0x78, 0x5f, 0x65,
 	0x78, 0x65, 0x63, 0x75, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x70, 0x65, 0x72, 0x69, 0x6f, 0x64, 0x18,
 	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70,
@@ -583,13 +657,15 @@ var file_dysonprotocol_crontask_module_v1_module_proto_rawDesc = []byte{
 	0x12, 0x6d, 0x61, 0x78, 0x45, 0x78, 0x65, 0x63, 0x75, 0x74, 0x69, 0x6f, 0x6e, 0x50, 0x65, 0x72,
 	0x69, 0x6f, 0x64, 0x12, 0x28, 0x0a, 0x10, 0x6d, 0x61, 0x78, 0x5f, 0x6d, 0x65, 0x74, 0x61, 0x64,
 	0x61, 0x74, 0x61, 0x5f, 0x6c, 0x65, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0e, 0x6d,
-	0x61, 0x78, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x4c, 0x65, 0x6e, 0x3a, 0x24, 0xba,
-	0xc0, 0x96, 0xda, 0x01, 0x1e, 0x0a, 0x1c, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x63, 0x72, 0x6f, 0x6e, 0x74,
-	0x61, 0x73, 0x6b, 0x42, 0x28, 0x5a, 0x26, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x63, 0x72, 0x6f, 0x6e, 0x74,
-	0x61, 0x73, 0x6b, 0x2f, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x2f, 0x76, 0x31, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x61, 0x78, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x4c, 0x65, 0x6e, 0x12, 0x1c, 0x0a,
+	0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x3a, 0x24, 0xba, 0xc0, 0x96,
+	0xda, 0x01, 0x1e, 0x0a, 0x1c, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63,
+	0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x63, 0x72, 0x6f, 0x6e, 0x74, 0x61, 0x73,
+	0x6b, 0x42, 0x28, 0x5a, 0x26, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63,
+	0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x63, 0x72, 0x6f, 0x6e, 0x74, 0x61, 0x73,
+	0x6b, 0x2f, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x2f, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (

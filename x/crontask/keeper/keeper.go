@@ -62,6 +62,7 @@ type Keeper struct {
 	accountKeeper crontasktypes.AccountKeeper
 	stakingKeeper crontasktypes.StakingKeeper
 	config        crontask.Config
+	authority     string // the address that is authorized to update module parameters
 
 	// Services from the app's depinject setup
 	MsgRouterService *baseapp.MsgServiceRouter
@@ -98,6 +99,7 @@ func NewKeeper(
 	stakingKeeper crontasktypes.StakingKeeper,
 	msgRouter *baseapp.MsgServiceRouter,
 	config crontask.Config,
+	authority string,
 	logger log.Logger,
 ) Keeper {
 	// Add the module name to the logger
@@ -184,6 +186,7 @@ func NewKeeper(
 		accountKeeper:      accountKeeper,
 		stakingKeeper:      stakingKeeper,
 		config:             config,
+		authority:          authority,
 		Tasks:              tasks,
 		NextTaskID:         nextTaskID,
 		Params:             params,

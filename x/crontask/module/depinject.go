@@ -13,7 +13,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 )
 
@@ -55,6 +57,14 @@ type CrontaskOutputs struct {
 
 // ProvideModule provides the app module
 func ProvideModule(in CrontaskInputs) CrontaskOutputs {
+	// Use the authority from the config if provided, otherwise default to gov module account
+	authority := authtypes.NewModuleAddress(govtypes.ModuleName).String()
+
+	// If authority is explicitly set in the config, use that instead
+	if in.Config != nil && in.Config.Authority != "" {
+		authority = in.Config.Authority
+	}
+
 	k := keeper.NewKeeper(
 		in.Cdc,
 		in.StoreService,
@@ -63,6 +73,7 @@ func ProvideModule(in CrontaskInputs) CrontaskOutputs {
 		in.StakingKeeper,
 		in.MsgServiceRouter,
 		*crontask.DefaultConfig(),
+		authority,
 		in.Logger,
 	)
 
