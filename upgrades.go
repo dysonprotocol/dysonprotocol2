@@ -10,27 +10,21 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
-// WhaleswapLeverageUpgradeName defines the on-chain upgrade name for the next
-// whaleswap migration (leverage/interest schema overhaul).
-const WhaleswapLeverageUpgradeName = "whaleswap-v3"
+// InvariantsUpgradeName defines the on-chain upgrade name for the next
+// invariants-focused migration.
+const InvariantsUpgradeName = "invariants"
 
 func (app *DysApp) RegisterUpgradeHandlers() {
-	// Register handler for leverage interest migration
+	// Register handler for invariants upgrade
 	app.UpgradeKeeper.SetUpgradeHandler(
-		WhaleswapLeverageUpgradeName,
+		InvariantsUpgradeName,
 		func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-			app.Logger().Info("Executing whaleswap upgrade", "name", plan.Name, "height", plan.Height)
+			app.Logger().Info("Executing invariants upgrade", "name", plan.Name, "height", plan.Height)
 
 			// Run module migrations
 			newVM, err := app.ModuleManager.RunMigrations(ctx, app.Configurator(), fromVM)
 			if err != nil {
 				app.Logger().Error("Upgrade handler failed", "name", plan.Name, "height", plan.Height, "err", err)
-				return newVM, err
-			}
-
-			// Execute whaleswap leverage interest migration
-			if err := app.WhaleswapKeeper.MigrateWhaleswapLeverageInterest(ctx); err != nil {
-				app.Logger().Error("Whaleswap leverage interest migration failed", "err", err)
 				return newVM, err
 			}
 
@@ -66,10 +60,10 @@ func (app *DysApp) RegisterUpgradeHandlers() {
 	}
 
 	if !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-		if upgradeInfo.Name == WhaleswapLeverageUpgradeName {
+		if upgradeInfo.Name == InvariantsUpgradeName {
 			// State migration upgrade; no store migrations needed (migration happens in handler)
 		}
-	} else if upgradeInfo.Name == WhaleswapLeverageUpgradeName {
+	} else if upgradeInfo.Name == InvariantsUpgradeName {
 		// Skip height is set; not configuring store loader
 	}
 }

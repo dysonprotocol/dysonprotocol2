@@ -37,7 +37,7 @@ jobs:
           make dev-install
           ./.venv/bin/pip install pytest-html
           mkdir -p reports
-          make test PYTEST_ARGS="tests/tew tests/whaleswap --html=reports/pytest.html --self-contained-html --random-order"
+          make test PYTEST_ARGS="tests/*/keeper --html=reports/pytest.html --self-contained-html --random-order"
 
       - name: Set release name env
         run: echo "RELEASE_NAME=dysond-$(uname -m)-${GITHUB_REF_NAME}" >> $GITHUB_ENV
