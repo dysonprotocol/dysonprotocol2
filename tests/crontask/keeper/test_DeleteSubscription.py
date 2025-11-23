@@ -34,7 +34,7 @@ def demo_delete_subscription_success(gov_addr, alice_addr):
     # Fund gov account first
     fund_msg = {
         "@type": "/cosmos.bank.v1beta1.MsgSend",
-        "from_address": "dys216vwht46aw58efaxx",
+        "from_address": alice_addr,
         "to_address": gov_addr,
         "amount": [{"denom": "udys", "amount": "1000"}]
     }
@@ -45,6 +45,11 @@ def demo_delete_subscription_success(gov_addr, alice_addr):
         "@type": "/dysonprotocol.crontask.v1.MsgUpdateParams",
         "authority": gov_addr,
         "params": {
+            "block_gas_limit": "3000000",
+            "expiry_limit": "86400",
+            "max_scheduled_time": "86400",
+            "clean_up_time": "86400",
+            "max_subscription_duration": "24h0m0s",
             "min_stake_per_subscription": {"denom": "udys", "amount": "0"}
         }
     }
@@ -195,7 +200,7 @@ def demo_delete_subscription_not_found(gov_addr):
     return {"delete_result": delete_result}
 """
 
-    kwargs = json.dumps({"gov_addr": gov_addr, "alice_addr": alice_addr})
+    kwargs = json.dumps({"gov_addr": gov_addr})
 
     query_result = dysond(
         "query",
@@ -246,11 +251,11 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_delete_subscription_unauthorized(gov_addr, wrong_addr):
+def demo_delete_subscription_unauthorized(gov_addr, alice_addr):
     # Fund gov account first
     fund_msg = {
         "@type": "/cosmos.bank.v1beta1.MsgSend",
-        "from_address": wrong_addr,
+        "from_address": alice_addr,
         "to_address": gov_addr,
         "amount": [{"denom": "udys", "amount": "1000"}]
     }
@@ -261,6 +266,11 @@ def demo_delete_subscription_unauthorized(gov_addr, wrong_addr):
         "@type": "/dysonprotocol.crontask.v1.MsgUpdateParams",
         "authority": gov_addr,
         "params": {
+            "block_gas_limit": "3000000",
+            "expiry_limit": "86400",
+            "max_scheduled_time": "86400",
+            "clean_up_time": "86400",
+            "max_subscription_duration": "24h0m0s",
             "min_stake_per_subscription": {"denom": "udys", "amount": "0"}
         }
     }

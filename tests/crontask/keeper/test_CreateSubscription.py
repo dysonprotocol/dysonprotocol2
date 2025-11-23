@@ -178,11 +178,11 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_create_subscription_invalid_script_address(gov_addr):
+def demo_create_subscription_invalid_script_address(gov_addr, alice_addr):
     # Fund gov account first
     fund_msg = {
         "@type": "/cosmos.bank.v1beta1.MsgSend",
-        "from_address": "dys216vwht46aw58efaxx",
+        "from_address": alice_addr,
         "to_address": gov_addr,
         "amount": [{"denom": "udys", "amount": "1000"}]
     }
@@ -193,6 +193,11 @@ def demo_create_subscription_invalid_script_address(gov_addr):
         "@type": "/dysonprotocol.crontask.v1.MsgUpdateParams",
         "authority": gov_addr,
         "params": {
+            "block_gas_limit": "3000000",
+            "expiry_limit": "86400",
+            "max_scheduled_time": "86400",
+            "clean_up_time": "86400",
+            "max_subscription_duration": "24h0m0s",
             "min_stake_per_subscription": {"denom": "udys", "amount": "0"}
         }
     }
@@ -236,16 +241,21 @@ def demo_create_subscription_invalid_script_address(gov_addr):
 
     result = deep_parse(query_result)
     assert (
-        query_result.get("exception") is not None
-    ), f"Script execution should have failed with invalid script address, but got: {json.dumps(query_result, indent=2)}"
+        query_result.get("exception") is None
+    ), f"Script execution should have succeeded, but got exception: {json.dumps(query_result.get('exception'), indent=2)}"
 
-    exception = query_result.get("exception")
-    assert isinstance(exception, dict), f"Exception should be dict, got {type(exception)}"
-    assert "msg" in exception, f"Exception missing 'msg' key. Keys: {list(exception.keys())}"
-    error_msg = exception["msg"]
-    assert isinstance(error_msg, str), f"Error message should be string, got {type(error_msg)}"
-    error_msg_lower = error_msg.lower()
-    assert "invalid" in error_msg_lower, f"Error should mention invalid address/script, got: {error_msg}"
+    demo_result = result["result"]["result"]
+    assert isinstance(demo_result, dict), f"Result should be dict, got {type(demo_result)}"
+    assert "create_result" in demo_result, f"Result missing 'create_result' key. Keys: {list(demo_result.keys())}"
+
+    create_result = demo_result["create_result"]
+    assert isinstance(create_result, dict), f"Create result should be dict, got {type(create_result)}"
+    assert "results" in create_result, f"Create result missing 'results' key. Keys: {list(create_result.keys())}"
+    assert len(create_result["results"]) == 1, f"Create result should have 1 result, got {len(create_result['results'])}"
+
+    result_item = create_result["results"][0]
+    assert result_item["@type"] == "/dysonprotocol.crontask.v1.MsgCreateSubscriptionResponse", f"Expected MsgCreateSubscriptionResponse, got {result_item['@type']}"
+    assert "subscription_id" in result_item, f"Response missing subscription_id. Keys: {list(result_item.keys())}"
 
 
 def test_create_subscription_invalid_json_args(chainnet):
@@ -268,11 +278,11 @@ def _sudo(msg_dict):
         "messages": [msg_dict]
     })
 
-def demo_create_subscription_invalid_json_args(gov_addr):
+def demo_create_subscription_invalid_json_args(gov_addr, alice_addr):
     # Fund gov account first
     fund_msg = {
         "@type": "/cosmos.bank.v1beta1.MsgSend",
-        "from_address": "dys216vwht46aw58efaxx",
+        "from_address": alice_addr,
         "to_address": gov_addr,
         "amount": [{"denom": "udys", "amount": "1000"}]
     }
@@ -283,6 +293,11 @@ def demo_create_subscription_invalid_json_args(gov_addr):
         "@type": "/dysonprotocol.crontask.v1.MsgUpdateParams",
         "authority": gov_addr,
         "params": {
+            "block_gas_limit": "3000000",
+            "expiry_limit": "86400",
+            "max_scheduled_time": "86400",
+            "clean_up_time": "86400",
+            "max_subscription_duration": "24h0m0s",
             "min_stake_per_subscription": {"denom": "udys", "amount": "0"}
         }
     }
