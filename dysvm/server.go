@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"regexp"
 	"sync"
+	"syscall"
 	"time"
 
 	"dysonprotocol.com/dysvm/internal/data"
@@ -156,8 +157,6 @@ GOT_PORT:
 }
 
 func (s *PythonServer) request(ctx context.Context, path string, payload any) (json.RawMessage, error) {
-	fmt.Println("requesting dyslang server")
-
 	if err := s.ensureStarted(ctx); err != nil {
 		return nil, errorsmod.Wrapf(err, "failed to ensure dyslang server is started")
 	}
@@ -172,7 +171,6 @@ func (s *PythonServer) request(ctx context.Context, path string, payload any) (j
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := s.client.Do(req)
 	if err != nil {
-		fmt.Printf("failed to do request: %s\n", err)
 		return nil, fmt.Errorf("failed to do request")
 	}
 	defer resp.Body.Close()
@@ -191,6 +189,46 @@ func (s *PythonServer) request(ctx context.Context, path string, payload any) (j
 		return nil, fmt.Errorf("%s", string(b))
 	}
 	return pr.Result, nil
+}
+
+func (s *PythonServer) stopLocked() error {
+	if s.child != nil && s.child.Process != nil {
+		_ = s.child.Process.Signal(syscall.SIGTERM)
+		done := make(chan struct{})
+		go func(cmd *exec.Cmd) {
+			_ = cmd.Wait()
+			close(done)
+		}(s.child)
+		select {
+		case <-done:
+		case <-time.After(3 * time.Second):
+			_ = s.child.Process.Kill()
+			<-done
+		}
+		s.child = nil
+	}
+	if s.cmd != nil {
+		_ = s.cmd.Cleanup()
+		s.cmd = nil
+	}
+	s.baseURL = ""
+	return nil
+}
+
+func (s *PythonServer) stop() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stopLocked()
+}
+
+// ShutdownServer terminates the embedded dyslang server if it was started.
+func ShutdownServer() {
+	if serverInst == nil {
+		return
+	}
+	if err := serverInst.stop(); err != nil {
+		fmt.Printf("failed to stop dyslang server: %s\n", err)
+	}
 }
 
 // Exec via server
@@ -232,11 +270,18 @@ func (s *PythonServer) Wsgi(ctx context.Context, port, scriptName, scriptJSON, b
 	if err != nil {
 		return "", errorsmod.Wrapf(err, "failed to run wsgi")
 	}
-	var out string
-	if err := json.Unmarshal(res, &out); err != nil {
-		return string(res), nil
+	var payloadStr string
+	if err := json.Unmarshal(res, &payloadStr); err != nil {
+		return "", errorsmod.Wrapf(err, "unexpected wsgi response: %s", string(res))
 	}
-	return out, nil
+	body, logs, err := decodeWsgiResponse([]byte(payloadStr))
+	if err != nil {
+		return "", errorsmod.Wrapf(err, "failed to parse wsgi response: %s", payloadStr)
+	}
+	if logs != "" {
+		fmt.Print(logs)
+	}
+	return string(body), nil
 }
 
 func (s *PythonServer) Benchmark(ctx context.Context, iterations int, details bool) (string, error) {

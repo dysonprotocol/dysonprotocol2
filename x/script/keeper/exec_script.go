@@ -80,14 +80,11 @@ func (k Keeper) execScript(sdkCtx sdk.Context, scriptCtx *ExecScriptContext) (*E
 		scriptCtx.AttachedMessageResults = results
 	}
 
-	fmt.Println("Starting RPC server")
 	port, srv, err := k.NewRPCServer(depthCtx, scriptCtx.Script.Address, k.App)
 
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println("Started RPC server on port", port)
 
 	now := time.Now()
 	defer func() {
@@ -143,7 +140,6 @@ func (k Keeper) execScript(sdkCtx sdk.Context, scriptCtx *ExecScriptContext) (*E
 		attachedMsgResultsJSON,
 		string(headerInfoJSON),
 		port)
-
 	if runErr != nil {
 		k.Logger(depthCtx).Error("failed to exec", "error", runErr)
 	}

@@ -3,6 +3,7 @@ package dysvm
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -107,12 +108,42 @@ func Wsgi(ctx context.Context, port, scriptName, scriptJSON, blockInfoJSON, http
 		return "", cosmossdkerrors.Wrapf(err, "failed to run wsgi")
 	}
 
-	out, runErr := cmd.CombinedOutput()
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return "", cosmossdkerrors.Wrapf(err, "failed to capture wsgi stdout")
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return "", cosmossdkerrors.Wrapf(err, "failed to capture wsgi stderr")
+	}
 
-	fmt.Println("Command output: ", string(out))
-	fmt.Println("Command error: ", runErr)
+	if err := cmd.Start(); err != nil {
+		return "", cosmossdkerrors.Wrapf(err, "failed to start wsgi process")
+	}
 
-	return string(out), runErr
+	stdoutBytes, stdoutErr := io.ReadAll(stdout)
+	stderrBytes, stderrErr := io.ReadAll(stderr)
+
+	if stdoutErr != nil {
+		return "", cosmossdkerrors.Wrapf(stdoutErr, "failed to read wsgi stdout")
+	}
+	if stderrErr != nil {
+		return "", cosmossdkerrors.Wrapf(stderrErr, "failed to read wsgi stderr")
+	}
+
+	if err := cmd.Wait(); err != nil {
+		return "", fmt.Errorf("failed to run wsgi: %w, stderr=%s", err, string(stderrBytes))
+	}
+
+	body, logs, err := decodeWsgiResponse(stdoutBytes)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse wsgi response: %w, stdout=%s, stderr=%s", err, string(stdoutBytes), string(stderrBytes))
+	}
+	if logs != "" {
+		fmt.Print(logs)
+	}
+
+	return string(body), nil
 
 }
 

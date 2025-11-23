@@ -390,7 +390,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
         "250ms",
         "--no-blocks-timeout",
         "15",
-        # "--logs",
+        "--logs",
     ]
 
     # Support optional log module filtering via environment variable
@@ -399,8 +399,16 @@ def chainnet(worker_id, test_base_dir, test_config_path):
         start_cmd.extend(["--log-module", log_module])
         print(f"Filtering logs to module: {log_module}")
 
+    # Create log file for network startup output
+    network_log_file = Path("blockchain.log")
+    network_log = open(network_log_file, "w")
+
+    print(f"Writing dysond blockchain logs to: {network_log_file}")
+
     dysond_proc = subprocess.Popen(
         start_cmd,
+        stdout=network_log,
+        stderr=network_log,
         preexec_fn=os.setsid,
     )
 
@@ -435,7 +443,10 @@ def chainnet(worker_id, test_base_dir, test_config_path):
 
     yield run_commands
 
-    # Simple fixture cleanup - just kill the process groups
+    # Simple fixture cleanup - close log file and kill the process groups
+    network_log.close()
+    print(f"Wrote dysond blockchain logs to: {network_log_file}")
+
     for proc in processes:
         if proc.poll() is None:
             try:

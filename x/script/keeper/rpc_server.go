@@ -56,13 +56,9 @@ func (k Keeper) NewRPCServer(ctx sdk.Context, address string, app *baseapp.BaseA
 	//fmt.Println("Using port:", listener.Addr().(*net.TCPAddr).Port)
 
 	go func() {
-		//fmt.Println("start ListenAndServe")
 		srv.Serve(listener)
-		//fmt.Println("end ListenAndServe")
 	}()
-	//fmt.Println("running dysvm")
-	port := strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
-	return port, srv, nil
+	return strconv.Itoa(listener.Addr().(*net.TCPAddr).Port), srv, nil
 }
 
 func (k Keeper) RunWeb(ctx context.Context, scriptAddress string, scriptName string, httpreq string) (string, error) {

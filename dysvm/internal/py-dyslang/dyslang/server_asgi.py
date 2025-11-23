@@ -98,6 +98,9 @@ async def _handle_dys_format(payload: Dict[str, Any]) -> Dict[str, Any]:
 
     code = payload.get("code", "")
     print(f"##### _handle_dys_format <len_code>{len(code)}</len_code>")
+    # Empty scripts are valid; bypass formatter to keep CLI/server parity.
+    if code == "":
+        return _ok("")
     try:
         DysEval().validate(code)
         print("is valid")
@@ -105,10 +108,6 @@ async def _handle_dys_format(payload: Dict[str, Any]) -> Dict[str, Any]:
         print(
             f"##### _handle_dys_format <len_formatted>{len(formatted)}</len_formatted>"
         )
-        if not formatted:
-            print("not formatted")
-            raise Exception("Failed to format code: %s" % code)
-
         return _ok(formatted)
     except Exception as e:
         print(f"##### _handle_dys_format <error>{e}</error>")

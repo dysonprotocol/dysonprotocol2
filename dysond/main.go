@@ -6,6 +6,7 @@ import (
 
 	"dysonprotocol.com"
 	cmd "dysonprotocol.com/dysond/cmd"
+	"dysonprotocol.com/dysvm"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -20,7 +21,9 @@ func main() {
 	cfg.SetBech32PrefixForConsensusNode("dys2valcons", "dys2valconspub") // consensus addresses
 
 	rootCmd := cmd.NewRootCmd()
-	if err := svrcmd.Execute(rootCmd, "DYSON", dysonprotocol.DefaultNodeHome); err != nil {
+	err := svrcmd.Execute(rootCmd, "DYSON", dysonprotocol.DefaultNodeHome)
+	dysvm.ShutdownServer()
+	if err != nil {
 		fmt.Fprintln(rootCmd.OutOrStderr(), err)
 		os.Exit(1)
 	}

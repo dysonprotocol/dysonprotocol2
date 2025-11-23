@@ -397,7 +397,7 @@ def build_sandbox(
             "id": 0,
         }
         try:
-            res = requests.post(url, json=payload)
+            res = requests.post(url, json=payload, timeout=30)
             # print(f"rpc {method}: {res.status_code} response from golang: {res.text}")
             ret_json = res.json()
             try:

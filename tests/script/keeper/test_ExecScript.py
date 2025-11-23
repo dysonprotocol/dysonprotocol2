@@ -457,7 +457,8 @@ def test_exec_script_script_name_resolution(chainnet):
 
     extra_code = f"""
 import json
-from dys import _msg, get_executor_address
+import re
+from dys import _msg, _query, get_executor_address
 
 def _sudo(msg_dict):
     return _msg({{
@@ -465,6 +466,45 @@ def _sudo(msg_dict):
         "authority": get_executor_address(),
         "messages": [msg_dict]
     }})
+
+def _parse_coin(s):
+    m = re.fullmatch(r"(\\d+)([a-zA-Z0-9./_]+)", s)
+    if not m:
+        raise Exception("invalid valuation: " + str(s))
+    return {{"denom": m.group(2), "amount": m.group(1)}}
+
+def _register_name(name, destination, valuation="10udys"):
+    owner = get_executor_address()
+    salt = "salt-" + name
+    hexhash = _query({{
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": name,
+        "salt": salt,
+        "committer": owner,
+    }})["hex_hash"]
+
+    _sudo({{
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": owner,
+        "hexhash": hexhash,
+        "valuation": _parse_coin(valuation),
+    }})
+
+    _sudo({{
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": owner,
+        "name": name,
+        "salt": salt,
+    }})
+
+    _sudo({{
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
+        "owner": owner,
+        "name": name,
+        "destination": destination,
+    }})
+
+    return name
 
 def demo_exec_script_name_resolution(gov_addr, script_owner_addr):
     # Register name and set destination
@@ -500,7 +540,6 @@ def demo_exec_script_name_resolution(gov_addr, script_owner_addr):
         {
             "gov_addr": gov_addr,
             "script_owner_addr": script_owner_addr,
-            "script_name": script_name,
         }
     )
 

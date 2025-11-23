@@ -109,12 +109,11 @@ if __name__ == "__main__":
             port = 0
         # Port 0 selects an ephemeral free port
 
-        # Use a single worker and low timeout to keep behavior deterministic
         uvicorn.run(
             "dyslang.server_asgi:app",
             host=host,
             port=port,
             log_level="info",
             timeout_keep_alive=60,
-            workers=1,
+            workers=10,
         )

@@ -117,6 +117,8 @@ def test_function():
         kwargs,
         "--extra-code",
         extra_code,
+        "--output",
+        "json",
     )
 
     result = deep_parse(query_result)

@@ -187,5 +187,12 @@ def main(port, script_name, script_json, block_info_json, http_request):
                 print("dyswsgi Execpetion:", traceback.format_exc())
             out = buf.getvalue()
 
+    response_payload = json.dumps(
+        {
+            "response_b64": base64.b64encode(wsgiout).decode(),
+            "logs": out,
+        },
+        separators=(",", ":"),
+    )
     sys.stderr.write(out)
-    print(base64.b64encode(wsgiout).decode(), end="")
+    print(response_payload, end="")
