@@ -233,27 +233,48 @@ def test_set_listed_success_listed_true(chainnet):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"demo_result should be dict, got {type(demo_result)}"
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
 
     # Validate set listed result
     set_listed_result = demo_result["set_listed_result"]
-    assert isinstance(set_listed_result, dict), f"set_listed_result should be dict, got {type(set_listed_result)}"
-    assert set_listed_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse", f"sudo should return sudo response, got {set_listed_result.get('@type')}"
-    assert len(set_listed_result["results"]) == 1, f"sudo should have one result, got {len(set_listed_result['results'])}"
-    assert set_listed_result["results"][0]["@type"] == "/dysonprotocol.nameservice.v1.MsgSetListedResponse", f"sudo should return set listed response, got {set_listed_result['results'][0].get('@type')}"
+    assert isinstance(
+        set_listed_result, dict
+    ), f"set_listed_result should be dict, got {type(set_listed_result)}"
+    assert (
+        set_listed_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
+    ), f"sudo should return sudo response, got {set_listed_result.get('@type')}"
+    assert (
+        len(set_listed_result["results"]) == 1
+    ), f"sudo should have one result, got {len(set_listed_result['results'])}"
+    assert (
+        set_listed_result["results"][0]["@type"]
+        == "/dysonprotocol.nameservice.v1.MsgSetListedResponse"
+    ), f"sudo should return set listed response, got {set_listed_result['results'][0].get('@type')}"
 
     # Validate NFT query shows NFT exists
     nft_query = demo_result["nft_query"]
-    assert isinstance(nft_query, dict), f"nft_query should be dict, got {type(nft_query)}"
-    assert "nft" in nft_query, f"nft_query should have nft, got {list(nft_query.keys())}"
+    assert isinstance(
+        nft_query, dict
+    ), f"nft_query should be dict, got {type(nft_query)}"
+    assert (
+        "nft" in nft_query
+    ), f"nft_query should have nft, got {list(nft_query.keys())}"
 
     nft = nft_query["nft"]
     assert nft["id"] == "nft1", f"nft ID should match, got {nft['id']}"
-    assert nft["class_id"] == "test-setlisted.dys", f"nft class_id should match, got {nft['class_id']}"
+    assert (
+        nft["class_id"] == "test-setlisted.dys"
+    ), f"nft class_id should match, got {nft['class_id']}"
 
 
 def test_set_listed_success_listed_false(chainnet):
@@ -285,18 +306,33 @@ def test_set_listed_success_listed_false(chainnet):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"demo_result should be dict, got {type(demo_result)}"
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
 
     # Validate set listed result
     set_listed_result = demo_result["set_listed_result"]
-    assert isinstance(set_listed_result, dict), f"set_listed_result should be dict, got {type(set_listed_result)}"
-    assert set_listed_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse", f"sudo should return sudo response, got {set_listed_result.get('@type')}"
-    assert len(set_listed_result["results"]) == 1, f"sudo should have one result, got {len(set_listed_result['results'])}"
-    assert set_listed_result["results"][0]["@type"] == "/dysonprotocol.nameservice.v1.MsgSetListedResponse", f"sudo should return set listed response, got {set_listed_result['results'][0].get('@type')}"
+    assert isinstance(
+        set_listed_result, dict
+    ), f"set_listed_result should be dict, got {type(set_listed_result)}"
+    assert (
+        set_listed_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
+    ), f"sudo should return sudo response, got {set_listed_result.get('@type')}"
+    assert (
+        len(set_listed_result["results"]) == 1
+    ), f"sudo should have one result, got {len(set_listed_result['results'])}"
+    assert (
+        set_listed_result["results"][0]["@type"]
+        == "/dysonprotocol.nameservice.v1.MsgSetListedResponse"
+    ), f"sudo should return set listed response, got {set_listed_result['results'][0].get('@type')}"
 
 
 def test_set_listed_nft_not_found(chainnet):
@@ -327,13 +363,14 @@ def test_set_listed_nft_not_found(chainnet):
         extra_code,
     )
 
-    result = deep_parse(query_result)
-    demo_result = result["result"]["result"]
-
-    # Should fail because NFT doesn't exist
-    set_listed_result = demo_result["set_listed_result"]
-    assert set_listed_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
-    # The result should indicate failure (empty results or error)
+    parsed = deep_parse(query_result)
+    assert (
+        parsed.get("exception") is not None
+    ), "Expected exception when setting listed status on non-existent NFT"
+    exception_msg = parsed["exception"]["msg"]
+    assert (
+        "not found" in exception_msg.lower()
+    ), f"Expected 'not found' in error message: {exception_msg}"
 
 
 def test_set_listed_unauthorized(chainnet):
@@ -365,13 +402,14 @@ def test_set_listed_unauthorized(chainnet):
         extra_code,
     )
 
-    result = deep_parse(query_result)
-    demo_result = result["result"]["result"]
-
-    # Should fail because wrong owner
-    set_listed_result = demo_result["set_listed_result"]
-    assert set_listed_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
-    # The result should indicate failure (empty results or error)
+    parsed = deep_parse(query_result)
+    assert (
+        parsed.get("exception") is not None
+    ), "Expected exception when setting listed status with unauthorized owner"
+    exception_msg = parsed["exception"]["msg"]
+    assert (
+        "unauthorized" in exception_msg.lower()
+    ), f"Expected 'unauthorized' in error message: {exception_msg}"
 
 
 def test_set_listed_toggle_status(chainnet):
@@ -403,11 +441,17 @@ def test_set_listed_toggle_status(chainnet):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"demo_result should be dict, got {type(demo_result)}"
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
 
     # Both operations should succeed
     list_result = demo_result["list_result"]

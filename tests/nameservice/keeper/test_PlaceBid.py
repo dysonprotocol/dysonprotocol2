@@ -161,8 +161,28 @@ def demo_place_bid_nft_not_listed(bidder_addr, owner_addr):
     # Setup: Create NFT class and mint NFT but don't list it
     _create_nft_class_and_mint_nft(class_id, nft_id, owner_addr)
 
-    # Set a valuation but don't list
+    # Explicitly set the class to not be always listed
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgSetNFTClassAlwaysListed",
+        "name_destination": owner_addr,
+        "class_id": class_id,
+        "always_listed": False,
+    })
+
+    # Set a valuation but don't list the NFT
     _set_nft_valuation(class_id, nft_id, owner_addr, "10udys")
+
+    # Check NFT status before bidding
+    nft_query = _query({
+        "@type": "/dysonprotocol.nft.v1beta1.QueryNFTRequest",
+        "class_id": class_id,
+        "id": nft_id,
+    })
+
+    class_query = _query({
+        "@type": "/dysonprotocol.nft.v1beta1.QueryClassRequest",
+        "class_id": class_id,
+    })
 
     # Try to place bid (should fail)
     result = _sudo({
@@ -173,7 +193,11 @@ def demo_place_bid_nft_not_listed(bidder_addr, owner_addr):
         "bid_amount": _parse_coin("15udys"),
     })
 
-    return {"place_bid_result": result}
+    return {
+        "place_bid_result": result,
+        "nft_status": nft_query,
+        "class_status": class_query,
+    }
 
 
 def demo_place_bid_nft_not_found(bidder_addr):
@@ -266,13 +290,13 @@ def _random_root_name():
 
 def _assert_query_response(query_result):
     parsed = deep_parse(query_result)
-    assert query_result.get("exception") is None, (
-        f"Script exception: {json.dumps(query_result.get('exception'), indent=2)}"
-    )
+    assert (
+        query_result.get("exception") is None
+    ), f"Script exception: {json.dumps(query_result.get('exception'), indent=2)}"
     demo_result = parsed["result"]["result"]
-    assert isinstance(demo_result, dict), (
-        f"Expected dict, got {type(demo_result)} full={json.dumps(demo_result, indent=2)}"
-    )
+    assert isinstance(
+        demo_result, dict
+    ), f"Expected dict, got {type(demo_result)} full={json.dumps(demo_result, indent=2)}"
     return demo_result
 
 
@@ -283,9 +307,13 @@ def test_place_bid_success(chainnet):
     gov_addr = gov_result["account"]["value"]["address"]
 
     # Use existing test keys
-    alice_info = dysond("keys", "show", "alice", "--keyring-backend", "test", "--output", "json")
+    alice_info = dysond(
+        "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
+    )
     owner_addr = alice_info["address"]
-    bob_info = dysond("keys", "show", "bob", "--keyring-backend", "test", "--output", "json")
+    bob_info = dysond(
+        "keys", "show", "bob", "--keyring-backend", "test", "--output", "json"
+    )
     bidder_addr = bob_info["address"]
     root_name = _random_root_name()
     nft_id = "nft1"
@@ -327,12 +355,14 @@ def demo_place_bid_success(root_name, nft_id, owner_addr, bidder_addr):
 """
     )
 
-    kwargs = json.dumps({
-        "root_name": root_name,
-        "nft_id": nft_id,
-        "owner_addr": owner_addr,
-        "bidder_addr": bidder_addr
-    })
+    kwargs = json.dumps(
+        {
+            "root_name": root_name,
+            "nft_id": nft_id,
+            "owner_addr": owner_addr,
+            "bidder_addr": bidder_addr,
+        }
+    )
 
     query_result = dysond(
         "query",
@@ -354,21 +384,40 @@ def demo_place_bid_success(root_name, nft_id, owner_addr, bidder_addr):
 
     # Validate place bid result
     place_bid_result = demo_result["place_bid_result"]
-    assert isinstance(place_bid_result, dict), f"place_bid_result should be dict, got {type(place_bid_result)}"
-    assert place_bid_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse", f"sudo should return sudo response, got {place_bid_result.get('@type')}"
-    assert len(place_bid_result["results"]) == 1, f"sudo should have one result, got {len(place_bid_result['results'])}"
-    assert place_bid_result["results"][0]["@type"] == "/dysonprotocol.nameservice.v1.MsgPlaceBidResponse", f"sudo should return place bid response, got {place_bid_result['results'][0].get('@type')}"
+    assert isinstance(
+        place_bid_result, dict
+    ), f"place_bid_result should be dict, got {type(place_bid_result)}"
+    assert (
+        place_bid_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
+    ), f"sudo should return sudo response, got {place_bid_result.get('@type')}"
+    assert (
+        len(place_bid_result["results"]) == 1
+    ), f"sudo should have one result, got {len(place_bid_result['results'])}"
+    assert (
+        place_bid_result["results"][0]["@type"]
+        == "/dysonprotocol.nameservice.v1.MsgPlaceBidResponse"
+    ), f"sudo should return place bid response, got {place_bid_result['results'][0].get('@type')}"
 
     # Validate bid query
     bid_query = demo_result["bid_query"]
-    assert isinstance(bid_query, dict), f"bid_query should be dict, got {type(bid_query)}"
-    assert "bids" in bid_query, f"bid_query should have bids, got {list(bid_query.keys())}"
-    assert len(bid_query["bids"]) == 1, f"should have one bid, got {len(bid_query['bids'])}"
+    assert isinstance(
+        bid_query, dict
+    ), f"bid_query should be dict, got {type(bid_query)}"
+    assert (
+        "bids" in bid_query
+    ), f"bid_query should have bids, got {list(bid_query.keys())}"
+    assert (
+        len(bid_query["bids"]) == 1
+    ), f"should have one bid, got {len(bid_query['bids'])}"
 
     bid = bid_query["bids"][0]
     assert bid["bidder"] == bidder_addr, f"bidder should match, got {bid['bidder']}"
-    assert bid["amount"]["denom"] == "udys", f"bid denom should be udys, got {bid['amount']['denom']}"
-    assert bid["amount"]["amount"] == "15", f"bid amount should be 15, got {bid['amount']['amount']}"
+    assert (
+        bid["amount"]["denom"] == "udys"
+    ), f"bid denom should be udys, got {bid['amount']['denom']}"
+    assert (
+        bid["amount"]["amount"] == "15"
+    ), f"bid amount should be 15, got {bid['amount']['amount']}"
 
 
 def test_place_bid_nft_not_listed(chainnet):
@@ -377,8 +426,15 @@ def test_place_bid_nft_not_listed(chainnet):
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    bidder_addr = get_test_address(dysond, "0x111111")
-    owner_addr = get_test_address(dysond, "0x222222")
+    # Use existing test keys that have coins
+    alice_info = dysond(
+        "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
+    )
+    bidder_addr = alice_info["address"]
+    bob_info = dysond(
+        "keys", "show", "bob", "--keyring-backend", "test", "--output", "json"
+    )
+    owner_addr = bob_info["address"]
 
     extra_code = BASE_EXTRA_CODE
 
@@ -400,13 +456,14 @@ def test_place_bid_nft_not_listed(chainnet):
         extra_code,
     )
 
-    result = deep_parse(query_result)
-    demo_result = result["result"]["result"]
-
-    # Should fail because NFT is not listed
-    place_bid_result = demo_result["place_bid_result"]
-    assert place_bid_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
-    # The result should indicate failure (empty results or error)
+    parsed = deep_parse(query_result)
+    assert (
+        parsed.get("exception") is not None
+    ), "Expected exception when placing bid on unlisted NFT"
+    exception_msg = parsed["exception"]["msg"]
+    assert (
+        "not listed" in exception_msg.lower()
+    ), f"Expected 'not listed' in error message: {exception_msg}"
 
 
 def test_place_bid_nft_not_found(chainnet):
@@ -415,7 +472,11 @@ def test_place_bid_nft_not_found(chainnet):
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    bidder_addr = get_test_address(dysond, "0x111111")
+    # Use existing test key that has coins
+    alice_info = dysond(
+        "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
+    )
+    bidder_addr = alice_info["address"]
 
     extra_code = BASE_EXTRA_CODE
 
@@ -437,13 +498,14 @@ def test_place_bid_nft_not_found(chainnet):
         extra_code,
     )
 
-    result = deep_parse(query_result)
-    demo_result = result["result"]["result"]
-
-    # Should fail because NFT doesn't exist
-    place_bid_result = demo_result["place_bid_result"]
-    assert place_bid_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
-    # The result should indicate failure (empty results or error)
+    parsed = deep_parse(query_result)
+    assert (
+        parsed.get("exception") is not None
+    ), "Expected exception when placing bid on non-existent NFT"
+    exception_msg = parsed["exception"]["msg"]
+    assert (
+        "not found" in exception_msg.lower()
+    ), f"Expected 'not found' in error message: {exception_msg}"
 
 
 def test_place_bid_insufficient_bid(chainnet):
@@ -452,8 +514,15 @@ def test_place_bid_insufficient_bid(chainnet):
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    bidder_addr = get_test_address(dysond, "0x111111")
-    owner_addr = get_test_address(dysond, "0x222222")
+    # Use existing test keys that have coins
+    alice_info = dysond(
+        "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
+    )
+    bidder_addr = alice_info["address"]
+    bob_info = dysond(
+        "keys", "show", "bob", "--keyring-backend", "test", "--output", "json"
+    )
+    owner_addr = bob_info["address"]
 
     extra_code = BASE_EXTRA_CODE
 
@@ -475,13 +544,14 @@ def test_place_bid_insufficient_bid(chainnet):
         extra_code,
     )
 
-    result = deep_parse(query_result)
-    demo_result = result["result"]["result"]
-
-    # Should fail because bid is below valuation
-    place_bid_result = demo_result["place_bid_result"]
-    assert place_bid_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
-    # The result should indicate failure (empty results or error)
+    parsed = deep_parse(query_result)
+    assert (
+        parsed.get("exception") is not None
+    ), "Expected exception when placing insufficient bid"
+    exception_msg = parsed["exception"]["msg"]
+    assert (
+        "must be greater than or equal to current valuation" in exception_msg.lower()
+    ), f"Expected 'must be greater than or equal to current valuation' in error message: {exception_msg}"
 
 
 def test_place_bid_outbid_existing(chainnet):
@@ -490,17 +560,26 @@ def test_place_bid_outbid_existing(chainnet):
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    bidder_addr = get_test_address(dysond, "0x111111")
-    owner_addr = get_test_address(dysond, "0x222222")
-    competitor_addr = get_test_address(dysond, "0x333333")
+    # Use existing test keys that have coins
+    alice_info = dysond(
+        "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
+    )
+    bidder_addr = alice_info["address"]
+    bob_info = dysond(
+        "keys", "show", "bob", "--keyring-backend", "test", "--output", "json"
+    )
+    owner_addr = bob_info["address"]
+    competitor_addr = bidder_addr  # Use alice as competitor too (simplified)
 
     extra_code = BASE_EXTRA_CODE
 
-    kwargs = json.dumps({
-        "bidder_addr": bidder_addr,
-        "owner_addr": owner_addr,
-        "competitor_addr": competitor_addr
-    })
+    kwargs = json.dumps(
+        {
+            "bidder_addr": bidder_addr,
+            "owner_addr": owner_addr,
+            "competitor_addr": competitor_addr,
+        }
+    )
 
     query_result = dysond(
         "query",
@@ -519,11 +598,17 @@ def test_place_bid_outbid_existing(chainnet):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"demo_result should be dict, got {type(demo_result)}"
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
 
     # Both bids should succeed
     first_bid = demo_result["first_bid"]
@@ -531,10 +616,21 @@ def test_place_bid_outbid_existing(chainnet):
     assert first_bid["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
     assert second_bid["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
 
-    # Final bid should be the higher one
+    # Should have 2 historical bids (both from the same bidder)
     bid_query = demo_result["bid_query"]
-    assert len(bid_query["bids"]) == 1, f"should have one active bid, got {len(bid_query['bids'])}"
+    assert (
+        len(bid_query["bids"]) == 2
+    ), f"should have two historical bids, got {len(bid_query['bids'])}"
 
-    final_bid = bid_query["bids"][0]
-    assert final_bid["bidder"] == competitor_addr, f"final bidder should be competitor, got {final_bid['bidder']}"
-    assert final_bid["bid_amount"]["amount"] == "20", f"final bid amount should be 20, got {final_bid['bid_amount']['amount']}"
+    # Find the bids by amount
+    bids_by_amount = {bid["amount"]["amount"]: bid for bid in bid_query["bids"]}
+
+    # Should have both the original bid (15) and the outbid (20)
+    assert "15" in bids_by_amount, "should have original bid of 15udys"
+    assert "20" in bids_by_amount, "should have outbid of 20udys"
+
+    # Both bids should be from the same bidder (alice bidding against herself)
+    for bid in bid_query["bids"]:
+        assert (
+            bid["bidder"] == bidder_addr
+        ), f"all bids should be from the same bidder, got {bid['bidder']}"

@@ -256,27 +256,50 @@ def test_save_class_success(chainnet):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"demo_result should be dict, got {type(demo_result)}"
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
 
     # Validate save class result
     save_class_result = demo_result["save_class_result"]
-    assert isinstance(save_class_result, dict), f"save_class_result should be dict, got {type(save_class_result)}"
-    assert save_class_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse", f"sudo should return sudo response, got {save_class_result.get('@type')}"
-    assert len(save_class_result["results"]) == 1, f"sudo should have one result, got {len(save_class_result['results'])}"
-    assert save_class_result["results"][0]["@type"] == "/dysonprotocol.nameservice.v1.MsgSaveClassResponse", f"sudo should return save class response, got {save_class_result['results'][0].get('@type')}"
+    assert isinstance(
+        save_class_result, dict
+    ), f"save_class_result should be dict, got {type(save_class_result)}"
+    assert (
+        save_class_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
+    ), f"sudo should return sudo response, got {save_class_result.get('@type')}"
+    assert (
+        len(save_class_result["results"]) == 1
+    ), f"sudo should have one result, got {len(save_class_result['results'])}"
+    assert (
+        save_class_result["results"][0]["@type"]
+        == "/dysonprotocol.nameservice.v1.MsgSaveClassResponse"
+    ), f"sudo should return save class response, got {save_class_result['results'][0].get('@type')}"
 
     # Validate class query
     class_query = demo_result["class_query"]
-    assert isinstance(class_query, dict), f"class_query should be dict, got {type(class_query)}"
-    assert "class" in class_query, f"class_query should have class, got {list(class_query.keys())}"
+    assert isinstance(
+        class_query, dict
+    ), f"class_query should be dict, got {type(class_query)}"
+    assert (
+        "class" in class_query
+    ), f"class_query should have class, got {list(class_query.keys())}"
 
     class_info = class_query["class"]
-    assert class_info["name"] == "Test Collection", f"class name should match, got {class_info['name']}"
-    assert class_info["symbol"] == "TEST", f"class symbol should match, got {class_info['symbol']}"
+    assert (
+        class_info["name"] == "Test Collection"
+    ), f"class name should match, got {class_info['name']}"
+    assert (
+        class_info["symbol"] == "TEST"
+    ), f"class symbol should match, got {class_info['symbol']}"
 
 
 def test_save_class_subcollection(chainnet):
@@ -308,11 +331,17 @@ def test_save_class_subcollection(chainnet):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"demo_result should be dict, got {type(demo_result)}"
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
 
     # Validate both classes exist
     main_class_query = demo_result["main_class_query"]
@@ -353,13 +382,14 @@ def test_save_class_unauthorized(chainnet):
         extra_code,
     )
 
-    result = deep_parse(query_result)
-    demo_result = result["result"]["result"]
-
-    # Should fail because wrong owner
-    save_class_result = demo_result["save_class_result"]
-    assert save_class_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
-    # The result should indicate failure (empty results or error)
+    parsed = deep_parse(query_result)
+    assert (
+        parsed.get("exception") is not None
+    ), "Expected exception when saving class with unauthorized owner"
+    exception_msg = parsed["exception"]["msg"]
+    assert (
+        "unauthorized" in exception_msg.lower()
+    ), f"Expected 'unauthorized' in error message: {exception_msg}"
 
 
 def test_save_class_no_root_name(chainnet):
@@ -390,13 +420,14 @@ def test_save_class_no_root_name(chainnet):
         extra_code,
     )
 
-    result = deep_parse(query_result)
-    demo_result = result["result"]["result"]
-
-    # Should fail because root name not registered
-    save_class_result = demo_result["save_class_result"]
-    assert save_class_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
-    # The result should indicate failure (empty results or error)
+    parsed = deep_parse(query_result)
+    assert (
+        parsed.get("exception") is not None
+    ), "Expected exception when saving class without root name registration"
+    exception_msg = parsed["exception"]["msg"]
+    assert (
+        "not found" in exception_msg.lower()
+    ), f"Expected 'not found' in error message: {exception_msg}"
 
 
 def test_save_class_update_existing(chainnet):
@@ -428,24 +459,46 @@ def test_save_class_update_existing(chainnet):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"demo_result should be dict, got {type(demo_result)}"
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
 
     # Validate update result
     update_class_result = demo_result["update_class_result"]
-    assert isinstance(update_class_result, dict), f"update_class_result should be dict, got {type(update_class_result)}"
-    assert update_class_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse", f"sudo should return sudo response, got {update_class_result.get('@type')}"
-    assert len(update_class_result["results"]) == 1, f"sudo should have one result, got {len(update_class_result['results'])}"
+    assert isinstance(
+        update_class_result, dict
+    ), f"update_class_result should be dict, got {type(update_class_result)}"
+    assert (
+        update_class_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
+    ), f"sudo should return sudo response, got {update_class_result.get('@type')}"
+    assert (
+        len(update_class_result["results"]) == 1
+    ), f"sudo should have one result, got {len(update_class_result['results'])}"
 
     # Validate updated class info
     class_query = demo_result["class_query"]
-    assert isinstance(class_query, dict), f"class_query should be dict, got {type(class_query)}"
-    assert "class" in class_query, f"class_query should have class, got {list(class_query.keys())}"
+    assert isinstance(
+        class_query, dict
+    ), f"class_query should be dict, got {type(class_query)}"
+    assert (
+        "class" in class_query
+    ), f"class_query should have class, got {list(class_query.keys())}"
 
     class_info = class_query["class"]
-    assert class_info["name"] == "Updated Name", f"class name should be updated, got {class_info['name']}"
-    assert class_info["symbol"] == "UPDT", f"class symbol should be updated, got {class_info['symbol']}"
-    assert class_info["description"] == "Updated Description", f"class description should be updated, got {class_info['description']}"
+    assert (
+        class_info["name"] == "Updated Name"
+    ), f"class name should be updated, got {class_info['name']}"
+    assert (
+        class_info["symbol"] == "UPDT"
+    ), f"class symbol should be updated, got {class_info['symbol']}"
+    assert (
+        class_info["description"] == "Updated Description"
+    ), f"class description should be updated, got {class_info['description']}"

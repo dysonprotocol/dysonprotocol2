@@ -277,28 +277,51 @@ def test_mint_nft_success(chainnet):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"demo_result should be dict, got {type(demo_result)}"
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
 
     # Validate mint NFT result
     mint_nft_result = demo_result["mint_nft_result"]
-    assert isinstance(mint_nft_result, dict), f"mint_nft_result should be dict, got {type(mint_nft_result)}"
-    assert mint_nft_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse", f"sudo should return sudo response, got {mint_nft_result.get('@type')}"
-    assert len(mint_nft_result["results"]) == 1, f"sudo should have one result, got {len(mint_nft_result['results'])}"
-    assert mint_nft_result["results"][0]["@type"] == "/dysonprotocol.nameservice.v1.MsgMintNFTResponse", f"sudo should return mint NFT response, got {mint_nft_result['results'][0].get('@type')}"
+    assert isinstance(
+        mint_nft_result, dict
+    ), f"mint_nft_result should be dict, got {type(mint_nft_result)}"
+    assert (
+        mint_nft_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
+    ), f"sudo should return sudo response, got {mint_nft_result.get('@type')}"
+    assert (
+        len(mint_nft_result["results"]) == 1
+    ), f"sudo should have one result, got {len(mint_nft_result['results'])}"
+    assert (
+        mint_nft_result["results"][0]["@type"]
+        == "/dysonprotocol.nameservice.v1.MsgMintNFTResponse"
+    ), f"sudo should return mint NFT response, got {mint_nft_result['results'][0].get('@type')}"
 
     # Validate NFT query
     nft_query = demo_result["nft_query"]
-    assert isinstance(nft_query, dict), f"nft_query should be dict, got {type(nft_query)}"
-    assert "nft" in nft_query, f"nft_query should have nft, got {list(nft_query.keys())}"
+    assert isinstance(
+        nft_query, dict
+    ), f"nft_query should be dict, got {type(nft_query)}"
+    assert (
+        "nft" in nft_query
+    ), f"nft_query should have nft, got {list(nft_query.keys())}"
 
     nft = nft_query["nft"]
     assert nft["id"] == "nft1", f"nft ID should match, got {nft['id']}"
-    assert nft["class_id"] == "test-mintnft.dys", f"nft class_id should match, got {nft['class_id']}"
-    assert nft["uri"] == "https://example.com/nft1", f"nft URI should match, got {nft['uri']}"
+    assert (
+        nft["class_id"] == "test-mintnft.dys"
+    ), f"nft class_id should match, got {nft['class_id']}"
+    assert (
+        nft["uri"] == "https://example.com/nft1"
+    ), f"nft URI should match, got {nft['uri']}"
 
 
 def test_mint_nft_multiple(chainnet):
@@ -330,11 +353,17 @@ def test_mint_nft_multiple(chainnet):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"demo_result should be dict, got {type(demo_result)}"
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
 
     # Validate both mint operations succeeded
     mint1_result = demo_result["mint1_result"]
@@ -344,9 +373,15 @@ def test_mint_nft_multiple(chainnet):
 
     # Validate NFTs query shows both NFTs
     nfts_query = demo_result["nfts_query"]
-    assert isinstance(nfts_query, dict), f"nfts_query should be dict, got {type(nfts_query)}"
-    assert "nfts" in nfts_query, f"nfts_query should have nfts, got {list(nfts_query.keys())}"
-    assert len(nfts_query["nfts"]) == 2, f"should have 2 NFTs, got {len(nfts_query['nfts'])}"
+    assert isinstance(
+        nfts_query, dict
+    ), f"nfts_query should be dict, got {type(nfts_query)}"
+    assert (
+        "nfts" in nfts_query
+    ), f"nfts_query should have nfts, got {list(nfts_query.keys())}"
+    assert (
+        len(nfts_query["nfts"]) == 2
+    ), f"should have 2 NFTs, got {len(nfts_query['nfts'])}"
 
 
 def test_mint_nft_class_not_found(chainnet):
@@ -377,13 +412,14 @@ def test_mint_nft_class_not_found(chainnet):
         extra_code,
     )
 
-    result = deep_parse(query_result)
-    demo_result = result["result"]["result"]
-
-    # Should fail because class doesn't exist
-    mint_nft_result = demo_result["mint_nft_result"]
-    assert mint_nft_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
-    # The result should indicate failure (empty results or error)
+    parsed = deep_parse(query_result)
+    assert (
+        parsed.get("exception") is not None
+    ), "Expected exception when minting NFT in non-existent class"
+    exception_msg = parsed["exception"]["msg"]
+    assert (
+        "not found" in exception_msg.lower()
+    ), f"Expected 'not found' in error message: {exception_msg}"
 
 
 def test_mint_nft_unauthorized(chainnet):
@@ -415,13 +451,14 @@ def test_mint_nft_unauthorized(chainnet):
         extra_code,
     )
 
-    result = deep_parse(query_result)
-    demo_result = result["result"]["result"]
-
-    # Should fail because wrong owner
-    mint_nft_result = demo_result["mint_nft_result"]
-    assert mint_nft_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
-    # The result should indicate failure (empty results or error)
+    parsed = deep_parse(query_result)
+    assert (
+        parsed.get("exception") is not None
+    ), "Expected exception when minting NFT with unauthorized owner"
+    exception_msg = parsed["exception"]["msg"]
+    assert (
+        "unauthorized" in exception_msg.lower()
+    ), f"Expected 'unauthorized' in error message: {exception_msg}"
 
 
 def test_mint_nft_duplicate_id(chainnet):
@@ -452,13 +489,14 @@ def test_mint_nft_duplicate_id(chainnet):
         extra_code,
     )
 
-    result = deep_parse(query_result)
-    demo_result = result["result"]["result"]
-
-    # Should fail because NFT ID already exists
-    mint_nft_result = demo_result["mint_nft_result"]
-    assert mint_nft_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
-    # The result should indicate failure (empty results or error)
+    parsed = deep_parse(query_result)
+    assert (
+        parsed.get("exception") is not None
+    ), "Expected exception when minting NFT with duplicate ID"
+    exception_msg = parsed["exception"]["msg"]
+    assert (
+        "already exists" in exception_msg.lower()
+    ), f"Expected 'already exists' in error message: {exception_msg}"
 
 
 def test_mint_nft_with_metadata(chainnet):
@@ -490,22 +528,36 @@ def test_mint_nft_with_metadata(chainnet):
     )
 
     result = deep_parse(query_result)
-    assert isinstance(result, dict), f"deep_parse should return dict. Got: {type(result)}"
-    assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        "result" in result
+    ), f"result missing 'result' key. Keys: {list(result.keys())}"
 
     demo_result = result["result"]["result"]
-    assert isinstance(demo_result, dict), f"demo_result should be dict, got {type(demo_result)}"
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
 
     # Validate mint result
     mint_nft_result = demo_result["mint_nft_result"]
-    assert isinstance(mint_nft_result, dict), f"mint_nft_result should be dict, got {type(mint_nft_result)}"
+    assert isinstance(
+        mint_nft_result, dict
+    ), f"mint_nft_result should be dict, got {type(mint_nft_result)}"
     assert mint_nft_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
 
     # Validate NFT has metadata
     nft_query = demo_result["nft_query"]
-    assert isinstance(nft_query, dict), f"nft_query should be dict, got {type(nft_query)}"
-    assert "nft" in nft_query, f"nft_query should have nft, got {list(nft_query.keys())}"
+    assert isinstance(
+        nft_query, dict
+    ), f"nft_query should be dict, got {type(nft_query)}"
+    assert (
+        "nft" in nft_query
+    ), f"nft_query should have nft, got {list(nft_query.keys())}"
 
     nft = nft_query["nft"]
-    assert nft["uri"] == "https://example.com/nft1", f"nft URI should match, got {nft['uri']}"
+    assert (
+        nft["uri"] == "https://example.com/nft1"
+    ), f"nft URI should match, got {nft['uri']}"
     # Note: uri_hash might be stored differently depending on implementation

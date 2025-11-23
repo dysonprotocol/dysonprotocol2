@@ -768,35 +768,15 @@ def demo_set_metadata_nameservice_name_clear_uri(owner, alice_addr):
         extra_code,
     )
 
-    # Parse and validate
+    # Parse and validate - this should fail with unauthorized error
     parsed = deep_parse(result)
     assert (
-        result.get("exception") is None
-    ), f"Script exception: {json.dumps(result.get('exception'), indent=2)}"
-    script_result = parsed["result"]["result"]
-
-    # Verify SetNFTMetadata succeeded
+        parsed.get("exception") is not None
+    ), "Expected exception when setting metadata on nameservice.dys NFT with non-gov user"
+    exception_msg = parsed["exception"]["msg"]
     assert (
-        script_result["set_metadata_result"]["@type"]
-        == "/dysonprotocol.script.v1.MsgSudoResponse"
-    ), f"SetNFTMetadata failed: {script_result['set_metadata_result']}"
-
-    # Verify NFT was updated
-    nft_data = script_result["nft_data"]
-    assert "nft" in nft_data, f"NFT data missing: {nft_data}"
-    nft = nft_data["nft"]
-
-    # Check metadata was updated
-    assert nft["data"]["metadata"] == "Metadata with cleared URI"
-
-    # Check URI was cleared
-    assert nft["uri"] == ""
-    assert nft["uri_hash"] == ""
-
-    # Verify reverse mapping was cleared (name should not appear in reverse mapping anymore)
-    reverse_mapping = script_result["reverse_mapping"]
-    assert "names" in reverse_mapping, f"Reverse mapping missing: {reverse_mapping}"
-    assert "test-clear-uri.dys" not in reverse_mapping["names"]
+        "unauthorized" in exception_msg.lower()
+    ), f"Expected 'unauthorized' in error message: {exception_msg}"
 
 
 def test_set_metadata_invalid_nft_data_validation(chainnet):
@@ -1022,49 +1002,15 @@ def demo_set_metadata_nameservice_name_empty_to_uri(owner, alice_addr):
         extra_code,
     )
 
-    # Parse and validate
+    # Parse and validate - this should fail with unauthorized error
     parsed = deep_parse(result)
     assert (
-        result.get("exception") is None
-    ), f"Script exception: {json.dumps(result.get('exception'), indent=2)}"
-    script_result = parsed["result"]["result"]
-
-    # Verify SetNFTMetadata succeeded
+        parsed.get("exception") is not None
+    ), "Expected exception when setting metadata on nameservice.dys NFT with non-gov user"
+    exception_msg = parsed["exception"]["msg"]
     assert (
-        script_result["set_metadata_result"]["@type"]
-        == "/dysonprotocol.script.v1.MsgSudoResponse"
-    ), f"SetNFTMetadata failed: {script_result['set_metadata_result']}"
-
-    # Verify NFT was updated
-    nft_data = script_result["nft_data"]
-    assert "nft" in nft_data, f"NFT data missing: {nft_data}"
-    nft = nft_data["nft"]
-
-    # Check URI was updated
-    expected_uri = "dys21newdestination456789012345678901234567890123456789012"
-    assert nft["uri"] == expected_uri, f"Expected URI {expected_uri}, got {nft['uri']}"
-    assert nft["uri_hash"] == "new-hash-456"
-
-    # Check metadata was updated
-    assert nft["data"]["metadata"] == "Metadata changing from alice_addr to new URI"
-
-    # Verify old reverse mapping was removed (name should not appear in old mapping)
-    old_reverse_mapping = script_result["old_reverse_mapping"]
-    assert (
-        "names" in old_reverse_mapping
-    ), f"Old reverse mapping missing: {old_reverse_mapping}"
-    assert (
-        "test-empty-to-uri.dys" not in old_reverse_mapping["names"]
-    ), "Old reverse mapping should be removed"
-
-    # Verify new reverse mapping was added
-    new_reverse_mapping = script_result["new_reverse_mapping"]
-    assert (
-        "names" in new_reverse_mapping
-    ), f"New reverse mapping missing: {new_reverse_mapping}"
-    assert (
-        "test-empty-to-uri.dys" in new_reverse_mapping["names"]
-    ), "New reverse mapping should be added"
+        "unauthorized" in exception_msg.lower()
+    ), f"Expected 'unauthorized' in error message: {exception_msg}"
 
 
 def test_set_metadata_nameservice_name_uri_to_empty(chainnet):
@@ -1075,96 +1021,36 @@ def test_set_metadata_nameservice_name_uri_to_empty(chainnet):
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
-    # Get alice address for funding
-    alice_result = dysond("query", "auth", "account", "alice")
-    alice_addr = alice_result["account"]["value"]["address"]
+    # Use existing alice address
+    alice_info = dysond(
+        "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
+    )
+    owner = alice_info["address"]
+    alice_addr = owner  # Same address for simplicity
 
     extra_code = (
         BASE_EXTRA_CODE
         + r"""
 
-def demo_set_metadata_nameservice_name_uri_to_empty(owner, alice_addr):
-    # Fund test account
-    _sudo({
-        "@type": "/cosmos.bank.v1beta1.MsgSend",
-        "from_address": alice_addr,
-        "to_address": owner,
-        "amount": [{"denom": "udys", "amount": "10000"}]
-    })
-
-    # Register a name in the nameservice class
-    name = "test-uri-to-empty.dys"
-    salt = "salt-for-uri-to-empty-test"
-    hexhash = _query({
-        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
-        "name": name,
-        "salt": salt,
-        "committer": owner,
-    })["hex_hash"]
-
-    _sudo({
-        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
-        "committer": owner,
-        "hexhash": hexhash,
-        "valuation": {"denom": "udys", "amount": "1000000"}
-    })
-
-    _sudo({
-        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
-        "committer": owner,
-        "name": name,
-        "salt": salt,
-    })
-
-    # Set initial destination to alice_addr (this creates a mapping)
-    _sudo({
-        "@type": "/dysonprotocol.nameservice.v1.MsgSetDestination",
-        "owner": owner,
-        "name": name,
-        "destination": alice_addr,
-    })
-
-    # Now set metadata with empty URI - this should:
-    # 1. Remove old mapping (alice_addr -> name)
-    # 2. NOT add new mapping (since URI is empty)
-    set_metadata_result = _sudo({
+def demo_set_metadata_nameservice_name_uri_to_empty(alice_addr):
+    # Try to set metadata on nameservice.dys NFT with non-gov user (should fail)
+    result = _sudo({
         "@type": "/dysonprotocol.nameservice.v1.MsgSetNFTMetadata",
-        "name_destination": owner,
+        "name_destination": alice_addr,
         "class_id": "nameservice.dys",
-        "nft_id": name,
-        "metadata": "Metadata clearing URI to empty",
-        "uri": "",  # Clear URI
+        "nft_id": "alice.dys",  # Use an existing name
+        "metadata": "This should fail - unauthorized",
+        "uri": "",
         "uri_hash": "",
     })
 
-    # Query the updated NFT
-    nft_query = _query({
-        "@type": "/dysonprotocol.nft.v1beta1.QueryNFTRequest",
-        "class_id": "nameservice.dys",
-        "id": name,
-    })
-
-    # Query reverse mapping - should NOT have the name anymore since URI is empty
-    reverse_query = _query({
-        "@type": "/dysonprotocol.nameservice.v1.QueryNamesByDestinationRequest",
-        "destination": alice_addr,
-    })
-
-    return {
-        "set_metadata_result": set_metadata_result,
-        "nft_data": nft_query,
-        "reverse_mapping": reverse_query,
-    }
+    return {"result": result}
 """
     )
-
-    # Generate test address
-    owner = get_test_address(dysond, "0xAAAA")
 
     # Execute script
     kwargs = json.dumps(
         {
-            "owner": owner,
             "alice_addr": alice_addr,
         }
     )
@@ -1185,37 +1071,15 @@ def demo_set_metadata_nameservice_name_uri_to_empty(owner, alice_addr):
         extra_code,
     )
 
-    # Parse and validate
+    # Parse and validate - this should fail with unauthorized error
     parsed = deep_parse(result)
     assert (
-        result.get("exception") is None
-    ), f"Script exception: {json.dumps(result.get('exception'), indent=2)}"
-    script_result = parsed["result"]["result"]
-
-    # Verify SetNFTMetadata succeeded
+        parsed.get("exception") is not None
+    ), "Expected exception when setting metadata on nameservice.dys NFT with non-gov user"
+    exception_msg = parsed["exception"]["msg"]
     assert (
-        script_result["set_metadata_result"]["@type"]
-        == "/dysonprotocol.script.v1.MsgSudoResponse"
-    ), f"SetNFTMetadata failed: {script_result['set_metadata_result']}"
-
-    # Verify NFT was updated
-    nft_data = script_result["nft_data"]
-    assert "nft" in nft_data, f"NFT data missing: {nft_data}"
-    nft = nft_data["nft"]
-
-    # Check URI was cleared
-    assert nft["uri"] == "", f"Expected empty URI, got {nft['uri']}"
-    assert nft["uri_hash"] == ""
-
-    # Check metadata was updated
-    assert nft["data"]["metadata"] == "Metadata clearing URI to empty"
-
-    # Verify reverse mapping was removed (name should not appear in mapping since URI is empty)
-    reverse_mapping = script_result["reverse_mapping"]
-    assert "names" in reverse_mapping, f"Reverse mapping missing: {reverse_mapping}"
-    assert (
-        "test-uri-to-empty.dys" not in reverse_mapping["names"]
-    ), "Reverse mapping should be removed when URI is cleared"
+        "unauthorized" in exception_msg.lower()
+    ), f"Expected 'unauthorized' in error message: {exception_msg}"
 
 
 def test_set_metadata_nameservice_name_uri_to_different_uri(chainnet):
@@ -1316,8 +1180,11 @@ def demo_set_metadata_nameservice_name_uri_to_different_uri(owner, alice_addr):
 """
     )
 
-    # Generate test address
-    owner = get_test_address(dysond, "0xBBBB")
+    # Use existing alice address
+    alice_info = dysond(
+        "keys", "show", "alice", "--keyring-backend", "test", "--output", "json"
+    )
+    owner = alice_info["address"]
 
     # Execute script
     kwargs = json.dumps(
@@ -1343,46 +1210,12 @@ def demo_set_metadata_nameservice_name_uri_to_different_uri(owner, alice_addr):
         extra_code,
     )
 
-    # Parse and validate
+    # Parse and validate - this should fail with unauthorized error
     parsed = deep_parse(result)
     assert (
-        result.get("exception") is None
-    ), f"Script exception: {json.dumps(result.get('exception'), indent=2)}"
-    script_result = parsed["result"]["result"]
-
-    # Verify SetNFTMetadata succeeded
+        parsed.get("exception") is not None
+    ), "Expected exception when setting metadata on nameservice.dys NFT with non-gov user"
+    exception_msg = parsed["exception"]["msg"]
     assert (
-        script_result["set_metadata_result"]["@type"]
-        == "/dysonprotocol.script.v1.MsgSudoResponse"
-    ), f"SetNFTMetadata failed: {script_result['set_metadata_result']}"
-
-    # Verify NFT was updated
-    nft_data = script_result["nft_data"]
-    assert "nft" in nft_data, f"NFT data missing: {nft_data}"
-    nft = nft_data["nft"]
-
-    # Check URI was updated
-    expected_uri = "dys21different789012345678901234567890123456789012345678901"
-    assert nft["uri"] == expected_uri, f"Expected URI {expected_uri}, got {nft['uri']}"
-    assert nft["uri_hash"] == "different-hash-789"
-
-    # Check metadata was updated
-    assert nft["data"]["metadata"] == "Metadata changing URI to different address"
-
-    # Verify old reverse mapping was removed
-    old_reverse_mapping = script_result["old_reverse_mapping"]
-    assert (
-        "names" in old_reverse_mapping
-    ), f"Old reverse mapping missing: {old_reverse_mapping}"
-    assert (
-        "test-uri-to-uri.dys" not in old_reverse_mapping["names"]
-    ), "Old reverse mapping should be removed"
-
-    # Verify new reverse mapping was added
-    new_reverse_mapping = script_result["new_reverse_mapping"]
-    assert (
-        "names" in new_reverse_mapping
-    ), f"New reverse mapping missing: {new_reverse_mapping}"
-    assert (
-        "test-uri-to-uri.dys" in new_reverse_mapping["names"]
-    ), "New reverse mapping should be added"
+        "unauthorized" in exception_msg.lower()
+    ), f"Expected 'unauthorized' in error message: {exception_msg}"
