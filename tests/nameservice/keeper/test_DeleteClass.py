@@ -20,6 +20,8 @@ def test_delete_class_success(chainnet):
     owner_addr = "dys216vwht46aw58efaxx"
 
     # Create a class ID under the registered name
+    class_id = "test-delete.dys/testclass"
+
     extra_code = """
 from dys import _msg, _query, get_executor_address
 import re
@@ -73,7 +75,8 @@ def _register_name(name, destination, valuation="10udys"):
 def demo_delete_class_success(owner_addr):
     # Register name and set destination
     root_name = _register_name("test-delete.dys", owner_addr)
-    class_id = f"{root_name}/testclass"
+    class_id = "test-delete.dys/testclass"
+
     # Debug: Check name resolution first
     name_resolution = _query({
         "@type": "/dysonprotocol.nameservice.v1.QueryResolveNameRequest",
@@ -128,7 +131,8 @@ def demo_delete_class_success(owner_addr):
         "class_before_delete": class_before_delete,
         "root_dest_check": root_dest_check,
         "delete_result": delete_result,
-        "class_still_exists": class_still_exists
+        "class_still_exists": class_still_exists,
+        "class_id": class_id
     }
 """
 
@@ -189,7 +193,7 @@ def demo_delete_class_success(owner_addr):
         "class" in class_before_delete
     ), f"class_before_delete should have class, got {list(class_before_delete.keys())}"
     assert (
-        class_before_delete["class"]["id"] == class_id
+        class_before_delete["class"]["id"] == demo_result["class_id"]
     ), f"class ID should match, got {class_before_delete['class']['id']}"
 
     # Validate delete result
