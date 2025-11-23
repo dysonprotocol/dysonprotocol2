@@ -11,10 +11,6 @@ import pytest
 from deep_parse import deep_parse
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="bug: codec registration - dyslang cannot resolve shared QueryTasksResponse type used by multiple query requests",
-)
 def test_tasks_by_address_existing_tasks(chainnet):
     """Test TasksByAddress query successfully returns tasks for an address with existing tasks."""
     dysond = chainnet[0]
@@ -134,10 +130,6 @@ def demo_tasks_by_address_existing(gov_addr):
         ), f"Status mismatch: expected 'SCHEDULED', got {task['status']}"
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="bug: codec registration - dyslang cannot resolve shared QueryTasksResponse type used by multiple query requests",
-)
 def test_tasks_by_address_no_tasks(chainnet):
     """Test TasksByAddress query returns empty results for address with no tasks."""
     dysond = chainnet[0]

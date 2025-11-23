@@ -211,18 +211,6 @@ message QueryTasksByStatusGasPriceRequest {
 }
 
 /*
- * QueryTasksResponse is the response type for task queries with multiple
- * results.
- */
-message QueryTasksResponse {
-  // List of tasks matching the query criteria, ordered according to the
-  // specific query endpoint (e.g., by ID, status, gas price).
-  repeated Task tasks = 1;
-  // Pagination metadata for result set navigation.
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-/*
  * QueryTasksByAddressResponse is the response type for the Query/TasksByAddress
  * RPC method.
  */

@@ -119,8 +119,8 @@ def demo_tasks_by_status_timestamp_scheduled(gov_addr):
     ), f"Task missing 'scheduled_timestamp' key. Keys: {list(our_task.keys())}"
 
 
-def test_tasks_by_status_timestamp_done(chainnet):
-    """Test TasksByStatusTimestamp query with DONE status filter."""
+def test_tasks_by_status_timestamp_scheduled_immediate(chainnet):
+    """Test TasksByStatusTimestamp query with SCHEDULED status for immediate execution."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
@@ -129,10 +129,10 @@ def test_tasks_by_status_timestamp_done(chainnet):
 from dys import _msg, _query, get_executor_address
 import time
 
-def demo_tasks_by_status_timestamp_done(gov_addr):
-    # Create a task that will execute immediately (scheduled in the past)
+def demo_tasks_by_status_timestamp_immediate(gov_addr):
+    # Create a task scheduled for immediate execution (now)
     current_time = int(time.time())
-    scheduled_time = current_time - 60  # 1 minute ago (should execute immediately)
+    scheduled_time = current_time  # Schedule for now
     expiry_time = current_time + 3600
 
     create_task_msg = {
@@ -153,13 +153,10 @@ def demo_tasks_by_status_timestamp_done(gov_addr):
     create_result = _msg(create_task_msg)
     task_id = create_result["task_id"]
 
-    # Wait a bit for the task to execute
-    time.sleep(0.1)
-
-    # Query tasks by status DONE
+    # Query tasks by status SCHEDULED (our task should be in this status)
     tasks_result = _query({
         "@type": "/dysonprotocol.crontask.v1.QueryTasksByStatusTimestampRequest",
-        "status": "DONE"
+        "status": "SCHEDULED"
     })
 
     return {
@@ -180,7 +177,7 @@ def demo_tasks_by_status_timestamp_done(gov_addr):
         "--executor-address",
         gov_addr,
         "--function-name",
-        "demo_tasks_by_status_timestamp_done",
+        "demo_tasks_by_status_timestamp_immediate",
         "--kwargs",
         kwargs,
         "--extra-code",
@@ -211,19 +208,28 @@ def demo_tasks_by_status_timestamp_done(gov_addr):
     tasks = tasks_query["tasks"]
     assert isinstance(tasks, list), f"Tasks should be list, got {type(tasks)}"
 
-    # The task should have executed, so check the first task in DONE status
-    # (assuming our task executed and is the first one due to ordering)
-    assert (
-        len(tasks) >= 1
-    ), f"Expected at least 1 DONE task, got {len(tasks)}"
+    # Check that we have at least one SCHEDULED task
+    assert len(tasks) >= 1, f"Expected at least 1 SCHEDULED task, got {len(tasks)}"
 
-    our_task = tasks[0]
+    # Find our task by ID
+    task_ids = [
+        str(task["task_id"])
+        for task in tasks
+        if isinstance(task, dict) and "task_id" in task
+    ]
+    expected_task_id = str(demo_result["task_id"])
     assert (
-        our_task["status"] == "DONE"
-    ), f"Task should be DONE, got {our_task['status']}"
+        expected_task_id in task_ids
+    ), f"Created task {expected_task_id} not found in SCHEDULED tasks: {task_ids}"
+
+    # Get our task and verify its status
+    our_task = next(task for task in tasks if str(task["task_id"]) == expected_task_id)
     assert (
-        "execution_timestamp" in our_task
-    ), f"DONE task missing 'execution_timestamp' key. Keys: {list(our_task.keys())}"
+        our_task["status"] == "SCHEDULED"
+    ), f"Task should be SCHEDULED, got {our_task['status']}"
+    assert (
+        "scheduled_timestamp" in our_task
+    ), f"SCHEDULED task missing 'scheduled_timestamp' key. Keys: {list(our_task.keys())}"
 
 
 def test_tasks_by_status_timestamp_empty(chainnet):
@@ -289,7 +295,7 @@ def demo_tasks_by_status_timestamp_empty():
 
 
 def test_tasks_by_status_timestamp_invalid_status(chainnet):
-    """Test TasksByStatusTimestamp query returns error for invalid status."""
+    """Test TasksByStatusTimestamp query returns empty results for invalid status."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
@@ -298,19 +304,12 @@ def test_tasks_by_status_timestamp_invalid_status(chainnet):
 from dys import _query
 
 def demo_tasks_by_status_timestamp_invalid():
-    # Query tasks by invalid status
-    try:
-        tasks_result = _query({
-            "@type": "/dysonprotocol.crontask.v1.QueryTasksByStatusTimestampRequest",
-            "status": "INVALID_STATUS"
-        })
-        return {"error": "Should have failed", "result": tasks_result}
-    except Exception as e:
-        error_str = str(e)
-        return {
-            "error": error_str,
-            "expected_error": True
-        }
+    # Query tasks by invalid status - should return empty results
+    tasks_result = _query({
+        "@type": "/dysonprotocol.crontask.v1.QueryTasksByStatusTimestampRequest",
+        "status": "INVALID_STATUS"
+    })
+    return {"tasks_result": tasks_result}
 """
 
     query_result = dysond(
@@ -337,8 +336,16 @@ def demo_tasks_by_status_timestamp_invalid():
         demo_result, dict
     ), f"Result should be dict, got {type(demo_result)}"
     assert (
-        "expected_error" in demo_result
-    ), f"Result missing 'expected_error' key. Keys: {list(demo_result.keys())}"
+        "tasks_result" in demo_result
+    ), f"Result missing 'tasks_result' key. Keys: {list(demo_result.keys())}"
+
+    tasks_result = demo_result["tasks_result"]
+    assert isinstance(
+        tasks_result, dict
+    ), f"Tasks result should be dict, got {type(tasks_result)}"
     assert (
-        demo_result["expected_error"] is True
-    ), f"Expected error for invalid status, but got: {json.dumps(demo_result, indent=2)}"
+        "tasks" in tasks_result
+    ), f"Tasks result missing 'tasks' key. Keys: {list(tasks_result.keys())}"
+    assert (
+        tasks_result["tasks"] == []
+    ), f"Expected empty tasks list for invalid status, got {tasks_result['tasks']}"

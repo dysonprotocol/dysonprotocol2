@@ -47,7 +47,7 @@ func (k Keeper) CreateSubscription(ctx context.Context, msg *crontasktypes.MsgCr
 
 	// Enforce minimum stake per subscription (across all subscriptions)
 	params := k.GetParams(ctx)
-	if params.MinStakePerSubscription.Denom != "" && params.MinStakePerSubscription.Amount.IsPositive() {
+	if !params.MinStakePerSubscription.IsZero() {
 		// Count all subscriptions for this creator (any status) via ByCreator index
 		it, err := k.Subscriptions.Indexes.ByCreator.MatchExact(ctx, msg.Creator)
 		if err != nil {

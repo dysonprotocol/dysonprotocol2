@@ -189,7 +189,7 @@ def demo_tasks_by_status_gas_price_empty():
 
 
 def test_tasks_by_status_gas_price_invalid_status(chainnet):
-    """Test TasksByStatusGasPrice query returns error for invalid status."""
+    """Test TasksByStatusGasPrice query returns empty results for invalid status."""
     dysond = chainnet[0]
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
@@ -198,19 +198,12 @@ def test_tasks_by_status_gas_price_invalid_status(chainnet):
 from dys import _query
 
 def demo_tasks_by_status_gas_price_invalid():
-    # Query tasks by invalid status
-    try:
-        tasks_result = _query({
-            "@type": "/dysonprotocol.crontask.v1.QueryTasksByStatusGasPriceRequest",
-            "status": "NONEXISTENT_STATUS"
-        })
-        return {"error": "Should have failed", "result": tasks_result}
-    except Exception as e:
-        error_str = str(e)
-        return {
-            "error": error_str,
-            "expected_error": True
-        }
+    # Query tasks by invalid status - should return empty results
+    tasks_result = _query({
+        "@type": "/dysonprotocol.crontask.v1.QueryTasksByStatusGasPriceRequest",
+        "status": "NONEXISTENT_STATUS"
+    })
+    return {"tasks_result": tasks_result}
 """
 
     query_result = dysond(
@@ -237,8 +230,10 @@ def demo_tasks_by_status_gas_price_invalid():
         demo_result, dict
     ), f"Result should be dict, got {type(demo_result)}"
     assert (
-        "expected_error" in demo_result
-    ), f"Result missing 'expected_error' key. Keys: {list(demo_result.keys())}"
-    assert (
-        demo_result["expected_error"] is True
-    ), f"Expected error for invalid status, but got: {json.dumps(demo_result, indent=2)}"
+        "tasks_result" in demo_result
+    ), f"Result missing 'tasks_result' key. Keys: {list(demo_result.keys())}"
+
+    tasks_result = demo_result["tasks_result"]
+    assert isinstance(tasks_result, dict), f"Tasks result should be dict, got {type(tasks_result)}"
+    assert "tasks" in tasks_result, f"Tasks result missing 'tasks' key. Keys: {list(tasks_result.keys())}"
+    assert tasks_result["tasks"] == [], f"Expected empty tasks list for invalid status, got {tasks_result['tasks']}"

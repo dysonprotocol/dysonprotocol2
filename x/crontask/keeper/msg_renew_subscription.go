@@ -50,7 +50,7 @@ func (k Keeper) RenewSubscription(ctx context.Context, msg *crontasktypes.MsgRen
 	}
 	// Enforce minimum stake per subscription (proxy via bank balance) before renewing
 	params := k.GetParams(ctx)
-	if params.MinStakePerSubscription.Denom != "" && params.MinStakePerSubscription.Amount.IsPositive() {
+	if !params.MinStakePerSubscription.IsZero() {
 		// Count all current subscriptions for creator and multiply requirement via ByCreator index
 		it, err := k.Subscriptions.Indexes.ByCreator.MatchExact(ctx, sub.Creator)
 		if err != nil {
