@@ -310,14 +310,20 @@ def demo_storage_delete_nonexistent(owner_addr, test_index):
     ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
 
     demo_result = result["result"]["result"]
-    # Non-existent entries should cause error (no entries deleted)
+    # Non-existent entries should succeed with empty deleted_indexes (idempotent)
     assert (
-        demo_result.get("error") is not None
-    ), f"Expected error for non-existent entry deletion, got: {json.dumps(demo_result, indent=2)}"
-    error_str = str(demo_result["error"]).lower()
+        demo_result.get("error") is None
+    ), f"Expected success for non-existent entry deletion, got error: {json.dumps(demo_result, indent=2)}"
+    delete_result = demo_result.get("delete_result", {})
+    results = delete_result.get("results", [])
     assert (
-        "no entries were deleted" in error_str
-    ), f"Expected 'no entries were deleted' error, got: {demo_result['error']}"
+        len(results) > 0
+    ), f"Expected delete result, got: {json.dumps(demo_result, indent=2)}"
+    delete_response = results[0]
+    deleted_indexes = delete_response.get("deleted_indexes", [])
+    assert (
+        len(deleted_indexes) == 0
+    ), f"Expected empty deleted_indexes for non-existent entry, got: {deleted_indexes}"
 
 
 def test_storage_delete_partial(chainnet):
@@ -476,7 +482,7 @@ def demo_storage_delete_empty(owner_addr):
 
 
 def test_storage_delete_no_entries_deleted(chainnet):
-    """Test StorageDelete error path: no entries deleted (all non-existent)."""
+    """Test StorageDelete succeeds with empty deleted_indexes when no entries deleted (all non-existent)."""
     dysond = chainnet[0]
     # Use hardcoded test address
     owner_addr = "dys216vwht46aw58efaxx"
@@ -531,13 +537,20 @@ def demo_storage_delete_none(owner_addr, indexes):
     ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
 
     demo_result = result["result"]["result"]
+    # No entries deleted should succeed with empty deleted_indexes (idempotent)
     assert (
-        demo_result.get("error") is not None
-    ), f"Expected error when no entries deleted, got: {json.dumps(demo_result, indent=2)}"
-    error_str = str(demo_result["error"]).lower()
+        demo_result.get("error") is None
+    ), f"Expected success when no entries deleted, got error: {json.dumps(demo_result, indent=2)}"
+    delete_result = demo_result.get("delete_result", {})
+    results = delete_result.get("results", [])
     assert (
-        "no entries were deleted" in error_str
-    ), f"Expected 'no entries were deleted' error, got: {demo_result['error']}"
+        len(results) > 0
+    ), f"Expected delete result, got: {json.dumps(demo_result, indent=2)}"
+    delete_response = results[0]
+    deleted_indexes = delete_response.get("deleted_indexes", [])
+    assert (
+        len(deleted_indexes) == 0
+    ), f"Expected empty deleted_indexes when no entries deleted, got: {deleted_indexes}"
 
 
 def test_storage_delete_metrics_update(chainnet):
@@ -893,7 +906,7 @@ def demo_storage_delete_invalid_owner(invalid_owner, test_index):
 
 
 def test_storage_delete_ownership_mismatch(chainnet):
-    """Test StorageDelete error path: ownership mismatch (entry owned by different address)."""
+    """Test StorageDelete succeeds with empty deleted_indexes when key doesn't match (ownership mismatch via key)."""
     dysond = chainnet[0]
     # Use hardcoded test addresses
     owner1_addr = "dys216vwht46aw58efaxx"
@@ -965,26 +978,22 @@ def demo_storage_delete_ownership_mismatch(owner1_addr, owner2_addr, test_index,
     ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
 
     demo_result = result["result"]["result"]
-    # Ownership mismatch should cause error
-    # Note: The key is constructed as owner2_addr/test_index, which won't exist
-    # So it will fail with "no entries were deleted" rather than ownership error
-    # This is because the key doesn't match owner1's entry
+    # Ownership mismatch: key is constructed as owner2_addr/test_index, which won't exist
+    # because the entry is stored as owner1_addr/test_index. So it will succeed with
+    # empty deleted_indexes (idempotent operation).
     assert (
-        demo_result.get("error") is not None
-    ), f"Expected error for ownership mismatch, got: {json.dumps(demo_result, indent=2)}"
-    error_str = str(demo_result["error"]).lower()
-    # The error will be "no entries were deleted" because the key doesn't match
-    # Check for various forms of ownership/permission errors
-    has_no_entries = "no entries were deleted" in error_str
-    has_cannot_delete = "cannot delete" in error_str
-    has_permission = "permission" in error_str
-    # At least one of these should be present
-    is_valid_error = has_no_entries
-    is_valid_error = is_valid_error or has_cannot_delete
-    is_valid_error = is_valid_error or has_permission
+        demo_result.get("error") is None
+    ), f"Expected success for ownership mismatch (key doesn't match), got error: {json.dumps(demo_result, indent=2)}"
+    delete_result = demo_result.get("delete_result", {})
+    results = delete_result.get("results", [])
     assert (
-        is_valid_error is True
-    ), f"Expected ownership/permission error (no entries/cannot delete/permission), got: {demo_result['error']}"
+        len(results) > 0
+    ), f"Expected delete result, got: {json.dumps(demo_result, indent=2)}"
+    delete_response = results[0]
+    deleted_indexes = delete_response.get("deleted_indexes", [])
+    assert (
+        len(deleted_indexes) == 0
+    ), f"Expected empty deleted_indexes when key doesn't match (ownership mismatch), got: {deleted_indexes}"
 
 
 def test_storage_delete_multiple_metrics_update(chainnet):

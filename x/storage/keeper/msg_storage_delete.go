@@ -17,11 +17,12 @@ import (
 //   - Verifies ownership of each entry before deletion to prevent unauthorized removal.
 //   - Updates owner's storage metrics by subtracting deleted bytes from total.
 //   - Returns list of successfully deleted indexes for transparency.
+//   - Succeeds even if no entries were deleted (idempotent operation).
 //
 // Validation:
 //   - Owner must be a valid bech32 address.
 //   - At least one index must be specified for deletion.
-//   - Each specified index must exist and be owned by the requesting account.
+//   - Each specified index must exist and be owned by the requesting account to be deleted.
 //
 // State Updates:
 //   - Removes entries from StorageMap for each successfully deleted index.
@@ -33,8 +34,8 @@ import (
 // Returns:
 //   - *storagetypes.MsgStorageDeleteResponse containing list of deleted_indexes.
 //
-// Errors are returned on invalid owner address, empty index list, non-existent entries,
-// ownership mismatches, or internal storage failures; no panics.
+// Errors are returned on invalid owner address, empty index list, ownership mismatches,
+// or internal storage failures; no panics. Non-existent entries are silently skipped.
 func (k Keeper) StorageDelete(ctx context.Context, msg *storagetypes.MsgStorageDelete) (*storagetypes.MsgStorageDeleteResponse, error) {
 	// Validate the owner address is properly formatted
 	if _, err := sdk.AccAddressFromBech32(msg.Owner); err != nil {
@@ -82,11 +83,6 @@ func (k Keeper) StorageDelete(ctx context.Context, msg *storagetypes.MsgStorageD
 			}
 			deletedIndexes = append(deletedIndexes, index)
 		}
-	}
-
-	// Check if any entries were actually deleted
-	if len(deletedIndexes) == 0 {
-		return nil, status.Errorf(codes.NotFound, "no entries were deleted")
 	}
 
 	// Update metrics after successful deletion
