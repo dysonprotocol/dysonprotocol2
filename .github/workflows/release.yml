@@ -24,7 +24,7 @@ jobs:
         run: git clean -fdx .
 
       - name: Build dysond
-        run: make dysvm build
+        run: make dysvm 
 
       - name: Install dev deps and run tests
         run: |
@@ -32,6 +32,9 @@ jobs:
           ./.venv/bin/pip install pytest-html
           mkdir -p reports
           make test PYTEST_ARGS="tests/*/keeper --html=reports/pytest.html --self-contained-html"
+
+      - name: Build dysond binary
+        run: make build
 
       - name: Set release name env
         run: echo "RELEASE_NAME=dysond-$(uname -m)-${GITHUB_REF_NAME}" >> $GITHUB_ENV
