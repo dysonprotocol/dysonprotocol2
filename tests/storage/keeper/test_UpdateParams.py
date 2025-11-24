@@ -252,6 +252,87 @@ def demo_update_invalid_decimal(gov_addr):
     ), f"Expected error about invalid decimal, got: {demo_result['error']}"
 
 
+def test_update_params_invalid_authority(chainnet):
+    """Test UpdateParams fails with invalid authority (not governance module)."""
+    dysond = chainnet[0]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+    # Use a different address as invalid authority
+    invalid_authority = "dys216vwht46aw58efaxx"
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_update_invalid_authority(invalid_authority):
+    # Get current params
+    current_params = _query({
+        "@type": "/dysonprotocol.storage.v1.QueryParamsRequest"
+    })
+    
+    # Try to update with invalid authority
+    try:
+        update_result = _sudo({
+            "@type": "/dysonprotocol.storage.v1.MsgUpdateParams",
+            "authority": invalid_authority,
+            "params": {
+                "max_storage_size": current_params["params"]["max_storage_size"],
+                "storage_stake_multiple": current_params["params"]["storage_stake_multiple"]
+            }
+        })
+        return {"update_result": update_result, "error": None}
+    except Exception as e:
+        return {"error": str(e)}
+"""
+
+    kwargs = json.dumps({"invalid_authority": invalid_authority})
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_update_invalid_authority",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"Result should be dict, got {type(demo_result)}"
+    assert (
+        "error" in demo_result
+    ), f"Expected error for invalid authority, got: {json.dumps(demo_result, indent=2)}"
+    assert (
+        demo_result["error"] is not None
+    ), f"Expected error, got None. Result: {json.dumps(demo_result, indent=2)}"
+
+    error_str = str(demo_result["error"]).lower()
+    has_unauthorized = "unauthorized" in error_str
+    has_invalid_authority = "invalid authority" in error_str
+    assert (
+        has_unauthorized
+    ), f"Expected unauthorized or invalid authority error, got: {demo_result['error']}"
+
+
 def test_update_params_no_events(chainnet):
     """Test UpdateParams does not emit events (parameter updates are silent)."""
     dysond = chainnet[0]
@@ -325,4 +406,3 @@ def demo_update_params_no_events(gov_addr):
     assert (
         "update_result" in demo_result
     ), f"Result missing 'update_result' key. Keys: {list(demo_result.keys())}"
-

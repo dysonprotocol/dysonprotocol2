@@ -12,9 +12,6 @@ CURRENT_DIR = $(shell pwd)
 # Build tags
 build_tags = netgo
 
-# Coverage: if COVERAGE_PACKAGES is non-empty, coverage is enabled
-# Comma-separated list of packages to include in coverage (can be overridden)
-COVERAGE_PACKAGES ?= dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper
 ifeq ($(LEDGER_ENABLED),true)
   ifeq ($(OS),Windows_NT)
     GCCEXE = $(shell where gcc.exe 2> NUL)
@@ -74,9 +71,6 @@ endif
 ldflags := $(strip $(ldflags))
 
 BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
-ifneq ($(strip $(COVERAGE_PACKAGES)),)
-  BUILD_FLAGS += -cover
-endif
 # check for nostrip option
 ifeq (,$(findstring nostrip,$(COSMOS_BUILD_OPTIONS)))
   BUILD_FLAGS += -trimpath
@@ -134,9 +128,22 @@ install: verify-requirements dysvm-assets
 # coverage files before running tests. By default, coverage files are cleaned up.
 CLEAN_COVERAGE ?= 1
 
-test: install
+# Coverage: if COVERAGE_PACKAGES is non-empty, coverage is enabled
+# Comma-separated list of packages to include in coverage (can be overridden)
+COVERAGE_PACKAGES ?= dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper
+
+
+test: verify-requirements dysvm-assets
+
+	@echo "--> building dysond binary with coverage for tests"
+	@mkdir -p $(BUILDDIR)
+	@go build -mod=readonly $(BUILD_FLAGS) -cover -o $(BUILDDIR)/dysond ./dysond
+	@chmod +x $(BUILDDIR)/dysond || true
+
 	@echo "--> running pytest"
 	@TMP_ROOT=$$(mktemp -d /tmp/dyson-test.XXXXXX); \
+	PATH="$(BUILDDIR):$$PATH"; \
+	export PATH; \
 	echo "Using temporary directory: $$TMP_ROOT"; \
 	if [ -n "$(COVERAGE_PACKAGES)" ]; then \
 		GOCOVERDIR="$(CURDIR)/coverage"; \
