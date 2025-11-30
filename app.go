@@ -72,7 +72,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	"github.com/cosmos/cosmos-sdk/x/auth/posthandler"
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
@@ -985,14 +984,11 @@ func (app *DysApp) setAnteHandler(txConfig client.TxConfig) {
 }
 
 func (app *DysApp) setPostHandler() {
-	postHandler, err := posthandler.NewPostHandler(
-		posthandler.HandlerOptions{},
-	)
-	if err != nil {
-		panic(err)
+	postDecorators := []sdk.PostDecorator{
+		NewLoggingPostDecorator(),
 	}
 
-	app.SetPostHandler(postHandler)
+	app.SetPostHandler(sdk.ChainPostDecorators(postDecorators...))
 }
 
 // Name returns the name of the App
