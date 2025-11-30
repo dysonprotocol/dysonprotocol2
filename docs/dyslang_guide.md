@@ -140,7 +140,7 @@ with tempfile.NamedTemporaryFile("w+", suffix=".py", delete=True) as f:
     f.write(query_multi_script)
     f.flush()
     path = f.name
-    # Execute the script using dysond query script exec
+    # Execute the script using dysond query script run
     out = ! dysond query script run --script-address {ALICE_ADDRESS} --executor-address {ALICE_ADDRESS} --function-name query_multiple_balances --extra-code-path {path} -o json
 out = '\n'.join(out)
 print(out)

@@ -2,7 +2,7 @@
 Hypothesis-based property testing for whaleswap module.
 
 Uses randomized message generation to discover edge cases and invariant violations.
-All operations happen in a single dysond query script exec for speed and determinism.
+All operations happen in a single dysond query script run for speed and determinism.
 """
 
 import json

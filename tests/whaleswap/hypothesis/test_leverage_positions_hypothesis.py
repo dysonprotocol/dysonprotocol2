@@ -4,7 +4,7 @@ Hypothesis-based property testing for whaleswap leveraged positions.
 Tests pool creation, position opening, closing, partial closes, and liquidations
 with randomized parameters to discover edge cases and invariant violations.
 
-All operations execute in a single dysond query script exec for speed and determinism.
+All operations execute in a single dysond query script run for speed and determinism.
 Block delays are set to 0 via MsgUpdateParams to enable same-transaction close/liquidation.
 """
 

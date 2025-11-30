@@ -2,11 +2,9 @@ package keeper
 
 import (
 	"context"
-	"encoding/base64"
 	"strings"
 
 	"cosmossdk.io/collections"
-	"dysonprotocol.com/x/storage"
 	storagetypes "dysonprotocol.com/x/storage/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -60,7 +58,6 @@ func (k Keeper) StorageList(ctx context.Context, req *storagetypes.QueryStorageL
 
 	// Resolve owner (accepts nameservice name or address)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	k.Logger(sdkCtx).Info("StorageList", "req", req)
 	resolvedOwner, err := k.namesvcKeeper.ResolveNameOrAddress(ctx, req.Owner)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "failed to resolve owner: %v", err)
@@ -88,14 +85,6 @@ func (k Keeper) StorageList(ctx context.Context, req *storagetypes.QueryStorageL
 	reverse := req.Pagination.GetReverse()
 	countTotal := req.Pagination.GetCountTotal()
 
-	// Basic debug log
-	k.Logger(sdkCtx).Info("StorageList pagination start",
-		"pagKeyLen", len(pagKey),
-		"pagKeyStr", string(pagKey),
-		"offset", offset,
-		"limit", limit,
-		"reverse", reverse)
-
 	if offset > 0 && len(pagKey) > 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid request, either offset or key is expected, got both")
 	}
@@ -108,45 +97,19 @@ func (k Keeper) StorageList(ctx context.Context, req *storagetypes.QueryStorageL
 
 	// Process pagination key if provided
 	if len(pagKey) > 0 {
-		k.Logger(sdkCtx).Info("Pagination key processing",
-			"module", storage.ModuleName,
-			"pagKey", string(pagKey),
-			"fullPrefix", fullPrefix,
-		)
-
 		// The pagination key is now always raw bytes:
 		// - CLI decodes base64 before sending
 		// - Script system sends raw bytes (protobuf JSON unmarshaling handles base64 automatically)
 		decodedKey := string(pagKey)
 		startKey := fullPrefix + decodedKey
 
-		k.Logger(sdkCtx).Info("Pagination DEBUG",
-			"module", storage.ModuleName,
-			"pagKey", string(pagKey),
-			"decodedKey", decodedKey,
-			"fullPrefix", fullPrefix,
-			"ownerPrefix", ownerPrefix,
-			"reverse", reverse,
-			"startKey", startKey,
-		)
-
 		if reverse {
 			// For reverse pagination, we need to iterate from ownerPrefix to the pagination key (inclusive)
 			ranger = (&collections.Range[string]{}).StartInclusive(fullPrefix).EndInclusive(startKey).Descending()
-			k.Logger(sdkCtx).Info("Reverse range constructed with endKey",
-				"module", storage.ModuleName,
-				"startInclusive", fullPrefix,
-				"endInclusive", startKey,
-			)
 		} else {
 			// For forward pagination, use StartInclusive range with prefix end
 			endExclusive := incrementLastByte(fullPrefix)
 			ranger = (&collections.Range[string]{}).StartInclusive(startKey).EndExclusive(endExclusive)
-			k.Logger(sdkCtx).Info("Forward range constructed with endKey",
-				"module", storage.ModuleName,
-				"startInclusive", startKey,
-				"endExclusive", endExclusive,
-			)
 		}
 	} else {
 		// No pagination key - use full prefix range
@@ -165,27 +128,20 @@ func (k Keeper) StorageList(ctx context.Context, req *storagetypes.QueryStorageL
 
 	// Define predicate and transform functions
 	predicateFunc := func(key string, val storagetypes.Storage) (bool, error) {
-		k.Logger(sdkCtx).Info("Filter", "req.Filter", req.Filter)
 		if req.Filter == "" {
-			k.Logger(sdkCtx).Info("No Filter", "req.Filter", req.Filter)
 			return true, nil
 		}
 		wrappedData := "[" + val.Data + "]"
 		result := gjson.Get(wrappedData, "#("+req.Filter+")")
-		k.Logger(sdkCtx).Info("Result", "result", result)
 		return result.Exists() && len(result.Array()) > 0, nil
 	}
 
 	transformFunc := func(key string, val storagetypes.Storage) (*storagetypes.Storage, error) {
-		k.Logger(sdkCtx).Info("TransformFunc", "val", val)
-
 		if req.Extract != "" {
-			k.Logger(sdkCtx).Info("Extract", "req.Extract", req.Extract)
 			res := gjson.Get(val.Data, req.Extract)
 			if res.Exists() {
 				val.Data = res.Raw
 			} else {
-				k.Logger(sdkCtx).Info("Extract", "req.Extract", req.Extract)
 				val.Data = ""
 			}
 		}
@@ -210,14 +166,6 @@ func (k Keeper) StorageList(ctx context.Context, req *storagetypes.QueryStorageL
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
-
-		// Debug logging for iteration
-		k.Logger(sdkCtx).Info("Iteration DEBUG",
-			"module", storage.ModuleName,
-			"key", key,
-			"collected", collected,
-			"limit", limit,
-		)
 
 		include, err := predicateFunc(key, val)
 		if err != nil {
@@ -253,13 +201,6 @@ func (k Keeper) StorageList(ctx context.Context, req *storagetypes.QueryStorageL
 				// The next key should be just the item part (after fullPrefix)
 				nextKey := strings.TrimPrefix(key, fullPrefix)
 				resp.Pagination.NextKey = []byte(nextKey)
-				k.Logger(sdkCtx).Info("Generated next pagination key",
-					"module", storage.ModuleName,
-					"lastIteratedKey", key,
-					"fullPrefix", fullPrefix,
-					"nextKey", nextKey,
-					"nextKeyBase64WillBe", base64.StdEncoding.EncodeToString([]byte(nextKey)),
-				)
 			}
 			// If no total requested or page key is provided, stop here like SDK
 			if !countTotal || len(pagKey) > 0 {
@@ -278,6 +219,7 @@ func (k Keeper) StorageList(ctx context.Context, req *storagetypes.QueryStorageL
 		resp.Pagination.Total = total
 	}
 
+	k.Logger(sdkCtx).Info("StorageList", "req", req, "entries_returned", len(resp.Entries))
+
 	return resp, nil
 }
-

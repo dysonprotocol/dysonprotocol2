@@ -98,7 +98,7 @@ func (rpcservice *RpcService) ConsumeGas(_ *http.Request, msg *ConsumeGasRequest
 			// Check for ErrorOutOfGas type directly, not as error interface
 			if _, ok := r.(storetypes.ErrorOutOfGas); ok {
 				err = cosmossdkerrors.Wrapf(sdkerrors.ErrOutOfGas,
-					"Consumegas script out of gas, gasLimit: %d: %s", gasLimit, r,
+					"Consumegas script out of gas, gasLimit: %d", gasLimit,
 				)
 				rpcservice.k.Logger(rpcservice.ctx).Error("Consumegas script out of gas", "gasLimit", gasLimit, "error", r)
 

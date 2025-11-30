@@ -27,8 +27,9 @@ import (
 // Validation:
 //   - Pool must exist and have exactly two positive reserves.
 //   - Signer must be valid address and hold majority of pool shares.
-//   - Amounts must contain exactly two positive coins matching pool denoms in
-//     canonical order.
+//   - Amounts must be valid coins with denoms that are a subset of pool denoms.
+//   - For proportional adds: exactly 2 coins matching pool denoms required.
+//   - For unbalanced adds: 1+ coins (subset of pool denoms) allowed.
 //
 // State Updates:
 //   - Transfers provided amounts from signer to module (then refunds surplus).
@@ -70,35 +71,44 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 
 	// Sanitize user-provided repeated coin vectors for amounts
 	msg.Amounts = sdk.NewCoins(msg.Amounts...)
-	// Validate amounts: must have exactly 2 denoms matching pool (already sorted)
-	if len(msg.Amounts) != 2 {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "must provide exactly 2 denoms")
+	// Validate amounts: must be valid coins with denoms that exist in the pool
+	if len(msg.Amounts) == 0 {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "must provide at least 1 denom")
 	}
 	if !msg.Amounts.IsValid() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "amounts must be valid sorted coins")
 	}
-	if msg.Amounts[0].Denom != pool.Coins[0].Denom || msg.Amounts[1].Denom != pool.Coins[1].Denom {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "amount denoms must match pool denoms in canonical order: expected %s,%s got %s,%s", pool.Coins[0].Denom, pool.Coins[1].Denom, msg.Amounts[0].Denom, msg.Amounts[1].Denom)
-	}
-	if !msg.Amounts[0].IsPositive() || !msg.Amounts[1].IsPositive() {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "amounts must be > 0")
+	if !msg.Amounts.DenomsSubsetOf(pool.Coins) {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "amount denoms must be subset of pool denoms: pool has %s, got %s", pool.Coins, msg.Amounts)
 	}
 
-	exR1 := pool.Coins[0]
-	exR2 := pool.Coins[1]
-	logger.Info("AddLiquidity current reserves", "r1", exR1, "r2", exR2)
-	if !exR1.IsPositive() || !exR2.IsPositive() {
+	// Validate pool reserves are positive
+	if !pool.Coins.IsAllPositive() {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool reserves")
 	}
-
-	add1 := msg.Amounts[0]
-	add2 := msg.Amounts[1]
-	orig1 := add1.Amount
-	orig2 := add2.Amount
+	logger.Info("AddLiquidity current reserves", "reserves", pool.Coins)
 
 	var minted math.Int
 
 	if msg.Unbalanced {
+		// Compute shares based on added amounts relative to old reserves (before modification)
+		totalShares := k.bank.GetSupply(ctx, pool.SharesDenom).Amount
+		if !totalShares.IsPositive() {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid total shares supply")
+		}
+		// For each added coin, compute shares = (addAmount / oldReserve) * totalShares
+		// Take minimum across all coins
+		for i, addCoin := range msg.Amounts {
+			exR := pool.Coins.AmountOf(addCoin.Denom)
+			si := addCoin.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR.ToLegacyDec()).TruncateInt()
+			if i == 0 || si.LT(minted) {
+				minted = si
+			}
+		}
+		if !minted.IsPositive() {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "shares must be > 0")
+		}
+
 		// Direct add: no proportional adjustments, escrow full amounts, no refunds
 		logger.Info("AddLiquidity unbalanced escrow", "amounts", msg.Amounts)
 		if err := k.sendToModule(ctx, signer, msg.Amounts); err != nil {
@@ -108,9 +118,18 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		// Update reserves with full provided amounts
 		pool.Coins = pool.Coins.Add(msg.Amounts...)
 		logger.Info("AddLiquidity unbalanced new reserves", "reserves", pool.Coins)
-
-
 	} else {
+		// Proportional add requires exactly 2 coins matching pool denoms
+		if len(msg.Amounts) != 2 || msg.Amounts[0].Denom != pool.Coins[0].Denom || msg.Amounts[1].Denom != pool.Coins[1].Denom {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "proportional add requires exactly 2 coins matching pool denoms: expected %s,%s", pool.Coins[0].Denom, pool.Coins[1].Denom)
+		}
+
+		exR1 := pool.Coins[0]
+		exR2 := pool.Coins[1]
+		add1 := msg.Amounts[0]
+		add2 := msg.Amounts[1]
+		orig1 := add1.Amount
+		orig2 := add2.Amount
 		// Proportional add: adjust amounts, escrow full, refund excess
 		refund1 := math.NewInt(0)
 		refund2 := math.NewInt(0)
@@ -169,24 +188,6 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 		logger.Info("AddLiquidity proportional new reserves", "r1", pool.Coins[0], "r2", pool.Coins[1])
 	}
 
-	if msg.Unbalanced {
-		// For unbalanced, mint shares based on added amounts relative to old reserves
-		totalShares := k.bank.GetSupply(ctx, pool.SharesDenom).Amount
-		if !totalShares.IsPositive() {
-			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid total shares supply")
-		}
-		s1 := add1.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR1.Amount.ToLegacyDec()).TruncateInt()
-		s2 := add2.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR2.Amount.ToLegacyDec()).TruncateInt()
-		minted = s1
-		if s2.LT(s1) {
-			minted = s2
-		}
-		if !minted.IsPositive() {
-			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "shares must be > 0")
-		}
-	}
-	// For proportional, minted is already calculated above
-
 	// Persist and emit poolupdate
 	if err := k.updatePool(ctx, &pool); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to update pool %d after add", pool.PoolId)
@@ -210,13 +211,11 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 	logger.Info("AddLiquidity emitted EventPoolLiquidityAdded", "pool_id", pool.PoolId, "shares", minted.String())
 	if err := k.AssertAMMInvariants(ctx); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err,
-			"AMM invariant after AddLiquidity: pool_id=%d add1=%s add2=%s minted=%s newR=(%s,%s)",
+			"AMM invariant after AddLiquidity: pool_id=%d added=%s minted=%s newR=%s",
 			pool.PoolId,
-			add1.String(),
-			add2.String(),
+			msg.Amounts,
 			minted.String(),
-			pool.Coins[0].String(),
-			pool.Coins[1].String(),
+			pool.Coins,
 		)
 	}
 	if err := k.AssertInvariants(ctx); err != nil {

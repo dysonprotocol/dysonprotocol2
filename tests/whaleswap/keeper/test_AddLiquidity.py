@@ -369,9 +369,10 @@ def demo_add_liquidity_wrong_denoms(alice_addr, foo_name):
         query_result.get("exception") is not None
     ), f"Should fail for wrong number of denoms: {query_result}"
     exception_msg = str(query_result["exception"]).lower()
+    # Proportional add with 1 coin triggers "proportional add requires exactly 2 coins" error
     assert (
-        "exactly 2 denoms" in exception_msg
-    ), f"Should mention 'exactly 2 denoms', got: {exception_msg}"
+        "proportional add requires exactly 2 coins" in exception_msg
+    ), f"Should mention 'proportional add requires exactly 2 coins', got: {exception_msg}"
 
 
 def test_add_liquidity_denom_mismatch(
@@ -463,10 +464,11 @@ def demo_add_liquidity_denom_mismatch(alice_addr, foo_name, bar_name):
         query_result.get("exception") is not None
     ), f"Should fail for denom mismatch: {query_result}"
     exception_msg = str(query_result["exception"]).lower()
+    # Unknown denom triggers DenomsSubsetOf check: "amount denoms must be subset of pool denoms"
     has_denom = "denom" in exception_msg
-    has_match = "match" in exception_msg
+    has_subset = "subset" in exception_msg
     assert has_denom == True, f"Should mention 'denom'. Got: {exception_msg}"
-    assert has_match == True, f"Should mention 'match'. Got: {exception_msg}"
+    assert has_subset == True, f"Should mention 'subset'. Got: {exception_msg}"
 
 
 def test_add_liquidity_non_positive_amounts(
@@ -558,8 +560,8 @@ def demo_add_liquidity_zero_amounts(alice_addr, foo_name, bar_name):
         query_result.get("exception") is not None
     ), f"Should fail for zero amounts: {query_result}"
     exception_msg = str(query_result["exception"]).lower()
-    # Zero amounts get filtered out by sdk.NewCoins, so we get "must provide exactly 2 denoms" error
-    has_exactly_2 = "exactly 2 denoms" in exception_msg
+    # Zero amounts get filtered out by sdk.NewCoins, leaving 1 coin
+    # Proportional add then fails with "proportional add requires exactly 2 coins" error
     assert (
-        has_exactly_2 == True
-    ), f"Should mention 'exactly 2 denoms' (zero amounts filtered). Got: {exception_msg}"
+        "proportional add requires exactly 2 coins" in exception_msg
+    ), f"Should mention 'proportional add requires exactly 2 coins' (zero amounts filtered). Got: {exception_msg}"

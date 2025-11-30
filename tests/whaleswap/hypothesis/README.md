@@ -4,7 +4,7 @@ Property-based testing for whaleswap using Hypothesis to discover edge cases and
 
 ## Architecture
 
-All operations execute in a **single `dysond query script exec`** call for:
+All operations execute in a **single `dysond query script run`** call for:
 - **Speed**: No waiting for blocks
 - **Determinism**: Same inputs → same outputs
 - **Atomicity**: All messages succeed or all fail together
@@ -12,7 +12,7 @@ All operations execute in a **single `dysond query script exec`** call for:
 ### Flow
 
 ```
-Hypothesis → Message Sequence → dysond query script exec → Invariant Check
+Hypothesis → Message Sequence → dysond query script run → Invariant Check
                ↓                          ↓                        ↓
         [Setup + Test Ops]       MsgSudo wrapper            Balance/Pool/Offer
 ```

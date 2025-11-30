@@ -194,7 +194,7 @@ func New(
 		"pattern", srv.config.ScriptAddressOrNamePattern,
 	)
 
-	srv.router.Handle("/", NewDefaultHandler(clientCtx, srv.config.ScriptAddressOrNamePattern, srv.config.PublicHostTemplate, srv.config.Libp2pBootstrapPeers))
+	srv.router.Handle("/", NewDefaultHandler(srv.logger, clientCtx, srv.config.ScriptAddressOrNamePattern, srv.config.PublicHostTemplate, srv.config.Libp2pBootstrapPeers))
 	// Pass the server to APIHandler
 	APIHandler(srv.router, srv)
 

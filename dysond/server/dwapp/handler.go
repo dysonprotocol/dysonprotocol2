@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/client"
 
 	scriptv1 "dysonprotocol.com/x/script/types"
@@ -22,7 +23,6 @@ import (
 const (
 	txtScriptNameRecordKey    = "DYSON_SCRIPT_NAME"
 	txtScriptAddressRecordKey = "DYSON_SCRIPT_ADDRESS"
-	debugPrefix               = "[DEBUG_DWAPP]"
 )
 
 // DysonTxtRecords holds the parsed TXT record values for Dyson script configuration
@@ -31,9 +31,10 @@ type DysonTxtRecords struct {
 	ScriptAddress string
 }
 
-func NewDefaultHandler(clientCtx client.Context, ScriptAddressOrNamePattern string, publicHostTemplate string, bootstrapPeers []string) http.Handler {
+func NewDefaultHandler(logger log.Logger, clientCtx client.Context, ScriptAddressOrNamePattern string, publicHostTemplate string, bootstrapPeers []string) http.Handler {
 	scriptAddressOrNameRe := regexp.MustCompile(ScriptAddressOrNamePattern)
 	h := &DefaultHandler{
+		logger:                logger,
 		clientCtx:             clientCtx,
 		scriptAddressOrNameRe: scriptAddressOrNameRe,
 		publicHostTemplate:    publicHostTemplate,
@@ -74,6 +75,7 @@ func NewDefaultHandler(clientCtx client.Context, ScriptAddressOrNamePattern stri
 }
 
 type DefaultHandler struct {
+	logger                log.Logger
 	clientCtx             client.Context
 	scriptAddressOrNameRe *regexp.Regexp
 	publicHostTemplate    string
@@ -91,10 +93,9 @@ func (h *DefaultHandler) SetP2PService(svc *P2PService) {
 }
 
 func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	fmt.Printf("%s incoming request method=%s path=%s host=%s\n", debugPrefix, req.Method, req.URL.Path, req.Host)
+	h.logger.Info("dwapp request", "method", req.Method, "path", req.URL.Path, "host", req.Host, "raw_query", req.URL.RawQuery)
 	// Reverse-proxy CometBFT RPC under /rpc/* to the configured NodeURI
 	if strings.HasPrefix(req.URL.Path, "/rpc") {
-		fmt.Printf("%s routing to rpc proxy\n", debugPrefix)
 		if h.rpcProxy == nil {
 			http.Error(w, "rpc proxy not configured", http.StatusBadGateway)
 			return
@@ -105,7 +106,6 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	// Bootstrap endpoint for libp2p connectivity (same-origin, no CORS required)
 	if req.Method == http.MethodGet && req.URL.Path == "/libp2p/bootstrap" {
-		fmt.Printf("%s handling /libp2p/bootstrap\n", debugPrefix)
 		if h.p2p == nil {
 			http.Error(w, "libp2p disabled", http.StatusServiceUnavailable)
 			return
@@ -153,7 +153,6 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	// POST /libp2p/verify: validate a single MsgArbitraryData envelope against a topic (utility)
 	if req.Method == http.MethodPost && req.URL.Path == "/libp2p/verify" {
-		fmt.Printf("%s handling /libp2p/verify\n", debugPrefix)
 		type body struct {
 			Topic      string          `json:"topic"`
 			Body       json.RawMessage `json:"body"`
@@ -198,7 +197,6 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	// New endpoint: /redirect-to-dwapp/{address_or_name} -> redirect or return public host
 	if strings.HasPrefix(req.URL.Path, "/redirect-to-dwapp/") {
-		fmt.Printf("%s handling redirect endpoint\n", debugPrefix)
 		// Extract the address_or_name (first path segment) and preserve the rest of the path
 		pathAfter := strings.TrimPrefix(req.URL.Path, "/redirect-to-dwapp/")
 		pathAfter = strings.TrimLeft(pathAfter, "/")
@@ -240,11 +238,9 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// get the raw request
 	rawRequest, err := getRawRequest(req)
 	if err != nil {
-		fmt.Printf("%s failed to get raw request: %v\n", debugPrefix, err)
 		http.Error(w, "Error getting raw request", http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("%s captured raw request length=%d\n", debugPrefix, len(rawRequest))
 
 	// Create the request - determine if addressOrName is an address or name
 	queryReq := &scriptv1.WebRequest{
@@ -254,7 +250,6 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// First, try to get script address/name from TXT records
 	txtRecords, err := getTXTRecords(req.Host)
 	if err == nil {
-		fmt.Printf("%s TXT records resolved addr=%s name=%s\n", debugPrefix, txtRecords.ScriptAddress, txtRecords.ScriptName)
 		// Prefer script address if available, otherwise use script name
 		if txtRecords.ScriptAddress != "" {
 			queryReq.ScriptAddress = txtRecords.ScriptAddress
@@ -270,7 +265,6 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if queryReq.ScriptAddress == "" && queryReq.ScriptName == "" {
 		match := h.scriptAddressOrNameRe.FindStringSubmatch(req.Host)
 		if len(match) == 0 {
-			fmt.Printf("%s host regex miss host=%s\n", debugPrefix, req.Host)
 			errorMsg := fmt.Sprintf("No match for host: `%s` using ScriptAddressOrNamePattern: `%s`", req.Host, h.scriptAddressOrNameRe.String())
 			http.Error(w, errorMsg, http.StatusNotFound)
 			return
@@ -307,7 +301,6 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	err = h.clientCtx.Invoke(req.Context(), "/dysonprotocol.script.v1.Query/Web", queryReq, resp)
 	if err != nil {
 		fmt.Println("[ERROR] DWApp Handler: Error querying app:", err)
-		fmt.Printf("%s query error: %v\n", debugPrefix, err)
 		// If error is "failed to resolve script name: {name}", extract and handle special case for dys.dys
 		errMsg := err.Error()
 		if strings.Contains(strings.ToLower(errMsg), "decoding bech32 failed") {
@@ -358,7 +351,6 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	rawBytes := []byte(resp.Httpresponse)
-	fmt.Printf("%s writing raw response bytes=%d\n", debugPrefix, len(rawBytes))
 
 	// write the response directly to the writer
 	err = WriteRawResponse(rawBytes, w)
@@ -371,28 +363,23 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func WriteRawResponse(rawResponse []byte, w http.ResponseWriter) error {
-	fmt.Printf("%s WriteRawResponse start len=%d\n", debugPrefix, len(rawResponse))
 	// Convert bytes to a buffered reader for easier line-by-line reading
 	reader := bufio.NewReader(bytes.NewReader(rawResponse))
 
 	// Read the status line
 	statusLine, err := reader.ReadString('\n')
 	if err != nil {
-		fmt.Printf("%s status line read error: %v\n", debugPrefix, err)
 		return fmt.Errorf("failed to read status line: %v, %s", err, rawResponse)
 	}
 	statusLine = strings.TrimSpace(statusLine) // Remove any trailing whitespace
-	fmt.Printf("%s status line=%s\n", debugPrefix, statusLine)
 
 	// Parse the status line
 	parts := strings.SplitN(statusLine, " ", 3)
 	if len(parts) < 2 {
-		fmt.Printf("%s malformed status line parts=%v\n", debugPrefix, parts)
 		return fmt.Errorf("malformed status line: '%s'", statusLine)
 	}
 	statusCode, err := strconv.Atoi(parts[1])
 	if err != nil {
-		fmt.Printf("%s invalid status code: %v\n", debugPrefix, err)
 		return fmt.Errorf("invalid status code: %v", err)
 	}
 
@@ -400,7 +387,6 @@ func WriteRawResponse(rawResponse []byte, w http.ResponseWriter) error {
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Printf("%s header read error: %v\n", debugPrefix, err)
 			return fmt.Errorf("failed to read header line: %v", err)
 		}
 		line = strings.TrimSpace(line)
@@ -410,16 +396,13 @@ func WriteRawResponse(rawResponse []byte, w http.ResponseWriter) error {
 
 		parts := strings.SplitN(line, ": ", 2)
 		if len(parts) != 2 {
-			fmt.Printf("%s malformed header: %s\n", debugPrefix, line)
 			return fmt.Errorf("malformed header: '%s'", line)
 		}
 		w.Header().Add(parts[0], parts[1])
-		fmt.Printf("%s header %s=%s\n", debugPrefix, parts[0], parts[1])
 	}
 
 	// Set the status code
 	w.WriteHeader(statusCode)
-	fmt.Printf("%s wrote status %d\n", debugPrefix, statusCode)
 
 	// Write the body
 	for {

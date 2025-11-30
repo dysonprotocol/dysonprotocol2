@@ -101,7 +101,7 @@ func RegisterDysonServer(clientCtx client.Context, logger log.Logger, rtr *mux.R
 
 		// Middleware to check path condition explicitly
 		rtr.Use(func(next http.Handler) http.Handler {
-			dwappHandler := dwapp.NewDefaultHandler(clientCtx, patternString, publicHostTemplate, libp2pBootstrapPeers)
+			dwappHandler := dwapp.NewDefaultHandler(logger, clientCtx, patternString, publicHostTemplate, libp2pBootstrapPeers)
 			if h, ok := dwappHandler.(*dwapp.DefaultHandler); ok && p2pService != nil {
 				h.SetP2PService(p2pService)
 			}
