@@ -945,6 +945,9 @@ func NewDysApp(
 	// upgrade.
 	app.setPostHandler()
 
+	// Set up message-level interceptor for logging/modifying individual msg execution.
+	app.setMsgInterceptor()
+
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
 			panic(fmt.Errorf("error loading last version: %w", err))
@@ -989,6 +992,12 @@ func (app *DysApp) setPostHandler() {
 	}
 
 	app.SetPostHandler(sdk.ChainPostDecorators(postDecorators...))
+}
+
+func (app *DysApp) setMsgInterceptor() {
+	// Set up message-level interceptor for pre/post execution hooks.
+	// This allows logging/modifying individual message execution and responses.
+	app.MsgServiceRouter().SetInterceptor(NewLoggingMsgInterceptor())
 }
 
 // Name returns the name of the App
