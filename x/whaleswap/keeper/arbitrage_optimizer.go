@@ -313,8 +313,9 @@ func (nm *NelderMeadOptimizer) Optimize(
 	return result, bestValue, true
 }
 
-// HybridOptimizer runs grid search first, then refines with Nelder-Mead.
-// Good balance of exploration and exploitation.
+// HybridOptimizer uses BinarySearch to find profitable direction,
+// then Nelder-Mead to refine to local maximum.
+// This is the optimal strategy for whaleswap arbitrage.
 type HybridOptimizer struct {
 	Grid       *GridSearchOptimizer
 	NelderMead *NelderMeadOptimizer
@@ -322,7 +323,6 @@ type HybridOptimizer struct {
 
 // NewHybridOptimizer creates a hybrid optimizer.
 func NewHybridOptimizer() *HybridOptimizer {
-	// Use BinarySearchOptimizer as the primary method
 	return &HybridOptimizer{
 		Grid: &GridSearchOptimizer{
 			GridPoints: 5,
@@ -336,32 +336,51 @@ func NewHybridOptimizer() *HybridOptimizer {
 	}
 }
 
-// Optimize implements ArbitrageOptimizer using hybrid approach.
+// Optimize implements ArbitrageOptimizer using hybrid approach:
+// 1. BinarySearch finds ANY profitable direction fast
+// 2. NelderMead polishes to true local maximum
 func (h *HybridOptimizer) Optimize(
 	objective func([]float64) float64,
 	bounds OptimizationBounds,
 	initialGuess []float64,
 ) (optimal []float64, value float64, found bool) {
-	// Try binary search first - it's more efficient for arbitrage
+	// Phase 1: BinarySearch finds a profitable direction quickly
 	bs := NewBinarySearchOptimizer()
 	bsResult, bsValue, bsFound := bs.Optimize(objective, bounds, initialGuess)
+
 	if bsFound && bsValue > 0 {
+		// Phase 2: NelderMead refines the result
+		refined, refinedVal, refinedOk := h.NelderMead.Optimize(objective, bounds, bsResult)
+		if refinedOk && refinedVal > bsValue {
+			return refined, refinedVal, true
+		}
+		// Refinement didn't improve - return original
 		return bsResult, bsValue, true
 	}
 
-	// Fallback to grid search
+	// Fallback: GridSearch if BinarySearch found nothing
 	gridResult, gridValue, gridFound := h.Grid.Optimize(objective, bounds, initialGuess)
 	if gridFound && gridValue > 0 {
+		// Try to refine grid result too
+		refined, refinedVal, refinedOk := h.NelderMead.Optimize(objective, bounds, gridResult)
+		if refinedOk && refinedVal > gridValue {
+			return refined, refinedVal, true
+		}
 		return gridResult, gridValue, true
 	}
 
 	return nil, 0, false
 }
 
-// BinarySearchOptimizer finds arbitrage by:
-// 1. Testing small amounts in each direction to find ANY profit
-// 2. Exponentially increasing until profit decreases
-// 3. Binary search to find optimal amount
+// BinarySearchOptimizer finds arbitrage opportunities for whaleswap.
+//
+// Key insight: Whaleswap's self-netting means pool order doesn't matter
+// and no cycle is needed. Any set of swaps with net positive output is profit.
+//
+// Strategy:
+// 1. Test small amounts in various directions to find ANY profit
+// 2. Exponentially scale until profit peaks
+// 3. Binary search to pinpoint optimal amount
 type BinarySearchOptimizer struct {
 	MaxPools      int
 	MaxIterations int
@@ -433,9 +452,9 @@ func (bs *BinarySearchOptimizer) Optimize(
 // generateDirections creates direction combinations to try.
 // Returns slice of direction vectors where each element is -1, 0, or +1.
 func (bs *BinarySearchOptimizer) generateDirections(n int) [][]int {
-	// For circular arbitrage, we want to try various direction combinations
-	// Key insight: profitable arb usually has SAME amounts in all pools
-	// to enable self-netting (output of one pool feeds next)
+	// Whaleswap arbitrage: pool order doesn't matter, no cycle needed!
+	// Due to self-netting, ANY set of swaps that results in net positive
+	// coins is valid arbitrage. We explore various direction combinations.
 	dirs := make([][]int, 0)
 
 	// Try all positive (sell denom0 in each pool)

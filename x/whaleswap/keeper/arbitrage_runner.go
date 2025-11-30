@@ -221,7 +221,6 @@ func ShouldCheckArbitrage(msg sdk.Msg) bool {
 	switch msg.(type) {
 	case *whaleswapv1.MsgMakeTrade,
 		*whaleswapv1.MsgAddLiquidity,
-		*whaleswapv1.MsgRemoveLiquidity,
 		*whaleswapv1.MsgCreatePool:
 		return true
 	default:
