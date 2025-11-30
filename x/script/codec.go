@@ -345,6 +345,9 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		&whaleswapv1.QueryPositionsByAddressRequest{}, &whaleswapv1.QueryPositionsByAddressResponse{},
 		&whaleswapv1.QueryPositionsByPoolRequest{}, &whaleswapv1.QueryPositionsByPoolResponse{},
 		&whaleswapv1.QueryMetricsRequest{}, &whaleswapv1.QueryMetricsResponse{},
+
+		// Arbitrage queries
+		&whaleswapv1.QuerySimulateArbitrageRequest{}, &whaleswapv1.QuerySimulateArbitrageResponse{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registrar, &scripttypes.Msg_serviceDesc)

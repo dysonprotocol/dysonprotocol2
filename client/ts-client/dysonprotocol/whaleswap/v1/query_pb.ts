@@ -3071,3 +3071,173 @@ export class QueryAddressMetricsAllResponse extends Message<QueryAddressMetricsA
   }
 }
 
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest
+ */
+export class QuerySimulateArbitrageRequest extends Message<QuerySimulateArbitrageRequest> {
+  /**
+   * Trader address to use for simulation; must be a valid bech32 address
+   *
+   * @generated from field: string trader = 1;
+   */
+  trader = "";
+
+  /**
+   * List of denoms affected (e.g., from a pool update). Arbitrage detection
+   * starts from pools containing these denoms.
+   *
+   * @generated from field: repeated string affected_denoms = 2;
+   */
+  affectedDenoms: string[] = [];
+
+  /**
+   * Reference denom to measure profit in (typically the chain's base denom)
+   *
+   * @generated from field: string ref_denom = 3;
+   */
+  refDenom = "";
+
+  /**
+   * Number of hops to expand pool graph (0 = only direct pools, 1 = include
+   * neighbor pools, etc.)
+   *
+   * @generated from field: int32 depth = 4;
+   */
+  depth = 0;
+
+  /**
+   * Maximum fraction of pool reserve to swap (e.g., 0.1 = 10%)
+   *
+   * @generated from field: string max_fraction = 5;
+   */
+  maxFraction = "";
+
+  constructor(data?: PartialMessage<QuerySimulateArbitrageRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "trader", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "affected_denoms", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 3, name: "ref_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "depth", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 5, name: "max_fraction", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QuerySimulateArbitrageRequest {
+    return new QuerySimulateArbitrageRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QuerySimulateArbitrageRequest {
+    return new QuerySimulateArbitrageRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QuerySimulateArbitrageRequest {
+    return new QuerySimulateArbitrageRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QuerySimulateArbitrageRequest | PlainMessage<QuerySimulateArbitrageRequest> | undefined, b: QuerySimulateArbitrageRequest | PlainMessage<QuerySimulateArbitrageRequest> | undefined): boolean {
+    return proto3.util.equals(QuerySimulateArbitrageRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message dysonprotocol.whaleswap.v1.QuerySimulateArbitrageResponse
+ */
+export class QuerySimulateArbitrageResponse extends Message<QuerySimulateArbitrageResponse> {
+  /**
+   * Whether a profitable arbitrage opportunity was found
+   *
+   * @generated from field: bool found = 1;
+   */
+  found = false;
+
+  /**
+   * Number of pools in the arbitrage graph
+   *
+   * @generated from field: int32 pool_count = 2;
+   */
+  poolCount = 0;
+
+  /**
+   * All denoms discovered in the pool graph
+   *
+   * @generated from field: repeated string denoms = 3;
+   */
+  denoms: string[] = [];
+
+  /**
+   * Simulated profit in ref_denom (only if found=true)
+   *
+   * @generated from field: string profit = 4;
+   */
+  profit = "";
+
+  /**
+   * Net inputs the trader would need to provide (ideally empty for circular
+   * arb)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin trader_inputs = 5;
+   */
+  traderInputs: Coin[] = [];
+
+  /**
+   * Net outputs the trader would receive
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin trader_outputs = 6;
+   */
+  traderOutputs: Coin[] = [];
+
+  /**
+   * Swap amounts per pool (signed: positive = sell denom0, negative = sell
+   * denom1)
+   *
+   * @generated from field: repeated int64 swap_amounts = 7;
+   */
+  swapAmounts: bigint[] = [];
+
+  /**
+   * Pool IDs in the arbitrage graph (corresponds to swap_amounts indices)
+   *
+   * @generated from field: repeated uint64 pool_ids = 8;
+   */
+  poolIds: bigint[] = [];
+
+  constructor(data?: PartialMessage<QuerySimulateArbitrageResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.QuerySimulateArbitrageResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "found", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 2, name: "pool_count", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "denoms", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 4, name: "profit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "trader_inputs", kind: "message", T: Coin, repeated: true },
+    { no: 6, name: "trader_outputs", kind: "message", T: Coin, repeated: true },
+    { no: 7, name: "swap_amounts", kind: "scalar", T: 3 /* ScalarType.INT64 */, repeated: true },
+    { no: 8, name: "pool_ids", kind: "scalar", T: 4 /* ScalarType.UINT64 */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QuerySimulateArbitrageResponse {
+    return new QuerySimulateArbitrageResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QuerySimulateArbitrageResponse {
+    return new QuerySimulateArbitrageResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QuerySimulateArbitrageResponse {
+    return new QuerySimulateArbitrageResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QuerySimulateArbitrageResponse | PlainMessage<QuerySimulateArbitrageResponse> | undefined, b: QuerySimulateArbitrageResponse | PlainMessage<QuerySimulateArbitrageResponse> | undefined): boolean {
+    return proto3.util.equals(QuerySimulateArbitrageResponse, a, b);
+  }
+}
+

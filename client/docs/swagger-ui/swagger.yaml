@@ -11435,6 +11435,170 @@ paths:
           format: uint64
       tags:
         - Query
+  /dysonprotocol/whaleswap/v1/simulate_arbitrage:
+    get:
+      summary: SimulateArbitrage tests arbitrage detection for given affected denoms.
+      description: >-
+        This query simulates arbitrage opportunity detection without executing
+
+        trades. It builds a pool graph starting from the affected denoms,
+        expands
+
+        by depth hops, runs the optimizer to find profitable circular swaps, and
+
+        returns the simulated result. Useful for testing arbitrage detection
+        logic
+
+        and understanding potential opportunities. All simulations use
+        CacheContext
+
+        so no state is modified.
+      operationId: dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              found:
+                type: boolean
+                title: Whether a profitable arbitrage opportunity was found
+              pool_count:
+                type: integer
+                format: int32
+                title: Number of pools in the arbitrage graph
+              denoms:
+                type: array
+                items:
+                  type: string
+                title: All denoms discovered in the pool graph
+              profit:
+                type: string
+                title: Simulated profit in ref_denom (only if found=true)
+              trader_inputs:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    Coin defines a token with a denomination and an amount.
+
+
+                    NOTE: The amount field is an Int which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                title: >-
+                  Net inputs the trader would need to provide (ideally empty for
+                  circular
+
+                  arb)
+              trader_outputs:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    Coin defines a token with a denomination and an amount.
+
+
+                    NOTE: The amount field is an Int which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                title: Net outputs the trader would receive
+              swap_amounts:
+                type: array
+                items:
+                  type: string
+                  format: int64
+                title: >-
+                  Swap amounts per pool (signed: positive = sell denom0,
+                  negative = sell
+
+                  denom1)
+              pool_ids:
+                type: array
+                items:
+                  type: string
+                  format: uint64
+                title: >-
+                  Pool IDs in the arbitrage graph (corresponds to swap_amounts
+                  indices)
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: trader
+          description: >-
+            Trader address to use for simulation; must be a valid bech32
+            address.
+          in: query
+          required: false
+          type: string
+        - name: affected_denoms
+          description: >-
+            List of denoms affected (e.g., from a pool update). Arbitrage
+            detection
+
+            starts from pools containing these denoms.
+          in: query
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: ref_denom
+          description: >-
+            Reference denom to measure profit in (typically the chain's base
+            denom).
+          in: query
+          required: false
+          type: string
+        - name: depth
+          description: >-
+            Number of hops to expand pool graph (0 = only direct pools, 1 =
+            include
+
+            neighbor pools, etc.).
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: max_fraction
+          description: Maximum fraction of pool reserve to swap (e.g., 0.1 = 10%).
+          in: query
+          required: false
+          type: string
+      tags:
+        - Query
   /dysonprotocol/whaleswap/v1/trades:
     get:
       summary: Trades lists trades with optional denom filters and pagination.
@@ -56551,6 +56715,72 @@ definitions:
                    repeated Bar results = 1;
                    PageResponse page = 2;
            }
+  dysonprotocol.whaleswap.v1.QuerySimulateArbitrageResponse:
+    type: object
+    properties:
+      found:
+        type: boolean
+        title: Whether a profitable arbitrage opportunity was found
+      pool_count:
+        type: integer
+        format: int32
+        title: Number of pools in the arbitrage graph
+      denoms:
+        type: array
+        items:
+          type: string
+        title: All denoms discovered in the pool graph
+      profit:
+        type: string
+        title: Simulated profit in ref_denom (only if found=true)
+      trader_inputs:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+        title: >-
+          Net inputs the trader would need to provide (ideally empty for
+          circular
+
+          arb)
+      trader_outputs:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+        title: Net outputs the trader would receive
+      swap_amounts:
+        type: array
+        items:
+          type: string
+          format: int64
+        title: |-
+          Swap amounts per pool (signed: positive = sell denom0, negative = sell
+          denom1)
+      pool_ids:
+        type: array
+        items:
+          type: string
+          format: uint64
+        title: Pool IDs in the arbitrage graph (corresponds to swap_amounts indices)
   dysonprotocol.whaleswap.v1.QueryTradeResponse:
     type: object
     properties:

@@ -50,6 +50,7 @@ const (
 	Query_Metrics_FullMethodName                  = "/dysonprotocol.whaleswap.v1.Query/Metrics"
 	Query_AddressMetrics_FullMethodName           = "/dysonprotocol.whaleswap.v1.Query/AddressMetrics"
 	Query_AddressMetricsAll_FullMethodName        = "/dysonprotocol.whaleswap.v1.Query/AddressMetricsAll"
+	Query_SimulateArbitrage_FullMethodName        = "/dysonprotocol.whaleswap.v1.Query/SimulateArbitrage"
 )
 
 // QueryClient is the client API for Query service.
@@ -282,6 +283,15 @@ type QueryClient interface {
 	// exhausting gRPC limits. Only use this endpoint for analytics dashboards or
 	// invariants; it can be expensive on large datasets.
 	AddressMetricsAll(ctx context.Context, in *QueryAddressMetricsAllRequest, opts ...grpc.CallOption) (*QueryAddressMetricsAllResponse, error)
+	// SimulateArbitrage tests arbitrage detection for given affected denoms.
+	//
+	// This query simulates arbitrage opportunity detection without executing
+	// trades. It builds a pool graph starting from the affected denoms, expands
+	// by depth hops, runs the optimizer to find profitable circular swaps, and
+	// returns the simulated result. Useful for testing arbitrage detection logic
+	// and understanding potential opportunities. All simulations use CacheContext
+	// so no state is modified.
+	SimulateArbitrage(ctx context.Context, in *QuerySimulateArbitrageRequest, opts ...grpc.CallOption) (*QuerySimulateArbitrageResponse, error)
 }
 
 type queryClient struct {
@@ -602,6 +612,16 @@ func (c *queryClient) AddressMetricsAll(ctx context.Context, in *QueryAddressMet
 	return out, nil
 }
 
+func (c *queryClient) SimulateArbitrage(ctx context.Context, in *QuerySimulateArbitrageRequest, opts ...grpc.CallOption) (*QuerySimulateArbitrageResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QuerySimulateArbitrageResponse)
+	err := c.cc.Invoke(ctx, Query_SimulateArbitrage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility.
@@ -832,6 +852,15 @@ type QueryServer interface {
 	// exhausting gRPC limits. Only use this endpoint for analytics dashboards or
 	// invariants; it can be expensive on large datasets.
 	AddressMetricsAll(context.Context, *QueryAddressMetricsAllRequest) (*QueryAddressMetricsAllResponse, error)
+	// SimulateArbitrage tests arbitrage detection for given affected denoms.
+	//
+	// This query simulates arbitrage opportunity detection without executing
+	// trades. It builds a pool graph starting from the affected denoms, expands
+	// by depth hops, runs the optimizer to find profitable circular swaps, and
+	// returns the simulated result. Useful for testing arbitrage detection logic
+	// and understanding potential opportunities. All simulations use CacheContext
+	// so no state is modified.
+	SimulateArbitrage(context.Context, *QuerySimulateArbitrageRequest) (*QuerySimulateArbitrageResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -934,6 +963,9 @@ func (UnimplementedQueryServer) AddressMetrics(context.Context, *QueryAddressMet
 }
 func (UnimplementedQueryServer) AddressMetricsAll(context.Context, *QueryAddressMetricsAllRequest) (*QueryAddressMetricsAllResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddressMetricsAll not implemented")
+}
+func (UnimplementedQueryServer) SimulateArbitrage(context.Context, *QuerySimulateArbitrageRequest) (*QuerySimulateArbitrageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SimulateArbitrage not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 func (UnimplementedQueryServer) testEmbeddedByValue()               {}
@@ -1514,6 +1546,24 @@ func _Query_AddressMetricsAll_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_SimulateArbitrage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySimulateArbitrageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).SimulateArbitrage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_SimulateArbitrage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).SimulateArbitrage(ctx, req.(*QuerySimulateArbitrageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1644,6 +1694,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddressMetricsAll",
 			Handler:    _Query_AddressMetricsAll_Handler,
+		},
+		{
+			MethodName: "SimulateArbitrage",
+			Handler:    _Query_SimulateArbitrage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

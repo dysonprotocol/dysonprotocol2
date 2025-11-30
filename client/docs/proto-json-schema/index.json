@@ -167,6 +167,7 @@
       {"type":"file","name":"dysonprotocol.whaleswap.v1.Position.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.PositionsByAddress.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.PositionsByPool.json"},
+      {"type":"file","name":"dysonprotocol.whaleswap.v1.SimulateArbitrage.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.Trade.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.Trades.json"},
       {"type":"file","name":"dysonprotocol.whaleswap.v1.TradesByAuction.json"},
@@ -387,5 +388,5 @@
     ]}
   ]}
 ,
-  {"type":"report","directories":3,"files":381}
+  {"type":"report","directories":3,"files":382}
 ]

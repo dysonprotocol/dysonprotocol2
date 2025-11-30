@@ -25,7 +25,7 @@ def leverage_names_and_coins(
     chainnet, generate_account, faucet, register_name, leverage_accounts
 ):
     """
-    Register 2 names and mint 1,000,000 coins of each.
+    Register 3 names and mint 1,000,000 coins of each.
     Names are reusable across all leverage tests.
     Session-scoped for performance.
     """
@@ -33,9 +33,10 @@ def leverage_names_and_coins(
     alice_name = leverage_accounts["alice"]["name"]
     alice_addr = leverage_accounts["alice"]["addr"]
 
-    # Register 2 names
+    # Register 3 names
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
+    qux_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
 
     # Get mint fee from params
     params = dysond("query", "nameservice", "params")
@@ -67,6 +68,18 @@ def leverage_names_and_coins(
         alice_name,
     )
 
+    dysond(
+        "tx",
+        "nameservice",
+        "mint-coins",
+        "--amount",
+        f"1000000{qux_name}",
+        "--mint-fee",
+        f"{mint_fee}udys",
+        "--from",
+        alice_name,
+    )
+
     # Distribute coins to bob and charlie (300K each denom)
     dysond(
         "tx",
@@ -74,7 +87,7 @@ def leverage_names_and_coins(
         "send",
         alice_addr,
         leverage_accounts["bob"]["addr"],
-        f"300000{foo_name},300000{bar_name}",
+        f"300000{foo_name},300000{bar_name},300000{qux_name}",
         "--from",
         alice_name,
     )
@@ -85,7 +98,7 @@ def leverage_names_and_coins(
         "send",
         alice_addr,
         leverage_accounts["charlie"]["addr"],
-        f"300000{foo_name},300000{bar_name}",
+        f"300000{foo_name},300000{bar_name},300000{qux_name}",
         "--from",
         alice_name,
     )
@@ -93,5 +106,6 @@ def leverage_names_and_coins(
     return {
         "foo_name": foo_name,
         "bar_name": bar_name,
+        "qux_name": qux_name,
         "alice_addr": alice_addr,
     }

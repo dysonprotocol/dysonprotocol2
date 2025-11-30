@@ -1,0 +1,115 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest": {
+                "properties": {
+                    "trader": {
+                        "type": "string",
+                        "description": "Trader address to use for simulation; must be a valid bech32 address"
+                    },
+                    "affected_denoms": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "List of denoms affected (e.g., from a pool update). Arbitrage detection starts from pools containing these denoms."
+                    },
+                    "ref_denom": {
+                        "type": "string",
+                        "description": "Reference denom to measure profit in (typically the chain's base denom)"
+                    },
+                    "depth": {
+                        "type": "integer",
+                        "description": "Number of hops to expand pool graph (0 = only direct pools, 1 = include neighbor pools, etc.)"
+                    },
+                    "max_fraction": {
+                        "type": "string",
+                        "description": "Maximum fraction of pool reserve to swap (e.g., 0.1 = 10%)"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "--- Arbitrage simulation ---",
+                "description": "--- Arbitrage simulation ---"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QuerySimulateArbitrageResponse": {
+                "properties": {
+                    "found": {
+                        "type": "boolean",
+                        "description": "Whether a profitable arbitrage opportunity was found"
+                    },
+                    "pool_count": {
+                        "type": "integer",
+                        "description": "Number of pools in the arbitrage graph"
+                    },
+                    "denoms": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "All denoms discovered in the pool graph"
+                    },
+                    "profit": {
+                        "type": "string",
+                        "description": "Simulated profit in ref_denom (only if found=true)"
+                    },
+                    "trader_inputs": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Net inputs the trader would need to provide (ideally empty for circular arb)"
+                    },
+                    "trader_outputs": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Net outputs the trader would receive"
+                    },
+                    "swap_amounts": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "Swap amounts per pool (signed: positive = sell denom0, negative = sell denom1)"
+                    },
+                    "pool_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "Pool IDs in the arbitrage graph (corresponds to swap_amounts indices)"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Simulate Arbitrage Response"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    }
+}

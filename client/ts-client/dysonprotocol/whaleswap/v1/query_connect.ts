@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { QueryAddressMetricsAllRequest, QueryAddressMetricsAllResponse, QueryAddressMetricsRequest, QueryAddressMetricsResponse, QueryAuctionByNFTRequest, QueryAuctionByNFTResponse, QueryAuctionRequest, QueryAuctionResponse, QueryAuctionsByPairPriceRangeRequest, QueryAuctionsByPairPriceRangeResponse, QueryAuctionsBySellerRequest, QueryAuctionsBySellerResponse, QueryAuctionsRequest, QueryAuctionsResponse, QueryMetricsRequest, QueryMetricsResponse, QueryOfferRequest, QueryOfferResponse, QueryOffersBestRequest, QueryOffersBestResponse, QueryOffersByDenomRequest, QueryOffersByDenomResponse, QueryOffersByOwnerRequest, QueryOffersByOwnerResponse, QueryOffersByPairPriceRangeRequest, QueryOffersByPairPriceRangeResponse, QueryOffersRequest, QueryOffersResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolBySharesDenomRequest, QueryPoolBySharesDenomResponse, QueryPoolRequest, QueryPoolResponse, QueryPoolsByDenomRequest, QueryPoolsByDenomResponse, QueryPoolsByOwnerRequest, QueryPoolsByOwnerResponse, QueryPoolsByPairPriceRangeRequest, QueryPoolsByPairPriceRangeResponse, QueryPoolsByPairRequest, QueryPoolsByPairResponse, QueryPoolsRequest, QueryPoolsResponse, QueryPositionRequest, QueryPositionResponse, QueryPositionsByAddressRequest, QueryPositionsByAddressResponse, QueryPositionsByPoolRequest, QueryPositionsByPoolResponse, QueryTradeRequest, QueryTradeResponse, QueryTradesByAuctionRequest, QueryTradesByAuctionResponse, QueryTradesByOfferRequest, QueryTradesByOfferResponse, QueryTradesByPoolRequest, QueryTradesByPoolResponse, QueryTradesByTakerRequest, QueryTradesByTakerResponse, QueryTradesRequest, QueryTradesResponse } from "./query_pb.js";
+import { QueryAddressMetricsAllRequest, QueryAddressMetricsAllResponse, QueryAddressMetricsRequest, QueryAddressMetricsResponse, QueryAuctionByNFTRequest, QueryAuctionByNFTResponse, QueryAuctionRequest, QueryAuctionResponse, QueryAuctionsByPairPriceRangeRequest, QueryAuctionsByPairPriceRangeResponse, QueryAuctionsBySellerRequest, QueryAuctionsBySellerResponse, QueryAuctionsRequest, QueryAuctionsResponse, QueryMetricsRequest, QueryMetricsResponse, QueryOfferRequest, QueryOfferResponse, QueryOffersBestRequest, QueryOffersBestResponse, QueryOffersByDenomRequest, QueryOffersByDenomResponse, QueryOffersByOwnerRequest, QueryOffersByOwnerResponse, QueryOffersByPairPriceRangeRequest, QueryOffersByPairPriceRangeResponse, QueryOffersRequest, QueryOffersResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolBySharesDenomRequest, QueryPoolBySharesDenomResponse, QueryPoolRequest, QueryPoolResponse, QueryPoolsByDenomRequest, QueryPoolsByDenomResponse, QueryPoolsByOwnerRequest, QueryPoolsByOwnerResponse, QueryPoolsByPairPriceRangeRequest, QueryPoolsByPairPriceRangeResponse, QueryPoolsByPairRequest, QueryPoolsByPairResponse, QueryPoolsRequest, QueryPoolsResponse, QueryPositionRequest, QueryPositionResponse, QueryPositionsByAddressRequest, QueryPositionsByAddressResponse, QueryPositionsByPoolRequest, QueryPositionsByPoolResponse, QuerySimulateArbitrageRequest, QuerySimulateArbitrageResponse, QueryTradeRequest, QueryTradeResponse, QueryTradesByAuctionRequest, QueryTradesByAuctionResponse, QueryTradesByOfferRequest, QueryTradesByOfferResponse, QueryTradesByPoolRequest, QueryTradesByPoolResponse, QueryTradesByTakerRequest, QueryTradesByTakerResponse, QueryTradesRequest, QueryTradesResponse } from "./query_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -546,6 +546,25 @@ export const Query = {
       name: "AddressMetricsAll",
       I: QueryAddressMetricsAllRequest,
       O: QueryAddressMetricsAllResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     *
+     * SimulateArbitrage tests arbitrage detection for given affected denoms.
+     *
+     * This query simulates arbitrage opportunity detection without executing
+     * trades. It builds a pool graph starting from the affected denoms, expands
+     * by depth hops, runs the optimizer to find profitable circular swaps, and
+     * returns the simulated result. Useful for testing arbitrage detection logic
+     * and understanding potential opportunities. All simulations use CacheContext
+     * so no state is modified.
+     *
+     * @generated from rpc dysonprotocol.whaleswap.v1.Query.SimulateArbitrage
+     */
+    simulateArbitrage: {
+      name: "SimulateArbitrage",
+      I: QuerySimulateArbitrageRequest,
+      O: QuerySimulateArbitrageResponse,
       kind: MethodKind.Unary,
     },
   }

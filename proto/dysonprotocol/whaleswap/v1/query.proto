@@ -409,6 +409,22 @@ service Query {
     option (google.api.http).get =
         "/dysonprotocol/whaleswap/v1/metrics/addresses";
   }
+
+  /*
+   * SimulateArbitrage tests arbitrage detection for given affected denoms.
+   *
+   * This query simulates arbitrage opportunity detection without executing
+   * trades. It builds a pool graph starting from the affected denoms, expands
+   * by depth hops, runs the optimizer to find profitable circular swaps, and
+   * returns the simulated result. Useful for testing arbitrage detection logic
+   * and understanding potential opportunities. All simulations use CacheContext
+   * so no state is modified.
+   */
+  rpc SimulateArbitrage(QuerySimulateArbitrageRequest)
+      returns (QuerySimulateArbitrageResponse) {
+    option (google.api.http).get =
+        "/dysonprotocol/whaleswap/v1/simulate_arbitrage";
+  }
 }
 
 message QueryParamsRequest {}
@@ -899,4 +915,48 @@ message QueryAddressMetricsAllResponse {
   repeated AddressMetrics metrics = 1;
   // Pagination metadata for result set navigation
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// --- Arbitrage simulation ---
+
+message QuerySimulateArbitrageRequest {
+  // Trader address to use for simulation; must be a valid bech32 address
+  string trader = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // List of denoms affected (e.g., from a pool update). Arbitrage detection
+  // starts from pools containing these denoms.
+  repeated string affected_denoms = 2;
+  // Reference denom to measure profit in (typically the chain's base denom)
+  string ref_denom = 3;
+  // Number of hops to expand pool graph (0 = only direct pools, 1 = include
+  // neighbor pools, etc.)
+  int32 depth = 4;
+  // Maximum fraction of pool reserve to swap (e.g., 0.1 = 10%)
+  string max_fraction = 5 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+}
+
+message QuerySimulateArbitrageResponse {
+  // Whether a profitable arbitrage opportunity was found
+  bool found = 1;
+  // Number of pools in the arbitrage graph
+  int32 pool_count = 2;
+  // All denoms discovered in the pool graph
+  repeated string denoms = 3;
+  // Simulated profit in ref_denom (only if found=true)
+  string profit = 4;
+  // Net inputs the trader would need to provide (ideally empty for circular
+  // arb)
+  repeated cosmos.base.v1beta1.Coin trader_inputs = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  // Net outputs the trader would receive
+  repeated cosmos.base.v1beta1.Coin trader_outputs = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  // Swap amounts per pool (signed: positive = sell denom0, negative = sell
+  // denom1)
+  repeated int64 swap_amounts = 7;
+  // Pool IDs in the arbitrage graph (corresponds to swap_amounts indices)
+  repeated uint64 pool_ids = 8;
 }
