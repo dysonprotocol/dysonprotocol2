@@ -1347,7 +1347,1223 @@ def demo_circular_arb(alice_addr, foo_name, bar_name, qux_name):
     # Verify pool_ids are populated
     assert len(demo_result["pool_ids"]) == 3, f"Should have 3 pool IDs: {demo_result}"
 
-    # With binary search optimizer, should find profitable arbitrage
+    # With ternary search optimizer, should find profitable arbitrage
     assert demo_result["found"], f"Should find arbitrage: {demo_result}"
     assert int(demo_result["profit"]) > 0, f"Should have profit: {demo_result}"
     assert len(demo_result["trader_outputs"]) > 0, f"Should have outputs: {demo_result}"
+
+
+def test_optimizer_grid_search_no_profit(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """
+    Test GridSearchOptimizer returns found=false when no profitable opportunity.
+
+    Creates balanced pools where no arbitrage exists.
+
+    Covers arbitrage_optimizer.go:
+    - GridSearchOptimizer.Optimize lines 46-120
+    - bestValue <= 0 path (line 115-117)
+    """
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+    qux_name = leverage_names_and_coins["qux_name"]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_balanced_pools(alice_addr, foo_name, bar_name, qux_name):
+    # Create balanced pools - no arbitrage opportunity
+    # All at same ratio: 10000:10000 (1:1)
+    
+    base_fb, quote_fb = sorted([foo_name, bar_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": foo_name, "amount": "10000"},
+            {"denom": bar_name, "amount": "10000"}
+        ],
+        "fee_rate": [
+            {"denom": base_fb, "amount": "0.003"},
+            {"denom": quote_fb, "amount": "0.003"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_fb, "amount": "1.5"},
+            {"denom": quote_fb, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_fb, "amount": "1.2"},
+            {"denom": quote_fb, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_fb, "amount": "0.8"},
+            {"denom": quote_fb, "amount": "0.8"}
+        ]
+    })
+    
+    base_bq, quote_bq = sorted([bar_name, qux_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": bar_name, "amount": "10000"},
+            {"denom": qux_name, "amount": "10000"}
+        ],
+        "fee_rate": [
+            {"denom": base_bq, "amount": "0.003"},
+            {"denom": quote_bq, "amount": "0.003"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_bq, "amount": "1.5"},
+            {"denom": quote_bq, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_bq, "amount": "1.2"},
+            {"denom": quote_bq, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_bq, "amount": "0.8"},
+            {"denom": quote_bq, "amount": "0.8"}
+        ]
+    })
+    
+    base_qf, quote_qf = sorted([qux_name, foo_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": qux_name, "amount": "10000"},
+            {"denom": foo_name, "amount": "10000"}
+        ],
+        "fee_rate": [
+            {"denom": base_qf, "amount": "0.003"},
+            {"denom": quote_qf, "amount": "0.003"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_qf, "amount": "1.5"},
+            {"denom": quote_qf, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_qf, "amount": "1.2"},
+            {"denom": quote_qf, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_qf, "amount": "0.8"},
+            {"denom": quote_qf, "amount": "0.8"}
+        ]
+    })
+    
+    # Query arbitrage - should find no profit with balanced pools
+    arb_result = _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
+        "trader": alice_addr,
+        "affected_denoms": [foo_name, bar_name],
+        "ref_denom": foo_name,
+        "depth": 1,
+        "max_fraction": "0.5"
+    })
+    
+    return {
+        "found": arb_result.get("found", False),
+        "pool_count": arb_result.get("pool_count", 0),
+        "profit": arb_result.get("profit", "0")
+    }
+"""
+
+    kwargs = json.dumps(
+        {
+            "alice_addr": alice_addr,
+            "foo_name": foo_name,
+            "bar_name": bar_name,
+            "qux_name": qux_name,
+        }
+    )
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_balanced_pools",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script failed: {query_result.get('exception')}"
+
+    demo_result = result["result"]["result"]
+
+    # Should find 3 pools but no profitable arbitrage
+    assert demo_result["pool_count"] == 3, f"Should find 3 pools: {demo_result}"
+    # Balanced pools with fees = no profit
+    assert not demo_result[
+        "found"
+    ], f"Should not find arb in balanced pools: {demo_result}"
+
+
+def test_optimizer_with_many_pools(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """
+    Test optimizer behavior with more than MaxPools (4) pools.
+
+    Creates 5 pools to trigger activeDims limiting in optimizers.
+
+    Covers arbitrage_optimizer.go:
+    - GridSearchOptimizer lines 57-60 (activeDims > MaxPools)
+    - NelderMeadOptimizer lines 152-155 (n > MaxPools)
+    - TernarySearchOptimizer lines 409-412 (activeDims > MaxPools)
+    """
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+    qux_name = leverage_names_and_coins["qux_name"]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_many_pools(alice_addr, foo_name, bar_name, qux_name):
+    # Create 5 pools to exceed MaxPools (4)
+    # Use skewed ratios for profit opportunity
+    
+    # Pool 1: foo-bar (100:100000)
+    base_fb, quote_fb = sorted([foo_name, bar_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": foo_name, "amount": "100"},
+            {"denom": bar_name, "amount": "100000"}
+        ],
+        "fee_rate": [
+            {"denom": base_fb, "amount": "0.001"},
+            {"denom": quote_fb, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_fb, "amount": "1.5"},
+            {"denom": quote_fb, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_fb, "amount": "1.2"},
+            {"denom": quote_fb, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_fb, "amount": "0.8"},
+            {"denom": quote_fb, "amount": "0.8"}
+        ]
+    })
+    
+    # Pool 2: bar-qux (100:100000)
+    base_bq, quote_bq = sorted([bar_name, qux_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": bar_name, "amount": "100"},
+            {"denom": qux_name, "amount": "100000"}
+        ],
+        "fee_rate": [
+            {"denom": base_bq, "amount": "0.001"},
+            {"denom": quote_bq, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_bq, "amount": "1.5"},
+            {"denom": quote_bq, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_bq, "amount": "1.2"},
+            {"denom": quote_bq, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_bq, "amount": "0.8"},
+            {"denom": quote_bq, "amount": "0.8"}
+        ]
+    })
+    
+    # Pool 3: qux-foo (100:110000)
+    base_qf, quote_qf = sorted([qux_name, foo_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": qux_name, "amount": "100"},
+            {"denom": foo_name, "amount": "110000"}
+        ],
+        "fee_rate": [
+            {"denom": base_qf, "amount": "0.001"},
+            {"denom": quote_qf, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_qf, "amount": "1.5"},
+            {"denom": quote_qf, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_qf, "amount": "1.2"},
+            {"denom": quote_qf, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_qf, "amount": "0.8"},
+            {"denom": quote_qf, "amount": "0.8"}
+        ]
+    })
+    
+    # Pool 4: foo-bar (different ratio)
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": foo_name, "amount": "1000"},
+            {"denom": bar_name, "amount": "50000"}
+        ],
+        "fee_rate": [
+            {"denom": base_fb, "amount": "0.001"},
+            {"denom": quote_fb, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_fb, "amount": "1.5"},
+            {"denom": quote_fb, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_fb, "amount": "1.2"},
+            {"denom": quote_fb, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_fb, "amount": "0.8"},
+            {"denom": quote_fb, "amount": "0.8"}
+        ]
+    })
+    
+    # Pool 5: bar-qux (different ratio)
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": bar_name, "amount": "1000"},
+            {"denom": qux_name, "amount": "50000"}
+        ],
+        "fee_rate": [
+            {"denom": base_bq, "amount": "0.001"},
+            {"denom": quote_bq, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_bq, "amount": "1.5"},
+            {"denom": quote_bq, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_bq, "amount": "1.2"},
+            {"denom": quote_bq, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_bq, "amount": "0.8"},
+            {"denom": quote_bq, "amount": "0.8"}
+        ]
+    })
+    
+    # Query with depth 2 to get more pools
+    arb_result = _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
+        "trader": alice_addr,
+        "affected_denoms": [foo_name, bar_name],
+        "ref_denom": foo_name,
+        "depth": 2,
+        "max_fraction": "0.5"
+    })
+    
+    return {
+        "found": arb_result.get("found", False),
+        "pool_count": arb_result.get("pool_count", 0),
+        "profit": arb_result.get("profit", "0"),
+        "swap_amounts": arb_result.get("swap_amounts", [])
+    }
+"""
+
+    kwargs = json.dumps(
+        {
+            "alice_addr": alice_addr,
+            "foo_name": foo_name,
+            "bar_name": bar_name,
+            "qux_name": qux_name,
+        }
+    )
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_many_pools",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script failed: {query_result.get('exception')}"
+
+    demo_result = result["result"]["result"]
+
+    # Should find 5 pools (exceeds MaxPools limit of 4)
+    assert demo_result["pool_count"] == 5, f"Should find 5 pools: {demo_result}"
+    # Should still find arbitrage despite pool limit
+    assert demo_result["found"], f"Should find arb: {demo_result}"
+
+
+def test_optimizer_nelder_mead_convergence(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """
+    Test NelderMead optimizer converges properly with refinement.
+
+    Creates moderate skew where NelderMead refinement helps.
+
+    Covers arbitrage_optimizer.go:
+    - NelderMeadOptimizer.Optimize lines 141-316
+    - Expansion path (lines 250-270)
+    - Contraction path (lines 278-294)
+    - Shrink path (lines 296-302)
+    - Convergence check (lines 218-220)
+    """
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+    qux_name = leverage_names_and_coins["qux_name"]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_moderate_skew(alice_addr, foo_name, bar_name, qux_name):
+    # Create pools with moderate skew - requires refinement to find optimal
+    # Ratios: 100:50000 (1:500), 100:60000 (1:600), 100:55000 (1:550)
+    
+    base_fb, quote_fb = sorted([foo_name, bar_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": foo_name, "amount": "100"},
+            {"denom": bar_name, "amount": "50000"}
+        ],
+        "fee_rate": [
+            {"denom": base_fb, "amount": "0.001"},
+            {"denom": quote_fb, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_fb, "amount": "1.5"},
+            {"denom": quote_fb, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_fb, "amount": "1.2"},
+            {"denom": quote_fb, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_fb, "amount": "0.8"},
+            {"denom": quote_fb, "amount": "0.8"}
+        ]
+    })
+    
+    base_bq, quote_bq = sorted([bar_name, qux_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": bar_name, "amount": "100"},
+            {"denom": qux_name, "amount": "60000"}
+        ],
+        "fee_rate": [
+            {"denom": base_bq, "amount": "0.001"},
+            {"denom": quote_bq, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_bq, "amount": "1.5"},
+            {"denom": quote_bq, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_bq, "amount": "1.2"},
+            {"denom": quote_bq, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_bq, "amount": "0.8"},
+            {"denom": quote_bq, "amount": "0.8"}
+        ]
+    })
+    
+    base_qf, quote_qf = sorted([qux_name, foo_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": qux_name, "amount": "100"},
+            {"denom": foo_name, "amount": "55000"}
+        ],
+        "fee_rate": [
+            {"denom": base_qf, "amount": "0.001"},
+            {"denom": quote_qf, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_qf, "amount": "1.5"},
+            {"denom": quote_qf, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_qf, "amount": "1.2"},
+            {"denom": quote_qf, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_qf, "amount": "0.8"},
+            {"denom": quote_qf, "amount": "0.8"}
+        ]
+    })
+    
+    arb_result = _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
+        "trader": alice_addr,
+        "affected_denoms": [foo_name, bar_name],
+        "ref_denom": foo_name,
+        "depth": 1,
+        "max_fraction": "0.5"
+    })
+    
+    return {
+        "found": arb_result.get("found", False),
+        "pool_count": arb_result.get("pool_count", 0),
+        "profit": arb_result.get("profit", "0")
+    }
+"""
+
+    kwargs = json.dumps(
+        {
+            "alice_addr": alice_addr,
+            "foo_name": foo_name,
+            "bar_name": bar_name,
+            "qux_name": qux_name,
+        }
+    )
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_moderate_skew",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script failed: {query_result.get('exception')}"
+
+    demo_result = result["result"]["result"]
+
+    assert demo_result["pool_count"] == 3, f"Should find 3 pools: {demo_result}"
+    # Moderate skew should still yield profit
+    assert demo_result["found"], f"Should find arb with moderate skew: {demo_result}"
+
+
+def test_optimizer_ternary_search_dimensions(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """
+    Test TernarySearchOptimizer coordinate descent across dimensions.
+
+    Creates pools that require searching multiple dimensions.
+
+    Covers arbitrage_optimizer.go:
+    - TernarySearchOptimizer.Optimize lines 398-474
+    - Ternary search loop (lines 428-449)
+    - v1 > v2 branch (lines 444-445)
+    - v1 <= v2 branch (lines 446-448)
+    - improved check (lines 457-460)
+    - !improved break (lines 463-465)
+    """
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+    qux_name = leverage_names_and_coins["qux_name"]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_ternary_dimensions(alice_addr, foo_name, bar_name, qux_name):
+    # Create asymmetric pools where ternary search must explore both branches
+    # Different skews require different optimal amounts per pool
+    
+    base_fb, quote_fb = sorted([foo_name, bar_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": foo_name, "amount": "200"},
+            {"denom": bar_name, "amount": "100000"}
+        ],
+        "fee_rate": [
+            {"denom": base_fb, "amount": "0.001"},
+            {"denom": quote_fb, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_fb, "amount": "1.5"},
+            {"denom": quote_fb, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_fb, "amount": "1.2"},
+            {"denom": quote_fb, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_fb, "amount": "0.8"},
+            {"denom": quote_fb, "amount": "0.8"}
+        ]
+    })
+    
+    base_bq, quote_bq = sorted([bar_name, qux_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": bar_name, "amount": "150"},
+            {"denom": qux_name, "amount": "100000"}
+        ],
+        "fee_rate": [
+            {"denom": base_bq, "amount": "0.001"},
+            {"denom": quote_bq, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_bq, "amount": "1.5"},
+            {"denom": quote_bq, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_bq, "amount": "1.2"},
+            {"denom": quote_bq, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_bq, "amount": "0.8"},
+            {"denom": quote_bq, "amount": "0.8"}
+        ]
+    })
+    
+    base_qf, quote_qf = sorted([qux_name, foo_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": qux_name, "amount": "100"},
+            {"denom": foo_name, "amount": "120000"}
+        ],
+        "fee_rate": [
+            {"denom": base_qf, "amount": "0.001"},
+            {"denom": quote_qf, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_qf, "amount": "1.5"},
+            {"denom": quote_qf, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_qf, "amount": "1.2"},
+            {"denom": quote_qf, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_qf, "amount": "0.8"},
+            {"denom": quote_qf, "amount": "0.8"}
+        ]
+    })
+    
+    arb_result = _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
+        "trader": alice_addr,
+        "affected_denoms": [foo_name, bar_name],
+        "ref_denom": foo_name,
+        "depth": 1,
+        "max_fraction": "0.5"
+    })
+    
+    return {
+        "found": arb_result.get("found", False),
+        "pool_count": arb_result.get("pool_count", 0),
+        "profit": arb_result.get("profit", "0"),
+        "swap_amounts": arb_result.get("swap_amounts", [])
+    }
+"""
+
+    kwargs = json.dumps(
+        {
+            "alice_addr": alice_addr,
+            "foo_name": foo_name,
+            "bar_name": bar_name,
+            "qux_name": qux_name,
+        }
+    )
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_ternary_dimensions",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script failed: {query_result.get('exception')}"
+
+    demo_result = result["result"]["result"]
+
+    assert demo_result["pool_count"] == 3, f"Should find 3 pools: {demo_result}"
+    assert demo_result["found"], f"Should find arb: {demo_result}"
+    assert int(demo_result["profit"]) > 0, f"Should have profit: {demo_result}"
+
+
+def test_optimizer_hybrid_fallback_to_grid(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """
+    Test HybridOptimizer falls back to GridSearch when Ternary fails.
+
+    Creates scenario where initial ternary search doesn't find profit.
+
+    Covers arbitrage_optimizer.go:
+    - HybridOptimizer.Optimize lines 344-375
+    - Fallback to GridSearch (lines 363-372)
+    - Grid result refinement (lines 367-370)
+    """
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+    qux_name = leverage_names_and_coins["qux_name"]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_hybrid_fallback(alice_addr, foo_name, bar_name, qux_name):
+    # Create pools with small reserves - GridSearch might find profit
+    # that TernarySearch misses due to starting from center
+    
+    base_fb, quote_fb = sorted([foo_name, bar_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": foo_name, "amount": "50"},
+            {"denom": bar_name, "amount": "50000"}
+        ],
+        "fee_rate": [
+            {"denom": base_fb, "amount": "0.001"},
+            {"denom": quote_fb, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_fb, "amount": "1.5"},
+            {"denom": quote_fb, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_fb, "amount": "1.2"},
+            {"denom": quote_fb, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_fb, "amount": "0.8"},
+            {"denom": quote_fb, "amount": "0.8"}
+        ]
+    })
+    
+    base_bq, quote_bq = sorted([bar_name, qux_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": bar_name, "amount": "50"},
+            {"denom": qux_name, "amount": "50000"}
+        ],
+        "fee_rate": [
+            {"denom": base_bq, "amount": "0.001"},
+            {"denom": quote_bq, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_bq, "amount": "1.5"},
+            {"denom": quote_bq, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_bq, "amount": "1.2"},
+            {"denom": quote_bq, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_bq, "amount": "0.8"},
+            {"denom": quote_bq, "amount": "0.8"}
+        ]
+    })
+    
+    base_qf, quote_qf = sorted([qux_name, foo_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": qux_name, "amount": "50"},
+            {"denom": foo_name, "amount": "55000"}
+        ],
+        "fee_rate": [
+            {"denom": base_qf, "amount": "0.001"},
+            {"denom": quote_qf, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_qf, "amount": "1.5"},
+            {"denom": quote_qf, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_qf, "amount": "1.2"},
+            {"denom": quote_qf, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_qf, "amount": "0.8"},
+            {"denom": quote_qf, "amount": "0.8"}
+        ]
+    })
+    
+    arb_result = _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
+        "trader": alice_addr,
+        "affected_denoms": [foo_name, bar_name],
+        "ref_denom": foo_name,
+        "depth": 1,
+        "max_fraction": "0.3"
+    })
+    
+    return {
+        "found": arb_result.get("found", False),
+        "pool_count": arb_result.get("pool_count", 0),
+        "profit": arb_result.get("profit", "0")
+    }
+"""
+
+    kwargs = json.dumps(
+        {
+            "alice_addr": alice_addr,
+            "foo_name": foo_name,
+            "bar_name": bar_name,
+            "qux_name": qux_name,
+        }
+    )
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_hybrid_fallback",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script failed: {query_result.get('exception')}"
+
+    demo_result = result["result"]["result"]
+
+    assert demo_result["pool_count"] == 3, f"Should find 3 pools: {demo_result}"
+    # The hybrid optimizer should find profit via some path
+    assert demo_result["found"], f"Hybrid should find arb: {demo_result}"
+
+
+def test_optimizer_nelder_mead_with_initial_guess(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """
+    Test NelderMead optimizer with initial guess from TernarySearch.
+
+    Creates profitable scenario where NelderMead refines TernarySearch result.
+
+    Covers arbitrage_optimizer.go:
+    - NelderMeadOptimizer.Optimize lines 124-296
+    - Initial guess path (lines 159-160 vs 161-164)
+    - Expansion path (lines 233-253)
+    - Accept reflection path (lines 255-258)
+    """
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+    qux_name = leverage_names_and_coins["qux_name"]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_nelder_mead_initial(alice_addr, foo_name, bar_name, qux_name):
+    # Create pools with moderate reserves for NelderMead to explore
+    # Extreme skew ensures profit
+    
+    base_fb, quote_fb = sorted([foo_name, bar_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": foo_name, "amount": "200"},
+            {"denom": bar_name, "amount": "100000"}
+        ],
+        "fee_rate": [
+            {"denom": base_fb, "amount": "0.001"},
+            {"denom": quote_fb, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_fb, "amount": "1.5"},
+            {"denom": quote_fb, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_fb, "amount": "1.2"},
+            {"denom": quote_fb, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_fb, "amount": "0.8"},
+            {"denom": quote_fb, "amount": "0.8"}
+        ]
+    })
+    
+    base_bq, quote_bq = sorted([bar_name, qux_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": bar_name, "amount": "150"},
+            {"denom": qux_name, "amount": "100000"}
+        ],
+        "fee_rate": [
+            {"denom": base_bq, "amount": "0.001"},
+            {"denom": quote_bq, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_bq, "amount": "1.5"},
+            {"denom": quote_bq, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_bq, "amount": "1.2"},
+            {"denom": quote_bq, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_bq, "amount": "0.8"},
+            {"denom": quote_bq, "amount": "0.8"}
+        ]
+    })
+    
+    base_qf, quote_qf = sorted([qux_name, foo_name])
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": qux_name, "amount": "100"},
+            {"denom": foo_name, "amount": "120000"}
+        ],
+        "fee_rate": [
+            {"denom": base_qf, "amount": "0.001"},
+            {"denom": quote_qf, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_qf, "amount": "1.5"},
+            {"denom": quote_qf, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_qf, "amount": "1.2"},
+            {"denom": quote_qf, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_qf, "amount": "0.8"},
+            {"denom": quote_qf, "amount": "0.8"}
+        ]
+    })
+    
+    arb_result = _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
+        "trader": alice_addr,
+        "affected_denoms": [foo_name, bar_name],
+        "ref_denom": foo_name,
+        "depth": 1,
+        "max_fraction": "0.8"
+    })
+    
+    return {
+        "found": arb_result.get("found", False),
+        "pool_count": arb_result.get("pool_count", 0),
+        "profit": arb_result.get("profit", "0")
+    }
+"""
+
+    kwargs = json.dumps(
+        {
+            "alice_addr": alice_addr,
+            "foo_name": foo_name,
+            "bar_name": bar_name,
+            "qux_name": qux_name,
+        }
+    )
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_nelder_mead_initial",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script failed: {query_result.get('exception')}"
+
+    demo_result = result["result"]["result"]
+
+    assert demo_result["pool_count"] == 3, f"Should find 3 pools: {demo_result}"
+    assert demo_result["found"], f"Should find arb: {demo_result}"
+    assert int(demo_result["profit"]) > 0, f"Should have profit: {demo_result}"
+
+
+def test_optimizer_two_pools_only(
+    chainnet, leverage_accounts, leverage_names_and_coins
+):
+    """
+    Test optimizer with exactly 2 pools (minimum for arbitrage).
+
+    Covers arbitrage_optimizer.go edge cases with small pool counts:
+    - activeDims = 2 paths in all optimizers
+    - Simpler convergence patterns
+    """
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_two_pools(alice_addr, foo_name, bar_name):
+    # Create just 2 pools - foo-bar with different ratios
+    # This tests minimum viable arbitrage scenario
+    
+    base_fb, quote_fb = sorted([foo_name, bar_name])
+    
+    # Pool 1: foo-bar at 100:100000 (1:1000)
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": foo_name, "amount": "100"},
+            {"denom": bar_name, "amount": "100000"}
+        ],
+        "fee_rate": [
+            {"denom": base_fb, "amount": "0.001"},
+            {"denom": quote_fb, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_fb, "amount": "1.5"},
+            {"denom": quote_fb, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_fb, "amount": "1.2"},
+            {"denom": quote_fb, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_fb, "amount": "0.8"},
+            {"denom": quote_fb, "amount": "0.8"}
+        ]
+    })
+    
+    # Pool 2: foo-bar at 110000:100 (1100:1) - opposite skew!
+    _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+        "creator": alice_addr,
+        "coins": [
+            {"denom": foo_name, "amount": "110000"},
+            {"denom": bar_name, "amount": "100"}
+        ],
+        "fee_rate": [
+            {"denom": base_fb, "amount": "0.001"},
+            {"denom": quote_fb, "amount": "0.001"}
+        ],
+        "min_initial_collateral_ratio": [
+            {"denom": base_fb, "amount": "1.5"},
+            {"denom": quote_fb, "amount": "1.5"}
+        ],
+        "interest_rate": [],
+        "liquidation_threshold": [
+            {"denom": base_fb, "amount": "1.2"},
+            {"denom": quote_fb, "amount": "1.2"}
+        ],
+        "max_borrow_percent": [
+            {"denom": base_fb, "amount": "0.8"},
+            {"denom": quote_fb, "amount": "0.8"}
+        ]
+    })
+    
+    arb_result = _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
+        "trader": alice_addr,
+        "affected_denoms": [foo_name, bar_name],
+        "ref_denom": foo_name,
+        "depth": 0,
+        "max_fraction": "0.5"
+    })
+    
+    return {
+        "found": arb_result.get("found", False),
+        "pool_count": arb_result.get("pool_count", 0),
+        "profit": arb_result.get("profit", "0")
+    }
+"""
+
+    kwargs = json.dumps(
+        {
+            "alice_addr": alice_addr,
+            "foo_name": foo_name,
+            "bar_name": bar_name,
+        }
+    )
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_two_pools",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script failed: {query_result.get('exception')}"
+
+    demo_result = result["result"]["result"]
+
+    # Should find 2 pools with arbitrage opportunity
+    assert demo_result["pool_count"] == 2, f"Should find 2 pools: {demo_result}"
+    assert demo_result["found"], f"Should find arb with 2 pools: {demo_result}"

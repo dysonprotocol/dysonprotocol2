@@ -34,14 +34,6 @@ type GridSearchOptimizer struct {
 	MaxPools int
 }
 
-// NewGridSearchOptimizer creates a grid search optimizer with default settings.
-func NewGridSearchOptimizer() *GridSearchOptimizer {
-	return &GridSearchOptimizer{
-		GridPoints: 7, // 7 points: -max, -2/3*max, -1/3*max, 0, 1/3*max, 2/3*max, max
-		MaxPools:   4, // limit to 4 pools to keep evaluations manageable (7^4 = 2401)
-	}
-}
-
 // Optimize implements ArbitrageOptimizer using grid search.
 func (g *GridSearchOptimizer) Optimize(
 	objective func([]float64) float64,
@@ -125,15 +117,6 @@ type NelderMeadOptimizer struct {
 	MaxIterations int
 	Tolerance     float64
 	MaxPools      int // limit active dimensions
-}
-
-// NewNelderMeadOptimizer creates a Nelder-Mead optimizer.
-func NewNelderMeadOptimizer() *NelderMeadOptimizer {
-	return &NelderMeadOptimizer{
-		MaxIterations: 100,
-		Tolerance:     1.0, // 1 unit of denom tolerance
-		MaxPools:      8,   // can handle more pools than grid search
-	}
 }
 
 // Optimize implements ArbitrageOptimizer using Nelder-Mead.
@@ -243,37 +226,39 @@ func (nm *NelderMeadOptimizer) Optimize(
 		}
 		reflectedVal := -evalFull(reflected)
 
-		if reflectedVal >= values[0] && reflectedVal < values[n-1] {
-			// Accept reflection
+		// Accept reflection if better than worst (standard NM accepts if better than second-worst,
+		// but being more permissive helps exploration in bounded spaces)
+		if reflectedVal < values[n] {
+			// Check if we should try expansion (reflected is best so far)
+			if reflectedVal < values[0] {
+				// Try expansion
+				expanded := make([]float64, n)
+				for i := 0; i < n; i++ {
+					expanded[i] = centroid[i] + gamma*(reflected[i]-centroid[i])
+					if expanded[i] < bounds.Lower[i] {
+						expanded[i] = bounds.Lower[i]
+					}
+					if expanded[i] > bounds.Upper[i] {
+						expanded[i] = bounds.Upper[i]
+					}
+				}
+				expandedVal := -evalFull(expanded)
+				if expandedVal < reflectedVal {
+					copy(simplex[n], expanded)
+					values[n] = expandedVal
+				} else {
+					copy(simplex[n], reflected)
+					values[n] = reflectedVal
+				}
+				continue
+			}
+			// Accept reflection (better than worst but not best)
 			copy(simplex[n], reflected)
 			values[n] = reflectedVal
 			continue
 		}
 
-		if reflectedVal < values[0] {
-			// Try expansion
-			expanded := make([]float64, n)
-			for i := 0; i < n; i++ {
-				expanded[i] = centroid[i] + gamma*(reflected[i]-centroid[i])
-				if expanded[i] < bounds.Lower[i] {
-					expanded[i] = bounds.Lower[i]
-				}
-				if expanded[i] > bounds.Upper[i] {
-					expanded[i] = bounds.Upper[i]
-				}
-			}
-			expandedVal := -evalFull(expanded)
-			if expandedVal < reflectedVal {
-				copy(simplex[n], expanded)
-				values[n] = expandedVal
-			} else {
-				copy(simplex[n], reflected)
-				values[n] = reflectedVal
-			}
-			continue
-		}
-
-		// Contraction
+		// Contraction (reflection was not better than worst)
 		contracted := make([]float64, n)
 		for i := 0; i < n; i++ {
 			contracted[i] = centroid[i] + rho*(simplex[n][i]-centroid[i])
@@ -313,7 +298,7 @@ func (nm *NelderMeadOptimizer) Optimize(
 	return result, bestValue, true
 }
 
-// HybridOptimizer uses BinarySearch to find profitable direction,
+// HybridOptimizer uses TernarySearch to find optimal amounts,
 // then Nelder-Mead to refine to local maximum.
 // This is the optimal strategy for whaleswap arbitrage.
 type HybridOptimizer struct {
@@ -337,28 +322,28 @@ func NewHybridOptimizer() *HybridOptimizer {
 }
 
 // Optimize implements ArbitrageOptimizer using hybrid approach:
-// 1. BinarySearch finds ANY profitable direction fast
+// 1. TernarySearch finds optimal via coordinate descent
 // 2. NelderMead polishes to true local maximum
 func (h *HybridOptimizer) Optimize(
 	objective func([]float64) float64,
 	bounds OptimizationBounds,
 	initialGuess []float64,
 ) (optimal []float64, value float64, found bool) {
-	// Phase 1: BinarySearch finds a profitable direction quickly
-	bs := NewBinarySearchOptimizer()
-	bsResult, bsValue, bsFound := bs.Optimize(objective, bounds, initialGuess)
+	// Phase 1: TernarySearch (coordinate descent) finds a good solution
+	ts := &TernarySearchOptimizer{MaxIterations: 10, MaxPools: 4}
+	tsResult, tsValue, tsFound := ts.Optimize(objective, bounds, initialGuess)
 
-	if bsFound && bsValue > 0 {
+	if tsFound && tsValue > 0 {
 		// Phase 2: NelderMead refines the result
-		refined, refinedVal, refinedOk := h.NelderMead.Optimize(objective, bounds, bsResult)
-		if refinedOk && refinedVal > bsValue {
+		refined, refinedVal, refinedOk := h.NelderMead.Optimize(objective, bounds, tsResult)
+		if refinedOk && refinedVal > tsValue {
 			return refined, refinedVal, true
 		}
 		// Refinement didn't improve - return original
-		return bsResult, bsValue, true
+		return tsResult, tsValue, true
 	}
 
-	// Fallback: GridSearch if BinarySearch found nothing
+	// Fallback: GridSearch if TernarySearch found nothing
 	gridResult, gridValue, gridFound := h.Grid.Optimize(objective, bounds, initialGuess)
 	if gridFound && gridValue > 0 {
 		// Try to refine grid result too
@@ -372,30 +357,20 @@ func (h *HybridOptimizer) Optimize(
 	return nil, 0, false
 }
 
-// BinarySearchOptimizer finds arbitrage opportunities for whaleswap.
+// TernarySearchOptimizer uses coordinate descent with ternary search per dimension.
+// More robust than BinarySearch as it optimizes each dimension independently.
 //
 // Key insight: Whaleswap's self-netting means pool order doesn't matter
 // and no cycle is needed. Any set of swaps with net positive output is profit.
-//
-// Strategy:
-// 1. Test small amounts in various directions to find ANY profit
-// 2. Exponentially scale until profit peaks
-// 3. Binary search to pinpoint optimal amount
-type BinarySearchOptimizer struct {
-	MaxPools      int
+type TernarySearchOptimizer struct {
 	MaxIterations int
+	MaxPools      int
 }
 
-// NewBinarySearchOptimizer creates a binary search optimizer.
-func NewBinarySearchOptimizer() *BinarySearchOptimizer {
-	return &BinarySearchOptimizer{
-		MaxPools:      4,
-		MaxIterations: 20,
-	}
-}
-
-// Optimize implements ArbitrageOptimizer using binary search approach.
-func (bs *BinarySearchOptimizer) Optimize(
+// Optimize implements ArbitrageOptimizer using coordinate ternary search.
+// For each dimension, performs ternary search to find optimal value while
+// holding other dimensions fixed. Iterates until convergence.
+func (t *TernarySearchOptimizer) Optimize(
 	objective func([]float64) float64,
 	bounds OptimizationBounds,
 	initialGuess []float64,
@@ -407,186 +382,68 @@ func (bs *BinarySearchOptimizer) Optimize(
 
 	// Limit dimensions
 	activeDims := n
-	if activeDims > bs.MaxPools {
-		activeDims = bs.MaxPools
+	if activeDims > t.MaxPools {
+		activeDims = t.MaxPools
 	}
 
-	// Phase 1: Find a profitable direction by testing small amounts
-	// Try each combination of directions (2^n combinations for n pools)
-	bestPoint := make([]float64, n)
-	bestValue := -1e18
+	// Start from center of bounds
+	x := make([]float64, n)
+	for i := 0; i < activeDims; i++ {
+		x[i] = (bounds.Lower[i] + bounds.Upper[i]) / 2
+	}
 
-	// Generate direction combinations: each pool can go +1 or -1 or 0
-	// For efficiency, just try: all positive, all negative, and alternating
-	directionSets := bs.generateDirections(activeDims)
+	// Coordinate descent with ternary search
+	for iter := 0; iter < t.MaxIterations; iter++ {
+		improved := false
 
-	// Try different starting amounts: 1, 5, 10, 20 to find any profit
-	startAmounts := []float64{1, 5, 10, 20, 50}
+		for i := 0; i < activeDims; i++ {
+			lo, hi := bounds.Lower[i], bounds.Upper[i]
 
-	for _, dirs := range directionSets {
-		for _, startAmt := range startAmounts {
-			point := make([]float64, n)
-			for i := 0; i < activeDims; i++ {
-				point[i] = float64(dirs[i]) * startAmt
-			}
+			// Ternary search on dimension i
+			for hi-lo > 1.0 {
+				m1 := lo + (hi-lo)/3
+				m2 := hi - (hi-lo)/3
 
-			val := objective(point)
-			if val > 0 {
-				// Found profit! Now scale up to find optimal
-				scaledPoint, scaledVal := bs.scaleToOptimal(objective, point, bounds, activeDims)
-				if scaledVal > bestValue {
-					bestValue = scaledVal
-					copy(bestPoint, scaledPoint)
+				// Evaluate at m1
+				x1 := make([]float64, n)
+				copy(x1, x)
+				x1[i] = m1
+				v1 := objective(x1)
+
+				// Evaluate at m2
+				x2 := make([]float64, n)
+				copy(x2, x)
+				x2[i] = m2
+				v2 := objective(x2)
+
+				if v1 > v2 {
+					hi = m2
+				} else {
+					lo = m1
 				}
 			}
-		}
-	}
 
-	if bestValue <= 0 {
-		return nil, bestValue, false
-	}
+			// Test the midpoint
+			mid := (lo + hi) / 2
+			xtest := make([]float64, n)
+			copy(xtest, x)
+			xtest[i] = mid
 
-	return bestPoint, bestValue, true
-}
-
-// generateDirections creates direction combinations to try.
-// Returns slice of direction vectors where each element is -1, 0, or +1.
-func (bs *BinarySearchOptimizer) generateDirections(n int) [][]int {
-	// Whaleswap arbitrage: pool order doesn't matter, no cycle needed!
-	// Due to self-netting, ANY set of swaps that results in net positive
-	// coins is valid arbitrage. We explore various direction combinations.
-	dirs := make([][]int, 0)
-
-	// Try all positive (sell denom0 in each pool)
-	allPos := make([]int, n)
-	for i := range allPos {
-		allPos[i] = 1
-	}
-	dirs = append(dirs, allPos)
-
-	// Try all negative (sell denom1 in each pool)
-	allNeg := make([]int, n)
-	for i := range allNeg {
-		allNeg[i] = -1
-	}
-	dirs = append(dirs, allNeg)
-
-	// Try alternating patterns
-	alt1 := make([]int, n)
-	alt2 := make([]int, n)
-	for i := range alt1 {
-		if i%2 == 0 {
-			alt1[i] = 1
-			alt2[i] = -1
-		} else {
-			alt1[i] = -1
-			alt2[i] = 1
-		}
-	}
-	dirs = append(dirs, alt1, alt2)
-
-	// For 3 pools, try all 8 combinations of +/- (2^3)
-	if n >= 3 {
-		signs := []int{1, -1}
-		for _, s0 := range signs {
-			for _, s1 := range signs {
-				for _, s2 := range signs {
-					d := make([]int, n)
-					d[0], d[1], d[2] = s0, s1, s2
-					dirs = append(dirs, d)
-				}
-			}
-		}
-	}
-
-	return dirs
-}
-
-// scaleToOptimal scales a profitable direction to find optimal amounts.
-// Uses exponential search then binary search.
-func (bs *BinarySearchOptimizer) scaleToOptimal(
-	objective func([]float64) float64,
-	direction []float64,
-	bounds OptimizationBounds,
-	activeDims int,
-) ([]float64, float64) {
-	n := len(direction)
-
-	// Phase 2: Exponential search - keep doubling until profit decreases
-	scale := 1.0
-	prevVal := objective(direction)
-	prevScale := scale
-
-	for iter := 0; iter < bs.MaxIterations; iter++ {
-		scale *= 2.0
-
-		// Check if we'd exceed bounds
-		exceeded := false
-		for i := 0; i < activeDims; i++ {
-			amt := direction[i] * scale
-			if amt > 0 && amt > bounds.Upper[i] {
-				scale = bounds.Upper[i] / direction[i]
-				exceeded = true
-			} else if amt < 0 && amt < bounds.Lower[i] {
-				scale = bounds.Lower[i] / direction[i]
-				exceeded = true
+			if objective(xtest) > objective(x) {
+				x[i] = mid
+				improved = true
 			}
 		}
 
-		point := make([]float64, n)
-		for i := 0; i < activeDims; i++ {
-			point[i] = direction[i] * scale
-		}
-
-		val := objective(point)
-		if val <= prevVal || exceeded {
-			// Profit decreased or hit bounds - optimal is between prevScale and scale
+		if !improved {
 			break
 		}
-		prevVal = val
-		prevScale = scale
 	}
 
-	// Phase 3: Binary search between prevScale and scale
-	lowScale := prevScale
-	highScale := scale
-
-	for iter := 0; iter < bs.MaxIterations; iter++ {
-		if highScale-lowScale < 1.0 {
-			break // Close enough
-		}
-
-		midScale := (lowScale + highScale) / 2.0
-		midPoint := make([]float64, n)
-		for i := 0; i < activeDims; i++ {
-			midPoint[i] = direction[i] * midScale
-		}
-		midVal := objective(midPoint)
-
-		// Try slightly higher
-		highMidScale := (midScale + highScale) / 2.0
-		highMidPoint := make([]float64, n)
-		for i := 0; i < activeDims; i++ {
-			highMidPoint[i] = direction[i] * highMidScale
-		}
-		highMidVal := objective(highMidPoint)
-
-		if highMidVal > midVal {
-			// Optimal is in upper half
-			lowScale = midScale
-		} else {
-			// Optimal is in lower half
-			highScale = midScale
-		}
+	val := objective(x)
+	if val <= 0 {
+		return nil, val, false
 	}
 
-	// Return best point found
-	bestScale := (lowScale + highScale) / 2.0
-	bestPoint := make([]float64, n)
-	for i := 0; i < activeDims; i++ {
-		bestPoint[i] = direction[i] * bestScale
-	}
-	bestVal := objective(bestPoint)
-
-	return bestPoint, bestVal
+	return x, val, true
 }
