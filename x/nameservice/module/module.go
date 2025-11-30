@@ -214,6 +214,10 @@ func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
 
 // EndBlock implements the appmodule.HasEndBlocker interface
 func (am AppModule) EndBlock(ctx context.Context) error {
+	// Prune expired commitments to prevent state bloat
+	if err := am.keeper.PruneExpiredCommitments(ctx); err != nil {
+		return fmt.Errorf("failed to prune expired commitments: %w", err)
+	}
 	return nil
 }
 

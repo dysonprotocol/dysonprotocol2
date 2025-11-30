@@ -292,6 +292,32 @@ func (k Keeper) DeleteCommitment(ctx context.Context, hexhash string) error {
 	return k.commitments.Remove(ctx, hexhash)
 }
 
+// PruneExpiredCommitments removes all commitments older than CommitmentTTL.
+// Called from EndBlock to prevent state bloat from abandoned commitments.
+func (k Keeper) PruneExpiredCommitments(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	cutoff := sdkCtx.BlockTime().Add(-CommitmentTTL)
+
+	var toDelete []string
+	if err := k.commitments.Walk(ctx, nil, func(hexhash string, c nameservicev1.Commitment) (bool, error) {
+		if c.Timestamp.Before(cutoff) {
+			toDelete = append(toDelete, hexhash)
+		}
+		return false, nil
+	}); err != nil {
+		return cosmossdkerrors.Wrap(err, "failed to walk commitments for pruning")
+	}
+
+	for _, h := range toDelete {
+		if err := k.commitments.Remove(ctx, h); err != nil {
+			return cosmossdkerrors.Wrapf(err, "failed to prune commitment %s", h)
+		}
+		k.Logger.Info("Pruned expired commitment", "hexhash", h)
+	}
+
+	return nil
+}
+
 // GetAllCommitmentHashes returns all commitment hashes
 func (k Keeper) GetAllCommitmentHashes(ctx context.Context) ([]string, error) {
 	var hashes []string

@@ -76,6 +76,13 @@ func (k Keeper) Reveal(ctx context.Context, msg *nameservicev1.MsgReveal) (*name
 		return nil, cosmossdkerrors.Wrap(err, "commitment not found")
 	}
 
+	// Validate commitment has not expired
+	if sdkCtx.BlockTime().Sub(commitment.Timestamp) > CommitmentTTL {
+		// Delete the expired commitment
+		_ = k.DeleteCommitment(ctx, hexhash)
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "commitment has expired (older than 1 hour)")
+	}
+
 	// Validate committer matches commitment
 	if commitment.Owner != msg.Committer {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrUnauthorized, "committer does not match commitment")

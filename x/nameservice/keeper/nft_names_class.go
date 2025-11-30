@@ -18,6 +18,10 @@ const (
 	NamesClassSymbol      = "DYSNAME"
 	NamesClassDescription = "Dyson Protocol registered names"
 	NamesClassURI         = ""
+
+	// CommitmentTTL is the maximum age of a commitment before it expires.
+	// Commitments older than this are pruned in EndBlock and cannot be revealed.
+	CommitmentTTL = time.Hour
 )
 
 // EnsureNamesClassExists ensures that the "nameservice" NFT class exists

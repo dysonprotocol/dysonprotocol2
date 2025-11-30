@@ -85,6 +85,15 @@ func (k Keeper) Renew(ctx context.Context, msg *nameservicev1.MsgRenew) (*namese
 	if period <= 0 {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "valuation_period not set for class %s", msg.NftClassId)
 	}
+
+	// Prevent pre-paying multiple periods: remaining time must be <= valuation_period
+	remainingTime := nftData.ValuationExpiry.Sub(currentTime)
+	if remainingTime > period {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest,
+			"cannot renew: remaining time (%s) exceeds valuation_period (%s)",
+			remainingTime, period)
+	}
+
 	// Set new expiry to baseline plus valuation_period (never shortens an already-future expiry)
 	newExpiry := baseTime.Add(period)
 
