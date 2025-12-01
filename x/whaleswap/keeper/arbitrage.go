@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	"sort"
 
 	"cosmossdk.io/math"
@@ -504,6 +505,8 @@ func (ac *ArbitrageContext) GetOptimizationBounds() OptimizationBounds {
 //
 // where γᵢ = (1 - feeᵢ). Newton converges in 2-3 iterations.
 // Returns the best initial guess found from detected cycles.
+//
+// Uses affected denoms + one-hop expansion as seeds to capture non-ref-denom cycles.
 func (ac *ArbitrageContext) ComputeClosedFormEstimate() []math.LegacyDec {
 	n := len(ac.Pools) * 2
 	best := make([]math.LegacyDec, n)
@@ -515,9 +518,24 @@ func (ac *ArbitrageContext) ComputeClosedFormEstimate() []math.LegacyDec {
 		return best
 	}
 
-	// Find cycles starting from RefDenom
-	// A cycle is: RefDenom → D1 → D2 → ... → RefDenom
-	cycles := ac.findArbitrageCycles(ac.RefDenom, 4) // max 4-pool cycles
+	// Build seed denoms: RefDenom + all denoms that have multiple pools (hub denoms)
+	// This captures cycles that don't pass through RefDenom
+	seeds := ac.getCycleSeedDenoms()
+
+	// Find cycles from each seed denom
+	var cycles [][]cycleStep
+	seen := make(map[string]bool) // track unique cycles by signature
+	for _, seed := range seeds {
+		seedCycles := ac.findArbitrageCycles(seed, 4) // max 4-pool cycles
+		for _, c := range seedCycles {
+			sig := cycleSignature(c)
+			if !seen[sig] {
+				seen[sig] = true
+				cycles = append(cycles, c)
+			}
+		}
+	}
+
 	if len(cycles) == 0 {
 		return best
 	}
@@ -570,6 +588,63 @@ type cycleStep struct {
 	sellDenom0 bool
 	inDenom    string
 	outDenom   string
+}
+
+// getCycleSeedDenoms returns denoms to use as cycle search starting points.
+// Includes: RefDenom + hub denoms (appearing in 2+ pools) for better coverage.
+// Capped at 10 seeds to avoid excessive search time.
+func (ac *ArbitrageContext) getCycleSeedDenoms() []string {
+	// Count pool appearances per denom
+	denomCount := make(map[string]int)
+	for _, p := range ac.Pools {
+		denomCount[p.Denom0]++
+		denomCount[p.Denom1]++
+	}
+
+	// Always include RefDenom first
+	seeds := []string{ac.RefDenom}
+	seen := map[string]bool{ac.RefDenom: true}
+
+	// Add hub denoms (2+ pools) - these form cycle junctions
+	for denom, count := range denomCount {
+		if count >= 2 && !seen[denom] {
+			seeds = append(seeds, denom)
+			seen[denom] = true
+		}
+	}
+
+	// Cap at 10 seeds to bound search complexity (~500 paths max)
+	if len(seeds) > 10 {
+		seeds = seeds[:10]
+	}
+
+	return seeds
+}
+
+// cycleSignature returns a canonical string for cycle deduplication.
+// Normalizes by starting from smallest pool index to handle rotations.
+func cycleSignature(cycle []cycleStep) string {
+	if len(cycle) == 0 {
+		return ""
+	}
+	// Find rotation with smallest first pool index
+	minIdx := 0
+	for i := 1; i < len(cycle); i++ {
+		if cycle[i].poolIdx < cycle[minIdx].poolIdx {
+			minIdx = i
+		}
+	}
+	// Build signature from normalized rotation
+	sig := ""
+	for i := 0; i < len(cycle); i++ {
+		step := cycle[(minIdx+i)%len(cycle)]
+		dir := "0"
+		if !step.sellDenom0 {
+			dir = "1"
+		}
+		sig += fmt.Sprintf("%d%s", step.poolIdx, dir)
+	}
+	return sig
 }
 
 // findArbitrageCycles finds all cycles starting and ending at startDenom
@@ -666,8 +741,8 @@ func (ac *ArbitrageContext) computeOptimalCycleAmount(cycle []cycleStep) (math.L
 	// Start with small amount (1% of max reserve)
 	x := maxInput.Mul(math.LegacyNewDecWithPrec(1, 2))
 
-	// 3 Newton iterations (converges fast for convex profit function)
-	for iter := 0; iter < 3; iter++ {
+	// 5 Newton iterations (converges in ≤4 for 4-pool cycles)
+	for iter := 0; iter < 5; iter++ {
 		out := simulateCycle(x)
 		if out.IsZero() || x.IsZero() {
 			break

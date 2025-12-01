@@ -121,11 +121,11 @@ func (nm *NelderMeadOptimizer) Optimize(
 		n = nm.MaxPools
 	}
 
-	// Nelder-Mead parameters (as LegacyDec)
-	alpha := DecOne                          // reflection
-	gamma := math.LegacyNewDec(3)            // expansion
+	// Nelder-Mead parameters (as LegacyDec) - standard values to avoid overshoot
+	alpha := DecOne                          // reflection (1.0)
+	gamma := math.LegacyNewDec(2)            // expansion (2.0 - standard, avoids overshoot)
 	rho := math.LegacyNewDecWithPrec(5, 1)   // contraction (0.5)
-	sigma := math.LegacyNewDecWithPrec(1, 1) // shrink (0.1)
+	sigma := math.LegacyNewDecWithPrec(1, 1) // shrink (0.1 - better collapse)
 
 	// Wrapper to handle full dimension vector (tracks evaluations)
 	evalFull := func(partial []math.LegacyDec) math.LegacyDec {
@@ -373,13 +373,13 @@ type HybridOptimizer struct {
 // Optimized for arbitrage: closed-form finds 99%+, NelderMead polishes in ~5 iterations.
 func NewHybridOptimizer() *HybridOptimizer {
 	return &HybridOptimizer{
-		MaxPools: 16, // supports up to 8 pools (16 dimensions)
+		MaxPools: 20, // supports up to 10 pools (20 dimensions)
 		NelderMead: &NelderMeadOptimizer{
-			MaxIterations:     15,                              // hard cap (CF finds most profit)
-			Tolerance:         math.LegacyNewDecWithPrec(5, 1), // 0.5 absolute
-			MaxPools:          16,                              // 8 pools
+			MaxIterations:     12,                              // hard cap (CF finds most profit)
+			Tolerance:         math.LegacyNewDecWithPrec(1, 2), // 0.01 absolute
+			MaxPools:          20,                              // 10 pools
 			NoImproveLimit:    3,                               // stop after 3 iters without improvement
-			RelativeTolerance: math.LegacyNewDecWithPrec(1, 4), // 0.01% relative improvement threshold
+			RelativeTolerance: math.LegacyNewDecWithPrec(5, 5), // 0.005% relative improvement threshold
 		},
 	}
 }
