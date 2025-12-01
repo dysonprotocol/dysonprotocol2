@@ -21,14 +21,13 @@ func (k Keeper) SimulateArbitrage(
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Parse max_fraction (default to 0.1 if not specified)
-	maxFraction := 0.1
+	maxFraction := math.LegacyNewDecWithPrec(1, 1) // 0.1
 	if req.MaxFraction != "" {
 		dec, err := math.LegacyNewDecFromStr(req.MaxFraction)
 		if err != nil {
 			return nil, err
 		}
-		f, _ := dec.Float64()
-		maxFraction = f
+		maxFraction = dec
 	}
 
 	// Default depth to 1 if not specified

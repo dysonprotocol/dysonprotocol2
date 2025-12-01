@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"cosmossdk.io/math"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -10,9 +11,9 @@ type ArbitrageRunner struct {
 	keeper    *Keeper
 	optimizer ArbitrageOptimizer
 	// Config
-	MaxDepth       int     // how many hops to expand pool graph
-	MaxFraction    float64 // max fraction of pool reserve to swap
-	MinProfitBasis int64   // minimum profit in basis points (1/10000) to execute
+	MaxDepth       int            // how many hops to expand pool graph
+	MaxFraction    math.LegacyDec // max fraction of pool reserve to swap (consensus-safe)
+	MinProfitBasis int64          // minimum profit in basis points (1/10000) to execute
 }
 
 // NewArbitrageRunner creates an ArbitrageRunner with default settings.
@@ -20,9 +21,9 @@ func NewArbitrageRunner(keeper *Keeper) *ArbitrageRunner {
 	return &ArbitrageRunner{
 		keeper:         keeper,
 		optimizer:      NewHybridOptimizer(),
-		MaxDepth:       1,   // include pools 1 hop away from affected denoms
-		MaxFraction:    0.1, // max 10% of any pool reserve
-		MinProfitBasis: 10,  // require at least 0.1% profit relative to trade size
+		MaxDepth:       1,                               // include pools 1 hop away from affected denoms
+		MaxFraction:    math.LegacyNewDecWithPrec(1, 1), // max 10% of any pool reserve (0.1)
+		MinProfitBasis: 10,                              // require at least 0.1% profit relative to trade size
 	}
 }
 
@@ -128,24 +129,26 @@ func (ar *ArbitrageRunner) CheckAndExecuteArbitrage(
 }
 
 // meetsMinProfit checks if the arbitrage meets minimum profit threshold.
+// Uses math.Int for consensus-safe arithmetic.
 func (ar *ArbitrageRunner) meetsMinProfit(result *ArbitrageResult) bool {
 	if result == nil || !result.Success || !result.Profit.IsPositive() {
 		return false
 	}
 
-	// Calculate total trade volume (sum of all outputs)
-	totalVolume := int64(0)
+	// Calculate total trade volume (sum of all outputs) using math.Int
+	totalVolume := math.ZeroInt()
 	for _, c := range result.TraderOutputs {
-		totalVolume += c.Amount.Int64()
+		totalVolume = totalVolume.Add(c.Amount)
 	}
 
-	if totalVolume == 0 {
+	if !totalVolume.IsPositive() {
 		return false
 	}
 
 	// Profit must be at least MinProfitBasis/10000 of volume
-	minProfit := totalVolume * ar.MinProfitBasis / 10000
-	return result.Profit.Int64() >= minProfit
+	// minProfit = totalVolume * MinProfitBasis / 10000
+	minProfit := totalVolume.MulRaw(ar.MinProfitBasis).QuoRaw(10000)
+	return result.Profit.GTE(minProfit)
 }
 
 // SimulateOnly runs arbitrage detection without execution.
