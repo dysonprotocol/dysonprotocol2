@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 
-	"cosmossdk.io/math"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -19,16 +18,6 @@ func (k Keeper) SimulateArbitrage(
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
-	// Parse max_fraction (default to 0.1 if not specified)
-	maxFraction := math.LegacyNewDecWithPrec(1, 1) // 0.1
-	if req.MaxFraction != "" {
-		dec, err := math.LegacyNewDecFromStr(req.MaxFraction)
-		if err != nil {
-			return nil, err
-		}
-		maxFraction = dec
-	}
 
 	// Default depth to 1 if not specified
 	depth := int(req.Depth)
@@ -62,7 +51,7 @@ func (k Keeper) SimulateArbitrage(
 
 	// Find arbitrage using default optimizer
 	optimizer := NewHybridOptimizer()
-	result := ac.FindArbitrage(optimizer, maxFraction)
+	result := ac.FindArbitrage(optimizer)
 
 	if result == nil || !result.Success || !result.Profit.IsPositive() {
 		return resp, nil
@@ -75,18 +64,21 @@ func (k Keeper) SimulateArbitrage(
 	resp.TraderOutputs = result.TraderOutputs
 
 	// Extract swap amounts from the result message
+	// Format: 2 values per pool [sell_denom0, sell_denom1, ...]
 	if result.Msg != nil {
-		swapAmounts := make([]int64, len(ac.Pools))
+		swapAmounts := make([]int64, len(ac.Pools)*2)
 		for _, op := range result.Msg.Operations {
 			if swap := op.GetSwap(); swap != nil {
 				// Find pool index
 				if idx, ok := ac.PoolIndex[swap.PoolId]; ok {
 					pool := ac.Pools[idx]
-					// Determine direction from SwapIn denom
+					// Determine which dimension based on SwapIn denom
 					if swap.SwapIn.Denom == pool.Denom0 {
-						swapAmounts[idx] = swap.SwapIn.Amount.Int64()
+						// Selling denom0 → dimension 2*idx
+						swapAmounts[2*idx] += swap.SwapIn.Amount.Int64()
 					} else {
-						swapAmounts[idx] = -swap.SwapIn.Amount.Int64()
+						// Selling denom1 → dimension 2*idx+1
+						swapAmounts[2*idx+1] += swap.SwapIn.Amount.Int64()
 					}
 				}
 			}

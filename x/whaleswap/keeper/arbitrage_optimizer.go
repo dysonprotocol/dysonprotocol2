@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"time"
 
 	"cosmossdk.io/math"
@@ -32,6 +33,8 @@ type OptimizationMetrics struct {
 	Duration time.Duration
 	// BestValue is the best objective value found
 	BestValue math.LegacyDec
+	// BestIteration is the iteration number when BestValue was found (0 = initial guess)
+	BestIteration int
 	// Found indicates if a profitable solution was found
 	Found bool
 }
@@ -39,8 +42,8 @@ type OptimizationMetrics struct {
 // OptimizationBounds holds the search bounds for each pool dimension.
 // Using LegacyDec ensures consensus-safe arithmetic.
 type OptimizationBounds struct {
-	Lower []math.LegacyDec // minimum swap amounts (negative = sell denom1)
-	Upper []math.LegacyDec // maximum swap amounts (positive = sell denom0)
+	Lower []math.LegacyDec // minimum swap amounts (0 for all dimensions)
+	Upper []math.LegacyDec // maximum swap amounts (pool reserves)
 }
 
 // ArbitrageOptimizer is the interface for a deterministic black-box optimizer.
@@ -69,149 +72,15 @@ type ArbitrageOptimizer interface {
 	GetMetrics() *OptimizationMetrics
 }
 
-// GridSearchOptimizer implements a simple deterministic grid search.
-// This is a baseline implementation; works well for small pool counts.
-type GridSearchOptimizer struct {
-	// GridPoints is the number of points to sample per dimension.
-	// Total evaluations = GridPoints^N where N is number of pools.
-	// Keep small for many pools (e.g., 5-10).
-	GridPoints int
-
-	// MaxPools limits how many pools to include in optimization.
-	// Pools beyond this limit are set to zero swap amount.
-	MaxPools int
-
-	// metrics stores results from the last optimization run
-	metrics *OptimizationMetrics
-}
-
-// GetMetrics returns metrics from the last optimization run.
-func (g *GridSearchOptimizer) GetMetrics() *OptimizationMetrics {
-	return g.metrics
-}
-
-// Optimize implements ArbitrageOptimizer using grid search.
-func (g *GridSearchOptimizer) Optimize(
-	objective func([]math.LegacyDec) math.LegacyDec,
-	bounds OptimizationBounds,
-	initialGuess []math.LegacyDec,
-) (optimal []math.LegacyDec, value math.LegacyDec, found bool) {
-	startTime := time.Now()
-	evaluations := 0
-
-	n := len(bounds.Lower)
-	if n == 0 {
-		g.metrics = &OptimizationMetrics{
-			Algorithm:   "GridSearch",
-			Iterations:  0,
-			Evaluations: 0,
-			Dimensions:  0,
-			Duration:    time.Since(startTime),
-			BestValue:   DecZero,
-			Found:       false,
-		}
-		return nil, DecZero, false
-	}
-
-	// Limit dimensions for tractability
-	activeDims := n
-	if activeDims > g.MaxPools {
-		activeDims = g.MaxPools
-	}
-
-	// Generate grid points for each active dimension
-	grids := make([][]math.LegacyDec, activeDims)
-	gridPointsDec := math.LegacyNewDec(int64(g.GridPoints - 1))
-
-	for i := 0; i < activeDims; i++ {
-		lower := bounds.Lower[i]
-		upper := bounds.Upper[i]
-		grids[i] = make([]math.LegacyDec, g.GridPoints)
-		rangeVal := upper.Sub(lower)
-
-		for j := 0; j < g.GridPoints; j++ {
-			// t = j / (GridPoints - 1)
-			t := math.LegacyNewDec(int64(j)).Quo(gridPointsDec)
-			// grid[i][j] = lower + t * range
-			grids[i][j] = lower.Add(t.Mul(rangeVal))
-		}
-	}
-
-	// Evaluate all grid combinations
-	bestValue := DecMinValue
-	bestPoint := make([]math.LegacyDec, n)
-	for i := range bestPoint {
-		bestPoint[i] = DecZero
-	}
-
-	// Use indices to enumerate all combinations
-	indices := make([]int, activeDims)
-	point := make([]math.LegacyDec, n)
-	for i := range point {
-		point[i] = DecZero
-	}
-
-	iterations := 0
-	for {
-		iterations++
-		// Build current point from indices
-		for i := 0; i < activeDims; i++ {
-			point[i] = grids[i][indices[i]]
-		}
-		// Zero out dimensions beyond MaxPools
-		for i := activeDims; i < n; i++ {
-			point[i] = DecZero
-		}
-
-		// Evaluate
-		evaluations++
-		val := objective(point)
-		if val.GT(bestValue) {
-			bestValue = val
-			copy(bestPoint, point)
-		}
-
-		// Increment indices (odometer style)
-		carry := true
-		for i := 0; carry && i < activeDims; i++ {
-			indices[i]++
-			if indices[i] >= g.GridPoints {
-				indices[i] = 0
-			} else {
-				carry = false
-			}
-		}
-		if carry {
-			break // all combinations exhausted
-		}
-	}
-
-	// Check if we found a profitable solution
-	foundProfit := bestValue.IsPositive()
-
-	g.metrics = &OptimizationMetrics{
-		Algorithm:   "GridSearch",
-		Iterations:  iterations,
-		Evaluations: evaluations,
-		Dimensions:  activeDims,
-		Duration:    time.Since(startTime),
-		BestValue:   bestValue,
-		Found:       foundProfit,
-	}
-
-	if !foundProfit {
-		return nil, bestValue, false
-	}
-
-	return bestPoint, bestValue, true
-}
-
 // NelderMeadOptimizer implements Nelder-Mead simplex for deterministic optimization.
 // More efficient than grid search for higher dimensions.
+// Optimized for circular arbitrage: stops early when improvement plateaus.
 type NelderMeadOptimizer struct {
-	MaxIterations int
-	Tolerance     math.LegacyDec
-	MaxPools      int // limit active dimensions
+	MaxIterations     int            // hard cap on iterations (default 15)
+	Tolerance         math.LegacyDec // absolute convergence tolerance
+	MaxPools          int            // limit active dimensions
+	NoImproveLimit    int            // stop after N iterations without improvement (default 3)
+	RelativeTolerance math.LegacyDec // stop when improvement < this fraction of best (default 0.0001 = 0.01%)
 
 	// metrics stores results from the last optimization run
 	metrics *OptimizationMetrics
@@ -253,11 +122,10 @@ func (nm *NelderMeadOptimizer) Optimize(
 	}
 
 	// Nelder-Mead parameters (as LegacyDec)
-	alpha := DecOne                             // reflection
-	gamma := math.LegacyNewDec(2)               // expansion
-	rho := math.LegacyNewDecWithPrec(5, 1)      // contraction (0.5)
-	sigma := math.LegacyNewDecWithPrec(5, 1)    // shrink (0.5)
-	pointOne := math.LegacyNewDecWithPrec(1, 1) // 0.1 for delta calculation
+	alpha := DecOne                          // reflection
+	gamma := math.LegacyNewDec(3)            // expansion
+	rho := math.LegacyNewDecWithPrec(5, 1)   // contraction (0.5)
+	sigma := math.LegacyNewDecWithPrec(1, 1) // shrink (0.1)
 
 	// Wrapper to handle full dimension vector (tracks evaluations)
 	evalFull := func(partial []math.LegacyDec) math.LegacyDec {
@@ -289,11 +157,14 @@ func (nm *NelderMeadOptimizer) Optimize(
 	}
 
 	// Remaining vertices: offset along each axis
+	// Use 10% of range for simplex - typical arb amounts are small
+	simplexScale := math.LegacyNewDecWithPrec(1, 1) // 10%
+
 	for i := 1; i <= n; i++ {
 		simplex[i] = make([]math.LegacyDec, n)
 		copy(simplex[i], simplex[0])
-		// Offset by 10% of range or 1.0, whichever is larger
-		delta := bounds.Upper[i-1].Sub(bounds.Lower[i-1]).Mul(pointOne)
+		// Offset by 10% of range
+		delta := bounds.Upper[i-1].Sub(bounds.Lower[i-1]).Mul(simplexScale)
 		if delta.LT(DecOne) {
 			delta = DecOne
 		}
@@ -307,6 +178,21 @@ func (nm *NelderMeadOptimizer) Optimize(
 	// Evaluate initial simplex (negate for minimization)
 	for i := 0; i <= n; i++ {
 		values[i] = evalFull(simplex[i]).Neg()
+	}
+
+	// Track best value and which iteration found it
+	bestNegVal := values[0] // will be updated after sort
+	bestIteration := 0      // 0 = initial simplex
+	noImproveCount := 0     // count iterations without improvement
+
+	// Early stopping parameters (use defaults if not set)
+	noImproveLimit := nm.NoImproveLimit
+	if noImproveLimit <= 0 {
+		noImproveLimit = 3 // stop after 3 iterations without improvement
+	}
+	relTol := nm.RelativeTolerance
+	if relTol.IsNil() || relTol.IsZero() {
+		relTol = math.LegacyNewDecWithPrec(1, 4) // 0.0001 = 0.01%
 	}
 
 	// Main loop
@@ -323,7 +209,31 @@ func (nm *NelderMeadOptimizer) Optimize(
 			}
 		}
 
-		// Check convergence
+		// Track if this iteration improved the best value
+		prevBest := bestNegVal
+		if values[0].LT(bestNegVal) {
+			bestNegVal = values[0]
+			bestIteration = iter + 1
+			noImproveCount = 0
+		} else {
+			noImproveCount++
+		}
+
+		// Early stopping: no improvement for N iterations
+		if noImproveCount >= noImproveLimit {
+			break
+		}
+
+		// Early stopping: relative improvement too small (< 0.01% of best)
+		if !prevBest.IsZero() && prevBest.IsNegative() {
+			improvement := prevBest.Sub(values[0])  // positive if improved
+			threshold := prevBest.Neg().Mul(relTol) // relTol * |best|
+			if improvement.IsPositive() && improvement.LT(threshold) {
+				noImproveCount++ // count as no significant improvement
+			}
+		}
+
+		// Check convergence (simplex collapsed)
 		if values[n].Sub(values[0]).LT(nm.Tolerance) {
 			break
 		}
@@ -430,13 +340,14 @@ func (nm *NelderMeadOptimizer) Optimize(
 	foundProfit := bestValue.IsPositive()
 
 	nm.metrics = &OptimizationMetrics{
-		Algorithm:   "NelderMead",
-		Iterations:  actualIters,
-		Evaluations: evaluations,
-		Dimensions:  n,
-		Duration:    time.Since(startTime),
-		BestValue:   bestValue,
-		Found:       foundProfit,
+		Algorithm:     "NelderMead",
+		Iterations:    actualIters,
+		Evaluations:   evaluations,
+		Dimensions:    n,
+		Duration:      time.Since(startTime),
+		BestValue:     bestValue,
+		BestIteration: bestIteration,
+		Found:         foundProfit,
 	}
 
 	if !foundProfit {
@@ -446,168 +357,45 @@ func (nm *NelderMeadOptimizer) Optimize(
 	return result, bestValue, true
 }
 
-// HybridOptimizer uses TernarySearch to find optimal amounts,
+// HybridOptimizer uses combinatorial probe to find profitable region,
 // then Nelder-Mead to refine to local maximum.
 // This is the optimal strategy for whaleswap arbitrage.
 type HybridOptimizer struct {
-	Grid       *GridSearchOptimizer
 	NelderMead *NelderMeadOptimizer
+	MaxPools   int // limit active dimensions for probe
 
-	// metrics aggregates results from sub-optimizers
+	// metrics aggregates results from optimization
 	metrics *OptimizationMetrics
-	// allMetrics stores metrics from each phase for detailed logging
-	AllMetrics []*OptimizationMetrics
 }
 
 // NewHybridOptimizer creates a hybrid optimizer.
+// Note: With 2N dimensions (2 per pool), MaxPools should be 2x the number of pools.
+// Optimized for arbitrage: closed-form finds 99%+, NelderMead polishes in ~5 iterations.
 func NewHybridOptimizer() *HybridOptimizer {
 	return &HybridOptimizer{
-		Grid: &GridSearchOptimizer{
-			GridPoints: 5,
-			MaxPools:   4,
-		},
+		MaxPools: 16, // supports up to 8 pools (16 dimensions)
 		NelderMead: &NelderMeadOptimizer{
-			MaxIterations: 50,
-			Tolerance:     math.LegacyNewDecWithPrec(5, 1), // 0.5
-			MaxPools:      8,
+			MaxIterations:     15,                              // hard cap (CF finds most profit)
+			Tolerance:         math.LegacyNewDecWithPrec(5, 1), // 0.5 absolute
+			MaxPools:          16,                              // 8 pools
+			NoImproveLimit:    3,                               // stop after 3 iters without improvement
+			RelativeTolerance: math.LegacyNewDecWithPrec(1, 4), // 0.01% relative improvement threshold
 		},
 	}
 }
 
-// GetMetrics returns aggregated metrics from the last optimization run.
+// GetMetrics returns metrics from the last optimization run.
 func (h *HybridOptimizer) GetMetrics() *OptimizationMetrics {
 	return h.metrics
 }
 
-// Optimize implements ArbitrageOptimizer using hybrid approach:
-// 1. TernarySearch finds optimal via coordinate descent
-// 2. NelderMead polishes to true local maximum
-func (h *HybridOptimizer) Optimize(
-	objective func([]math.LegacyDec) math.LegacyDec,
-	bounds OptimizationBounds,
-	initialGuess []math.LegacyDec,
-) (optimal []math.LegacyDec, value math.LegacyDec, found bool) {
-	startTime := time.Now()
-	h.AllMetrics = make([]*OptimizationMetrics, 0, 3)
-	totalEvaluations := 0
-	totalIterations := 0
-
-	// Phase 1: TernarySearch (coordinate descent) finds a good solution
-	ts := &TernarySearchOptimizer{MaxIterations: 10, MaxPools: 4}
-	tsResult, tsValue, tsFound := ts.Optimize(objective, bounds, initialGuess)
-	h.AllMetrics = append(h.AllMetrics, ts.GetMetrics())
-	totalEvaluations += ts.metrics.Evaluations
-	totalIterations += ts.metrics.Iterations
-
-	if tsFound && tsValue.IsPositive() {
-		// Phase 2: NelderMead refines the result
-		refined, refinedVal, refinedOk := h.NelderMead.Optimize(objective, bounds, tsResult)
-		h.AllMetrics = append(h.AllMetrics, h.NelderMead.GetMetrics())
-		totalEvaluations += h.NelderMead.metrics.Evaluations
-		totalIterations += h.NelderMead.metrics.Iterations
-
-		if refinedOk && refinedVal.GT(tsValue) {
-			h.metrics = &OptimizationMetrics{
-				Algorithm:   "Hybrid(TernarySearch→NelderMead)",
-				Iterations:  totalIterations,
-				Evaluations: totalEvaluations,
-				Dimensions:  ts.metrics.Dimensions,
-				Duration:    time.Since(startTime),
-				BestValue:   refinedVal,
-				Found:       true,
-			}
-			return refined, refinedVal, true
-		}
-		// Refinement didn't improve - return original
-		h.metrics = &OptimizationMetrics{
-			Algorithm:   "Hybrid(TernarySearch)",
-			Iterations:  totalIterations,
-			Evaluations: totalEvaluations,
-			Dimensions:  ts.metrics.Dimensions,
-			Duration:    time.Since(startTime),
-			BestValue:   tsValue,
-			Found:       true,
-		}
-		return tsResult, tsValue, true
-	}
-
-	// Fallback: GridSearch if TernarySearch found nothing
-	gridResult, gridValue, gridFound := h.Grid.Optimize(objective, bounds, initialGuess)
-	h.AllMetrics = append(h.AllMetrics, h.Grid.GetMetrics())
-	totalEvaluations += h.Grid.metrics.Evaluations
-	totalIterations += h.Grid.metrics.Iterations
-
-	if gridFound && gridValue.IsPositive() {
-		// Try to refine grid result too
-		refined, refinedVal, refinedOk := h.NelderMead.Optimize(objective, bounds, gridResult)
-		h.AllMetrics = append(h.AllMetrics, h.NelderMead.GetMetrics())
-		totalEvaluations += h.NelderMead.metrics.Evaluations
-		totalIterations += h.NelderMead.metrics.Iterations
-
-		if refinedOk && refinedVal.GT(gridValue) {
-			h.metrics = &OptimizationMetrics{
-				Algorithm:   "Hybrid(GridSearch→NelderMead)",
-				Iterations:  totalIterations,
-				Evaluations: totalEvaluations,
-				Dimensions:  h.Grid.metrics.Dimensions,
-				Duration:    time.Since(startTime),
-				BestValue:   refinedVal,
-				Found:       true,
-			}
-			return refined, refinedVal, true
-		}
-
-		h.metrics = &OptimizationMetrics{
-			Algorithm:   "Hybrid(GridSearch)",
-			Iterations:  totalIterations,
-			Evaluations: totalEvaluations,
-			Dimensions:  h.Grid.metrics.Dimensions,
-			Duration:    time.Since(startTime),
-			BestValue:   gridValue,
-			Found:       true,
-		}
-		return gridResult, gridValue, true
-	}
-
-	// Nothing found
-	dims := 0
-	if len(bounds.Lower) > 0 {
-		dims = len(bounds.Lower)
-	}
-	h.metrics = &OptimizationMetrics{
-		Algorithm:   "Hybrid(NoProfit)",
-		Iterations:  totalIterations,
-		Evaluations: totalEvaluations,
-		Dimensions:  dims,
-		Duration:    time.Since(startTime),
-		BestValue:   DecZero,
-		Found:       false,
-	}
-	return nil, DecZero, false
-}
-
-// TernarySearchOptimizer uses coordinate descent with ternary search per dimension.
-// More robust than BinarySearch as it optimizes each dimension independently.
+// Optimize implements ArbitrageOptimizer using two-phase approach:
+// 1. Closed-form estimate (Newton's method on cycles, provided in initialGuess)
+// 2. NelderMead refinement to polish and consolidate extras
 //
-// Key insight: Whaleswap's self-netting means pool order doesn't matter
-// and no cycle is needed. Any set of swaps with net positive output is profit.
-type TernarySearchOptimizer struct {
-	MaxIterations int
-	MaxPools      int
-
-	// metrics stores results from the last optimization run
-	metrics *OptimizationMetrics
-}
-
-// GetMetrics returns metrics from the last optimization run.
-func (t *TernarySearchOptimizer) GetMetrics() *OptimizationMetrics {
-	return t.metrics
-}
-
-// Optimize implements ArbitrageOptimizer using coordinate ternary search.
-// For each dimension, performs ternary search to find optimal value while
-// holding other dimensions fixed. Iterates until convergence.
-func (t *TernarySearchOptimizer) Optimize(
+// The closed-form typically finds 99%+ of optimal profit in 1 evaluation.
+// NelderMead adds the final 1% in ~10-15 evaluations.
+func (h *HybridOptimizer) Optimize(
 	objective func([]math.LegacyDec) math.LegacyDec,
 	bounds OptimizationBounds,
 	initialGuess []math.LegacyDec,
@@ -617,110 +405,92 @@ func (t *TernarySearchOptimizer) Optimize(
 
 	n := len(bounds.Lower)
 	if n == 0 {
-		t.metrics = &OptimizationMetrics{
-			Algorithm:   "TernarySearch",
-			Iterations:  0,
-			Evaluations: 0,
-			Dimensions:  0,
-			Duration:    time.Since(startTime),
-			BestValue:   DecZero,
-			Found:       false,
+		h.metrics = &OptimizationMetrics{
+			Algorithm:     "CF+NM(NoPool)",
+			Evaluations:   0,
+			Dimensions:    0,
+			Duration:      time.Since(startTime),
+			BestValue:     DecZero,
+			BestIteration: 0,
+			Found:         false,
 		}
 		return nil, DecZero, false
 	}
 
-	// Limit dimensions
-	activeDims := n
-	if activeDims > t.MaxPools {
-		activeDims = t.MaxPools
-	}
-
-	// Start from center of bounds
-	two := math.LegacyNewDec(2)
-	three := math.LegacyNewDec(3)
-	convergenceThreshold := DecOne // converge when range < 1
-
+	// === PHASE 1: Evaluate closed-form estimate ===
 	x := make([]math.LegacyDec, n)
-	for i := 0; i < n; i++ {
-		if i < activeDims {
-			x[i] = bounds.Lower[i].Add(bounds.Upper[i]).Quo(two)
-		} else {
-			x[i] = DecZero
-		}
+	for i := range x {
+		x[i] = DecZero
 	}
+	bestVal := DecMinValue
 
-	// Coordinate descent with ternary search
-	actualIters := 0
-	for iter := 0; iter < t.MaxIterations; iter++ {
-		actualIters = iter + 1
-		improved := false
-
-		for i := 0; i < activeDims; i++ {
-			lo := bounds.Lower[i]
-			hi := bounds.Upper[i]
-
-			// Ternary search on dimension i
-			for hi.Sub(lo).GT(convergenceThreshold) {
-				rangeVal := hi.Sub(lo)
-				m1 := lo.Add(rangeVal.Quo(three))
-				m2 := hi.Sub(rangeVal.Quo(three))
-
-				// Evaluate at m1
-				x1 := make([]math.LegacyDec, n)
-				copy(x1, x)
-				x1[i] = m1
-				evaluations++
-				v1 := objective(x1)
-
-				// Evaluate at m2
-				x2 := make([]math.LegacyDec, n)
-				copy(x2, x)
-				x2[i] = m2
-				evaluations++
-				v2 := objective(x2)
-
-				if v1.GT(v2) {
-					hi = m2
-				} else {
-					lo = m1
-				}
-			}
-
-			// Test the midpoint
-			mid := lo.Add(hi).Quo(two)
-			xtest := make([]math.LegacyDec, n)
-			copy(xtest, x)
-			xtest[i] = mid
-
-			evaluations += 2 // both objective(xtest) and objective(x)
-			if objective(xtest).GT(objective(x)) {
-				x[i] = mid
-				improved = true
+	// Check if closed-form found a profitable cycle
+	hasClosedForm := false
+	if len(initialGuess) == n {
+		for _, v := range initialGuess {
+			if !v.IsZero() {
+				hasClosedForm = true
+				break
 			}
 		}
+	}
 
-		if !improved {
-			break
+	if hasClosedForm {
+		evaluations++
+		closedFormVal := objective(initialGuess)
+		if closedFormVal.GT(bestVal) {
+			bestVal = closedFormVal
+			copy(x, initialGuess)
 		}
 	}
 
-	evaluations++
-	val := objective(x)
-	foundProfit := val.IsPositive()
-
-	t.metrics = &OptimizationMetrics{
-		Algorithm:   "TernarySearch",
-		Iterations:  actualIters,
-		Evaluations: evaluations,
-		Dimensions:  activeDims,
-		Duration:    time.Since(startTime),
-		BestValue:   val,
-		Found:       foundProfit,
+	// If closed-form didn't find profit, exit early
+	if !bestVal.IsPositive() {
+		h.metrics = &OptimizationMetrics{
+			Algorithm:     "CF+NM(NoProfit)",
+			Evaluations:   evaluations,
+			Dimensions:    n,
+			Duration:      time.Since(startTime),
+			BestValue:     bestVal,
+			BestIteration: 0, // closed-form was evaluated but not profitable
+			Found:         false,
+		}
+		return nil, bestVal, false
 	}
 
-	if !foundProfit {
-		return nil, val, false
+	cfVal := bestVal
+
+	// === PHASE 2: NelderMead refinement ===
+	// Polish the closed-form estimate and consolidate extras to ref_denom
+	refined, refinedVal, refinedOk := h.NelderMead.Optimize(objective, bounds, x)
+	evaluations += h.NelderMead.metrics.Evaluations
+
+	if refinedOk && refinedVal.GT(cfVal) {
+		improvement := refinedVal.Sub(cfVal)
+		// NelderMead improved, report its best iteration
+		h.metrics = &OptimizationMetrics{
+			Algorithm:     fmt.Sprintf("CF:%s→NM:+%s", cfVal.TruncateInt().String(), improvement.TruncateInt().String()),
+			Iterations:    h.NelderMead.metrics.Iterations,
+			Evaluations:   evaluations,
+			Dimensions:    n,
+			Duration:      time.Since(startTime),
+			BestValue:     refinedVal,
+			BestIteration: h.NelderMead.metrics.BestIteration, // iteration within NM that found best
+			Found:         true,
+		}
+		return refined, refinedVal, true
 	}
 
-	return x, val, true
+	// NelderMead didn't improve - closed-form was best (iteration 0)
+	h.metrics = &OptimizationMetrics{
+		Algorithm:     fmt.Sprintf("CF:%s(NM:NoImprove)", cfVal.TruncateInt().String()),
+		Iterations:    h.NelderMead.metrics.Iterations,
+		Evaluations:   evaluations,
+		Dimensions:    n,
+		Duration:      time.Since(startTime),
+		BestValue:     cfVal,
+		BestIteration: 0, // closed-form was best
+		Found:         true,
+	}
+	return x, cfVal, true
 }

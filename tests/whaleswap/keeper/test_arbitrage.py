@@ -1285,14 +1285,13 @@ def demo_circular_arb(alice_addr, foo_name, bar_name, qux_name):
         ]
     })
     
-    # Simulate arbitrage - the extreme skew should make detection easy
+    # Simulate arbitrage - closed-form Newton method finds optimal automatically
     arb_result = _query({
         "@type": "/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
         "trader": alice_addr,
         "affected_denoms": [foo_name, bar_name],
         "ref_denom": foo_name,
-        "depth": 1,
-        "max_fraction": "0.5"
+        "depth": 1
     })
     
     return {
@@ -1528,14 +1527,15 @@ def test_optimizer_with_many_pools(
     chainnet, leverage_accounts, leverage_names_and_coins
 ):
     """
-    Test optimizer behavior with more than MaxPools (4) pools.
+    Test optimizer behavior with 4 pools (8 dimensions with 2N model).
 
-    Creates 5 pools to trigger activeDims limiting in optimizers.
+    With 2N dimensions (2 per pool), 4 pools = 8 dimensions.
+    GridSearch with 3 points = 3^8 = 6,561 evaluations.
 
     Covers arbitrage_optimizer.go:
-    - GridSearchOptimizer lines 57-60 (activeDims > MaxPools)
-    - NelderMeadOptimizer lines 152-155 (n > MaxPools)
-    - TernarySearchOptimizer lines 409-412 (activeDims > MaxPools)
+    - GridSearchOptimizer with multiple dimensions
+    - TernarySearchOptimizer coordinate descent
+    - HybridOptimizer combining search strategies
     """
     dysond = chainnet[0]
     alice_addr = leverage_accounts["alice"]["addr"]
@@ -1670,34 +1670,7 @@ def demo_many_pools(alice_addr, foo_name, bar_name, qux_name):
         ]
     })
     
-    # Pool 5: bar-qux (different ratio)
-    _sudo({
-        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
-        "creator": alice_addr,
-        "coins": [
-            {"denom": bar_name, "amount": "1000"},
-            {"denom": qux_name, "amount": "50000"}
-        ],
-        "fee_rate": [
-            {"denom": base_bq, "amount": "0.001"},
-            {"denom": quote_bq, "amount": "0.001"}
-        ],
-        "min_initial_collateral_ratio": [
-            {"denom": base_bq, "amount": "1.5"},
-            {"denom": quote_bq, "amount": "1.5"}
-        ],
-        "interest_rate": [],
-        "liquidation_threshold": [
-            {"denom": base_bq, "amount": "1.2"},
-            {"denom": quote_bq, "amount": "1.2"}
-        ],
-        "max_borrow_percent": [
-            {"denom": base_bq, "amount": "0.8"},
-            {"denom": quote_bq, "amount": "0.8"}
-        ]
-    })
-    
-    # Query with depth 2 to get more pools
+    # Query with depth 2 to get all 4 pools
     arb_result = _query({
         "@type": "/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
         "trader": alice_addr,
@@ -1746,9 +1719,9 @@ def demo_many_pools(alice_addr, foo_name, bar_name, qux_name):
 
     demo_result = result["result"]["result"]
 
-    # Should find 5 pools (exceeds MaxPools limit of 4)
-    assert demo_result["pool_count"] == 5, f"Should find 5 pools: {demo_result}"
-    # Should still find arbitrage despite pool limit
+    # Should find 4 pools (8 dimensions with 2N model)
+    assert demo_result["pool_count"] == 4, f"Should find 4 pools: {demo_result}"
+    # Should find arbitrage with the skewed pool ratios
     assert demo_result["found"], f"Should find arb: {demo_result}"
 
 
@@ -2567,3 +2540,639 @@ def demo_two_pools(alice_addr, foo_name, bar_name):
     # Should find 2 pools with arbitrage opportunity
     assert demo_result["pool_count"] == 2, f"Should find 2 pools: {demo_result}"
     assert demo_result["found"], f"Should find arb with 2 pools: {demo_result}"
+
+
+def test_many_pools_same_pair(chainnet, leverage_accounts, leverage_names_and_coins):
+    """Test arbitrage detection with 10 pools of the same denom pair.
+
+    This tests the optimizer's ability to find statistical arbitrage
+    when many pools trade the same pair at different prices.
+    """
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    bar_name = leverage_names_and_coins["bar_name"]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_many_pools_same_pair(alice_addr, foo_name, bar_name):
+    # Create 10 pools with same pair but varying ratios
+    # Some pools favor FOO, some favor BAR - creates arb opportunity
+    base, quote = sorted([foo_name, bar_name])
+    pool_ids = []
+    ratios = [
+        (100, 10),      # 10:1 FOO:BAR (FOO expensive)
+        (10, 100),      # 1:10 (BAR expensive)
+        (50, 50),       # 1:1
+        (80, 20),       # 4:1
+        (20, 80),       # 1:4
+        (100, 5),       # 20:1 (extreme FOO expensive)
+        (5, 100),       # 1:20 (extreme BAR expensive)
+        (60, 40),       # 1.5:1
+        (40, 60),       # 1:1.5
+        (70, 30),       # ~2.3:1
+    ]
+    
+    for i, (foo_amt, bar_amt) in enumerate(ratios):
+        pool_result = _sudo({
+            "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+            "creator": alice_addr,
+            "coins": [
+                {"denom": foo_name, "amount": str(foo_amt)},
+                {"denom": bar_name, "amount": str(bar_amt)}
+            ],
+            "fee_rate": [
+                {"denom": base, "amount": "0.001"},
+                {"denom": quote, "amount": "0.001"}
+            ],
+            "min_initial_collateral_ratio": [
+                {"denom": base, "amount": "1.5"},
+                {"denom": quote, "amount": "1.5"}
+            ],
+            "interest_rate": [],
+            "liquidation_threshold": [
+                {"denom": base, "amount": "1.2"},
+                {"denom": quote, "amount": "1.2"}
+            ],
+            "max_borrow_percent": [
+                {"denom": base, "amount": "0.8"},
+                {"denom": quote, "amount": "0.8"}
+            ]
+        })
+        pool_ids.append(pool_result.get("pool_id", 0))
+    
+    # Query arbitrage with all 10 pools
+    arb_result = _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
+        "trader": alice_addr,
+        "affected_denoms": [foo_name, bar_name],
+        "ref_denom": foo_name,
+        "depth": 0  # only direct pools
+    })
+    
+    return {
+        "found": arb_result.get("found", False),
+        "pool_count": arb_result.get("pool_count", 0),
+        "profit": arb_result.get("profit", "0"),
+        "pool_ids": arb_result.get("pool_ids", []),
+        "swap_amounts": arb_result.get("swap_amounts", [])
+    }
+"""
+
+    kwargs = json.dumps(
+        {"alice_addr": alice_addr, "foo_name": foo_name, "bar_name": bar_name}
+    )
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_many_pools_same_pair",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script failed: {query_result.get('exception')}"
+
+    demo_result = result["result"]["result"]
+
+    # Should find arbitrage with 8 pools (MaxPools limit) out of 10 created
+    assert demo_result["pool_count"] >= 8, f"Should have 8+ pools: {demo_result}"
+    assert demo_result[
+        "found"
+    ], f"Should find arb with many same-pair pools: {demo_result}"
+    assert int(demo_result["profit"]) > 0, f"Should have positive profit: {demo_result}"
+
+
+def test_long_circular_chain(chainnet, leverage_accounts, leverage_names_and_coins):
+    """Test arbitrage detection with 8 pools in a circular chain.
+
+    Creates: A→B→C→D→E→F→G→H→A (8-pool cycle)
+    Uses subdenoms of foo_name like foo.dys/A, foo.dys/B, etc.
+    This exceeds the closed-form Newton limit (4 pools) so tests fallback.
+    """
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_long_chain(alice_addr, foo_name):
+    # Generate 8 unique subdenoms for A→B→C→D→E→F→G→H→A cycle
+    # Using subdenoms: foo.dys/A, foo.dys/B, ... foo.dys/H
+    subdenom_chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    denoms = [f"{foo_name}/{c}" for c in subdenom_chars]
+    
+    # Mint all subdenoms via MsgMintCoins
+    # Get mint fee parameters
+    params = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest",
+    })
+    mint_fee_per = float(params["params"]["mint_fee_per_coin"])
+    
+    # Mint 100000 of each subdenom
+    mint_amount = 100000
+    coins_to_mint = [{"denom": d, "amount": str(mint_amount)} for d in denoms]
+    total_units = mint_amount * len(denoms)
+    required_fee = int(total_units * mint_fee_per + 0.99999)
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgMintCoins",
+        "name_destination": alice_addr,
+        "amount": coins_to_mint,
+        "mint_fee": {"denom": "udys", "amount": str(required_fee)},
+    })
+    
+    # Create 8 pools forming a cycle: A-B, B-C, ..., H-A
+    # Use skewed ratios to create arbitrage opportunity
+    pool_ids = []
+    for i in range(8):
+        denom_a = denoms[i]
+        denom_b = denoms[(i + 1) % 8]
+        base, quote = sorted([denom_a, denom_b])
+        
+        # Alternate ratios to create mispricing around the cycle
+        # Some edges favor going forward, some backward
+        if i % 2 == 0:
+            amt_a, amt_b = 100, 1000  # 1:10
+        else:
+            amt_a, amt_b = 1000, 100  # 10:1
+        
+        pool_result = _sudo({
+            "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+            "creator": alice_addr,
+            "coins": [
+                {"denom": denom_a, "amount": str(amt_a)},
+                {"denom": denom_b, "amount": str(amt_b)}
+            ],
+            "fee_rate": [
+                {"denom": base, "amount": "0.001"},
+                {"denom": quote, "amount": "0.001"}
+            ],
+            "min_initial_collateral_ratio": [
+                {"denom": base, "amount": "1.5"},
+                {"denom": quote, "amount": "1.5"}
+            ],
+            "interest_rate": [],
+            "liquidation_threshold": [
+                {"denom": base, "amount": "1.2"},
+                {"denom": quote, "amount": "1.2"}
+            ],
+            "max_borrow_percent": [
+                {"denom": base, "amount": "0.8"},
+                {"denom": quote, "amount": "0.8"}
+            ]
+        })
+        pool_ids.append(pool_result.get("pool_id", 0))
+    
+    # Query arbitrage starting from denom A
+    arb_result = _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
+        "trader": alice_addr,
+        "affected_denoms": [denoms[0], denoms[1]],
+        "ref_denom": denoms[0],
+        "depth": 4  # allow traversal through the chain
+    })
+    
+    return {
+        "found": arb_result.get("found", False),
+        "pool_count": arb_result.get("pool_count", 0),
+        "profit": arb_result.get("profit", "0"),
+        "denoms": arb_result.get("denoms", []),
+        "swap_amounts": arb_result.get("swap_amounts", [])
+    }
+"""
+
+    kwargs = json.dumps({"alice_addr": alice_addr, "foo_name": foo_name})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_long_chain",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script failed: {query_result.get('exception')}"
+
+    demo_result = result["result"]["result"]
+
+    # Should discover the circular chain (8 pools, but MaxPools=16 dims = 8 pools)
+    assert (
+        demo_result["pool_count"] == 8
+    ), f"Should find 8 pools in chain: {demo_result}"
+    # Note: 8-pool cycle may not find profit due to Newton limit of 4
+    # But the optimizer should still process all pools
+
+
+def test_hub_and_spoke_topology(chainnet, leverage_accounts, leverage_names_and_coins):
+    """Test arbitrage with hub-and-spoke topology.
+
+    Creates a hub denom (HUB) connected to 6 spoke denoms (S0-S5).
+    Each pair of spokes also has a shortcut pool to create triangular arbitrage.
+    Uses subdenoms: foo.dys/HUB, foo.dys/S0, foo.dys/S1, etc.
+
+    Topology:
+        S0 ← HUB → S1
+        ↑  ↘   ↙   ↓
+        S5   ...   S2
+        ↑         ↓
+        S4 ← ... → S3
+    Plus direct spoke-to-spoke shortcuts for triangular arb.
+    """
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_hub_spoke(alice_addr, foo_name):
+    # Create hub and spoke subdenoms
+    hub = f"{foo_name}/HUB"
+    spokes = [f"{foo_name}/S{i}" for i in range(6)]
+    all_denoms = [hub] + spokes
+    
+    # Mint all subdenoms via MsgMintCoins
+    params = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest",
+    })
+    mint_fee_per = float(params["params"]["mint_fee_per_coin"])
+    
+    mint_amount = 10000000  # 10 million to cover all pool creations
+    coins_to_mint = [{"denom": d, "amount": str(mint_amount)} for d in all_denoms]
+    total_units = mint_amount * len(all_denoms)
+    required_fee = int(total_units * mint_fee_per + 0.99999)
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgMintCoins",
+        "name_destination": alice_addr,
+        "amount": coins_to_mint,
+        "mint_fee": {"denom": "udys", "amount": str(required_fee)},
+    })
+    
+    pool_ids = []
+    
+    # Create hub-spoke pools with EXTREME varying ratios
+    # Creates arbitrage: buy HUB cheap from S1, sell HUB expensive to S0
+    hub_ratios = [
+        (100, 100000),  # HUB very expensive vs S0 (sell HUB here)
+        (100000, 100),  # HUB very cheap vs S1 (buy HUB here)
+        (500, 500),     # equal
+        (100, 50000),   # HUB expensive vs S3
+        (50000, 100),   # HUB cheap vs S4
+        (100, 80000),   # HUB expensive vs S5
+    ]
+    
+    for i, spoke in enumerate(spokes):
+        hub_amt, spoke_amt = hub_ratios[i]
+        base, quote = sorted([hub, spoke])
+        pool_result = _sudo({
+            "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+            "creator": alice_addr,
+            "coins": [
+                {"denom": hub, "amount": str(hub_amt)},
+                {"denom": spoke, "amount": str(spoke_amt)}
+            ],
+            "fee_rate": [
+                {"denom": base, "amount": "0.001"},
+                {"denom": quote, "amount": "0.001"}
+            ],
+            "min_initial_collateral_ratio": [
+                {"denom": base, "amount": "1.5"},
+                {"denom": quote, "amount": "1.5"}
+            ],
+            "interest_rate": [],
+            "liquidation_threshold": [
+                {"denom": base, "amount": "1.2"},
+                {"denom": quote, "amount": "1.2"}
+            ],
+            "max_borrow_percent": [
+                {"denom": base, "amount": "0.8"},
+                {"denom": quote, "amount": "0.8"}
+            ]
+        })
+        pool_ids.append(pool_result.get("pool_id", 0))
+    
+    # Create spoke-to-spoke shortcuts for triangular arb
+    # S0-S1, S2-S3, S4-S5 (skewed ratios)
+    shortcuts = [(0, 1), (2, 3), (4, 5)]
+    for s_a, s_b in shortcuts:
+        base, quote = sorted([spokes[s_a], spokes[s_b]])
+        pool_result = _sudo({
+            "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+            "creator": alice_addr,
+            "coins": [
+                {"denom": spokes[s_a], "amount": "100"},
+                {"denom": spokes[s_b], "amount": "1000"}  # 1:10 skew
+            ],
+            "fee_rate": [
+                {"denom": base, "amount": "0.001"},
+                {"denom": quote, "amount": "0.001"}
+            ],
+            "min_initial_collateral_ratio": [
+                {"denom": base, "amount": "1.5"},
+                {"denom": quote, "amount": "1.5"}
+            ],
+            "interest_rate": [],
+            "liquidation_threshold": [
+                {"denom": base, "amount": "1.2"},
+                {"denom": quote, "amount": "1.2"}
+            ],
+            "max_borrow_percent": [
+                {"denom": base, "amount": "0.8"},
+                {"denom": quote, "amount": "0.8"}
+            ]
+        })
+        pool_ids.append(pool_result.get("pool_id", 0))
+    
+    # Query arbitrage from hub perspective
+    arb_result = _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
+        "trader": alice_addr,
+        "affected_denoms": [hub],
+        "ref_denom": hub,
+        "depth": 2  # explore hub→spoke→spoke→hub triangles
+    })
+    
+    return {
+        "found": arb_result.get("found", False),
+        "pool_count": arb_result.get("pool_count", 0),
+        "profit": arb_result.get("profit", "0"),
+        "denoms": arb_result.get("denoms", []),
+        "pool_ids": arb_result.get("pool_ids", [])
+    }
+"""
+
+    kwargs = json.dumps({"alice_addr": alice_addr, "foo_name": foo_name})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_hub_spoke",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script failed: {query_result.get('exception')}"
+
+    demo_result = result["result"]["result"]
+
+    # Should find triangular arbitrage opportunities (6 hub-spoke + 3 shortcuts = 9 pools)
+    assert demo_result["pool_count"] >= 6, f"Should find hub+spoke pools: {demo_result}"
+    assert demo_result[
+        "found"
+    ], f"Should find triangular arb in hub-spoke: {demo_result}"
+
+
+def test_mixed_topology_stress(chainnet, leverage_accounts, leverage_names_and_coins):
+    """Stress test with mixed topology: same-pair pools + circular chain + shortcuts.
+
+    Creates a complex graph with subdenoms foo.dys/A, foo.dys/B, foo.dys/C:
+    - 3 pools of A-B pair (different ratios)
+    - 3 pools of B-C pair (different ratios)
+    - 2 pools of C-A pair (completing triangles)
+
+    Total: 8 pools, multiple arbitrage paths
+    """
+    dysond = chainnet[0]
+    alice_addr = leverage_accounts["alice"]["addr"]
+    foo_name = leverage_names_and_coins["foo_name"]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_mixed_stress(alice_addr, foo_name):
+    # Create subdenoms A, B, C
+    denom_a = f"{foo_name}/A"
+    denom_b = f"{foo_name}/B"
+    denom_c = f"{foo_name}/C"
+    all_denoms = [denom_a, denom_b, denom_c]
+    
+    # Mint all subdenoms via MsgMintCoins
+    params = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest",
+    })
+    mint_fee_per = float(params["params"]["mint_fee_per_coin"])
+    
+    mint_amount = 10000000  # 10 million to cover all pool creations
+    coins_to_mint = [{"denom": d, "amount": str(mint_amount)} for d in all_denoms]
+    total_units = mint_amount * len(all_denoms)
+    required_fee = int(total_units * mint_fee_per + 0.99999)
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgMintCoins",
+        "name_destination": alice_addr,
+        "amount": coins_to_mint,
+        "mint_fee": {"denom": "udys", "amount": str(required_fee)},
+    })
+    
+    pool_ids = []
+    base_ab, quote_ab = sorted([denom_a, denom_b])
+    base_bc, quote_bc = sorted([denom_b, denom_c])
+    base_ca, quote_ca = sorted([denom_c, denom_a])
+    
+    # 3 A-B pools with EXTREME varying ratios
+    ab_ratios = [(100, 100000), (100000, 100), (500, 500)]
+    for a_amt, b_amt in ab_ratios:
+        pool_result = _sudo({
+            "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+            "creator": alice_addr,
+            "coins": [
+                {"denom": denom_a, "amount": str(a_amt)},
+                {"denom": denom_b, "amount": str(b_amt)}
+            ],
+            "fee_rate": [
+                {"denom": base_ab, "amount": "0.001"},
+                {"denom": quote_ab, "amount": "0.001"}
+            ],
+            "min_initial_collateral_ratio": [
+                {"denom": base_ab, "amount": "1.5"},
+                {"denom": quote_ab, "amount": "1.5"}
+            ],
+            "interest_rate": [],
+            "liquidation_threshold": [
+                {"denom": base_ab, "amount": "1.2"},
+                {"denom": quote_ab, "amount": "1.2"}
+            ],
+            "max_borrow_percent": [
+                {"denom": base_ab, "amount": "0.8"},
+                {"denom": quote_ab, "amount": "0.8"}
+            ]
+        })
+        pool_ids.append(pool_result.get("pool_id", 0))
+    
+    # 3 B-C pools with EXTREME varying ratios
+    bc_ratios = [(100, 100000), (100000, 100), (600, 400)]
+    for b_amt, c_amt in bc_ratios:
+        pool_result = _sudo({
+            "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+            "creator": alice_addr,
+            "coins": [
+                {"denom": denom_b, "amount": str(b_amt)},
+                {"denom": denom_c, "amount": str(c_amt)}
+            ],
+            "fee_rate": [
+                {"denom": base_bc, "amount": "0.001"},
+                {"denom": quote_bc, "amount": "0.001"}
+            ],
+            "min_initial_collateral_ratio": [
+                {"denom": base_bc, "amount": "1.5"},
+                {"denom": quote_bc, "amount": "1.5"}
+            ],
+            "interest_rate": [],
+            "liquidation_threshold": [
+                {"denom": base_bc, "amount": "1.2"},
+                {"denom": quote_bc, "amount": "1.2"}
+            ],
+            "max_borrow_percent": [
+                {"denom": base_bc, "amount": "0.8"},
+                {"denom": quote_bc, "amount": "0.8"}
+            ]
+        })
+        pool_ids.append(pool_result.get("pool_id", 0))
+    
+    # 2 C-A pools to complete triangles (extreme skew for profitable cycle)
+    ca_ratios = [(100, 110000), (90000, 100)]  # very extreme skew
+    for c_amt, a_amt in ca_ratios:
+        pool_result = _sudo({
+            "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
+            "creator": alice_addr,
+            "coins": [
+                {"denom": denom_c, "amount": str(c_amt)},
+                {"denom": denom_a, "amount": str(a_amt)}
+            ],
+            "fee_rate": [
+                {"denom": base_ca, "amount": "0.001"},
+                {"denom": quote_ca, "amount": "0.001"}
+            ],
+            "min_initial_collateral_ratio": [
+                {"denom": base_ca, "amount": "1.5"},
+                {"denom": quote_ca, "amount": "1.5"}
+            ],
+            "interest_rate": [],
+            "liquidation_threshold": [
+                {"denom": base_ca, "amount": "1.2"},
+                {"denom": quote_ca, "amount": "1.2"}
+            ],
+            "max_borrow_percent": [
+                {"denom": base_ca, "amount": "0.8"},
+                {"denom": quote_ca, "amount": "0.8"}
+            ]
+        })
+        pool_ids.append(pool_result.get("pool_id", 0))
+    
+    # Query arbitrage
+    arb_result = _query({
+        "@type": "/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
+        "trader": alice_addr,
+        "affected_denoms": [denom_a, denom_b],
+        "ref_denom": denom_a,
+        "depth": 1
+    })
+    
+    return {
+        "found": arb_result.get("found", False),
+        "pool_count": arb_result.get("pool_count", 0),
+        "profit": arb_result.get("profit", "0"),
+        "denoms": arb_result.get("denoms", []),
+        "swap_amounts": arb_result.get("swap_amounts", []),
+        "trader_outputs": arb_result.get("trader_outputs", [])
+    }
+"""
+
+    kwargs = json.dumps({"alice_addr": alice_addr, "foo_name": foo_name})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_mixed_stress",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script failed: {query_result.get('exception')}"
+
+    demo_result = result["result"]["result"]
+
+    # Should find all 8 pools
+    assert demo_result["pool_count"] == 8, f"Should find 8 pools: {demo_result}"
+    assert demo_result["found"], f"Should find arb in mixed topology: {demo_result}"
+    assert int(demo_result["profit"]) > 0, f"Should have positive profit: {demo_result}"

@@ -3112,6 +3112,22 @@ export class QuerySimulateArbitrageRequest extends Message<QuerySimulateArbitrag
    */
   maxFraction = "";
 
+  /**
+   * Trigger trade inputs (coins sent in the triggering swap) - used to scale
+   * probe bounds
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin trigger_inputs = 6;
+   */
+  triggerInputs: Coin[] = [];
+
+  /**
+   * Trigger trade outputs (coins received from the triggering swap) - used to
+   * scale probe bounds
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin trigger_outputs = 7;
+   */
+  triggerOutputs: Coin[] = [];
+
   constructor(data?: PartialMessage<QuerySimulateArbitrageRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -3125,6 +3141,8 @@ export class QuerySimulateArbitrageRequest extends Message<QuerySimulateArbitrag
     { no: 3, name: "ref_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "depth", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 5, name: "max_fraction", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "trigger_inputs", kind: "message", T: Coin, repeated: true },
+    { no: 7, name: "trigger_outputs", kind: "message", T: Coin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QuerySimulateArbitrageRequest {

@@ -13,6 +13,7 @@ import (
 // We only store what's required to:
 //  1. Build MsgMakeTrade operations (PoolID, denoms for direction)
 //  2. Compute optimization bounds (reserves for max swap limits)
+//  3. Compute closed-form arbitrage estimates (fee rates)
 //
 // Simulation uses actual MakeTrade with CacheContext, so AMM math uses
 // live pool state, not these snapshots. Reserves here are only for bounds.
@@ -20,8 +21,10 @@ type ArbitragePool struct {
 	PoolID   uint64
 	Denom0   string // canonical order: denom0 < denom1
 	Denom1   string
-	Reserve0 math.Int // for bounds computation only
-	Reserve1 math.Int // for bounds computation only
+	Reserve0 math.Int       // for bounds computation only
+	Reserve1 math.Int       // for bounds computation only
+	Fee0     math.LegacyDec // fee rate when selling denom0 (typically 0.001-0.003)
+	Fee1     math.LegacyDec // fee rate when selling denom1
 }
 
 // ArbitrageContext holds the pool graph for arbitrage computation.
@@ -159,12 +162,27 @@ func poolToArbitragePool(pool whaleswapv1.Pool) (ArbitragePool, error) {
 		return ArbitragePool{}, errInvalidPool
 	}
 
+	// Default fee rate if not specified (0.1% = 0.001)
+	defaultFee := math.LegacyNewDecWithPrec(1, 3)
+	fee0, fee1 := defaultFee, defaultFee
+
+	// Extract fee rates from pool config
+	for _, fr := range pool.FeeRate {
+		if fr.Denom == pool.Coins[0].Denom {
+			fee0 = fr.Amount
+		} else if fr.Denom == pool.Coins[1].Denom {
+			fee1 = fr.Amount
+		}
+	}
+
 	return ArbitragePool{
 		PoolID:   pool.PoolId,
 		Denom0:   pool.Coins[0].Denom,
 		Denom1:   pool.Coins[1].Denom,
 		Reserve0: pool.Coins[0].Amount,
 		Reserve1: pool.Coins[1].Amount,
+		Fee0:     fee0,
+		Fee1:     fee1,
 	}, nil
 }
 
@@ -278,12 +296,15 @@ func prioritizePools(ac *ArbitrageContext, affectedDenoms []string) {
 // SimulateArbitrage runs MakeTrade with a CacheContext to evaluate swap amounts.
 // Nothing is persisted; this is purely for objective function evaluation.
 //
-// swapAmounts[i] corresponds to ac.Pools[i]:
-//   - positive: swap that many units of denom0 -> denom1
-//   - negative: swap |amount| units of denom1 -> denom0
-//   - zero: skip this pool
+// swapAmounts has 2*len(Pools) elements (2 per pool):
+//   - swapAmounts[2*i]:   amount of denom0 to sell on pool i (buy denom1)
+//   - swapAmounts[2*i+1]: amount of denom1 to sell on pool i (buy denom0)
+//
+// Both directions can be non-zero for the same pool - MakeTrade handles
+// multiple operations and nets them at the end.
 func (ac *ArbitrageContext) SimulateArbitrage(swapAmounts []int64) *ArbitrageResult {
-	if len(swapAmounts) != len(ac.Pools) {
+	expectedLen := len(ac.Pools) * 2
+	if len(swapAmounts) != expectedLen {
 		return &ArbitrageResult{Success: false, Error: errInvalidInput}
 	}
 
@@ -320,39 +341,43 @@ func (ac *ArbitrageContext) SimulateArbitrage(swapAmounts []int64) *ArbitrageRes
 }
 
 // buildMakeTradeMsg constructs a MsgMakeTrade from swap amounts.
-// During simulation, we use large MaxInput to allow trades to execute
-// and then evaluate profitability from the response.
+// swapAmounts has 2 entries per pool: [sell_denom0, sell_denom1].
+// Both can be non-zero, creating multiple operations on the same pool.
 func (ac *ArbitrageContext) buildMakeTradeMsg(swapAmounts []int64) *whaleswapv1.MsgMakeTrade {
 	operations := make([]whaleswapv1.TradeOperation, 0)
 	maxInputs := sdk.NewCoins() // Use Coins to handle merging/sorting
 
-	for i, amt := range swapAmounts {
-		if amt == 0 {
-			continue
-		}
+	for i, pool := range ac.Pools {
+		sellDenom0 := swapAmounts[2*i]
+		sellDenom1 := swapAmounts[2*i+1]
 
-		pool := ac.Pools[i]
-		var swapIn sdk.Coin
-
-		if amt > 0 {
-			// Sell denom0 for denom1
-			swapIn = sdk.NewCoin(pool.Denom0, math.NewInt(amt))
-		} else {
-			// Sell denom1 for denom0
-			swapIn = sdk.NewCoin(pool.Denom1, math.NewInt(-amt))
-		}
-
-		operations = append(operations, whaleswapv1.TradeOperation{
-			Op: &whaleswapv1.TradeOperation_Swap{
-				Swap: &whaleswapv1.SwapLeg{
-					PoolId: pool.PoolID,
-					SwapIn: swapIn,
+		// Add operation for selling denom0 (if any)
+		if sellDenom0 > 0 {
+			swapIn := sdk.NewCoin(pool.Denom0, math.NewInt(sellDenom0))
+			operations = append(operations, whaleswapv1.TradeOperation{
+				Op: &whaleswapv1.TradeOperation_Swap{
+					Swap: &whaleswapv1.SwapLeg{
+						PoolId: pool.PoolID,
+						SwapIn: swapIn,
+					},
 				},
-			},
-		})
+			})
+			maxInputs = maxInputs.Add(swapIn)
+		}
 
-		// Accumulate max inputs (Coins handles merging same denom)
-		maxInputs = maxInputs.Add(swapIn)
+		// Add operation for selling denom1 (if any)
+		if sellDenom1 > 0 {
+			swapIn := sdk.NewCoin(pool.Denom1, math.NewInt(sellDenom1))
+			operations = append(operations, whaleswapv1.TradeOperation{
+				Op: &whaleswapv1.TradeOperation_Swap{
+					Swap: &whaleswapv1.SwapLeg{
+						PoolId: pool.PoolID,
+						SwapIn: swapIn,
+					},
+				},
+			})
+			maxInputs = maxInputs.Add(swapIn)
+		}
 	}
 
 	if len(operations) == 0 {
@@ -381,21 +406,30 @@ func (e *simError) Error() string { return e.msg }
 // ObjectiveFunction returns a function suitable for a black-box optimizer.
 // The optimizer should MAXIMIZE the returned value.
 //
+// Input has 2*N dimensions (2 per pool):
+//   - amounts[2*i]:   amount of denom0 to sell on pool i
+//   - amounts[2*i+1]: amount of denom1 to sell on pool i
+//
 // Uses math.LegacyDec for consensus-safe arithmetic.
 // Negative return values indicate unprofitable or failed swaps.
 func (ac *ArbitrageContext) ObjectiveFunction() func([]math.LegacyDec) math.LegacyDec {
 	// Cost penalty multiplier for non-circular arbitrage
 	costPenalty := math.LegacyNewDec(1000)
+	expectedLen := len(ac.Pools) * 2
 
 	return func(amounts []math.LegacyDec) math.LegacyDec {
-		if len(amounts) != len(ac.Pools) {
+		if len(amounts) != expectedLen {
 			return DecMinValue // invalid input
 		}
 
-		// Convert LegacyDec to int64 (truncate towards zero)
+		// Convert LegacyDec to int64 (truncate towards zero, ensure non-negative)
 		intAmounts := make([]int64, len(amounts))
 		for i, a := range amounts {
-			intAmounts[i] = a.TruncateInt64()
+			val := a.TruncateInt64()
+			if val < 0 {
+				val = 0 // bounds should prevent this, but be safe
+			}
+			intAmounts[i] = val
 		}
 
 		result := ac.SimulateArbitrage(intAmounts)
@@ -433,64 +467,278 @@ func GetAffectedDenomsFromPool(pool *whaleswapv1.Pool) []string {
 	return []string{pool.Coins[0].Denom, pool.Coins[1].Denom}
 }
 
-// GetOptimizationBounds computes reasonable bounds for swap amounts.
-// Uses math.LegacyDec for consensus-safe arithmetic.
-// Limits to maxFraction of smaller reserve to avoid extreme price impact.
-func (ac *ArbitrageContext) GetOptimizationBounds(maxFraction math.LegacyDec) OptimizationBounds {
-	n := len(ac.Pools)
+// GetOptimizationBounds computes bounds for swap amounts based on pool reserves.
+// Returns 2*N bounds (2 per pool):
+//   - bounds[2*i]:   [0, reserve0] for selling denom0 on pool i
+//   - bounds[2*i+1]: [0, reserve1] for selling denom1 on pool i
+//
+// Uses full reserves as bounds - MakeTrade will naturally reject impossible swaps,
+// and the constant product formula handles slippage.
+func (ac *ArbitrageContext) GetOptimizationBounds() OptimizationBounds {
+	n := len(ac.Pools) * 2
 	bounds := OptimizationBounds{
 		Lower: make([]math.LegacyDec, n),
 		Upper: make([]math.LegacyDec, n),
 	}
 
 	for i, pool := range ac.Pools {
-		// Max sell denom0: fraction of reserve0
 		reserve0Dec := math.LegacyNewDecFromInt(pool.Reserve0)
-		max0 := reserve0Dec.Mul(maxFraction)
-
-		// Max sell denom1: fraction of reserve1
 		reserve1Dec := math.LegacyNewDecFromInt(pool.Reserve1)
-		max1 := reserve1Dec.Mul(maxFraction)
 
-		bounds.Lower[i] = max1.Neg() // negative = sell denom1
-		bounds.Upper[i] = max0       // positive = sell denom0
+		// Dimension 2*i: amount of denom0 to sell [0, reserve0]
+		bounds.Lower[2*i] = DecZero
+		bounds.Upper[2*i] = reserve0Dec
+
+		// Dimension 2*i+1: amount of denom1 to sell [0, reserve1]
+		bounds.Lower[2*i+1] = DecZero
+		bounds.Upper[2*i+1] = reserve1Dec
 	}
 
 	return bounds
 }
 
+// ComputeClosedFormEstimate computes optimal arbitrage using Newton's method.
+// Works for any N-pool cycle by finding optimal input via:
+//
+//	f(x) = x × ∏(γᵢ·rOutᵢ / (rInᵢ + γᵢ·x)) - x = 0
+//
+// where γᵢ = (1 - feeᵢ). Newton converges in 2-3 iterations.
+// Returns the best initial guess found from detected cycles.
+func (ac *ArbitrageContext) ComputeClosedFormEstimate() []math.LegacyDec {
+	n := len(ac.Pools) * 2
+	best := make([]math.LegacyDec, n)
+	for i := range best {
+		best[i] = DecZero
+	}
+
+	if len(ac.Pools) < 2 {
+		return best
+	}
+
+	// Find cycles starting from RefDenom
+	// A cycle is: RefDenom → D1 → D2 → ... → RefDenom
+	cycles := ac.findArbitrageCycles(ac.RefDenom, 4) // max 4-pool cycles
+	if len(cycles) == 0 {
+		return best
+	}
+
+	bestProfit := DecZero
+
+	for _, cycle := range cycles {
+		// Compute optimal input using Newton's method
+		optimalAmt, profit := ac.computeOptimalCycleAmount(cycle)
+		if profit.GT(bestProfit) {
+			bestProfit = profit
+			// Build the 2N result vector
+			for k := range best {
+				best[k] = DecZero
+			}
+			// Set amounts for each pool in the cycle
+			amt := optimalAmt
+			for _, step := range cycle {
+				poolIdx := step.poolIdx
+				if step.sellDenom0 {
+					best[2*poolIdx] = amt
+				} else {
+					best[2*poolIdx+1] = amt
+				}
+				// Compute output of this step (becomes input of next)
+				pool := ac.Pools[poolIdx]
+				var rIn, rOut, fee math.LegacyDec
+				if step.sellDenom0 {
+					rIn = math.LegacyNewDecFromInt(pool.Reserve0)
+					rOut = math.LegacyNewDecFromInt(pool.Reserve1)
+					fee = pool.Fee0
+				} else {
+					rIn = math.LegacyNewDecFromInt(pool.Reserve1)
+					rOut = math.LegacyNewDecFromInt(pool.Reserve0)
+					fee = pool.Fee1
+				}
+				gamma := DecOne.Sub(fee)
+				effectiveAmt := amt.Mul(gamma)
+				amt = rOut.Mul(effectiveAmt).Quo(rIn.Add(effectiveAmt))
+			}
+		}
+	}
+
+	return best
+}
+
+// cycleStep represents one step in an arbitrage cycle
+type cycleStep struct {
+	poolIdx    int
+	sellDenom0 bool
+	inDenom    string
+	outDenom   string
+}
+
+// findArbitrageCycles finds all cycles starting and ending at startDenom
+func (ac *ArbitrageContext) findArbitrageCycles(startDenom string, maxLen int) [][]cycleStep {
+	var cycles [][]cycleStep
+
+	// DFS to find cycles
+	var dfs func(currentDenom string, path []cycleStep, usedPools map[int]bool)
+	dfs = func(currentDenom string, path []cycleStep, usedPools map[int]bool) {
+		if len(path) > maxLen {
+			return
+		}
+
+		// Check if we've completed a cycle
+		if len(path) >= 2 && currentDenom == startDenom {
+			cycleCopy := make([]cycleStep, len(path))
+			copy(cycleCopy, path)
+			cycles = append(cycles, cycleCopy)
+			return
+		}
+
+		// Try each pool that contains currentDenom
+		for poolIdx, pool := range ac.Pools {
+			if usedPools[poolIdx] {
+				continue
+			}
+
+			var step cycleStep
+			step.poolIdx = poolIdx
+
+			if pool.Denom0 == currentDenom {
+				step.sellDenom0 = true
+				step.inDenom = pool.Denom0
+				step.outDenom = pool.Denom1
+			} else if pool.Denom1 == currentDenom {
+				step.sellDenom0 = false
+				step.inDenom = pool.Denom1
+				step.outDenom = pool.Denom0
+			} else {
+				continue
+			}
+
+			usedPools[poolIdx] = true
+			path = append(path, step)
+			dfs(step.outDenom, path, usedPools)
+			path = path[:len(path)-1]
+			usedPools[poolIdx] = false
+		}
+	}
+
+	dfs(startDenom, nil, make(map[int]bool))
+	return cycles
+}
+
+// computeOptimalCycleAmount uses Newton's method to find optimal input amount
+func (ac *ArbitrageContext) computeOptimalCycleAmount(cycle []cycleStep) (math.LegacyDec, math.LegacyDec) {
+	if len(cycle) == 0 {
+		return DecZero, DecZero
+	}
+
+	// Get first pool's input reserve as scale reference
+	firstPool := ac.Pools[cycle[0].poolIdx]
+	var maxInput math.LegacyDec
+	if cycle[0].sellDenom0 {
+		maxInput = math.LegacyNewDecFromInt(firstPool.Reserve0)
+	} else {
+		maxInput = math.LegacyNewDecFromInt(firstPool.Reserve1)
+	}
+
+	// simulateCycle computes output for input x
+	simulateCycle := func(x math.LegacyDec) math.LegacyDec {
+		amt := x
+		for _, step := range cycle {
+			pool := ac.Pools[step.poolIdx]
+			var rIn, rOut, fee math.LegacyDec
+			if step.sellDenom0 {
+				rIn = math.LegacyNewDecFromInt(pool.Reserve0)
+				rOut = math.LegacyNewDecFromInt(pool.Reserve1)
+				fee = pool.Fee0
+			} else {
+				rIn = math.LegacyNewDecFromInt(pool.Reserve1)
+				rOut = math.LegacyNewDecFromInt(pool.Reserve0)
+				fee = pool.Fee1
+			}
+			gamma := DecOne.Sub(fee)
+			effectiveAmt := amt.Mul(gamma)
+			// AMM formula: out = rOut * effectiveAmt / (rIn + effectiveAmt)
+			amt = rOut.Mul(effectiveAmt).Quo(rIn.Add(effectiveAmt))
+		}
+		return amt
+	}
+
+	// Newton's method: find x where profit'(x) = 0
+	// Start with small amount (1% of max reserve)
+	x := maxInput.Mul(math.LegacyNewDecWithPrec(1, 2))
+
+	// 3 Newton iterations (converges fast for convex profit function)
+	for iter := 0; iter < 3; iter++ {
+		out := simulateCycle(x)
+		if out.IsZero() || x.IsZero() {
+			break
+		}
+		// Newton step: x_new = x * x / out (simplified for this form)
+		// This finds where marginal output = 1 (optimal)
+		xNew := x.Mul(x).Quo(out)
+
+		// Clamp to reasonable bounds
+		if xNew.GT(maxInput.Mul(math.LegacyNewDecWithPrec(9, 1))) {
+			xNew = maxInput.Mul(math.LegacyNewDecWithPrec(9, 1)) // 90% max
+		}
+		if xNew.LT(DecOne) {
+			xNew = DecOne
+		}
+		x = xNew
+	}
+
+	// Compute final profit
+	finalOut := simulateCycle(x)
+	profit := finalOut.Sub(x)
+
+	// Only return if profitable
+	if profit.IsPositive() {
+		return x, profit
+	}
+	return DecZero, DecZero
+}
+
 // FindArbitrage runs the optimizer to find profitable arbitrage.
 // Returns nil if no profitable arbitrage found.
-// maxFraction should be a LegacyDec between 0 and 1 (e.g., 0.5 for 50%).
-func (ac *ArbitrageContext) FindArbitrage(optimizer ArbitrageOptimizer, maxFraction math.LegacyDec) *ArbitrageResult {
-	logger := ac.Keeper.Logger(ac.Ctx)
+// Uses 2N dimensions (2 per pool) to allow bidirectional trading on each pool.
+func (ac *ArbitrageContext) FindArbitrage(optimizer ArbitrageOptimizer) *ArbitrageResult {
+	logger := ac.Keeper.ArbitrageLogger(ac.Ctx)
 
 	if len(ac.Pools) == 0 {
-		logger.Debug("arbitrage: no pools to optimize")
+		logger.Info("arbitrage: no pools to optimize")
 		return nil
 	}
 
-	// Collect pool IDs for logging
-	poolIDs := make([]uint64, len(ac.Pools))
-	for i, p := range ac.Pools {
-		poolIDs[i] = p.PoolID
-	}
+	numDimensions := len(ac.Pools) * 2
 
-	logger.Debug("arbitrage optimization starting",
+	logger.Info("arbitrage optimization starting",
 		"pool_count", len(ac.Pools),
-		"pool_ids", poolIDs,
-		"denoms", ac.AllDenoms,
+		"dimensions", numDimensions,
+		"pools", ac.Pools,
 		"ref_denom", ac.RefDenom,
-		"max_fraction", maxFraction.String(),
 	)
 
-	bounds := ac.GetOptimizationBounds(maxFraction)
+	bounds := ac.GetOptimizationBounds()
 	objective := ac.ObjectiveFunction()
 
-	// Initial guess: all zeros (no swaps)
-	initialGuess := make([]math.LegacyDec, len(ac.Pools))
-	for i := range initialGuess {
-		initialGuess[i] = DecZero
+	// Compute closed-form estimate as initial guess
+	initialGuess := ac.ComputeClosedFormEstimate()
+
+	// Check if closed-form found something
+	hasClosedForm := false
+	for _, v := range initialGuess {
+		if !v.IsZero() {
+			hasClosedForm = true
+			break
+		}
+	}
+
+	if hasClosedForm {
+		// Evaluate the closed-form estimate
+		closedFormProfit := objective(initialGuess)
+		logger.Info("closed-form arbitrage estimate",
+			"profit", closedFormProfit.TruncateInt().String(),
+			"amounts", initialGuess,
+		)
 	}
 
 	optimal, value, found := optimizer.Optimize(objective, bounds, initialGuess)
@@ -501,18 +749,18 @@ func (ac *ArbitrageContext) FindArbitrage(optimizer ArbitrageOptimizer, maxFract
 		logger.Info("arbitrage optimization completed",
 			"algorithm", metrics.Algorithm,
 			"iterations", metrics.Iterations,
+			"best_iteration", metrics.BestIteration, // 0 = initial/CF, >0 = NM improved
 			"evaluations", metrics.Evaluations,
 			"dimensions", metrics.Dimensions,
 			"duration_ms", metrics.Duration.Milliseconds(),
 			"best_value", metrics.BestValue.String(),
 			"found", metrics.Found,
-			"pool_ids", poolIDs,
-			"denoms", ac.AllDenoms,
+			"pools", ac.Pools,
 		)
 	}
 
 	if !found || !value.IsPositive() {
-		logger.Debug("arbitrage: no profitable opportunity found",
+		logger.Info("arbitrage: no profitable opportunity found",
 			"found", found,
 			"value", value.String(),
 		)
@@ -522,12 +770,16 @@ func (ac *ArbitrageContext) FindArbitrage(optimizer ArbitrageOptimizer, maxFract
 	// Convert optimal LegacyDec to int64 and run final simulation
 	intAmounts := make([]int64, len(optimal))
 	for i, a := range optimal {
-		intAmounts[i] = a.TruncateInt64()
+		val := a.TruncateInt64()
+		if val < 0 {
+			val = 0
+		}
+		intAmounts[i] = val
 	}
 
 	result := ac.SimulateArbitrage(intAmounts)
 	if result == nil || !result.Success || !result.Profit.IsPositive() {
-		logger.Debug("arbitrage: final simulation failed or unprofitable",
+		logger.Info("arbitrage: final simulation failed or unprofitable",
 			"success", result != nil && result.Success,
 			"profit", func() string {
 				if result != nil {
@@ -539,13 +791,14 @@ func (ac *ArbitrageContext) FindArbitrage(optimizer ArbitrageOptimizer, maxFract
 		return nil
 	}
 
+	// Format swap amounts for logging: [pool0_sell0, pool0_sell1, pool1_sell0, ...]
 	logger.Info("arbitrage opportunity found",
 		"profit", result.Profit.String(),
 		"ref_denom", ac.RefDenom,
 		"trader_inputs", result.TraderInputs.String(),
 		"trader_outputs", result.TraderOutputs.String(),
 		"swap_amounts", intAmounts,
-		"pool_ids", poolIDs,
+		"pools", ac.Pools,
 	)
 
 	return result

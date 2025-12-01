@@ -11,9 +11,8 @@ type ArbitrageRunner struct {
 	keeper    *Keeper
 	optimizer ArbitrageOptimizer
 	// Config
-	MaxDepth       int            // how many hops to expand pool graph
-	MaxFraction    math.LegacyDec // max fraction of pool reserve to swap (consensus-safe)
-	MinProfitBasis int64          // minimum profit in basis points (1/10000) to execute
+	MaxDepth       int   // how many hops to expand pool graph
+	MinProfitBasis int64 // minimum profit in basis points (1/10000) to execute
 }
 
 // NewArbitrageRunner creates an ArbitrageRunner with default settings.
@@ -21,9 +20,8 @@ func NewArbitrageRunner(keeper *Keeper) *ArbitrageRunner {
 	return &ArbitrageRunner{
 		keeper:         keeper,
 		optimizer:      NewHybridOptimizer(),
-		MaxDepth:       1,                               // include pools 1 hop away from affected denoms
-		MaxFraction:    math.LegacyNewDecWithPrec(1, 1), // max 10% of any pool reserve (0.1)
-		MinProfitBasis: 10,                              // require at least 0.1% profit relative to trade size
+		MaxDepth:       1,  // include pools 1 hop away from affected denoms
+		MinProfitBasis: 10, // require at least 0.1% profit relative to trade size
 	}
 }
 
@@ -52,7 +50,7 @@ func (ar *ArbitrageRunner) CheckAndExecuteArbitrage(
 	affectedDenoms []string,
 	refDenom string,
 ) (*ArbitrageResult, error) {
-	logger := ar.keeper.Logger(ctx)
+	logger := ar.keeper.ArbitrageLogger(ctx)
 	logger.Debug("arbitrage check starting",
 		"affected_denoms", affectedDenoms,
 		"ref_denom", refDenom,
@@ -76,7 +74,7 @@ func (ar *ArbitrageRunner) CheckAndExecuteArbitrage(
 	)
 
 	// Find arbitrage opportunity
-	result := ac.FindArbitrage(ar.optimizer, ar.MaxFraction)
+	result := ac.FindArbitrage(ar.optimizer)
 	if result == nil {
 		logger.Debug("no profitable arbitrage found")
 		return nil, nil
@@ -168,7 +166,7 @@ func (ar *ArbitrageRunner) SimulateOnly(
 		return nil, nil
 	}
 
-	return ac.FindArbitrage(ar.optimizer, ar.MaxFraction), nil
+	return ac.FindArbitrage(ar.optimizer), nil
 }
 
 // GetPoolDenomsFromMsg extracts affected denoms from a message if it affects pools.

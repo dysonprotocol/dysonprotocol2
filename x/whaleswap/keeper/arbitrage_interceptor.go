@@ -52,7 +52,7 @@ func (i *ArbitrageMsgInterceptor) Post(ctx sdk.Context, msg sdk.Msg, result *sdk
 		return
 	}
 
-	logger := i.keeper.Logger(ctx)
+	logger := i.keeper.ArbitrageLogger(ctx)
 
 	// Get affected denoms from the message
 	affectedDenoms := GetPoolDenomsFromMsg(msg)

@@ -932,6 +932,18 @@ message QuerySimulateArbitrageRequest {
   int32 depth = 4;
   // Maximum fraction of pool reserve to swap (e.g., 0.1 = 10%)
   string max_fraction = 5 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+  // Trigger trade inputs (coins sent in the triggering swap) - used to scale
+  // probe bounds
+  repeated cosmos.base.v1beta1.Coin trigger_inputs = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  // Trigger trade outputs (coins received from the triggering swap) - used to
+  // scale probe bounds
+  repeated cosmos.base.v1beta1.Coin trigger_outputs = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
 }
 
 message QuerySimulateArbitrageResponse {

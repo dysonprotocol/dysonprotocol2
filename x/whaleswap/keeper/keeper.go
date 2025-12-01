@@ -90,10 +90,10 @@ type Keeper struct {
 	AuctionsBySellBid collections.Map[collections.Triple[string, string, uint64], uint64]
 	AuctionsByBidSell collections.Map[collections.Triple[string, string, uint64], uint64]
 	// Leverage
-	leveragePositionSeq  collections.Sequence
-	LeveragePositions    collections.Map[uint64, whaleswapv1.LeveragePosition]
+	leveragePositionSeq     collections.Sequence
+	LeveragePositions       collections.Map[uint64, whaleswapv1.LeveragePosition]
 	PositionsByAddressIndex collections.Map[collections.Triple[string, uint32, uint64], uint64]
-	PositionsByPoolIndex collections.Map[collections.Triple[uint64, uint32, uint64], uint64]
+	PositionsByPoolIndex    collections.Map[collections.Triple[uint64, uint32, uint64], uint64]
 	// Metrics
 	AddressMetricsMap collections.Map[string, whaleswapv1.AddressMetrics]
 }
@@ -269,6 +269,11 @@ func NewKeeper(
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", "x/whaleswap")
+}
+
+// ArbitrageLogger returns a logger with feature=arbitrage for easy filtering.
+func (k Keeper) ArbitrageLogger(ctx sdk.Context) log.Logger {
+	return k.Logger(ctx).With("feature", "arbitrage")
 }
 
 func (k Keeper) GetAuthority() string { return k.authority }

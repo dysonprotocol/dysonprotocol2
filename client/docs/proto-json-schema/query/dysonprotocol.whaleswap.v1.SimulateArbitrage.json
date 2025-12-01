@@ -27,12 +27,42 @@
                     "max_fraction": {
                         "type": "string",
                         "description": "Maximum fraction of pool reserve to swap (e.g., 0.1 = 10%)"
+                    },
+                    "trigger_inputs": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Trigger trade inputs (coins sent in the triggering swap) - used to scale probe bounds"
+                    },
+                    "trigger_outputs": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Trigger trade outputs (coins received from the triggering swap) - used to scale probe bounds"
                     }
                 },
                 "additionalProperties": false,
                 "type": "object",
                 "title": "--- Arbitrage simulation ---",
                 "description": "--- Arbitrage simulation ---"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
             }
         }
     },
