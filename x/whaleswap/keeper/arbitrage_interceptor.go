@@ -89,7 +89,7 @@ func (i *ArbitrageMsgInterceptor) Post(ctx sdk.Context, msg sdk.Msg, result *sdk
 	}
 
 	if arbResult != nil && arbResult.Success {
-		logger.Info("arbitrage executed",
+		logger.Debug("arbitrage executed",
 			"profit", arbResult.Profit.String(),
 			"ref_denom", i.refDenom,
 			"inputs", arbResult.TraderInputs.String(),

@@ -147,7 +147,7 @@ func (k *Keeper) BuildArbitrageContext(
 	for i, p := range ac.Pools {
 		poolIDs[i] = p.PoolID
 	}
-	logger.Info("arbitrage context built",
+	logger.Debug("arbitrage context built",
 		"pool_count", len(ac.Pools),
 		"pool_ids", poolIDs,
 		"all_denoms", ac.AllDenoms,
@@ -339,7 +339,7 @@ func (ac *ArbitrageContext) SimulateArbitrage(swapAmounts []int64) *ArbitrageRes
 	resp, err := ac.Keeper.MakeTrade(cacheCtx, msg)
 	if err != nil {
 		logger := ac.Keeper.Logger(ac.Ctx)
-		logger.Info("SimulateArbitrage MakeTrade failed",
+		logger.Debug("SimulateArbitrage MakeTrade failed",
 			"error", err.Error(),
 			"trader", msg.Trader,
 			"operations_count", len(msg.Operations),
@@ -376,7 +376,7 @@ func (ac *ArbitrageContext) buildMakeTradeMsg(swapAmounts []int64) *whaleswapv1.
 	// If we have a path from FLOOD, generate operations in path order
 	// Must recompute cascading amounts using TRUNCATED values to avoid rounding shortfalls
 	if len(ac.arbPath) > 0 {
-		logger.Info("buildMakeTradeMsg using path order", "path_len", len(ac.arbPath))
+		logger.Debug("buildMakeTradeMsg using path order", "path_len", len(ac.arbPath))
 
 		// Start with the first step's amount
 		currentAmount := ac.arbPath[0].amount
@@ -428,7 +428,7 @@ func (ac *ArbitrageContext) buildMakeTradeMsg(swapAmounts []int64) *whaleswapv1.
 				},
 			})
 
-			logger.Info("buildMakeTradeMsg path step",
+			logger.Debug("buildMakeTradeMsg path step",
 				"step", i,
 				"pool_id", pool.PoolID,
 				"sell_denom0", step.sellDenom0,
@@ -635,7 +635,7 @@ func (ac *ArbitrageContext) ComputeClosedFormEstimate() []math.LegacyDec {
 	numTokens := len(tokens)
 
 	// Log token mapping
-	logger.Info("FLOOD token mapping",
+	logger.Debug("FLOOD token mapping",
 		"ref_denom", ac.RefDenom,
 		"base_idx", baseIdx,
 		"num_tokens", numTokens,
@@ -647,7 +647,7 @@ func (ac *ArbitrageContext) ComputeClosedFormEstimate() []math.LegacyDec {
 	minReserve := math.LegacyNewDec(1 << 60)
 	for _, pool := range ac.Pools {
 		if pool.Reserve0.IsNil() || pool.Reserve1.IsNil() {
-			logger.Info("FLOOD skipping pool with nil reserves", "pool_id", pool.PoolID)
+			logger.Debug("FLOOD skipping pool with nil reserves", "pool_id", pool.PoolID)
 			continue
 		}
 		r0 := math.LegacyNewDecFromInt(pool.Reserve0)
@@ -660,7 +660,7 @@ func (ac *ArbitrageContext) ComputeClosedFormEstimate() []math.LegacyDec {
 		}
 	}
 
-	logger.Info("FLOOD min_reserve", "min_reserve", minReserve.TruncateInt().String())
+	logger.Debug("FLOOD min_reserve", "min_reserve", minReserve.TruncateInt().String())
 
 	// Try different starting amounts and split counts
 	bestProfit := DecZero
@@ -677,7 +677,7 @@ func (ac *ArbitrageContext) ComputeClosedFormEstimate() []math.LegacyDec {
 				startAmt = DecOne
 			}
 
-			logger.Info("FLOOD trying",
+			logger.Debug("FLOOD trying",
 				"splits", splits,
 				"frac_pct", fracPct,
 				"start_amt", startAmt.TruncateInt().String(),
@@ -685,7 +685,7 @@ func (ac *ArbitrageContext) ComputeClosedFormEstimate() []math.LegacyDec {
 
 			profit, path := ac.floodSearch(tokens, tokenIdx, baseIdx, numTokens, startAmt, splits, maxDepth, logger)
 
-			logger.Info("FLOOD search result",
+			logger.Debug("FLOOD search result",
 				"splits", splits,
 				"frac_pct", fracPct,
 				"profit", profit.TruncateInt().String(),
@@ -695,7 +695,7 @@ func (ac *ArbitrageContext) ComputeClosedFormEstimate() []math.LegacyDec {
 			if profit.GT(bestProfit) {
 				bestProfit = profit
 				bestPath = path
-				logger.Info("FLOOD found better profit",
+				logger.Debug("FLOOD found better profit",
 					"splits", splits,
 					"start_amt", startAmt.TruncateInt().String(),
 					"profit", profit.TruncateInt().String(),
@@ -711,7 +711,7 @@ func (ac *ArbitrageContext) ComputeClosedFormEstimate() []math.LegacyDec {
 	}
 
 	if bestProfit.GT(DecZero) && len(bestPath) > 0 {
-		logger.Info("FLOOD arbitrage found",
+		logger.Debug("FLOOD arbitrage found",
 			"profit", bestProfit.TruncateInt().String(),
 			"path_len", len(bestPath),
 		)
@@ -719,11 +719,11 @@ func (ac *ArbitrageContext) ComputeClosedFormEstimate() []math.LegacyDec {
 		ac.arbPath = bestPath
 		// Convert path to flows for optimizer compatibility
 		flows := ac.pathToFlows(bestPath, n)
-		logger.Info("FLOOD flows generated", "flows", formatFlows(flows))
+		logger.Debug("FLOOD flows generated", "flows", formatFlows(flows))
 		return flows
 	}
 
-	logger.Info("FLOOD: no profitable path found",
+	logger.Debug("FLOOD: no profitable path found",
 		"best_profit", bestProfit.String(),
 		"pools_checked", len(ac.Pools),
 	)
@@ -762,7 +762,7 @@ func (ac *ArbitrageContext) floodSearch(
 
 	splitsDec := math.LegacyNewDec(int64(splits))
 
-	logger.Info("FLOOD search starting",
+	logger.Debug("FLOOD search starting",
 		"base_idx", baseIdx,
 		"start_amt", startAmt.TruncateInt().String(),
 		"splits", splits,
@@ -805,7 +805,7 @@ func (ac *ArbitrageContext) floodSearch(
 				dstIdx, dstOk := tokenIdx[tout]
 
 				if !srcOk || !dstOk {
-					logger.Info("FLOOD edge skip: token not in index",
+					logger.Debug("FLOOD edge skip: token not in index",
 						"tin", tin,
 						"tout", tout,
 						"src_ok", srcOk,
@@ -835,7 +835,7 @@ func (ac *ArbitrageContext) floodSearch(
 				}
 
 				if totalOut.GT(newDist[dstIdx]) {
-					logger.Info("FLOOD edge relax",
+					logger.Debug("FLOOD edge relax",
 						"iter", iter,
 						"pool_id", pool.PoolID,
 						"tin", tin,
@@ -864,7 +864,7 @@ func (ac *ArbitrageContext) floodSearch(
 		for i := 0; i < numTokens; i++ {
 			distStrs[i] = dist[i].TruncateInt().String()
 		}
-		logger.Info("FLOOD iter complete",
+		logger.Debug("FLOOD iter complete",
 			"iter", iter,
 			"updated", updated,
 			"dist_base", dist[baseIdx].TruncateInt().String(),
@@ -875,7 +875,7 @@ func (ac *ArbitrageContext) floodSearch(
 		// Early profit detection (>0.1%)
 		if dist[baseIdx].GT(startAmt.MulInt64(1001).QuoInt64(1000)) {
 			profit := dist[baseIdx].Sub(startAmt)
-			logger.Info("FLOOD early profit detected",
+			logger.Debug("FLOOD early profit detected",
 				"iter", iter,
 				"dist_base", dist[baseIdx].TruncateInt().String(),
 				"profit", profit.TruncateInt().String(),
@@ -885,7 +885,7 @@ func (ac *ArbitrageContext) floodSearch(
 		}
 
 		if !updated {
-			logger.Info("FLOOD no updates, stopping", "iter", iter)
+			logger.Debug("FLOOD no updates, stopping", "iter", iter)
 			break
 		}
 	}
@@ -903,7 +903,7 @@ func (ac *ArbitrageContext) floodSearch(
 			parentInfo[i] = tokens[i] + "←nil"
 		}
 	}
-	logger.Info("FLOOD final check",
+	logger.Debug("FLOOD final check",
 		"dist_base", dist[baseIdx].TruncateInt().String(),
 		"start_amt", startAmt.TruncateInt().String(),
 		"profit", profit.TruncateInt().String(),
@@ -929,7 +929,7 @@ func (ac *ArbitrageContext) reconstructPath(
 	startAmt math.LegacyDec,
 	logger log.Logger,
 ) []floodStep {
-	logger.Info("FLOOD reconstructPath starting DFS",
+	logger.Debug("FLOOD reconstructPath starting DFS",
 		"base_idx", baseIdx,
 		"base_token", tokens[baseIdx],
 		"start_amt", startAmt.TruncateInt().String(),
@@ -987,7 +987,7 @@ func (ac *ArbitrageContext) reconstructPath(
 		if depth > 0 && state.tokenIdx == baseIdx {
 			profit := state.amount.Sub(startAmt)
 			if profit.GT(bestProfit) {
-				logger.Info("FLOOD DFS found cycle",
+				logger.Debug("FLOOD DFS found cycle",
 					"depth", depth,
 					"profit", profit.TruncateInt().String(),
 					"path_len", len(state.path),
@@ -1078,7 +1078,7 @@ func (ac *ArbitrageContext) reconstructPath(
 		usedDir:  make(map[int]bool),
 	}, 0)
 
-	logger.Info("FLOOD reconstructPath DFS result",
+	logger.Debug("FLOOD reconstructPath DFS result",
 		"path_len", len(bestPath),
 		"profit", bestProfit.TruncateInt().String(),
 	)
@@ -1098,7 +1098,7 @@ func (ac *ArbitrageContext) pathToFlows(path []floodStep, n int) []math.LegacyDe
 	}
 
 	if len(path) == 0 {
-		logger.Info("pathToFlows: empty path")
+		logger.Debug("pathToFlows: empty path")
 		return flows
 	}
 
@@ -1110,14 +1110,14 @@ func (ac *ArbitrageContext) pathToFlows(path []floodStep, n int) []math.LegacyDe
 		currentAmount = math.LegacyNewDec(100)
 	}
 
-	logger.Info("pathToFlows starting",
+	logger.Debug("pathToFlows starting",
 		"path_len", len(path),
 		"initial_amount", currentAmount.TruncateInt().String(),
 	)
 
 	for i, step := range path {
 		if step.poolIdx < 0 || step.poolIdx >= len(ac.Pools) {
-			logger.Info("pathToFlows: invalid pool index", "idx", step.poolIdx)
+			logger.Debug("pathToFlows: invalid pool index", "idx", step.poolIdx)
 			continue
 		}
 
@@ -1133,7 +1133,7 @@ func (ac *ArbitrageContext) pathToFlows(path []floodStep, n int) []math.LegacyDe
 		}
 		flows[dirKey] = currentAmount
 
-		logger.Info("pathToFlows step",
+		logger.Debug("pathToFlows step",
 			"step", i,
 			"pool_id", pool.PoolID,
 			"sell_denom0", step.sellDenom0,
@@ -1164,7 +1164,7 @@ func (ac *ArbitrageContext) pathToFlows(path []floodStep, n int) []math.LegacyDe
 			effectiveIn := currentAmount.Mul(gamma)
 			outputAmount := rOut.Mul(effectiveIn).Quo(rIn.Add(effectiveIn))
 
-			logger.Info("pathToFlows compute output",
+			logger.Debug("pathToFlows compute output",
 				"step", i,
 				"input", currentAmount.TruncateInt().String(),
 				"output", outputAmount.TruncateInt().String(),
@@ -1174,7 +1174,7 @@ func (ac *ArbitrageContext) pathToFlows(path []floodStep, n int) []math.LegacyDe
 		}
 	}
 
-	logger.Info("pathToFlows result", "flows", formatFlows(flows))
+	logger.Debug("pathToFlows result", "flows", formatFlows(flows))
 	return flows
 }
 
@@ -1198,13 +1198,13 @@ func (ac *ArbitrageContext) FindArbitrage(optimizer ArbitrageOptimizer) *Arbitra
 	logger := ac.Keeper.ArbitrageLogger(ac.Ctx)
 
 	if len(ac.Pools) == 0 {
-		logger.Info("arbitrage: no pools to optimize")
+		logger.Debug("arbitrage: no pools to optimize")
 		return nil
 	}
 
 	numDimensions := len(ac.Pools) * 2
 
-	logger.Info("arbitrage optimization starting",
+	logger.Debug("arbitrage optimization starting",
 		"pool_count", len(ac.Pools),
 		"dimensions", numDimensions,
 		"pools", ac.Pools,
@@ -1229,7 +1229,7 @@ func (ac *ArbitrageContext) FindArbitrage(optimizer ArbitrageOptimizer) *Arbitra
 	if hasClosedForm {
 		// Evaluate the closed-form estimate
 		closedFormProfit := objective(initialGuess)
-		logger.Info("closed-form arbitrage estimate",
+		logger.Debug("closed-form arbitrage estimate",
 			"profit", closedFormProfit.TruncateInt().String(),
 			"amounts", initialGuess,
 		)
@@ -1240,7 +1240,7 @@ func (ac *ArbitrageContext) FindArbitrage(optimizer ArbitrageOptimizer) *Arbitra
 	// Log optimization metrics
 	metrics := optimizer.GetMetrics()
 	if metrics != nil {
-		logger.Info("arbitrage optimization completed",
+		logger.Debug("arbitrage optimization completed",
 			"algorithm", metrics.Algorithm,
 			"iterations", metrics.Iterations,
 			"best_iteration", metrics.BestIteration, // 0 = initial/CF, >0 = NM improved
@@ -1254,7 +1254,7 @@ func (ac *ArbitrageContext) FindArbitrage(optimizer ArbitrageOptimizer) *Arbitra
 	}
 
 	if !found || !value.IsPositive() {
-		logger.Info("arbitrage: no profitable opportunity found",
+		logger.Debug("arbitrage: no profitable opportunity found",
 			"found", found,
 			"value", value.String(),
 		)
@@ -1273,7 +1273,7 @@ func (ac *ArbitrageContext) FindArbitrage(optimizer ArbitrageOptimizer) *Arbitra
 
 	result := ac.SimulateArbitrage(intAmounts)
 	if result == nil || !result.Success || !result.Profit.IsPositive() {
-		logger.Info("arbitrage: final simulation failed or unprofitable",
+		logger.Debug("arbitrage: final simulation failed or unprofitable",
 			"success", result != nil && result.Success,
 			"profit", func() string {
 				if result != nil {
@@ -1286,7 +1286,7 @@ func (ac *ArbitrageContext) FindArbitrage(optimizer ArbitrageOptimizer) *Arbitra
 	}
 
 	// Format swap amounts for logging: [pool0_sell0, pool0_sell1, pool1_sell0, ...]
-	logger.Info("arbitrage opportunity found",
+	logger.Debug("arbitrage opportunity found",
 		"profit", result.Profit.String(),
 		"ref_denom", ac.RefDenom,
 		"trader_inputs", result.TraderInputs.String(),

@@ -80,7 +80,7 @@ func (ar *ArbitrageRunner) CheckAndExecuteArbitrage(
 		return nil, nil
 	}
 
-	logger.Info("arbitrage opportunity found",
+	logger.Debug("arbitrage opportunity found",
 		"profit", result.Profit.String(),
 		"ref_denom", refDenom,
 		"inputs", result.TraderInputs.String(),
@@ -111,7 +111,7 @@ func (ar *ArbitrageRunner) CheckAndExecuteArbitrage(
 		return nil, nil
 	}
 
-	logger.Info("arbitrage executed successfully",
+	logger.Debug("arbitrage executed successfully",
 		"trade_id", resp.TradeId,
 		"trader_inputs", resp.TraderInputs.String(),
 		"trader_outputs", resp.TraderOutputs.String(),
