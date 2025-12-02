@@ -178,6 +178,8 @@ var (
 		// Whaleswap leverage vaults (module accounts)
 		whaleswapv1.LeverageVaultModuleName:       nil,
 		whaleswapv1.LeverageBorrowVaultModuleName: nil,
+		// Whaleswap arbitrage revenue account (receives MEV profits)
+		whaleswapv1.ArbRevenueModuleName: nil,
 	}
 )
 
@@ -997,7 +999,25 @@ func (app *DysApp) setPostHandler() {
 func (app *DysApp) setMsgInterceptor() {
 	// Set up message-level interceptor for pre/post execution hooks.
 	// This allows logging/modifying individual message execution and responses.
-	app.MsgServiceRouter().SetInterceptor(NewLoggingMsgInterceptor())
+
+	// Get dedicated arbitrage revenue module address for MEV capture
+	arbTrader := app.AccountKeeper.GetModuleAddress(whaleswapv1.ArbRevenueModuleName).String()
+
+	// Create arbitrage interceptor - runs after pool-affecting messages to capture arb
+	arbInterceptor := whaleswapkeeper.NewArbitrageMsgInterceptor(
+		&app.WhaleswapKeeper,
+		arbTrader,
+		"udys", // refDenom for profit measurement
+	)
+
+	// Compose interceptors: logging first, then arbitrage
+	// Post hooks execute in reverse order, so arbitrage runs immediately after msg success
+	composed := whaleswapkeeper.NewComposedMsgInterceptor(
+		NewLoggingMsgInterceptor(),
+		arbInterceptor,
+	)
+
+	app.MsgServiceRouter().SetInterceptor(composed)
 }
 
 // Name returns the name of the App

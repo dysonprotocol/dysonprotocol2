@@ -26,6 +26,7 @@ var (
 	fd_Params_max_note_length                protoreflect.FieldDescriptor
 	fd_Params_block_delay_before_close       protoreflect.FieldDescriptor
 	fd_Params_block_delay_before_liquidation protoreflect.FieldDescriptor
+	fd_Params_arbitrage_mode                 protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -39,6 +40,7 @@ func init() {
 	fd_Params_max_note_length = md_Params.Fields().ByName("max_note_length")
 	fd_Params_block_delay_before_close = md_Params.Fields().ByName("block_delay_before_close")
 	fd_Params_block_delay_before_liquidation = md_Params.Fields().ByName("block_delay_before_liquidation")
+	fd_Params_arbitrage_mode = md_Params.Fields().ByName("arbitrage_mode")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -154,6 +156,12 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
+	if x.ArbitrageMode != 0 {
+		value := protoreflect.ValueOfEnum((protoreflect.EnumNumber)(x.ArbitrageMode))
+		if !f(fd_Params_arbitrage_mode, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -185,6 +193,8 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.BlockDelayBeforeClose != uint64(0)
 	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_liquidation":
 		return x.BlockDelayBeforeLiquidation != uint64(0)
+	case "dysonprotocol.whaleswap.v1.Params.arbitrage_mode":
+		return x.ArbitrageMode != 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -217,6 +227,8 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.BlockDelayBeforeClose = uint64(0)
 	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_liquidation":
 		x.BlockDelayBeforeLiquidation = uint64(0)
+	case "dysonprotocol.whaleswap.v1.Params.arbitrage_mode":
+		x.ArbitrageMode = 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -257,6 +269,9 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_liquidation":
 		value := x.BlockDelayBeforeLiquidation
 		return protoreflect.ValueOfUint64(value)
+	case "dysonprotocol.whaleswap.v1.Params.arbitrage_mode":
+		value := x.ArbitrageMode
+		return protoreflect.ValueOfEnum((protoreflect.EnumNumber)(value))
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -293,6 +308,8 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.BlockDelayBeforeClose = value.Uint()
 	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_liquidation":
 		x.BlockDelayBeforeLiquidation = value.Uint()
+	case "dysonprotocol.whaleswap.v1.Params.arbitrage_mode":
+		x.ArbitrageMode = (ArbitrageMode)(value.Enum())
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -338,6 +355,8 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field block_delay_before_close of message dysonprotocol.whaleswap.v1.Params is not mutable"))
 	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_liquidation":
 		panic(fmt.Errorf("field block_delay_before_liquidation of message dysonprotocol.whaleswap.v1.Params is not mutable"))
+	case "dysonprotocol.whaleswap.v1.Params.arbitrage_mode":
+		panic(fmt.Errorf("field arbitrage_mode of message dysonprotocol.whaleswap.v1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -370,6 +389,8 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "dysonprotocol.whaleswap.v1.Params.block_delay_before_liquidation":
 		return protoreflect.ValueOfUint64(uint64(0))
+	case "dysonprotocol.whaleswap.v1.Params.arbitrage_mode":
+		return protoreflect.ValueOfEnum(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.whaleswap.v1.Params"))
@@ -468,6 +489,9 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.BlockDelayBeforeLiquidation != 0 {
 			n += 1 + runtime.Sov(uint64(x.BlockDelayBeforeLiquidation))
 		}
+		if x.ArbitrageMode != 0 {
+			n += 1 + runtime.Sov(uint64(x.ArbitrageMode))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -496,6 +520,11 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.ArbitrageMode != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.ArbitrageMode))
+			i--
+			dAtA[i] = 0x48
 		}
 		if x.BlockDelayBeforeLiquidation != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockDelayBeforeLiquidation))
@@ -846,6 +875,25 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 						break
 					}
 				}
+			case 9:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ArbitrageMode", wireType)
+				}
+				x.ArbitrageMode = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.ArbitrageMode |= ArbitrageMode(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -894,6 +942,65 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ArbitrageMode determines how the protocol handles arbitrage opportunities.
+type ArbitrageMode int32
+
+const (
+	// ARBITRAGE_MODE_UNSPECIFIED defaults to AUTO for backwards compatibility.
+	ArbitrageMode_ARBITRAGE_MODE_UNSPECIFIED ArbitrageMode = 0
+	// ARBITRAGE_MODE_DISABLED completely disables arbitrage detection and
+	// execution.
+	ArbitrageMode_ARBITRAGE_MODE_DISABLED ArbitrageMode = 1
+	// ARBITRAGE_MODE_MANUAL allows arbitrage queries/simulation but no automatic
+	// execution.
+	ArbitrageMode_ARBITRAGE_MODE_MANUAL ArbitrageMode = 2
+	// ARBITRAGE_MODE_AUTO enables automatic arbitrage execution after trades.
+	ArbitrageMode_ARBITRAGE_MODE_AUTO ArbitrageMode = 3
+)
+
+// Enum value maps for ArbitrageMode.
+var (
+	ArbitrageMode_name = map[int32]string{
+		0: "ARBITRAGE_MODE_UNSPECIFIED",
+		1: "ARBITRAGE_MODE_DISABLED",
+		2: "ARBITRAGE_MODE_MANUAL",
+		3: "ARBITRAGE_MODE_AUTO",
+	}
+	ArbitrageMode_value = map[string]int32{
+		"ARBITRAGE_MODE_UNSPECIFIED": 0,
+		"ARBITRAGE_MODE_DISABLED":    1,
+		"ARBITRAGE_MODE_MANUAL":      2,
+		"ARBITRAGE_MODE_AUTO":        3,
+	}
+)
+
+func (x ArbitrageMode) Enum() *ArbitrageMode {
+	p := new(ArbitrageMode)
+	*p = x
+	return p
+}
+
+func (x ArbitrageMode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ArbitrageMode) Descriptor() protoreflect.EnumDescriptor {
+	return file_dysonprotocol_whaleswap_v1_params_proto_enumTypes[0].Descriptor()
+}
+
+func (ArbitrageMode) Type() protoreflect.EnumType {
+	return &file_dysonprotocol_whaleswap_v1_params_proto_enumTypes[0]
+}
+
+func (x ArbitrageMode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ArbitrageMode.Descriptor instead.
+func (ArbitrageMode) EnumDescriptor() ([]byte, []int) {
+	return file_dysonprotocol_whaleswap_v1_params_proto_rawDescGZIP(), []int{0}
+}
+
 type Params struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -918,6 +1025,9 @@ type Params struct {
 	BlockDelayBeforeClose uint64 `protobuf:"varint,7,opt,name=block_delay_before_close,json=blockDelayBeforeClose,proto3" json:"block_delay_before_close,omitempty"`
 	// Block delay before liquidation can be finalized after initialization
 	BlockDelayBeforeLiquidation uint64 `protobuf:"varint,8,opt,name=block_delay_before_liquidation,json=blockDelayBeforeLiquidation,proto3" json:"block_delay_before_liquidation,omitempty"`
+	// ═════ ARBITRAGE PARAMETERS ═════
+	// arbitrage_mode controls protocol arbitrage behavior.
+	ArbitrageMode ArbitrageMode `protobuf:"varint,9,opt,name=arbitrage_mode,json=arbitrageMode,proto3,enum=dysonprotocol.whaleswap.v1.ArbitrageMode" json:"arbitrage_mode,omitempty"`
 }
 
 func (x *Params) Reset() {
@@ -996,6 +1106,13 @@ func (x *Params) GetBlockDelayBeforeLiquidation() uint64 {
 	return 0
 }
 
+func (x *Params) GetArbitrageMode() ArbitrageMode {
+	if x != nil {
+		return x.ArbitrageMode
+	}
+	return ArbitrageMode_ARBITRAGE_MODE_UNSPECIFIED
+}
+
 var File_dysonprotocol_whaleswap_v1_params_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_whaleswap_v1_params_proto_rawDesc = []byte{
@@ -1010,7 +1127,7 @@ var file_dysonprotocol_whaleswap_v1_params_proto_rawDesc = []byte{
 	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x62,
 	0x61, 0x73, 0x65, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2f, 0x63, 0x6f, 0x69, 0x6e,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x94, 0x06, 0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x81, 0x07, 0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d,
 	0x73, 0x12, 0x61, 0x0a, 0x0f, 0x70, 0x66, 0x61, 0x6e, 0x64, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x6f,
 	0x66, 0x66, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x63, 0x6f, 0x73,
 	0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31,
@@ -1059,7 +1176,22 @@ var file_dysonprotocol_whaleswap_v1_params_proto_rawDesc = []byte{
 	0x22, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x64, 0x65, 0x6c, 0x61, 0x79, 0x5f, 0x62, 0x65, 0x66,
 	0x6f, 0x72, 0x65, 0x5f, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22,
 	0x52, 0x1b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x44, 0x65, 0x6c, 0x61, 0x79, 0x42, 0x65, 0x66, 0x6f,
-	0x72, 0x65, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x42, 0x25, 0x5a,
+	0x72, 0x65, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x6b, 0x0a,
+	0x0e, 0x61, 0x72, 0x62, 0x69, 0x74, 0x72, 0x61, 0x67, 0x65, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x18,
+	0x09, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x29, 0x2e, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2e,
+	0x76, 0x31, 0x2e, 0x41, 0x72, 0x62, 0x69, 0x74, 0x72, 0x61, 0x67, 0x65, 0x4d, 0x6f, 0x64, 0x65,
+	0x42, 0x19, 0xf2, 0xde, 0x1f, 0x15, 0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x61, 0x72, 0x62, 0x69,
+	0x74, 0x72, 0x61, 0x67, 0x65, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x22, 0x52, 0x0d, 0x61, 0x72, 0x62,
+	0x69, 0x74, 0x72, 0x61, 0x67, 0x65, 0x4d, 0x6f, 0x64, 0x65, 0x2a, 0x80, 0x01, 0x0a, 0x0d, 0x41,
+	0x72, 0x62, 0x69, 0x74, 0x72, 0x61, 0x67, 0x65, 0x4d, 0x6f, 0x64, 0x65, 0x12, 0x1e, 0x0a, 0x1a,
+	0x41, 0x52, 0x42, 0x49, 0x54, 0x52, 0x41, 0x47, 0x45, 0x5f, 0x4d, 0x4f, 0x44, 0x45, 0x5f, 0x55,
+	0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x1b, 0x0a, 0x17,
+	0x41, 0x52, 0x42, 0x49, 0x54, 0x52, 0x41, 0x47, 0x45, 0x5f, 0x4d, 0x4f, 0x44, 0x45, 0x5f, 0x44,
+	0x49, 0x53, 0x41, 0x42, 0x4c, 0x45, 0x44, 0x10, 0x01, 0x12, 0x19, 0x0a, 0x15, 0x41, 0x52, 0x42,
+	0x49, 0x54, 0x52, 0x41, 0x47, 0x45, 0x5f, 0x4d, 0x4f, 0x44, 0x45, 0x5f, 0x4d, 0x41, 0x4e, 0x55,
+	0x41, 0x4c, 0x10, 0x02, 0x12, 0x17, 0x0a, 0x13, 0x41, 0x52, 0x42, 0x49, 0x54, 0x52, 0x41, 0x47,
+	0x45, 0x5f, 0x4d, 0x4f, 0x44, 0x45, 0x5f, 0x41, 0x55, 0x54, 0x4f, 0x10, 0x03, 0x42, 0x25, 0x5a,
 	0x23, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63,
 	0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x77, 0x68, 0x61, 0x6c, 0x65, 0x73, 0x77, 0x61, 0x70, 0x2f, 0x74,
 	0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
@@ -1077,21 +1209,24 @@ func file_dysonprotocol_whaleswap_v1_params_proto_rawDescGZIP() []byte {
 	return file_dysonprotocol_whaleswap_v1_params_proto_rawDescData
 }
 
+var file_dysonprotocol_whaleswap_v1_params_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_dysonprotocol_whaleswap_v1_params_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_dysonprotocol_whaleswap_v1_params_proto_goTypes = []interface{}{
-	(*Params)(nil),              // 0: dysonprotocol.whaleswap.v1.Params
-	(*v1beta1.Coin)(nil),        // 1: cosmos.base.v1beta1.Coin
-	(*durationpb.Duration)(nil), // 2: google.protobuf.Duration
+	(ArbitrageMode)(0),          // 0: dysonprotocol.whaleswap.v1.ArbitrageMode
+	(*Params)(nil),              // 1: dysonprotocol.whaleswap.v1.Params
+	(*v1beta1.Coin)(nil),        // 2: cosmos.base.v1beta1.Coin
+	(*durationpb.Duration)(nil), // 3: google.protobuf.Duration
 }
 var file_dysonprotocol_whaleswap_v1_params_proto_depIdxs = []int32{
-	1, // 0: dysonprotocol.whaleswap.v1.Params.pfand_per_offer:type_name -> cosmos.base.v1beta1.Coin
-	2, // 1: dysonprotocol.whaleswap.v1.Params.valuation_period:type_name -> google.protobuf.Duration
-	2, // 2: dysonprotocol.whaleswap.v1.Params.bid_timeout:type_name -> google.protobuf.Duration
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	2, // 0: dysonprotocol.whaleswap.v1.Params.pfand_per_offer:type_name -> cosmos.base.v1beta1.Coin
+	3, // 1: dysonprotocol.whaleswap.v1.Params.valuation_period:type_name -> google.protobuf.Duration
+	3, // 2: dysonprotocol.whaleswap.v1.Params.bid_timeout:type_name -> google.protobuf.Duration
+	0, // 3: dysonprotocol.whaleswap.v1.Params.arbitrage_mode:type_name -> dysonprotocol.whaleswap.v1.ArbitrageMode
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_dysonprotocol_whaleswap_v1_params_proto_init() }
@@ -1118,13 +1253,14 @@ func file_dysonprotocol_whaleswap_v1_params_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_dysonprotocol_whaleswap_v1_params_proto_rawDesc,
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_dysonprotocol_whaleswap_v1_params_proto_goTypes,
 		DependencyIndexes: file_dysonprotocol_whaleswap_v1_params_proto_depIdxs,
+		EnumInfos:         file_dysonprotocol_whaleswap_v1_params_proto_enumTypes,
 		MessageInfos:      file_dysonprotocol_whaleswap_v1_params_proto_msgTypes,
 	}.Build()
 	File_dysonprotocol_whaleswap_v1_params_proto = out.File

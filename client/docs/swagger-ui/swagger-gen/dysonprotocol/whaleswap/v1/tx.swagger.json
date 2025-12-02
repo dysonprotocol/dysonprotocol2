@@ -601,6 +601,17 @@
       },
       "description": "DecCoin defines a token with a denomination and a decimal amount.\n\nNOTE: The amount field is an Dec which implements the custom method\nsignatures required by gogoproto."
     },
+    "dysonprotocol.whaleswap.v1.ArbitrageMode": {
+      "type": "string",
+      "enum": [
+        "ARBITRAGE_MODE_UNSPECIFIED",
+        "ARBITRAGE_MODE_DISABLED",
+        "ARBITRAGE_MODE_MANUAL",
+        "ARBITRAGE_MODE_AUTO"
+      ],
+      "default": "ARBITRAGE_MODE_UNSPECIFIED",
+      "description": "ArbitrageMode determines how the protocol handles arbitrage opportunities.\n\n - ARBITRAGE_MODE_UNSPECIFIED: ARBITRAGE_MODE_UNSPECIFIED defaults to AUTO for backwards compatibility.\n - ARBITRAGE_MODE_DISABLED: ARBITRAGE_MODE_DISABLED completely disables arbitrage detection and\nexecution.\n - ARBITRAGE_MODE_MANUAL: ARBITRAGE_MODE_MANUAL allows arbitrage queries/simulation but no automatic\nexecution.\n - ARBITRAGE_MODE_AUTO: ARBITRAGE_MODE_AUTO enables automatic arbitrage execution after trades."
+    },
     "dysonprotocol.whaleswap.v1.AuctionRedeem": {
       "type": "object",
       "properties": {
@@ -1329,6 +1340,10 @@
           "type": "string",
           "format": "uint64",
           "title": "Block delay before liquidation can be finalized after initialization"
+        },
+        "arbitrage_mode": {
+          "$ref": "#/definitions/dysonprotocol.whaleswap.v1.ArbitrageMode",
+          "description": "\u2550\u2550\u2550\u2550\u2550 ARBITRAGE PARAMETERS \u2550\u2550\u2550\u2550\u2550\narbitrage_mode controls protocol arbitrage behavior."
         }
       }
     },

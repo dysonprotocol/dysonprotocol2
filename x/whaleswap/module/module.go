@@ -24,7 +24,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
-const ConsensusVersion = 1
+const ConsensusVersion = 2
 
 var (
 	_ module.AppModuleBasic        = AppModuleBasic{}
@@ -192,6 +192,12 @@ func (AppModule) RegisterInterfaces(registrar cdctypes.InterfaceRegistry) {
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	whaleswaptypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 	whaleswaptypes.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+
+	// Register migrations
+	migrator := keeper.NewMigrator(am.keeper)
+	if err := cfg.RegisterMigration(whaleswap.ModuleName, 1, migrator.Migrate1to2); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 1 to 2: %v", whaleswap.ModuleName, err))
+	}
 }
 func (AppModule) RegisterMigrations() error          { return nil }
 func (AppModule) ConsensusVersion() uint64           { return ConsensusVersion }

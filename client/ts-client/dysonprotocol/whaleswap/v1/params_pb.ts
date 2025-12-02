@@ -8,6 +8,50 @@ import { Duration, Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 import { Coin } from "../../../cosmos/base/v1beta1/coin_pb.js";
 
 /**
+ * ArbitrageMode determines how the protocol handles arbitrage opportunities.
+ *
+ * @generated from enum dysonprotocol.whaleswap.v1.ArbitrageMode
+ */
+export enum ArbitrageMode {
+  /**
+   * ARBITRAGE_MODE_UNSPECIFIED defaults to AUTO for backwards compatibility.
+   *
+   * @generated from enum value: ARBITRAGE_MODE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * ARBITRAGE_MODE_DISABLED completely disables arbitrage detection and
+   * execution.
+   *
+   * @generated from enum value: ARBITRAGE_MODE_DISABLED = 1;
+   */
+  DISABLED = 1,
+
+  /**
+   * ARBITRAGE_MODE_MANUAL allows arbitrage queries/simulation but no automatic
+   * execution.
+   *
+   * @generated from enum value: ARBITRAGE_MODE_MANUAL = 2;
+   */
+  MANUAL = 2,
+
+  /**
+   * ARBITRAGE_MODE_AUTO enables automatic arbitrage execution after trades.
+   *
+   * @generated from enum value: ARBITRAGE_MODE_AUTO = 3;
+   */
+  AUTO = 3,
+}
+// Retrieve enum metadata with: proto3.getEnumType(ArbitrageMode)
+proto3.util.setEnumType(ArbitrageMode, "dysonprotocol.whaleswap.v1.ArbitrageMode", [
+  { no: 0, name: "ARBITRAGE_MODE_UNSPECIFIED" },
+  { no: 1, name: "ARBITRAGE_MODE_DISABLED" },
+  { no: 2, name: "ARBITRAGE_MODE_MANUAL" },
+  { no: 3, name: "ARBITRAGE_MODE_AUTO" },
+]);
+
+/**
  * @generated from message dysonprotocol.whaleswap.v1.Params
  */
 export class Params extends Message<Params> {
@@ -69,6 +113,14 @@ export class Params extends Message<Params> {
    */
   blockDelayBeforeLiquidation = protoInt64.zero;
 
+  /**
+   * ═════ ARBITRAGE PARAMETERS ═════
+   * arbitrage_mode controls protocol arbitrage behavior.
+   *
+   * @generated from field: dysonprotocol.whaleswap.v1.ArbitrageMode arbitrage_mode = 9;
+   */
+  arbitrageMode = ArbitrageMode.UNSPECIFIED;
+
   constructor(data?: PartialMessage<Params>) {
     super();
     proto3.util.initPartial(data, this);
@@ -85,6 +137,7 @@ export class Params extends Message<Params> {
     { no: 6, name: "max_note_length", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 7, name: "block_delay_before_close", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 8, name: "block_delay_before_liquidation", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 9, name: "arbitrage_mode", kind: "enum", T: proto3.getEnumType(ArbitrageMode) },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Params {

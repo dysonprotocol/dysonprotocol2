@@ -8,6 +8,20 @@ import "cosmos/base/v1beta1/coin.proto";
 
 option go_package = "dysonprotocol.com/x/whaleswap/types";
 
+// ArbitrageMode determines how the protocol handles arbitrage opportunities.
+enum ArbitrageMode {
+  // ARBITRAGE_MODE_UNSPECIFIED defaults to AUTO for backwards compatibility.
+  ARBITRAGE_MODE_UNSPECIFIED = 0;
+  // ARBITRAGE_MODE_DISABLED completely disables arbitrage detection and
+  // execution.
+  ARBITRAGE_MODE_DISABLED = 1;
+  // ARBITRAGE_MODE_MANUAL allows arbitrage queries/simulation but no automatic
+  // execution.
+  ARBITRAGE_MODE_MANUAL = 2;
+  // ARBITRAGE_MODE_AUTO enables automatic arbitrage execution after trades.
+  ARBITRAGE_MODE_AUTO = 3;
+}
+
 message Params {
   // pfand_per_offer is the PFAND coin required for liquid-mode offers.
   cosmos.base.v1beta1.Coin pfand_per_offer = 1 [
@@ -57,4 +71,9 @@ message Params {
   // Block delay before liquidation can be finalized after initialization
   uint64 block_delay_before_liquidation = 8
       [ (gogoproto.moretags) = "yaml:\"block_delay_before_liquidation\"" ];
+
+  // ═════ ARBITRAGE PARAMETERS ═════
+  // arbitrage_mode controls protocol arbitrage behavior.
+  ArbitrageMode arbitrage_mode = 9
+      [ (gogoproto.moretags) = "yaml:\"arbitrage_mode\"" ];
 }

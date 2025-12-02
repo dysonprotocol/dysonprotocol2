@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"runtime/debug"
 
 	cosmossdkerrors "cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
@@ -17,7 +18,9 @@ func HandleRunRecovery(r interface{}) error {
 }
 
 func handleRunRecovery(r interface{}) error {
-	fmt.Printf("Handle recovery: %v\n", r)
+	fmt.Printf("Handle recovery: %+v\n", r)
+	stack := string(debug.Stack())
+	fmt.Printf("Stack: %s\n", stack)
 	switch rec := r.(type) {
 	case nil:
 		// No panic, just return nil or handle gracefully

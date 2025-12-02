@@ -113,7 +113,10 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 	}
 	var pfandReleases []pfandRelease
 	pfandCredits := sdk.NewCoins()
-	seenPools := make(map[uint64]bool)
+	// Note: Duplicate pool IDs are allowed in operations. Each swap modifies
+	// pool state sequentially, and deltaByDenom accumulates all changes.
+	// This enables complex multi-step strategies like opposite-direction
+	// trades on the same pool within a single MakeTrade (e.g., arbitrage cycles).
 	seenOffers := make(map[uint64]bool)
 	seenAuctions := make(map[uint64]bool)
 
@@ -125,10 +128,6 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap leg invalid")
 			}
 			logger.Info("MakeTrade processing swap operation", "operation_idx", i, "pool_id", leg.PoolId, "swap_in", leg.SwapIn, "swap_out", leg.SwapOut)
-			if seenPools[leg.PoolId] {
-				return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate pool_id %d in operations", leg.PoolId)
-			}
-			seenPools[leg.PoolId] = true
 			tradeOp, inCoin, outCoin, derr := k.tradeApplySwapLeg(ctx, msg.Trader, leg, msg.Note)
 			if derr != nil {
 				return nil, derr

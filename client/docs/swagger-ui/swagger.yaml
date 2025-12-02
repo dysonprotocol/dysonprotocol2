@@ -7366,6 +7366,17 @@ paths:
                     title: >-
                       Block delay before liquidation can be finalized after
                       initialization
+                  arbitrage_mode:
+                    description: |-
+                      ═════ ARBITRAGE PARAMETERS ═════
+                      arbitrage_mode controls protocol arbitrage behavior.
+                    type: string
+                    enum:
+                      - ARBITRAGE_MODE_UNSPECIFIED
+                      - ARBITRAGE_MODE_DISABLED
+                      - ARBITRAGE_MODE_MANUAL
+                      - ARBITRAGE_MODE_AUTO
+                    default: ARBITRAGE_MODE_UNSPECIFIED
         default:
           description: An unexpected error response.
           schema:
@@ -38257,6 +38268,17 @@ paths:
                     title: >-
                       Block delay before liquidation can be finalized after
                       initialization
+                  arbitrage_mode:
+                    description: |-
+                      ═════ ARBITRAGE PARAMETERS ═════
+                      arbitrage_mode controls protocol arbitrage behavior.
+                    type: string
+                    enum:
+                      - ARBITRAGE_MODE_UNSPECIFIED
+                      - ARBITRAGE_MODE_DISABLED
+                      - ARBITRAGE_MODE_MANUAL
+                      - ARBITRAGE_MODE_AUTO
+                    default: ARBITRAGE_MODE_UNSPECIFIED
             description: >-
               *
 
@@ -50968,6 +50990,23 @@ definitions:
       and focus on relevant assets. Coins without metadata are excluded from all
 
       volume and balance aggregations.
+  dysonprotocol.whaleswap.v1.ArbitrageMode:
+    type: string
+    enum:
+      - ARBITRAGE_MODE_UNSPECIFIED
+      - ARBITRAGE_MODE_DISABLED
+      - ARBITRAGE_MODE_MANUAL
+      - ARBITRAGE_MODE_AUTO
+    default: ARBITRAGE_MODE_UNSPECIFIED
+    description: |-
+      ArbitrageMode determines how the protocol handles arbitrage opportunities.
+
+       - ARBITRAGE_MODE_UNSPECIFIED: ARBITRAGE_MODE_UNSPECIFIED defaults to AUTO for backwards compatibility.
+       - ARBITRAGE_MODE_DISABLED: ARBITRAGE_MODE_DISABLED completely disables arbitrage detection and
+      execution.
+       - ARBITRAGE_MODE_MANUAL: ARBITRAGE_MODE_MANUAL allows arbitrage queries/simulation but no automatic
+      execution.
+       - ARBITRAGE_MODE_AUTO: ARBITRAGE_MODE_AUTO enables automatic arbitrage execution after trades.
   dysonprotocol.whaleswap.v1.AuctionRecord:
     type: object
     properties:
@@ -51430,6 +51469,17 @@ definitions:
         type: string
         format: uint64
         title: Block delay before liquidation can be finalized after initialization
+      arbitrage_mode:
+        description: |-
+          ═════ ARBITRAGE PARAMETERS ═════
+          arbitrage_mode controls protocol arbitrage behavior.
+        type: string
+        enum:
+          - ARBITRAGE_MODE_UNSPECIFIED
+          - ARBITRAGE_MODE_DISABLED
+          - ARBITRAGE_MODE_MANUAL
+          - ARBITRAGE_MODE_AUTO
+        default: ARBITRAGE_MODE_UNSPECIFIED
   dysonprotocol.whaleswap.v1.Pool:
     type: object
     properties:
@@ -53504,6 +53554,17 @@ definitions:
             title: >-
               Block delay before liquidation can be finalized after
               initialization
+          arbitrage_mode:
+            description: |-
+              ═════ ARBITRAGE PARAMETERS ═════
+              arbitrage_mode controls protocol arbitrage behavior.
+            type: string
+            enum:
+              - ARBITRAGE_MODE_UNSPECIFIED
+              - ARBITRAGE_MODE_DISABLED
+              - ARBITRAGE_MODE_MANUAL
+              - ARBITRAGE_MODE_AUTO
+            default: ARBITRAGE_MODE_UNSPECIFIED
   dysonprotocol.whaleswap.v1.QueryPoolBySharesDenomResponse:
     type: object
     properties:
@@ -81658,6 +81719,17 @@ definitions:
             title: >-
               Block delay before liquidation can be finalized after
               initialization
+          arbitrage_mode:
+            description: |-
+              ═════ ARBITRAGE PARAMETERS ═════
+              arbitrage_mode controls protocol arbitrage behavior.
+            type: string
+            enum:
+              - ARBITRAGE_MODE_UNSPECIFIED
+              - ARBITRAGE_MODE_DISABLED
+              - ARBITRAGE_MODE_MANUAL
+              - ARBITRAGE_MODE_AUTO
+            default: ARBITRAGE_MODE_UNSPECIFIED
     description: >-
       *
 

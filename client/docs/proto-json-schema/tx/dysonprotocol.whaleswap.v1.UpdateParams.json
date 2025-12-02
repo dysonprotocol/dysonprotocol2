@@ -72,6 +72,28 @@
                     "block_delay_before_liquidation": {
                         "type": "string",
                         "description": "Block delay before liquidation can be finalized after initialization"
+                    },
+                    "arbitrage_mode": {
+                        "enum": [
+                            "ARBITRAGE_MODE_UNSPECIFIED",
+                            0,
+                            "ARBITRAGE_MODE_DISABLED",
+                            1,
+                            "ARBITRAGE_MODE_MANUAL",
+                            2,
+                            "ARBITRAGE_MODE_AUTO",
+                            3
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Arbitrage Mode",
+                        "description": "ArbitrageMode determines how the protocol handles arbitrage opportunities."
                     }
                 },
                 "additionalProperties": false,

@@ -20,6 +20,10 @@ func NormalizeLegacyGenesisJSON(raw []byte) ([]byte, error) {
 // It should be invoked on any params object loaded from persistent state or
 // decoded from legacy genesis JSON before validation.
 func MigrateParams(p Params) Params {
+	// Backfill ArbitrageMode: UNSPECIFIED (0) means old genesis, default to AUTO
+	if p.ArbitrageMode == ArbitrageMode_ARBITRAGE_MODE_UNSPECIFIED {
+		p.ArbitrageMode = ArbitrageMode_ARBITRAGE_MODE_AUTO
+	}
 	return p
 }
 

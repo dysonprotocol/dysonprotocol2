@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 
+	"cosmossdk.io/log"
 	"cosmossdk.io/math"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -39,6 +40,7 @@ type ArbitrageContext struct {
 	DenomPools map[string][]int // denom -> indices of pools containing it
 	AllDenoms  []string         // all unique denoms in the graph
 	RefDenom   string           // reference denom for profit measurement
+	arbPath    []floodStep      // path from FLOOD for ordered operation generation
 }
 
 // ArbitrageInput represents swap amounts for optimizer input.
@@ -138,6 +140,21 @@ func (k *Keeper) BuildArbitrageContext(
 
 	// Prioritize pools for MaxPools selection
 	prioritizePools(ac, affectedDenoms)
+
+	// Log the built context
+	logger := k.ArbitrageLogger(ctx)
+	poolIDs := make([]uint64, len(ac.Pools))
+	for i, p := range ac.Pools {
+		poolIDs[i] = p.PoolID
+	}
+	logger.Info("arbitrage context built",
+		"pool_count", len(ac.Pools),
+		"pool_ids", poolIDs,
+		"all_denoms", ac.AllDenoms,
+		"ref_denom", refDenom,
+		"affected_denoms", affectedDenoms,
+		"depth", depth,
+	)
 
 	return ac, nil
 }
@@ -321,6 +338,13 @@ func (ac *ArbitrageContext) SimulateArbitrage(swapAmounts []int64) *ArbitrageRes
 	// Execute MakeTrade on cached context
 	resp, err := ac.Keeper.MakeTrade(cacheCtx, msg)
 	if err != nil {
+		logger := ac.Keeper.Logger(ac.Ctx)
+		logger.Info("SimulateArbitrage MakeTrade failed",
+			"error", err.Error(),
+			"trader", msg.Trader,
+			"operations_count", len(msg.Operations),
+			"feature", "arbitrage",
+		)
 		return &ArbitrageResult{
 			Success: false,
 			Msg:     msg,
@@ -342,33 +366,59 @@ func (ac *ArbitrageContext) SimulateArbitrage(swapAmounts []int64) *ArbitrageRes
 }
 
 // buildMakeTradeMsg constructs a MsgMakeTrade from swap amounts.
+// If arbPath is set (from FLOOD), operations are generated in path order for proper
+// sequential execution. Otherwise, falls back to pool-index order.
 // swapAmounts has 2 entries per pool: [sell_denom0, sell_denom1].
-// Both can be non-zero, creating multiple operations on the same pool.
 func (ac *ArbitrageContext) buildMakeTradeMsg(swapAmounts []int64) *whaleswapv1.MsgMakeTrade {
+	logger := ac.Keeper.ArbitrageLogger(ac.Ctx)
 	operations := make([]whaleswapv1.TradeOperation, 0)
-	maxInputs := sdk.NewCoins() // Use Coins to handle merging/sorting
 
-	for i, pool := range ac.Pools {
-		sellDenom0 := swapAmounts[2*i]
-		sellDenom1 := swapAmounts[2*i+1]
+	// If we have a path from FLOOD, generate operations in path order
+	// Must recompute cascading amounts using TRUNCATED values to avoid rounding shortfalls
+	if len(ac.arbPath) > 0 {
+		logger.Info("buildMakeTradeMsg using path order", "path_len", len(ac.arbPath))
 
-		// Add operation for selling denom0 (if any)
-		if sellDenom0 > 0 {
-			swapIn := sdk.NewCoin(pool.Denom0, math.NewInt(sellDenom0))
-			operations = append(operations, whaleswapv1.TradeOperation{
-				Op: &whaleswapv1.TradeOperation_Swap{
-					Swap: &whaleswapv1.SwapLeg{
-						PoolId: pool.PoolID,
-						SwapIn: swapIn,
-					},
-				},
-			})
-			maxInputs = maxInputs.Add(swapIn)
+		// Start with the first step's amount
+		currentAmount := ac.arbPath[0].amount
+		if currentAmount.IsNil() || currentAmount.LTE(DecZero) {
+			currentAmount = math.LegacyNewDec(100)
 		}
 
-		// Add operation for selling denom1 (if any)
-		if sellDenom1 > 0 {
-			swapIn := sdk.NewCoin(pool.Denom1, math.NewInt(sellDenom1))
+		for i, step := range ac.arbPath {
+			if step.poolIdx < 0 || step.poolIdx >= len(ac.Pools) {
+				continue
+			}
+			pool := ac.Pools[step.poolIdx]
+
+			// Truncate BEFORE creating the swap operation
+			swapInAmt := currentAmount.TruncateInt()
+			if !swapInAmt.IsPositive() {
+				continue
+			}
+
+			var swapIn sdk.Coin
+			var rIn, rOut, fee math.LegacyDec
+
+			if step.sellDenom0 {
+				swapIn = sdk.NewCoin(pool.Denom0, swapInAmt)
+				rIn = math.LegacyNewDecFromInt(pool.Reserve0)
+				rOut = math.LegacyNewDecFromInt(pool.Reserve1)
+				if !pool.Fee0.IsNil() {
+					fee = pool.Fee0
+				} else {
+					fee = DecZero
+				}
+			} else {
+				swapIn = sdk.NewCoin(pool.Denom1, swapInAmt)
+				rIn = math.LegacyNewDecFromInt(pool.Reserve1)
+				rOut = math.LegacyNewDecFromInt(pool.Reserve0)
+				if !pool.Fee1.IsNil() {
+					fee = pool.Fee1
+				} else {
+					fee = DecZero
+				}
+			}
+
 			operations = append(operations, whaleswapv1.TradeOperation{
 				Op: &whaleswapv1.TradeOperation_Swap{
 					Swap: &whaleswapv1.SwapLeg{
@@ -377,7 +427,52 @@ func (ac *ArbitrageContext) buildMakeTradeMsg(swapAmounts []int64) *whaleswapv1.
 					},
 				},
 			})
-			maxInputs = maxInputs.Add(swapIn)
+
+			logger.Info("buildMakeTradeMsg path step",
+				"step", i,
+				"pool_id", pool.PoolID,
+				"sell_denom0", step.sellDenom0,
+				"swap_in", swapIn.String(),
+			)
+
+			// Compute output for next step using the TRUNCATED input amount
+			if i < len(ac.arbPath)-1 && !rIn.IsZero() && !rOut.IsZero() {
+				truncatedIn := math.LegacyNewDecFromInt(swapInAmt)
+				gamma := DecOne.Sub(fee)
+				effectiveIn := truncatedIn.Mul(gamma)
+				currentAmount = rOut.Mul(effectiveIn).Quo(rIn.Add(effectiveIn))
+			}
+		}
+
+		// Keep path for subsequent simulations (cleared by FindArbitrage after final execution)
+	} else {
+		// Fallback: pool-index order (for optimizer probes)
+		for i, pool := range ac.Pools {
+			sellDenom0 := swapAmounts[2*i]
+			sellDenom1 := swapAmounts[2*i+1]
+
+			if sellDenom0 > 0 {
+				swapIn := sdk.NewCoin(pool.Denom0, math.NewInt(sellDenom0))
+				operations = append(operations, whaleswapv1.TradeOperation{
+					Op: &whaleswapv1.TradeOperation_Swap{
+						Swap: &whaleswapv1.SwapLeg{
+							PoolId: pool.PoolID,
+							SwapIn: swapIn,
+						},
+					},
+				})
+			}
+			if sellDenom1 > 0 {
+				swapIn := sdk.NewCoin(pool.Denom1, math.NewInt(sellDenom1))
+				operations = append(operations, whaleswapv1.TradeOperation{
+					Op: &whaleswapv1.TradeOperation_Swap{
+						Swap: &whaleswapv1.SwapLeg{
+							PoolId: pool.PoolID,
+							SwapIn: swapIn,
+						},
+					},
+				})
+			}
 		}
 	}
 
@@ -385,15 +480,14 @@ func (ac *ArbitrageContext) buildMakeTradeMsg(swapAmounts []int64) *whaleswapv1.
 		return nil
 	}
 
-	// For simulation, allow all swap inputs as max debits.
-	// Self-netting will cover most/all of these for circular trades.
-	// The objective function evaluates net profit after.
+	// For circular arbitrage: MaxInput=nil enforces that net debits must be zero.
+	// Self-netting handles intermediate tokens - a true circular trade has no net inputs.
 	return &whaleswapv1.MsgMakeTrade{
 		Trader:     ac.Trader,
 		Operations: operations,
-		MaxInput:   maxInputs,
+		MaxInput:   nil, // Enforce circularity: only zero net-input trades succeed
 		MinOutput:  []sdk.Coin{},
-		Note:       "arb-simulation",
+		Note:       "",
 	}
 }
 
@@ -414,8 +508,6 @@ func (e *simError) Error() string { return e.msg }
 // Uses math.LegacyDec for consensus-safe arithmetic.
 // Negative return values indicate unprofitable or failed swaps.
 func (ac *ArbitrageContext) ObjectiveFunction() func([]math.LegacyDec) math.LegacyDec {
-	// Cost penalty multiplier for non-circular arbitrage
-	costPenalty := math.LegacyNewDec(1000)
 	expectedLen := len(ac.Pools) * 2
 
 	return func(amounts []math.LegacyDec) math.LegacyDec {
@@ -442,21 +534,12 @@ func (ac *ArbitrageContext) ObjectiveFunction() func([]math.LegacyDec) math.Lega
 		// - TraderInputs to be empty or zero (self-netting covers all)
 		// - TraderOutputs to be positive in RefDenom (profit)
 
-		profitDec := math.LegacyNewDecFromInt(result.Profit)
-
-		// Penalize if there are any net inputs (trader has to pay)
-		if !result.TraderInputs.IsZero() {
-			// There are net debits - this isn't a pure circular arb
-			// Return profit minus costs, heavily penalized
-			totalCost := math.ZeroInt()
-			for _, c := range result.TraderInputs {
-				totalCost = totalCost.Add(c.Amount)
-			}
-			costDec := math.LegacyNewDecFromInt(totalCost)
-			return profitDec.Sub(costDec.Mul(costPenalty))
-		}
-
-		return profitDec
+		// Return raw profit — no penalty for non-circular solutions.
+		// This gives Nelder-Mead a smooth, honest profit landscape.
+		// Circularity is enforced later in BuildFinalMakeTradeMsg.
+		// Net inputs are subtracted from profit in SimulateTrade already,
+		// so this naturally penalizes non-circular trades without cliffs.
+		return math.LegacyNewDecFromInt(result.Profit)
 	}
 }
 
@@ -483,8 +566,18 @@ func (ac *ArbitrageContext) GetOptimizationBounds() OptimizationBounds {
 	}
 
 	for i, pool := range ac.Pools {
-		reserve0Dec := math.LegacyNewDecFromInt(pool.Reserve0)
-		reserve1Dec := math.LegacyNewDecFromInt(pool.Reserve1)
+		// Handle nil reserves safely
+		var reserve0Dec, reserve1Dec math.LegacyDec
+		if pool.Reserve0.IsNil() {
+			reserve0Dec = DecZero
+		} else {
+			reserve0Dec = math.LegacyNewDecFromInt(pool.Reserve0)
+		}
+		if pool.Reserve1.IsNil() {
+			reserve1Dec = DecZero
+		} else {
+			reserve1Dec = math.LegacyNewDecFromInt(pool.Reserve1)
+		}
 
 		// Dimension 2*i: amount of denom0 to sell [0, reserve0]
 		bounds.Lower[2*i] = DecZero
@@ -498,15 +591,12 @@ func (ac *ArbitrageContext) GetOptimizationBounds() OptimizationBounds {
 	return bounds
 }
 
-// ComputeClosedFormEstimate computes optimal arbitrage using Newton's method.
-// Works for any N-pool cycle by finding optimal input via:
-//
-//	f(x) = x × ∏(γᵢ·rOutᵢ / (rInᵢ + γᵢ·x)) - x = 0
-//
-// where γᵢ = (1 - feeᵢ). Newton converges in 2-3 iterations.
-// Returns the best initial guess found from detected cycles.
-//
-// Uses affected denoms + one-hop expansion as seeds to capture non-ref-denom cycles.
+// ComputeClosedFormEstimate uses FLOOD-style (MMBF) flow optimization.
+// Production-grade algorithm:
+// 1. Always starts and ends at refDenom (base token)
+// 2. Multi-path order splitting for AMM convexity
+// 3. Early exit on profit detection
+// 4. Returns flows for Nelder-Mead refinement
 func (ac *ArbitrageContext) ComputeClosedFormEstimate() []math.LegacyDec {
 	n := len(ac.Pools) * 2
 	best := make([]math.LegacyDec, n)
@@ -514,262 +604,591 @@ func (ac *ArbitrageContext) ComputeClosedFormEstimate() []math.LegacyDec {
 		best[i] = DecZero
 	}
 
-	if len(ac.Pools) < 2 {
+	if len(ac.Pools) < 2 || ac.Keeper == nil {
 		return best
 	}
 
-	// Build seed denoms: RefDenom + all denoms that have multiple pools (hub denoms)
-	// This captures cycles that don't pass through RefDenom
-	seeds := ac.getCycleSeedDenoms()
+	logger := ac.Keeper.ArbitrageLogger(ac.Ctx)
 
-	// Find cycles from each seed denom
-	var cycles [][]cycleStep
-	seen := make(map[string]bool) // track unique cycles by signature
-	for _, seed := range seeds {
-		seedCycles := ac.findArbitrageCycles(seed, 4) // max 4-pool cycles
-		for _, c := range seedCycles {
-			sig := cycleSignature(c)
-			if !seen[sig] {
-				seen[sig] = true
-				cycles = append(cycles, c)
+	// Build token index for fast lookup
+	tokenIdx := make(map[string]int)
+	var tokens []string
+	idx := 0
+	tokenIdx[ac.RefDenom] = idx
+	tokens = append(tokens, ac.RefDenom)
+	idx++
+
+	for _, pool := range ac.Pools {
+		if _, ok := tokenIdx[pool.Denom0]; !ok {
+			tokenIdx[pool.Denom0] = idx
+			tokens = append(tokens, pool.Denom0)
+			idx++
+		}
+		if _, ok := tokenIdx[pool.Denom1]; !ok {
+			tokenIdx[pool.Denom1] = idx
+			tokens = append(tokens, pool.Denom1)
+			idx++
+		}
+	}
+
+	baseIdx := tokenIdx[ac.RefDenom]
+	numTokens := len(tokens)
+
+	// Log token mapping
+	logger.Info("FLOOD token mapping",
+		"ref_denom", ac.RefDenom,
+		"base_idx", baseIdx,
+		"num_tokens", numTokens,
+		"tokens", tokens,
+		"token_idx", tokenIdx,
+	)
+
+	// Find minimum reserve for scaling
+	minReserve := math.LegacyNewDec(1 << 60)
+	for _, pool := range ac.Pools {
+		if pool.Reserve0.IsNil() || pool.Reserve1.IsNil() {
+			logger.Info("FLOOD skipping pool with nil reserves", "pool_id", pool.PoolID)
+			continue
+		}
+		r0 := math.LegacyNewDecFromInt(pool.Reserve0)
+		r1 := math.LegacyNewDecFromInt(pool.Reserve1)
+		if r0.GT(DecZero) && r0.LT(minReserve) {
+			minReserve = r0
+		}
+		if r1.GT(DecZero) && r1.LT(minReserve) {
+			minReserve = r1
+		}
+	}
+
+	logger.Info("FLOOD min_reserve", "min_reserve", minReserve.TruncateInt().String())
+
+	// Try different starting amounts and split counts
+	bestProfit := DecZero
+	var bestPath []floodStep
+
+	maxDepth := 6
+	maxSplits := 5
+
+	for splits := 1; splits <= maxSplits; splits++ {
+		// Try different fractions of min reserve
+		for _, fracPct := range []int64{1, 5, 10, 25} {
+			startAmt := minReserve.MulInt64(fracPct).QuoInt64(100)
+			if startAmt.LT(DecOne) {
+				startAmt = DecOne
+			}
+
+			logger.Info("FLOOD trying",
+				"splits", splits,
+				"frac_pct", fracPct,
+				"start_amt", startAmt.TruncateInt().String(),
+			)
+
+			profit, path := ac.floodSearch(tokens, tokenIdx, baseIdx, numTokens, startAmt, splits, maxDepth, logger)
+
+			logger.Info("FLOOD search result",
+				"splits", splits,
+				"frac_pct", fracPct,
+				"profit", profit.TruncateInt().String(),
+				"path_len", len(path),
+			)
+
+			if profit.GT(bestProfit) {
+				bestProfit = profit
+				bestPath = path
+				logger.Info("FLOOD found better profit",
+					"splits", splits,
+					"start_amt", startAmt.TruncateInt().String(),
+					"profit", profit.TruncateInt().String(),
+					"path_len", len(path),
+				)
+
+				// Early exit on significant profit (5%+)
+				if profit.GT(startAmt.MulInt64(5).QuoInt64(100)) {
+					break
+				}
 			}
 		}
 	}
 
-	if len(cycles) == 0 {
-		return best
+	if bestProfit.GT(DecZero) && len(bestPath) > 0 {
+		logger.Info("FLOOD arbitrage found",
+			"profit", bestProfit.TruncateInt().String(),
+			"path_len", len(bestPath),
+		)
+		// Store path for direct operation generation (preserves order)
+		ac.arbPath = bestPath
+		// Convert path to flows for optimizer compatibility
+		flows := ac.pathToFlows(bestPath, n)
+		logger.Info("FLOOD flows generated", "flows", formatFlows(flows))
+		return flows
 	}
 
-	bestProfit := DecZero
+	logger.Info("FLOOD: no profitable path found",
+		"best_profit", bestProfit.String(),
+		"pools_checked", len(ac.Pools),
+	)
+	return best
+}
 
-	for _, cycle := range cycles {
-		// Compute optimal input using Newton's method
-		optimalAmt, profit := ac.computeOptimalCycleAmount(cycle)
-		if profit.GT(bestProfit) {
-			bestProfit = profit
-			// Build the 2N result vector
-			for k := range best {
-				best[k] = DecZero
+// floodStep represents one step in an arbitrage path
+type floodStep struct {
+	poolIdx    int
+	sellDenom0 bool
+	amount     math.LegacyDec
+}
+
+// floodSearch runs FLOOD algorithm and returns (profit, path)
+func (ac *ArbitrageContext) floodSearch(
+	tokens []string,
+	tokenIdx map[string]int,
+	baseIdx, numTokens int,
+	startAmt math.LegacyDec,
+	splits, maxDepth int,
+	logger log.Logger,
+) (math.LegacyDec, []floodStep) {
+
+	// dist[i] = max reachable amount of token i starting from base
+	dist := make([]math.LegacyDec, numTokens)
+	for i := range dist {
+		dist[i] = DecZero
+	}
+	dist[baseIdx] = startAmt
+
+	// parent[i] = how we reached token i (for path reconstruction)
+	parent := make([]floodStep, numTokens)
+	for i := range parent {
+		parent[i] = floodStep{poolIdx: -1}
+	}
+
+	splitsDec := math.LegacyNewDec(int64(splits))
+
+	logger.Info("FLOOD search starting",
+		"base_idx", baseIdx,
+		"start_amt", startAmt.TruncateInt().String(),
+		"splits", splits,
+		"max_depth", maxDepth,
+		"num_pools", len(ac.Pools),
+	)
+
+	for iter := 0; iter < maxDepth*splits; iter++ {
+		updated := false
+		newDist := make([]math.LegacyDec, numTokens)
+		copy(newDist, dist)
+
+		// Relax all edges
+		for poolIdx, pool := range ac.Pools {
+			if pool.Reserve0.IsNil() || pool.Reserve1.IsNil() {
+				continue
 			}
-			// Set amounts for each pool in the cycle
-			amt := optimalAmt
-			for _, step := range cycle {
-				poolIdx := step.poolIdx
-				if step.sellDenom0 {
-					best[2*poolIdx] = amt
-				} else {
-					best[2*poolIdx+1] = amt
-				}
-				// Compute output of this step (becomes input of next)
-				pool := ac.Pools[poolIdx]
+			if pool.Fee0.IsNil() || pool.Fee1.IsNil() {
+				continue
+			}
+
+			// Try both directions
+			for _, sellDenom0 := range []bool{true, false} {
+				var tin, tout string
 				var rIn, rOut, fee math.LegacyDec
-				if step.sellDenom0 {
+
+				if sellDenom0 {
+					tin, tout = pool.Denom0, pool.Denom1
 					rIn = math.LegacyNewDecFromInt(pool.Reserve0)
 					rOut = math.LegacyNewDecFromInt(pool.Reserve1)
 					fee = pool.Fee0
 				} else {
+					tin, tout = pool.Denom1, pool.Denom0
 					rIn = math.LegacyNewDecFromInt(pool.Reserve1)
 					rOut = math.LegacyNewDecFromInt(pool.Reserve0)
 					fee = pool.Fee1
 				}
+
+				srcIdx, srcOk := tokenIdx[tin]
+				dstIdx, dstOk := tokenIdx[tout]
+
+				if !srcOk || !dstOk {
+					logger.Info("FLOOD edge skip: token not in index",
+						"tin", tin,
+						"tout", tout,
+						"src_ok", srcOk,
+						"dst_ok", dstOk,
+					)
+					continue
+				}
+
+				if dist[srcIdx].LT(DecOne) {
+					continue
+				}
+
+				// Split input for better AMM rates
+				stepIn := dist[srcIdx].Quo(splitsDec)
 				gamma := DecOne.Sub(fee)
-				effectiveAmt := amt.Mul(gamma)
-				amt = rOut.Mul(effectiveAmt).Quo(rIn.Add(effectiveAmt))
+
+				totalOut := DecZero
+				virtualRIn, virtualROut := rIn, rOut
+
+				for s := 0; s < splits; s++ {
+					effectiveIn := stepIn.Mul(gamma)
+					out := virtualROut.Mul(effectiveIn).Quo(virtualRIn.Add(effectiveIn))
+					totalOut = totalOut.Add(out)
+					// Update virtual reserves
+					virtualRIn = virtualRIn.Add(stepIn)
+					virtualROut = virtualROut.Sub(out)
+				}
+
+				if totalOut.GT(newDist[dstIdx]) {
+					logger.Info("FLOOD edge relax",
+						"iter", iter,
+						"pool_id", pool.PoolID,
+						"tin", tin,
+						"tout", tout,
+						"src_idx", srcIdx,
+						"dst_idx", dstIdx,
+						"dist_src", dist[srcIdx].TruncateInt().String(),
+						"total_out", totalOut.TruncateInt().String(),
+						"prev_dist_dst", newDist[dstIdx].TruncateInt().String(),
+					)
+					newDist[dstIdx] = totalOut
+					parent[dstIdx] = floodStep{
+						poolIdx:    poolIdx,
+						sellDenom0: sellDenom0,
+						amount:     dist[srcIdx],
+					}
+					updated = true
+				}
 			}
 		}
-	}
 
-	return best
-}
+		dist = newDist
 
-// cycleStep represents one step in an arbitrage cycle
-type cycleStep struct {
-	poolIdx    int
-	sellDenom0 bool
-	inDenom    string
-	outDenom   string
-}
+		// Log dist state
+		distStrs := make([]string, numTokens)
+		for i := 0; i < numTokens; i++ {
+			distStrs[i] = dist[i].TruncateInt().String()
+		}
+		logger.Info("FLOOD iter complete",
+			"iter", iter,
+			"updated", updated,
+			"dist_base", dist[baseIdx].TruncateInt().String(),
+			"start_amt", startAmt.TruncateInt().String(),
+			"dist", distStrs,
+		)
 
-// getCycleSeedDenoms returns denoms to use as cycle search starting points.
-// Includes: RefDenom + hub denoms (appearing in 2+ pools) for better coverage.
-// Capped at 10 seeds to avoid excessive search time.
-func (ac *ArbitrageContext) getCycleSeedDenoms() []string {
-	// Count pool appearances per denom
-	denomCount := make(map[string]int)
-	for _, p := range ac.Pools {
-		denomCount[p.Denom0]++
-		denomCount[p.Denom1]++
-	}
+		// Early profit detection (>0.1%)
+		if dist[baseIdx].GT(startAmt.MulInt64(1001).QuoInt64(1000)) {
+			profit := dist[baseIdx].Sub(startAmt)
+			logger.Info("FLOOD early profit detected",
+				"iter", iter,
+				"dist_base", dist[baseIdx].TruncateInt().String(),
+				"profit", profit.TruncateInt().String(),
+			)
+			path := ac.reconstructPath(parent, tokens, tokenIdx, baseIdx, startAmt, logger)
+			return profit, path
+		}
 
-	// Always include RefDenom first
-	seeds := []string{ac.RefDenom}
-	seen := map[string]bool{ac.RefDenom: true}
-
-	// Add hub denoms (2+ pools) - these form cycle junctions
-	for denom, count := range denomCount {
-		if count >= 2 && !seen[denom] {
-			seeds = append(seeds, denom)
-			seen[denom] = true
+		if !updated {
+			logger.Info("FLOOD no updates, stopping", "iter", iter)
+			break
 		}
 	}
 
-	// Cap at 10 seeds to bound search complexity (~500 paths max)
-	if len(seeds) > 10 {
-		seeds = seeds[:10]
-	}
+	// Final profit check
+	profit := dist[baseIdx].Sub(startAmt)
 
-	return seeds
-}
-
-// cycleSignature returns a canonical string for cycle deduplication.
-// Normalizes by starting from smallest pool index to handle rotations.
-func cycleSignature(cycle []cycleStep) string {
-	if len(cycle) == 0 {
-		return ""
-	}
-	// Find rotation with smallest first pool index
-	minIdx := 0
-	for i := 1; i < len(cycle); i++ {
-		if cycle[i].poolIdx < cycle[minIdx].poolIdx {
-			minIdx = i
+	// Log parent array state
+	parentInfo := make([]string, numTokens)
+	for i := 0; i < numTokens; i++ {
+		if parent[i].poolIdx >= 0 {
+			pool := ac.Pools[parent[i].poolIdx]
+			parentInfo[i] = fmt.Sprintf("%s←P%d", tokens[i], pool.PoolID)
+		} else {
+			parentInfo[i] = tokens[i] + "←nil"
 		}
 	}
-	// Build signature from normalized rotation
-	sig := ""
-	for i := 0; i < len(cycle); i++ {
-		step := cycle[(minIdx+i)%len(cycle)]
-		dir := "0"
-		if !step.sellDenom0 {
-			dir = "1"
-		}
-		sig += fmt.Sprintf("%d%s", step.poolIdx, dir)
+	logger.Info("FLOOD final check",
+		"dist_base", dist[baseIdx].TruncateInt().String(),
+		"start_amt", startAmt.TruncateInt().String(),
+		"profit", profit.TruncateInt().String(),
+		"parent_info", parentInfo,
+	)
+
+	if profit.GT(DecZero) {
+		path := ac.reconstructPath(parent, tokens, tokenIdx, baseIdx, startAmt, logger)
+		return profit, path
 	}
-	return sig
+
+	return DecZero, nil
 }
 
-// findArbitrageCycles finds all cycles starting and ending at startDenom
-func (ac *ArbitrageContext) findArbitrageCycles(startDenom string, maxLen int) [][]cycleStep {
-	var cycles [][]cycleStep
+// reconstructPath finds a profitable cycle from base back to base using DFS.
+// Since parent pointers in FLOOD get overwritten, we do a fresh DFS to find
+// an actual valid cycle with computed swap amounts.
+func (ac *ArbitrageContext) reconstructPath(
+	parent []floodStep,
+	tokens []string,
+	tokenIdx map[string]int,
+	baseIdx int,
+	startAmt math.LegacyDec,
+	logger log.Logger,
+) []floodStep {
+	logger.Info("FLOOD reconstructPath starting DFS",
+		"base_idx", baseIdx,
+		"base_token", tokens[baseIdx],
+		"start_amt", startAmt.TruncateInt().String(),
+		"num_pools", len(ac.Pools),
+	)
 
-	// DFS to find cycles
-	var dfs func(currentDenom string, path []cycleStep, usedPools map[int]bool)
-	dfs = func(currentDenom string, path []cycleStep, usedPools map[int]bool) {
-		if len(path) > maxLen {
+	// Build adjacency: for each token, list (poolIdx, sellDenom0, dstTokenIdx)
+	type edge struct {
+		poolIdx    int
+		sellDenom0 bool
+		dstIdx     int
+	}
+	adj := make(map[int][]edge)
+
+	for poolIdx, pool := range ac.Pools {
+		if pool.Reserve0.IsNil() || pool.Reserve1.IsNil() {
+			continue
+		}
+		if pool.Reserve0.IsZero() || pool.Reserve1.IsZero() {
+			continue
+		}
+
+		srcIdx0, ok0 := tokenIdx[pool.Denom0]
+		srcIdx1, ok1 := tokenIdx[pool.Denom1]
+		if !ok0 || !ok1 {
+			continue
+		}
+
+		// Denom0 → Denom1
+		adj[srcIdx0] = append(adj[srcIdx0], edge{poolIdx, true, srcIdx1})
+		// Denom1 → Denom0
+		adj[srcIdx1] = append(adj[srcIdx1], edge{poolIdx, false, srcIdx0})
+	}
+
+	// DFS to find profitable cycle starting and ending at baseIdx
+	// Track: current token, current amount, path taken, used pools
+	type dfsState struct {
+		tokenIdx int
+		amount   math.LegacyDec
+		path     []floodStep
+		usedDir  map[int]bool // pool_idx * 2 + (1 if sellDenom0 else 0) -> used
+	}
+
+	var bestPath []floodStep
+	bestProfit := DecZero
+	maxDepth := 6
+
+	var dfs func(state dfsState, depth int)
+	dfs = func(state dfsState, depth int) {
+		if depth > maxDepth {
 			return
 		}
 
-		// Check if we've completed a cycle
-		if len(path) >= 2 && currentDenom == startDenom {
-			cycleCopy := make([]cycleStep, len(path))
-			copy(cycleCopy, path)
-			cycles = append(cycles, cycleCopy)
+		// Check if we can return to base
+		if depth > 0 && state.tokenIdx == baseIdx {
+			profit := state.amount.Sub(startAmt)
+			if profit.GT(bestProfit) {
+				logger.Info("FLOOD DFS found cycle",
+					"depth", depth,
+					"profit", profit.TruncateInt().String(),
+					"path_len", len(state.path),
+				)
+				bestProfit = profit
+				bestPath = make([]floodStep, len(state.path))
+				copy(bestPath, state.path)
+			}
 			return
 		}
 
-		// Try each pool that contains currentDenom
-		for poolIdx, pool := range ac.Pools {
-			if usedPools[poolIdx] {
+		// Explore edges
+		for _, e := range adj[state.tokenIdx] {
+			dirKey := e.poolIdx*2 + func() int {
+				if e.sellDenom0 {
+					return 1
+				}
+				return 0
+			}()
+
+			// Skip if already used this direction
+			if state.usedDir[dirKey] {
 				continue
 			}
 
-			var step cycleStep
-			step.poolIdx = poolIdx
-
-			if pool.Denom0 == currentDenom {
-				step.sellDenom0 = true
-				step.inDenom = pool.Denom0
-				step.outDenom = pool.Denom1
-			} else if pool.Denom1 == currentDenom {
-				step.sellDenom0 = false
-				step.inDenom = pool.Denom1
-				step.outDenom = pool.Denom0
+			// Compute output
+			pool := ac.Pools[e.poolIdx]
+			var rIn, rOut, fee math.LegacyDec
+			if e.sellDenom0 {
+				rIn = math.LegacyNewDecFromInt(pool.Reserve0)
+				rOut = math.LegacyNewDecFromInt(pool.Reserve1)
+				if !pool.Fee0.IsNil() {
+					fee = pool.Fee0
+				} else {
+					fee = DecZero
+				}
 			} else {
+				rIn = math.LegacyNewDecFromInt(pool.Reserve1)
+				rOut = math.LegacyNewDecFromInt(pool.Reserve0)
+				if !pool.Fee1.IsNil() {
+					fee = pool.Fee1
+				} else {
+					fee = DecZero
+				}
+			}
+
+			if rIn.IsZero() || rOut.IsZero() {
 				continue
 			}
 
-			usedPools[poolIdx] = true
-			path = append(path, step)
-			dfs(step.outDenom, path, usedPools)
-			path = path[:len(path)-1]
-			usedPools[poolIdx] = false
+			gamma := DecOne.Sub(fee)
+			effectiveIn := state.amount.Mul(gamma)
+			out := rOut.Mul(effectiveIn).Quo(rIn.Add(effectiveIn))
+
+			if out.LTE(DecZero) {
+				continue
+			}
+
+			// Recurse
+			newUsedDir := make(map[int]bool)
+			for k, v := range state.usedDir {
+				newUsedDir[k] = v
+			}
+			newUsedDir[dirKey] = true
+
+			newPath := make([]floodStep, len(state.path)+1)
+			copy(newPath, state.path)
+			newPath[len(state.path)] = floodStep{
+				poolIdx:    e.poolIdx,
+				sellDenom0: e.sellDenom0,
+				amount:     state.amount,
+			}
+
+			dfs(dfsState{
+				tokenIdx: e.dstIdx,
+				amount:   out,
+				path:     newPath,
+				usedDir:  newUsedDir,
+			}, depth+1)
 		}
 	}
 
-	dfs(startDenom, nil, make(map[int]bool))
-	return cycles
+	// Start DFS from base
+	dfs(dfsState{
+		tokenIdx: baseIdx,
+		amount:   startAmt,
+		path:     nil,
+		usedDir:  make(map[int]bool),
+	}, 0)
+
+	logger.Info("FLOOD reconstructPath DFS result",
+		"path_len", len(bestPath),
+		"profit", bestProfit.TruncateInt().String(),
+	)
+
+	return bestPath
 }
 
-// computeOptimalCycleAmount uses Newton's method to find optimal input amount
-func (ac *ArbitrageContext) computeOptimalCycleAmount(cycle []cycleStep) (math.LegacyDec, math.LegacyDec) {
-	if len(cycle) == 0 {
-		return DecZero, DecZero
+// pathToFlows converts a path to the 2N flows vector with proper cascading amounts.
+// The path represents edges traversed in FORWARD order (from base to base).
+// We compute sequential trade amounts where each trade's output is next trade's input.
+func (ac *ArbitrageContext) pathToFlows(path []floodStep, n int) []math.LegacyDec {
+	logger := ac.Keeper.ArbitrageLogger(ac.Ctx)
+
+	flows := make([]math.LegacyDec, n)
+	for i := range flows {
+		flows[i] = DecZero
 	}
 
-	// Get first pool's input reserve as scale reference
-	firstPool := ac.Pools[cycle[0].poolIdx]
-	var maxInput math.LegacyDec
-	if cycle[0].sellDenom0 {
-		maxInput = math.LegacyNewDecFromInt(firstPool.Reserve0)
-	} else {
-		maxInput = math.LegacyNewDecFromInt(firstPool.Reserve1)
+	if len(path) == 0 {
+		logger.Info("pathToFlows: empty path")
+		return flows
 	}
 
-	// simulateCycle computes output for input x
-	simulateCycle := func(x math.LegacyDec) math.LegacyDec {
-		amt := x
-		for _, step := range cycle {
-			pool := ac.Pools[step.poolIdx]
+	// The first step's amount is how much we start with
+	// For subsequent steps, we compute output of previous trade
+	currentAmount := path[0].amount
+	if currentAmount.IsNil() || currentAmount.LTE(DecZero) {
+		// Use a reasonable starting amount if not set
+		currentAmount = math.LegacyNewDec(100)
+	}
+
+	logger.Info("pathToFlows starting",
+		"path_len", len(path),
+		"initial_amount", currentAmount.TruncateInt().String(),
+	)
+
+	for i, step := range path {
+		if step.poolIdx < 0 || step.poolIdx >= len(ac.Pools) {
+			logger.Info("pathToFlows: invalid pool index", "idx", step.poolIdx)
+			continue
+		}
+
+		pool := ac.Pools[step.poolIdx]
+
+		// Set the flow for this step
+		// Convention (from buildMakeTradeMsg):
+		//   sellDenom0 (swap denom0 in) → flows[2*idx]
+		//   sellDenom1 (swap denom1 in) → flows[2*idx+1]
+		dirKey := step.poolIdx * 2
+		if !step.sellDenom0 {
+			dirKey++
+		}
+		flows[dirKey] = currentAmount
+
+		logger.Info("pathToFlows step",
+			"step", i,
+			"pool_id", pool.PoolID,
+			"sell_denom0", step.sellDenom0,
+			"dir_key", dirKey,
+			"amount", currentAmount.TruncateInt().String(),
+		)
+
+		// Compute output for next step (if not last)
+		if i < len(path)-1 {
 			var rIn, rOut, fee math.LegacyDec
 			if step.sellDenom0 {
+				if pool.Reserve0.IsNil() || pool.Reserve1.IsNil() || pool.Fee0.IsNil() {
+					break
+				}
 				rIn = math.LegacyNewDecFromInt(pool.Reserve0)
 				rOut = math.LegacyNewDecFromInt(pool.Reserve1)
 				fee = pool.Fee0
 			} else {
+				if pool.Reserve0.IsNil() || pool.Reserve1.IsNil() || pool.Fee1.IsNil() {
+					break
+				}
 				rIn = math.LegacyNewDecFromInt(pool.Reserve1)
 				rOut = math.LegacyNewDecFromInt(pool.Reserve0)
 				fee = pool.Fee1
 			}
+
 			gamma := DecOne.Sub(fee)
-			effectiveAmt := amt.Mul(gamma)
-			// AMM formula: out = rOut * effectiveAmt / (rIn + effectiveAmt)
-			amt = rOut.Mul(effectiveAmt).Quo(rIn.Add(effectiveAmt))
+			effectiveIn := currentAmount.Mul(gamma)
+			outputAmount := rOut.Mul(effectiveIn).Quo(rIn.Add(effectiveIn))
+
+			logger.Info("pathToFlows compute output",
+				"step", i,
+				"input", currentAmount.TruncateInt().String(),
+				"output", outputAmount.TruncateInt().String(),
+			)
+
+			currentAmount = outputAmount
 		}
-		return amt
 	}
 
-	// Newton's method: find x where profit'(x) = 0
-	// Start with small amount (1% of max reserve)
-	x := maxInput.Mul(math.LegacyNewDecWithPrec(1, 2))
+	logger.Info("pathToFlows result", "flows", formatFlows(flows))
+	return flows
+}
 
-	// 5 Newton iterations (converges in ≤4 for 4-pool cycles)
-	for iter := 0; iter < 5; iter++ {
-		out := simulateCycle(x)
-		if out.IsZero() || x.IsZero() {
-			break
+// formatFlows formats flow amounts for logging
+func formatFlows(flows []math.LegacyDec) string {
+	result := "["
+	for i, f := range flows {
+		if i > 0 {
+			result += ","
 		}
-		// Newton step: x_new = x * x / out (simplified for this form)
-		// This finds where marginal output = 1 (optimal)
-		xNew := x.Mul(x).Quo(out)
-
-		// Clamp to reasonable bounds
-		if xNew.GT(maxInput.Mul(math.LegacyNewDecWithPrec(9, 1))) {
-			xNew = maxInput.Mul(math.LegacyNewDecWithPrec(9, 1)) // 90% max
-		}
-		if xNew.LT(DecOne) {
-			xNew = DecOne
-		}
-		x = xNew
+		result += f.String()
 	}
-
-	// Compute final profit
-	finalOut := simulateCycle(x)
-	profit := finalOut.Sub(x)
-
-	// Only return if profitable
-	if profit.IsPositive() {
-		return x, profit
-	}
-	return DecZero, DecZero
+	result += "]"
+	return result
 }
 
 // FindArbitrage runs the optimizer to find profitable arbitrage.
@@ -882,8 +1301,15 @@ func (ac *ArbitrageContext) FindArbitrage(optimizer ArbitrageOptimizer) *Arbitra
 // BuildFinalMakeTradeMsg creates the MsgMakeTrade for execution with proper constraints.
 // This should be called after FindArbitrage to create a msg with appropriate
 // MaxInput and MinOutput based on the simulation result.
+//
+// Returns nil if the arbitrage is not purely circular (has any net inputs).
 func (ac *ArbitrageContext) BuildFinalMakeTradeMsg(result *ArbitrageResult) *whaleswapv1.MsgMakeTrade {
 	if result == nil || !result.Success || result.Msg == nil {
+		return nil
+	}
+
+	// Arbitrage must be purely circular — reject if there are any net inputs
+	if !result.TraderInputs.IsZero() {
 		return nil
 	}
 
@@ -891,13 +1317,8 @@ func (ac *ArbitrageContext) BuildFinalMakeTradeMsg(result *ArbitrageResult) *wha
 	msg := &whaleswapv1.MsgMakeTrade{
 		Trader:     ac.Trader,
 		Operations: result.Msg.Operations,
-		Note:       "auto-arbitrage",
-	}
-
-	// For circular arbitrage, MaxInput should be empty (no net debits expected)
-	// If the simulation showed inputs, include them as max (safety margin)
-	if !result.TraderInputs.IsZero() {
-		msg.MaxInput = result.TraderInputs
+		Note:       "",
+		MaxInput:   nil, // Circular arb: no inputs allowed
 	}
 
 	// MinOutput: require at least the profit we found (with small margin for rounding)

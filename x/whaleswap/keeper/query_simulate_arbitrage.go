@@ -19,6 +19,15 @@ func (k Keeper) SimulateArbitrage(
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	// Check ArbitrageMode param - if DISABLED, return empty result immediately
+	params := k.GetParams(ctx)
+	if params.ArbitrageMode == whaleswapv1.ArbitrageMode_ARBITRAGE_MODE_DISABLED {
+		k.Logger(ctx).Info("arbitrage mode is disabled, returning empty result", "arbitrage_mode", params.ArbitrageMode)
+		return &whaleswapv1.QuerySimulateArbitrageResponse{
+			Found: false,
+		}, nil
+	}
+
 	// Default depth to 1 if not specified
 	depth := int(req.Depth)
 	if depth < 0 {

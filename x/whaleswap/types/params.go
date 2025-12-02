@@ -11,7 +11,7 @@ import (
 // Defaults: empty denom means PFAND disabled by default.
 var DefaultPfandPerOffer = sdk.Coin{Denom: "udys", Amount: math.NewInt(1)}
 
-func NewParams(pfandPerOffer sdk.Coin, valuationFeePct, minBidPctIncrease string, valuationPeriod time.Duration, bidTimeout time.Duration, maxNoteLength uint32, blockDelayBeforeClose, blockDelayBeforeLiquidation uint64) Params {
+func NewParams(pfandPerOffer sdk.Coin, valuationFeePct, minBidPctIncrease string, valuationPeriod time.Duration, bidTimeout time.Duration, maxNoteLength uint32, blockDelayBeforeClose, blockDelayBeforeLiquidation uint64, arbitrageMode ArbitrageMode) Params {
 	return Params{
 		PfandPerOffer:               pfandPerOffer,
 		ValuationFeePct:             valuationFeePct,
@@ -21,11 +21,12 @@ func NewParams(pfandPerOffer sdk.Coin, valuationFeePct, minBidPctIncrease string
 		MaxNoteLength:               maxNoteLength,
 		BlockDelayBeforeClose:       blockDelayBeforeClose,
 		BlockDelayBeforeLiquidation: blockDelayBeforeLiquidation,
+		ArbitrageMode:               arbitrageMode,
 	}
 }
 
 func DefaultParams() Params {
-	p := NewParams(DefaultPfandPerOffer, "0", "0", time.Hour, time.Second*5, 128, 1, 1)
+	p := NewParams(DefaultPfandPerOffer, "0", "0", time.Hour, time.Second*5, 128, 1, 1, ArbitrageMode_ARBITRAGE_MODE_AUTO)
 	return p
 }
 

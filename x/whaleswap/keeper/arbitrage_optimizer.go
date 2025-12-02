@@ -377,7 +377,7 @@ func NewHybridOptimizer() *HybridOptimizer {
 		NelderMead: &NelderMeadOptimizer{
 			MaxIterations:     12,                              // hard cap (CF finds most profit)
 			Tolerance:         math.LegacyNewDecWithPrec(1, 2), // 0.01 absolute
-			MaxPools:          20,                              // 10 pools
+			MaxPools:          20,                              // 20 pools
 			NoImproveLimit:    3,                               // stop after 3 iters without improvement
 			RelativeTolerance: math.LegacyNewDecWithPrec(5, 5), // 0.005% relative improvement threshold
 		},
@@ -444,53 +444,108 @@ func (h *HybridOptimizer) Optimize(
 		}
 	}
 
-	// If closed-form didn't find profit, exit early
-	if !bestVal.IsPositive() {
-		h.metrics = &OptimizationMetrics{
-			Algorithm:     "CF+NM(NoProfit)",
-			Evaluations:   evaluations,
-			Dimensions:    n,
-			Duration:      time.Since(startTime),
-			BestValue:     bestVal,
-			BestIteration: 0, // closed-form was evaluated but not profitable
-			Found:         false,
-		}
-		return nil, bestVal, false
-	}
-
 	cfVal := bestVal
 
-	// === PHASE 2: NelderMead refinement ===
-	// Polish the closed-form estimate and consolidate extras to ref_denom
-	refined, refinedVal, refinedOk := h.NelderMead.Optimize(objective, bounds, x)
-	evaluations += h.NelderMead.metrics.Evaluations
+	// === PHASE 2: NelderMead refinement with multiple starting points ===
+	// Try NM from CF estimate first, then from scaled versions if no improvement.
+	// This helps escape local optima and verify CF is actually optimal.
 
-	if refinedOk && refinedVal.GT(cfVal) {
-		improvement := refinedVal.Sub(cfVal)
-		// NelderMead improved, report its best iteration
+	var finalVal math.LegacyDec
+	var finalResult []math.LegacyDec
+	var algorithm string
+	totalNMIters := 0
+
+	// Starting points to try: CF estimate, 2x CF, 0.5x CF
+	scales := []math.LegacyDec{
+		DecOne,                          // 1.0x (original CF)
+		math.LegacyNewDec(2),            // 2.0x (explore larger amounts)
+		math.LegacyNewDecWithPrec(5, 1), // 0.5x (explore smaller amounts)
+	}
+
+	bestFromNM := cfVal
+	var bestNMResult []math.LegacyDec
+
+	for scaleIdx, scale := range scales {
+		// Create scaled starting point
+		startPoint := make([]math.LegacyDec, n)
+		for i := 0; i < n; i++ {
+			if i < len(x) {
+				scaled := x[i].Mul(scale)
+				// Clamp to bounds
+				if scaled.LT(bounds.Lower[i]) {
+					scaled = bounds.Lower[i]
+				}
+				if scaled.GT(bounds.Upper[i]) {
+					scaled = bounds.Upper[i]
+				}
+				startPoint[i] = scaled
+			} else {
+				startPoint[i] = DecZero
+			}
+		}
+
+		refined, refinedVal, refinedOk := h.NelderMead.Optimize(objective, bounds, startPoint)
+		evaluations += h.NelderMead.metrics.Evaluations
+		totalNMIters += h.NelderMead.metrics.Iterations
+
+		if refinedOk && refinedVal.GT(bestFromNM) {
+			bestFromNM = refinedVal
+			bestNMResult = refined
+		}
+
+		// If we found significant improvement (>5%), stop trying more scales
+		if refinedOk && cfVal.IsPositive() {
+			improvement := refinedVal.Sub(cfVal).Quo(cfVal)
+			if improvement.GT(math.LegacyNewDecWithPrec(5, 2)) { // >5% improvement
+				break
+			}
+		}
+
+		// Don't try all scales if CF was zero (first NM run is sufficient)
+		if !cfVal.IsPositive() && scaleIdx == 0 {
+			break
+		}
+	}
+
+	// Determine final result
+	if bestFromNM.GT(cfVal) {
+		finalVal = bestFromNM
+		finalResult = bestNMResult
+		if cfVal.IsPositive() {
+			improvement := bestFromNM.Sub(cfVal)
+			algorithm = fmt.Sprintf("CF:%s→NM:+%s", cfVal.TruncateInt().String(), improvement.TruncateInt().String())
+		} else {
+			algorithm = fmt.Sprintf("NM:%s", bestFromNM.TruncateInt().String())
+		}
+	} else if cfVal.IsPositive() {
+		// CF was best even after trying multiple NM starting points
+		finalVal = cfVal
+		finalResult = x
+		algorithm = fmt.Sprintf("CF:%s(NM:Verified)", cfVal.TruncateInt().String())
+	} else {
+		// Neither found profit
 		h.metrics = &OptimizationMetrics{
-			Algorithm:     fmt.Sprintf("CF:%s→NM:+%s", cfVal.TruncateInt().String(), improvement.TruncateInt().String()),
-			Iterations:    h.NelderMead.metrics.Iterations,
+			Algorithm:     "CF+NM(NoProfit)",
+			Iterations:    totalNMIters,
 			Evaluations:   evaluations,
 			Dimensions:    n,
 			Duration:      time.Since(startTime),
-			BestValue:     refinedVal,
-			BestIteration: h.NelderMead.metrics.BestIteration, // iteration within NM that found best
-			Found:         true,
+			BestValue:     cfVal,
+			BestIteration: 0,
+			Found:         false,
 		}
-		return refined, refinedVal, true
+		return nil, cfVal, false
 	}
 
-	// NelderMead didn't improve - closed-form was best (iteration 0)
 	h.metrics = &OptimizationMetrics{
-		Algorithm:     fmt.Sprintf("CF:%s(NM:NoImprove)", cfVal.TruncateInt().String()),
-		Iterations:    h.NelderMead.metrics.Iterations,
+		Algorithm:     algorithm,
+		Iterations:    totalNMIters,
 		Evaluations:   evaluations,
 		Dimensions:    n,
 		Duration:      time.Since(startTime),
-		BestValue:     cfVal,
-		BestIteration: 0, // closed-form was best
+		BestValue:     finalVal,
+		BestIteration: h.NelderMead.metrics.BestIteration,
 		Found:         true,
 	}
-	return x, cfVal, true
+	return finalResult, finalVal, true
 }

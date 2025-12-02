@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"dysonprotocol.com/x/whaleswap/types"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -52,6 +54,12 @@ func (i *ArbitrageMsgInterceptor) Post(ctx sdk.Context, msg sdk.Msg, result *sdk
 		return
 	}
 
+	// Check ArbitrageMode param - only run auto-execution in AUTO mode
+	params := i.keeper.GetParams(ctx)
+	if params.ArbitrageMode != types.ArbitrageMode_ARBITRAGE_MODE_AUTO {
+		return
+	}
+
 	logger := i.keeper.ArbitrageLogger(ctx)
 
 	// Get affected denoms from the message
@@ -63,9 +71,11 @@ func (i *ArbitrageMsgInterceptor) Post(ctx sdk.Context, msg sdk.Msg, result *sdk
 	logger.Debug("arbitrage check triggered",
 		"msg_type", sdk.MsgTypeURL(msg),
 		"affected_denoms", affectedDenoms,
+		"ref_denom", i.refDenom,
 	)
 
 	// Run arbitrage detection and execution
+	// Always use configured refDenom (udys) - only execute if there's profit in udys terms
 	arbResult, arbErr := i.runner.CheckAndExecuteArbitrage(
 		ctx,
 		i.trader,
