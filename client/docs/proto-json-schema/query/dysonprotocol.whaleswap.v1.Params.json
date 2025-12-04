@@ -99,6 +99,10 @@
                         ],
                         "title": "Arbitrage Mode",
                         "description": "ArbitrageMode determines how the protocol handles arbitrage opportunities."
+                    },
+                    "arbitrage_ref_denom": {
+                        "type": "string",
+                        "description": "arbitrage_ref_denom is the reference denom for measuring arbitrage profit. Only cycles ending in this denom will be considered for auto-execution."
                     }
                 },
                 "additionalProperties": false,

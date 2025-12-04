@@ -1344,6 +1344,10 @@
         "arbitrage_mode": {
           "$ref": "#/definitions/dysonprotocol.whaleswap.v1.ArbitrageMode",
           "description": "\u2550\u2550\u2550\u2550\u2550 ARBITRAGE PARAMETERS \u2550\u2550\u2550\u2550\u2550\narbitrage_mode controls protocol arbitrage behavior."
+        },
+        "arbitrage_ref_denom": {
+          "type": "string",
+          "description": "arbitrage_ref_denom is the reference denom for measuring arbitrage profit.\nOnly cycles ending in this denom will be considered for auto-execution."
         }
       }
     },

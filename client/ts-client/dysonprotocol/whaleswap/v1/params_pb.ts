@@ -121,6 +121,14 @@ export class Params extends Message<Params> {
    */
   arbitrageMode = ArbitrageMode.UNSPECIFIED;
 
+  /**
+   * arbitrage_ref_denom is the reference denom for measuring arbitrage profit.
+   * Only cycles ending in this denom will be considered for auto-execution.
+   *
+   * @generated from field: string arbitrage_ref_denom = 10;
+   */
+  arbitrageRefDenom = "";
+
   constructor(data?: PartialMessage<Params>) {
     super();
     proto3.util.initPartial(data, this);
@@ -138,6 +146,7 @@ export class Params extends Message<Params> {
     { no: 7, name: "block_delay_before_close", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 8, name: "block_delay_before_liquidation", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 9, name: "arbitrage_mode", kind: "enum", T: proto3.getEnumType(ArbitrageMode) },
+    { no: 10, name: "arbitrage_ref_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Params {

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -12,23 +13,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// =============================================================================
-// LIGHTNING Arbitrage Algorithm
-// =============================================================================
-//
-// LIGHTNING finds and executes multi-path arbitrage opportunities by:
-// 1. LOAD: Copy pool reserves into fast local data structures
-// 2. LOOP: Iteratively find profitable cycles, updating local state each time
-// 3. COLLECT: Gather all operations from all paths
-// 4. EXECUTE: Single MakeTrade with all operations
-//
-// Key insight: Each path is computed with UPDATED reserves from previous paths,
-// so amounts are exact - no scaling heuristics needed.
+// LIGHTNING finds multi-path arbitrage by iteratively finding profitable cycles
+// on local pool state, then executing all operations in a single MakeTrade.
 
-// Consensus-safe constants
 var (
-	DecZero = math.LegacyZeroDec()
-	DecOne  = math.LegacyOneDec()
+	DecZero         = math.LegacyZeroDec()
+	DecOne          = math.LegacyOneDec()
+	errNoOperations = errors.New("no operations generated")
 )
 
 // ArbitragePool holds minimal pool info for arbitrage computation.
@@ -83,12 +74,6 @@ type arbStep struct {
 	sellDenom0 bool
 	amount     math.LegacyDec
 }
-
-var errNoOperations = &simError{msg: "no operations generated"}
-
-type simError struct{ msg string }
-
-func (e *simError) Error() string { return e.msg }
 
 // =============================================================================
 // Context Building
@@ -163,21 +148,6 @@ func (k *Keeper) BuildArbitrageContext(
 		denomQueue = nextDenoms
 	}
 
-	// Prioritize pools by connectivity
-	prioritizePools(ac, affectedDenoms)
-
-	logger := k.ArbitrageLogger(ctx)
-	poolIDs := make([]uint64, len(ac.Pools))
-	for i, p := range ac.Pools {
-		poolIDs[i] = p.PoolID
-	}
-	logger.Debug("arbitrage context built",
-		"pool_count", len(ac.Pools),
-		"pool_ids", poolIDs,
-		"all_denoms", ac.AllDenoms,
-		"ref_denom", refDenom,
-	)
-
 	return ac, nil
 }
 
@@ -211,82 +181,6 @@ func poolToArbitragePool(pool whaleswapv1.Pool) (ArbitragePool, error) {
 		Fee0:     fee0,
 		Fee1:     fee1,
 	}, nil
-}
-
-// Pool scoring constants
-var (
-	scoreAffectedDenom = math.NewInt(1000)
-	scoreHubMultiplier = math.NewInt(10)
-	scoreLiquidityDiv  = math.NewInt(1000000)
-	scoreLiquidityCap  = math.NewInt(100)
-)
-
-type poolScore struct {
-	idx   int
-	score math.Int
-}
-
-// prioritizePools reorders pools by connectivity score.
-func prioritizePools(ac *ArbitrageContext, affectedDenoms []string) {
-	if len(ac.Pools) <= 1 {
-		return
-	}
-
-	affected := make(map[string]bool)
-	for _, d := range affectedDenoms {
-		affected[d] = true
-	}
-
-	denomPoolCount := make(map[string]int)
-	for _, p := range ac.Pools {
-		denomPoolCount[p.Denom0]++
-		denomPoolCount[p.Denom1]++
-	}
-
-	scores := make([]poolScore, len(ac.Pools))
-	for i, p := range ac.Pools {
-		score := math.ZeroInt()
-
-		if affected[p.Denom0] || affected[p.Denom1] {
-			score = score.Add(scoreAffectedDenom)
-		}
-
-		if denomPoolCount[p.Denom0] > 1 {
-			score = score.Add(scoreHubMultiplier.MulRaw(int64(denomPoolCount[p.Denom0])))
-		}
-		if denomPoolCount[p.Denom1] > 1 {
-			score = score.Add(scoreHubMultiplier.MulRaw(int64(denomPoolCount[p.Denom1])))
-		}
-
-		totalReserve := p.Reserve0.Add(p.Reserve1)
-		if totalReserve.IsPositive() {
-			scaled := totalReserve.Quo(scoreLiquidityDiv)
-			if scaled.GT(scoreLiquidityCap) {
-				scaled = scoreLiquidityCap
-			}
-			score = score.Add(scaled)
-		}
-
-		scores[i] = poolScore{idx: i, score: score}
-	}
-
-	sort.SliceStable(scores, func(i, j int) bool {
-		return scores[i].score.GT(scores[j].score)
-	})
-
-	newPools := make([]ArbitragePool, len(ac.Pools))
-	for newIdx, ps := range scores {
-		newPools[newIdx] = ac.Pools[ps.idx]
-	}
-	ac.Pools = newPools
-
-	ac.PoolIndex = make(map[uint64]int, len(ac.Pools))
-	ac.DenomPools = make(map[string][]int)
-	for i, p := range ac.Pools {
-		ac.PoolIndex[p.PoolID] = i
-		ac.DenomPools[p.Denom0] = append(ac.DenomPools[p.Denom0], i)
-		ac.DenomPools[p.Denom1] = append(ac.DenomPools[p.Denom1], i)
-	}
 }
 
 // =============================================================================

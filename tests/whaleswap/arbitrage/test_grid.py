@@ -441,7 +441,7 @@ def _create_pool(creator, denom_a, amount_a, denom_b, amount_b):
     }})
     return result.get("results", [{{}}])[0].get("pool_id", 0)
 
-def demo_3x2_grid(alice_addr, base_denom, rows, cols, pool_amount, swap_amount):
+def demo_3x2_grid(alice_addr, gov_addr, base_denom, rows, cols, pool_amount, swap_amount):
     """Create 3x2 grid, swap on middle row, check for arbitrage."""
     
     def denom_name(row, col):
@@ -488,7 +488,27 @@ def demo_3x2_grid(alice_addr, base_denom, rows, cols, pool_amount, swap_amount):
     
     # NO diagonal pool - this creates independent top/bottom paths
     
-    # Verify arbitrage mode is AUTO before swap
+    # Set arbitrage_ref_denom to G2_1 for this test (since pools don't include udys)
+    params_resp = _query({{"@type": "/dysonprotocol.whaleswap.v1.QueryParamsRequest"}})
+    current_params = params_resp.get("params", {{}})
+    _sudo({{
+        "@type": "/dysonprotocol.whaleswap.v1.MsgUpdateParams",
+        "authority": gov_addr,
+        "params": {{
+            "pfand_per_offer": current_params.get("pfand_per_offer", {{"denom": "udys", "amount": "1"}}),
+            "valuation_fee_pct": current_params.get("valuation_fee_pct", "0"),
+            "valuation_period": current_params.get("valuation_period", "3600s"),
+            "bid_timeout": current_params.get("bid_timeout", "5s"),
+            "minimum_bid_percent_increase": current_params.get("minimum_bid_percent_increase", "0"),
+            "max_note_length": current_params.get("max_note_length", 128),
+            "block_delay_before_close": current_params.get("block_delay_before_close", 1),
+            "block_delay_before_liquidation": current_params.get("block_delay_before_liquidation", 1),
+            "arbitrage_mode": "ARBITRAGE_MODE_AUTO",
+            "arbitrage_ref_denom": denom_name(1, 0)
+        }}
+    }})
+    
+    # Verify arbitrage mode is AUTO and ref_denom is set
     params_resp = _query({{"@type": "/dysonprotocol.whaleswap.v1.QueryParamsRequest"}})
     arb_mode = params_resp.get("params", {{}}).get("arbitrage_mode", "")
     
@@ -615,6 +635,7 @@ def demo_3x2_grid(alice_addr, base_denom, rows, cols, pool_amount, swap_amount):
     kwargs = json.dumps(
         {
             "alice_addr": alice_addr,
+            "gov_addr": gov_addr,
             "base_denom": base_denom,
             "rows": ROWS,
             "cols": COLS,

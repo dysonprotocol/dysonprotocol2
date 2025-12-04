@@ -76,4 +76,9 @@ message Params {
   // arbitrage_mode controls protocol arbitrage behavior.
   ArbitrageMode arbitrage_mode = 9
       [ (gogoproto.moretags) = "yaml:\"arbitrage_mode\"" ];
+
+  // arbitrage_ref_denom is the reference denom for measuring arbitrage profit.
+  // Only cycles ending in this denom will be considered for auto-execution.
+  string arbitrage_ref_denom = 10
+      [ (gogoproto.moretags) = "yaml:\"arbitrage_ref_denom\"" ];
 }

@@ -1004,10 +1004,10 @@ func (app *DysApp) setMsgInterceptor() {
 	arbTrader := app.AccountKeeper.GetModuleAddress(whaleswapv1.ArbRevenueModuleName).String()
 
 	// Create arbitrage interceptor - runs after pool-affecting messages to capture arb
+	// refDenom is read from Params.ArbitrageRefDenom at runtime
 	arbInterceptor := whaleswapkeeper.NewArbitrageMsgInterceptor(
 		&app.WhaleswapKeeper,
 		arbTrader,
-		"udys", // refDenom for profit measurement
 	)
 
 	// Compose interceptors: logging first, then arbitrage

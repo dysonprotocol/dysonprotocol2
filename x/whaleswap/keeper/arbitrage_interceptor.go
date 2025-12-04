@@ -7,113 +7,73 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Ensure ArbitrageMsgInterceptor implements baseapp.MsgHandlerInterceptor.
 var _ baseapp.MsgHandlerInterceptor = (*ArbitrageMsgInterceptor)(nil)
 
 // ArbitrageMsgInterceptor detects and executes arbitrage after pool-affecting messages.
 type ArbitrageMsgInterceptor struct {
-	keeper   *Keeper
-	runner   *ArbitrageRunner
-	trader   string // address to use for arbitrage trades (e.g., module account)
-	refDenom string // reference denom for profit measurement
-	enabled  bool   // can be toggled at runtime
+	keeper *Keeper
+	trader string // address for arbitrage trades (module account)
 }
 
 // NewArbitrageMsgInterceptor creates a new arbitrage interceptor.
-//
-// Parameters:
-//   - keeper: the whaleswap keeper
-//   - trader: address to use for arbitrage trades (typically a module account)
-//   - refDenom: denom to measure profit in (e.g., "udys")
-func NewArbitrageMsgInterceptor(keeper *Keeper, trader string, refDenom string) *ArbitrageMsgInterceptor {
+// refDenom is now read from Params.ArbitrageRefDenom at runtime.
+func NewArbitrageMsgInterceptor(keeper *Keeper, trader string) *ArbitrageMsgInterceptor {
 	return &ArbitrageMsgInterceptor{
-		keeper:   keeper,
-		runner:   NewArbitrageRunner(keeper),
-		trader:   trader,
-		refDenom: refDenom,
-		enabled:  true,
+		keeper: keeper,
+		trader: trader,
 	}
 }
 
-// SetEnabled enables or disables arbitrage detection.
-func (i *ArbitrageMsgInterceptor) SetEnabled(enabled bool) {
-	i.enabled = enabled
-}
-
-// Pre is called before message execution.
-// Currently a no-op for arbitrage detection.
+// Pre is called before message execution. No-op for arbitrage.
 func (i *ArbitrageMsgInterceptor) Pre(ctx sdk.Context, msg sdk.Msg) error {
 	return nil
 }
 
-// Post is called after message execution.
-// If the message affected pools and succeeded, runs arbitrage detection.
+// Post is called after message execution. Runs arbitrage if message affected pools.
 func (i *ArbitrageMsgInterceptor) Post(ctx sdk.Context, msg sdk.Msg, result *sdk.Result, err error) {
-	// Skip if disabled, failed, or not a pool-affecting message
-	if !i.enabled || err != nil || !ShouldCheckArbitrage(msg) {
+	if err != nil || !ShouldCheckArbitrage(msg) {
 		return
 	}
 
-	// Check ArbitrageMode param - only run auto-execution in AUTO mode
 	params := i.keeper.GetParams(ctx)
 	if params.ArbitrageMode != types.ArbitrageMode_ARBITRAGE_MODE_AUTO {
 		return
 	}
 
-	logger := i.keeper.ArbitrageLogger(ctx)
-
-	// Get affected denoms from the message
 	affectedDenoms := GetPoolDenomsFromMsg(msg)
 	if len(affectedDenoms) == 0 {
 		return
 	}
 
-	logger.Debug("arbitrage check triggered",
-		"msg_type", sdk.MsgTypeURL(msg),
-		"affected_denoms", affectedDenoms,
-		"ref_denom", i.refDenom,
-	)
-
-	// Run arbitrage detection and execution in a loop until no more opportunities
-	// Use first affected denom as refDenom for circular arbitrage detection.
-	// Circular arbitrage profits in whatever token the cycle starts/ends with.
-	// If refDenom is in affected denoms, prefer it; otherwise use first affected denom.
-	refDenom := affectedDenoms[0]
-	for _, d := range affectedDenoms {
-		if d == i.refDenom {
-			refDenom = i.refDenom
-			break
-		}
-	}
-
-	totalProfit, execCount, arbErr := i.runner.CheckAndExecuteArbitrage(
-		ctx,
-		i.trader,
-		affectedDenoms,
-		refDenom,
-	)
-
-	if arbErr != nil {
-		logger.Error("arbitrage check error", "error", arbErr)
+	// Use shared arbitrage simulation (uses params.ArbitrageRefDenom by default)
+	simResp, simErr := i.keeper.SimulateArbitrageInternal(ctx, i.trader, affectedDenoms, "", 1, 0)
+	if simErr != nil || !simResp.Found || len(simResp.Operations) == 0 {
 		return
 	}
 
-	if execCount > 0 {
-		logger.Debug("arbitrage complete",
-			"total_profit", totalProfit.String(),
-			"exec_count", execCount,
-			"ref_denom", refDenom,
-		)
+	// Execute the arbitrage trade
+	tradeResp, execErr := i.keeper.MakeTrade(ctx, &types.MsgMakeTrade{
+		Trader:     i.trader,
+		Operations: simResp.Operations,
+	})
+	if execErr != nil {
+		i.keeper.ArbitrageLogger(ctx).Error("arbitrage execution failed", "error", execErr)
+		return
 	}
+
+	i.keeper.ArbitrageLogger(ctx).Debug("arbitrage executed",
+		"trade_id", tradeResp.TradeId,
+		"profit", simResp.Profit,
+		"ops", len(simResp.Operations),
+	)
 }
 
 // ComposedMsgInterceptor chains multiple interceptors together.
-// Pre calls are executed in order; Post calls are executed in reverse order.
 type ComposedMsgInterceptor struct {
 	interceptors []baseapp.MsgHandlerInterceptor
 }
 
-// NewComposedMsgInterceptor creates a composed interceptor from multiple interceptors.
+// NewComposedMsgInterceptor creates a composed interceptor.
 func NewComposedMsgInterceptor(interceptors ...baseapp.MsgHandlerInterceptor) *ComposedMsgInterceptor {
 	return &ComposedMsgInterceptor{interceptors: interceptors}
 }

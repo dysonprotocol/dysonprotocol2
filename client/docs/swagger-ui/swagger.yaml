@@ -7377,6 +7377,14 @@ paths:
                       - ARBITRAGE_MODE_MANUAL
                       - ARBITRAGE_MODE_AUTO
                     default: ARBITRAGE_MODE_UNSPECIFIED
+                  arbitrage_ref_denom:
+                    type: string
+                    description: >-
+                      arbitrage_ref_denom is the reference denom for measuring
+                      arbitrage profit.
+
+                      Only cycles ending in this denom will be considered for
+                      auto-execution.
         default:
           description: An unexpected error response.
           schema:
@@ -11526,24 +11534,141 @@ paths:
 
                     signatures required by gogoproto.
                 title: Net outputs the trader would receive
-              swap_amounts:
-                type: array
-                items:
-                  type: string
-                  format: int64
-                title: >-
-                  Swap amounts per pool (signed: positive = sell denom0,
-                  negative = sell
-
-                  denom1)
               pool_ids:
                 type: array
                 items:
                   type: string
                   format: uint64
-                title: >-
-                  Pool IDs in the arbitrage graph (corresponds to swap_amounts
-                  indices)
+                title: Pool IDs in the arbitrage graph
+              operations:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    swap:
+                      type: object
+                      properties:
+                        pool_id:
+                          type: string
+                          format: uint64
+                        swap_in:
+                          type: object
+                          properties:
+                            denom:
+                              type: string
+                            amount:
+                              type: string
+                          description: >-
+                            Coin defines a token with a denomination and an
+                            amount.
+
+
+                            NOTE: The amount field is an Int which implements
+                            the custom method
+
+                            signatures required by gogoproto.
+                        swap_out:
+                          type: object
+                          properties:
+                            denom:
+                              type: string
+                            amount:
+                              type: string
+                          description: >-
+                            Coin defines a token with a denomination and an
+                            amount.
+
+
+                            NOTE: The amount field is an Int which implements
+                            the custom method
+
+                            signatures required by gogoproto.
+                    take:
+                      type: object
+                      properties:
+                        offer_id:
+                          type: string
+                          format: uint64
+                          description: >-
+                            ID of the offer to take from; offer must exist and
+                            be in open status.
+                        take_units:
+                          type: string
+                          description: >-
+                            Units to take (sdk.Int string). If empty, take full
+                            remaining. Must be
+
+                            positive and ≤ remaining.
+                    auction:
+                      type: object
+                      properties:
+                        auction_id:
+                          type: string
+                          format: uint64
+                      title: >-
+                        AuctionRedeem operation for recording auction redemption
+                        in Trade history
+                    sent:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      title: 'Execution results (populated when recording Trade):'
+                    received:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    fees_paid:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                  description: >-
+                    TradeOperation allows mixing pool swap legs, orderbook
+                    takes, and auction
+
+                    redemptions. When stored in Trade.operations, sent/received
+                    fields are
+
+                    populated with execution results. When used in
+                    MsgMakeTrade.operations,
+
+                    sent/received are empty (populated during execution).
+                title: Trade operations to execute (used by auto-arbitrage)
+              trader:
+                type: string
+                title: Trader address used in simulation
         default:
           description: An unexpected error response.
           schema:
@@ -38291,6 +38416,14 @@ paths:
                       - ARBITRAGE_MODE_MANUAL
                       - ARBITRAGE_MODE_AUTO
                     default: ARBITRAGE_MODE_UNSPECIFIED
+                  arbitrage_ref_denom:
+                    type: string
+                    description: >-
+                      arbitrage_ref_denom is the reference denom for measuring
+                      arbitrage profit.
+
+                      Only cycles ending in this denom will be considered for
+                      auto-execution.
             description: >-
               *
 
@@ -51492,6 +51625,14 @@ definitions:
           - ARBITRAGE_MODE_MANUAL
           - ARBITRAGE_MODE_AUTO
         default: ARBITRAGE_MODE_UNSPECIFIED
+      arbitrage_ref_denom:
+        type: string
+        description: >-
+          arbitrage_ref_denom is the reference denom for measuring arbitrage
+          profit.
+
+          Only cycles ending in this denom will be considered for
+          auto-execution.
   dysonprotocol.whaleswap.v1.Pool:
     type: object
     properties:
@@ -53577,6 +53718,14 @@ definitions:
               - ARBITRAGE_MODE_MANUAL
               - ARBITRAGE_MODE_AUTO
             default: ARBITRAGE_MODE_UNSPECIFIED
+          arbitrage_ref_denom:
+            type: string
+            description: >-
+              arbitrage_ref_denom is the reference denom for measuring arbitrage
+              profit.
+
+              Only cycles ending in this denom will be considered for
+              auto-execution.
   dysonprotocol.whaleswap.v1.QueryPoolBySharesDenomResponse:
     type: object
     properties:
@@ -56840,20 +56989,139 @@ definitions:
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
         title: Net outputs the trader would receive
-      swap_amounts:
-        type: array
-        items:
-          type: string
-          format: int64
-        title: |-
-          Swap amounts per pool (signed: positive = sell denom0, negative = sell
-          denom1)
       pool_ids:
         type: array
         items:
           type: string
           format: uint64
-        title: Pool IDs in the arbitrage graph (corresponds to swap_amounts indices)
+        title: Pool IDs in the arbitrage graph
+      operations:
+        type: array
+        items:
+          type: object
+          properties:
+            swap:
+              type: object
+              properties:
+                pool_id:
+                  type: string
+                  format: uint64
+                swap_in:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    Coin defines a token with a denomination and an amount.
+
+
+                    NOTE: The amount field is an Int which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                swap_out:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    Coin defines a token with a denomination and an amount.
+
+
+                    NOTE: The amount field is an Int which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+            take:
+              type: object
+              properties:
+                offer_id:
+                  type: string
+                  format: uint64
+                  description: >-
+                    ID of the offer to take from; offer must exist and be in
+                    open status.
+                take_units:
+                  type: string
+                  description: >-
+                    Units to take (sdk.Int string). If empty, take full
+                    remaining. Must be
+
+                    positive and ≤ remaining.
+            auction:
+              type: object
+              properties:
+                auction_id:
+                  type: string
+                  format: uint64
+              title: >-
+                AuctionRedeem operation for recording auction redemption in
+                Trade history
+            sent:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              title: 'Execution results (populated when recording Trade):'
+            received:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            fees_paid:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+          description: >-
+            TradeOperation allows mixing pool swap legs, orderbook takes, and
+            auction
+
+            redemptions. When stored in Trade.operations, sent/received fields
+            are
+
+            populated with execution results. When used in
+            MsgMakeTrade.operations,
+
+            sent/received are empty (populated during execution).
+        title: Trade operations to execute (used by auto-arbitrage)
+      trader:
+        type: string
+        title: Trader address used in simulation
   dysonprotocol.whaleswap.v1.QueryTradeResponse:
     type: object
     properties:
@@ -81742,6 +82010,14 @@ definitions:
               - ARBITRAGE_MODE_MANUAL
               - ARBITRAGE_MODE_AUTO
             default: ARBITRAGE_MODE_UNSPECIFIED
+          arbitrage_ref_denom:
+            type: string
+            description: >-
+              arbitrage_ref_denom is the reference denom for measuring arbitrage
+              profit.
+
+              Only cycles ending in this denom will be considered for
+              auto-execution.
     description: >-
       *
 

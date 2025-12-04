@@ -1888,7 +1888,7 @@ def demo_circular_arb(alice_addr, foo_name, bar_name, qux_name):
         "denoms": arb_result.get("denoms", []),
         "trader_inputs": arb_result.get("trader_inputs", []),
         "trader_outputs": arb_result.get("trader_outputs", []),
-        "swap_amounts": arb_result.get("swap_amounts", []),
+        "operations": arb_result.get("operations", []),
         "pool_ids": arb_result.get("pool_ids", [])
     }
 """
@@ -2271,7 +2271,7 @@ def demo_many_pools(alice_addr, foo_name, bar_name, qux_name):
         "found": arb_result.get("found", False),
         "pool_count": arb_result.get("pool_count", 0),
         "profit": arb_result.get("profit", "0"),
-        "swap_amounts": arb_result.get("swap_amounts", [])
+        "operations": arb_result.get("operations", [])
     }
 """
 
@@ -2614,7 +2614,7 @@ def demo_ternary_dimensions(alice_addr, foo_name, bar_name, qux_name):
         "found": arb_result.get("found", False),
         "pool_count": arb_result.get("pool_count", 0),
         "profit": arb_result.get("profit", "0"),
-        "swap_amounts": arb_result.get("swap_amounts", [])
+        "operations": arb_result.get("operations", [])
     }
 """
 
@@ -3212,7 +3212,7 @@ def demo_many_pools_same_pair(alice_addr, foo_name, bar_name):
         "pool_count": arb_result.get("pool_count", 0),
         "profit": arb_result.get("profit", "0"),
         "pool_ids": arb_result.get("pool_ids", []),
-        "swap_amounts": arb_result.get("swap_amounts", [])
+        "operations": arb_result.get("operations", [])
     }
 """
 
@@ -3355,7 +3355,7 @@ def demo_long_chain(alice_addr, foo_name):
         "pool_count": arb_result.get("pool_count", 0),
         "profit": arb_result.get("profit", "0"),
         "denoms": arb_result.get("denoms", []),
-        "swap_amounts": arb_result.get("swap_amounts", [])
+        "operations": arb_result.get("operations", [])
     }
 """
 
@@ -3730,7 +3730,7 @@ def demo_mixed_stress(alice_addr, foo_name):
         "pool_count": arb_result.get("pool_count", 0),
         "profit": arb_result.get("profit", "0"),
         "denoms": arb_result.get("denoms", []),
-        "swap_amounts": arb_result.get("swap_amounts", []),
+        "operations": arb_result.get("operations", []),
         "trader_outputs": arb_result.get("trader_outputs", [])
     }
 """
@@ -3920,7 +3920,7 @@ def demo_triangle_single_bridge(alice_addr, foo_name):
         "pool_count": arb_result.get("pool_count", 0),
         "profit": arb_result.get("profit", "0"),
         "pool_ids": arb_result.get("pool_ids", []),
-        "swap_amounts": arb_result.get("swap_amounts", [])
+        "operations": arb_result.get("operations", [])
     }
 """
 

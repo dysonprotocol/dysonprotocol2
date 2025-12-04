@@ -2436,6 +2436,10 @@
         "arbitrage_mode": {
           "$ref": "#/definitions/dysonprotocol.whaleswap.v1.ArbitrageMode",
           "description": "\u2550\u2550\u2550\u2550\u2550 ARBITRAGE PARAMETERS \u2550\u2550\u2550\u2550\u2550\narbitrage_mode controls protocol arbitrage behavior."
+        },
+        "arbitrage_ref_denom": {
+          "type": "string",
+          "description": "arbitrage_ref_denom is the reference denom for measuring arbitrage profit.\nOnly cycles ending in this denom will be considered for auto-execution."
         }
       }
     },
@@ -2965,21 +2969,24 @@
           },
           "title": "Net outputs the trader would receive"
         },
-        "swap_amounts": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "int64"
-          },
-          "title": "Swap amounts per pool (signed: positive = sell denom0, negative = sell\ndenom1)"
-        },
         "pool_ids": {
           "type": "array",
           "items": {
             "type": "string",
             "format": "uint64"
           },
-          "title": "Pool IDs in the arbitrage graph (corresponds to swap_amounts indices)"
+          "title": "Pool IDs in the arbitrage graph"
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TradeOperation"
+          },
+          "title": "Trade operations to execute (used by auto-arbitrage)"
+        },
+        "trader": {
+          "type": "string",
+          "title": "Trader address used in simulation"
         }
       }
     },
