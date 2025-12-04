@@ -88,8 +88,6 @@ def demo_single_pool(alice_addr, foo_name, bar_name):
         "trader": alice_addr,
         "affected_denoms": [foo_name],
         "ref_denom": bar_name,
-        "depth": 0,
-        "max_fraction": "0.1"
     })
     
     return arb_result
@@ -240,8 +238,6 @@ def demo_two_pools_depth(alice_addr, foo_name, bar_name):
         "trader": alice_addr,
         "affected_denoms": [foo_name],
         "ref_denom": "udys",
-        "depth": 1,
-        "max_fraction": "0.1"
     })
     
     return arb_result
@@ -370,8 +366,6 @@ def demo_no_profit(alice_addr, foo_name, bar_name):
         "trader": alice_addr,
         "affected_denoms": [foo_name, bar_name],
         "ref_denom": "udys",
-        "depth": 1,
-        "max_fraction": "0.1"
     })
     
     return arb_result
@@ -433,8 +427,6 @@ def demo_no_pools(alice_addr):
         "trader": alice_addr,
         "affected_denoms": ["nonexistent_denom_xyz123"],
         "ref_denom": "udys",
-        "depth": 1,
-        "max_fraction": "0.1"
     })
     
     return arb_result
@@ -559,8 +551,6 @@ def demo_depth_zero(alice_addr, foo_name, bar_name):
         "trader": alice_addr,
         "affected_denoms": [foo_name],
         "ref_denom": "udys",
-        "depth": 0,
-        "max_fraction": "0.1"
     })
     
     return {
@@ -946,7 +936,6 @@ def demo_square_arb(alice_addr, foo_name, bar_name, qux_name, arb_rev_addr):
         "trader": alice_addr,
         "affected_denoms": ["udys", foo_name],
         "ref_denom": "udys",
-        "depth": 2
     })
     
     # Query arb revenue module balance (address passed from test)
@@ -1184,7 +1173,6 @@ def demo_intermediate_arb(alice_addr, bar_name, energy_name, arb_rev_addr):
         "trader": alice_addr,
         "affected_denoms": [bar_name, energy_name],
         "ref_denom": "udys",
-        "depth": 2
     })
     
     # Query arb revenue balance
@@ -1438,7 +1426,6 @@ def demo_production_9pool(alice_addr, foo_name, bar_name, energy_name, arb_rev_a
         "trader": alice_addr,
         "affected_denoms": [bar_sub, energy_sub],
         "ref_denom": "udys",
-        "depth": 2
     })
     
     # Query arb revenue balance
@@ -1878,7 +1865,6 @@ def demo_circular_arb(alice_addr, foo_name, bar_name, qux_name):
         "trader": alice_addr,
         "affected_denoms": [foo_name, bar_name],
         "ref_denom": foo_name,
-        "depth": 1
     })
     
     return {
@@ -2060,8 +2046,6 @@ def demo_balanced_pools(alice_addr, foo_name, bar_name, qux_name):
         "trader": alice_addr,
         "affected_denoms": [foo_name, bar_name],
         "ref_denom": foo_name,
-        "depth": 1,
-        "max_fraction": "0.5"
     })
     
     return {
@@ -2263,8 +2247,6 @@ def demo_many_pools(alice_addr, foo_name, bar_name, qux_name):
         "trader": alice_addr,
         "affected_denoms": [foo_name, bar_name],
         "ref_denom": foo_name,
-        "depth": 2,
-        "max_fraction": "0.5"
     })
     
     return {
@@ -2435,8 +2417,6 @@ def demo_moderate_skew(alice_addr, foo_name, bar_name, qux_name):
         "trader": alice_addr,
         "affected_denoms": [foo_name, bar_name],
         "ref_denom": foo_name,
-        "depth": 1,
-        "max_fraction": "0.5"
     })
     
     return {
@@ -2606,8 +2586,6 @@ def demo_ternary_dimensions(alice_addr, foo_name, bar_name, qux_name):
         "trader": alice_addr,
         "affected_denoms": [foo_name, bar_name],
         "ref_denom": foo_name,
-        "depth": 1,
-        "max_fraction": "0.5"
     })
     
     return {
@@ -2775,8 +2753,6 @@ def demo_hybrid_fallback(alice_addr, foo_name, bar_name, qux_name):
         "trader": alice_addr,
         "affected_denoms": [foo_name, bar_name],
         "ref_denom": foo_name,
-        "depth": 1,
-        "max_fraction": "0.3"
     })
     
     return {
@@ -2944,8 +2920,6 @@ def demo_nelder_mead_initial(alice_addr, foo_name, bar_name, qux_name):
         "trader": alice_addr,
         "affected_denoms": [foo_name, bar_name],
         "ref_denom": foo_name,
-        "depth": 1,
-        "max_fraction": "0.8"
     })
     
     return {
@@ -3083,8 +3057,6 @@ def demo_two_pools(alice_addr, foo_name, bar_name):
         "trader": alice_addr,
         "affected_denoms": [foo_name, bar_name],
         "ref_denom": foo_name,
-        "depth": 0,
-        "max_fraction": "0.5"
     })
     
     return {
@@ -3204,7 +3176,6 @@ def demo_many_pools_same_pair(alice_addr, foo_name, bar_name):
         "trader": alice_addr,
         "affected_denoms": [foo_name, bar_name],
         "ref_denom": foo_name,
-        "depth": 0  # only direct pools
     })
     
     return {
@@ -3347,7 +3318,6 @@ def demo_long_chain(alice_addr, foo_name):
         "trader": alice_addr,
         "affected_denoms": [denoms[0], denoms[1]],
         "ref_denom": denoms[0],
-        "depth": 4  # allow traversal through the chain
     })
     
     return {
@@ -3527,7 +3497,7 @@ def demo_hub_spoke(alice_addr, foo_name):
         "trader": alice_addr,
         "affected_denoms": [hub],
         "ref_denom": hub,
-        "depth": 2  # explore hub→spoke→spoke→hub triangles
+  # explore hub→spoke→spoke→hub triangles
     })
     
     return {
@@ -3728,7 +3698,6 @@ def demo_mixed_stress(alice_addr, foo_name):
         "trader": alice_addr,
         "affected_denoms": [denom_a, denom_b],
         "ref_denom": denom_a,
-        "depth": 1
     })
     
     return {
@@ -3930,7 +3899,6 @@ def demo_triangle_single_bridge(alice_addr, foo_name):
         "trader": alice_addr,
         "affected_denoms": [denom_a, denom_b, denom_c],
         "ref_denom": "udys",
-        "depth": 2
     })
     
     return {

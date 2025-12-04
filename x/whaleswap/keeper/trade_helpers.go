@@ -13,7 +13,11 @@ import (
 
 // tradeApplySwapLeg executes a single SwapLeg against the pool, persists pool state, and returns a TradeOperation.
 // It returns (operation, in, out) for aggregator accounting. Trade recording happens in recordTradeWithOperations.
-func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whaleswapv1.SwapLeg, note string) (whaleswapv1.TradeOperation, sdk.Coin, sdk.Coin, error) {
+//
+// chainedOutputs maps denom -> amount from previous operations. When swap_in.amount is zero but denom is set,
+// the amount is taken from chainedOutputs[denom]. This enables chaining swaps where each uses the previous output.
+// Specifying a positive amount at any step starts a new chain from that point.
+func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whaleswapv1.SwapLeg, note string, chainedOutputs map[string]math.Int) (whaleswapv1.TradeOperation, sdk.Coin, sdk.Coin, error) {
 	logger := k.Logger(sdk.UnwrapSDKContext(ctx))
 
 	if leg == nil || leg.PoolId == 0 {
@@ -31,13 +35,24 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 
 	one := math.LegacyNewDec(1)
 
-	hasIn := leg.SwapIn.Denom != "" && leg.SwapIn.Amount.IsPositive()
+	// Resolve chained input: if swap_in has denom but zero amount, use chained output
+	resolvedSwapIn := leg.SwapIn
+	if leg.SwapIn.Denom != "" && !leg.SwapIn.Amount.IsPositive() {
+		if chainedOutputs != nil {
+			if chainedAmt, ok := chainedOutputs[leg.SwapIn.Denom]; ok && chainedAmt.IsPositive() {
+				resolvedSwapIn = sdk.NewCoin(leg.SwapIn.Denom, chainedAmt)
+				logger.Info("tradeApplySwapLeg using chained input", "denom", leg.SwapIn.Denom, "amount", chainedAmt)
+			}
+		}
+	}
+
+	hasIn := resolvedSwapIn.Denom != "" && resolvedSwapIn.Amount.IsPositive()
 	hasOut := leg.SwapOut.Denom != "" && leg.SwapOut.Amount.IsPositive()
 	if hasIn && hasOut {
 		return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap_in and swap_out cannot both be set; specify exactly one per leg and use message-level max_input/min_output for global constraints")
 	}
 	if !hasIn && !hasOut {
-		return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "leg requires swap_in or swap_out")
+		return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "leg requires swap_in or swap_out (swap_in with zero amount uses chained output)")
 	}
 
 	inputIdx := -1
@@ -47,15 +62,15 @@ func (k Keeper) tradeApplySwapLeg(ctx context.Context, trader string, leg *whale
 	var outAmt math.Int
 	var outDenom string
 	if hasIn {
-		if leg.SwapIn.Denom == pool.Coins[0].Denom {
+		if resolvedSwapIn.Denom == pool.Coins[0].Denom {
 			inputIdx = 0
-		} else if leg.SwapIn.Denom == pool.Coins[1].Denom {
+		} else if resolvedSwapIn.Denom == pool.Coins[1].Denom {
 			inputIdx = 1
 		} else {
-			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "input denom %s not in pool %d", leg.SwapIn.Denom, leg.PoolId)
+			return whaleswapv1.TradeOperation{}, sdk.Coin{}, sdk.Coin{}, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "input denom %s not in pool %d", resolvedSwapIn.Denom, leg.PoolId)
 		}
 		outputIdx = 1 - inputIdx
-		actualInCoin = leg.SwapIn
+		actualInCoin = resolvedSwapIn
 	} else {
 		if leg.SwapOut.Denom == pool.Coins[0].Denom {
 			outputIdx = 0

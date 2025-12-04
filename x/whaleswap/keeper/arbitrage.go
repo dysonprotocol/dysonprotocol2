@@ -22,6 +22,14 @@ var (
 	errNoOperations = errors.New("no operations generated")
 )
 
+const (
+	// ArbGraphDepth is how many hops to expand the pool graph from affected denoms.
+	// Value of 4 allows finding 8-pool cycles (common test case).
+	ArbGraphDepth = 4
+	// ArbMaxCycleLen is the maximum number of swaps in an arbitrage cycle
+	ArbMaxCycleLen = 6
+)
+
 // ArbitragePool holds minimal pool info for arbitrage computation.
 type ArbitragePool struct {
 	PoolID   uint64
@@ -86,7 +94,6 @@ func (k *Keeper) BuildArbitrageContext(
 	trader string,
 	affectedDenoms []string,
 	refDenom string,
-	depth int,
 ) (*ArbitrageContext, error) {
 	ac := &ArbitrageContext{
 		Keeper:         k,
@@ -98,7 +105,7 @@ func (k *Keeper) BuildArbitrageContext(
 		AllDenoms:      make([]string, 0),
 		AffectedDenoms: affectedDenoms, // Store for cycle search origin
 		RefDenom:       refDenom,
-		MaxDepth:       6, // default
+		MaxDepth:       ArbMaxCycleLen,
 	}
 
 	// BFS to expand the pool graph
@@ -107,7 +114,7 @@ func (k *Keeper) BuildArbitrageContext(
 	visitedDenoms := make(map[string]bool)
 	visitedPools := make(map[uint64]bool)
 
-	for d := 0; d <= depth; d++ {
+	for d := 0; d <= ArbGraphDepth; d++ {
 		nextDenoms := make([]string, 0)
 
 		for _, denom := range denomQueue {
@@ -203,21 +210,20 @@ func (ac *ArbitrageContext) FindArbitrage() *ArbitrageResult {
 	// STEP 1: Copy pools to local mutable state
 	localPools := ac.copyToLocal()
 
-	// STEP 2: Iteratively find paths, updating local state each time
+	// STEP 2: Iteratively find paths, re-syncing local state after each
 	const maxIterations = 10
 	var allOperations []whaleswapv1.TradeOperation
-	totalProfit := DecZero
 	pathsFound := 0
 
 	for iter := 0; iter < maxIterations; iter++ {
 		// Find best cycle using local reserves
-		path, profit := ac.findBestCycleLocal(localPools, logger)
+		// iter controls liquidity buffer: 0=25%, 1=50%, 2+=100%
+		path, profit := ac.findBestCycleLocal(localPools, iter, logger)
 
 		if len(path) == 0 || profit.LTE(DecOne) {
 			logger.Debug("LIGHTNING: no more profitable paths",
 				"iteration", iter,
 				"paths_found", pathsFound,
-				"total_profit", totalProfit.TruncateInt().String(),
 			)
 			break
 		}
@@ -229,7 +235,6 @@ func (ac *ArbitrageContext) FindArbitrage() *ArbitrageResult {
 		}
 
 		allOperations = append(allOperations, ops...)
-		totalProfit = totalProfit.Add(profit)
 		pathsFound++
 
 		logger.Debug("LIGHTNING: path found",
@@ -239,6 +244,11 @@ func (ac *ArbitrageContext) FindArbitrage() *ArbitrageResult {
 			"ops_added", len(ops),
 			"total_ops", len(allOperations),
 		)
+
+		// Re-sync local state: simulate ALL operations on fresh state
+		// This ensures next path search uses reserves matching actual execution
+		localPools = ac.copyToLocal()
+		ac.resimulateOpsOnLocal(localPools, allOperations)
 	}
 
 	if len(allOperations) == 0 {
@@ -297,10 +307,83 @@ func (ac *ArbitrageContext) copyToLocal() []LocalPool {
 	return local
 }
 
+// resimulateOpsOnLocal applies operations to local state using Int math (matching execution).
+// This syncs local reserves with what actual MakeTrade execution would produce.
+func (ac *ArbitrageContext) resimulateOpsOnLocal(localPools []LocalPool, ops []whaleswapv1.TradeOperation) {
+	// Build pool index
+	poolIdx := make(map[uint64]int)
+	for i, p := range localPools {
+		poolIdx[p.PoolID] = i
+	}
+
+	// Track chained outputs (matching MakeTrade execution)
+	chainedOutputs := make(map[string]math.Int)
+
+	for _, op := range ops {
+		swap := op.GetSwap()
+		if swap == nil {
+			continue
+		}
+
+		idx, ok := poolIdx[swap.PoolId]
+		if !ok {
+			continue
+		}
+		pool := &localPools[idx]
+
+		// Resolve input amount (chaining)
+		inDenom := swap.SwapIn.Denom
+		inAmt := swap.SwapIn.Amount
+		if !inAmt.IsPositive() {
+			if chained, ok := chainedOutputs[inDenom]; ok {
+				inAmt = chained
+			} else {
+				continue
+			}
+		}
+
+		// Determine direction
+		var rIn, rOut, fee *math.LegacyDec
+		var outDenom string
+		if inDenom == pool.Denom0 {
+			rIn, rOut = &pool.Reserve0, &pool.Reserve1
+			fee = &pool.Fee0
+			outDenom = pool.Denom1
+		} else {
+			rIn, rOut = &pool.Reserve1, &pool.Reserve0
+			fee = &pool.Fee1
+			outDenom = pool.Denom0
+		}
+
+		// AMM math with Int (truncation)
+		inDec := math.LegacyNewDecFromInt(inAmt)
+		gamma := DecOne.Sub(*fee)
+		effIn := inDec.Mul(gamma)
+		k := (*rIn).Mul(*rOut)
+		q := k.Quo((*rIn).Add(effIn)).Ceil()
+		outDec := (*rOut).Sub(q)
+		outAmt := outDec.TruncateInt()
+
+		// Update reserves
+		*rIn = (*rIn).Add(inDec)
+		*rOut = (*rOut).Sub(math.LegacyNewDecFromInt(outAmt))
+
+		// Track output for chaining
+		chainedOutputs[outDenom] = outAmt
+	}
+}
+
 // findBestCycleLocal finds the most profitable cycle using local pool state.
 // Searches from each affected denom (where imbalance was created).
+// findBestCycleLocal finds the most profitable cycle using local pool state.
+// Searches from each affected denom (where imbalance was created).
+// iterNum controls liquidity scaling:
+//   - iter 0: use 25% of liquidity (75% buffer, most conservative)
+//   - iter 1: use 50% of liquidity (50% buffer)
+//   - iter 2+: use 100% of liquidity (no buffer, exact)
 func (ac *ArbitrageContext) findBestCycleLocal(
 	localPools []LocalPool,
+	iterNum int,
 	logger log.Logger,
 ) ([]arbStep, math.LegacyDec) {
 	// Build token index - RefDenom first for profit calculation
@@ -347,15 +430,27 @@ func (ac *ArbitrageContext) findBestCycleLocal(
 	var bestPath []arbStep
 	bestProfit := DecZero
 
-	// Determine which denoms to start from
-	startDenoms := ac.AffectedDenoms
-	if len(startDenoms) == 0 {
+	// Initialize search queue with affected denoms
+	searchQueue := make([]string, 0, len(ac.AffectedDenoms)+8)
+	searched := make(map[string]bool)
+
+	if len(ac.AffectedDenoms) > 0 {
+		searchQueue = append(searchQueue, ac.AffectedDenoms...)
+	} else {
 		// Fallback: start from RefDenom (original behavior)
-		startDenoms = []string{ac.RefDenom}
+		searchQueue = append(searchQueue, ac.RefDenom)
 	}
 
-	// Search from each affected denom
-	for _, startDenom := range startDenoms {
+	// BFS-style search: after finding a cycle, add intermediate denoms to queue
+	for len(searchQueue) > 0 {
+		startDenom := searchQueue[0]
+		searchQueue = searchQueue[1:]
+
+		if searched[startDenom] {
+			continue
+		}
+		searched[startDenom] = true
+
 		startIdx, ok := tokenIdx[startDenom]
 		if !ok {
 			continue // Denom not in pool graph
@@ -378,6 +473,17 @@ func (ac *ArbitrageContext) findBestCycleLocal(
 				continue
 			}
 
+			// Extract intermediate denoms from cycle and add to search queue
+			for _, step := range cyclePath {
+				pool := localPools[step.poolIdx]
+				if !searched[pool.Denom0] {
+					searchQueue = append(searchQueue, pool.Denom0)
+				}
+				if !searched[pool.Denom1] {
+					searchQueue = append(searchQueue, pool.Denom1)
+				}
+			}
+
 			// Convert cycle profit to RefDenom
 			cycleGain := cycleOutput.Sub(startAmt)
 			if !cycleGain.IsPositive() {
@@ -390,12 +496,33 @@ func (ac *ArbitrageContext) findBestCycleLocal(
 			var fullPath []arbStep
 
 			if startDenom == ac.RefDenom {
-				profit = cycleGain
-				fullPath = cyclePath
+				// Apply liquidity scaling for RefDenom cycles:
+				// iter 0: 25% of liquidity, iter 1: 50%, iter 2+: 100%
+				var scaleFactor math.LegacyDec
+				switch iterNum {
+				case 0:
+					scaleFactor = math.LegacyNewDecWithPrec(25, 2) // 0.25
+				case 1:
+					scaleFactor = math.LegacyNewDecWithPrec(50, 2) // 0.50
+				default:
+					scaleFactor = DecOne // 1.00
+				}
+
+				profit = cycleGain.Mul(scaleFactor)
+				// Scale the cycle path amounts (round up to ensure minimum 1 unit)
+				scaledPath := make([]arbStep, len(cyclePath))
+				for i, step := range cyclePath {
+					scaledPath[i] = arbStep{
+						poolIdx:    step.poolIdx,
+						sellDenom0: step.sellDenom0,
+						amount:     math.LegacyNewDecFromInt(step.amount.Mul(scaleFactor).Ceil().TruncateInt()),
+					}
+				}
+				fullPath = scaledPath
 			} else {
 				// Need to enter from RefDenom and exit back to RefDenom
 				fullPath, profit = ac.wrapCycleWithBridge(
-					localPools, tokenIdx, refIdx, startIdx, startAmt, cyclePath, cycleOutput, logger,
+					localPools, tokenIdx, refIdx, startIdx, startAmt, cyclePath, cycleOutput, iterNum, logger,
 				)
 			}
 
@@ -773,6 +900,10 @@ func (ac *ArbitrageContext) findCycleFromDenom(
 
 // wrapCycleWithBridge adds RefDenom entry/exit to a cycle in another denom.
 // Returns the full path and net profit in RefDenom.
+// iterNum controls liquidity scaling:
+//   - iter 0: use 25% of liquidity (75% buffer, most conservative)
+//   - iter 1: use 50% of liquidity (50% buffer)
+//   - iter 2+: use 100% of liquidity (no buffer, exact)
 func (ac *ArbitrageContext) wrapCycleWithBridge(
 	localPools []LocalPool,
 	tokenIdx map[string]int,
@@ -780,6 +911,7 @@ func (ac *ArbitrageContext) wrapCycleWithBridge(
 	cycleStartAmt math.LegacyDec,
 	cyclePath []arbStep,
 	cycleOutput math.LegacyDec,
+	iterNum int,
 	logger log.Logger,
 ) ([]arbStep, math.LegacyDec) {
 	// Find bridge pool: RefDenom <-> cycleDenom
@@ -811,8 +943,8 @@ func (ac *ArbitrageContext) wrapCycleWithBridge(
 
 	bridgePool := localPools[bridgePoolIdx]
 
-	// Step 1: Calculate how much RefDenom needed to get cycleStartAmt of cycleDenom
-	// We need to reverse-calculate: given output = cycleStartAmt, what input?
+	// Step 1: Calculate EXACT input needed to get cycleStartAmt of cycleDenom
+	// Inverse AMM: given desired output, compute required input
 	var rIn, rOut, fee math.LegacyDec
 	if bridgeSellRef {
 		rIn, rOut = bridgePool.Reserve0, bridgePool.Reserve1
@@ -822,17 +954,39 @@ func (ac *ArbitrageContext) wrapCycleWithBridge(
 		fee = bridgePool.Fee1
 	}
 
-	// Forward calculation: try to find input that gives ~cycleStartAmt output
-	// Approximate: input ≈ cycleStartAmt * rIn / rOut (ignoring fees for estimate)
-	approxIn := cycleStartAmt.Mul(rIn).Quo(rOut).Mul(math.LegacyNewDecWithPrec(105, 2)) // 5% buffer
-	approxIn = math.LegacyNewDecFromInt(approxIn.TruncateInt())
-	if approxIn.LT(DecOne) {
-		approxIn = DecOne
+	// Exact inverse of AMM formula:
+	// Forward: out = rOut - Ceil(k / (rIn + in*gamma))
+	// Inverse: in = Ceil(rIn * out / ((rOut - out) * gamma))
+	gamma := DecOne.Sub(fee)
+	denominator := rOut.Sub(cycleStartAmt).Mul(gamma)
+	if !denominator.IsPositive() {
+		return nil, DecZero // Can't get this much output
+	}
+	exactIn := rIn.Mul(cycleStartAmt).Quo(denominator).Ceil()
+
+	// Apply liquidity scaling based on iteration:
+	// iter 0: 25% of exact (75% buffer - conservative first route)
+	// iter 1: 50% of exact (50% buffer)
+	// iter 2+: 100% of exact (no buffer - use full available liquidity)
+	var scaleFactor math.LegacyDec
+	switch iterNum {
+	case 0:
+		scaleFactor = math.LegacyNewDecWithPrec(25, 2) // 0.25
+	case 1:
+		scaleFactor = math.LegacyNewDecWithPrec(50, 2) // 0.50
+	default:
+		scaleFactor = DecOne // 1.00
+	}
+	// Round up to ensure minimum 1 unit after scaling
+	exactIn = exactIn.Mul(scaleFactor).Ceil()
+
+	exactIn = math.LegacyNewDecFromInt(exactIn.TruncateInt())
+	if exactIn.LT(DecOne) {
+		exactIn = DecOne
 	}
 
-	// Calculate actual output from this input
-	gamma := DecOne.Sub(fee)
-	effectiveIn := approxIn.Mul(gamma)
+	// Verify: calculate actual output from this exact input
+	effectiveIn := exactIn.Mul(gamma)
 	kDec := rIn.Mul(rOut)
 	q := kDec.Quo(rIn.Add(effectiveIn)).Ceil()
 	entryOutput := rOut.Sub(q)
@@ -841,13 +995,13 @@ func (ac *ArbitrageContext) wrapCycleWithBridge(
 		return nil, DecZero
 	}
 
-	// Scale cycle proportionally to actual entry output
+	// Scale cycle proportionally to actual entry output (should be ~1.0 with exact calc)
 	scale := entryOutput.Quo(cycleStartAmt)
 	scaledCycleOutput := cycleOutput.Mul(scale)
 
 	// Step 2: Exit - sell scaledCycleOutput of cycleDenom back to RefDenom
 	// After entry, bridge reserves changed
-	newRIn := rIn.Add(approxIn)
+	newRIn := rIn.Add(exactIn)
 	newROut := rOut.Sub(entryOutput)
 
 	// Exit is opposite direction
@@ -874,7 +1028,7 @@ func (ac *ArbitrageContext) wrapCycleWithBridge(
 	exitOutput := exitROut.Sub(exitQ)
 
 	// Profit = exit output - entry input (both in RefDenom)
-	profit := exitOutput.Sub(approxIn)
+	profit := exitOutput.Sub(exactIn)
 	if !profit.IsPositive() {
 		return nil, DecZero
 	}
@@ -886,7 +1040,7 @@ func (ac *ArbitrageContext) wrapCycleWithBridge(
 	fullPath = append(fullPath, arbStep{
 		poolIdx:    bridgePoolIdx,
 		sellDenom0: bridgeSellRef,
-		amount:     approxIn,
+		amount:     exactIn,
 	})
 
 	// Scale and add cycle steps
@@ -911,7 +1065,7 @@ func (ac *ArbitrageContext) wrapCycleWithBridge(
 
 	logger.Debug("LIGHTNING: wrapped cycle with bridge",
 		"bridge_pool", bridgePoolIdx,
-		"entry_ref", approxIn.TruncateInt().String(),
+		"entry_ref", exactIn.TruncateInt().String(),
 		"entry_cycle", entryOutput.TruncateInt().String(),
 		"exit_cycle", exitAmtDec.String(),
 		"exit_ref", exitOutput.TruncateInt().String(),
@@ -948,18 +1102,27 @@ func (ac *ArbitrageContext) simulatePathLocal(
 		// Use truncated amount for all calculations to match MakeTrade exactly
 		amtDec := math.LegacyNewDecFromInt(amt)
 
-		// Build operation
+		// Build operation - first step specifies amount, rest use chaining (amount=0)
 		var swapIn sdk.Coin
 		var rIn, rOut, fee *math.LegacyDec
+		var inDenom string
 
 		if step.sellDenom0 {
-			swapIn = sdk.NewCoin(pool.Denom0, amt)
+			inDenom = pool.Denom0
 			rIn, rOut = &pool.Reserve0, &pool.Reserve1
 			fee = &pool.Fee0
 		} else {
-			swapIn = sdk.NewCoin(pool.Denom1, amt)
+			inDenom = pool.Denom1
 			rIn, rOut = &pool.Reserve1, &pool.Reserve0
 			fee = &pool.Fee1
+		}
+
+		if i == 0 {
+			// First step: specify exact amount
+			swapIn = sdk.NewCoin(inDenom, amt)
+		} else {
+			// Subsequent steps: use chaining (amount=0, MakeTrade will use previous output)
+			swapIn = sdk.NewCoin(inDenom, math.ZeroInt())
 		}
 
 		ops = append(ops, whaleswapv1.TradeOperation{
@@ -986,8 +1149,9 @@ func (ac *ArbitrageContext) simulatePathLocal(
 		logger.Debug("LIGHTNING: simulated swap",
 			"step", i,
 			"pool_id", pool.PoolID,
-			"sell", swapIn.Denom,
+			"sell", inDenom,
 			"amount", amt.String(),
+			"chained", i > 0,
 			"output", outputAmount.TruncateInt().String(),
 			"new_r0", pool.Reserve0.TruncateInt().String(),
 			"new_r1", pool.Reserve1.TruncateInt().String(),

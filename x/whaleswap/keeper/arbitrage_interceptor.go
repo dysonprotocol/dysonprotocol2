@@ -46,7 +46,7 @@ func (i *ArbitrageMsgInterceptor) Post(ctx sdk.Context, msg sdk.Msg, result *sdk
 	}
 
 	// Use shared arbitrage simulation (uses params.ArbitrageRefDenom by default)
-	simResp, simErr := i.keeper.SimulateArbitrageInternal(ctx, i.trader, affectedDenoms, "", 1, 0)
+	simResp, simErr := i.keeper.SimulateArbitrageInternal(ctx, i.trader, affectedDenoms, "")
 	if simErr != nil || !simResp.Found || len(simResp.Operations) == 0 {
 		return
 	}

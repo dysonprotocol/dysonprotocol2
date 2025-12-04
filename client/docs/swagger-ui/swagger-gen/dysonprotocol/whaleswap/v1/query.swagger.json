@@ -1516,41 +1516,10 @@
           },
           {
             "name": "ref_denom",
-            "description": "Reference denom to measure profit in (typically the chain's base denom).",
+            "description": "Reference denom to measure profit in. Defaults to Params.ArbitrageRefDenom\nif empty.",
             "in": "query",
             "required": false,
             "type": "string"
-          },
-          {
-            "name": "depth",
-            "description": "Number of hops to expand pool graph (0 = only direct pools, 1 = include\nneighbor pools, etc.).",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "max_fraction",
-            "description": "Maximum fraction of pool reserve to swap (e.g., 0.1 = 10%).",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "max_depth",
-            "description": "Maximum path depth for FLOOD algorithm cycle search (default: 6).",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "max_splits",
-            "description": "Maximum number of split iterations for FLOOD algorithm (default: 5).",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
           }
         ],
         "tags": [

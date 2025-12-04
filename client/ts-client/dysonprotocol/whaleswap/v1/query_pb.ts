@@ -3092,56 +3092,12 @@ export class QuerySimulateArbitrageRequest extends Message<QuerySimulateArbitrag
   affectedDenoms: string[] = [];
 
   /**
-   * Reference denom to measure profit in (typically the chain's base denom)
+   * Reference denom to measure profit in. Defaults to Params.ArbitrageRefDenom
+   * if empty.
    *
    * @generated from field: string ref_denom = 3;
    */
   refDenom = "";
-
-  /**
-   * Number of hops to expand pool graph (0 = only direct pools, 1 = include
-   * neighbor pools, etc.)
-   *
-   * @generated from field: int32 depth = 4;
-   */
-  depth = 0;
-
-  /**
-   * Maximum fraction of pool reserve to swap (e.g., 0.1 = 10%)
-   *
-   * @generated from field: string max_fraction = 5;
-   */
-  maxFraction = "";
-
-  /**
-   * Trigger trade inputs (coins sent in the triggering swap) - used to scale
-   * probe bounds
-   *
-   * @generated from field: repeated cosmos.base.v1beta1.Coin trigger_inputs = 6;
-   */
-  triggerInputs: Coin[] = [];
-
-  /**
-   * Trigger trade outputs (coins received from the triggering swap) - used to
-   * scale probe bounds
-   *
-   * @generated from field: repeated cosmos.base.v1beta1.Coin trigger_outputs = 7;
-   */
-  triggerOutputs: Coin[] = [];
-
-  /**
-   * Maximum path depth for FLOOD algorithm cycle search (default: 6)
-   *
-   * @generated from field: int32 max_depth = 8;
-   */
-  maxDepth = 0;
-
-  /**
-   * Maximum number of split iterations for FLOOD algorithm (default: 5)
-   *
-   * @generated from field: int32 max_splits = 9;
-   */
-  maxSplits = 0;
 
   constructor(data?: PartialMessage<QuerySimulateArbitrageRequest>) {
     super();
@@ -3154,12 +3110,6 @@ export class QuerySimulateArbitrageRequest extends Message<QuerySimulateArbitrag
     { no: 1, name: "trader", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "affected_denoms", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 3, name: "ref_denom", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "depth", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 5, name: "max_fraction", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 6, name: "trigger_inputs", kind: "message", T: Coin, repeated: true },
-    { no: 7, name: "trigger_outputs", kind: "message", T: Coin, repeated: true },
-    { no: 8, name: "max_depth", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 9, name: "max_splits", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QuerySimulateArbitrageRequest {

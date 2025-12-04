@@ -120,6 +120,9 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 	seenOffers := make(map[uint64]bool)
 	seenAuctions := make(map[uint64]bool)
 
+	// Track outputs for chaining: when swap_in.amount=0, use previous output of that denom
+	chainedOutputs := make(map[string]math.Int)
+
 	for i, op := range msg.Operations {
 		switch v := op.Op.(type) {
 		case *whaleswapv1.TradeOperation_Swap:
@@ -128,11 +131,15 @@ func (k Keeper) MakeTrade(ctx context.Context, msg *whaleswapv1.MsgMakeTrade) (*
 				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "swap leg invalid")
 			}
 			logger.Info("MakeTrade processing swap operation", "operation_idx", i, "pool_id", leg.PoolId, "swap_in", leg.SwapIn, "swap_out", leg.SwapOut)
-			tradeOp, inCoin, outCoin, derr := k.tradeApplySwapLeg(ctx, msg.Trader, leg, msg.Note)
+			tradeOp, inCoin, outCoin, derr := k.tradeApplySwapLeg(ctx, msg.Trader, leg, msg.Note, chainedOutputs)
 			if derr != nil {
 				return nil, derr
 			}
 			operations = append(operations, tradeOp)
+
+			// Update chained outputs for subsequent operations
+			chainedOutputs[outCoin.Denom] = outCoin.Amount
+
 			if v, ok := deltaByDenom[inCoin.Denom]; ok {
 				deltaByDenom[inCoin.Denom] = v.Add(inCoin.Amount)
 			} else {

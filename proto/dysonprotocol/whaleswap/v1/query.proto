@@ -926,29 +926,14 @@ message QuerySimulateArbitrageRequest {
   // List of denoms affected (e.g., from a pool update). Arbitrage detection
   // starts from pools containing these denoms.
   repeated string affected_denoms = 2;
-  // Reference denom to measure profit in (typically the chain's base denom)
+  // Reference denom to measure profit in. Defaults to Params.ArbitrageRefDenom
+  // if empty.
   string ref_denom = 3;
-  // Number of hops to expand pool graph (0 = only direct pools, 1 = include
-  // neighbor pools, etc.)
-  int32 depth = 4;
-  // Maximum fraction of pool reserve to swap (e.g., 0.1 = 10%)
-  string max_fraction = 5 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
-  // Trigger trade inputs (coins sent in the triggering swap) - used to scale
-  // probe bounds
-  repeated cosmos.base.v1beta1.Coin trigger_inputs = 6 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
-  ];
-  // Trigger trade outputs (coins received from the triggering swap) - used to
-  // scale probe bounds
-  repeated cosmos.base.v1beta1.Coin trigger_outputs = 7 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
-  ];
-  // Maximum path depth for FLOOD algorithm cycle search (default: 6)
-  int32 max_depth = 8;
-  // Maximum number of split iterations for FLOOD algorithm (default: 5)
-  int32 max_splits = 9;
+
+  // Reserved field numbers for removed parameters (now constants in keeper)
+  reserved 4, 5, 6, 7, 8, 9;
+  reserved "depth", "max_fraction", "trigger_inputs", "trigger_outputs",
+      "max_depth", "max_splits";
 }
 
 message QuerySimulateArbitrageResponse {

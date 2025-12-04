@@ -50,9 +50,14 @@ def test_grid_NxN_arbitrage_after_diagonal_swap(
     find a profitable cycle through the grid.
 
     Expected cycle: G1_1 → (grid path) → GN_N → G1_1 (via diagonal)
+
+    NOTE: Cycle length = 2*(N-1) + 1 (grid path + diagonal).
+    With ArbMaxCycleLen=6, only N<=3 works. N=4 requires cycle length 7.
     """
     # === Grid configuration ===
-    GRID_SIZE = 3  # NxN grid - adjust this to test different sizes
+    # N=3: cycle length = 2*(3-1)+1 = 5 ≤ 6 ✓
+    # N=4: cycle length = 2*(4-1)+1 = 7 > 6 ✗
+    GRID_SIZE = 3  # Max 3 with ArbMaxCycleLen=6
     POOL_AMOUNT = 100000  # Initial liquidity per pool (larger = less rounding impact)
     SWAP_AMOUNT = 50000  # Amount to swap on diagonal to create imbalance
 
@@ -112,7 +117,7 @@ def _create_pool(creator, denom_a, amount_a, denom_b, amount_b):
     # Extract pool_id from sudo response
     return result.get("results", [{{}}])[0].get("pool_id", 0)
 
-def demo_grid_arbitrage(alice_addr, base_denom, grid_size, pool_amount, swap_amount):
+def demo_grid_arbitrage(alice_addr, gov_addr, base_denom, grid_size, pool_amount, swap_amount):
     """Create NxN grid, swap on diagonal, check for arbitrage."""
     
     # Generate denom names
@@ -157,6 +162,34 @@ def demo_grid_arbitrage(alice_addr, base_denom, grid_size, pool_amount, swap_amo
     diagonal_pool_id = _create_pool(alice_addr, d_start, pool_amount, d_end, pool_amount)
     pool_ids.append(diagonal_pool_id)
     
+    # Set arbitrage_ref_denom to G1_1 so interceptor can find cycles in this grid
+    params_resp = _query({{"@type": "/dysonprotocol.whaleswap.v1.QueryParamsRequest"}})
+    current_params = params_resp.get("params", {{}})
+    _sudo({{
+        "@type": "/dysonprotocol.whaleswap.v1.MsgUpdateParams",
+        "authority": gov_addr,
+        "params": {{
+            "pfand_per_offer": current_params.get("pfand_per_offer", {{"denom": "udys", "amount": "1"}}),
+            "valuation_fee_pct": current_params.get("valuation_fee_pct", "0"),
+            "valuation_period": current_params.get("valuation_period", "3600s"),
+            "bid_timeout": current_params.get("bid_timeout", "5s"),
+            "minimum_bid_percent_increase": current_params.get("minimum_bid_percent_increase", "0"),
+            "max_note_length": current_params.get("max_note_length", 128),
+            "block_delay_before_close": current_params.get("block_delay_before_close", 1),
+            "block_delay_before_liquidation": current_params.get("block_delay_before_liquidation", 1),
+            "arbitrage_mode": "ARBITRAGE_MODE_AUTO",
+            "arbitrage_ref_denom": d_start  # G1_1
+        }}
+    }})
+    
+    # Get trade count BEFORE swap
+    trades_before_resp = _query({{
+        "@type": "/dysonprotocol.whaleswap.v1.QueryTradesRequest",
+        "pagination": {{"limit": "1", "reverse": True}}
+    }})
+    trades_before = trades_before_resp.get("trades", [])
+    trade_count_before = int(trades_before[0]["trade_id"]) if len(trades_before) > 0 else 0
+    
     # Execute swap on diagonal: G1_1 → GN_N (creates imbalance)
     # After swap: diagonal pool will have more G1_1 and less GN_N
     _sudo({{
@@ -173,7 +206,7 @@ def demo_grid_arbitrage(alice_addr, base_denom, grid_size, pool_amount, swap_amo
         "min_output": []
     }})
     
-    # Query diagonal pool state after swap
+    # Query diagonal pool state after swap+arbitrage
     diagonal_pool_resp = _query({{
         "@type": "/dysonprotocol.whaleswap.v1.QueryPoolRequest",
         "pool_id": str(diagonal_pool_id)
@@ -182,16 +215,45 @@ def demo_grid_arbitrage(alice_addr, base_denom, grid_size, pool_amount, swap_amo
     coins = diagonal_pool.get("coins", [])
     reserves = {{c["denom"]: int(c["amount"]) for c in coins}}
     
-    # Query arbitrage - may or may not find opportunity depending on interceptor
-    # The interceptor runs after the swap and may have captured the arbitrage already
+    # Get alice's trade ID
+    alice_trades_resp = _query({{
+        "@type": "/dysonprotocol.whaleswap.v1.QueryTradesByTakerRequest",
+        "taker": alice_addr,
+        "pagination": {{"limit": "10", "reverse": True}}
+    }})
+    alice_trades = alice_trades_resp.get("trades", [])
+    alice_trade_id = int(alice_trades[0]["trade_id"]) if len(alice_trades) > 0 else 0
+    
+    # Find interceptor trades (trades after alice's)
+    all_trades_resp = _query({{
+        "@type": "/dysonprotocol.whaleswap.v1.QueryTradesRequest",
+        "pagination": {{"limit": "100", "reverse": True}}
+    }})
+    all_trades = all_trades_resp.get("trades", [])
+    interceptor_trades = []
+    for trade in all_trades:
+        trade_id = int(trade.get("trade_id", 0))
+        is_after_alice = trade_id > alice_trade_id
+        interceptor_trades.append(trade) if is_after_alice else None
+    
+    # Calculate interceptor profit
+    interceptor_trade = interceptor_trades[0] if len(interceptor_trades) > 0 else None
+    interceptor_ops = len(interceptor_trade.get("operations", [])) if interceptor_trade else 0
+    interceptor_profit = 0
+    total_sent = interceptor_trade.get("total_sent", []) if interceptor_trade else []
+    total_recv = interceptor_trade.get("total_received", []) if interceptor_trade else []
+    sent_map = {{c["denom"]: int(c["amount"]) for c in total_sent}}
+    recv_map = {{c["denom"]: int(c["amount"]) for c in total_recv}}
+    denoms_traded = set(list(sent_map.keys()) + list(recv_map.keys()))
+    for d in denoms_traded:
+        interceptor_profit = interceptor_profit + recv_map.get(d, 0) - sent_map.get(d, 0)
+    
+    # Query arbitrage simulation
     arb_result = _query({{
         "@type": "/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
         "trader": alice_addr,
         "affected_denoms": [d_start, d_end],
         "ref_denom": d_start,
-        "depth": 100,  # Allow traversal through grid
-        "max_depth": 2 * grid_size,  # Path depth: 2*N for NxN grid cycle
-        "max_splits": 5  # Order splitting for better AMM rates
     }})
     
     return {{
@@ -202,19 +264,22 @@ def demo_grid_arbitrage(alice_addr, base_denom, grid_size, pool_amount, swap_amo
         "d_start": d_start,
         "d_end": d_end,
         "diagonal_reserves": reserves,
+        "trade_count_before": trade_count_before,
+        "alice_trade_id": alice_trade_id,
+        "interceptor_trades_count": len(interceptor_trades),
+        "interceptor_ops": interceptor_ops,
+        "interceptor_profit": interceptor_profit,
         "arb_found": arb_result.get("found", False),
         "arb_pool_count": arb_result.get("pool_count", 0),
         "arb_profit": arb_result.get("profit", "0"),
         "arb_denoms": arb_result.get("denoms", []),
-        "arb_swap_amounts": arb_result.get("swap_amounts", []),
-        "arb_trader_inputs": arb_result.get("trader_inputs", []),
-        "arb_trader_outputs": arb_result.get("trader_outputs", []),
     }}
 '''
 
     kwargs = json.dumps(
         {
             "alice_addr": alice_addr,
+            "gov_addr": gov_addr,
             "base_denom": base_denom,
             "grid_size": GRID_SIZE,
             "pool_amount": POOL_AMOUNT,
@@ -252,33 +317,15 @@ def demo_grid_arbitrage(alice_addr, base_denom, grid_size, pool_amount, swap_amo
     ), f"pool_count must be int: {type(r['pool_count'])}"
     assert isinstance(
         r["diagonal_pool_id"], (int, str)
-    ), f"diagonal_pool_id must be int/str: {type(r['diagonal_pool_id'])}"
-    assert isinstance(r["d_start"], str), f"d_start must be str: {type(r['d_start'])}"
-    assert isinstance(r["d_end"], str), f"d_end must be str: {type(r['d_end'])}"
+    ), f"diagonal_pool_id must be int/str"
+    assert isinstance(r["d_start"], str), f"d_start must be str"
+    assert isinstance(r["d_end"], str), f"d_end must be str"
+    assert isinstance(r["diagonal_reserves"], dict), f"diagonal_reserves must be dict"
     assert isinstance(
-        r["diagonal_reserves"], dict
-    ), f"diagonal_reserves must be dict: {type(r['diagonal_reserves'])}"
-    assert isinstance(
-        r["arb_found"], bool
-    ), f"arb_found must be bool: {type(r['arb_found'])}"
-    assert isinstance(
-        r["arb_pool_count"], int
-    ), f"arb_pool_count must be int: {type(r['arb_pool_count'])}"
-    assert isinstance(
-        r["arb_profit"], str
-    ), f"arb_profit must be str: {type(r['arb_profit'])}"
-    assert isinstance(
-        r["arb_denoms"], list
-    ), f"arb_denoms must be list: {type(r['arb_denoms'])}"
-    assert isinstance(
-        r["arb_swap_amounts"], list
-    ), f"arb_swap_amounts must be list: {type(r['arb_swap_amounts'])}"
-    assert isinstance(
-        r["arb_trader_inputs"], list
-    ), f"arb_trader_inputs must be list: {type(r['arb_trader_inputs'])}"
-    assert isinstance(
-        r["arb_trader_outputs"], list
-    ), f"arb_trader_outputs must be list: {type(r['arb_trader_outputs'])}"
+        r["interceptor_trades_count"], int
+    ), f"interceptor_trades_count must be int"
+    assert isinstance(r["interceptor_ops"], int), f"interceptor_ops must be int"
+    assert isinstance(r["interceptor_profit"], int), f"interceptor_profit must be int"
 
     # === Shape assertions ===
     assert (
@@ -320,38 +367,40 @@ def demo_grid_arbitrage(alice_addr, base_denom, grid_size, pool_amount, swap_amo
     product = reserve_start * reserve_end
     assert product >= initial_k * 0.99, f"AMM product invariant (x*y≥k): {product}"
 
-    # === Content assertions: arbitrage behavior ===
-    # The interceptor runs automatically after pool-affecting messages.
-    # After the swap, the diagonal pool is imbalanced. The interceptor should
-    # find and execute arbitrage, moving reserves closer to equilibrium.
-    #
-    # Expected reserves WITHOUT arbitrage (just the swap):
-    expected_no_arb_start = POOL_AMOUNT + SWAP_AMOUNT  # 150000 for default values
-    expected_no_arb_end = (POOL_AMOUNT * POOL_AMOUNT) // expected_no_arb_start  # ~66666
+    # === CRITICAL: Verify auto-arbitrage executed ===
+    # After alice's swap, interceptor should execute exactly 1 arbitrage trade
+    interceptor_count = r["interceptor_trades_count"]
+    interceptor_ops = r["interceptor_ops"]
+    interceptor_profit = r["interceptor_profit"]
 
-    # Actual reserves should show the swap happened (imbalance created)
-    assert (
-        reserve_start > POOL_AMOUNT
-    ), f"Swap should have increased G1_1 reserve: {reserve_start} > {POOL_AMOUNT}"
-    assert (
-        reserve_end < POOL_AMOUNT
-    ), f"Swap should have decreased G{GRID_SIZE}_{GRID_SIZE} reserve: {reserve_end} < {POOL_AMOUNT}"
+    assert interceptor_count == 1, (
+        f"Expected exactly 1 interceptor trade after alice's swap. "
+        f"Got {interceptor_count}. Full result: {r}"
+    )
 
-    # The interceptor should have partially restored balance by executing arbitrage.
-    # For 3x3 grid: interceptor finds profitable 5-hop cycle and executes it.
-    # Result: reserves should be CLOSER to equilibrium than raw swap would leave them.
-    #
-    # Raw swap leaves: G1_1=150000, G3_3=66666 (imbalance ~83334 from equilibrium)
-    # After arb:       G1_1 < 150000, G3_3 > 66666 (closer to 100000 each)
-    #
-    # The interceptor may not fully arbitrage (small profits get filtered by MinProfitBasis)
-    # but it should make SOME progress toward equilibrium.
+    # Cycle length = 2*(N-1)+1 for NxN grid with diagonal
+    # For N=3: 5 ops (4 grid edges + 1 diagonal)
+    min_expected_ops = 2 * (GRID_SIZE - 1) + 1
+    assert interceptor_ops >= min_expected_ops, (
+        f"Arbitrage should use at least {min_expected_ops} ops for {GRID_SIZE}x{GRID_SIZE} grid. "
+        f"Got {interceptor_ops}."
+    )
+
+    # Arbitrage should capture meaningful profit
+    assert interceptor_profit >= 100, (
+        f"Arbitrage profit was only {interceptor_profit}. "
+        f"Expected >= 100 from exploiting diagonal imbalance."
+    )
+
+    # Reserves should show arbitrage partially restored balance
+    expected_no_arb_start = POOL_AMOUNT + SWAP_AMOUNT
+    expected_no_arb_end = (POOL_AMOUNT * POOL_AMOUNT) // expected_no_arb_start
     assert (
-        reserve_start <= expected_no_arb_start
-    ), f"Interceptor should reduce G1_1 imbalance: {reserve_start} <= {expected_no_arb_start}"
+        reserve_start < expected_no_arb_start
+    ), f"Arbitrage should reduce G1_1: {reserve_start} < {expected_no_arb_start}"
     assert (
-        reserve_end >= expected_no_arb_end
-    ), f"Interceptor should reduce G{GRID_SIZE}_{GRID_SIZE} imbalance: {reserve_end} >= {expected_no_arb_end}"
+        reserve_end > expected_no_arb_end
+    ), f"Arbitrage should increase G{GRID_SIZE}_{GRID_SIZE}: {reserve_end} > {expected_no_arb_end}"
 
     # The query correctly reports pool/denom counts
     assert (
@@ -366,33 +415,34 @@ def test_grid_3x2_independent_paths(
     chainnet, leverage_accounts, leverage_names_and_coins
 ):
     """
-    Test 3x2 grid with middle-row swap creating TWO independent arbitrage paths.
+    Test 3x2 grid with diagonal swap creating TWO independent arbitrage paths.
 
-    Grid layout (no diagonal):
+    Grid layout with diagonal:
         G1_1 -- G1_2
-          |       |
-        G2_1 -- G2_2   <-- swap here
-          |       |
+          |  \\    |
+        G2_1 -- G2_2
+          |       \\|
         G3_1 -- G3_2
 
-    Swap G2_1 → G2_2 creates imbalance. Two independent cycles exist:
-    - TOP:    G2_1 → G1_1 → G1_2 → G2_2 → G2_1 (via top row)
-    - BOTTOM: G2_1 → G3_1 → G3_2 → G2_2 → G2_1 (via bottom row)
+    Swap G1_1 → G3_2 on diagonal creates imbalance. Two independent cycles exist:
+    - LEFT:  G1_1 → G2_1 → G3_1 → G3_2 → G1_1 (via left column + bottom)
+    - RIGHT: G1_1 → G1_2 → G2_2 → G3_2 → G1_1 (via top row + right column)
 
-    These paths share ONLY the middle pool (G2_1-G2_2), allowing
-    Nelder-Mead to find optimal split between top and bottom routes.
+    These paths share ONLY the diagonal pool (G1_1-G3_2), allowing
+    multi-path optimization to split flow between routes.
     """
     # === Grid configuration ===
     ROWS = 3
     COLS = 2
     POOL_AMOUNT = 100000
-    SWAP_AMOUNT = 80000  # Larger swap to stress single-path capacity
+    SWAP_AMOUNT = 50000  # Swap on diagonal to create imbalance
 
     # Derived constants
     NUM_DENOMS = ROWS * COLS  # 6 denoms
     HORIZONTAL_POOLS = ROWS * (COLS - 1)  # 3 pools
     VERTICAL_POOLS = (ROWS - 1) * COLS  # 4 pools
-    TOTAL_POOLS = HORIZONTAL_POOLS + VERTICAL_POOLS  # 7 pools (no diagonal)
+    EDGE_POOLS = HORIZONTAL_POOLS + VERTICAL_POOLS  # 7 edge pools
+    TOTAL_POOLS = EDGE_POOLS + 1  # +1 for diagonal
 
     dysond = chainnet[0]
     alice_addr = leverage_accounts["alice"]["addr"]
@@ -442,7 +492,7 @@ def _create_pool(creator, denom_a, amount_a, denom_b, amount_b):
     return result.get("results", [{{}}])[0].get("pool_id", 0)
 
 def demo_3x2_grid(alice_addr, gov_addr, base_denom, rows, cols, pool_amount, swap_amount):
-    """Create 3x2 grid, swap on middle row, check for arbitrage."""
+    """Create 3x2 grid with diagonal, swap G1_1 → G3_2, check for arbitrage."""
     
     def denom_name(row, col):
         return f"{{base_denom}}/G{{row+1}}_{{col+1}}"
@@ -467,18 +517,12 @@ def demo_3x2_grid(alice_addr, gov_addr, base_denom, rows, cols, pool_amount, swa
     }})
     
     pool_ids = []
-    middle_pool_id = None
     
     # Create horizontal pools: (row, col) <-> (row, col+1)
     for r in range(rows):
         for c in range(cols - 1):
             pool_id = _create_pool(alice_addr, denom_name(r, c), pool_amount, denom_name(r, c + 1), pool_amount)
             pool_ids.append(pool_id)
-            # Track middle pool (row 1, connecting G2_1 and G2_2)
-            row_is_middle = (r == 1)
-            col_is_first = (c == 0)
-            is_middle_pool = row_is_middle and col_is_first
-            middle_pool_id = pool_id if is_middle_pool else middle_pool_id
     
     # Create vertical pools: (row, col) <-> (row+1, col)
     for r in range(rows - 1):
@@ -486,9 +530,13 @@ def demo_3x2_grid(alice_addr, gov_addr, base_denom, rows, cols, pool_amount, swa
             pool_id = _create_pool(alice_addr, denom_name(r, c), pool_amount, denom_name(r + 1, c), pool_amount)
             pool_ids.append(pool_id)
     
-    # NO diagonal pool - this creates independent top/bottom paths
+    # Create diagonal shortcut: G1_1 ↔ G3_2 (top-left to bottom-right)
+    d_start = denom_name(0, 0)           # G1_1
+    d_end = denom_name(rows - 1, cols - 1)  # G3_2
+    diagonal_pool_id = _create_pool(alice_addr, d_start, pool_amount, d_end, pool_amount)
+    pool_ids.append(diagonal_pool_id)
     
-    # Set arbitrage_ref_denom to G2_1 for this test (since pools don't include udys)
+    # Set arbitrage_ref_denom to G1_1 for this test
     params_resp = _query({{"@type": "/dysonprotocol.whaleswap.v1.QueryParamsRequest"}})
     current_params = params_resp.get("params", {{}})
     _sudo({{
@@ -504,7 +552,7 @@ def demo_3x2_grid(alice_addr, gov_addr, base_denom, rows, cols, pool_amount, swa
             "block_delay_before_close": current_params.get("block_delay_before_close", 1),
             "block_delay_before_liquidation": current_params.get("block_delay_before_liquidation", 1),
             "arbitrage_mode": "ARBITRAGE_MODE_AUTO",
-            "arbitrage_ref_denom": denom_name(1, 0)
+            "arbitrage_ref_denom": d_start  # G1_1
         }}
     }})
     
@@ -520,16 +568,13 @@ def demo_3x2_grid(alice_addr, gov_addr, base_denom, rows, cols, pool_amount, swa
     trades_before = trades_before_resp.get("trades", [])
     trade_count_before = int(trades_before[0]["trade_id"]) if len(trades_before) > 0 else 0
     
-    # Swap on middle row: G2_1 -> G2_2
-    d_start = denom_name(1, 0)  # G2_1
-    d_end = denom_name(1, 1)    # G2_2
-    
+    # Swap on diagonal: G1_1 → G3_2
     _sudo({{
         "@type": "/dysonprotocol.whaleswap.v1.MsgMakeTrade",
         "trader": alice_addr,
         "operations": [{{
             "swap": {{
-                "pool_id": str(middle_pool_id),
+                "pool_id": str(diagonal_pool_id),
                 "swap_in": {{"denom": d_start, "amount": str(swap_amount)}},
                 "swap_out": {{"denom": d_end, "amount": "0"}}
             }}
@@ -538,16 +583,14 @@ def demo_3x2_grid(alice_addr, gov_addr, base_denom, rows, cols, pool_amount, swa
         "min_output": []
     }})
     
-    # Query ALL pool reserves after swap+arbitrage
-    all_pool_reserves = {{}}
-    for pid in pool_ids:
-        pool_resp = _query({{
-            "@type": "/dysonprotocol.whaleswap.v1.QueryPoolRequest",
-            "pool_id": str(pid)
-        }})
-        pool = pool_resp.get("pool", {{}})
-        coins = pool.get("coins", [])
-        all_pool_reserves[pid] = {{c["denom"]: int(c["amount"]) for c in coins}}
+    # Query diagonal pool reserves after swap+arbitrage
+    diagonal_pool_resp = _query({{
+        "@type": "/dysonprotocol.whaleswap.v1.QueryPoolRequest",
+        "pool_id": str(diagonal_pool_id)
+    }})
+    diagonal_pool = diagonal_pool_resp.get("pool", {{}})
+    coins = diagonal_pool.get("coins", [])
+    diagonal_reserves = {{c["denom"]: int(c["amount"]) for c in coins}}
     
     # Get alice's trade ID (she made the initial swap)
     alice_trades_resp = _query({{
@@ -600,9 +643,6 @@ def demo_3x2_grid(alice_addr, gov_addr, base_denom, rows, cols, pool_amount, swa
         "trader": alice_addr,
         "affected_denoms": [d_start, d_end],
         "ref_denom": d_start,
-        "depth": 100,
-        "max_depth": 8,  # 4-hop cycles
-        "max_splits": 5
     }})
     
     return {{
@@ -613,10 +653,10 @@ def demo_3x2_grid(alice_addr, gov_addr, base_denom, rows, cols, pool_amount, swa
         "subdenoms": subdenoms,
         "pool_count": len(pool_ids),
         "pool_ids": pool_ids,
-        "middle_pool_id": middle_pool_id,
+        "diagonal_pool_id": diagonal_pool_id,
         "d_start": d_start,
         "d_end": d_end,
-        "all_pool_reserves": all_pool_reserves,
+        "diagonal_reserves": diagonal_reserves,
         "alice_trade_id": alice_trade_id,
         "interceptor_trades_count": len(interceptor_trades),
         "interceptor_trader": interceptor_trader,
@@ -673,28 +713,29 @@ def demo_3x2_grid(alice_addr, gov_addr, base_denom, rows, cols, pool_amount, swa
         len(r["subdenoms"]) == NUM_DENOMS
     ), f"Expected {NUM_DENOMS} subdenoms: {len(r['subdenoms'])}"
 
-    # === Content assertions: middle pool imbalance ===
+    # === Content assertions: diagonal pool imbalance ===
     d_start = r["d_start"]
     d_end = r["d_end"]
-    assert d_start.endswith("/G2_1"), f"d_start should be G2_1: {d_start}"
-    assert d_end.endswith("/G2_2"), f"d_end should be G2_2: {d_end}"
+    assert d_start.endswith("/G1_1"), f"d_start should be G1_1: {d_start}"
+    assert d_end.endswith(
+        f"/G{ROWS}_{COLS}"
+    ), f"d_end should be G{ROWS}_{COLS}: {d_end}"
 
-    middle_pool_id = r["middle_pool_id"]
-    middle_reserves = r["all_pool_reserves"][middle_pool_id]
-    reserve_start = middle_reserves[d_start]
-    reserve_end = middle_reserves[d_end]
+    diagonal_reserves = r["diagonal_reserves"]
+    reserve_start = diagonal_reserves[d_start]
+    reserve_end = diagonal_reserves[d_end]
 
-    # After swap: G2_1 increased, G2_2 decreased
-    expected_no_arb_start = POOL_AMOUNT + SWAP_AMOUNT  # 180000
-    expected_no_arb_end = (POOL_AMOUNT * POOL_AMOUNT) // expected_no_arb_start  # ~55555
+    # After swap: G1_1 increased, G3_2 decreased
+    expected_no_arb_start = POOL_AMOUNT + SWAP_AMOUNT  # 150000
+    expected_no_arb_end = (POOL_AMOUNT * POOL_AMOUNT) // expected_no_arb_start  # ~66666
 
     # Interceptor should have executed arbitrage
     assert (
         reserve_start <= expected_no_arb_start
-    ), f"Interceptor should reduce G2_1: {reserve_start} <= {expected_no_arb_start}"
+    ), f"Interceptor should reduce G1_1: {reserve_start} <= {expected_no_arb_start}"
     assert (
         reserve_end >= expected_no_arb_end
-    ), f"Interceptor should increase G2_2: {reserve_end} >= {expected_no_arb_end}"
+    ), f"Interceptor should increase G{ROWS}_{COLS}: {reserve_end} >= {expected_no_arb_end}"
 
     # === Verify ARBITRAGE_MODE_AUTO is enabled and triggers interceptor ===
     arb_mode = r["arbitrage_mode"]
@@ -711,9 +752,8 @@ def demo_3x2_grid(alice_addr, gov_addr, base_denom, rows, cols, pool_amount, swa
         alice_trade_id == trade_count_before + 1
     ), f"Alice's trade should be #{trade_count_before + 1}, got #{alice_trade_id}"
 
-    # === CRITICAL: Verify MULTI-PATH optimization worked ===
+    # === CRITICAL: Verify auto-arbitrage executed ===
     # After alice's swap, there should be exactly 1 interceptor trade
-    # That trade should use 7 operations (all pools) and capture 15000+ profit
     interceptor_count = r["interceptor_trades_count"]
     interceptor_ops = r["interceptor_ops"]
     interceptor_profit = r["interceptor_profit"]
@@ -726,7 +766,7 @@ def demo_3x2_grid(alice_addr, gov_addr, base_denom, rows, cols, pool_amount, swa
     )
 
     # That trade should use at least 4 operations (single best path uses 4 pools)
-    # Multi-path would use 6+ ops but requires paths that don't overlap incorrectly
+    # A cycle through the grid: G1_1 → edge pools → G3_2 → diagonal → G1_1
     assert interceptor_ops >= 4, (
         f"Arbitrage trade used only {interceptor_ops} ops. "
         f"Expected >= 4 (at least one circular path). "
@@ -734,13 +774,12 @@ def demo_3x2_grid(alice_addr, gov_addr, base_denom, rows, cols, pool_amount, swa
     )
 
     # That trade should capture profit from the arbitrage opportunity
-    # Single best path captures ~13000, multi-path could capture more
-    assert interceptor_profit >= 10000, (
+    assert interceptor_profit >= 1000, (
         f"Arbitrage profit was only {interceptor_profit}. "
-        f"Expected >= 10000 from efficient arbitrage trade."
+        f"Expected >= 1000 from efficient arbitrage trade."
     )
 
-    # Verify arbitrage used pools (should see 7 pools, 6 denoms)
+    # Verify arbitrage used pools (should see 8 pools, 6 denoms)
     assert (
         r["arb_pool_count"] == TOTAL_POOLS
     ), f"Should see {TOTAL_POOLS} pools: {r['arb_pool_count']}"

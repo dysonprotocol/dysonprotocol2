@@ -16,8 +16,6 @@ func (k Keeper) SimulateArbitrageInternal(
 	trader string,
 	affectedDenoms []string,
 	refDenom string,
-	depth int,
-	maxDepth int,
 ) (*whaleswapv1.QuerySimulateArbitrageResponse, error) {
 	params := k.GetParams(ctx)
 	if params.ArbitrageMode == whaleswapv1.ArbitrageMode_ARBITRAGE_MODE_DISABLED {
@@ -32,16 +30,9 @@ func (k Keeper) SimulateArbitrageInternal(
 		return &whaleswapv1.QuerySimulateArbitrageResponse{}, nil
 	}
 
-	if depth < 0 {
-		depth = 0
-	}
-
-	ac, err := k.BuildArbitrageContext(ctx, trader, affectedDenoms, refDenom, depth)
+	ac, err := k.BuildArbitrageContext(ctx, trader, affectedDenoms, refDenom)
 	if err != nil {
 		return nil, err
-	}
-	if maxDepth > 0 {
-		ac.MaxDepth = maxDepth
 	}
 
 	// Build base response
@@ -90,8 +81,6 @@ func (k Keeper) SimulateArbitrage(
 		req.Trader,
 		req.AffectedDenoms,
 		req.RefDenom,
-		int(req.Depth),
-		int(req.MaxDepth),
 	)
 }
 
