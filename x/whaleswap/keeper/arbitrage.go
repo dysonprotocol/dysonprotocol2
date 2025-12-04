@@ -35,15 +35,16 @@ type ArbitragePool struct {
 
 // ArbitrageContext holds the pool graph for arbitrage computation.
 type ArbitrageContext struct {
-	Keeper     *Keeper
-	Ctx        sdk.Context
-	Trader     string
-	Pools      []ArbitragePool
-	PoolIndex  map[uint64]int   // pool_id -> index
-	DenomPools map[string][]int // denom -> pool indices
-	AllDenoms  []string
-	RefDenom   string
-	MaxDepth   int // max path depth (default: 6)
+	Keeper         *Keeper
+	Ctx            sdk.Context
+	Trader         string
+	Pools          []ArbitragePool
+	PoolIndex      map[uint64]int   // pool_id -> index
+	DenomPools     map[string][]int // denom -> pool indices
+	AllDenoms      []string
+	AffectedDenoms []string // denoms from triggering swap (start search here)
+	RefDenom       string
+	MaxDepth       int // max path depth (default: 6)
 }
 
 // ArbitrageResult holds the result of simulating/executing arbitrage.
@@ -88,15 +89,16 @@ func (k *Keeper) BuildArbitrageContext(
 	depth int,
 ) (*ArbitrageContext, error) {
 	ac := &ArbitrageContext{
-		Keeper:     k,
-		Ctx:        ctx,
-		Trader:     trader,
-		Pools:      make([]ArbitragePool, 0),
-		PoolIndex:  make(map[uint64]int),
-		DenomPools: make(map[string][]int),
-		AllDenoms:  make([]string, 0),
-		RefDenom:   refDenom,
-		MaxDepth:   6, // default
+		Keeper:         k,
+		Ctx:            ctx,
+		Trader:         trader,
+		Pools:          make([]ArbitragePool, 0),
+		PoolIndex:      make(map[uint64]int),
+		DenomPools:     make(map[string][]int),
+		AllDenoms:      make([]string, 0),
+		AffectedDenoms: affectedDenoms, // Store for cycle search origin
+		RefDenom:       refDenom,
+		MaxDepth:       6, // default
 	}
 
 	// BFS to expand the pool graph
@@ -296,11 +298,12 @@ func (ac *ArbitrageContext) copyToLocal() []LocalPool {
 }
 
 // findBestCycleLocal finds the most profitable cycle using local pool state.
+// Searches from each affected denom (where imbalance was created).
 func (ac *ArbitrageContext) findBestCycleLocal(
 	localPools []LocalPool,
 	logger log.Logger,
 ) ([]arbStep, math.LegacyDec) {
-	// Build token index
+	// Build token index - RefDenom first for profit calculation
 	tokenIdx := make(map[string]int)
 	var tokens []string
 	idx := 0
@@ -322,7 +325,7 @@ func (ac *ArbitrageContext) findBestCycleLocal(
 		}
 	}
 
-	baseIdx := tokenIdx[ac.RefDenom]
+	refIdx := tokenIdx[ac.RefDenom]
 	numTokens := len(tokens)
 
 	// Find minimum reserve for starting amount
@@ -336,28 +339,75 @@ func (ac *ArbitrageContext) findBestCycleLocal(
 		}
 	}
 
-	// Try different starting amounts
-	var bestPath []arbStep
-	bestProfit := DecZero
-
 	maxDepth := ac.MaxDepth
 	if maxDepth <= 0 {
 		maxDepth = 6
 	}
 
-	for _, fracPct := range []int64{10, 25, 50} {
-		startAmt := minReserve.MulInt64(fracPct).QuoInt64(100)
-		if startAmt.LT(DecOne) {
-			startAmt = DecOne
+	var bestPath []arbStep
+	bestProfit := DecZero
+
+	// Determine which denoms to start from
+	startDenoms := ac.AffectedDenoms
+	if len(startDenoms) == 0 {
+		// Fallback: start from RefDenom (original behavior)
+		startDenoms = []string{ac.RefDenom}
+	}
+
+	// Search from each affected denom
+	for _, startDenom := range startDenoms {
+		startIdx, ok := tokenIdx[startDenom]
+		if !ok {
+			continue // Denom not in pool graph
 		}
-		// Truncate to integer to match MakeTrade execution
-		startAmt = math.LegacyNewDecFromInt(startAmt.TruncateInt())
 
-		profit, path := ac.bellmanFordLocal(localPools, tokens, tokenIdx, baseIdx, numTokens, startAmt, maxDepth)
+		// Try different starting amounts
+		for _, fracPct := range []int64{10, 25, 50} {
+			startAmt := minReserve.MulInt64(fracPct).QuoInt64(100)
+			if startAmt.LT(DecOne) {
+				startAmt = DecOne
+			}
+			startAmt = math.LegacyNewDecFromInt(startAmt.TruncateInt())
 
-		if profit.GT(bestProfit) && len(path) > 0 {
-			bestProfit = profit
-			bestPath = path
+			// Find cycle starting from this denom
+			cyclePath, cycleOutput := ac.findCycleFromDenom(
+				localPools, tokens, tokenIdx, startIdx, numTokens, startAmt, maxDepth, logger,
+			)
+
+			if len(cyclePath) == 0 {
+				continue
+			}
+
+			// Convert cycle profit to RefDenom
+			cycleGain := cycleOutput.Sub(startAmt)
+			if !cycleGain.IsPositive() {
+				continue
+			}
+
+			// If cycle is in RefDenom, profit is direct
+			// Otherwise, wrap with bridge and calculate net profit
+			var profit math.LegacyDec
+			var fullPath []arbStep
+
+			if startDenom == ac.RefDenom {
+				profit = cycleGain
+				fullPath = cyclePath
+			} else {
+				// Need to enter from RefDenom and exit back to RefDenom
+				fullPath, profit = ac.wrapCycleWithBridge(
+					localPools, tokenIdx, refIdx, startIdx, startAmt, cyclePath, cycleOutput, logger,
+				)
+			}
+
+			if profit.GT(bestProfit) && len(fullPath) > 0 {
+				bestProfit = profit
+				bestPath = fullPath
+				logger.Debug("LIGHTNING: better cycle found",
+					"start_denom", startDenom,
+					"cycle_gain", cycleGain.TruncateInt().String(),
+					"ref_profit", profit.TruncateInt().String(),
+				)
+			}
 		}
 	}
 
@@ -588,6 +638,287 @@ func (ac *ArbitrageContext) reconstructPathLocal(
 	}, 0)
 
 	return bestPath
+}
+
+// findCycleFromDenom finds profitable cycles starting and ending at the given token.
+func (ac *ArbitrageContext) findCycleFromDenom(
+	localPools []LocalPool,
+	tokens []string,
+	tokenIdx map[string]int,
+	startIdx, numTokens int,
+	startAmt math.LegacyDec,
+	maxDepth int,
+	logger log.Logger,
+) ([]arbStep, math.LegacyDec) {
+	// Build adjacency list
+	type edge struct {
+		poolIdx    int
+		sellDenom0 bool
+		dstIdx     int
+	}
+	adj := make(map[int][]edge)
+
+	for poolIdx, pool := range localPools {
+		srcIdx0, ok0 := tokenIdx[pool.Denom0]
+		srcIdx1, ok1 := tokenIdx[pool.Denom1]
+		if !ok0 || !ok1 {
+			continue
+		}
+		adj[srcIdx0] = append(adj[srcIdx0], edge{poolIdx, true, srcIdx1})
+		adj[srcIdx1] = append(adj[srcIdx1], edge{poolIdx, false, srcIdx0})
+	}
+
+	// DFS state
+	type dfsState struct {
+		tokenIdx int
+		amount   math.LegacyDec
+		path     []arbStep
+		usedDir  map[int]bool // dirKey -> used
+	}
+
+	var bestPath []arbStep
+	bestOutput := DecZero
+	minProfit := math.LegacyNewDec(int64(maxDepth)) // Min profit threshold
+
+	var dfs func(state dfsState, depth int)
+	dfs = func(state dfsState, depth int) {
+		if depth > maxDepth {
+			return
+		}
+
+		// Check if we returned to start with profit
+		if depth > 0 && state.tokenIdx == startIdx {
+			if state.amount.GT(startAmt.Add(minProfit)) && state.amount.GT(bestOutput) {
+				bestOutput = state.amount
+				bestPath = make([]arbStep, len(state.path))
+				copy(bestPath, state.path)
+			}
+			return
+		}
+
+		// Explore edges
+		for _, e := range adj[state.tokenIdx] {
+			pool := localPools[e.poolIdx]
+			dirKey := e.poolIdx*2 + map[bool]int{true: 1, false: 0}[e.sellDenom0]
+
+			if state.usedDir[dirKey] {
+				continue // Same direction already used
+			}
+
+			// Compute output
+			var rIn, rOut, fee math.LegacyDec
+			if e.sellDenom0 {
+				rIn, rOut = pool.Reserve0, pool.Reserve1
+				fee = pool.Fee0
+			} else {
+				rIn, rOut = pool.Reserve1, pool.Reserve0
+				fee = pool.Fee1
+			}
+
+			if rIn.LT(DecOne) || rOut.LT(DecOne) {
+				continue
+			}
+
+			amtTrunc := state.amount.TruncateInt()
+			if !amtTrunc.IsPositive() {
+				continue
+			}
+			amtDec := math.LegacyNewDecFromInt(amtTrunc)
+
+			// AMM formula: q = Ceil(k / (rIn + effIn)), out = rOut - q
+			gamma := DecOne.Sub(fee)
+			effectiveIn := amtDec.Mul(gamma)
+			kDec := rIn.Mul(rOut)
+			q := kDec.Quo(rIn.Add(effectiveIn)).Ceil()
+			out := rOut.Sub(q)
+
+			if out.LT(DecOne) {
+				continue
+			}
+
+			// Clone usedDir
+			newUsedDir := make(map[int]bool)
+			for k, v := range state.usedDir {
+				newUsedDir[k] = v
+			}
+			newUsedDir[dirKey] = true
+
+			// Build new path
+			newPath := make([]arbStep, len(state.path)+1)
+			copy(newPath, state.path)
+			newPath[len(state.path)] = arbStep{
+				poolIdx:    e.poolIdx,
+				sellDenom0: e.sellDenom0,
+				amount:     amtDec,
+			}
+
+			dfs(dfsState{
+				tokenIdx: e.dstIdx,
+				amount:   out,
+				path:     newPath,
+				usedDir:  newUsedDir,
+			}, depth+1)
+		}
+	}
+
+	dfs(dfsState{
+		tokenIdx: startIdx,
+		amount:   startAmt,
+		path:     nil,
+		usedDir:  make(map[int]bool),
+	}, 0)
+
+	return bestPath, bestOutput
+}
+
+// wrapCycleWithBridge adds RefDenom entry/exit to a cycle in another denom.
+// Returns the full path and net profit in RefDenom.
+func (ac *ArbitrageContext) wrapCycleWithBridge(
+	localPools []LocalPool,
+	tokenIdx map[string]int,
+	refIdx, cycleIdx int,
+	cycleStartAmt math.LegacyDec,
+	cyclePath []arbStep,
+	cycleOutput math.LegacyDec,
+	logger log.Logger,
+) ([]arbStep, math.LegacyDec) {
+	// Find bridge pool: RefDenom <-> cycleDenom
+	cycleDenom := ""
+	for denom, idx := range tokenIdx {
+		if idx == cycleIdx {
+			cycleDenom = denom
+			break
+		}
+	}
+
+	var bridgePoolIdx int = -1
+	var bridgeSellRef bool // true if selling RefDenom to get cycleDenom
+
+	for poolIdx, pool := range localPools {
+		hasRef := pool.Denom0 == ac.RefDenom || pool.Denom1 == ac.RefDenom
+		hasCycle := pool.Denom0 == cycleDenom || pool.Denom1 == cycleDenom
+		if hasRef && hasCycle {
+			bridgePoolIdx = poolIdx
+			bridgeSellRef = pool.Denom0 == ac.RefDenom // sell denom0 = sell RefDenom
+			break
+		}
+	}
+
+	if bridgePoolIdx < 0 {
+		// No direct bridge, cycle not reachable from RefDenom
+		return nil, DecZero
+	}
+
+	bridgePool := localPools[bridgePoolIdx]
+
+	// Step 1: Calculate how much RefDenom needed to get cycleStartAmt of cycleDenom
+	// We need to reverse-calculate: given output = cycleStartAmt, what input?
+	var rIn, rOut, fee math.LegacyDec
+	if bridgeSellRef {
+		rIn, rOut = bridgePool.Reserve0, bridgePool.Reserve1
+		fee = bridgePool.Fee0
+	} else {
+		rIn, rOut = bridgePool.Reserve1, bridgePool.Reserve0
+		fee = bridgePool.Fee1
+	}
+
+	// Forward calculation: try to find input that gives ~cycleStartAmt output
+	// Approximate: input ≈ cycleStartAmt * rIn / rOut (ignoring fees for estimate)
+	approxIn := cycleStartAmt.Mul(rIn).Quo(rOut).Mul(math.LegacyNewDecWithPrec(105, 2)) // 5% buffer
+	approxIn = math.LegacyNewDecFromInt(approxIn.TruncateInt())
+	if approxIn.LT(DecOne) {
+		approxIn = DecOne
+	}
+
+	// Calculate actual output from this input
+	gamma := DecOne.Sub(fee)
+	effectiveIn := approxIn.Mul(gamma)
+	kDec := rIn.Mul(rOut)
+	q := kDec.Quo(rIn.Add(effectiveIn)).Ceil()
+	entryOutput := rOut.Sub(q)
+
+	if entryOutput.LT(DecOne) {
+		return nil, DecZero
+	}
+
+	// Scale cycle proportionally to actual entry output
+	scale := entryOutput.Quo(cycleStartAmt)
+	scaledCycleOutput := cycleOutput.Mul(scale)
+
+	// Step 2: Exit - sell scaledCycleOutput of cycleDenom back to RefDenom
+	// After entry, bridge reserves changed
+	newRIn := rIn.Add(approxIn)
+	newROut := rOut.Sub(entryOutput)
+
+	// Exit is opposite direction
+	var exitRIn, exitROut, exitFee math.LegacyDec
+	if bridgeSellRef {
+		// Entry sold RefDenom (denom0), exit sells cycleDenom (denom1)
+		exitRIn, exitROut = newROut, newRIn
+		exitFee = bridgePool.Fee1
+	} else {
+		exitRIn, exitROut = newRIn, newROut
+		exitFee = bridgePool.Fee0
+	}
+
+	exitAmt := scaledCycleOutput.TruncateInt()
+	if !exitAmt.IsPositive() {
+		return nil, DecZero
+	}
+	exitAmtDec := math.LegacyNewDecFromInt(exitAmt)
+
+	exitGamma := DecOne.Sub(exitFee)
+	exitEffIn := exitAmtDec.Mul(exitGamma)
+	exitK := exitRIn.Mul(exitROut)
+	exitQ := exitK.Quo(exitRIn.Add(exitEffIn)).Ceil()
+	exitOutput := exitROut.Sub(exitQ)
+
+	// Profit = exit output - entry input (both in RefDenom)
+	profit := exitOutput.Sub(approxIn)
+	if !profit.IsPositive() {
+		return nil, DecZero
+	}
+
+	// Build full path: entry + cycle + exit
+	fullPath := make([]arbStep, 0, len(cyclePath)+2)
+
+	// Entry step
+	fullPath = append(fullPath, arbStep{
+		poolIdx:    bridgePoolIdx,
+		sellDenom0: bridgeSellRef,
+		amount:     approxIn,
+	})
+
+	// Scale and add cycle steps
+	for i, step := range cyclePath {
+		scaledAmt := step.amount.Mul(scale)
+		if i == 0 {
+			scaledAmt = entryOutput // First step uses actual entry output
+		}
+		fullPath = append(fullPath, arbStep{
+			poolIdx:    step.poolIdx,
+			sellDenom0: step.sellDenom0,
+			amount:     math.LegacyNewDecFromInt(scaledAmt.TruncateInt()),
+		})
+	}
+
+	// Exit step
+	fullPath = append(fullPath, arbStep{
+		poolIdx:    bridgePoolIdx,
+		sellDenom0: !bridgeSellRef, // Opposite direction
+		amount:     exitAmtDec,
+	})
+
+	logger.Debug("LIGHTNING: wrapped cycle with bridge",
+		"bridge_pool", bridgePoolIdx,
+		"entry_ref", approxIn.TruncateInt().String(),
+		"entry_cycle", entryOutput.TruncateInt().String(),
+		"exit_cycle", exitAmtDec.String(),
+		"exit_ref", exitOutput.TruncateInt().String(),
+		"profit", profit.TruncateInt().String(),
+	)
+
+	return fullPath, profit
 }
 
 // simulatePathLocal applies a path to local pool state and returns operations.
