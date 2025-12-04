@@ -11608,6 +11608,18 @@ paths:
           in: query
           required: false
           type: string
+        - name: max_depth
+          description: 'Maximum path depth for FLOOD algorithm cycle search (default: 6).'
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: max_splits
+          description: 'Maximum number of split iterations for FLOOD algorithm (default: 5).'
+          in: query
+          required: false
+          type: integer
+          format: int32
       tags:
         - Query
   /dysonprotocol/whaleswap/v1/trades:

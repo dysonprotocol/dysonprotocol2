@@ -6,16 +6,16 @@ All tests use query script run with _query and _sudo (_msg), which operates on
 CacheContext so no state is persisted.
 
 Coverage targets in arbitrage.go:
-- BuildArbitrageContext lines 65-134 (via SimulateArbitrage query)
-- getPoolsByDenomInternal lines 138-150 (via pool graph construction)
-- poolToArbitragePool lines 153-165 (via pool conversion)
-- SimulateArbitrage lines 180-214 (via FindArbitrage->SimulateArbitrage)
-- buildMakeTradeMsg lines 220-262 (via optimizer simulation)
-- ObjectiveFunction lines 277-310 (via optimizer evaluation)
-- GetAffectedDenomsFromPool lines 314-318 (via pool denom extraction)
-- GetOptimizationBounds lines 329-346 (via optimizer bounds)
-- FindArbitrage lines 351-378 (via SimulateArbitrage query)
-- BuildFinalMakeTradeMsg lines 384-415 (via successful arbitrage response)
+- BuildArbitrageContext (via SimulateArbitrage query)
+- getPoolsByDenomInternal (via pool graph construction)
+- poolToArbitragePool (via pool conversion)
+- SimulateArbitrage (via FindArbitrage->SimulateArbitrage)
+- buildMakeTradeMsg (via optimizer simulation)
+- ObjectiveFunction (via optimizer evaluation)
+- GetAffectedDenomsFromPool (via pool denom extraction)
+- ComputeClosedFormEstimate (via FLOOD optimization)
+- FindArbitrage (via SimulateArbitrage query)
+- BuildFinalMakeTradeMsg (via successful arbitrage response)
 """
 
 import json
@@ -702,11 +702,9 @@ def demo_affected_denoms(alice_addr, foo_name, bar_name):
     assert bar_name in demo_result["denoms"], f"bar_name not in denoms: {demo_result}"
 
 
-def test_get_optimization_bounds(chainnet, leverage_accounts, leverage_names_and_coins):
+def test_pool_reserves_retrieval(chainnet, leverage_accounts, leverage_names_and_coins):
     """
-    Test GetOptimizationBounds via pool reserves.
-
-    Covers lines 329-346.
+    Test pool creation and reserve retrieval for arbitrage context.
     """
     dysond = chainnet[0]
     alice_addr = leverage_accounts["alice"]["addr"]
@@ -766,7 +764,7 @@ def demo_bounds(alice_addr, foo_name, bar_name):
     coins = pool.get("pool", {}).get("coins", [])
     reserves = {c["denom"]: int(c["amount"]) for c in coins}
     
-    # GetOptimizationBounds uses maxFraction of reserves
+    # Arbitrage uses fraction of reserves for trade sizing
     max_fraction = 0.1
     denom0, denom1 = sorted([foo_name, bar_name])
     expected_upper = reserves[denom0] * max_fraction

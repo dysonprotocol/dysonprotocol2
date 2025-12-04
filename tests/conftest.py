@@ -393,11 +393,10 @@ def chainnet(worker_id, test_base_dir, test_config_path):
         "--logs",
     ]
 
-    # Support optional log module filtering via environment variable
-    log_module = os.getenv("LOG_MODULE")
-    if log_module:
-        start_cmd.extend(["--log-module", log_module])
-        print(f"Filtering logs to module: {log_module}")
+    # Support optional log module filtering via environment variable (default: whaleswap)
+    log_module = os.getenv("LOG_MODULE", "*")
+    start_cmd.extend(["--log-module", log_module])
+    print(f"Filtering logs to module: {log_module}")
 
     # Create log file for network startup output
     network_log_file = Path("blockchain.log")

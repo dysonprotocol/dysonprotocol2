@@ -3128,6 +3128,20 @@ export class QuerySimulateArbitrageRequest extends Message<QuerySimulateArbitrag
    */
   triggerOutputs: Coin[] = [];
 
+  /**
+   * Maximum path depth for FLOOD algorithm cycle search (default: 6)
+   *
+   * @generated from field: int32 max_depth = 8;
+   */
+  maxDepth = 0;
+
+  /**
+   * Maximum number of split iterations for FLOOD algorithm (default: 5)
+   *
+   * @generated from field: int32 max_splits = 9;
+   */
+  maxSplits = 0;
+
   constructor(data?: PartialMessage<QuerySimulateArbitrageRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -3143,6 +3157,8 @@ export class QuerySimulateArbitrageRequest extends Message<QuerySimulateArbitrag
     { no: 5, name: "max_fraction", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "trigger_inputs", kind: "message", T: Coin, repeated: true },
     { no: 7, name: "trigger_outputs", kind: "message", T: Coin, repeated: true },
+    { no: 8, name: "max_depth", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 9, name: "max_splits", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QuerySimulateArbitrageRequest {

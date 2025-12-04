@@ -74,13 +74,23 @@ func (i *ArbitrageMsgInterceptor) Post(ctx sdk.Context, msg sdk.Msg, result *sdk
 		"ref_denom", i.refDenom,
 	)
 
-	// Run arbitrage detection and execution
-	// Always use configured refDenom (udys) - only execute if there's profit in udys terms
-	arbResult, arbErr := i.runner.CheckAndExecuteArbitrage(
+	// Run arbitrage detection and execution in a loop until no more opportunities
+	// Use first affected denom as refDenom for circular arbitrage detection.
+	// Circular arbitrage profits in whatever token the cycle starts/ends with.
+	// If refDenom is in affected denoms, prefer it; otherwise use first affected denom.
+	refDenom := affectedDenoms[0]
+	for _, d := range affectedDenoms {
+		if d == i.refDenom {
+			refDenom = i.refDenom
+			break
+		}
+	}
+
+	totalProfit, execCount, arbErr := i.runner.CheckAndExecuteArbitrage(
 		ctx,
 		i.trader,
 		affectedDenoms,
-		i.refDenom,
+		refDenom,
 	)
 
 	if arbErr != nil {
@@ -88,12 +98,11 @@ func (i *ArbitrageMsgInterceptor) Post(ctx sdk.Context, msg sdk.Msg, result *sdk
 		return
 	}
 
-	if arbResult != nil && arbResult.Success {
-		logger.Debug("arbitrage executed",
-			"profit", arbResult.Profit.String(),
-			"ref_denom", i.refDenom,
-			"inputs", arbResult.TraderInputs.String(),
-			"outputs", arbResult.TraderOutputs.String(),
+	if execCount > 0 {
+		logger.Debug("arbitrage complete",
+			"total_profit", totalProfit.String(),
+			"exec_count", execCount,
+			"ref_denom", refDenom,
 		)
 	}
 }

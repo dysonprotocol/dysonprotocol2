@@ -944,6 +944,10 @@ message QuerySimulateArbitrageRequest {
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
+  // Maximum path depth for FLOOD algorithm cycle search (default: 6)
+  int32 max_depth = 8;
+  // Maximum number of split iterations for FLOOD algorithm (default: 5)
+  int32 max_splits = 9;
 }
 
 message QuerySimulateArbitrageResponse {

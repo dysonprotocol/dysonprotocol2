@@ -1169,7 +1169,7 @@ def start(config_file, block_speed, extra_args, no_blocks_timeout, logs, log_mod
     log_level_args = []
     if log_module:
         # Set the specified module to debug and everything else to error
-        log_level_args = ["--log_level", f"{log_module}:debug,*:error"]
+        log_level_args = ["--log_level", f"{log_module}:debug"]
         click.echo(f"Filtering logs to module: {log_module}")
 
     for chain in cfg["chains"]:
