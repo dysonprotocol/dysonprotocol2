@@ -27,9 +27,8 @@ import (
 
 // Consensus-safe constants
 var (
-	DecZero     = math.LegacyZeroDec()
-	DecOne      = math.LegacyOneDec()
-	DecMinValue = math.LegacyNewDec(-1).MulInt64(1e18)
+	DecZero = math.LegacyZeroDec()
+	DecOne  = math.LegacyOneDec()
 )
 
 // ArbitragePool holds minimal pool info for arbitrage computation.
@@ -85,7 +84,6 @@ type arbStep struct {
 	amount     math.LegacyDec
 }
 
-var errInvalidInput = &simError{msg: "invalid input length"}
 var errNoOperations = &simError{msg: "no operations generated"}
 
 type simError struct{ msg string }
@@ -810,85 +808,12 @@ func (ac *ArbitrageContext) simulateMsg(msg *whaleswapv1.MsgMakeTrade) *Arbitrag
 // Helper Functions
 // =============================================================================
 
-// RefreshPoolReserves updates pool reserve snapshots from current state.
-func (ac *ArbitrageContext) RefreshPoolReserves(ctx sdk.Context) {
-	ac.Ctx = ctx
-	for i, pool := range ac.Pools {
-		freshPool, err := ac.Keeper.PoolsMap.Get(ctx, pool.PoolID)
-		if err != nil || len(freshPool.Coins) != 2 {
-			continue
-		}
-		ac.Pools[i].Reserve0 = freshPool.Coins[0].Amount
-		ac.Pools[i].Reserve1 = freshPool.Coins[1].Amount
-	}
-}
-
 // GetAffectedDenomsFromPool extracts denoms from a pool.
 func GetAffectedDenomsFromPool(pool *whaleswapv1.Pool) []string {
 	if pool == nil || len(pool.Coins) != 2 {
 		return nil
 	}
 	return []string{pool.Coins[0].Denom, pool.Coins[1].Denom}
-}
-
-// =============================================================================
-// Utilities for External Use
-// =============================================================================
-
-// SimulateArbitrage allows external callers to test swap amounts.
-// swapAmounts has 2*len(Pools) elements (2 per pool).
-func (ac *ArbitrageContext) SimulateArbitrage(swapAmounts []int64) *ArbitrageResult {
-	expectedLen := len(ac.Pools) * 2
-	if len(swapAmounts) != expectedLen {
-		return &ArbitrageResult{Success: false, Error: errInvalidInput}
-	}
-
-	ops := make([]whaleswapv1.TradeOperation, 0)
-	for i, pool := range ac.Pools {
-		sellDenom0 := swapAmounts[2*i]
-		sellDenom1 := swapAmounts[2*i+1]
-
-		if sellDenom0 > 0 {
-			swapIn := sdk.NewCoin(pool.Denom0, math.NewInt(sellDenom0))
-			ops = append(ops, whaleswapv1.TradeOperation{
-				Op: &whaleswapv1.TradeOperation_Swap{
-					Swap: &whaleswapv1.SwapLeg{
-						PoolId: pool.PoolID,
-						SwapIn: swapIn,
-					},
-				},
-			})
-		}
-		if sellDenom1 > 0 {
-			swapIn := sdk.NewCoin(pool.Denom1, math.NewInt(sellDenom1))
-			ops = append(ops, whaleswapv1.TradeOperation{
-				Op: &whaleswapv1.TradeOperation_Swap{
-					Swap: &whaleswapv1.SwapLeg{
-						PoolId: pool.PoolID,
-						SwapIn: swapIn,
-					},
-				},
-			})
-		}
-	}
-
-	if len(ops) == 0 {
-		return &ArbitrageResult{Success: false, Error: errNoOperations}
-	}
-
-	msg := &whaleswapv1.MsgMakeTrade{
-		Trader:     ac.Trader,
-		Operations: ops,
-		MaxInput:   nil,
-		MinOutput:  []sdk.Coin{},
-	}
-
-	return ac.simulateMsg(msg)
-}
-
-// GetPools returns the pools in this context.
-func (ac *ArbitrageContext) GetPools() []ArbitragePool {
-	return ac.Pools
 }
 
 // FormatSwaps formats swap operations for logging.
