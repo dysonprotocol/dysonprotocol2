@@ -14,6 +14,7 @@ import (
 type AccountKeeper interface {
 	AddressCodec() address.Codec
 	GetModuleAddress(moduleName string) sdk.AccAddress
+	GetModuleAccount(ctx context.Context, moduleName string) sdk.ModuleAccountI
 }
 
 type BankKeeper interface {

@@ -991,9 +991,9 @@ def demo_square_arb(alice_addr, foo_name, bar_name, qux_name, arb_rev_addr):
 """
 
     # Get the arb revenue module address from CLI
-    arb_rev_addr = dysond("query", "auth", "module-account", "whaleswap_arb_revenue")[
-        "account"
-    ]["value"]["address"]
+    arb_rev_result = dysond("query", "auth", "module-account", "whaleswap_arb_revenue")
+    assert isinstance(arb_rev_result, dict), f"Expected dict, got: {arb_rev_result}"
+    arb_rev_addr = arb_rev_result["account"]["value"]["address"]
 
     kwargs = json.dumps(
         {
@@ -1242,9 +1242,9 @@ def demo_intermediate_arb(alice_addr, bar_name, energy_name, arb_rev_addr):
     }
 """
 
-    arb_rev_addr = dysond("query", "auth", "module-account", "whaleswap_arb_revenue")[
-        "account"
-    ]["value"]["address"]
+    arb_rev_result = dysond("query", "auth", "module-account", "whaleswap_arb_revenue")
+    assert isinstance(arb_rev_result, dict), f"Expected dict, got: {arb_rev_result}"
+    arb_rev_addr = arb_rev_result["account"]["value"]["address"]
 
     kwargs = json.dumps(
         {
@@ -1494,9 +1494,9 @@ def demo_production_9pool(alice_addr, foo_name, bar_name, energy_name, arb_rev_a
     }
 """
 
-    arb_rev_addr = dysond("query", "auth", "module-account", "whaleswap_arb_revenue")[
-        "account"
-    ]["value"]["address"]
+    arb_rev_result = dysond("query", "auth", "module-account", "whaleswap_arb_revenue")
+    assert isinstance(arb_rev_result, dict), f"Expected dict, got: {arb_rev_result}"
+    arb_rev_addr = arb_rev_result["account"]["value"]["address"]
 
     kwargs = json.dumps(
         {

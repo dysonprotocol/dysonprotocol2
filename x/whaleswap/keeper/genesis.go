@@ -13,6 +13,14 @@ import (
 
 // InitGenesis initializes state from genesis
 func (k Keeper) InitGenesis(ctx sdk.Context, gs *types.GenesisState) {
+	// Ensure all whaleswap module accounts exist as proper ModuleAccountI types.
+	// GetModuleAccount auto-creates them if they don't exist yet; calling early
+	// prevents later operations from accidentally creating regular accounts at
+	// these addresses (which would panic when queried as module accounts).
+	_ = k.accKeeper.GetModuleAccount(ctx, whaleswap.LeverageVaultModuleName)
+	_ = k.accKeeper.GetModuleAccount(ctx, whaleswap.LeverageBorrowVaultModuleName)
+	_ = k.accKeeper.GetModuleAccount(ctx, whaleswap.ArbRevenueModuleName)
+
 	// params
 	if err := k.SetParams(ctx, gs.Params); err != nil {
 		panic(err)

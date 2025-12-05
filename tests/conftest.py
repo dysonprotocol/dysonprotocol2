@@ -283,6 +283,17 @@ def make_run_command(dysond_bin, node_home):
                         json_out = json.loads(return_out)
                     return json_out
                 except json.JSONDecodeError:
+                    # Check for transient errors that should trigger retry
+                    if "connect: connection refused" in return_out:
+                        logging.getLogger().debug(
+                            f"Connection refused, retrying ({attempt}/10)"
+                        )
+                        time.sleep(0.1 * (attempt + 1))
+                        continue
+                    if "timed out" in return_out.lower():
+                        logging.getLogger().debug(f"Timeout, retrying ({attempt}/10)")
+                        time.sleep(0.1 * (attempt + 1))
+                        continue
                     return return_out
             except Exception as e:
                 logging.getLogger().debug(f"Error running command: {commands}\n{e}")
@@ -457,7 +468,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
                     proc.wait(timeout=3)
                 except (ProcessLookupError, OSError, subprocess.TimeoutExpired):
                     pass
-    # return
+    return
     ## NOTE: This is disabled for now as it is not needed for the test suite
     # Export/Import validation - chain is now stopped
     print("\n" + "=" * 80)
@@ -974,22 +985,7 @@ def propose_sudo_grant(gov_addr):
     assert result.get("code", 1) == 0, f"Proposal submission failed: {result}"
     print(f"Submitted MsgSudo authz grant proposal")
 
-    # Vote using CLI directly - validator has staked tokens
-    vote_result = dysond(
-        "tx",
-        "gov",
-        "vote",
-        "1",  # proposal_id
-        "yes",
-        "--from",
-        "validator",  # validator key has voting power
-        "--gas",
-        "500000",
-    )
-    assert vote_result.get("code", 1) == 0, f"Vote failed: {vote_result}"
-    print(f"Voted YES on proposal via validator")
-
-    # Extract proposal_id from result events
+    # Extract proposal_id from result events BEFORE voting
     proposal_id = None
     for event in result.get("events", []):
         for attr in event.get("attributes", []):
@@ -999,11 +995,25 @@ def propose_sudo_grant(gov_addr):
         if proposal_id:
             break
 
-    # Fallback: try to get from script response
-    if not proposal_id:
-        proposal_id = "1"  # First proposal in test genesis
-
+    assert (
+        proposal_id
+    ), f"Failed to extract proposal_id from events: {result.get('events', [])}"
     print(f"Proposal ID: {proposal_id}")
+
+    # Vote using CLI directly - validator has staked tokens
+    vote_result = dysond(
+        "tx",
+        "gov",
+        "vote",
+        proposal_id,  # Use actual proposal_id, not hardcoded
+        "yes",
+        "--from",
+        "validator",  # validator key has voting power
+        "--gas",
+        "500000",
+    )
+    assert vote_result.get("code", 1) == 0, f"Vote failed: {vote_result}"
+    print(f"Voted YES on proposal {proposal_id} via validator")
 
     # Wait for proposal to pass (expedited voting period is 5s in test genesis)
     def proposal_passed():
