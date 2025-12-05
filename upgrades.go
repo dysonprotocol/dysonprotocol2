@@ -10,36 +10,22 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
-// InvariantsUpgradeName defines the on-chain upgrade name for the next
-// invariants-focused migration.
-const InvariantsUpgradeName = "invariants"
+// ProtorevUpgradeName defines the on-chain upgrade name for the
+// whaleswap arbitrage (protorev) feature.
+const ProtorevUpgradeName = "protorev"
 
 func (app *DysApp) RegisterUpgradeHandlers() {
-	// Register handler for invariants upgrade
+	// Register handler for protorev upgrade
 	app.UpgradeKeeper.SetUpgradeHandler(
-		InvariantsUpgradeName,
+		ProtorevUpgradeName,
 		func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-			app.Logger().Info("Executing invariants upgrade", "name", plan.Name, "height", plan.Height)
+			app.Logger().Info("Executing protorev upgrade", "name", plan.Name, "height", plan.Height)
 
 			// Run module migrations
 			newVM, err := app.ModuleManager.RunMigrations(ctx, app.Configurator(), fromVM)
 			if err != nil {
 				app.Logger().Error("Upgrade handler failed", "name", plan.Name, "height", plan.Height, "err", err)
 				return newVM, err
-			}
-
-			// Rebuild whaleswap invariants so new pools can be created safely.
-			if report, err := app.WhaleswapKeeper.RebuildModuleInvariants(ctx); err != nil {
-				app.Logger().Error("Whaleswap invariant rebuild failed", "err", err)
-				return newVM, err
-			} else {
-				app.Logger().Info(
-					"Whaleswap invariants rebuilt",
-					"fees_cleared", report.FeesCleared.String(),
-					"burned", report.Burned.String(),
-					"expected_balances", report.Expected.String(),
-					"actual_balances", report.Actual.String(),
-				)
 			}
 
 			app.Logger().Info("Upgrade handler completed", "name", plan.Name, "height", plan.Height)
@@ -74,10 +60,10 @@ func (app *DysApp) RegisterUpgradeHandlers() {
 	}
 
 	if !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-		if upgradeInfo.Name == InvariantsUpgradeName {
-			// State migration upgrade; no store migrations needed (migration happens in handler)
+		if upgradeInfo.Name == ProtorevUpgradeName {
+			// Feature upgrade; no store migrations needed
 		}
-	} else if upgradeInfo.Name == InvariantsUpgradeName {
+	} else if upgradeInfo.Name == ProtorevUpgradeName {
 		// Skip height is set; not configuring store loader
 	}
 }

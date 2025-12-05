@@ -457,7 +457,7 @@ def chainnet(worker_id, test_base_dir, test_config_path):
                     proc.wait(timeout=3)
                 except (ProcessLookupError, OSError, subprocess.TimeoutExpired):
                     pass
-    return
+    # return
     ## NOTE: This is disabled for now as it is not needed for the test suite
     # Export/Import validation - chain is now stopped
     print("\n" + "=" * 80)
