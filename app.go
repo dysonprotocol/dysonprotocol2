@@ -1008,6 +1008,7 @@ func (app *DysApp) setMsgInterceptor() {
 	arbInterceptor := whaleswapkeeper.NewArbitrageMsgInterceptor(
 		&app.WhaleswapKeeper,
 		arbTrader,
+		app.txConfig.TxDecoder(),
 	)
 
 	// Compose interceptors: logging first, then arbitrage

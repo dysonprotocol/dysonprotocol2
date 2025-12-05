@@ -231,6 +231,14 @@
                         "additionalProperties": false,
                         "type": "array",
                         "description": "Total auction volume sold (denoms with metadata only)"
+                    },
+                    "affiliate_earned": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 AFFILIATE \u2550\u2550\u2550\u2550\u2550 Cumulative earnings from affiliate referrals (denoms with metadata only)"
                     }
                 },
                 "additionalProperties": false,

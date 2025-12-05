@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"dysonprotocol.com/x/whaleswap/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -11,17 +13,36 @@ var _ baseapp.MsgHandlerInterceptor = (*ArbitrageMsgInterceptor)(nil)
 
 // ArbitrageMsgInterceptor detects and executes arbitrage after pool-affecting messages.
 type ArbitrageMsgInterceptor struct {
-	keeper *Keeper
-	trader string // address for arbitrage trades (module account)
+	keeper    *Keeper
+	trader    string        // address for arbitrage trades (module account)
+	txDecoder sdk.TxDecoder // decodes tx bytes for memo extraction
 }
 
 // NewArbitrageMsgInterceptor creates a new arbitrage interceptor.
 // refDenom is now read from Params.ArbitrageRefDenom at runtime.
-func NewArbitrageMsgInterceptor(keeper *Keeper, trader string) *ArbitrageMsgInterceptor {
+func NewArbitrageMsgInterceptor(keeper *Keeper, trader string, txDecoder sdk.TxDecoder) *ArbitrageMsgInterceptor {
 	return &ArbitrageMsgInterceptor{
-		keeper: keeper,
-		trader: trader,
+		keeper:    keeper,
+		trader:    trader,
+		txDecoder: txDecoder,
 	}
+}
+
+// extractMemoFromContext decodes tx bytes from context and returns the memo.
+func (i *ArbitrageMsgInterceptor) extractMemoFromContext(ctx sdk.Context) string {
+	txBytes := ctx.TxBytes()
+	if len(txBytes) == 0 || i.txDecoder == nil {
+		return ""
+	}
+	tx, err := i.txDecoder(txBytes)
+	if err != nil {
+		return ""
+	}
+	memoTx, ok := tx.(sdk.TxWithMemo)
+	if !ok {
+		return ""
+	}
+	return memoTx.GetMemo()
 }
 
 // Pre is called before message execution. No-op for arbitrage.
@@ -65,6 +86,45 @@ func (i *ArbitrageMsgInterceptor) Post(ctx sdk.Context, msg sdk.Msg, result *sdk
 		"trade_id", tradeResp.TradeId,
 		"profit", simResp.Profit,
 		"ops", len(simResp.Operations),
+	)
+
+	// ═════ AFFILIATE PAYMENT ═════
+	memo := i.extractMemoFromContext(ctx)
+	affiliateName := ParseAffiliateName(memo)
+	if affiliateName == "" {
+		return
+	}
+
+	// Calculate net profit from trade response
+	netProfit, hasNeg := tradeResp.TraderOutputs.SafeSub(tradeResp.TraderInputs...)
+	if hasNeg || netProfit.IsZero() || !netProfit.IsAllPositive() {
+		return
+	}
+
+	remaining, paid, addr, affErr := i.keeper.ProcessAffiliatePayment(ctx, netProfit, affiliateName)
+	if affErr != nil {
+		panic(fmt.Sprintf("affiliate payment failed: %v", affErr))
+	}
+	if paid.IsZero() {
+		return
+	}
+
+	// Emit affiliate event
+	if emitErr := ctx.EventManager().EmitTypedEvent(&types.EventAffiliatePayment{
+		AffiliateName: affiliateName,
+		AffiliateAddr: addr,
+		Amount:        paid,
+		TradeId:       tradeResp.TradeId,
+	}); emitErr != nil {
+		i.keeper.ArbitrageLogger(ctx).Error("failed to emit affiliate event", "error", emitErr)
+	}
+
+	i.keeper.ArbitrageLogger(ctx).Debug("affiliate paid",
+		"trade_id", tradeResp.TradeId,
+		"name", affiliateName,
+		"addr", addr,
+		"paid", paid,
+		"remaining", remaining,
 	)
 }
 

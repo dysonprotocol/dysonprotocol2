@@ -11,7 +11,7 @@ import (
 // Defaults: empty denom means PFAND disabled by default.
 var DefaultPfandPerOffer = sdk.Coin{Denom: "udys", Amount: math.NewInt(1)}
 
-func NewParams(pfandPerOffer sdk.Coin, valuationFeePct, minBidPctIncrease string, valuationPeriod time.Duration, bidTimeout time.Duration, maxNoteLength uint32, blockDelayBeforeClose, blockDelayBeforeLiquidation uint64, arbitrageMode ArbitrageMode, arbitrageRefDenom string) Params {
+func NewParams(pfandPerOffer sdk.Coin, valuationFeePct, minBidPctIncrease string, valuationPeriod time.Duration, bidTimeout time.Duration, maxNoteLength uint32, blockDelayBeforeClose, blockDelayBeforeLiquidation uint64, arbitrageMode ArbitrageMode, arbitrageRefDenom, affiliateFeePct string) Params {
 	return Params{
 		PfandPerOffer:               pfandPerOffer,
 		ValuationFeePct:             valuationFeePct,
@@ -23,11 +23,12 @@ func NewParams(pfandPerOffer sdk.Coin, valuationFeePct, minBidPctIncrease string
 		BlockDelayBeforeLiquidation: blockDelayBeforeLiquidation,
 		ArbitrageMode:               arbitrageMode,
 		ArbitrageRefDenom:           arbitrageRefDenom,
+		AffiliateFeePct:             affiliateFeePct,
 	}
 }
 
 func DefaultParams() Params {
-	p := NewParams(DefaultPfandPerOffer, "0", "0", time.Hour, time.Second*5, 128, 1, 1, ArbitrageMode_ARBITRAGE_MODE_AUTO, "udys")
+	p := NewParams(DefaultPfandPerOffer, "0", "0", time.Hour, time.Second*5, 128, 1, 1, ArbitrageMode_ARBITRAGE_MODE_AUTO, "udys", "0")
 	return p
 }
 
@@ -63,5 +64,19 @@ func (p Params) Validate() error {
 	// Note: block delays can be 0 for testing (query exec scenarios where blocks don't advance).
 	// Production deployments should use >= 1 via governance for safety.
 	// No validation error for 0 to enable single-transaction testing.
+
+	// Affiliate fee validation
+	if p.AffiliateFeePct != "" {
+		dec, err := math.LegacyNewDecFromStr(p.AffiliateFeePct)
+		if err != nil {
+			return fmt.Errorf("invalid affiliate_fee_pct: %v", err)
+		}
+		if dec.IsNegative() {
+			return fmt.Errorf("affiliate_fee_pct cannot be negative")
+		}
+		if dec.GTE(math.LegacyOneDec()) {
+			return fmt.Errorf("affiliate_fee_pct must be less than 1")
+		}
+	}
 	return nil
 }

@@ -1207,3 +1207,69 @@ export class EventLeveragePositionPartiallyClosed extends Message<EventLeverageP
   }
 }
 
+/**
+ * EventAffiliatePayment is emitted when an affiliate receives a share of
+ * arbitrage profit from a transaction with their dysname in the memo.
+ *
+ * @generated from message dysonprotocol.whaleswap.v1.EventAffiliatePayment
+ */
+export class EventAffiliatePayment extends Message<EventAffiliatePayment> {
+  /**
+   * affiliate_name is the dysname from the transaction memo
+   *
+   * @generated from field: string affiliate_name = 1;
+   */
+  affiliateName = "";
+
+  /**
+   * affiliate_addr is the resolved address that received payment
+   *
+   * @generated from field: string affiliate_addr = 2;
+   */
+  affiliateAddr = "";
+
+  /**
+   * amount is the coins paid to the affiliate
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin amount = 3;
+   */
+  amount: Coin[] = [];
+
+  /**
+   * trade_id is the arbitrage trade that generated the profit
+   *
+   * @generated from field: uint64 trade_id = 4;
+   */
+  tradeId = protoInt64.zero;
+
+  constructor(data?: PartialMessage<EventAffiliatePayment>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.EventAffiliatePayment";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "affiliate_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "affiliate_addr", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "amount", kind: "message", T: Coin, repeated: true },
+    { no: 4, name: "trade_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): EventAffiliatePayment {
+    return new EventAffiliatePayment().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): EventAffiliatePayment {
+    return new EventAffiliatePayment().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): EventAffiliatePayment {
+    return new EventAffiliatePayment().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: EventAffiliatePayment | PlainMessage<EventAffiliatePayment> | undefined, b: EventAffiliatePayment | PlainMessage<EventAffiliatePayment> | undefined): boolean {
+    return proto3.util.equals(EventAffiliatePayment, a, b);
+  }
+}
+

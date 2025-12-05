@@ -98,6 +98,10 @@
                     "arbitrage_ref_denom": {
                         "type": "string",
                         "description": "arbitrage_ref_denom is the reference denom for measuring arbitrage profit. Only cycles ending in this denom will be considered for auto-execution."
+                    },
+                    "affiliate_fee_pct": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 AFFILIATE PARAMETERS \u2550\u2550\u2550\u2550\u2550 affiliate_fee_pct is the percentage of arbitrage profit sent to the affiliate address resolved from tx memo dysname. E.g., \"0.10\" = 10%. Zero or empty disables affiliate payouts. Must be in range [0, 1)."
                     }
                 },
                 "additionalProperties": false,

@@ -32,6 +32,7 @@ func (k Keeper) getOrCreateMetrics(ctx context.Context, address string) (whalesw
 			Losses:              sdk.NewCoins(),
 			MakerVolume:         sdk.NewCoins(),
 			AuctionVolume:       sdk.NewCoins(),
+			AffiliateEarned:     sdk.NewCoins(),
 		}
 	}
 
@@ -70,6 +71,7 @@ func (k Keeper) checkAddressMetricsInvariants(ctx context.Context, metrics whale
 		metrics.Losses,
 		metrics.MakerVolume,
 		metrics.AuctionVolume,
+		metrics.AffiliateEarned,
 	}
 
 	for i, coins := range coinArrays {
@@ -287,4 +289,22 @@ func (k Keeper) filterCoinsWithMetadata(ctx context.Context, coins sdk.Coins) sd
 		}
 	}
 	return filtered
+}
+
+// incrementAffiliateEarned adds affiliate earnings to an address's metrics.
+func (k Keeper) incrementAffiliateEarned(ctx context.Context, affiliate string, earned sdk.Coins) error {
+	metrics, err := k.getOrCreateMetrics(ctx, affiliate)
+	if err != nil {
+		return err
+	}
+
+	// Filter and add coins with metadata
+	filteredEarned := k.filterCoinsWithMetadata(ctx, earned)
+	if filteredEarned.IsZero() {
+		return nil
+	}
+
+	metrics.AffiliateEarned = metrics.AffiliateEarned.Add(filteredEarned...)
+
+	return k.saveMetrics(ctx, metrics)
 }

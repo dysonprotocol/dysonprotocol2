@@ -24,7 +24,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
-const ConsensusVersion = 2
+const ConsensusVersion = 3
 
 var (
 	_ module.AppModuleBasic        = AppModuleBasic{}
@@ -197,6 +197,9 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	migrator := keeper.NewMigrator(am.keeper)
 	if err := cfg.RegisterMigration(whaleswap.ModuleName, 1, migrator.Migrate1to2); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 1 to 2: %v", whaleswap.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(whaleswap.ModuleName, 2, migrator.Migrate2to3); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 2 to 3: %v", whaleswap.ModuleName, err))
 	}
 }
 func (AppModule) RegisterMigrations() error          { return nil }

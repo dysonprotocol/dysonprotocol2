@@ -763,6 +763,14 @@ export class AddressMetrics extends Message<AddressMetrics> {
    */
   auctionVolume: Coin[] = [];
 
+  /**
+   * ═════ AFFILIATE ═════
+   * Cumulative earnings from affiliate referrals (denoms with metadata only)
+   *
+   * @generated from field: repeated cosmos.base.v1beta1.Coin affiliate_earned = 60;
+   */
+  affiliateEarned: Coin[] = [];
+
   constructor(data?: PartialMessage<AddressMetrics>) {
     super();
     proto3.util.initPartial(data, this);
@@ -794,6 +802,7 @@ export class AddressMetrics extends Message<AddressMetrics> {
     { no: 43, name: "maker_volume", kind: "message", T: Coin, repeated: true },
     { no: 50, name: "auctions_created", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 51, name: "auction_volume", kind: "message", T: Coin, repeated: true },
+    { no: 60, name: "affiliate_earned", kind: "message", T: Coin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AddressMetrics {

@@ -899,6 +899,148 @@ def faucet(chainnet):
 
 
 @pytest.fixture(scope="session")
+def alice_sudo_grant(chainnet, faucet):
+    """
+    Grant alice authz permission to call MsgSudo on behalf of gov module.
+
+    After this fixture, alice can execute governance messages via authz exec.
+    Uses an expedited governance proposal to grant the permission.
+    """
+    dysond = chainnet[0]
+
+    alice_info = dysond("keys", "show", "alice")
+    alice_addr = alice_info["address"]
+
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    # Check if grant already exists
+    existing_grants = dysond("query", "authz", "grants", gov_addr, alice_addr)
+    for g in existing_grants.get("grants", []):
+        auth = g.get("authorization", {})
+        if "/dysonprotocol.script.v1.MsgSudo" in str(auth):
+            print(f"Alice already has MsgSudo authz grant from gov")
+            return {"alice_addr": alice_addr, "gov_addr": gov_addr}
+
+    # Submit proposal to grant alice authz for MsgSudo
+    propose_code = """
+from dys import get_script_address, _msg
+
+def propose_sudo_grant(gov_addr):
+    proposal_msg = {
+        "@type": "/cosmos.gov.v1.MsgSubmitProposal",
+        "proposer": get_script_address(),
+        "messages": [
+            {
+                "@type": "/cosmos.authz.v1beta1.MsgGrant",
+                "granter": gov_addr,
+                "grantee": get_script_address(),
+                "grant": {
+                    "authorization": {
+                        "@type": "/cosmos.authz.v1beta1.GenericAuthorization",
+                        "msg": "/dysonprotocol.script.v1.MsgSudo",
+                    }
+                },
+            }
+        ],
+        "initial_deposit": [{"denom": "udys", "amount": "10000000"}],
+        "title": "Grant MsgSudo to alice",
+        "summary": "Allow alice to execute MsgSudo on behalf of gov",
+        "expedited": True,
+    }
+    result = _msg(proposal_msg)
+    return {"proposal_id": result["proposal_id"]}
+"""
+
+    kwargs = json.dumps({"gov_addr": gov_addr})
+    result = dysond(
+        "tx",
+        "script",
+        "exec",
+        "--script-address",
+        alice_addr,
+        "--function-name",
+        "propose_sudo_grant",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        propose_code,
+        "--from",
+        "alice",
+        "--gas",
+        "50000000",
+    )
+
+    assert result.get("code", 1) == 0, f"Proposal submission failed: {result}"
+    print(f"Submitted MsgSudo authz grant proposal")
+
+    # Vote using CLI directly - validator has staked tokens
+    vote_result = dysond(
+        "tx",
+        "gov",
+        "vote",
+        "1",  # proposal_id
+        "yes",
+        "--from",
+        "validator",  # validator key has voting power
+        "--gas",
+        "500000",
+    )
+    assert vote_result.get("code", 1) == 0, f"Vote failed: {vote_result}"
+    print(f"Voted YES on proposal via validator")
+
+    # Extract proposal_id from result events
+    proposal_id = None
+    for event in result.get("events", []):
+        for attr in event.get("attributes", []):
+            if attr.get("key") == "proposal_id":
+                proposal_id = attr.get("value", "").strip('"')
+                break
+        if proposal_id:
+            break
+
+    # Fallback: try to get from script response
+    if not proposal_id:
+        proposal_id = "1"  # First proposal in test genesis
+
+    print(f"Proposal ID: {proposal_id}")
+
+    # Wait for proposal to pass (expedited voting period is 5s in test genesis)
+    def proposal_passed():
+        proposal = dysond("query", "gov", "proposal", proposal_id)
+        status = proposal.get("proposal", {}).get("status", "")
+        return status == "PROPOSAL_STATUS_PASSED"
+
+    utils.poll_until_condition(
+        proposal_passed,
+        timeout=30,
+        poll_interval=1,
+        error_message=f"Proposal {proposal_id} did not pass",
+    )
+
+    print(f"Proposal {proposal_id} passed, checking for authz grant...")
+
+    # Verify authz grant exists
+    def grant_exists():
+        grants = dysond("query", "authz", "grants", gov_addr, alice_addr)
+        for g in grants.get("grants", []):
+            auth = g.get("authorization", {})
+            if "/dysonprotocol.script.v1.MsgSudo" in str(auth):
+                return True
+        return False
+
+    utils.poll_until_condition(
+        grant_exists,
+        timeout=10,
+        poll_interval=1,
+        error_message="Authz grant for MsgSudo not found after proposal passed",
+    )
+
+    print(f"Alice now has MsgSudo authz grant from gov module")
+    return {"alice_addr": alice_addr, "gov_addr": gov_addr}
+
+
+@pytest.fixture(scope="session")
 def api_address(chainnet) -> Dict[str, str]:
     """
     Get the API host string (host:port) from the dysond config.

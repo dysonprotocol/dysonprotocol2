@@ -166,3 +166,23 @@ message EventLeveragePositionPartiallyClosed {
   string new_collateral_ratio = 12 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
   cosmos.base.v1beta1.Coin loss = 13 [ (gogoproto.nullable) = false ];
 }
+
+// ═════════════════════════════════
+// Affiliate Events
+// ═════════════════════════════════
+
+// EventAffiliatePayment is emitted when an affiliate receives a share of
+// arbitrage profit from a transaction with their dysname in the memo.
+message EventAffiliatePayment {
+  // affiliate_name is the dysname from the transaction memo
+  string affiliate_name = 1;
+  // affiliate_addr is the resolved address that received payment
+  string affiliate_addr = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // amount is the coins paid to the affiliate
+  repeated cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  // trade_id is the arbitrage trade that generated the profit
+  uint64 trade_id = 4;
+}
