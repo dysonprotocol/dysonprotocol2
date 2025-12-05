@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"strings"
 	"time"
 
 	"cosmossdk.io/log"
@@ -1053,30 +1052,6 @@ func (ac *ArbitrageContext) simulateMsg(msg *whaleswapv1.MsgMakeTrade) *Arbitrag
 // =============================================================================
 // Helper Functions
 // =============================================================================
-
-// GetAffectedDenomsFromPool extracts denoms from a pool.
-func GetAffectedDenomsFromPool(pool *whaleswapv1.Pool) []string {
-	if pool == nil || len(pool.Coins) != 2 {
-		return nil
-	}
-	return []string{pool.Coins[0].Denom, pool.Coins[1].Denom}
-}
-
-// FormatSwaps formats swap operations for logging.
-func FormatSwaps(ops []whaleswapv1.TradeOperation) string {
-	var parts []string
-	for _, op := range ops {
-		if swap := op.GetSwap(); swap != nil {
-			denomSuffix := swap.SwapIn.Denom
-			if idx := strings.LastIndex(denomSuffix, "/"); idx >= 0 {
-				denomSuffix = denomSuffix[idx+1:]
-			}
-			parts = append(parts, fmt.Sprintf("pool%d:%s%s",
-				swap.PoolId, swap.SwapIn.Amount.String(), denomSuffix))
-		}
-	}
-	return strings.Join(parts, " → ")
-}
 
 // ShouldCheckArbitrage returns true if the message type can affect pool state.
 func ShouldCheckArbitrage(msg sdk.Msg) bool {

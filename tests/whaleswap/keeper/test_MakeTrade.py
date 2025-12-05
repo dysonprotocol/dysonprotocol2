@@ -12,9 +12,7 @@ import pytest
 from deep_parse import deep_parse
 
 
-def test_make_trade_swap_success(
-    chainnet, leverage_accounts, leverage_names_and_coins
-):
+def test_make_trade_swap_success(chainnet, leverage_accounts, leverage_names_and_coins):
     """Test successful trade with swap operation (happy path)."""
     dysond = chainnet[0]
     alice_addr = leverage_accounts["alice"]["addr"]
@@ -467,7 +465,13 @@ def demo_make_trade_invalid_swap_leg(alice_addr):
 def test_make_trade_duplicate_pool_id(
     chainnet, leverage_accounts, leverage_names_and_coins
 ):
-    """Test MakeTrade with duplicate pool_id in operations."""
+    """Test MakeTrade with duplicate pool_id in operations.
+
+    Duplicate pool IDs ARE allowed by design to enable arbitrage cycles
+    (e.g., A->B->C->A where same pool is used in opposite directions).
+    This test verifies that duplicate pool_id swaps work correctly when
+    max_input is set properly.
+    """
     dysond = chainnet[0]
     alice_addr = leverage_accounts["alice"]["addr"]
     foo_name = leverage_names_and_coins["foo_name"]
@@ -520,29 +524,34 @@ def demo_make_trade_duplicate_pool(alice_addr, foo_name, bar_name):
     
     pool_id = pool_result["results"][0]["pool_id"]
     
-    try:
-        # Use same pool_id twice
-        trade_result = _sudo({
-            "@type": "/dysonprotocol.whaleswap.v1.MsgMakeTrade",
-            "trader": alice_addr,
-            "operations": [
-                {
-                    "swap": {
-                        "pool_id": int(pool_id),
-                        "swap_in": {"denom": foo_name, "amount": "1000"}
-                    }
-                },
-                {
-                    "swap": {
-                        "pool_id": int(pool_id),
-                        "swap_in": {"denom": foo_name, "amount": "1000"}
-                    }
+    # Use same pool_id twice - this is ALLOWED for arbitrage cycles
+    # First swap foo->bar, second swap bar->foo (circular)
+    trade_result = _sudo({
+        "@type": "/dysonprotocol.whaleswap.v1.MsgMakeTrade",
+        "trader": alice_addr,
+        "operations": [
+            {
+                "swap": {
+                    "pool_id": int(pool_id),
+                    "swap_in": {"denom": foo_name, "amount": "1000"}
                 }
-            ]
-        })
-        return {"error": "Should have failed"}
-    except Exception as e:
-        return {"error": str(e), "expected": True}
+            },
+            {
+                "swap": {
+                    "pool_id": int(pool_id),
+                    "swap_in": {"denom": bar_name, "amount": "0"}  # Chained: uses output of first swap
+                }
+            }
+        ],
+        "max_input": [{"denom": foo_name, "amount": "1000"}]  # Allow up to 1000 foo input
+    })
+    
+    return {
+        "success": True,
+        "trade_id": trade_result["results"][0].get("trade_id"),
+        "trader_inputs": trade_result["results"][0].get("trader_inputs", []),
+        "trader_outputs": trade_result["results"][0].get("trader_outputs", [])
+    }
 """
 
     kwargs = json.dumps(
@@ -566,11 +575,14 @@ def demo_make_trade_duplicate_pool(alice_addr, foo_name, bar_name):
 
     result = deep_parse(query_result)
     assert isinstance(result, dict), f"Expected dict, got {type(result)}"
-    demo_result = result["result"]["result"]
-    assert "expected" in demo_result, f"Should have failed: {demo_result}"
     assert (
-        "duplicate" in demo_result["error"].lower()
-    ), f"Error should mention duplicate: {demo_result['error']}"
+        query_result.get("exception") is None
+    ), f"Script failed: {query_result.get('exception')}"
+    demo_result = result["result"]["result"]
+    assert demo_result.get("success") is True, f"Trade should succeed: {demo_result}"
+    assert (
+        demo_result.get("trade_id") is not None
+    ), f"Should have trade_id: {demo_result}"
 
 
 def test_make_trade_duplicate_offer_id(
@@ -995,7 +1007,9 @@ def demo_make_trade_self_net_swap_pfand(alice_addr, charlie_addr, foo_name, bar_
     input_map = {coin["denom"]: coin["amount"] for coin in inputs}
     assert "udys" not in input_map, f"udys debits should self-net: {inputs}"
     assert "udys" not in outputs, f"udys credits should self-net: {outputs}"
-    assert demo_result["offer"]["status"] == "closed", "Offer should close and release PFAND"
+    assert (
+        demo_result["offer"]["status"] == "closed"
+    ), "Offer should close and release PFAND"
 
 
 def test_make_trade_self_net_dual_swaps(
@@ -1127,9 +1141,7 @@ def demo_make_trade_self_net_swaps(alice_addr, foo_name, bar_name):
     ), f"Script failed: {query_result.get('exception')}"
 
     trade_result = result["result"]["result"]
-    assert (
-        trade_result.get("trade_id") is not None
-    ), f"Trade ID missing: {trade_result}"
+    assert trade_result.get("trade_id") is not None, f"Trade ID missing: {trade_result}"
 
 
 def test_make_trade_debit_exceeds_cap(
@@ -1339,4 +1351,3 @@ def demo_make_trade_min_output_not_met(alice_addr, foo_name, bar_name):
     assert (
         "min_output" in demo_result["error"].lower()
     ), f"Error should mention min_output: {demo_result['error']}"
-
