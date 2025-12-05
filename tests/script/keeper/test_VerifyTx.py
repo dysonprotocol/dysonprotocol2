@@ -234,6 +234,10 @@ def demo_verify_invalid_sig():
         )
 
         result = deep_parse(query_result)
+        assert (
+            result.get("exception") is None
+        ), f"Script failed with exception: {result.get('exception')}"
+        assert result.get("result") is not None, f"Script returned no result: {result}"
         demo_result = result["result"]["result"]
         assert isinstance(
             demo_result, dict
@@ -292,6 +296,10 @@ def demo_verify_invalid_json():
     )
 
     result = deep_parse(query_result)
+    assert (
+        result.get("exception") is None
+    ), f"Script failed with exception: {result.get('exception')}"
+    assert result.get("result") is not None, f"Script returned no result: {result}"
     demo_result = result["result"]["result"]
     assert isinstance(
         demo_result, dict
@@ -348,6 +356,10 @@ def demo_verify_empty_json():
     )
 
     result = deep_parse(query_result)
+    assert (
+        result.get("exception") is None
+    ), f"Script failed with exception: {result.get('exception')}"
+    assert result.get("result") is not None, f"Script returned no result: {result}"
     demo_result = result["result"]["result"]
     assert isinstance(
         demo_result, dict
@@ -406,6 +418,10 @@ def demo_verify_oversized():
     )
 
     result = deep_parse(query_result)
+    assert (
+        result.get("exception") is None
+    ), f"Script failed with exception: {result.get('exception')}"
+    assert result.get("result") is not None, f"Script returned no result: {result}"
     demo_result = result["result"]["result"]
     assert isinstance(
         demo_result, dict
@@ -459,6 +475,10 @@ def demo_verify_nil_request():
     )
 
     result = deep_parse(query_result)
+    assert (
+        result.get("exception") is None
+    ), f"Script failed with exception: {result.get('exception')}"
+    assert result.get("result") is not None, f"Script returned no result: {result}"
     demo_result = result["result"]["result"]
     assert isinstance(
         demo_result, dict
