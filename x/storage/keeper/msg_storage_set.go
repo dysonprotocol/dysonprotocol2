@@ -17,6 +17,9 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// MaxIndexLength is the maximum allowed length for storage index keys
+const MaxIndexLength = 50
+
 func isPrintableASCII(s string) bool {
 	for _, r := range s {
 		if r < ' ' || r > '~' {
@@ -62,6 +65,10 @@ func (k Keeper) StorageSet(ctx context.Context, msg *storagetypes.MsgStorageSet)
 
 	if msg.Index == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "index cannot be empty")
+	}
+
+	if len(msg.Index) > MaxIndexLength {
+		return nil, status.Errorf(codes.InvalidArgument, "index too long: max %d characters, got %d", MaxIndexLength, len(msg.Index))
 	}
 
 	if !isPrintableASCII(msg.Index) {
@@ -170,4 +177,3 @@ func (k Keeper) StorageSet(ctx context.Context, msg *storagetypes.MsgStorageSet)
 
 	return &storagetypes.MsgStorageSetResponse{}, nil
 }
-

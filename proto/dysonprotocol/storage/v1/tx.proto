@@ -103,8 +103,8 @@ message MsgStorageSet {
   // Account address that owns the storage entry; must be a valid bech32
   // address.
   string owner = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  // Index key for the storage entry; must be non-empty and printable ASCII
-  // only.
+  // Index key for the storage entry; must be non-empty, max 50 characters,
+  // and printable ASCII only.
   string index = 2;
   // JSON data to store; size limited by MaxStorageSize parameter.
   string data = 3;
