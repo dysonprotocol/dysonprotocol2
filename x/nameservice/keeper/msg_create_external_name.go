@@ -12,7 +12,14 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// CreateExternalName implements the MsgServer.CreateExternalName method
+// CreateExternalName implements the MsgServer.CreateExternalName method.
+// This is a governance-only operation that creates a "bridged name" - a name NFT
+// representing an external domain (e.g., example.com) or even a .dys name that
+// bypasses the normal commit-reveal registration process.
+//
+// Note: .dys suffix names ARE allowed here intentionally. This enables governance
+// to create reserved names (e.g., "dys.dys", "protocol.dys") without going through
+// the standard registration flow. The ExternalNameRegex is a superset of NameRegex.
 func (k Keeper) CreateExternalName(ctx context.Context, msg *nameservicev1.MsgCreateExternalName) (*nameservicev1.MsgCreateExternalNameResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
@@ -26,7 +33,8 @@ func (k Keeper) CreateExternalName(ctx context.Context, msg *nameservicev1.MsgCr
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "name cannot be empty")
 	}
 
-	// Validate name format using ExternalNameRegex
+	// Validate name format using ExternalNameRegex (superset of NameRegex)
+	// This allows both external domains (example.com) and .dys names (reserved.dys)
 	if !nameservicev1.ExternalNameRegex.MatchString(msg.Name) {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid external name format: must be lowercase alphanumeric with optional dashes (e.g., example.com, sub.domain.org, example)")
 	}

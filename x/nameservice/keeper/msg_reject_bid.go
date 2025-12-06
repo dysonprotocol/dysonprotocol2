@@ -258,18 +258,21 @@ func (k Keeper) RejectBid(ctx context.Context, msg *nameservicev1.MsgRejectBid) 
 	}
 
 	// --- Bid ledger update: mark active bid as REJECTED, record fee, clear active index ---
-	if bidID, err := k.activeBidForNFT.Get(ctx, collections.Join(msg.NftClassId, msg.NftId)); err == nil {
-		rec, gErr := k.bids.Get(ctx, bidID)
-		if gErr == nil {
-			rec.Status = nameservicev1.BidStatus_BID_REJECTED
-			rec.RejectionFee = totalFeeCoins
-			if err := k.bids.Set(ctx, bidID, rec); err != nil {
-				return nil, cosmossdkerrors.Wrap(err, "failed to update bid status")
-			}
-		}
-		if err := k.activeBidForNFT.Remove(ctx, collections.Join(msg.NftClassId, msg.NftId)); err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to remove active bid index")
-		}
+	bidID, err := k.activeBidForNFT.Get(ctx, collections.Join(msg.NftClassId, msg.NftId))
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "failed to get active bid ID for NFT %s/%s", msg.NftClassId, msg.NftId)
+	}
+	rec, err := k.bids.Get(ctx, bidID)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "failed to get bid record %d", bidID)
+	}
+	rec.Status = nameservicev1.BidStatus_BID_REJECTED
+	rec.RejectionFee = totalFeeCoins
+	if err := k.bids.Set(ctx, bidID, rec); err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "failed to update bid record %d", bidID)
+	}
+	if err := k.activeBidForNFT.Remove(ctx, collections.Join(msg.NftClassId, msg.NftId)); err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "failed to remove active bid index for NFT %s/%s", msg.NftClassId, msg.NftId)
 	}
 
 	// Emit an event

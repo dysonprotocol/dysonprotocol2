@@ -121,15 +121,10 @@ func (k Keeper) SetValuation(ctx context.Context, msg *nameservicev1.MsgSetValua
 		incrementalValuation := newValuation.Sub(oldValuation...)
 
 		// Get current and expiry time
+		// Note: remainingSeconds is guaranteed positive due to expiry check at function start (line 58)
 		currentTime := sdkCtx.BlockTime()
 		expiryTime := nftData.ValuationExpiry
-
-		// Calculate time proportion using class valuation_period (defaults handled elsewhere)
 		remainingSeconds := expiryTime.Unix() - currentTime.Unix()
-		if remainingSeconds <= 0 {
-			k.Logger.Info("SetValuation: Valuation already expired, skipping fee calculation")
-			remainingSeconds = 0
-		}
 		periodSeconds := int64(classData.ValuationPeriod.Seconds())
 		if periodSeconds <= 0 {
 			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "valuation_period not set for class %s", msg.NftClassId)
@@ -206,16 +201,9 @@ func (k Keeper) SetValuation(ctx context.Context, msg *nameservicev1.MsgSetValua
 	}
 
 	// Update NFT data
+	// Note: expiry is preserved as-is. Use MsgRenew to extend expiry.
+	// The expiry check at function start ensures expiry is not zero/past.
 	nftData.Valuation = msg.Valuation
-	// Keep the same expiry time - we're just updating the valuation, not extending
-	// However, if expiry time is zero (unset), set it to 1 year from now
-	if nftData.ValuationExpiry.IsZero() {
-		nftData.ValuationExpiry = sdkCtx.BlockTime().AddDate(1, 0, 0) // 1 year from now
-		k.Logger.Info("SetValuation: Setting initial valuation expiry",
-			"class_id", msg.NftClassId,
-			"nft_id", msg.NftId,
-			"expiry", nftData.ValuationExpiry.String())
-	}
 
 	// Update the NFT data
 	if err := k.SetNFTData(ctx, msg.NftClassId, msg.NftId, nftData); err != nil {

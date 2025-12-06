@@ -10,27 +10,22 @@ func TestParseAffiliateName(t *testing.T) {
 		memo     string
 		expected string
 	}{
-		// Valid cases - must match nameservice regex: ^[a-z]([-a-z0-9]*[a-z0-9])?\.dys$
+		// Accepted - has .dys suffix (resolution will validate further)
 		{name: "valid dysname", memo: "alice.dys", expected: "alice.dys"},
 		{name: "uppercase dysname", memo: "ALICE.DYS", expected: "alice.dys"},
 		{name: "mixed case", memo: "AlIcE.DyS", expected: "alice.dys"},
 		{name: "with spaces", memo: "  alice.dys  ", expected: "alice.dys"},
 		{name: "with numbers", memo: "test123.dys", expected: "test123.dys"},
 		{name: "with dash", memo: "my-name.dys", expected: "my-name.dys"},
-		{name: "single letter", memo: "a.dys", expected: "a.dys"},
-		{name: "letter and number", memo: "a1.dys", expected: "a1.dys"},
+		{name: "only .dys", memo: ".dys", expected: ".dys"},                          // resolution will fail
+		{name: "starts with number", memo: "123abc.dys", expected: "123abc.dys"},     // resolution will fail
+		{name: "subdomain dots", memo: "sub.domain.dys", expected: "sub.domain.dys"}, // resolution will fail
 
-		// Invalid cases - rejected by nameservice regex
+		// Rejected - no .dys suffix
 		{name: "empty memo", memo: "", expected: ""},
 		{name: "no .dys suffix", memo: "alice", expected: ""},
 		{name: "wrong suffix .com", memo: "alice.com", expected: ""},
 		{name: "wrong suffix .eth", memo: "alice.eth", expected: ""},
-		{name: "only .dys", memo: ".dys", expected: ""},                // must start with letter
-		{name: "starts with number", memo: "123abc.dys", expected: ""}, // must start with letter
-		{name: "starts with dash", memo: "-alice.dys", expected: ""},   // must start with letter
-		{name: "ends with dash", memo: "alice-.dys", expected: ""},     // must end with alphanumeric
-		{name: "subdomain dots", memo: "sub.domain.dys", expected: ""}, // dots not allowed in name part
-		{name: "underscore", memo: "alice_bob.dys", expected: ""},      // underscore not allowed
 		{name: "just spaces", memo: "   ", expected: ""},
 		{name: "too long", memo: string(make([]byte, 200)), expected: ""},
 	}
@@ -46,27 +41,18 @@ func TestParseAffiliateName(t *testing.T) {
 }
 
 func TestParseAffiliateNameEdgeCases(t *testing.T) {
-	// Test max length with valid characters (a + 122 alphanumeric + .dys = 127 chars)
-	// Nameservice regex requires: start with letter, alphanumeric/dash middle, end with alphanumeric
-	longName := "a" + string(makeAlphanumeric(122)) + ".dys" // 1 + 122 + 4 = 127
+	// Test exactly 128 chars (max allowed)
+	longName := string(make([]byte, 124)) + ".dys" // 124 + 4 = 128
 	result := ParseAffiliateName(longName)
+	// Returns lowercased version (null bytes become valid after ToLower)
 	if result == "" {
-		t.Errorf("ParseAffiliateName with valid 127-char name should succeed, got empty")
+		t.Errorf("ParseAffiliateName with 128 chars should return non-empty")
 	}
 
-	// Test that length limit still applies
-	tooLong := "a" + string(makeAlphanumeric(130)) + ".dys" // > 128
+	// Test 129 chars (too long)
+	tooLong := string(make([]byte, 125)) + ".dys" // > 128
 	result = ParseAffiliateName(tooLong)
 	if result != "" {
 		t.Errorf("ParseAffiliateName with >128 chars should fail, got %q", result)
 	}
-}
-
-// makeAlphanumeric creates a byte slice of lowercase letters/numbers
-func makeAlphanumeric(n int) []byte {
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = 'a' + byte(i%26)
-	}
-	return b
 }

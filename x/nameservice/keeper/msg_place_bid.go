@@ -296,17 +296,26 @@ func (k Keeper) PlaceBid(ctx context.Context, msg *nameservicev1.MsgPlaceBid) (*
 	if err := k.bids.Set(ctx, newBidID, bidRecord); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to store bid record")
 	}
-	_ = k.bidsByBidder.Set(ctx, collections.Join(msg.Bidder, newBidID), newBidID)
-	_ = k.bidsByNFT.Set(ctx, collections.Join3(msg.NftClassId, msg.NftId, newBidID), newBidID)
-	_ = k.activeBidForNFT.Set(ctx, collections.Join(msg.NftClassId, msg.NftId), newBidID)
+	if err := k.bidsByBidder.Set(ctx, collections.Join(msg.Bidder, newBidID), newBidID); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update bidsByBidder index")
+	}
+	if err := k.bidsByNFT.Set(ctx, collections.Join3(msg.NftClassId, msg.NftId, newBidID), newBidID); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update bidsByNFT index")
+	}
+	if err := k.activeBidForNFT.Set(ctx, collections.Join(msg.NftClassId, msg.NftId), newBidID); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to update activeBidForNFT index")
+	}
 
 	// If there was a previous active bid for this NFT, mark it as outbid and link
 	if hadPrev {
 		prev, err := k.bids.Get(ctx, prevActiveBidID)
-		if err == nil {
-			prev.Status = nameservicev1.BidStatus_BID_OUTBID
-			prev.ReplacedByBidId = newBidID
-			_ = k.bids.Set(ctx, prevActiveBidID, prev)
+		if err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to get previous bid record %d", prevActiveBidID)
+		}
+		prev.Status = nameservicev1.BidStatus_BID_OUTBID
+		prev.ReplacedByBidId = newBidID
+		if err := k.bids.Set(ctx, prevActiveBidID, prev); err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to update previous bid record %d", prevActiveBidID)
 		}
 	}
 

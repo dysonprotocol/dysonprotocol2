@@ -174,6 +174,129 @@ def test_claim_before_timeout_fails(chainnet, generate_account, faucet, register
     assert nft_info["owner"] == alice_address
 
 
+def test_claim_after_timeout_community_pool_fee(
+    chainnet, generate_account, faucet, register_name
+):
+    """Test ClaimBid fee routing for governance-owned class (nameservice.dys).
+
+    When claiming a bid on a .dys name (nameservice.dys class), the fee goes to
+    the community pool since governance owns that class. We verify this by checking
+    that Alice receives (bid - fee), not the full bid amount.
+    """
+    dysond_bin = chainnet[0]
+    [alice_name, alice_address] = generate_account("alice")
+    faucet(alice_address, denom="udys", amount="25000")
+
+    [bob_name, bob_address] = generate_account("bob")
+    faucet(bob_address, denom="udys", amount="1000")
+
+    # Register a .dys name (this creates NFT in governance-owned nameservice.dys class)
+    # Using low valuation so we can bid higher and trigger surplus fee
+    dys_name = register_name(dysond_bin, alice_name, alice_address, "100udys")
+    class_id = "nameservice.dys"
+    nft_id = dys_name  # The NFT ID is the name itself
+
+    # Record Alice's initial balance (she's the name owner/seller)
+    alice_bal_before = dysond_bin("query", "bank", "balances", alice_address)
+    alice_coins_before = {
+        b["denom"]: int(b["amount"]) for b in alice_bal_before.get("balances", [])
+    }
+    alice_udys_before = alice_coins_before.get("udys", 0)
+
+    # Place a bid from Bob (higher than valuation to trigger surplus fee)
+    # Bid 500 vs valuation 100, so surplus = 400
+    bid_amount = "500udys"
+    print(f"Placing bid of {bid_amount} from Bob on {dys_name}")
+    bid_result = dysond_bin(
+        "tx",
+        "nameservice",
+        "place-bid",
+        "--nft-class-id",
+        class_id,
+        "--nft-id",
+        nft_id,
+        "--bid-amount",
+        bid_amount,
+        "--from",
+        bob_name,
+        "--keyring-backend",
+        "test",
+        "--yes",
+    )
+    assert bid_result["code"] == 0, bid_result["raw_log"]
+
+    # Wait for bid timeout to elapse
+    # Default nameservice.dys timeout is ~2s. With ~500ms block time, wait for >= 6 blocks.
+    bid_block_height = int(bid_result["height"])
+
+    def timeout_elapsed():
+        out = dysond_bin("query", "block")
+        current_block = int(out["header"]["height"])
+        return (current_block - bid_block_height) >= 6
+
+    utils.poll_until_condition(
+        timeout_elapsed, timeout=15, error_message="Bid timeout did not elapse"
+    )
+
+    print(f"Attempting to claim after timeout (should succeed)")
+    claim_result = dysond_bin(
+        "tx",
+        "nameservice",
+        "claim-bid",
+        "--nft-class-id",
+        class_id,
+        "--nft-id",
+        nft_id,
+        "--from",
+        bob_name,
+        "--keyring-backend",
+        "test",
+        "--yes",
+    )
+    print(f"Claim result: {claim_result}")
+
+    assert (
+        claim_result["code"] == 0
+    ), f"Expected claim transaction to succeed, but got error: {claim_result.get('raw_log', 'Unknown error')}"
+
+    # Alice should receive (bid - fee), not the full 500
+    # Fee = surplus_fee + renewal_fee
+    # surplus_fee = (500 - 100) * 0.01 * remaining/period ≈ 4
+    # renewal_fee = 500 * 0.01 = 5
+    # So Alice should receive ~491 (500 - 9)
+    alice_bal_after = dysond_bin("query", "bank", "balances", alice_address)
+    alice_coins_after = {
+        b["denom"]: int(b["amount"]) for b in alice_bal_after.get("balances", [])
+    }
+    alice_udys_after = alice_coins_after.get("udys", 0)
+    alice_received = alice_udys_after - alice_udys_before
+    print(
+        f"Alice: before={alice_udys_before}, after={alice_udys_after}, received={alice_received}"
+    )
+
+    # Alice should receive between 450 and 500 (bid minus fee)
+    # Not exactly 500 proves fee was deducted
+    assert (
+        alice_received > 450
+    ), f"Alice should have received ~491, but received {alice_received}"
+    assert (
+        alice_received < 500
+    ), f"Alice should have received less than 500 (fee deducted), but received {alice_received}"
+
+    fee_amount = 500 - alice_received
+    print(
+        f"Fee deducted: {fee_amount}udys (routed to community pool for gov-owned class)"
+    )
+
+    # Verify that Bob now owns the name
+    owner_result = dysond_bin(
+        "query", "nft", "owner", class_id, nft_id, "--output", "json"
+    )
+    assert (
+        owner_result["owner"] == bob_address
+    ), f"Expected Bob to own the NFT, but owner is {owner_result['owner']}"
+
+
 def test_claim_after_timeout_succeeds(
     chainnet, generate_account, faucet, register_name
 ):

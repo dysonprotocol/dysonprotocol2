@@ -35,7 +35,7 @@ func (k Keeper) SetDestination(ctx context.Context, msg *nameservicev1.MsgSetDes
 	oldDestination := nameNFT.Uri
 	k.Logger.Info("SetDestination: Current destination", "name", msg.Name, "old_destination", oldDestination, "new_destination", msg.Destination)
 
-	// Validate the destination before updating
+	// Validate the destination BEFORE updating the NFT
 	if msg.Destination != "" {
 		// Check if destination is a valid bech32 address
 		_, err := sdk.AccAddressFromBech32(msg.Destination)
@@ -49,26 +49,52 @@ func (k Keeper) SetDestination(ctx context.Context, msg *nameservicev1.MsgSetDes
 				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "destination must be a valid bech32 address or existing name")
 			}
 			k.Logger.Info("SetDestination: Destination is an existing name", "destination", msg.Destination)
+
+			// Verify the destination name chain resolves properly and doesn't create a cycle
+			// Check for self-reference
+			if msg.Destination == msg.Name {
+				k.Logger.Error("SetDestination: Self-reference detected", "name", msg.Name)
+				return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "name cannot point to itself")
+			}
+
+			// Check that the destination chain resolves and doesn't include this name (circular)
+			visited := map[string]bool{msg.Name: true} // Include source name to detect cycles
+			current := msg.Destination
+			for i := 0; i < 10; i++ {
+				if visited[current] {
+					k.Logger.Error("SetDestination: Circular reference detected", "name", msg.Name, "destination", msg.Destination, "cycle_at", current)
+					return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "destination creates circular name chain")
+				}
+				visited[current] = true
+
+				// Check if current resolves to an address (terminal)
+				if _, addrErr := sdk.AccAddressFromBech32(current); addrErr == nil {
+					break // Reached a terminal address
+				}
+
+				// Get the next hop
+				destNFT, destFound := k.nftKeeper.GetNFT(ctx, NamesClassID, current)
+				if !destFound {
+					k.Logger.Error("SetDestination: Name in chain not found", "name", current)
+					return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "destination chain contains unresolvable name")
+				}
+				if destNFT.Uri == "" {
+					k.Logger.Error("SetDestination: Name in chain has no destination", "name", current)
+					return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "destination chain contains name with no destination")
+				}
+				current = destNFT.Uri
+			}
+			k.Logger.Info("SetDestination: Destination chain validated", "name", msg.Name, "destination", msg.Destination)
 		} else {
 			k.Logger.Info("SetDestination: Destination is a valid bech32 address", "destination", msg.Destination)
 		}
 	}
 
-	// Update the NFT
+	// Update the NFT (validation passed)
 	nameNFT.Uri = msg.Destination
 	if err := k.nftKeeper.Update(ctx, nameNFT); err != nil {
 		k.Logger.Error("SetDestination: Failed to update NFT", "name", msg.Name, "error", err)
 		return nil, cosmossdkerrors.Wrap(err, "failed to update NFT")
-	}
-
-	// Verify that the updated name can be resolved properly
-	if msg.Destination != "" {
-		_, err := k.ResolveNameOrAddress(ctx, msg.Name)
-		if err != nil {
-			k.Logger.Error("SetDestination: Name resolution failed after update", "name", msg.Name, "destination", msg.Destination, "error", err)
-			return nil, cosmossdkerrors.Wrap(err, "destination creates unresolvable name chain")
-		}
-		k.Logger.Info("SetDestination: Name resolution verified", "name", msg.Name, "destination", msg.Destination)
 	}
 
 	// Update reverse mappings

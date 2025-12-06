@@ -5,24 +5,22 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
-	nameservicetypes "dysonprotocol.com/x/nameservice/types"
 	whaleswap "dysonprotocol.com/x/whaleswap"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const maxAffiliateNameLen = 128
 
-// ParseAffiliateName extracts and validates an affiliate dysname from a memo.
-// Returns empty string if memo is empty, too long, or not a valid dysname format.
-// Uses nameservice.NameRegex to ensure only resolvable names are attempted.
+// ParseAffiliateName extracts a potential affiliate dysname from a memo.
+// Returns empty string if memo is empty, too long, or doesn't end with .dys.
+// Resolution will determine if the name is actually valid.
 func ParseAffiliateName(memo string) string {
 	memo = strings.TrimSpace(memo)
 	if memo == "" || len(memo) > maxAffiliateNameLen {
 		return ""
 	}
 	lower := strings.ToLower(memo)
-	// Validate against nameservice regex: ^[a-z]([-a-z0-9]*[a-z0-9])?\.dys$
-	if !nameservicetypes.NameRegex.MatchString(lower) {
+	if !strings.HasSuffix(lower, ".dys") {
 		return ""
 	}
 	return lower
