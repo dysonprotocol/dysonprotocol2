@@ -227,7 +227,7 @@ I'll add the SetSubscription helper and enforce index consistency, implement eve
 
 - Implemented SetSubscription and used it throughout for index consistency.
 - Added event→kwargs merge: normalized event is now merged under kwargs.event when scheduling tasks.
-- Added pre-expiry check in the event loop; set status to "expired" with status_message.
+- Added pre-expiry check in the event loop; set status to "disabled" with status_message.
 - Autocli: added Query and Tx entries for subscriptions (by-id, by-creator, all; create/delete/renew).
 
 Next:

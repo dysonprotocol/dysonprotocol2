@@ -11,7 +11,7 @@
                     },
                     "index": {
                         "type": "string",
-                        "description": "Index key for the storage entry; must be non-empty and printable ASCII only."
+                        "description": "Index key for the storage entry; must be non-empty, max 50 characters, and printable ASCII only."
                     },
                     "data": {
                         "type": "string",

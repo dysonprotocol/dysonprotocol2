@@ -150,7 +150,7 @@
     "dysonprotocol.crontask.v1.MsgRenewSubscription": {
       "post": {
         "summary": "RenewSubscription extends subscription expiry and recharges the fee.",
-        "description": "Behavior:\n- Extends subscription expiry to current time + max_subscription_duration.\n- Recharges the task gas fee from creator to fee_collector.\n- Re-enables expired subscriptions if they were in \"expired\" status.\n- Enforces minimum stake requirements before renewal.\n\nValidation:\n- Creator address must be valid.\n- Subscription must exist.\n- Creator must match the subscription's creator field.\n- Creator must have sufficient bonded stake if MinStakePerSubscription is\nconfigured.\n\nEmits:\n- No events are emitted for renewal (subscription remains active).\n\nReturns:\n- Empty MsgRenewSubscriptionResponse.",
+        "description": "Behavior:\n- Extends subscription expiry to current time + max_subscription_duration.\n- Recharges the task gas fee from creator to fee_collector.\n- Re-enables \"disabled\" subscriptions (time-expired or insufficient funds).\n- Does NOT re-enable \"error\" subscriptions (unrecoverable issues).\n- Enforces minimum stake requirements before renewal.\n\nValidation:\n- Creator address must be valid.\n- Subscription must exist.\n- Creator must match the subscription's creator field.\n- Creator must have sufficient bonded stake if MinStakePerSubscription is\nconfigured.\n\nEmits:\n- No events are emitted for renewal (subscription remains active).\n\nReturns:\n- Empty MsgRenewSubscriptionResponse.",
         "operationId": "dysonprotocol.crontask.v1.MsgRenewSubscription",
         "responses": {
           "200": {
@@ -375,7 +375,7 @@
           "description": "Unique identifier of the subscription to renew."
         }
       },
-      "description": "MsgRenewSubscription extends subscription expiry and recharges the fee.\n\nBehavior:\n- Extends subscription expiry to current time + max_subscription_duration.\n- Recharges the task gas fee from creator to fee_collector.\n- Re-enables expired subscriptions if they were in \"expired\" status.\n- Enforces minimum stake requirements before renewal.\n\nValidation:\n- Creator address must be valid.\n- Subscription must exist.\n- Creator must match the subscription's creator field.\n- Creator must have sufficient bonded stake if MinStakePerSubscription is\nconfigured.\n\nEmits:\n- No events are emitted for renewal (subscription remains active).\n\nReturns:\n- Empty MsgRenewSubscriptionResponse."
+      "description": "MsgRenewSubscription extends subscription expiry and recharges the fee.\n\nBehavior:\n- Extends subscription expiry to current time + max_subscription_duration.\n- Recharges the task gas fee from creator to fee_collector.\n- Re-enables \"disabled\" subscriptions (time-expired or insufficient funds).\n- Does NOT re-enable \"error\" subscriptions (unrecoverable issues).\n- Enforces minimum stake requirements before renewal.\n\nValidation:\n- Creator address must be valid.\n- Subscription must exist.\n- Creator must match the subscription's creator field.\n- Creator must have sufficient bonded stake if MinStakePerSubscription is\nconfigured.\n\nEmits:\n- No events are emitted for renewal (subscription remains active).\n\nReturns:\n- Empty MsgRenewSubscriptionResponse."
     },
     "dysonprotocol.crontask.v1.MsgRenewSubscriptionResponse": {
       "type": "object",

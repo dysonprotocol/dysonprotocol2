@@ -77,7 +77,12 @@ export class Subscription extends Message<Subscription> {
   taskGasFee?: Coin;
 
   /**
-   * status: enabled|disabled|error|expired
+   * status: enabled|disabled|error
+   * - enabled: Active, processing events.
+   * - disabled: Recoverable pause (time expired, insufficient funds) - can be
+   * re-enabled via RenewSubscription.
+   * - error: Unrecoverable (invalid address, task creation failed) - cannot be
+   * re-enabled.
    *
    * @generated from field: string status = 10;
    */

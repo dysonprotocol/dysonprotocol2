@@ -2821,8 +2821,8 @@ type MsgStorageSet struct {
 	// Account address that owns the storage entry; must be a valid bech32
 	// address.
 	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
-	// Index key for the storage entry; must be non-empty and printable ASCII
-	// only.
+	// Index key for the storage entry; must be non-empty, max 50 characters,
+	// and printable ASCII only.
 	Index string `protobuf:"bytes,2,opt,name=index,proto3" json:"index,omitempty"`
 	// JSON data to store; size limited by MaxStorageSize parameter.
 	Data string `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`

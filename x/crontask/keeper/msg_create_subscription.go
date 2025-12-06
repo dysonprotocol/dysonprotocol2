@@ -20,6 +20,11 @@ import (
 //   - Minifies JSON args/kwargs for storage efficiency.
 //   - Initializes subscription with "enabled" status and zero trigger count.
 //
+// Subscription Status Values:
+//   - "enabled": Active, processing events.
+//   - "disabled": Recoverable pause (time expired, insufficient funds) - can be re-enabled via RenewSubscription.
+//   - "error": Unrecoverable (invalid address, task creation failed) - cannot be re-enabled, must delete and recreate.
+//
 // Validation:
 //   - Creator address must be valid.
 //   - Script address must be valid and non-empty.

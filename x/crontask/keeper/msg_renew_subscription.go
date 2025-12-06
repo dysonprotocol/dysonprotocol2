@@ -14,8 +14,14 @@ import (
 // Semantics:
 //   - Extends subscription expiry to current time + max_subscription_duration.
 //   - Recharges the task gas fee from creator to fee_collector.
-//   - Re-enables expired subscriptions if they were in "expired" status.
+//   - Re-enables "disabled" subscriptions (time-expired or insufficient funds).
+//   - Does NOT re-enable "error" subscriptions (unrecoverable issues like invalid address or task creation failure).
 //   - Enforces minimum stake requirements before renewal.
+//
+// Subscription Status Values:
+//   - "enabled": Active, processing events.
+//   - "disabled": Recoverable pause (time expired, insufficient funds) - can be re-enabled via Renew.
+//   - "error": Unrecoverable (invalid address, task creation failed) - cannot be re-enabled.
 //
 // Validation:
 //   - Creator address must be valid.
@@ -26,7 +32,7 @@ import (
 // State Updates:
 //   - Updates subscription expiry timestamp.
 //   - Recharges gas fee from creator to fee_collector.
-//   - Changes status from "expired" to "enabled" if previously expired.
+//   - Changes status from "disabled" to "enabled" if previously disabled.
 //
 // Emits:
 //   - No events are emitted for renewal (subscription remains active).
@@ -85,7 +91,9 @@ func (k Keeper) RenewSubscription(ctx context.Context, msg *crontasktypes.MsgRen
 		return nil, errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "fee deduction failed: %s", err)
 	}
 	sub.ExpiryTimestamp = sdkCtx.BlockTime().Add(params.MaxSubscriptionDuration).Unix()
-	if sub.Status == "expired" {
+	// Re-enable "disabled" subscriptions (time-expired or insufficient funds).
+	// "error" subscriptions remain in error state - they require deletion and recreation.
+	if sub.Status == "disabled" {
 		sub.Status = "enabled"
 		sub.StatusMessage = "renewed"
 	}

@@ -17,7 +17,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "title": "Msg Renew Subscription",
-                "description": "MsgRenewSubscription extends subscription expiry and recharges the fee. Behavior: - Extends subscription expiry to current time + max_subscription_duration. - Recharges the task gas fee from creator to fee_collector. - Re-enables expired subscriptions if they were in \"expired\" status. - Enforces minimum stake requirements before renewal. Validation: - Creator address must be valid. - Subscription must exist. - Creator must match the subscription's creator field. - Creator must have sufficient bonded stake if MinStakePerSubscription is configured. Emits: - No events are emitted for renewal (subscription remains active). Returns: - Empty MsgRenewSubscriptionResponse."
+                "description": "MsgRenewSubscription extends subscription expiry and recharges the fee. Behavior: - Extends subscription expiry to current time + max_subscription_duration. - Recharges the task gas fee from creator to fee_collector. - Re-enables \"disabled\" subscriptions (time-expired or insufficient funds). - Does NOT re-enable \"error\" subscriptions (unrecoverable issues). - Enforces minimum stake requirements before renewal. Validation: - Creator address must be valid. - Subscription must exist. - Creator must match the subscription's creator field. - Creator must have sufficient bonded stake if MinStakePerSubscription is configured. Emits: - No events are emitted for renewal (subscription remains active). Returns: - Empty MsgRenewSubscriptionResponse."
             }
         }
     },

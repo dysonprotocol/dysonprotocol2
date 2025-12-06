@@ -252,26 +252,24 @@ func (k Keeper) HandleBlockEvents(ctx sdk.Context, allEvents []abci.Event) {
 			continue
 		}
 
-		// Preemptively expire subscriptions past their expiry_timestamp
+		// Disable subscriptions past their expiry_timestamp (recoverable via RenewSubscription)
 		if sub.ExpiryTimestamp > 0 && sub.ExpiryTimestamp <= now {
-
-			sub.Status = "expired"
+			sub.Status = "disabled"
 			sub.StatusMessage = fmt.Sprintf("expired at [%d]", sub.ExpiryTimestamp)
 			if err := k.Subscriptions.Set(ctx, sub.SubscriptionId, sub); err != nil {
-				k.Logger.Error("failed to mark subscription expired", "id", id, "err", err)
+				k.Logger.Error("failed to mark subscription disabled (expired)", "id", id, "err", err)
 			}
 			continue
 		}
 
-		// Preemptively disable if creator lacks balance for fee
+		// Mark as error if creator address is invalid (unrecoverable - data corruption)
 		creatorAddr, addrErr := sdk.AccAddressFromBech32(sub.Creator)
 		if addrErr != nil {
-			k.Logger.Error("invalid creator address in subscription; disabling", "id", id, "err", addrErr)
-
-			sub.Status = "disabled"
+			k.Logger.Error("invalid creator address in subscription; marking as error", "id", id, "err", addrErr)
+			sub.Status = "error"
 			sub.StatusMessage = "invalid creator address"
 			if err := k.Subscriptions.Set(ctx, sub.SubscriptionId, sub); err != nil {
-				k.Logger.Error("failed to persist disabled subscription", "id", id, "err", err)
+				k.Logger.Error("failed to persist error subscription", "id", id, "err", err)
 			}
 			continue
 		}
@@ -292,7 +290,7 @@ func (k Keeper) HandleBlockEvents(ctx sdk.Context, allEvents []abci.Event) {
 			continue
 		}
 
-		// Check balance upfront for ALL matches - require full coverage or disable
+		// Check balance upfront for ALL matches - require full coverage or disable (recoverable via RenewSubscription)
 		totalRequired := sub.TaskGasFee.Amount.MulRaw(int64(len(matches)))
 		balance := k.bankKeeper.GetBalance(ctx, creatorAddr, sub.TaskGasFee.Denom)
 		if balance.Amount.LT(totalRequired) {
@@ -321,9 +319,9 @@ func (k Keeper) HandleBlockEvents(ctx sdk.Context, allEvents []abci.Event) {
 			}
 			if err := k.createTaskForSubscriptionWithNormalized(ctx, sub, matched); err != nil {
 				k.Logger.Error("failed to create task for subscription", "id", id, "err", err)
-				// Disable subscription on task creation failure.
+				// Mark as error on task creation failure (unrecoverable - likely config issue).
 				// The outer persist at the end of the loop will save this status.
-				sub.Status = "disabled"
+				sub.Status = "error"
 				sub.StatusMessage = fmt.Sprintf("task creation error: %v", err)
 				break
 			}

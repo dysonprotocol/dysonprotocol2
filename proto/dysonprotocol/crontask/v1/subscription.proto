@@ -36,7 +36,12 @@ message Subscription {
   // fee for the created crontask; also charged at subscription creation/renewal
   cosmos.base.v1beta1.Coin task_gas_fee = 9 [ (gogoproto.nullable) = false ];
 
-  // status: enabled|disabled|error|expired
+  // status: enabled|disabled|error
+  // - enabled: Active, processing events.
+  // - disabled: Recoverable pause (time expired, insufficient funds) - can be
+  // re-enabled via RenewSubscription.
+  // - error: Unrecoverable (invalid address, task creation failed) - cannot be
+  // re-enabled.
   string status = 10;
 
   // status message

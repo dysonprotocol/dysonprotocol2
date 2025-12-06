@@ -725,7 +725,8 @@ var xxx_messageInfo_MsgDeleteSubscriptionResponse proto.InternalMessageInfo
 // Behavior:
 // - Extends subscription expiry to current time + max_subscription_duration.
 // - Recharges the task gas fee from creator to fee_collector.
-// - Re-enables expired subscriptions if they were in "expired" status.
+// - Re-enables "disabled" subscriptions (time-expired or insufficient funds).
+// - Does NOT re-enable "error" subscriptions (unrecoverable issues).
 // - Enforces minimum stake requirements before renewal.
 //
 // Validation:
@@ -1049,7 +1050,8 @@ type MsgClient interface {
 	// Behavior:
 	// - Extends subscription expiry to current time + max_subscription_duration.
 	// - Recharges the task gas fee from creator to fee_collector.
-	// - Re-enables expired subscriptions if they were in "expired" status.
+	// - Re-enables "disabled" subscriptions (time-expired or insufficient funds).
+	// - Does NOT re-enable "error" subscriptions (unrecoverable issues).
 	// - Enforces minimum stake requirements before renewal.
 	//
 	// Validation:
@@ -1259,7 +1261,8 @@ type MsgServer interface {
 	// Behavior:
 	// - Extends subscription expiry to current time + max_subscription_duration.
 	// - Recharges the task gas fee from creator to fee_collector.
-	// - Re-enables expired subscriptions if they were in "expired" status.
+	// - Re-enables "disabled" subscriptions (time-expired or insufficient funds).
+	// - Does NOT re-enable "error" subscriptions (unrecoverable issues).
 	// - Enforces minimum stake requirements before renewal.
 	//
 	// Validation:

@@ -1440,7 +1440,20 @@ paths:
                         subscription creation/renewal
                     status:
                       type: string
-                      title: 'status: enabled|disabled|error|expired'
+                      description: >-
+                        status: enabled|disabled|error
+
+                        - enabled: Active, processing events.
+
+                        - disabled: Recoverable pause (time expired,
+                        insufficient funds) - can be
+
+                        re-enabled via RenewSubscription.
+
+                        - error: Unrecoverable (invalid address, task creation
+                        failed) - cannot be
+
+                        re-enabled.
                     status_message:
                       type: string
                       title: status message
@@ -1629,7 +1642,20 @@ paths:
                         subscription creation/renewal
                     status:
                       type: string
-                      title: 'status: enabled|disabled|error|expired'
+                      description: >-
+                        status: enabled|disabled|error
+
+                        - enabled: Active, processing events.
+
+                        - disabled: Recoverable pause (time expired,
+                        insufficient funds) - can be
+
+                        re-enabled via RenewSubscription.
+
+                        - error: Unrecoverable (invalid address, task creation
+                        failed) - cannot be
+
+                        re-enabled.
                     status_message:
                       type: string
                       title: status message
@@ -1823,7 +1849,20 @@ paths:
                       creation/renewal
                   status:
                     type: string
-                    title: 'status: enabled|disabled|error|expired'
+                    description: >-
+                      status: enabled|disabled|error
+
+                      - enabled: Active, processing events.
+
+                      - disabled: Recoverable pause (time expired, insufficient
+                      funds) - can be
+
+                      re-enabled via RenewSubscription.
+
+                      - error: Unrecoverable (invalid address, task creation
+                      failed) - cannot be
+
+                      re-enabled.
                   status_message:
                     type: string
                     title: status message
@@ -33156,7 +33195,10 @@ paths:
 
         - Recharges the task gas fee from creator to fee_collector.
 
-        - Re-enables expired subscriptions if they were in "expired" status.
+        - Re-enables "disabled" subscriptions (time-expired or insufficient
+        funds).
+
+        - Does NOT re-enable "error" subscriptions (unrecoverable issues).
 
         - Enforces minimum stake requirements before renewal.
 
@@ -33247,8 +33289,10 @@ paths:
 
               - Recharges the task gas fee from creator to fee_collector.
 
-              - Re-enables expired subscriptions if they were in "expired"
-              status.
+              - Re-enables "disabled" subscriptions (time-expired or
+              insufficient funds).
+
+              - Does NOT re-enable "error" subscriptions (unrecoverable issues).
 
               - Enforces minimum stake requirements before renewal.
 
@@ -39600,10 +39644,10 @@ paths:
               index:
                 type: string
                 description: >-
-                  Index key for the storage entry; must be non-empty and
-                  printable ASCII
+                  Index key for the storage entry; must be non-empty, max 50
+                  characters,
 
-                  only.
+                  and printable ASCII only.
               data:
                 type: string
                 description: JSON data to store; size limited by MaxStorageSize parameter.
@@ -48713,7 +48757,20 @@ definitions:
               creation/renewal
           status:
             type: string
-            title: 'status: enabled|disabled|error|expired'
+            description: >-
+              status: enabled|disabled|error
+
+              - enabled: Active, processing events.
+
+              - disabled: Recoverable pause (time expired, insufficient funds) -
+              can be
+
+              re-enabled via RenewSubscription.
+
+              - error: Unrecoverable (invalid address, task creation failed) -
+              cannot be
+
+              re-enabled.
           status_message:
             type: string
             title: status message
@@ -48810,7 +48867,20 @@ definitions:
                 creation/renewal
             status:
               type: string
-              title: 'status: enabled|disabled|error|expired'
+              description: >-
+                status: enabled|disabled|error
+
+                - enabled: Active, processing events.
+
+                - disabled: Recoverable pause (time expired, insufficient funds)
+                - can be
+
+                re-enabled via RenewSubscription.
+
+                - error: Unrecoverable (invalid address, task creation failed) -
+                cannot be
+
+                re-enabled.
             status_message:
               type: string
               title: status message
@@ -48927,7 +48997,20 @@ definitions:
                 creation/renewal
             status:
               type: string
-              title: 'status: enabled|disabled|error|expired'
+              description: >-
+                status: enabled|disabled|error
+
+                - enabled: Active, processing events.
+
+                - disabled: Recoverable pause (time expired, insufficient funds)
+                - can be
+
+                re-enabled via RenewSubscription.
+
+                - error: Unrecoverable (invalid address, task creation failed) -
+                cannot be
+
+                re-enabled.
             status_message:
               type: string
               title: status message
@@ -49746,7 +49829,20 @@ definitions:
           creation/renewal
       status:
         type: string
-        title: 'status: enabled|disabled|error|expired'
+        description: >-
+          status: enabled|disabled|error
+
+          - enabled: Active, processing events.
+
+          - disabled: Recoverable pause (time expired, insufficient funds) - can
+          be
+
+          re-enabled via RenewSubscription.
+
+          - error: Unrecoverable (invalid address, task creation failed) -
+          cannot be
+
+          re-enabled.
       status_message:
         type: string
         title: status message
@@ -79382,26 +79478,44 @@ definitions:
         type: string
         format: uint64
         description: Unique identifier of the subscription to renew.
-    description: |-
+    description: >-
       MsgRenewSubscription extends subscription expiry and recharges the fee.
 
+
       Behavior:
+
       - Extends subscription expiry to current time + max_subscription_duration.
+
       - Recharges the task gas fee from creator to fee_collector.
-      - Re-enables expired subscriptions if they were in "expired" status.
+
+      - Re-enables "disabled" subscriptions (time-expired or insufficient
+      funds).
+
+      - Does NOT re-enable "error" subscriptions (unrecoverable issues).
+
       - Enforces minimum stake requirements before renewal.
 
+
       Validation:
+
       - Creator address must be valid.
+
       - Subscription must exist.
+
       - Creator must match the subscription's creator field.
+
       - Creator must have sufficient bonded stake if MinStakePerSubscription is
+
       configured.
 
+
       Emits:
+
       - No events are emitted for renewal (subscription remains active).
 
+
       Returns:
+
       - Empty MsgRenewSubscriptionResponse.
   dysonprotocol.crontask.v1.MsgRenewSubscriptionResponse:
     type: object
@@ -82733,8 +82847,8 @@ definitions:
       index:
         type: string
         description: |-
-          Index key for the storage entry; must be non-empty and printable ASCII
-          only.
+          Index key for the storage entry; must be non-empty, max 50 characters,
+          and printable ASCII only.
       data:
         type: string
         description: JSON data to store; size limited by MaxStorageSize parameter.

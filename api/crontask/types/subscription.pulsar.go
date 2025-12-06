@@ -1368,7 +1368,12 @@ type Subscription struct {
 	TaskGasLimit uint64 `protobuf:"varint,8,opt,name=task_gas_limit,json=taskGasLimit,proto3" json:"task_gas_limit,omitempty"`
 	// fee for the created crontask; also charged at subscription creation/renewal
 	TaskGasFee *v1beta1.Coin `protobuf:"bytes,9,opt,name=task_gas_fee,json=taskGasFee,proto3" json:"task_gas_fee,omitempty"`
-	// status: enabled|disabled|error|expired
+	// status: enabled|disabled|error
+	// - enabled: Active, processing events.
+	// - disabled: Recoverable pause (time expired, insufficient funds) - can be
+	// re-enabled via RenewSubscription.
+	// - error: Unrecoverable (invalid address, task creation failed) - cannot be
+	// re-enabled.
 	Status string `protobuf:"bytes,10,opt,name=status,proto3" json:"status,omitempty"`
 	// status message
 	StatusMessage string `protobuf:"bytes,11,opt,name=status_message,json=statusMessage,proto3" json:"status_message,omitempty"`

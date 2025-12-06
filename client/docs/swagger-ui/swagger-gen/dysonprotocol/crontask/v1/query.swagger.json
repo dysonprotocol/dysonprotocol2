@@ -838,7 +838,7 @@
         },
         "status": {
           "type": "string",
-          "title": "status: enabled|disabled|error|expired"
+          "description": "status: enabled|disabled|error\n- enabled: Active, processing events.\n- disabled: Recoverable pause (time expired, insufficient funds) - can be\nre-enabled via RenewSubscription.\n- error: Unrecoverable (invalid address, task creation failed) - cannot be\nre-enabled."
         },
         "status_message": {
           "type": "string",
