@@ -266,12 +266,12 @@ func (k Keeper) RejectBid(ctx context.Context, msg *nameservicev1.MsgRejectBid) 
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to get bid record %d", bidID)
 	}
-	rec.Status = nameservicev1.BidStatus_BID_REJECTED
-	rec.RejectionFee = totalFeeCoins
-	if err := k.bids.Set(ctx, bidID, rec); err != nil {
+			rec.Status = nameservicev1.BidStatus_BID_REJECTED
+			rec.RejectionFee = totalFeeCoins
+			if err := k.bids.Set(ctx, bidID, rec); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to update bid record %d", bidID)
-	}
-	if err := k.activeBidForNFT.Remove(ctx, collections.Join(msg.NftClassId, msg.NftId)); err != nil {
+		}
+		if err := k.activeBidForNFT.Remove(ctx, collections.Join(msg.NftClassId, msg.NftId)); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to remove active bid index for NFT %s/%s", msg.NftClassId, msg.NftId)
 	}
 

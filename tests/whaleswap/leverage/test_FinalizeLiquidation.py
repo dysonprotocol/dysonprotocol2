@@ -193,8 +193,13 @@ def test_finalize_liquidation_success(
     ]
     init_map = {key: value.strip('"') for key, value in init_attrs}
 
+    # CR is calculated using current pool prices. After opening the position,
+    # the swap moved the pool from 10000/10000 to ~10000/9900, so:
+    # priceCollateralInBorrow = 10000/9900 ≈ 1.0101
+    # collateralValue = 110 * 1.0101 ≈ 111.11 foo
+    # CR = 111.11 / 100 = 1.1111...
     assert (
-        init_map["collateral_ratio"] == "1.100000000000000000"
+        init_map["collateral_ratio"] == "1.111111111111111111"
     ), f"Unexpected collateral ratio: {json.dumps(init_map, indent=2)}"
     assert (
         init_map["liquidation_threshold"] == "1.200000000000000000"

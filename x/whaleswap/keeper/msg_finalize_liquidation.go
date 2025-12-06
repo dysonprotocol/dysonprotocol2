@@ -137,6 +137,20 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 		"module_after", afterCollBal.String(),
 	)
 
+	// Handle held funds: move from borrow vault to module and return to pool reserves.
+	// The held funds represent the swapped position (borrowed → held during OpenPosition).
+	// In liquidation, these are returned to the pool to restore reserves.
+	if pos.Held.IsPositive() {
+		logger.Info("FinalizeLiquidation: returning held funds to pool",
+			"held", pos.Held.String(),
+		)
+		if err := k.moveModuleToModule(ctx, whaleswap.LeverageBorrowVaultModuleName, whaleswap.ModuleName, sdk.NewCoins(pos.Held)); err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "failed to move held from borrow vault")
+		}
+		// Add held to pool reserves
+		pool.Coins = pool.Coins.Add(pos.Held)
+	}
+
 	// Update pool: add repayment to reserves, update borrowed, track interest
 	pool.Coins = pool.Coins.Add(repaymentCoin)
 	totalBorrowed, hasNeg := sdk.NewCoins(pool.TotalBorrowed...).SafeSub(pos.Borrowed)
@@ -168,6 +182,7 @@ func (k Keeper) FinalizeLiquidation(ctx context.Context, msg *whaleswapv1.MsgFin
 	pos.LiquidationStatus = whaleswapv1.LiquidationStatus_LIQUIDATION_STATUS_NONE
 	pos.LiquidationInitializedBlockHeight = 0
 	pos.Borrowed = sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
+	pos.Held = sdk.NewCoin(pos.Held.Denom, math.ZeroInt())
 	pos.AccruedInterest = sdk.NewCoin(pos.Borrowed.Denom, math.ZeroInt())
 	resetInterestRemainderIfNoDebt(&pos)
 	if err := k.savePosition(ctx, pos, prevStatus); err != nil {

@@ -135,22 +135,17 @@ def setup_arbitrage(alice_addr, gov_addr, denom_a, denom_b, denom_c):
     _create_pool(alice_addr, gov_addr, denom_b, POOL_AMOUNT, denom_c, POOL_AMOUNT)
     _create_pool(alice_addr, gov_addr, denom_c, POOL_AMOUNT, denom_a, POOL_AMOUNT)
 
-    # Query pools to find pool IDs
+    # Query pool A-B directly by pair (avoids looping through all pools)
+    base, quote = sorted([denom_a, denom_b])
     pools_resp = _query({
-        "@type": "/dysonprotocol.whaleswap.v1.QueryPoolsRequest",
-        "pagination": {"limit": "100"}
+        "@type": "/dysonprotocol.whaleswap.v1.QueryPoolsByPairRequest",
+        "base_denom": base,
+        "quote_denom": quote,
+        "pagination": {"limit": "1"}
     })
     pools = pools_resp.get("pools", [])
-
-    # Find pool A-B by checking denoms
-    pool_ab_id = 0
-    for p in pools:
-        coins = p.get("coins", [])
-        denoms = [c["denom"] for c in coins]
-        has_a = denom_a in denoms
-        has_b = denom_b in denoms
-        found = has_a and has_b
-        pool_ab_id = int(p["pool_id"]) if found else pool_ab_id
+    assert len(pools) > 0, "Pool A-B not found"
+    pool_ab_id = int(pools[0]["pool_id"])
 
     # Get trade count before swap
     trades_before = _query({
@@ -175,23 +170,20 @@ def setup_arbitrage(alice_addr, gov_addr, denom_a, denom_b, denom_c):
         "min_output": []
     })
 
-    # Get trades after - check if interceptor executed
+    # Get latest trade ID after swap
     trades_after = _query({
         "@type": "/dysonprotocol.whaleswap.v1.QueryTradesRequest",
-        "pagination": {"limit": "10", "reverse": True}
+        "pagination": {"limit": "1", "reverse": True}
     })
-    all_trades = trades_after.get("trades", [])
+    trades_list_after = trades_after.get("trades", [])
+    trade_count_after = int(trades_list_after[0]["trade_id"]) if trades_list_after else 0
 
-    # Count interceptor trades (trades after alice's swap)
+    # Count interceptor trades = (trades after - trades before - 1 for alice's trade)
     alice_trade_id = trade_count_before + 1
-    interceptor_count = 0
-    for t in all_trades:
-        tid = int(t.get("trade_id", 0))
-        is_after = tid > alice_trade_id
-        interceptor_count = interceptor_count + (1 if is_after else 0)
+    interceptor_count = trade_count_after - alice_trade_id
 
     return {
-        "pool_count": len(pools),
+        "pool_count": 1,
         "pool_ab_id": pool_ab_id,
         "trade_count_before": trade_count_before,
         "alice_trade_id": alice_trade_id,

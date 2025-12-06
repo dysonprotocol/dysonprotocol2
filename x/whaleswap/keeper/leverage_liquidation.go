@@ -11,8 +11,14 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// ComputeHealthStatus evaluates position collateral ratio and returns health status.
-func (k Keeper) ComputeHealthStatus(collateralValue, debtWithInterest math.LegacyDec) (whaleswapv1.PositionHealthStatus, error) {
+// ComputeHealthStatus evaluates position collateral ratio and returns health status
+// relative to the position's liquidation_threshold.
+//
+// Health status is derived from the actual liquidation_threshold to ensure consistency:
+//   - LIQUIDATABLE: CR < liquidation_threshold (position can be liquidated)
+//   - AT_RISK: CR < liquidation_threshold * 1.25 (within 25% of liquidation)
+//   - HEALTHY: CR >= liquidation_threshold * 1.25 (comfortable margin)
+func (k Keeper) ComputeHealthStatus(collateralValue, debtWithInterest, liquidationThreshold math.LegacyDec) (whaleswapv1.PositionHealthStatus, error) {
 	if debtWithInterest.IsZero() {
 		return whaleswapv1.PositionHealthStatus_POSITION_HEALTH_STATUS_HEALTHY, nil
 	}
@@ -20,15 +26,19 @@ func (k Keeper) ComputeHealthStatus(collateralValue, debtWithInterest math.Legac
 		return whaleswapv1.PositionHealthStatus_POSITION_HEALTH_STATUS_UNSPECIFIED, fmt.Errorf("debt cannot be negative")
 	}
 	cr := collateralValue.Quo(debtWithInterest)
-	thresholdHealthy := math.LegacyNewDecWithPrec(150, 2) // 1.5
-	thresholdRisk := math.LegacyNewDecWithPrec(120, 2)    // 1.2
-	if cr.GT(thresholdHealthy) {
-		return whaleswapv1.PositionHealthStatus_POSITION_HEALTH_STATUS_HEALTHY, nil
+
+	// Derive thresholds from the position's actual liquidation_threshold
+	// AT_RISK buffer: 25% above liquidation threshold
+	atRiskBuffer := math.LegacyNewDecWithPrec(125, 2) // 1.25
+	thresholdAtRisk := liquidationThreshold.Mul(atRiskBuffer)
+
+	if cr.LT(liquidationThreshold) {
+		return whaleswapv1.PositionHealthStatus_POSITION_HEALTH_STATUS_LIQUIDATABLE, nil
 	}
-	if cr.GTE(thresholdRisk) {
+	if cr.LT(thresholdAtRisk) {
 		return whaleswapv1.PositionHealthStatus_POSITION_HEALTH_STATUS_AT_RISK, nil
 	}
-	return whaleswapv1.PositionHealthStatus_POSITION_HEALTH_STATUS_LIQUIDATABLE, nil
+	return whaleswapv1.PositionHealthStatus_POSITION_HEALTH_STATUS_HEALTHY, nil
 }
 
 // IsPositionLiquidatable checks if CR < liquidation_threshold.

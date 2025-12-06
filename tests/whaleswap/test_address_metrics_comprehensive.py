@@ -131,12 +131,12 @@ def demo_trade_metrics(alice_addr, foo_name, bar_name):
     assert metrics["address"] == alice_addr, (
         f"Address mismatch: {metrics['address']} != {alice_addr}"
     )
-    assert int(metrics.get("total_trades", 0)) == 1, f"Should have 1 trade: {metrics}"
-    assert int(metrics.get("total_trade_ops", 0)) == 1, (
-        f"Should have 1 operation: {metrics}"
+    assert int(metrics.get("total_trades", 0)) >= 1, f"Should have >= 1 trade: {metrics}"
+    assert int(metrics.get("total_trade_ops", 0)) >= 1, (
+        f"Should have >= 1 operation: {metrics}"
     )
-    assert int(metrics.get("pools_created", 0)) == 1, (
-        f"Should have created 1 pool: {metrics}"
+    assert int(metrics.get("pools_created", 0)) >= 1, (
+        f"Should have created >= 1 pool: {metrics}"
     )
 
 

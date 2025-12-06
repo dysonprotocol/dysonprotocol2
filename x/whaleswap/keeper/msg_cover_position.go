@@ -279,6 +279,10 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 		if err := k.AssertInvariants(ctx); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "invariant after CoverPosition close")
 		}
+		// Borrow vault invariant: check AFTER position is closed
+		if err := k.AssertBorrowVaultInvariant(ctx); err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "borrow vault invariant after CoverPosition close")
+		}
 		logger.Info("CoverPosition close invariants passed")
 
 		return &whaleswapv1.MsgCoverPositionResponse{
@@ -377,6 +381,10 @@ func (k Keeper) CoverPosition(ctx context.Context, msg *whaleswapv1.MsgCoverPosi
 	}
 	if err := k.AssertInvariants(ctx); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "invariant after CoverPosition")
+	}
+	// Borrow vault invariant: check AFTER position is updated
+	if err := k.AssertBorrowVaultInvariant(ctx); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "borrow vault invariant after CoverPosition")
 	}
 	logger.Info("CoverPosition partial-cover invariants passed")
 

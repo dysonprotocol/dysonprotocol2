@@ -500,6 +500,10 @@ func (k Keeper) ClosePosition(ctx context.Context, msg *whaleswapv1.MsgClosePosi
 	if err := k.AssertInvariants(ctx); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "invariant after ClosePosition")
 	}
+	// Borrow vault invariant: check AFTER position is updated/closed
+	if err := k.AssertBorrowVaultInvariant(ctx); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "borrow vault invariant after ClosePosition")
+	}
 
 	// Update address metrics
 	var metricsErr error

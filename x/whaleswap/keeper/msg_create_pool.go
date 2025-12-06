@@ -215,20 +215,20 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 
 	t := sdkCtx.BlockTime()
 	pool := whaleswapv1.Pool{
-		PoolId:               id,
-		Coins:                msg.Coins,
-		SharesDenom:          sharesDenom,
-		FeeRate:              msg.FeeRate,
-		BoundPercent:         msg.BoundPercent,
-		CreatedHeight:        uint64(sdkCtx.BlockHeight()),
-		CreatedTime:          &t,
-		UpdatedHeight:        uint64(sdkCtx.BlockHeight()),
-		UpdatedTime:          &t,
-		NumTrades:            0,
-		LiquidationThreshold: msg.LiquidationThreshold,
-		InterestRate:         msg.InterestRate,
-		MaxBorrowPercent:     msg.MaxBorrowPercent,
-		MinInitialCollateralRatio:   msg.MinInitialCollateralRatio,
+		PoolId:                    id,
+		Coins:                     msg.Coins,
+		SharesDenom:               sharesDenom,
+		FeeRate:                   msg.FeeRate,
+		BoundPercent:              msg.BoundPercent,
+		CreatedHeight:             uint64(sdkCtx.BlockHeight()),
+		CreatedTime:               &t,
+		UpdatedHeight:             uint64(sdkCtx.BlockHeight()),
+		UpdatedTime:               &t,
+		NumTrades:                 0,
+		LiquidationThreshold:      msg.LiquidationThreshold,
+		InterestRate:              msg.InterestRate,
+		MaxBorrowPercent:          msg.MaxBorrowPercent,
+		MinInitialCollateralRatio: msg.MinInitialCollateralRatio,
 	}
 	logger.Info("CreatePool calculating initial shares (constant-product)")
 	prod := math.LegacyNewDecFromInt(msg.Coins[0].Amount).Mul(math.LegacyNewDecFromInt(msg.Coins[1].Amount))
@@ -236,12 +236,9 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to compute sqrt of initial product: %+v", msg)
 	}
-	initialShares := sqrt.TruncateInt()
+	// Ceil ensures at least 1 share for very small reserves (e.g., sqrt(0.5 * 0.5) = 0.5 → 1)
+	initialShares := sqrt.Ceil().TruncateInt()
 	logger.Info("CreatePool calculated liquidity", "initial_shares", initialShares, "product", prod, "sqrt", sqrt)
-	if !initialShares.IsPositive() {
-		initialShares = math.NewInt(1)
-		logger.Info("CreatePool adjusted initial shares to minimum", "initial_shares", initialShares)
-	}
 
 	logger.Info("CreatePool saving pool", "pool_id", id, "shares_denom", sharesDenom)
 	if err := k.PoolsMap.Set(ctx, id, pool); err != nil {

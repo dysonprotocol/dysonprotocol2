@@ -88,12 +88,16 @@ func (k Keeper) CancelOffer(ctx context.Context, msg *whaleswapv1.MsgCancelOffer
 		)
 	}
 
+	// Capture previous state BEFORE status change for correct reindexing
+	prevStatus := offer.Status
 	offer.Status = whaleswapv1.OfferStatusCancelled
 	if err := k.OffersMap.Set(ctx, offer.OfferId, offer); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to update offer %d", offer.OfferId)
 	}
 	// Remove reverse index entries and update owner/status via helper
+	// Create a copy with the old status for proper index removal
 	prev := offer
+	prev.Status = prevStatus
 	if err := k.reindexOfferOnStatusChange(ctx, prev, offer); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to reindex offer after cancel")
 	}

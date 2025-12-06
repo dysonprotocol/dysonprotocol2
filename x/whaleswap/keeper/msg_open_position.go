@@ -24,6 +24,8 @@ import (
 //   - Computes collateral ratio CR = collateral_value / debt_value in borrow
 //     units, where collateral_value accounts for current pool price.
 //   - Validates CR >= pool.min_collateral_ratio[borrow_denom] (> 1).
+//   - After swap execution, re-validates CR using post-swap prices to ensure
+//     the position is not immediately undercollateralized due to price impact.
 //   - Enforces borrow caps via pool.max_borrow_percent (per-denom).
 //   - Reduces pool reserves by borrow amount, updates total_borrowed.
 //   - Moves borrowed amount to borrow vault module account.
@@ -96,8 +98,6 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to determine held denom: %v", err)
 	}
 	sdkCtx.Logger().Info("OpenPosition: borrow validated and held derived", "borrowDenom", borrowDenom, "heldDenom", heldDenom)
-
-	// Borrow cap based on pool utilization is no longer enforced by max_borrow_percent; capacity checks moved to bands/liquidity
 
 	// Compute entry price: held_per_borrow = held_reserve / borrow_reserve
 	// Find pool amounts for the specific denoms being borrowed and held using AmountOf
@@ -226,6 +226,35 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	}
 	sdkCtx.Logger().Info("OpenPosition: PoolSwap executed", "borrowDenom", borrowDenom, "heldDenom", heldDenom, "borrowAmount", loan.Amount, "heldAmt", heldAmt)
 
+	// Post-swap CR validation: the swap moves the price, so we must verify the position
+	// is still adequately collateralized using post-swap prices. This prevents positions
+	// that pass pre-swap validation but are immediately undercollateralized.
+	poolPostSwap, err := k.PoolsMap.Get(ctx, msg.PoolId)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "failed to re-fetch pool %d after swap", msg.PoolId)
+	}
+	borrowPoolAmountPost := poolPostSwap.Coins.AmountOf(borrowDenom)
+	heldPoolAmountPost := poolPostSwap.Coins.AmountOf(heldDenom)
+	if borrowPoolAmountPost.IsZero() {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "post-swap borrow reserve is zero")
+	}
+	priceHeldPerBorrowPost := math.LegacyNewDecFromInt(heldPoolAmountPost).Quo(math.LegacyNewDecFromInt(borrowPoolAmountPost))
+
+	collateralValueInBorrowPost := math.LegacyNewDecFromInt(msg.Collateral.Amount)
+	if msg.Collateral.Denom == heldDenom {
+		if priceHeldPerBorrowPost.IsZero() {
+			return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "post-swap price is zero, cannot value collateral")
+		}
+		collateralValueInBorrowPost = collateralValueInBorrowPost.Quo(priceHeldPerBorrowPost)
+	}
+	crPost := collateralValueInBorrowPost.Quo(debtValue)
+	if crPost.LT(minCR) {
+		return nil, cosmossdkerrors.Wrapf(whaleswapv1.ErrInsufficientCollateral,
+			"position undercollateralized after swap: post-swap CR %s < min_cr %s (pre-swap CR was %s)",
+			crPost.String(), minCR.String(), cr.String())
+	}
+	sdkCtx.Logger().Info("OpenPosition: post-swap CR validated", "preCR", cr.String(), "postCR", crPost.String(), "minCR", minCR.String())
+
 	// Now escrow collateral to module (post-swap) so subsequent invariant checks see both collateral and position state together
 	if err := k.sendToModule(ctx, userAddr, sdk.NewCoins(msg.Collateral)); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to transfer collateral")
@@ -234,13 +263,14 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	// Persist final position after swap and collateral escrow
 	// Snapshot interest_rate, min_collateral_ratio, liquidation_threshold at open per updated design
 	// Use single DecCoin for interest_rate of the borrowed denom
-	var snapIR sdk.DecCoin
-	if len(pool.InterestRate) == 2 {
-		ir := sdk.NewDecCoins(pool.InterestRate...).Sort()
-		snapIR = sdk.NewDecCoinFromDec(borrowDenom, ir.AmountOf(borrowDenom))
-	} else {
-		snapIR = sdk.NewDecCoinFromDec(borrowDenom, math.LegacyNewDec(0))
+	// Fail fast if pool has invalid interest_rate configuration to prevent zero-interest loans
+	if len(pool.InterestRate) != 2 {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest,
+			"pool %d has invalid interest_rate configuration: expected 2 entries, got %d",
+			msg.PoolId, len(pool.InterestRate))
 	}
+	ir := sdk.NewDecCoins(pool.InterestRate...).Sort()
+	snapIR := sdk.NewDecCoinFromDec(borrowDenom, ir.AmountOf(borrowDenom))
 	pos := whaleswapv1.LeveragePosition{
 		PositionId:                 posID,
 		PoolId:                     msg.PoolId,
@@ -271,7 +301,7 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		return nil, cosmossdkerrors.Wrap(err, "failed to save position")
 	}
 
-	// Emit event
+	// Emit event with post-swap price and CR (the actual position state)
 	if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventLeveragePositionOpened{
 		PositionId:              posID,
 		User:                    msg.Trader,
@@ -280,8 +310,8 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		CollateralAmount:        pos.Collateral.Amount.String(),
 		BorrowedDenom:           pos.Borrowed.Denom,
 		BorrowedAmount:          pos.Borrowed.Amount.String(),
-		EntryPriceHeldPerBorrow: priceHeldPerBorrow.String(),
-		CollateralRatio:         cr.String(),
+		EntryPriceHeldPerBorrow: priceHeldPerBorrowPost.String(),
+		CollateralRatio:         crPost.String(),
 	}); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to emit event")
 	}
@@ -296,6 +326,10 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	if err := k.AssertInvariants(ctx); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "invariant after OpenPosition")
 	}
+	// Borrow vault invariant: check AFTER position is persisted
+	if err := k.AssertBorrowVaultInvariant(ctx); err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "borrow vault invariant after OpenPosition")
+	}
 
 	// Update address metrics
 	if err := k.incrementPositionOpened(ctx, msg.Trader); err != nil {
@@ -307,8 +341,6 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 		Held:       heldCoin,
 	}, nil
 }
-
-// Borrow capacity is enforced via current pool price bands and liquidity; explicit percent caps removed.
 
 func (k Keeper) isDenomInPool(pool *whaleswapv1.Pool, denom string) bool {
 	return denom == pool.Coins[0].Denom || denom == pool.Coins[1].Denom

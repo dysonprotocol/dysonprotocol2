@@ -67,6 +67,7 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 	// Full exit special-case: allow zeroing reserves only if burning all shares
 	if sharesAmt.Equal(totalShares) {
 		// Payout full reserves and delete the pool
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		out1 := pool.Coins[0]
 		out2 := pool.Coins[1]
 		logger.Info("RemoveLiquidity full exit", "pool_id", pool.PoolId, "out1", out1, "out2", out2, "burn_shares", sharesAmt.String())
@@ -76,9 +77,13 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 		if err := k.burnModule(ctx, sdk.NewCoins(sdk.NewCoin(pool.SharesDenom, sharesAmt))); err != nil {
 			return nil, cosmossdkerrors.Wrapf(err, "failed to burn shares %s", sharesAmt.String())
 		}
-		// Remove pool from state (no poolupdate emitted on deletion)
+		// Remove pool from state
 		if err := k.PoolsMap.Remove(ctx, msg.PoolId); err != nil {
-			return nil, cosmossdkerrors.Wrap(err, "failed to escrow shares to module")
+			return nil, cosmossdkerrors.Wrap(err, "failed to remove pool from state")
+		}
+		// Emit EventPoolUpdate for consistency with other pool mutations (listeners can detect deletion by querying)
+		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPoolUpdate{PoolId: pool.PoolId}); err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventPoolUpdate for deleted pool")
 		}
 		outs := sdk.NewCoins()
 		if out1.IsPositive() {
@@ -89,11 +94,12 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 		}
 		if !outs.Empty() {
 			if err := k.sendFromModule(ctx, signer, outs); err != nil {
-				return nil, cosmossdkerrors.Wrap(err, "failed to burn shares from module")
+				return nil, cosmossdkerrors.Wrap(err, "failed to send reserves from module")
 			}
 		}
-		sdkCtx := sdk.UnwrapSDKContext(ctx)
-		_ = sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPoolLiquidityRemoved{PoolId: pool.PoolId, Shares: sharesAmt.String()})
+		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPoolLiquidityRemoved{PoolId: pool.PoolId, Shares: sharesAmt.String()}); err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventPoolLiquidityRemoved")
+		}
 		logger.Info("RemoveLiquidity emitted EventPoolLiquidityRemoved", "pool_id", pool.PoolId, "shares", sharesAmt.String())
 		return &whaleswapv1.MsgRemoveLiquidityResponse{Amount: outs}, nil
 	}

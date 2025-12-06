@@ -76,11 +76,21 @@ def test_add_liquidity_v2(chainnet, generate_account, faucet, register_name):
     exR2 = int(p_pre["coins"][1]["amount"])  # sorted_denoms[1] reserve
     add1_i = _amt(a1, sorted_denoms[0])
     add2_i = _amt(a2, sorted_denoms[1])
-    # Ceil divisions to match keeper math; compute both sides and then take mins/max without branching
-    targetA2 = (add1_i * exR2 + (exR1 - 1)) // exR1
-    targetA1 = (add2_i * exR1 + (exR2 - 1)) // exR2
-    eff1 = min(add1_i, targetA1)
-    eff2 = min(add2_i, targetA2)
+    # Match Go's exact math for proportional adds:
+    # 1. totalShares = ceil(sqrt(R1 * R2)) from pool creation (Go uses .Ceil().TruncateInt())
+    # 2. s1 = floor(add1 * totalShares / R1), s2 = floor(add2 * totalShares / R2)
+    # 3. minted = min(s1, s2)
+    # 4. req1 = ceil(minted * R1 / totalShares), req2 = ceil(minted * R2 / totalShares)
+    import math
+
+    sqrt_raw = math.sqrt(exR1 * exR2)
+    totalShares = int(math.ceil(sqrt_raw))  # Go uses .Ceil().TruncateInt()
+    s1 = (add1_i * totalShares) // exR1
+    s2 = (add2_i * totalShares) // exR2
+    minted = min(s1, s2)
+    # ceil(a/b) = (a + b - 1) // b
+    eff1 = (minted * exR1 + totalShares - 1) // totalShares
+    eff2 = (minted * exR2 + totalShares - 1) // totalShares
     refund1 = add1_i - eff1
     refund2 = add2_i - eff2
 

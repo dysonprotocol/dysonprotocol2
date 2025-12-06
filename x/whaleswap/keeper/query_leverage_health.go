@@ -97,11 +97,6 @@ func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequ
 		cr, _ = k.ComputeCollateralRatio(collateralValue, debtValue)
 	}
 
-	health, err := k.ComputeHealthStatus(collateralValue, debtValue)
-	if err != nil {
-		return nil, err
-	}
-
 	// Use position's snapshotted liquidation_threshold
 	liquidationThreshold, err := math.LegacyNewDecFromStr(pos.LiquidationThreshold)
 	if err != nil {
@@ -109,6 +104,11 @@ func (k Keeper) Position(ctx context.Context, req *whaleswapv1.QueryPositionRequ
 	}
 	if !liquidationThreshold.GT(math.LegacyNewDec(1)) {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid position liquidation_threshold")
+	}
+
+	health, err := k.ComputeHealthStatus(collateralValue, debtValue, liquidationThreshold)
+	if err != nil {
+		return nil, err
 	}
 
 	canClose := false

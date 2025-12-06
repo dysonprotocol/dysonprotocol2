@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 
 	"cosmossdk.io/collections"
 	cosmossdkerrors "cosmossdk.io/errors"
@@ -84,31 +85,46 @@ func (k Keeper) indexOfferOpen(ctx context.Context, offer whaleswapv1.OfferData)
 }
 
 // unindexOfferAll removes all reverse indexes for an offer using unit ints for price key.
-func (k Keeper) unindexOfferAll(ctx context.Context, offer whaleswapv1.OfferData) {
-	_ = k.OffersByHave.Remove(ctx, collections.Join(offer.RemainingHave.Denom, offer.OfferId))
-	_ = k.OffersByWant.Remove(ctx, collections.Join(offer.RemainingWant.Denom, offer.OfferId))
+// Returns an error if any removal fails (except ErrNotFound which is tolerated for idempotency).
+func (k Keeper) unindexOfferAll(ctx context.Context, offer whaleswapv1.OfferData) error {
+	if err := k.OffersByHave.Remove(ctx, collections.Join(offer.RemainingHave.Denom, offer.OfferId)); err != nil && !isNotFoundError(err) {
+		return cosmossdkerrors.Wrapf(err, "failed to remove OffersByHave index for offer %d", offer.OfferId)
+	}
+	if err := k.OffersByWant.Remove(ctx, collections.Join(offer.RemainingWant.Denom, offer.OfferId)); err != nil && !isNotFoundError(err) {
+		return cosmossdkerrors.Wrapf(err, "failed to remove OffersByWant index for offer %d", offer.OfferId)
+	}
 	pairKey, priceKey := k.obPriceKeyFromUnits(offer.RemainingHave.Denom, offer.RemainingWant.Denom, offer.UnitHaveInt, offer.UnitWantInt)
-	_ = k.OffersByPairPrice.Remove(ctx, collections.Join3(pairKey, priceKey, offer.OfferId))
+	if err := k.OffersByPairPrice.Remove(ctx, collections.Join3(pairKey, priceKey, offer.OfferId)); err != nil && !isNotFoundError(err) {
+		return cosmossdkerrors.Wrapf(err, "failed to remove OffersByPairPrice index for offer %d", offer.OfferId)
+	}
+	return nil
+}
+
+// isNotFoundError returns true if the error is a collections.ErrNotFound (tolerated for idempotent removals).
+func isNotFoundError(err error) bool {
+	return errors.Is(err, collections.ErrNotFound)
 }
 
 // reindexOfferOnStatusChange updates owner/status mapping and removes open indexes when leaving Open.
 func (k Keeper) reindexOfferOnStatusChange(ctx context.Context, prev whaleswapv1.OfferData, next whaleswapv1.OfferData) error {
 	if prev.Status != next.Status {
-		if err := k.OffersByOwnerStatus.Remove(ctx, collections.Join3(prev.Maker, prev.Status, prev.OfferId)); err != nil {
-			return err
+		if err := k.OffersByOwnerStatus.Remove(ctx, collections.Join3(prev.Maker, prev.Status, prev.OfferId)); err != nil && !isNotFoundError(err) {
+			return cosmossdkerrors.Wrapf(err, "failed to remove OffersByOwnerStatus for offer %d", prev.OfferId)
 		}
 		if err := k.OffersByOwnerStatus.Set(ctx, collections.Join3(next.Maker, next.Status, next.OfferId), next.OfferId); err != nil {
-			return err
+			return cosmossdkerrors.Wrapf(err, "failed to set OffersByOwnerStatus for offer %d", next.OfferId)
 		}
 	}
 	// Leaving Open → remove reverse indexes
 	if prev.Status == whaleswapv1.OfferStatusOpen && next.Status != whaleswapv1.OfferStatusOpen {
-		k.unindexOfferAll(ctx, prev)
+		if err := k.unindexOfferAll(ctx, prev); err != nil {
+			return cosmossdkerrors.Wrapf(err, "failed to unindex offer %d on status change", prev.OfferId)
+		}
 	}
 	// Entering Open (not used today) → add reverse indexes
 	if prev.Status != whaleswapv1.OfferStatusOpen && next.Status == whaleswapv1.OfferStatusOpen {
 		if err := k.indexOfferOpen(ctx, next); err != nil {
-			return err
+			return cosmossdkerrors.Wrapf(err, "failed to index offer %d on status change", next.OfferId)
 		}
 	}
 	return nil

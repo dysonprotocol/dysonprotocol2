@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"cosmossdk.io/collections"
 	cosmossdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	whaleswap "dysonprotocol.com/x/whaleswap"
@@ -20,15 +21,30 @@ type InvariantsRebuildReport struct {
 	Actual      sdk.Coins
 }
 
-// AssertInvariants checks orderbook escrow and pfand invariants.
-// - Sum(escrowed have by open normal offers) == module balances per denom
-// - Sum(pfand_locked by open liquid offers) == module pfand balance (per denom)
+// AssertInvariants checks core whaleswap module invariants that are safe to check mid-operation:
+// - Module balances match expected (AMM reserves + escrow + pfand + auction + collateral)
+// - Index consistency for offers and auctions
+//
+// Note: Borrow vault invariant is NOT checked here because AssertInvariants is called from
+// MakeTrade which may be invoked mid-operation (e.g., from OpenPosition before position is persisted).
+// Use AssertBorrowVaultInvariant explicitly at operation boundaries where state is consistent.
 func (k Keeper) AssertInvariants(ctx context.Context) error {
 	// Unified whaleswap module balance invariant with explicit breakdown
 	if err := k.checkModuleBalancesInvariant(ctx); err != nil {
 		return err
 	}
+	// Reverse indexes must be consistent with primary maps
+	if err := k.checkIndexConsistency(ctx); err != nil {
+		return err
+	}
 	return nil
+}
+
+// AssertBorrowVaultInvariant checks that borrow vault holds exactly what open positions require.
+// Call this at the END of leverage operations (OpenPosition, ClosePosition, etc.) after
+// position state is fully persisted. Do NOT call mid-operation.
+func (k Keeper) AssertBorrowVaultInvariant(ctx context.Context) error {
+	return k.checkBorrowVaultInvariant(ctx)
 }
 
 // checkModuleBalancesInvariant verifies that the whaleswap module account balances equal the
@@ -414,6 +430,176 @@ func (k Keeper) tallyPfandRequired(ctx context.Context) (sdk.Coins, error) {
 	return out, nil
 }
 
+// checkBorrowVaultInvariant verifies that the leverage borrow vault balance EXACTLY matches
+// the sum of all open/liquidating position held amounts. The borrow vault holds the
+// "held" asset after the borrowed tokens are swapped during position opening.
+func (k Keeper) checkBorrowVaultInvariant(ctx context.Context) error {
+	_, heldRequired, _, err := k.tallyLeveragePositions(ctx)
+	if err != nil {
+		return err
+	}
+
+	borrowVaultAddr := k.accKeeper.GetModuleAddress(whaleswap.LeverageBorrowVaultModuleName)
+	actual := k.bank.SpendableCoins(ctx, borrowVaultAddr)
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(sdkCtx)
+	logger.Info("Borrow vault invariant check", "vault", borrowVaultAddr.String(), "actual", actual.String(), "expected_held", heldRequired.String())
+
+	// Build denom set from both expected and actual
+	denomSet := map[string]struct{}{}
+	for _, c := range heldRequired {
+		denomSet[c.Denom] = struct{}{}
+	}
+	for _, c := range actual {
+		denomSet[c.Denom] = struct{}{}
+	}
+
+	for denom := range denomSet {
+		expected := heldRequired.AmountOf(denom)
+		have := actual.AmountOf(denom)
+		if !have.Equal(expected) {
+			logger.Info("Borrow vault mismatch", "denom", denom, "have", have.String(), "expected", expected.String())
+			return cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+				"borrow vault balance mismatch for %s: have=%s expected=%s",
+				denom, have.String(), expected.String())
+		}
+	}
+	return nil
+}
+
+// checkIndexConsistency verifies bidirectional consistency between primary maps and reverse indexes.
+// For offers: each open offer must have all index entries, and each index entry must point to a valid open offer.
+// For auctions: each auction must have both reverse index entries, and vice versa.
+func (k Keeper) checkIndexConsistency(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(sdkCtx)
+
+	// --- Offer Index Consistency ---
+	// 1. Forward check: each open offer must have all required index entries
+	openOfferIDs := map[uint64]struct{}{}
+	if err := k.OffersMap.Walk(ctx, nil, func(id uint64, offer whaleswapv1.OfferData) (bool, error) {
+		if offer.Status != whaleswapv1.OfferStatusOpen {
+			return false, nil
+		}
+		openOfferIDs[id] = struct{}{}
+
+		// Check OffersByHave index exists
+		if _, err := k.OffersByHave.Get(ctx, collections.Join(offer.RemainingHave.Denom, id)); err != nil {
+			logger.Info("Missing OffersByHave index", "offer_id", id, "have_denom", offer.RemainingHave.Denom)
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+				"missing OffersByHave index for open offer %d (have_denom=%s)", id, offer.RemainingHave.Denom)
+		}
+
+		// Check OffersByWant index exists
+		if _, err := k.OffersByWant.Get(ctx, collections.Join(offer.RemainingWant.Denom, id)); err != nil {
+			logger.Info("Missing OffersByWant index", "offer_id", id, "want_denom", offer.RemainingWant.Denom)
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+				"missing OffersByWant index for open offer %d (want_denom=%s)", id, offer.RemainingWant.Denom)
+		}
+
+		// Check OffersByOwnerStatus index exists
+		if _, err := k.OffersByOwnerStatus.Get(ctx, collections.Join3(offer.Maker, offer.Status, id)); err != nil {
+			logger.Info("Missing OffersByOwnerStatus index", "offer_id", id, "maker", offer.Maker, "status", offer.Status)
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+				"missing OffersByOwnerStatus index for open offer %d (maker=%s status=%s)", id, offer.Maker, offer.Status)
+		}
+
+		return false, nil
+	}); err != nil {
+		return err
+	}
+
+	// 2. Backward check: each OffersByHave entry must point to a valid open offer
+	if err := k.OffersByHave.Walk(ctx, nil, func(_ collections.Pair[string, uint64], offerID uint64) (bool, error) {
+		if _, ok := openOfferIDs[offerID]; !ok {
+			// Check if offer exists at all
+			offer, err := k.OffersMap.Get(ctx, offerID)
+			if err != nil {
+				logger.Info("Dangling OffersByHave index: offer not found", "offer_id", offerID)
+				return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+					"dangling OffersByHave index: offer %d not found", offerID)
+			}
+			logger.Info("Dangling OffersByHave index: offer not open", "offer_id", offerID, "status", offer.Status)
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+				"dangling OffersByHave index: offer %d has status %s (not open)", offerID, offer.Status)
+		}
+		return false, nil
+	}); err != nil {
+		return err
+	}
+
+	// 3. Backward check: each OffersByWant entry must point to a valid open offer
+	if err := k.OffersByWant.Walk(ctx, nil, func(_ collections.Pair[string, uint64], offerID uint64) (bool, error) {
+		if _, ok := openOfferIDs[offerID]; !ok {
+			offer, err := k.OffersMap.Get(ctx, offerID)
+			if err != nil {
+				logger.Info("Dangling OffersByWant index: offer not found", "offer_id", offerID)
+				return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+					"dangling OffersByWant index: offer %d not found", offerID)
+			}
+			logger.Info("Dangling OffersByWant index: offer not open", "offer_id", offerID, "status", offer.Status)
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+				"dangling OffersByWant index: offer %d has status %s (not open)", offerID, offer.Status)
+		}
+		return false, nil
+	}); err != nil {
+		return err
+	}
+
+	// --- Auction Index Consistency ---
+	// 1. Forward check: each auction must have both reverse index entries
+	auctionIDs := map[uint64]struct{}{}
+	if err := k.AuctionsMap.Walk(ctx, nil, func(id uint64, auction whaleswapv1.AuctionRecord) (bool, error) {
+		auctionIDs[id] = struct{}{}
+
+		// Check AuctionsBySellBid index exists
+		if _, err := k.AuctionsBySellBid.Get(ctx, collections.Join3(auction.Sell.Denom, auction.BidDenom, id)); err != nil {
+			logger.Info("Missing AuctionsBySellBid index", "auction_id", id, "sell", auction.Sell.Denom, "bid", auction.BidDenom)
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+				"missing AuctionsBySellBid index for auction %d (sell=%s bid=%s)", id, auction.Sell.Denom, auction.BidDenom)
+		}
+
+		// Check AuctionsByBidSell index exists
+		if _, err := k.AuctionsByBidSell.Get(ctx, collections.Join3(auction.BidDenom, auction.Sell.Denom, id)); err != nil {
+			logger.Info("Missing AuctionsByBidSell index", "auction_id", id, "bid", auction.BidDenom, "sell", auction.Sell.Denom)
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+				"missing AuctionsByBidSell index for auction %d (bid=%s sell=%s)", id, auction.BidDenom, auction.Sell.Denom)
+		}
+
+		return false, nil
+	}); err != nil {
+		return err
+	}
+
+	// 2. Backward check: each AuctionsBySellBid entry must point to a valid auction
+	if err := k.AuctionsBySellBid.Walk(ctx, nil, func(_ collections.Triple[string, string, uint64], auctionID uint64) (bool, error) {
+		if _, ok := auctionIDs[auctionID]; !ok {
+			logger.Info("Dangling AuctionsBySellBid index", "auction_id", auctionID)
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+				"dangling AuctionsBySellBid index: auction %d not found", auctionID)
+		}
+		return false, nil
+	}); err != nil {
+		return err
+	}
+
+	// 3. Backward check: each AuctionsByBidSell entry must point to a valid auction
+	if err := k.AuctionsByBidSell.Walk(ctx, nil, func(_ collections.Triple[string, string, uint64], auctionID uint64) (bool, error) {
+		if _, ok := auctionIDs[auctionID]; !ok {
+			logger.Info("Dangling AuctionsByBidSell index", "auction_id", auctionID)
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+				"dangling AuctionsByBidSell index: auction %d not found", auctionID)
+		}
+		return false, nil
+	}); err != nil {
+		return err
+	}
+
+	logger.Info("Index consistency check passed", "open_offers", len(openOfferIDs), "auctions", len(auctionIDs))
+	return nil
+}
+
 // AssertAMMInvariants checks AMM-related invariants across all pools:
 // - Module balance per denom must cover the sum of all pool reserves for that denom
 // - Shares supply must be > 0 for existing pools; if band set then Lcur > 0
@@ -439,6 +625,27 @@ func (k Keeper) AssertAMMInvariants(ctx context.Context) error {
 		supply := k.bank.GetSupply(ctx, p.SharesDenom).Amount
 		if !supply.IsPositive() {
 			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic, "shares supply must be > 0: pool_id=%d denom=%s", p.PoolId, p.SharesDenom)
+		}
+		// Module should never hold pool shares (would indicate failed distribution)
+		moduleShareBal := k.bank.GetBalance(ctx, k.accKeeper.GetModuleAddress(whaleswap.ModuleName), p.SharesDenom).Amount
+		if moduleShareBal.IsPositive() {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+				"module unexpectedly holds %s shares of pool %d (denom=%s)",
+				moduleShareBal.String(), p.PoolId, p.SharesDenom)
+		}
+		// Borrow vault should never hold pool shares
+		borrowVaultShareBal := k.bank.GetBalance(ctx, k.accKeeper.GetModuleAddress(whaleswap.LeverageBorrowVaultModuleName), p.SharesDenom).Amount
+		if borrowVaultShareBal.IsPositive() {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+				"borrow vault unexpectedly holds %s shares of pool %d (denom=%s)",
+				borrowVaultShareBal.String(), p.PoolId, p.SharesDenom)
+		}
+		// Leverage vault should never hold pool shares
+		leverageVaultShareBal := k.bank.GetBalance(ctx, k.accKeeper.GetModuleAddress(whaleswap.LeverageVaultModuleName), p.SharesDenom).Amount
+		if leverageVaultShareBal.IsPositive() {
+			return true, cosmossdkerrors.Wrapf(sdkerrors.ErrLogic,
+				"leverage vault unexpectedly holds %s shares of pool %d (denom=%s)",
+				leverageVaultShareBal.String(), p.PoolId, p.SharesDenom)
 		}
 		// Validate bound_percent when present
 		if len(p.BoundPercent) != 0 && len(p.BoundPercent) != 2 {

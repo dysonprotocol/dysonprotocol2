@@ -2,8 +2,13 @@ import json
 import pytest
 
 
-def test_make_trade_duplicate_pool_id_fails(chainnet, ws_setup_env):
-    """Verify that MakeTrade rejects duplicate pool_id in operations."""
+def test_make_trade_duplicate_pool_id_allowed(chainnet, ws_setup_env):
+    """Verify that MakeTrade ALLOWS duplicate pool_id in operations.
+
+    Design decision: Duplicate pool IDs are allowed to enable complex
+    multi-step strategies like opposite-direction trades on the same pool
+    within a single MakeTrade (e.g., arbitrage cycles).
+    """
     dysond = chainnet[0]
     env = ws_setup_env
     a, b = env["denoms"][0], env["denoms"][1]
@@ -33,26 +38,28 @@ def test_make_trade_duplicate_pool_id_fails(chainnet, ws_setup_env):
     pid = int(json.loads(attrs["pool_id"]))
     assert pid > 0
 
-    # Attempt two legs on the same pool - should fail
+    # Two legs on the same pool - now allowed for arbitrage strategies
     leg1 = {"swap": {"pool_id": pid, "swap_in": {"denom": a, "amount": "5"}}}
     leg2 = {"swap": {"pool_id": pid, "swap_in": {"denom": a, "amount": "5"}}}
 
-    with pytest.raises(Exception, match="duplicate pool_id"):
-        dysond(
-            "tx",
-            "whaleswap",
-            "make-trade",
-            "--max-input",
-            f"10{a}",
-            "--op",
-            json.dumps(leg1),
-            "--op",
-            json.dumps(leg2),
-            "--from",
-            taker_name,
-            "--gas",
-            "auto",
-        )
+    txr = dysond(
+        "tx",
+        "whaleswap",
+        "make-trade",
+        "--max-input",
+        f"10{a}",
+        "--op",
+        json.dumps(leg1),
+        "--op",
+        json.dumps(leg2),
+        "--from",
+        taker_name,
+        "--gas",
+        "auto",
+    )
+    assert (
+        txr["code"] == 0
+    ), f"make-trade with duplicate pool_id should succeed: {json.dumps(txr, indent=2)}"
 
 
 def test_make_trade_duplicate_offer_id_fails(chainnet, ws_setup_env, ws_create_offer):

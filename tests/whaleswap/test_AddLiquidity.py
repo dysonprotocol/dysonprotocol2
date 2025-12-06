@@ -308,9 +308,35 @@ def demo_add_liquidity_token2_limiting(alice_addr, foo_name, bar_name):
     before = {coin["denom"]: int(coin["amount"]) for coin in pool_before["coins"]}
     after = {coin["denom"]: int(coin["amount"]) for coin in pool_after["coins"]}
 
-    # Quote tokens are limiting (pool ratio 1:2, deposit 10000:5000 -> effective ratio 1:0.5)
-    assert after[demo_result["foo_name"]] == before[demo_result["foo_name"]] + 2500
-    assert after[demo_result["bar_name"]] == before[demo_result["bar_name"]] + 5000
+    # Compute exact expected deltas using Go's math:
+    # Pool: foo=10000, bar=20000; Add: foo=10000, bar=5000
+    # totalShares = ceil(sqrt(10000 * 20000)) = 14143
+    # s1 = (10000 * 14143) // 10000 = 14143
+    # s2 = (5000 * 14143) // 20000 = 3535
+    # minted = min(s1, s2) = 3535
+    # req_foo = ceil(3535 * 10000 / 14143) = 2500
+    # req_bar = ceil(3535 * 20000 / 14143) = 5000
+    import math
+
+    R_foo = before[demo_result["foo_name"]]
+    R_bar = before[demo_result["bar_name"]]
+    add_foo = 10000
+    add_bar = 5000
+    totalShares = int(math.ceil(math.sqrt(R_foo * R_bar)))
+    s1 = (add_foo * totalShares) // R_foo
+    s2 = (add_bar * totalShares) // R_bar
+    minted = min(s1, s2)
+    expected_foo_delta = (minted * R_foo + totalShares - 1) // totalShares  # ceil
+    expected_bar_delta = (minted * R_bar + totalShares - 1) // totalShares  # ceil
+
+    foo_delta = after[demo_result["foo_name"]] - before[demo_result["foo_name"]]
+    bar_delta = after[demo_result["bar_name"]] - before[demo_result["bar_name"]]
+    assert (
+        foo_delta == expected_foo_delta
+    ), f"foo delta expected {expected_foo_delta}, got {foo_delta}"
+    assert (
+        bar_delta == expected_bar_delta
+    ), f"bar delta expected {expected_bar_delta}, got {bar_delta}"
 
 
 @pytest.mark.usefixtures("faucet")
@@ -777,8 +803,9 @@ def test_add_liquidity_unbalanced_s2_less_than_s1(
     # s1 = truncate((5000/10000) * 14142) = truncate(7071) = 7071
     # s2 = truncate((3000/20000) * 14142) = truncate(2121.3) = 2121
     # So minted should be min(7071, 2121) = 2121
-    # Verify initial shares calculation matches Go's floor(sqrt(R1*R2))
-    expected_initial_shares = int(math.sqrt(10000 * 20000))
+    # Verify initial shares calculation matches Go's ceil(sqrt(R1*R2))
+    # Go uses .Ceil().TruncateInt() on the sqrt result
+    expected_initial_shares = int(math.ceil(math.sqrt(10000 * 20000)))
     assert (
         initial_shares == expected_initial_shares
     ), f"Initial shares should be {expected_initial_shares}, got {initial_shares}"
@@ -787,13 +814,14 @@ def test_add_liquidity_unbalanced_s2_less_than_s1(
     # s1 := add1.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR1.Amount.ToLegacyDec()).TruncateInt()
     # s2 := add2.Amount.ToLegacyDec().MulInt(totalShares).Quo(exR2.Amount.ToLegacyDec()).TruncateInt()
     # minted = min(s1, s2)
-    total_shares = expected_initial_shares
-    s1 = int((5000 / 10000) * total_shares)  # Truncate in Go
-    s2 = int((3000 / 20000) * total_shares)  # Truncate in Go
+    total_shares = initial_shares
+    s1 = (5000 * total_shares) // 10000  # Integer truncate like Go
+    s2 = (3000 * total_shares) // 20000  # Integer truncate like Go
     expected_shares = min(s1, s2)
-    assert (
-        shares_minted == expected_shares
-    ), f"Expected {expected_shares} shares minted (min({s1}, {s2})), got {shares_minted}. Initial: {initial_shares}, Final: {final_shares}"
+    assert shares_minted == expected_shares, (
+        f"Expected {expected_shares} shares minted (min({s1}, {s2})), got {shares_minted}. "
+        f"Initial: {initial_shares}, Final: {final_shares}"
+    )
 
     # CRITICAL: Verify shares can be used to remove liquidity (this would fail if minted was nil)
     # Remove a small portion of the minted shares
