@@ -88,8 +88,6 @@ type Keeper struct {
 	NextSubscriptionID collections.Sequence
 }
 
-
-
 // NewKeeper creates a new crontask Keeper instance
 func NewKeeper(
 	cdc codec.Codec,
@@ -207,12 +205,6 @@ func NewKeeper(
 	return keeper
 }
 
-
-
-
-
-
-
 // HandleBlockEvents receives all block events (begin, txs, end) as a flat list
 func (k Keeper) HandleBlockEvents(ctx sdk.Context, allEvents []abci.Event) {
 	if len(allEvents) == 0 {
@@ -283,47 +275,60 @@ func (k Keeper) HandleBlockEvents(ctx sdk.Context, allEvents []abci.Event) {
 			}
 			continue
 		}
-		if !k.bankKeeper.HasBalance(ctx, creatorAddr, sub.TaskGasFee) {
-			k.Logger.Info("disabling subscription due to insufficient balance", "id", id)
+		// Apply subscription filter against array of normalized events; schedule for each match
+		res := gjson.GetBytes(jsonNormalized, sub.Filter)
+		if !res.Exists() {
+			continue
+		}
 
+		var matches []gjson.Result
+		if res.IsArray() {
+			matches = res.Array()
+		} else {
+			matches = []gjson.Result{res}
+		}
+
+		if len(matches) == 0 {
+			continue
+		}
+
+		// Check balance upfront for ALL matches - require full coverage or disable
+		totalRequired := sub.TaskGasFee.Amount.MulRaw(int64(len(matches)))
+		balance := k.bankKeeper.GetBalance(ctx, creatorAddr, sub.TaskGasFee.Denom)
+		if balance.Amount.LT(totalRequired) {
+			k.Logger.Info("disabling subscription due to insufficient balance for all triggers",
+				"id", id,
+				"matches", len(matches),
+				"required", sdk.NewCoin(sub.TaskGasFee.Denom, totalRequired).String(),
+				"balance", balance.String())
 			sub.Status = "disabled"
-			sub.StatusMessage = fmt.Sprintf("insufficient funds for fee [%s]", sub.TaskGasFee.String())
+			sub.StatusMessage = fmt.Sprintf("insufficient funds: need %s for %d triggers, have %s",
+				sdk.NewCoin(sub.TaskGasFee.Denom, totalRequired).String(),
+				len(matches),
+				balance.String())
 			if err := k.Subscriptions.Set(ctx, sub.SubscriptionId, sub); err != nil {
 				k.Logger.Error("failed to persist disabled subscription", "id", id, "err", err)
 			}
 			continue
 		}
 
-		// Apply subscription filter against array of normalized events; schedule for each match
-		//k.Logger.Info("HandleBlockEvents", "sub.Filter", sub.Filter)
-		res := gjson.GetBytes(jsonNormalized, sub.Filter)
-		//k.Logger.Info("HandleBlockEvents", "res", res.String())
-		if res.Exists() {
-			var matches []gjson.Result
-			if res.IsArray() {
-				matches = res.Array()
-			} else {
-				matches = []gjson.Result{res}
+		// Process matches
+		for _, m := range matches {
+			var matched map[string]any
+			if err := json.Unmarshal([]byte(m.Raw), &matched); err != nil {
+				k.Logger.Error("failed to unmarshal matched normalized event", "id", id, "err", err)
+				continue
 			}
-			for _, m := range matches {
-				var matched map[string]any
-				if err := json.Unmarshal([]byte(m.Raw), &matched); err != nil {
-					k.Logger.Error("failed to unmarshal matched normalized event", "id", id, "err", err)
-					continue
-				}
-				if err := k.createTaskForSubscriptionWithNormalized(ctx, sub, matched); err != nil {
-					k.Logger.Error("failed to create task for subscription", "id", id, "err", err)
-					// disable subscription on task creation failure
-
-					sub.Status = "disabled"
-					sub.StatusMessage = fmt.Sprintf("task creation error: %v", err)
-					if setErr := k.Subscriptions.Set(ctx, sub.SubscriptionId, sub); setErr != nil {
-						k.Logger.Error("failed to persist disabled subscription after task error", "id", id, "err", setErr)
-					}
-					break
-				}
-				sub.TriggerCount++
+			if err := k.createTaskForSubscriptionWithNormalized(ctx, sub, matched); err != nil {
+				k.Logger.Error("failed to create task for subscription", "id", id, "err", err)
+				// Disable subscription on task creation failure.
+				// The outer persist at the end of the loop will save this status.
+				sub.Status = "disabled"
+				sub.StatusMessage = fmt.Sprintf("task creation error: %v", err)
+				break
 			}
+			// Only increment after successful task creation
+			sub.TriggerCount++
 		}
 
 		// persist updates

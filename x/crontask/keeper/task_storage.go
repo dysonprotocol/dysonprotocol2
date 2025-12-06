@@ -50,7 +50,9 @@ func (k Keeper) SetTask(ctx context.Context, task crontasktypes.Task) error {
 	// a collections.ErrNotFound error because that simply means this is a brand
 	// new task.
 	if prev, err := k.Tasks.Get(ctx, task.TaskId); err == nil {
-		k.removeIndexes(ctx, prev)
+		if err := k.removeIndexes(ctx, prev); err != nil {
+			return errorsmod.Wrapf(err, "failed to remove old indexes for task %d", task.TaskId)
+		}
 	} else if !errors.Is(err, collections.ErrNotFound) {
 		// Any other error (e.g. I/O problems) should be reported upstream.
 		return err
@@ -61,7 +63,9 @@ func (k Keeper) SetTask(ctx context.Context, task crontasktypes.Task) error {
 		return err
 	}
 
-	k.addIndexes(ctx, task)
+	if err := k.addIndexes(ctx, task); err != nil {
+		return errorsmod.Wrapf(err, "failed to add indexes for task %d", task.TaskId)
+	}
 	return nil
 }
 
@@ -81,7 +85,9 @@ func (k Keeper) RemoveTask(ctx context.Context, id uint64) error {
 	}
 
 	// Delete secondary-index keys (address, status+timestamp, status+gasPrice)
-	k.removeIndexes(ctx, task)
+	if err := k.removeIndexes(ctx, task); err != nil {
+		return errorsmod.Wrapf(err, "failed to remove indexes for task %d", id)
+	}
 
 	// Finally remove the primary record from the `Tasks` map.
 	return k.Tasks.Remove(ctx, id)

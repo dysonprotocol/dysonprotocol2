@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"encoding/binary"
+	"fmt"
 
 	"cosmossdk.io/collections/indexes"
 	storetypes "cosmossdk.io/store/types"
@@ -19,7 +20,9 @@ func (k Keeper) RebuildIndexes(ctx context.Context) error {
 	// If running in-place, callers should clear old prefixes beforehand if needed.
 	if err := k.Tasks.Walk(ctx, nil, func(_ uint64, task crontasktypes.Task) (bool, error) {
 		// Ensure indexes exist for current task state
-		k.addIndexes(ctx, task)
+		if err := k.addIndexes(ctx, task); err != nil {
+			return true, err
+		}
 		return false, nil
 	}); err != nil {
 		return err
@@ -42,13 +45,16 @@ func bigEndian(u uint64) []byte {
 	return b[:]
 }
 
-// addIndexes writes secondary-index entries for a task
-func (k Keeper) addIndexes(ctx context.Context, t crontasktypes.Task) {
+// addIndexes writes secondary-index entries for a task.
+// Returns an error if any index write fails.
+func (k Keeper) addIndexes(ctx context.Context, t crontasktypes.Task) error {
 	store := k.storeService.OpenKVStore(ctx)
 
 	// address index: prefix | creator | id
 	keyAddr := append(append(indexAddrPrefix, []byte(t.Creator)...), bigEndian(t.TaskId)...)
-	_ = store.Set(keyAddr, []byte{})
+	if err := store.Set(keyAddr, []byte{}); err != nil {
+		return fmt.Errorf("failed to set address index for task %d: %w", t.TaskId, err)
+	}
 
 	// status+timestamp index
 	// For SCHEDULED use scheduled time; for PENDING use creation time; for terminal statuses use execution/expiry
@@ -69,7 +75,9 @@ func (k Keeper) addIndexes(ctx context.Context, t crontasktypes.Task) {
 	tsKey := append(indexStatusTsPrefix, []byte(t.Status)...)
 	tsKey = append(tsKey, bigEndian(tsForIndex)...)
 	tsKey = append(tsKey, bigEndian(t.TaskId)...)
-	_ = store.Set(tsKey, []byte{})
+	if err := store.Set(tsKey, []byte{}); err != nil {
+		return fmt.Errorf("failed to set status+timestamp index for task %d: %w", t.TaskId, err)
+	}
 
 	// status+gasPrice index: use scaled decimal gas price to preserve ordering
 	scaled := t.TaskGasPrice.Amount.MulInt64(1_000_000_000_000).TruncateInt()
@@ -83,15 +91,22 @@ func (k Keeper) addIndexes(ctx context.Context, t crontasktypes.Task) {
 	gpKey := append(indexStatusGasPrefix, []byte(t.Status)...)
 	gpKey = append(gpKey, bigEndian(scaledU64)...)
 	gpKey = append(gpKey, bigEndian(t.TaskId)...)
-	_ = store.Set(gpKey, []byte{})
+	if err := store.Set(gpKey, []byte{}); err != nil {
+		return fmt.Errorf("failed to set status+gas price index for task %d: %w", t.TaskId, err)
+	}
+
+	return nil
 }
 
-// removeIndexes deletes secondary-index entries for a task
-func (k Keeper) removeIndexes(ctx context.Context, t crontasktypes.Task) {
+// removeIndexes deletes secondary-index entries for a task.
+// Returns an error if any index delete fails.
+func (k Keeper) removeIndexes(ctx context.Context, t crontasktypes.Task) error {
 	store := k.storeService.OpenKVStore(ctx)
 
 	keyAddr := append(append(indexAddrPrefix, []byte(t.Creator)...), bigEndian(t.TaskId)...)
-	_ = store.Delete(keyAddr)
+	if err := store.Delete(keyAddr); err != nil {
+		return fmt.Errorf("failed to delete address index for task %d: %w", t.TaskId, err)
+	}
 
 	// status+timestamp index uses same timestamp selection logic as addIndexes
 	var tsForIndex uint64
@@ -110,7 +125,9 @@ func (k Keeper) removeIndexes(ctx context.Context, t crontasktypes.Task) {
 	tsKey := append(indexStatusTsPrefix, []byte(t.Status)...)
 	tsKey = append(tsKey, bigEndian(tsForIndex)...)
 	tsKey = append(tsKey, bigEndian(t.TaskId)...)
-	_ = store.Delete(tsKey)
+	if err := store.Delete(tsKey); err != nil {
+		return fmt.Errorf("failed to delete status+timestamp index for task %d: %w", t.TaskId, err)
+	}
 
 	// Recompute scaled gas price key used for insertion to delete it
 	scaled := t.TaskGasPrice.Amount.MulInt64(1_000_000_000_000).TruncateInt()
@@ -123,7 +140,11 @@ func (k Keeper) removeIndexes(ctx context.Context, t crontasktypes.Task) {
 	gpKey := append(indexStatusGasPrefix, []byte(t.Status)...)
 	gpKey = append(gpKey, bigEndian(scaledU64)...)
 	gpKey = append(gpKey, bigEndian(t.TaskId)...)
-	_ = store.Delete(gpKey)
+	if err := store.Delete(gpKey); err != nil {
+		return fmt.Errorf("failed to delete status+gas price index for task %d: %w", t.TaskId, err)
+	}
+
+	return nil
 }
 
 // Subscriptions are stored in an IndexedMap; secondary indexes are maintained automatically.

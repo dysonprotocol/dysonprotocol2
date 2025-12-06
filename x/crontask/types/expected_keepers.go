@@ -16,6 +16,7 @@ type AccountKeeper interface {
 // BankKeeper defines the expected bank keeper
 type BankKeeper interface {
 	HasBalance(ctx context.Context, addr sdk.AccAddress, amt sdk.Coin) bool
+	GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin
 	SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 }
 
