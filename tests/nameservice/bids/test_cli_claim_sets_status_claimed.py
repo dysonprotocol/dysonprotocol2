@@ -58,7 +58,7 @@ def _latest_bid_status_for_nft(dysond_bin, class_id, nft_id):
     view = dysond_bin(
         "query",
         "nameservice",
-        "query-bids-for-nft",
+        "bids-for-nft",
         "--class-id",
         class_id,
         "--nft-id",

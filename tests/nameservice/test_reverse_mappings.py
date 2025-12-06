@@ -28,7 +28,7 @@ def test_reverse_mapping_creation_on_name_registration(
     query_result = dysond_bin(
         "query",
         "nameservice",
-        "query-names-by-destination",
+        "names-by-destination",
         "--destination",
         alice_address,
     )
@@ -76,7 +76,7 @@ def test_reverse_mapping_update_on_destination_change(
     old_query = dysond_bin(
         "query",
         "nameservice",
-        "query-names-by-destination",
+        "names-by-destination",
         "--destination",
         alice_address,
     )
@@ -91,7 +91,7 @@ def test_reverse_mapping_update_on_destination_change(
     new_query = dysond_bin(
         "query",
         "nameservice",
-        "query-names-by-destination",
+        "names-by-destination",
         "--destination",
         bob_address,
     )
@@ -125,7 +125,7 @@ def test_query_pagination(chainnet, generate_account, faucet, register_name):
     paginated_query = dysond_bin(
         "query",
         "nameservice",
-        "query-names-by-destination",
+        "names-by-destination",
         "--destination",
         alice_address,
         "--page-limit",

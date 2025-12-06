@@ -104,7 +104,7 @@ def test_cli_bids_for_nft_outbid_chain(
     resp = dysond_bin(
         "query",
         "nameservice",
-        "query-bids-for-nft",
+        "bids-for-nft",
         "--class-id",
         class_id,
         "--nft-id",

@@ -58,9 +58,15 @@ func (k Keeper) SetDestination(ctx context.Context, msg *nameservicev1.MsgSetDes
 			}
 
 			// Check that the destination chain resolves and doesn't include this name (circular)
+			// Also enforce max depth of 10 to prevent excessively long chains
+			// The chain includes: source name -> destination -> ... -> terminal address
+			// A chain of 10 names total (source + 9 intermediate) is the maximum allowed
+			// The 10th name must resolve to an address, not another name
 			visited := map[string]bool{msg.Name: true} // Include source name to detect cycles
 			current := msg.Destination
-			for i := 0; i < 10; i++ {
+			const maxDepth = 9 // Max 9 intermediate names (10 total including source)
+			depth := 1         // Count the source -> destination hop
+			for depth <= maxDepth {
 				if visited[current] {
 					k.Logger.Error("SetDestination: Circular reference detected", "name", msg.Name, "destination", msg.Destination, "cycle_at", current)
 					return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "destination creates circular name chain")
@@ -69,7 +75,14 @@ func (k Keeper) SetDestination(ctx context.Context, msg *nameservicev1.MsgSetDes
 
 				// Check if current resolves to an address (terminal)
 				if _, addrErr := sdk.AccAddressFromBech32(current); addrErr == nil {
-					break // Reached a terminal address
+					break // Reached a terminal address - chain is valid
+				}
+
+				// Not an address, so it's another name - increment depth
+				depth++
+				if depth > maxDepth {
+					k.Logger.Error("SetDestination: Chain exceeds maximum depth", "name", msg.Name, "destination", msg.Destination, "depth", depth)
+					return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "destination chain exceeds maximum depth of 10")
 				}
 
 				// Get the next hop
@@ -84,7 +97,7 @@ func (k Keeper) SetDestination(ctx context.Context, msg *nameservicev1.MsgSetDes
 				}
 				current = destNFT.Uri
 			}
-			k.Logger.Info("SetDestination: Destination chain validated", "name", msg.Name, "destination", msg.Destination)
+			k.Logger.Info("SetDestination: Destination chain validated", "name", msg.Name, "destination", msg.Destination, "depth", depth)
 		} else {
 			k.Logger.Info("SetDestination: Destination is a valid bech32 address", "destination", msg.Destination)
 		}

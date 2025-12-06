@@ -28,6 +28,11 @@ type ExecScriptResponse struct {
 
 type scriptDepthKey struct{}
 
+// MaxScriptDepth limits nested script calls to prevent stack overflow and resource exhaustion.
+// A script at depth 1 can call another script (depth 2), which can call another (depth 3).
+// Calls beyond this depth are rejected.
+const MaxScriptDepth = 3
+
 func (k Keeper) execScript(sdkCtx sdk.Context, scriptCtx *ExecScriptContext) (*ExecScriptResponse, error) {
 
 	// Get current depth from context
@@ -36,6 +41,12 @@ func (k Keeper) execScript(sdkCtx sdk.Context, scriptCtx *ExecScriptContext) (*E
 		depth = 1
 	} else {
 		depth++
+	}
+
+	// Enforce maximum depth to prevent stack overflow from recursive script calls
+	if depth > MaxScriptDepth {
+		return nil, cosmossdkerrors.Wrapf(scriptErrors.ErrMaxLimit,
+			"maximum script call depth (%d) exceeded at depth %d", MaxScriptDepth, depth)
 	}
 
 	k.Logger(sdkCtx).Info("current depth", "depth", depth)

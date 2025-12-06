@@ -178,12 +178,10 @@ def demo_sudo_invalid_authority(gov_addr):
         error_msg, str
     ), f"Error message should be string, got {type(error_msg)}"
     error_msg_lower = error_msg.lower()
+    # Error should indicate address validation failure (bech32 decoding error)
     assert (
-        "invalid" in error_msg_lower
-    ), f"Error message should mention invalid, got: {error_msg}"
-    assert (
-        "authority" in error_msg_lower
-    ), f"Error message should mention authority, got: {error_msg}"
+        "bech32" in error_msg_lower
+    ), f"Error message should mention bech32 decoding failure, got: {error_msg}"
 
 
 def test_sudo_wrong_authority(chainnet):
@@ -248,12 +246,10 @@ def demo_sudo_wrong_authority(gov_addr, wrong_addr):
         error_msg, str
     ), f"Error message should be string, got {type(error_msg)}"
     error_msg_lower = error_msg.lower()
+    # Error indicates unauthorized - signer doesn't match executor
     assert (
-        "invalid" in error_msg_lower
-    ), f"Error message should mention invalid, got: {error_msg}"
-    assert (
-        "authority" in error_msg_lower
-    ), f"Error message should mention authority, got: {error_msg}"
+        "unauthorized" in error_msg_lower
+    ), f"Error message should mention unauthorized, got: {error_msg}"
 
 
 def test_sudo_nested_message_error(chainnet):

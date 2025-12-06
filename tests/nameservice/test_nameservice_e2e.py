@@ -1001,17 +1001,17 @@ def test_nameservice_e2e(chainnet, generate_account, faucet):
         timeout_bid_amount
     ), "Charlie's bid on timeout name not recorded correctly"
 
-    # Wait for bid timeout by polling blocks. Default nameservice.dys timeout is ~2s.
-    # With ~500ms block time, wait for >= 6 blocks since the bid.
+    # Wait for bid timeout by polling blocks. Default nameservice.dys timeout is ~5s.
+    # With ~500ms block time, wait for >= 12 blocks since the bid.
     bid_block_height = int(timeout_bid_result["height"])
 
     def timeout_elapsed():
         out = dysond_bin("query", "block")
         current_block = int(out["header"]["height"])
-        return (current_block - bid_block_height) >= 6
+        return (current_block - bid_block_height) >= 12
 
     poll_until_condition(
-        timeout_elapsed, timeout=15, error_message="Bid timeout did not elapse"
+        timeout_elapsed, timeout=20, error_message="Bid timeout did not elapse"
     )
 
     claim_bid_result = dysond_bin(

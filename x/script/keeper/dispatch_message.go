@@ -9,11 +9,28 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// DispatchMessage dispatches a message for execution and returns the result
+// DispatchMessage dispatches a message for execution and returns the result.
+// The executor must be the first (and only) signer of the message.
 func (k Keeper) DispatchMessage(sdkCtx sdk.Context, executor sdk.AccAddress, msg sdk.Msg) (sdk.Msg, error) {
 	err := validateMsg(msg)
 	if err != nil {
 		return nil, err
+	}
+
+	// Validate signer BEFORE execution to prevent unauthorized message dispatch
+	signers, _, err := k.cdc.GetMsgV1Signers(msg)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrapf(err, "failed to get message signers")
+	}
+
+	// Verify signer count - scripts can only dispatch single-signer messages
+	if len(signers) != 1 {
+		return nil, cosmossdkerrors.Wrap(scriptErrors.ErrUnauthorized, "incorrect number of signers")
+	}
+
+	// Verify executor matches the message signer
+	if !bytes.Equal(signers[0], executor) {
+		return nil, cosmossdkerrors.Wrap(scriptErrors.ErrUnauthorized, "the first signer must be the message creator")
 	}
 
 	// Use the MsgServiceRouter to route and handle the message
@@ -22,27 +39,10 @@ func (k Keeper) DispatchMessage(sdkCtx sdk.Context, executor sdk.AccAddress, msg
 		return nil, fmt.Errorf("no message handler found for %s", sdk.MsgTypeURL(msg))
 	}
 
-	// Get the response and convert back to sdk.Msg
+	// Execute the message now that authorization is verified
 	resp, err := handler(sdkCtx, msg)
-
 	if err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to dispatch message")
-	}
-
-	// Get signers using the codec
-	signers, _, err := k.cdc.GetMsgV1Signers(msg)
-	if err != nil {
-		return nil, err
-	}
-
-	// Verify signer count
-	if len(signers) != 1 {
-		return nil, cosmossdkerrors.Wrap(scriptErrors.ErrUnauthorized, "incorrect number of signers")
-	}
-
-	// Verify executor
-	if !bytes.Equal(signers[0], executor) {
-		return nil, cosmossdkerrors.Wrap(scriptErrors.ErrUnauthorized, "the first signer must be the message creator")
 	}
 
 	// Extract message from response

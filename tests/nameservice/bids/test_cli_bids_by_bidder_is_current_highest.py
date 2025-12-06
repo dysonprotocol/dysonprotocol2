@@ -103,18 +103,16 @@ def test_cli_bids_by_bidder_is_current_highest(
     bob_view = dysond_bin(
         "query",
         "nameservice",
-        "query-bids-by-bidder",
+        "bids-by-bidder",
         "--bidder",
         bob_addr,
-        "--include-nft-status",
     )
     carol_view = dysond_bin(
         "query",
         "nameservice",
-        "query-bids-by-bidder",
+        "bids-by-bidder",
         "--bidder",
         carol_addr,
-        "--include-nft-status",
     )
 
     bob_bids = [
