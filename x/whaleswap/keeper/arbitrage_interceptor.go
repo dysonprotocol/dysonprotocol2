@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	"dysonprotocol.com/x/whaleswap/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -103,7 +101,13 @@ func (i *ArbitrageMsgInterceptor) Post(ctx sdk.Context, msg sdk.Msg, result *sdk
 
 	remaining, paid, addr, affErr := i.keeper.ProcessAffiliatePayment(ctx, netProfit, affiliateName)
 	if affErr != nil {
-		panic(fmt.Sprintf("affiliate payment failed: %v", affErr))
+		// Log error but don't fail - Post handlers are fire-and-forget per SDK design
+		// Arbitrage succeeded; affiliate payment is best-effort
+		i.keeper.ArbitrageLogger(ctx).Error("affiliate payment failed",
+			"error", affErr,
+			"name", affiliateName,
+			"profit", netProfit)
+		return
 	}
 	if paid.IsZero() {
 		return

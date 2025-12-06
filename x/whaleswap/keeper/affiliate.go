@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
+	nameservicetypes "dysonprotocol.com/x/nameservice/types"
 	whaleswap "dysonprotocol.com/x/whaleswap"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -12,15 +13,16 @@ import (
 const maxAffiliateNameLen = 128
 
 // ParseAffiliateName extracts and validates an affiliate dysname from a memo.
-// Returns empty string if memo is empty, too long, or not a valid dysname.
+// Returns empty string if memo is empty, too long, or not a valid dysname format.
+// Uses nameservice.NameRegex to ensure only resolvable names are attempted.
 func ParseAffiliateName(memo string) string {
 	memo = strings.TrimSpace(memo)
 	if memo == "" || len(memo) > maxAffiliateNameLen {
 		return ""
 	}
-	// Must end with .dys to be a dysname
 	lower := strings.ToLower(memo)
-	if !strings.HasSuffix(lower, ".dys") {
+	// Validate against nameservice regex: ^[a-z]([-a-z0-9]*[a-z0-9])?\.dys$
+	if !nameservicetypes.NameRegex.MatchString(lower) {
 		return ""
 	}
 	return lower
@@ -58,10 +60,9 @@ func (k Keeper) ProcessAffiliatePayment(ctx sdk.Context, profit sdk.Coins, affil
 		return profit, nil, "", nil
 	}
 
-	// Don't pay affiliate if it's the arb module itself
-	arbModuleAddr := k.accKeeper.GetModuleAddress(whaleswap.ArbRevenueModuleName)
-	if addr.Equals(arbModuleAddr) {
-		logger.Debug("affiliate is arb module, skipping", "name", affiliateName)
+	// Don't pay blocked addresses (module accounts, etc.)
+	if k.bank.BlockedAddr(addr) {
+		logger.Debug("affiliate address blocked", "addr", affiliateAddr, "name", affiliateName)
 		return profit, nil, "", nil
 	}
 
@@ -74,10 +75,12 @@ func (k Keeper) ProcessAffiliatePayment(ctx sdk.Context, profit sdk.Coins, affil
 		return profit, nil, affiliateAddr, nil
 	}
 
-	// Calculate remaining after subtracting affiliate share
+	// Calculate remaining after subtracting affiliate share (truncated coins only)
 	remainingCoins, hasNeg := profit.SafeSub(affiliateCoins...)
 	if hasNeg {
-		// Rounding edge case: affiliate share exceeds profit, skip payment
+		// Rounding edge case: should not happen with truncation, but log and skip
+		logger.Info("affiliate share exceeds profit after truncation, skipping",
+			"profit", profit, "affiliate_share", affiliateCoins)
 		return profit, nil, affiliateAddr, nil
 	}
 

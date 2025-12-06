@@ -28,6 +28,8 @@ type BankKeeper interface {
 	SpendableCoins(ctx context.Context, addr sdk.AccAddress) sdk.Coins
 	GetSupply(ctx context.Context, denom string) sdk.Coin
 	GetDenomMetaData(ctx context.Context, denom string) (banktypes.Metadata, bool)
+	// BlockedAddr returns true if the address is blocked from receiving funds (module accounts, etc.)
+	BlockedAddr(addr sdk.AccAddress) bool
 }
 
 type NameserviceKeeper interface {
