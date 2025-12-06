@@ -73,26 +73,36 @@ func parseValue(raw string) interface{} {
 	return raw
 }
 
+// maxParseDepth limits recursion depth to prevent stack overflow on maliciously nested JSON.
+const maxParseDepth = 100
+
 // deepParse recursively parses values, decoding nested JSON strings into structures where appropriate.
 func deepParse(v interface{}) interface{} {
+	return deepParseWithDepth(v, 0)
+}
+
+func deepParseWithDepth(v interface{}, depth int) interface{} {
+	if depth > maxParseDepth {
+		return v // Stop recursing, return as-is
+	}
 	switch vv := v.(type) {
 	case string:
 		trimmed := strings.TrimSpace(vv)
 		if strings.HasPrefix(trimmed, "{") || strings.HasPrefix(trimmed, "[") {
 			var inner interface{}
 			if err := json.Unmarshal([]byte(vv), &inner); err == nil {
-				return deepParse(inner)
+				return deepParseWithDepth(inner, depth+1)
 			}
 		}
 		return vv
 	case map[string]interface{}:
 		for key, val := range vv {
-			vv[key] = deepParse(val)
+			vv[key] = deepParseWithDepth(val, depth+1)
 		}
 		return vv
 	case []interface{}:
 		for i, val := range vv {
-			vv[i] = deepParse(val)
+			vv[i] = deepParseWithDepth(val, depth+1)
 		}
 		return vv
 	default:
