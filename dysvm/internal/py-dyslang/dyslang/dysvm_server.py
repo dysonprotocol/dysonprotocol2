@@ -990,7 +990,7 @@ dyslang.WHITELIST_FUNCTIONS.update(
         "freezegun.api.FakeDatetime.utcfromtimestamp",
         "freezegun.api.FakeDatetime.utcnow",
         "freezegun.api.FakeDatetime.utcoffset",
-        "freezegun.api.FakeDatetime.utctimetuple"
+        "freezegun.api.FakeDatetime.utctimetuple",
         # Datetime: parsing/formatting functions
         "Datetime.astimezone",
         "Datetime.combine",

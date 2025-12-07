@@ -76,6 +76,10 @@
                         "pattern": "^([0-9]+\\.?[0-9]*|\\.[0-9]+)s$",
                         "type": "string",
                         "format": "regex"
+                    },
+                    "reserved_names": {
+                        "type": "string",
+                        "description": "reserved_names defines a newline-separated list of forbidden .dys names that cannot be registered via the normal commit-reveal process. Blank lines and lines starting with # are ignored. Reserved names can still be created via CreateExternalName (governance only)."
                     }
                 },
                 "additionalProperties": false,

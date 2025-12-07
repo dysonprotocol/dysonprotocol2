@@ -300,6 +300,266 @@ def reveal_empty_name():
 
 
 @pytest.mark.nameservice
+def test_reveal_reserved_name_fails(chainnet):
+    """Test reveal with reserved name fails."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-test.dys"
+        }
+    })
+    
+    # Step 2: Create commitment for reserved name
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "reserved-test.dys",
+        "salt": "random_salt_123",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Try reveal with reserved name - should fail
+    try:
+        reveal_result = _sudo({
+            "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+            "committer": executor,
+            "name": "reserved-test.dys",
+            "salt": "random_salt_123"
+        })
+        return {"error": None, "result": reveal_result}
+    except Exception as e:
+        return {"error": str(e), "result": None}
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert "result" in parsed, "Missing result in response"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    assert "error" in function_result, "Missing error in response"
+    assert "result" in function_result, "Missing result in response"
+
+    error = function_result["error"]
+    assert isinstance(error, str), f"Expected error to be string, got {type(error)}"
+    assert error is not None, "Expected error for reserved name"
+    assert "reserved" in error.lower(), (
+        f"Expected reserved name error, got: {error}"
+    )
+    assert "cannot be registered via reveal" in error.lower(), (
+        f"Expected 'cannot be registered via reveal' in error, got: {error}"
+    )
+
+    func_result = function_result["result"]
+    assert func_result is None, "Expected no result for error case"
+
+
+@pytest.mark.nameservice
+def test_reveal_non_reserved_name_succeeds(chainnet):
+    """Test reveal with non-reserved name succeeds even when reserved names are set."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_non_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-test.dys"
+        }
+    })
+    
+    # Step 2: Create commitment for non-reserved name
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "allowed-test.dys",
+        "salt": "random_salt_456",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Reveal with non-reserved name - should succeed
+    reveal_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": executor,
+        "name": "allowed-test.dys",
+        "salt": "random_salt_456"
+    })
+    
+    # Step 4: Query the NFT to verify it was minted
+    nft_query = _query({
+        "@type": "/dysonprotocol.nft.v1beta1.QueryNFTRequest",
+        "class_id": "nameservice.dys",
+        "id": "allowed-test.dys"
+    })
+    
+    return {
+        "reveal_result": reveal_result,
+        "nft_query": nft_query
+    }
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_non_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    # Verify reveal succeeded
+    assert "reveal_result" in function_result, "Missing reveal_result in response"
+    reveal_result = function_result["reveal_result"]
+    assert isinstance(reveal_result, dict), (
+        f"Expected reveal_result to be dict, got {type(reveal_result)}"
+    )
+    assert "@type" in reveal_result, "Missing @type in reveal_result"
+    assert reveal_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
+
+    # Verify NFT was minted
+    assert "nft_query" in function_result, "Missing nft_query in response"
+    nft_query = function_result["nft_query"]
+    assert isinstance(nft_query, dict), (
+        f"Expected nft_query to be dict, got {type(nft_query)}"
+    )
+    assert "nft" in nft_query, "Missing nft in query response"
+    nft = nft_query["nft"]
+    assert isinstance(nft, dict), f"Expected nft to be dict, got {type(nft)}"
+    assert nft["id"] == "allowed-test.dys", (
+        f"Expected NFT id 'allowed-test.dys', got: {nft['id']}"
+    )
+
+
+@pytest.mark.nameservice
 def test_reveal_empty_salt(chainnet):
     """Test reveal with empty salt fails."""
     dysond = chainnet[0]
@@ -400,6 +660,266 @@ def reveal_empty_salt():
 
 
 @pytest.mark.nameservice
+def test_reveal_reserved_name_fails(chainnet):
+    """Test reveal with reserved name fails."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-test.dys"
+        }
+    })
+    
+    # Step 2: Create commitment for reserved name
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "reserved-test.dys",
+        "salt": "random_salt_123",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Try reveal with reserved name - should fail
+    try:
+        reveal_result = _sudo({
+            "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+            "committer": executor,
+            "name": "reserved-test.dys",
+            "salt": "random_salt_123"
+        })
+        return {"error": None, "result": reveal_result}
+    except Exception as e:
+        return {"error": str(e), "result": None}
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert "result" in parsed, "Missing result in response"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    assert "error" in function_result, "Missing error in response"
+    assert "result" in function_result, "Missing result in response"
+
+    error = function_result["error"]
+    assert isinstance(error, str), f"Expected error to be string, got {type(error)}"
+    assert error is not None, "Expected error for reserved name"
+    assert "reserved" in error.lower(), (
+        f"Expected reserved name error, got: {error}"
+    )
+    assert "cannot be registered via reveal" in error.lower(), (
+        f"Expected 'cannot be registered via reveal' in error, got: {error}"
+    )
+
+    func_result = function_result["result"]
+    assert func_result is None, "Expected no result for error case"
+
+
+@pytest.mark.nameservice
+def test_reveal_non_reserved_name_succeeds(chainnet):
+    """Test reveal with non-reserved name succeeds even when reserved names are set."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_non_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-test.dys"
+        }
+    })
+    
+    # Step 2: Create commitment for non-reserved name
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "allowed-test.dys",
+        "salt": "random_salt_456",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Reveal with non-reserved name - should succeed
+    reveal_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": executor,
+        "name": "allowed-test.dys",
+        "salt": "random_salt_456"
+    })
+    
+    # Step 4: Query the NFT to verify it was minted
+    nft_query = _query({
+        "@type": "/dysonprotocol.nft.v1beta1.QueryNFTRequest",
+        "class_id": "nameservice.dys",
+        "id": "allowed-test.dys"
+    })
+    
+    return {
+        "reveal_result": reveal_result,
+        "nft_query": nft_query
+    }
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_non_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    # Verify reveal succeeded
+    assert "reveal_result" in function_result, "Missing reveal_result in response"
+    reveal_result = function_result["reveal_result"]
+    assert isinstance(reveal_result, dict), (
+        f"Expected reveal_result to be dict, got {type(reveal_result)}"
+    )
+    assert "@type" in reveal_result, "Missing @type in reveal_result"
+    assert reveal_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
+
+    # Verify NFT was minted
+    assert "nft_query" in function_result, "Missing nft_query in response"
+    nft_query = function_result["nft_query"]
+    assert isinstance(nft_query, dict), (
+        f"Expected nft_query to be dict, got {type(nft_query)}"
+    )
+    assert "nft" in nft_query, "Missing nft in query response"
+    nft = nft_query["nft"]
+    assert isinstance(nft, dict), f"Expected nft to be dict, got {type(nft)}"
+    assert nft["id"] == "allowed-test.dys", (
+        f"Expected NFT id 'allowed-test.dys', got: {nft['id']}"
+    )
+
+
+@pytest.mark.nameservice
 def test_reveal_empty_committer(chainnet):
     """Test reveal with empty committer fails."""
     dysond = chainnet[0]
@@ -496,6 +1016,266 @@ def reveal_empty_committer():
 
     func_result = function_result["result"]
     assert func_result is None, "Expected no result for error case"
+
+
+@pytest.mark.nameservice
+def test_reveal_reserved_name_fails(chainnet):
+    """Test reveal with reserved name fails."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-test.dys"
+        }
+    })
+    
+    # Step 2: Create commitment for reserved name
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "reserved-test.dys",
+        "salt": "random_salt_123",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Try reveal with reserved name - should fail
+    try:
+        reveal_result = _sudo({
+            "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+            "committer": executor,
+            "name": "reserved-test.dys",
+            "salt": "random_salt_123"
+        })
+        return {"error": None, "result": reveal_result}
+    except Exception as e:
+        return {"error": str(e), "result": None}
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert "result" in parsed, "Missing result in response"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    assert "error" in function_result, "Missing error in response"
+    assert "result" in function_result, "Missing result in response"
+
+    error = function_result["error"]
+    assert isinstance(error, str), f"Expected error to be string, got {type(error)}"
+    assert error is not None, "Expected error for reserved name"
+    assert "reserved" in error.lower(), (
+        f"Expected reserved name error, got: {error}"
+    )
+    assert "cannot be registered via reveal" in error.lower(), (
+        f"Expected 'cannot be registered via reveal' in error, got: {error}"
+    )
+
+    func_result = function_result["result"]
+    assert func_result is None, "Expected no result for error case"
+
+
+@pytest.mark.nameservice
+def test_reveal_non_reserved_name_succeeds(chainnet):
+    """Test reveal with non-reserved name succeeds even when reserved names are set."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_non_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-test.dys"
+        }
+    })
+    
+    # Step 2: Create commitment for non-reserved name
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "allowed-test.dys",
+        "salt": "random_salt_456",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Reveal with non-reserved name - should succeed
+    reveal_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": executor,
+        "name": "allowed-test.dys",
+        "salt": "random_salt_456"
+    })
+    
+    # Step 4: Query the NFT to verify it was minted
+    nft_query = _query({
+        "@type": "/dysonprotocol.nft.v1beta1.QueryNFTRequest",
+        "class_id": "nameservice.dys",
+        "id": "allowed-test.dys"
+    })
+    
+    return {
+        "reveal_result": reveal_result,
+        "nft_query": nft_query
+    }
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_non_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    # Verify reveal succeeded
+    assert "reveal_result" in function_result, "Missing reveal_result in response"
+    reveal_result = function_result["reveal_result"]
+    assert isinstance(reveal_result, dict), (
+        f"Expected reveal_result to be dict, got {type(reveal_result)}"
+    )
+    assert "@type" in reveal_result, "Missing @type in reveal_result"
+    assert reveal_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
+
+    # Verify NFT was minted
+    assert "nft_query" in function_result, "Missing nft_query in response"
+    nft_query = function_result["nft_query"]
+    assert isinstance(nft_query, dict), (
+        f"Expected nft_query to be dict, got {type(nft_query)}"
+    )
+    assert "nft" in nft_query, "Missing nft in query response"
+    nft = nft_query["nft"]
+    assert isinstance(nft, dict), f"Expected nft to be dict, got {type(nft)}"
+    assert nft["id"] == "allowed-test.dys", (
+        f"Expected NFT id 'allowed-test.dys', got: {nft['id']}"
+    )
 
 
 @pytest.mark.nameservice
@@ -712,6 +1492,266 @@ def reveal_commitment_not_found():
 
 
 @pytest.mark.nameservice
+def test_reveal_reserved_name_fails(chainnet):
+    """Test reveal with reserved name fails."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-test.dys"
+        }
+    })
+    
+    # Step 2: Create commitment for reserved name
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "reserved-test.dys",
+        "salt": "random_salt_123",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Try reveal with reserved name - should fail
+    try:
+        reveal_result = _sudo({
+            "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+            "committer": executor,
+            "name": "reserved-test.dys",
+            "salt": "random_salt_123"
+        })
+        return {"error": None, "result": reveal_result}
+    except Exception as e:
+        return {"error": str(e), "result": None}
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert "result" in parsed, "Missing result in response"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    assert "error" in function_result, "Missing error in response"
+    assert "result" in function_result, "Missing result in response"
+
+    error = function_result["error"]
+    assert isinstance(error, str), f"Expected error to be string, got {type(error)}"
+    assert error is not None, "Expected error for reserved name"
+    assert "reserved" in error.lower(), (
+        f"Expected reserved name error, got: {error}"
+    )
+    assert "cannot be registered via reveal" in error.lower(), (
+        f"Expected 'cannot be registered via reveal' in error, got: {error}"
+    )
+
+    func_result = function_result["result"]
+    assert func_result is None, "Expected no result for error case"
+
+
+@pytest.mark.nameservice
+def test_reveal_non_reserved_name_succeeds(chainnet):
+    """Test reveal with non-reserved name succeeds even when reserved names are set."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_non_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-test.dys"
+        }
+    })
+    
+    # Step 2: Create commitment for non-reserved name
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "allowed-test.dys",
+        "salt": "random_salt_456",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Reveal with non-reserved name - should succeed
+    reveal_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": executor,
+        "name": "allowed-test.dys",
+        "salt": "random_salt_456"
+    })
+    
+    # Step 4: Query the NFT to verify it was minted
+    nft_query = _query({
+        "@type": "/dysonprotocol.nft.v1beta1.QueryNFTRequest",
+        "class_id": "nameservice.dys",
+        "id": "allowed-test.dys"
+    })
+    
+    return {
+        "reveal_result": reveal_result,
+        "nft_query": nft_query
+    }
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_non_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    # Verify reveal succeeded
+    assert "reveal_result" in function_result, "Missing reveal_result in response"
+    reveal_result = function_result["reveal_result"]
+    assert isinstance(reveal_result, dict), (
+        f"Expected reveal_result to be dict, got {type(reveal_result)}"
+    )
+    assert "@type" in reveal_result, "Missing @type in reveal_result"
+    assert reveal_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
+
+    # Verify NFT was minted
+    assert "nft_query" in function_result, "Missing nft_query in response"
+    nft_query = function_result["nft_query"]
+    assert isinstance(nft_query, dict), (
+        f"Expected nft_query to be dict, got {type(nft_query)}"
+    )
+    assert "nft" in nft_query, "Missing nft in query response"
+    nft = nft_query["nft"]
+    assert isinstance(nft, dict), f"Expected nft to be dict, got {type(nft)}"
+    assert nft["id"] == "allowed-test.dys", (
+        f"Expected NFT id 'allowed-test.dys', got: {nft['id']}"
+    )
+
+
+@pytest.mark.nameservice
 def test_reveal_commitment_mismatch(chainnet):
     """Test reveal with wrong committer fails."""
     dysond = chainnet[0]
@@ -814,6 +1854,266 @@ def reveal_commitment_mismatch():
 
 
 @pytest.mark.nameservice
+def test_reveal_reserved_name_fails(chainnet):
+    """Test reveal with reserved name fails."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-test.dys"
+        }
+    })
+    
+    # Step 2: Create commitment for reserved name
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "reserved-test.dys",
+        "salt": "random_salt_123",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Try reveal with reserved name - should fail
+    try:
+        reveal_result = _sudo({
+            "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+            "committer": executor,
+            "name": "reserved-test.dys",
+            "salt": "random_salt_123"
+        })
+        return {"error": None, "result": reveal_result}
+    except Exception as e:
+        return {"error": str(e), "result": None}
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert "result" in parsed, "Missing result in response"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    assert "error" in function_result, "Missing error in response"
+    assert "result" in function_result, "Missing result in response"
+
+    error = function_result["error"]
+    assert isinstance(error, str), f"Expected error to be string, got {type(error)}"
+    assert error is not None, "Expected error for reserved name"
+    assert "reserved" in error.lower(), (
+        f"Expected reserved name error, got: {error}"
+    )
+    assert "cannot be registered via reveal" in error.lower(), (
+        f"Expected 'cannot be registered via reveal' in error, got: {error}"
+    )
+
+    func_result = function_result["result"]
+    assert func_result is None, "Expected no result for error case"
+
+
+@pytest.mark.nameservice
+def test_reveal_non_reserved_name_succeeds(chainnet):
+    """Test reveal with non-reserved name succeeds even when reserved names are set."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_non_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-test.dys"
+        }
+    })
+    
+    # Step 2: Create commitment for non-reserved name
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "allowed-test.dys",
+        "salt": "random_salt_456",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Reveal with non-reserved name - should succeed
+    reveal_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": executor,
+        "name": "allowed-test.dys",
+        "salt": "random_salt_456"
+    })
+    
+    # Step 4: Query the NFT to verify it was minted
+    nft_query = _query({
+        "@type": "/dysonprotocol.nft.v1beta1.QueryNFTRequest",
+        "class_id": "nameservice.dys",
+        "id": "allowed-test.dys"
+    })
+    
+    return {
+        "reveal_result": reveal_result,
+        "nft_query": nft_query
+    }
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_non_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    # Verify reveal succeeded
+    assert "reveal_result" in function_result, "Missing reveal_result in response"
+    reveal_result = function_result["reveal_result"]
+    assert isinstance(reveal_result, dict), (
+        f"Expected reveal_result to be dict, got {type(reveal_result)}"
+    )
+    assert "@type" in reveal_result, "Missing @type in reveal_result"
+    assert reveal_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
+
+    # Verify NFT was minted
+    assert "nft_query" in function_result, "Missing nft_query in response"
+    nft_query = function_result["nft_query"]
+    assert isinstance(nft_query, dict), (
+        f"Expected nft_query to be dict, got {type(nft_query)}"
+    )
+    assert "nft" in nft_query, "Missing nft in query response"
+    nft = nft_query["nft"]
+    assert isinstance(nft, dict), f"Expected nft to be dict, got {type(nft)}"
+    assert nft["id"] == "allowed-test.dys", (
+        f"Expected NFT id 'allowed-test.dys', got: {nft['id']}"
+    )
+
+
+@pytest.mark.nameservice
 def test_reveal_invalid_valuation(chainnet):
     """Test reveal with zero valuation fails."""
     dysond = chainnet[0]
@@ -907,6 +2207,266 @@ def reveal_invalid_valuation():
 
 
 @pytest.mark.nameservice
+def test_reveal_reserved_name_fails(chainnet):
+    """Test reveal with reserved name fails."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-test.dys"
+        }
+    })
+    
+    # Step 2: Create commitment for reserved name
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "reserved-test.dys",
+        "salt": "random_salt_123",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Try reveal with reserved name - should fail
+    try:
+        reveal_result = _sudo({
+            "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+            "committer": executor,
+            "name": "reserved-test.dys",
+            "salt": "random_salt_123"
+        })
+        return {"error": None, "result": reveal_result}
+    except Exception as e:
+        return {"error": str(e), "result": None}
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert "result" in parsed, "Missing result in response"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    assert "error" in function_result, "Missing error in response"
+    assert "result" in function_result, "Missing result in response"
+
+    error = function_result["error"]
+    assert isinstance(error, str), f"Expected error to be string, got {type(error)}"
+    assert error is not None, "Expected error for reserved name"
+    assert "reserved" in error.lower(), (
+        f"Expected reserved name error, got: {error}"
+    )
+    assert "cannot be registered via reveal" in error.lower(), (
+        f"Expected 'cannot be registered via reveal' in error, got: {error}"
+    )
+
+    func_result = function_result["result"]
+    assert func_result is None, "Expected no result for error case"
+
+
+@pytest.mark.nameservice
+def test_reveal_non_reserved_name_succeeds(chainnet):
+    """Test reveal with non-reserved name succeeds even when reserved names are set."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_non_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-test.dys"
+        }
+    })
+    
+    # Step 2: Create commitment for non-reserved name
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "allowed-test.dys",
+        "salt": "random_salt_456",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Reveal with non-reserved name - should succeed
+    reveal_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": executor,
+        "name": "allowed-test.dys",
+        "salt": "random_salt_456"
+    })
+    
+    # Step 4: Query the NFT to verify it was minted
+    nft_query = _query({
+        "@type": "/dysonprotocol.nft.v1beta1.QueryNFTRequest",
+        "class_id": "nameservice.dys",
+        "id": "allowed-test.dys"
+    })
+    
+    return {
+        "reveal_result": reveal_result,
+        "nft_query": nft_query
+    }
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_non_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    # Verify reveal succeeded
+    assert "reveal_result" in function_result, "Missing reveal_result in response"
+    reveal_result = function_result["reveal_result"]
+    assert isinstance(reveal_result, dict), (
+        f"Expected reveal_result to be dict, got {type(reveal_result)}"
+    )
+    assert "@type" in reveal_result, "Missing @type in reveal_result"
+    assert reveal_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
+
+    # Verify NFT was minted
+    assert "nft_query" in function_result, "Missing nft_query in response"
+    nft_query = function_result["nft_query"]
+    assert isinstance(nft_query, dict), (
+        f"Expected nft_query to be dict, got {type(nft_query)}"
+    )
+    assert "nft" in nft_query, "Missing nft in query response"
+    nft = nft_query["nft"]
+    assert isinstance(nft, dict), f"Expected nft to be dict, got {type(nft)}"
+    assert nft["id"] == "allowed-test.dys", (
+        f"Expected NFT id 'allowed-test.dys', got: {nft['id']}"
+    )
+
+
+@pytest.mark.nameservice
 def test_reveal_nil_request(chainnet):
     """Test reveal with nil request fails."""
     dysond = chainnet[0]
@@ -981,3 +2541,263 @@ def reveal_nil_request():
 
     func_result = function_result["result"]
     assert func_result is None, "Expected no result for error case"
+
+
+@pytest.mark.nameservice
+def test_reveal_reserved_name_fails(chainnet):
+    """Test reveal with reserved name fails."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-test.dys"
+        }
+    })
+    
+    # Step 2: Create commitment for reserved name
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "reserved-test.dys",
+        "salt": "random_salt_123",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Try reveal with reserved name - should fail
+    try:
+        reveal_result = _sudo({
+            "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+            "committer": executor,
+            "name": "reserved-test.dys",
+            "salt": "random_salt_123"
+        })
+        return {"error": None, "result": reveal_result}
+    except Exception as e:
+        return {"error": str(e), "result": None}
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert "result" in parsed, "Missing result in response"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    assert "error" in function_result, "Missing error in response"
+    assert "result" in function_result, "Missing result in response"
+
+    error = function_result["error"]
+    assert isinstance(error, str), f"Expected error to be string, got {type(error)}"
+    assert error is not None, "Expected error for reserved name"
+    assert "reserved" in error.lower(), (
+        f"Expected reserved name error, got: {error}"
+    )
+    assert "cannot be registered via reveal" in error.lower(), (
+        f"Expected 'cannot be registered via reveal' in error, got: {error}"
+    )
+
+    func_result = function_result["result"]
+    assert func_result is None, "Expected no result for error case"
+
+
+@pytest.mark.nameservice
+def test_reveal_non_reserved_name_succeeds(chainnet):
+    """Test reveal with non-reserved name succeeds even when reserved names are set."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_non_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-test.dys"
+        }
+    })
+    
+    # Step 2: Create commitment for non-reserved name
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "allowed-test.dys",
+        "salt": "random_salt_456",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Reveal with non-reserved name - should succeed
+    reveal_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": executor,
+        "name": "allowed-test.dys",
+        "salt": "random_salt_456"
+    })
+    
+    # Step 4: Query the NFT to verify it was minted
+    nft_query = _query({
+        "@type": "/dysonprotocol.nft.v1beta1.QueryNFTRequest",
+        "class_id": "nameservice.dys",
+        "id": "allowed-test.dys"
+    })
+    
+    return {
+        "reveal_result": reveal_result,
+        "nft_query": nft_query
+    }
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_non_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    # Verify reveal succeeded
+    assert "reveal_result" in function_result, "Missing reveal_result in response"
+    reveal_result = function_result["reveal_result"]
+    assert isinstance(reveal_result, dict), (
+        f"Expected reveal_result to be dict, got {type(reveal_result)}"
+    )
+    assert "@type" in reveal_result, "Missing @type in reveal_result"
+    assert reveal_result["@type"] == "/dysonprotocol.script.v1.MsgSudoResponse"
+
+    # Verify NFT was minted
+    assert "nft_query" in function_result, "Missing nft_query in response"
+    nft_query = function_result["nft_query"]
+    assert isinstance(nft_query, dict), (
+        f"Expected nft_query to be dict, got {type(nft_query)}"
+    )
+    assert "nft" in nft_query, "Missing nft in query response"
+    nft = nft_query["nft"]
+    assert isinstance(nft, dict), f"Expected nft to be dict, got {type(nft)}"
+    assert nft["id"] == "allowed-test.dys", (
+        f"Expected NFT id 'allowed-test.dys', got: {nft['id']}"
+    )

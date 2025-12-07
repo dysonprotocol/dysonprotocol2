@@ -588,7 +588,8 @@ message MsgUpdateParams {
 
   // params defines the x/nameservice parameters to update.
   //
-  // NOTE: All parameters must be supplied.
+  // NOTE: All parameters must be supplied, except reserved_names which is optional.
+  // If reserved_names is blank, the existing value will be preserved.
   Params params = 2 [ (gogoproto.nullable) = false ];
 }
 

@@ -86,6 +86,17 @@ export class Params extends Message<Params> {
    */
   maxValuationPeriod?: Duration;
 
+  /**
+   * reserved_names defines a newline-separated list of forbidden .dys names
+   * that cannot be registered via the normal commit-reveal process.
+   * Blank lines and lines starting with # are ignored.
+   * Reserved names can still be created via CreateExternalName (governance
+   * only).
+   *
+   * @generated from field: string reserved_names = 17;
+   */
+  reservedNames = "";
+
   constructor(data?: PartialMessage<Params>) {
     super();
     proto3.util.initPartial(data, this);
@@ -105,6 +116,7 @@ export class Params extends Message<Params> {
     { no: 14, name: "max_valuation_fee_pct", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 15, name: "min_valuation_period", kind: "message", T: Duration },
     { no: 16, name: "max_valuation_period", kind: "message", T: Duration },
+    { no: 17, name: "reserved_names", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Params {

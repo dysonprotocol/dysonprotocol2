@@ -3875,6 +3875,21 @@ paths:
                       [min_valuation_period, max_valuation_period]
                   max_valuation_period:
                     type: string
+                  reserved_names:
+                    type: string
+                    description: >-
+                      reserved_names defines a newline-separated list of
+                      forbidden .dys names
+
+                      that cannot be registered via the normal commit-reveal
+                      process.
+
+                      Blank lines and lines starting with # are ignored.
+
+                      Reserved names can still be created via CreateExternalName
+                      (governance
+
+                      only).
             description: >-
               QueryParamsResponse is response type for the Query/Params RPC
               method.
@@ -35872,6 +35887,21 @@ paths:
                       [min_valuation_period, max_valuation_period]
                   max_valuation_period:
                     type: string
+                  reserved_names:
+                    type: string
+                    description: >-
+                      reserved_names defines a newline-separated list of
+                      forbidden .dys names
+
+                      that cannot be registered via the normal commit-reveal
+                      process.
+
+                      Blank lines and lines starting with # are ignored.
+
+                      Reserved names can still be created via CreateExternalName
+                      (governance
+
+                      only).
             description: MsgUpdateParams is the Msg/UpdateParams request type.
       tags:
         - Msg
@@ -50276,6 +50306,19 @@ definitions:
           [min_valuation_period, max_valuation_period]
       max_valuation_period:
         type: string
+      reserved_names:
+        type: string
+        description: >-
+          reserved_names defines a newline-separated list of forbidden .dys
+          names
+
+          that cannot be registered via the normal commit-reveal process.
+
+          Blank lines and lines starting with # are ignored.
+
+          Reserved names can still be created via CreateExternalName (governance
+
+          only).
     description: Params defines the parameters for the nameservice module.
   dysonprotocol.nameservice.v1.QueryBidsByBidderResponse:
     type: object
@@ -50706,6 +50749,20 @@ definitions:
               [min_valuation_period, max_valuation_period]
           max_valuation_period:
             type: string
+          reserved_names:
+            type: string
+            description: >-
+              reserved_names defines a newline-separated list of forbidden .dys
+              names
+
+              that cannot be registered via the normal commit-reveal process.
+
+              Blank lines and lines starting with # are ignored.
+
+              Reserved names can still be created via CreateExternalName
+              (governance
+
+              only).
     description: QueryParamsResponse is response type for the Query/Params RPC method.
   dysonprotocol.nameservice.v1.QueryResolveNameResponse:
     type: object
@@ -80660,6 +80717,20 @@ definitions:
               [min_valuation_period, max_valuation_period]
           max_valuation_period:
             type: string
+          reserved_names:
+            type: string
+            description: >-
+              reserved_names defines a newline-separated list of forbidden .dys
+              names
+
+              that cannot be registered via the normal commit-reveal process.
+
+              Blank lines and lines starting with # are ignored.
+
+              Reserved names can still be created via CreateExternalName
+              (governance
+
+              only).
     description: MsgUpdateParams is the Msg/UpdateParams request type.
   dysonprotocol.nameservice.v1.MsgUpdateParamsResponse:
     type: object

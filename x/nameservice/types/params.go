@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"cosmossdk.io/math"
@@ -41,6 +42,8 @@ func DefaultParams() Params {
 	p.MaxValuationFeePct = "1.0"
 	p.MinValuationPeriod = time.Hour * 1
 	p.MaxValuationPeriod = time.Hour * 24 * 365
+	// Reserved names defaults to empty (no restrictions)
+	p.ReservedNames = ""
 	return p
 }
 
@@ -64,6 +67,11 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateDurationBounds(p.MinValuationPeriod, p.MaxValuationPeriod); err != nil {
+		return err
+	}
+
+	// Validate reserved names
+	if err := validateReservedNames(p.ReservedNames); err != nil {
 		return err
 	}
 
@@ -161,4 +169,60 @@ func validateMintFeePerCoin(mintFeePerCoinStr string) error {
 // GetMintFeePerCoinAsDec returns the mint fee per coin as a math.LegacyDec
 func (p Params) GetMintFeePerCoinAsDec() (math.LegacyDec, error) {
 	return math.LegacyNewDecFromStr(p.MintFeePerCoin)
+}
+
+// validateReservedNames validates the reserved_names field.
+// It parses the newline-separated string, ignores blank lines and lines starting with #,
+// and validates that each name matches the NameRegex format.
+func validateReservedNames(reservedNamesStr string) error {
+	if reservedNamesStr == "" {
+		return nil
+	}
+
+	lines := strings.Split(reservedNamesStr, "\n")
+	for i, line := range lines {
+		line = strings.TrimSpace(line)
+		// Skip blank lines
+		if line == "" {
+			continue
+		}
+		// Skip comment lines
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+		// Validate name format - must match NameRegex (ends with .dys)
+		if !NameRegex.MatchString(line) {
+			return fmt.Errorf("invalid reserved name at line %d: %s (must be lowercase, start with a letter, contain only alphanumeric and dash characters, and end with .dys)", i+1, line)
+		}
+	}
+
+	return nil
+}
+
+// IsReservedName checks if a name is in the reserved names list.
+// It parses the newline-separated string, ignores blank lines and lines starting with #,
+// and returns true if the name exactly matches any reserved name (case-sensitive).
+func IsReservedName(name string, reservedNamesStr string) bool {
+	if reservedNamesStr == "" {
+		return false
+	}
+
+	lines := strings.Split(reservedNamesStr, "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		// Skip blank lines
+		if line == "" {
+			continue
+		}
+		// Skip comment lines
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+		// Exact match (case-sensitive)
+		if line == name {
+			return true
+		}
+	}
+
+	return false
 }

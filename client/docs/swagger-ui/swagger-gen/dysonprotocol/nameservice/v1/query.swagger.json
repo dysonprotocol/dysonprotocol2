@@ -698,6 +698,10 @@
         },
         "max_valuation_period": {
           "type": "string"
+        },
+        "reserved_names": {
+          "type": "string",
+          "description": "reserved_names defines a newline-separated list of forbidden .dys names\nthat cannot be registered via the normal commit-reveal process.\nBlank lines and lines starting with # are ignored.\nReserved names can still be created via CreateExternalName (governance\nonly)."
         }
       },
       "description": "Params defines the parameters for the nameservice module."

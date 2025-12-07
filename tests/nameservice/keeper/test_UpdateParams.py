@@ -178,6 +178,247 @@ def demo_update_params_invalid_authority(invalid_authority):
     assert (
         exception["class"] == "DysRuntimeError"
     ), f"should be DysRuntimeError, got {exception['class']}"
+
+
+def test_update_params_reserved_names_blank_preserves_existing(chainnet):
+    """Test UpdateParams with blank reserved_names preserves existing value."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_reserved_names_blank_preserves():
+    # Step 1: Set reserved_names to a known value
+    update_result1 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved1.dys\\nreserved2.dys"
+        }
+    })
+    
+    # Step 2: Query params to verify reserved_names was set
+    params_query1 = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    # Step 3: Update params with blank reserved_names (should preserve existing)
+    update_result2 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.02",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": ""  # Blank - should preserve existing
+        }
+    })
+    
+    # Step 4: Query params again to verify reserved_names was preserved
+    params_query2 = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    return {
+        "update_result1": update_result1,
+        "params_before": params_query1["params"],
+        "update_result2": update_result2,
+        "params_after": params_query2["params"]
+    }
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_reserved_names_blank_preserves",
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
+
+    # Verify params_before has reserved_names set
+    params_before = demo_result["params_before"]
+    assert isinstance(
+        params_before, dict
+    ), f"params_before should be dict, got {type(params_before)}"
+    assert (
+        "reserved_names" in params_before
+    ), f"params_before missing 'reserved_names' key. Keys: {list(params_before.keys())}"
+    assert params_before["reserved_names"] == "reserved1.dys\nreserved2.dys", (
+        f"Expected reserved_names to be 'reserved1.dys\\nreserved2.dys', got: {params_before['reserved_names']}"
+    )
+
+    # Verify params_after preserved reserved_names (mint_fee_per_coin should be updated though)
+    params_after = demo_result["params_after"]
+    assert isinstance(
+        params_after, dict
+    ), f"params_after should be dict, got {type(params_after)}"
+    assert (
+        "reserved_names" in params_after
+    ), f"params_after missing 'reserved_names' key. Keys: {list(params_after.keys())}"
+    assert params_after["reserved_names"] == "reserved1.dys\nreserved2.dys", (
+        f"Expected reserved_names to be preserved as 'reserved1.dys\\nreserved2.dys', got: {params_after['reserved_names']}"
+    )
+    assert params_after["mint_fee_per_coin"] == "0.02", (
+        f"Expected mint_fee_per_coin to be updated to '0.02', got: {params_after['mint_fee_per_coin']}"
+    )
+
+
+def test_update_params_reserved_names_non_blank_updates(chainnet):
+    """Test UpdateParams with non-blank reserved_names updates the value."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_reserved_names_updates():
+    # Step 1: Set initial reserved_names
+    update_result1 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "old1.dys\\nold2.dys"
+        }
+    })
+    
+    # Step 2: Update with new reserved_names
+    update_result2 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys"
+        }
+    })
+    
+    # Step 3: Query params to verify reserved_names was updated
+    params_query = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    return {
+        "update_result1": update_result1,
+        "update_result2": update_result2,
+        "params": params_query["params"]
+    }
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_reserved_names_updates",
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
+
+    # Verify reserved_names was updated
+    params = demo_result["params"]
+    assert isinstance(
+        params, dict
+    ), f"params should be dict, got {type(params)}"
+    assert (
+        "reserved_names" in params
+    ), f"params missing 'reserved_names' key. Keys: {list(params.keys())}"
+    assert params["reserved_names"] == "new1.dys\nnew2.dys\nnew3.dys", (
+        f"Expected reserved_names to be 'new1.dys\\nnew2.dys\\nnew3.dys', got: {params['reserved_names']}"
+    )
     assert (
         "invalid authority" in exception["msg"].lower()
     ), f"error should mention invalid authority, got: {exception['msg']}"
@@ -253,6 +494,247 @@ def demo_update_params_invalid_params():
     assert (
         exception["class"] == "DysRuntimeError"
     ), f"should be DysRuntimeError, got {exception['class']}"
+
+
+def test_update_params_reserved_names_blank_preserves_existing(chainnet):
+    """Test UpdateParams with blank reserved_names preserves existing value."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_reserved_names_blank_preserves():
+    # Step 1: Set reserved_names to a known value
+    update_result1 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved1.dys\\nreserved2.dys"
+        }
+    })
+    
+    # Step 2: Query params to verify reserved_names was set
+    params_query1 = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    # Step 3: Update params with blank reserved_names (should preserve existing)
+    update_result2 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.02",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": ""  # Blank - should preserve existing
+        }
+    })
+    
+    # Step 4: Query params again to verify reserved_names was preserved
+    params_query2 = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    return {
+        "update_result1": update_result1,
+        "params_before": params_query1["params"],
+        "update_result2": update_result2,
+        "params_after": params_query2["params"]
+    }
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_reserved_names_blank_preserves",
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
+
+    # Verify params_before has reserved_names set
+    params_before = demo_result["params_before"]
+    assert isinstance(
+        params_before, dict
+    ), f"params_before should be dict, got {type(params_before)}"
+    assert (
+        "reserved_names" in params_before
+    ), f"params_before missing 'reserved_names' key. Keys: {list(params_before.keys())}"
+    assert params_before["reserved_names"] == "reserved1.dys\nreserved2.dys", (
+        f"Expected reserved_names to be 'reserved1.dys\\nreserved2.dys', got: {params_before['reserved_names']}"
+    )
+
+    # Verify params_after preserved reserved_names (mint_fee_per_coin should be updated though)
+    params_after = demo_result["params_after"]
+    assert isinstance(
+        params_after, dict
+    ), f"params_after should be dict, got {type(params_after)}"
+    assert (
+        "reserved_names" in params_after
+    ), f"params_after missing 'reserved_names' key. Keys: {list(params_after.keys())}"
+    assert params_after["reserved_names"] == "reserved1.dys\nreserved2.dys", (
+        f"Expected reserved_names to be preserved as 'reserved1.dys\\nreserved2.dys', got: {params_after['reserved_names']}"
+    )
+    assert params_after["mint_fee_per_coin"] == "0.02", (
+        f"Expected mint_fee_per_coin to be updated to '0.02', got: {params_after['mint_fee_per_coin']}"
+    )
+
+
+def test_update_params_reserved_names_non_blank_updates(chainnet):
+    """Test UpdateParams with non-blank reserved_names updates the value."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_reserved_names_updates():
+    # Step 1: Set initial reserved_names
+    update_result1 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "old1.dys\\nold2.dys"
+        }
+    })
+    
+    # Step 2: Update with new reserved_names
+    update_result2 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys"
+        }
+    })
+    
+    # Step 3: Query params to verify reserved_names was updated
+    params_query = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    return {
+        "update_result1": update_result1,
+        "update_result2": update_result2,
+        "params": params_query["params"]
+    }
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_reserved_names_updates",
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
+
+    # Verify reserved_names was updated
+    params = demo_result["params"]
+    assert isinstance(
+        params, dict
+    ), f"params should be dict, got {type(params)}"
+    assert (
+        "reserved_names" in params
+    ), f"params missing 'reserved_names' key. Keys: {list(params.keys())}"
+    assert params["reserved_names"] == "new1.dys\nnew2.dys\nnew3.dys", (
+        f"Expected reserved_names to be 'new1.dys\\nnew2.dys\\nnew3.dys', got: {params['reserved_names']}"
+    )
     assert (
         "invalid parameters" in exception["msg"].lower()
     ), f"error should mention invalid parameters, got: {exception['msg']}"
@@ -328,6 +810,247 @@ def demo_update_params_invalid_decimal():
     assert (
         exception["class"] == "DysRuntimeError"
     ), f"should be DysRuntimeError, got {exception['class']}"
+
+
+def test_update_params_reserved_names_blank_preserves_existing(chainnet):
+    """Test UpdateParams with blank reserved_names preserves existing value."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_reserved_names_blank_preserves():
+    # Step 1: Set reserved_names to a known value
+    update_result1 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved1.dys\\nreserved2.dys"
+        }
+    })
+    
+    # Step 2: Query params to verify reserved_names was set
+    params_query1 = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    # Step 3: Update params with blank reserved_names (should preserve existing)
+    update_result2 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.02",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": ""  # Blank - should preserve existing
+        }
+    })
+    
+    # Step 4: Query params again to verify reserved_names was preserved
+    params_query2 = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    return {
+        "update_result1": update_result1,
+        "params_before": params_query1["params"],
+        "update_result2": update_result2,
+        "params_after": params_query2["params"]
+    }
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_reserved_names_blank_preserves",
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
+
+    # Verify params_before has reserved_names set
+    params_before = demo_result["params_before"]
+    assert isinstance(
+        params_before, dict
+    ), f"params_before should be dict, got {type(params_before)}"
+    assert (
+        "reserved_names" in params_before
+    ), f"params_before missing 'reserved_names' key. Keys: {list(params_before.keys())}"
+    assert params_before["reserved_names"] == "reserved1.dys\nreserved2.dys", (
+        f"Expected reserved_names to be 'reserved1.dys\\nreserved2.dys', got: {params_before['reserved_names']}"
+    )
+
+    # Verify params_after preserved reserved_names (mint_fee_per_coin should be updated though)
+    params_after = demo_result["params_after"]
+    assert isinstance(
+        params_after, dict
+    ), f"params_after should be dict, got {type(params_after)}"
+    assert (
+        "reserved_names" in params_after
+    ), f"params_after missing 'reserved_names' key. Keys: {list(params_after.keys())}"
+    assert params_after["reserved_names"] == "reserved1.dys\nreserved2.dys", (
+        f"Expected reserved_names to be preserved as 'reserved1.dys\\nreserved2.dys', got: {params_after['reserved_names']}"
+    )
+    assert params_after["mint_fee_per_coin"] == "0.02", (
+        f"Expected mint_fee_per_coin to be updated to '0.02', got: {params_after['mint_fee_per_coin']}"
+    )
+
+
+def test_update_params_reserved_names_non_blank_updates(chainnet):
+    """Test UpdateParams with non-blank reserved_names updates the value."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_reserved_names_updates():
+    # Step 1: Set initial reserved_names
+    update_result1 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "old1.dys\\nold2.dys"
+        }
+    })
+    
+    # Step 2: Update with new reserved_names
+    update_result2 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys"
+        }
+    })
+    
+    # Step 3: Query params to verify reserved_names was updated
+    params_query = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    return {
+        "update_result1": update_result1,
+        "update_result2": update_result2,
+        "params": params_query["params"]
+    }
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_reserved_names_updates",
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
+
+    # Verify reserved_names was updated
+    params = demo_result["params"]
+    assert isinstance(
+        params, dict
+    ), f"params should be dict, got {type(params)}"
+    assert (
+        "reserved_names" in params
+    ), f"params missing 'reserved_names' key. Keys: {list(params.keys())}"
+    assert params["reserved_names"] == "new1.dys\nnew2.dys\nnew3.dys", (
+        f"Expected reserved_names to be 'new1.dys\\nnew2.dys\\nnew3.dys', got: {params['reserved_names']}"
+    )
     assert (
         "invalid parameters" in exception["msg"].lower()
     ), f"error should mention invalid parameters, got: {exception['msg']}"
@@ -403,6 +1126,247 @@ def demo_update_params_bounds_violation():
     assert (
         exception["class"] == "DysRuntimeError"
     ), f"should be DysRuntimeError, got {exception['class']}"
+
+
+def test_update_params_reserved_names_blank_preserves_existing(chainnet):
+    """Test UpdateParams with blank reserved_names preserves existing value."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_reserved_names_blank_preserves():
+    # Step 1: Set reserved_names to a known value
+    update_result1 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved1.dys\\nreserved2.dys"
+        }
+    })
+    
+    # Step 2: Query params to verify reserved_names was set
+    params_query1 = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    # Step 3: Update params with blank reserved_names (should preserve existing)
+    update_result2 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.02",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": ""  # Blank - should preserve existing
+        }
+    })
+    
+    # Step 4: Query params again to verify reserved_names was preserved
+    params_query2 = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    return {
+        "update_result1": update_result1,
+        "params_before": params_query1["params"],
+        "update_result2": update_result2,
+        "params_after": params_query2["params"]
+    }
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_reserved_names_blank_preserves",
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
+
+    # Verify params_before has reserved_names set
+    params_before = demo_result["params_before"]
+    assert isinstance(
+        params_before, dict
+    ), f"params_before should be dict, got {type(params_before)}"
+    assert (
+        "reserved_names" in params_before
+    ), f"params_before missing 'reserved_names' key. Keys: {list(params_before.keys())}"
+    assert params_before["reserved_names"] == "reserved1.dys\nreserved2.dys", (
+        f"Expected reserved_names to be 'reserved1.dys\\nreserved2.dys', got: {params_before['reserved_names']}"
+    )
+
+    # Verify params_after preserved reserved_names (mint_fee_per_coin should be updated though)
+    params_after = demo_result["params_after"]
+    assert isinstance(
+        params_after, dict
+    ), f"params_after should be dict, got {type(params_after)}"
+    assert (
+        "reserved_names" in params_after
+    ), f"params_after missing 'reserved_names' key. Keys: {list(params_after.keys())}"
+    assert params_after["reserved_names"] == "reserved1.dys\nreserved2.dys", (
+        f"Expected reserved_names to be preserved as 'reserved1.dys\\nreserved2.dys', got: {params_after['reserved_names']}"
+    )
+    assert params_after["mint_fee_per_coin"] == "0.02", (
+        f"Expected mint_fee_per_coin to be updated to '0.02', got: {params_after['mint_fee_per_coin']}"
+    )
+
+
+def test_update_params_reserved_names_non_blank_updates(chainnet):
+    """Test UpdateParams with non-blank reserved_names updates the value."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_reserved_names_updates():
+    # Step 1: Set initial reserved_names
+    update_result1 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "old1.dys\\nold2.dys"
+        }
+    })
+    
+    # Step 2: Update with new reserved_names
+    update_result2 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys"
+        }
+    })
+    
+    # Step 3: Query params to verify reserved_names was updated
+    params_query = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    return {
+        "update_result1": update_result1,
+        "update_result2": update_result2,
+        "params": params_query["params"]
+    }
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_reserved_names_updates",
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
+
+    # Verify reserved_names was updated
+    params = demo_result["params"]
+    assert isinstance(
+        params, dict
+    ), f"params should be dict, got {type(params)}"
+    assert (
+        "reserved_names" in params
+    ), f"params missing 'reserved_names' key. Keys: {list(params.keys())}"
+    assert params["reserved_names"] == "new1.dys\nnew2.dys\nnew3.dys", (
+        f"Expected reserved_names to be 'new1.dys\\nnew2.dys\\nnew3.dys', got: {params['reserved_names']}"
+    )
     assert (
         "invalid parameters" in exception["msg"].lower()
     ), f"error should mention invalid parameters, got: {exception['msg']}"
@@ -466,3 +1430,244 @@ def demo_nil_request():
     assert (
         exception["class"] == "DysRuntimeError"
     ), f"should be DysRuntimeError, got {exception['class']}"
+
+
+def test_update_params_reserved_names_blank_preserves_existing(chainnet):
+    """Test UpdateParams with blank reserved_names preserves existing value."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_reserved_names_blank_preserves():
+    # Step 1: Set reserved_names to a known value
+    update_result1 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved1.dys\\nreserved2.dys"
+        }
+    })
+    
+    # Step 2: Query params to verify reserved_names was set
+    params_query1 = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    # Step 3: Update params with blank reserved_names (should preserve existing)
+    update_result2 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.02",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": ""  # Blank - should preserve existing
+        }
+    })
+    
+    # Step 4: Query params again to verify reserved_names was preserved
+    params_query2 = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    return {
+        "update_result1": update_result1,
+        "params_before": params_query1["params"],
+        "update_result2": update_result2,
+        "params_after": params_query2["params"]
+    }
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_reserved_names_blank_preserves",
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
+
+    # Verify params_before has reserved_names set
+    params_before = demo_result["params_before"]
+    assert isinstance(
+        params_before, dict
+    ), f"params_before should be dict, got {type(params_before)}"
+    assert (
+        "reserved_names" in params_before
+    ), f"params_before missing 'reserved_names' key. Keys: {list(params_before.keys())}"
+    assert params_before["reserved_names"] == "reserved1.dys\nreserved2.dys", (
+        f"Expected reserved_names to be 'reserved1.dys\\nreserved2.dys', got: {params_before['reserved_names']}"
+    )
+
+    # Verify params_after preserved reserved_names (mint_fee_per_coin should be updated though)
+    params_after = demo_result["params_after"]
+    assert isinstance(
+        params_after, dict
+    ), f"params_after should be dict, got {type(params_after)}"
+    assert (
+        "reserved_names" in params_after
+    ), f"params_after missing 'reserved_names' key. Keys: {list(params_after.keys())}"
+    assert params_after["reserved_names"] == "reserved1.dys\nreserved2.dys", (
+        f"Expected reserved_names to be preserved as 'reserved1.dys\\nreserved2.dys', got: {params_after['reserved_names']}"
+    )
+    assert params_after["mint_fee_per_coin"] == "0.02", (
+        f"Expected mint_fee_per_coin to be updated to '0.02', got: {params_after['mint_fee_per_coin']}"
+    )
+
+
+def test_update_params_reserved_names_non_blank_updates(chainnet):
+    """Test UpdateParams with non-blank reserved_names updates the value."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_reserved_names_updates():
+    # Step 1: Set initial reserved_names
+    update_result1 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "old1.dys\\nold2.dys"
+        }
+    })
+    
+    # Step 2: Update with new reserved_names
+    update_result2 = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys"
+        }
+    })
+    
+    # Step 3: Query params to verify reserved_names was updated
+    params_query = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    return {
+        "update_result1": update_result1,
+        "update_result2": update_result2,
+        "params": params_query["params"]
+    }
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_reserved_names_updates",
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
+
+    # Verify reserved_names was updated
+    params = demo_result["params"]
+    assert isinstance(
+        params, dict
+    ), f"params should be dict, got {type(params)}"
+    assert (
+        "reserved_names" in params
+    ), f"params missing 'reserved_names' key. Keys: {list(params.keys())}"
+    assert params["reserved_names"] == "new1.dys\nnew2.dys\nnew3.dys", (
+        f"Expected reserved_names to be 'new1.dys\\nnew2.dys\\nnew3.dys', got: {params['reserved_names']}"
+    )

@@ -618,3 +618,113 @@ def demo_nil_request():
     assert (
         demo_result.get("status") == "nil_request_handled_by_framework"
     ), f"Framework should handle nil request"
+
+
+def test_create_external_name_reserved_name_allowed(chainnet):
+    """Test CreateExternalName can create reserved names (governance bypass)."""
+    dysond = chainnet[0]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_reserved_name_allowed(authority):
+    # Step 1: Set reserved_names via UpdateParams
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "reserved-governance.dys"
+        }
+    })
+    
+    # Step 2: Create external name with reserved name - should succeed (governance bypass)
+    sudo_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCreateExternalName",
+        "authority": authority,
+        "name": "reserved-governance.dys"
+    })
+    
+    # Step 3: Query the NFT to verify it was created
+    nft_query = _query({
+        "@type": "/dysonprotocol.nft.v1beta1.QueryNFTRequest",
+        "class_id": "nameservice.dys",
+        "id": "reserved-governance.dys"
+    })
+    
+    return {
+        "sudo_result": sudo_result,
+        "nft_query": nft_query
+    }
+"""
+
+    kwargs = json.dumps({"authority": gov_addr})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_reserved_name_allowed",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    # Parse and validate result
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
+
+    # Validate sudo result - should succeed
+    sudo_result = demo_result["sudo_result"]
+    assert isinstance(
+        sudo_result, dict
+    ), f"sudo_result should be dict, got {type(sudo_result)}"
+    assert (
+        sudo_result.get("@type") == "/dysonprotocol.script.v1.MsgSudoResponse"
+    ), f"sudo_result should be MsgSudoResponse, got {sudo_result.get('@type')}"
+
+    # Verify NFT was created
+    nft_query = demo_result["nft_query"]
+    assert isinstance(
+        nft_query, dict
+    ), f"nft_query should be dict, got {type(nft_query)}"
+    assert "nft" in nft_query, "Missing nft in query response"
+    nft = nft_query["nft"]
+    assert isinstance(nft, dict), f"Expected nft to be dict, got {type(nft)}"
+    assert nft["id"] == "reserved-governance.dys", (
+        f"Expected NFT id 'reserved-governance.dys', got: {nft['id']}"
+    )

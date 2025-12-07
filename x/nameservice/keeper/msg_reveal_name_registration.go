@@ -62,6 +62,12 @@ func (k Keeper) Reveal(ctx context.Context, msg *nameservicev1.MsgReveal) (*name
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid name format: must be lowercase, start with a letter, contain only alphanumeric and dash characters, and end with .dys")
 	}
 
+	// Check if name is reserved (cannot be registered via reveal)
+	params := k.GetParams(ctx)
+	if nameservicev1.IsReservedName(msg.Name, params.ReservedNames) {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "name is reserved and cannot be registered via reveal")
+	}
+
 	// Check if name is already registered
 	if k.nftKeeper.HasNFT(ctx, NamesClassID, msg.Name) {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "name is already registered")
