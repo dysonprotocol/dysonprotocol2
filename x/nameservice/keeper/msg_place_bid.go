@@ -312,8 +312,8 @@ func (k Keeper) PlaceBid(ctx context.Context, msg *nameservicev1.MsgPlaceBid) (*
 		if err != nil {
 			return nil, cosmossdkerrors.Wrapf(err, "failed to get previous bid record %d", prevActiveBidID)
 		}
-			prev.Status = nameservicev1.BidStatus_BID_OUTBID
-			prev.ReplacedByBidId = newBidID
+		prev.Status = nameservicev1.BidStatus_BID_OUTBID
+		prev.ReplacedByBidId = newBidID
 		if err := k.bids.Set(ctx, prevActiveBidID, prev); err != nil {
 			return nil, cosmossdkerrors.Wrapf(err, "failed to update previous bid record %d", prevActiveBidID)
 		}

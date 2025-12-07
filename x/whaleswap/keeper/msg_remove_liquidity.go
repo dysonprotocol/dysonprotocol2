@@ -35,6 +35,7 @@ import (
 //
 // Emits:
 //   - EventPoolLiquidityRemoved (pool_id, shares_burned)
+//   - EventPoolDeleted (pool_id) - only on full exit when pool is deleted
 //
 // Returns:
 //   - *whaleswapv1.MsgRemoveLiquidityResponse with amount (coins returned to caller).
@@ -81,9 +82,9 @@ func (k Keeper) RemoveLiquidity(ctx context.Context, msg *whaleswapv1.MsgRemoveL
 		if err := k.PoolsMap.Remove(ctx, msg.PoolId); err != nil {
 			return nil, cosmossdkerrors.Wrap(err, "failed to remove pool from state")
 		}
-		// Emit EventPoolUpdate for consistency with other pool mutations (listeners can detect deletion by querying)
-		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPoolUpdate{PoolId: pool.PoolId}); err != nil {
-			return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventPoolUpdate for deleted pool")
+		// Emit EventPoolDeleted to signal pool removal to listeners
+		if err := sdkCtx.EventManager().EmitTypedEvent(&whaleswapv1.EventPoolDeleted{PoolId: pool.PoolId}); err != nil {
+			return nil, cosmossdkerrors.Wrapf(err, "failed to emit EventPoolDeleted")
 		}
 		outs := sdk.NewCoins()
 		if out1.IsPositive() {

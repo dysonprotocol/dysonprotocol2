@@ -1499,15 +1499,13 @@ export class MsgUpdateParamsResponse extends Message<MsgUpdateParamsResponse> {
 
 /**
  * *
- * OpenPosition creates a leveraged position by borrowing against collateral.
+ *  v creates a leveraged position by borrowing against collateral.
  *
  * Behavior:
  * - Validates pool (exactly 2 denoms), collateral/borrow amounts and denoms.
- * - Estimates post-swap price impact to compute collateral ratio (CR) using
- *   the expected post-swap price, ensuring position meets min_cr AFTER swap.
+ * - Computes collateral ratio CR = collateral_value / debt_value in borrow
+ *   units, accounting for current pool price.
  * - Validates CR >= pool.min_collateral_ratio[borrow_denom] (> 1).
- * - Enforces slippage protection via min_held_output; swap must produce at
- *   least this amount or the transaction fails. Defaults to 99% of estimate.
  * - Reduces pool reserves by borrow amount, updates total_borrowed.
  * - Moves borrowed amount to borrow vault, executes swap (borrowed → held).
  * - Escrows collateral to whaleswap module after swap.
@@ -1518,9 +1516,9 @@ export class MsgUpdateParamsResponse extends Message<MsgUpdateParamsResponse> {
  * - Pool must exist with exactly 2 denoms.
  * - Collateral/borrow amounts must be positive.
  * - Collateral/borrow denoms must match pool denoms.
- * - Post-swap CR must meet pool min_collateral_ratio for borrow denom.
+ * - Collateral ratio must meet pool min_collateral_ratio for borrow denom.
  * - Borrow amount must not exceed pool borrow cap (max_borrow_percent).
- * - Swap output must meet min_held_output (slippage protection).
+ * - Swap must produce positive held output.
  *
  * Emits:
  * - EventLeveragePositionOpened with position_id, user, pool_id,
@@ -1570,15 +1568,6 @@ export class MsgOpenPosition extends Message<MsgOpenPosition> {
    */
   note = "";
 
-  /**
-   * Minimum acceptable held output from the swap (slippage protection).
-   * If zero or omitted, defaults to 99% of the estimated output based on
-   * current pool state (1% slippage tolerance).
-   *
-   * @generated from field: string min_held_output = 6;
-   */
-  minHeldOutput = "";
-
   constructor(data?: PartialMessage<MsgOpenPosition>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1592,7 +1581,6 @@ export class MsgOpenPosition extends Message<MsgOpenPosition> {
     { no: 3, name: "collateral", kind: "message", T: Coin },
     { no: 4, name: "borrow", kind: "message", T: Coin },
     { no: 5, name: "note", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 6, name: "min_held_output", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MsgOpenPosition {

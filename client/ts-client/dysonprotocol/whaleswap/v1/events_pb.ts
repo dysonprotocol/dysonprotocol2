@@ -82,6 +82,45 @@ export class EventPoolUpdate extends Message<EventPoolUpdate> {
 }
 
 /**
+ * Emitted when a pool is deleted (full liquidity exit)
+ *
+ * @generated from message dysonprotocol.whaleswap.v1.EventPoolDeleted
+ */
+export class EventPoolDeleted extends Message<EventPoolDeleted> {
+  /**
+   * @generated from field: uint64 pool_id = 1;
+   */
+  poolId = protoInt64.zero;
+
+  constructor(data?: PartialMessage<EventPoolDeleted>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "dysonprotocol.whaleswap.v1.EventPoolDeleted";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "pool_id", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): EventPoolDeleted {
+    return new EventPoolDeleted().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): EventPoolDeleted {
+    return new EventPoolDeleted().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): EventPoolDeleted {
+    return new EventPoolDeleted().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: EventPoolDeleted | PlainMessage<EventPoolDeleted> | undefined, b: EventPoolDeleted | PlainMessage<EventPoolDeleted> | undefined): boolean {
+    return proto3.util.equals(EventPoolDeleted, a, b);
+  }
+}
+
+/**
  * @generated from message dysonprotocol.whaleswap.v1.EventPoolSwap
  */
 export class EventPoolSwap extends Message<EventPoolSwap> {

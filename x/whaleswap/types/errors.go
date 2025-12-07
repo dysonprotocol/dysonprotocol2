@@ -15,4 +15,5 @@ var (
 	ErrBlockDelayNotPassed       = sdkerrors.Register("whaleswap", 1004, "block delay not passed")
 	ErrInvalidCollateralRatio    = sdkerrors.Register("whaleswap", 1005, "invalid collateral ratio")
 	ErrLiquidationAlreadyPending = sdkerrors.Register("whaleswap", 1006, "liquidation already pending")
+	ErrLeverageDisabled          = sdkerrors.Register("whaleswap", 1007, "leverage disabled for denom")
 )

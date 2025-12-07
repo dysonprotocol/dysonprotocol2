@@ -166,8 +166,12 @@ func (k Keeper) OpenPosition(ctx context.Context, msg *whaleswapv1.MsgOpenPositi
 	}
 	capPct := pool.MaxBorrowPercent.AmountOf(borrowDenom)
 	one := math.LegacyNewDec(1)
-	if !capPct.IsPositive() || capPct.GTE(one) {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pool max_borrow_percent must be in (0,1) for borrow denom")
+	// MaxBorrowPercent = 0 means leverage is disabled for this denom
+	if capPct.IsZero() {
+		return nil, cosmossdkerrors.Wrapf(whaleswapv1.ErrLeverageDisabled, "pool %d has max_borrow_percent=0 for %s", msg.PoolId, borrowDenom)
+	}
+	if capPct.IsNegative() || capPct.GTE(one) {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "pool max_borrow_percent must be in (0,1) for borrow denom %s, got %s", borrowDenom, capPct.String())
 	}
 	maxBorrowAmt := math.LegacyNewDecFromInt(effectiveAvailable).Mul(capPct).TruncateInt()
 	if msg.Borrow.Amount.GT(maxBorrowAmt) {

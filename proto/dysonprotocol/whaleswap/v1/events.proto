@@ -15,6 +15,9 @@ message EventPoolCreated { uint64 pool_id = 1; }
 
 message EventPoolUpdate { uint64 pool_id = 1; }
 
+// Emitted when a pool is deleted (full liquidity exit)
+message EventPoolDeleted { uint64 pool_id = 1; }
+
 message EventPoolSwap {
   uint64 pool_id = 1;
   uint64 trade_id = 2;
