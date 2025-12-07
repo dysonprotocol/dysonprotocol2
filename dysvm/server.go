@@ -49,7 +49,10 @@ func getServer(ctx context.Context) *PythonServer {
 		}
 		err := serverInst.ensureStarted(ctx)
 		if err != nil {
-			fmt.Printf("failed to ensure dyslang server is started: %s\n", err)
+			// Fail fast and loud - the chain cannot operate without dysvm.
+			// A node running without Python would produce different results
+			// than other validators, breaking consensus.
+			panic(fmt.Sprintf("FATAL: dysvm server failed to start: %s", err))
 		}
 	})
 	return serverInst
