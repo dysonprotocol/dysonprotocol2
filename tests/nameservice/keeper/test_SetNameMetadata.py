@@ -74,7 +74,7 @@ def demo_set_name_metadata(name, owner, metadata):
 
     kwargs = json.dumps(
         {
-            "name": "test.dys",
+            "name": "mytestname.dys",
             "owner": owner_addr,
             "metadata": "https://example.com/metadata.json",
         }
@@ -370,7 +370,7 @@ def demo_unauthorized(name, owner, unauthorized_owner, metadata):
 
     kwargs = json.dumps(
         {
-            "name": "test.dys",
+            "name": "mytestname.dys",
             "owner": owner_addr,
             "unauthorized_owner": unauthorized_owner,
             "metadata": "https://example.com/metadata.json",
@@ -485,7 +485,7 @@ def demo_metadata_too_large(name, owner, metadata):
 
     kwargs = json.dumps(
         {
-            "name": "test.dys",
+            "name": "mytestname.dys",
             "owner": owner_addr,
             "metadata": large_metadata,
         }

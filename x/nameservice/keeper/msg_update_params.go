@@ -45,6 +45,9 @@ func (k Keeper) UpdateParams(ctx context.Context, msg *nameservicev1.MsgUpdatePa
 	if msg.Params.ReservedNames == "" {
 		currentParams := k.GetParams(ctx)
 		msg.Params.ReservedNames = currentParams.ReservedNames
+	} else {
+		// Normalize reserved_names: filter out comments and blank lines before storing
+		msg.Params.ReservedNames = nameservicev1.NormalizeReservedNames(msg.Params.ReservedNames)
 	}
 
 	// Validate the parameters

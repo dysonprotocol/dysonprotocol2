@@ -240,6 +240,32 @@ func validateReservedNames(reservedNamesStr string) error {
 	return nil
 }
 
+// NormalizeReservedNames filters out comments and blank lines from a reserved names string.
+// This should be called before storing the reserved names to keep stored values clean.
+func NormalizeReservedNames(reservedNamesStr string) string {
+	if reservedNamesStr == "" {
+		return ""
+	}
+
+	lines := strings.Split(reservedNamesStr, "\n")
+	var validNames []string
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		// Skip blank lines
+		if line == "" {
+			continue
+		}
+		// Skip comment lines
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+		validNames = append(validNames, line)
+	}
+
+	return strings.Join(validNames, "\n")
+}
+
 // defaultReservedNamesCache caches the processed default reserved names for efficiency
 var defaultReservedNamesCache string
 

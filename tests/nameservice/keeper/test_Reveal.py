@@ -580,10 +580,10 @@ def _sudo(msg_dict):
 def reveal_empty_salt():
     executor = get_executor_address()
     
-    # Create commitment first
+    # Create commitment first (use non-reserved name)
     hash_result = _query({
         "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
-        "name": "test.dys",
+        "name": "mytestname.dys",
         "salt": "random_salt_123",
         "committer": executor
     })
@@ -598,16 +598,13 @@ def reveal_empty_salt():
     })
     
     # Try reveal with empty salt
-    try:
-        reveal_result = _sudo({
-            "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
-            "committer": executor,
-            "name": "test.dys",
-            "salt": ""  # Empty salt
-        })
-        return {"error": None, "result": reveal_result}
-    except Exception as e:
-        return {"error": str(e), "result": None}
+    reveal_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": executor,
+        "name": "mytestname.dys",
+        "salt": ""  # Empty salt
+    })
+    return {"reveal_result": reveal_result}
 """
 
     kwargs = json.dumps({})
@@ -627,36 +624,28 @@ def reveal_empty_salt():
         extra_code,
     )
 
-    parsed = deep_parse(query_result)
-
-    # Type → Shape → Values assertions
-    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
-    assert "result" in parsed, "Missing result in response"
-
-    result = parsed["result"]
-    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
-    assert "result" in result, "Missing nested result in response"
-
-    nested_result = result["result"]
-    assert isinstance(nested_result, dict), (
-        f"Expected nested result to be dict, got {type(nested_result)}"
-    )
-
-    function_result = nested_result
-
-    assert "error" in function_result, "Missing error in response"
-    assert "result" in function_result, "Missing result in response"
-
-    error = function_result["error"]
-    assert isinstance(error, str), f"Expected error to be string, got {type(error)}"
-    assert error is not None, "Expected error for empty salt"
+    # Script should fail with exception for empty salt (commitment not found due to hash mismatch)
+    assert (
+        query_result.get("exception") is not None
+    ), f"Expected exception for empty salt reveal, but script succeeded. Result: {json.dumps(query_result, indent=2)}"
+    
+    exception = query_result.get("exception", {})
+    assert isinstance(
+        exception, dict
+    ), f"Exception should be dict, got {type(exception)}"
+    assert (
+        "msg" in exception
+    ), f"Exception missing 'msg' key. Keys: {list(exception.keys())}"
+    
+    error_msg = exception["msg"]
+    assert isinstance(
+        error_msg, str
+    ), f"Exception msg should be string, got {type(error_msg)}"
     # Empty salt should cause commitment not found error due to hash mismatch
-    error_lower = error.lower()
-    has_commitment_error = "commitment not found" in error_lower
-    assert has_commitment_error, f"Expected commitment not found error, got: {error}"
-
-    func_result = function_result["result"]
-    assert func_result is None, "Expected no result for error case"
+    assert "commitment not found" in error_msg.lower(), (
+        f"Expected 'commitment not found' in exception message, got: {error_msg}. "
+        f"Full exception: {json.dumps(exception, indent=2)}"
+    )
 
 
 @pytest.mark.nameservice
@@ -2134,27 +2123,24 @@ def _sudo(msg_dict):
 def reveal_invalid_valuation():
     executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
     
-    # Create commitment with zero valuation
+    # Create commitment with zero valuation (use non-reserved name)
     hash_result = _query({
         "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
-        "name": "test.dys",
+        "name": "mytestname.dys",
         "salt": "random_salt_123",
         "committer": executor
     })
     
     hexhash = hash_result["hex_hash"]
     
-    # Try reveal - should fail due to zero valuation (reveal happens even with zero valuation)
-    try:
-        reveal_result = _sudo({
-            "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
-            "committer": executor,
-            "name": "test.dys",
-            "salt": "random_salt_123"
-        })
-        return {"error": None, "result": reveal_result}
-    except Exception as e:
-        return {"error": str(e), "result": None}
+    # Try reveal - should fail due to commitment not found (no commit was made)
+    reveal_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": executor,
+        "name": "mytestname.dys",
+        "salt": "random_salt_123"
+    })
+    return {"reveal_result": reveal_result}
 """
 
     kwargs = json.dumps({})
@@ -2174,36 +2160,27 @@ def reveal_invalid_valuation():
         extra_code,
     )
 
-    parsed = deep_parse(query_result)
-
-    # Type → Shape → Values assertions
-    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
-    assert "result" in parsed, "Missing result in response"
-
-    result = parsed["result"]
-    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
-    assert "result" in result, "Missing nested result in response"
-
-    nested_result = result["result"]
-    assert isinstance(nested_result, dict), (
-        f"Expected nested result to be dict, got {type(nested_result)}"
+    # Script should fail with exception for commitment not found
+    assert (
+        query_result.get("exception") is not None
+    ), f"Expected exception for invalid valuation reveal, but script succeeded. Result: {json.dumps(query_result, indent=2)}"
+    
+    exception = query_result.get("exception", {})
+    assert isinstance(
+        exception, dict
+    ), f"Exception should be dict, got {type(exception)}"
+    assert (
+        "msg" in exception
+    ), f"Exception missing 'msg' key. Keys: {list(exception.keys())}"
+    
+    error_msg = exception["msg"]
+    assert isinstance(
+        error_msg, str
+    ), f"Exception msg should be string, got {type(error_msg)}"
+    assert "commitment not found" in error_msg.lower(), (
+        f"Expected 'commitment not found' in exception message, got: {error_msg}. "
+        f"Full exception: {json.dumps(exception, indent=2)}"
     )
-
-    function_result = nested_result
-
-    assert "error" in function_result, "Missing error in response"
-    assert "result" in function_result, "Missing result in response"
-
-    error = function_result["error"]
-    assert isinstance(error, str), f"Expected error to be string, got {type(error)}"
-    assert error is not None, "Expected error for invalid valuation"
-    error_lower = error.lower()
-    assert "commitment not found" in error_lower, (
-        f"Expected commitment not found error, got: {error}"
-    )
-
-    func_result = function_result["result"]
-    assert func_result is None, "Expected no result for error case"
 
 
 @pytest.mark.nameservice
