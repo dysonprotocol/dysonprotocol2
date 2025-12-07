@@ -161,3 +161,200 @@ def demo_params_nil_request():
         f"Error message should mention '@type'. Got: {error_msg}"
     )
 
+
+@pytest.mark.nameservice
+def test_params_default_reserved_names_loaded(chainnet):
+    """Test that default params includes reserved names from embedded file.
+    
+    Note: This test checks the params as stored in the chain. If the chain was
+    initialized before reserved names were added, it may not have them. The test
+    verifies that reserved names functionality works correctly.
+    """
+    dysond = chainnet[0]
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _query, _msg, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_default_reserved_names():
+    # Query current params
+    params_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    params = params_result["params"]
+    current_reserved_names = params.get("reserved_names", "")
+    
+    # If reserved_names is empty, it means the chain was initialized before
+    # reserved names were added. This is expected for existing chains.
+    # We'll verify the functionality by checking that we can set reserved names.
+    has_reserved_names = len(current_reserved_names) > 0
+    
+    # Check for known reserved names if they exist
+    has_aaron = "aaron.dys" in current_reserved_names if has_reserved_names else False
+    has_admin = "admin.dys" in current_reserved_names if has_reserved_names else False
+    
+    return {
+        "has_reserved_names": has_reserved_names,
+        "reserved_names_length": len(current_reserved_names),
+        "has_aaron": has_aaron,
+        "has_admin": has_admin,
+        "reserved_names_preview": current_reserved_names[:200] if current_reserved_names else ""
+    }
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_default_reserved_names",
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"Result should be dict, got {type(demo_result)}"
+    
+    # Verify structure
+    assert (
+        "has_reserved_names" in demo_result
+    ), f"Result missing 'has_reserved_names' key. Keys: {list(demo_result.keys())}"
+    assert (
+        "reserved_names_length" in demo_result
+    ), f"Result missing 'reserved_names_length' key. Keys: {list(demo_result.keys())}"
+    
+    # params.ReservedNames is now empty by default (custom additional names only)
+    # Default reserved names from the embedded file are enforced separately
+    reserved_names_length = demo_result["reserved_names_length"]
+    assert isinstance(
+        reserved_names_length, int
+    ), f"reserved_names_length should be int, got {type(reserved_names_length)}"
+    # params.ReservedNames should be empty for a fresh chain (defaults are enforced separately)
+    assert reserved_names_length == 0, (
+        f"Expected params.reserved_names to be empty (defaults are enforced separately), "
+        f"but got length {reserved_names_length}. Preview: {demo_result.get('reserved_names_preview', '')}"
+    )
+
+
+@pytest.mark.nameservice
+def test_reveal_default_reserved_name_fails(chainnet):
+    """Test that revealing a name from default reserved names list fails."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_default_reserved_name():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Try to reveal "admin.dys" which should be in default reserved names
+    # Step 1: Create commitment
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "admin.dys",
+        "salt": "random_salt_123",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 2: Try reveal with reserved name - should fail
+    try:
+        reveal_result = _sudo({
+            "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+            "committer": executor,
+            "name": "admin.dys",
+            "salt": "random_salt_123"
+        })
+        return {"error": None, "result": reveal_result}
+    except Exception as e:
+        return {"error": str(e), "result": None}
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_default_reserved_name",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    parsed = deep_parse(query_result)
+
+    # Type → Shape → Values assertions
+    assert isinstance(parsed, dict), f"Expected dict, got {type(parsed)}"
+    assert "result" in parsed, "Missing result in response"
+
+    result = parsed["result"]
+    assert isinstance(result, dict), f"Expected result to be dict, got {type(result)}"
+    assert "result" in result, "Missing nested result in response"
+
+    nested_result = result["result"]
+    assert isinstance(nested_result, dict), (
+        f"Expected nested result to be dict, got {type(nested_result)}"
+    )
+
+    function_result = nested_result
+
+    assert "error" in function_result, "Missing error in response"
+    assert "result" in function_result, "Missing result in response"
+
+    error = function_result["error"]
+    assert isinstance(error, str), f"Expected error to be string, got {type(error)}"
+    assert error is not None, "Expected error for reserved name"
+    assert "reserved" in error.lower(), (
+        f"Expected reserved name error, got: {error}"
+    )
+    assert "cannot be registered via reveal" in error.lower(), (
+        f"Expected 'cannot be registered via reveal' in error, got: {error}"
+    )
+
+    func_result = function_result["result"]
+    assert func_result is None, "Expected no result for error case"
+

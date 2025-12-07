@@ -2801,3 +2801,114 @@ def reveal_non_reserved_name():
     assert nft["id"] == "allowed-test.dys", (
         f"Expected NFT id 'allowed-test.dys', got: {nft['id']}"
     )
+
+
+@pytest.mark.nameservice
+def test_reveal_reserved_name_without_dys_suffix(chainnet):
+    """Test IsReservedName trimming logic - reserved name stored without .dys suffix."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def reveal_reserved_name_no_suffix():
+    executor = "dys21cvqzw2968lq5wzldcglds02gnxg3d49fpmzt7e"
+    
+    # Step 1: Set reserved_names with name WITHOUT .dys suffix
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "testreserved"  # No .dys suffix
+        }
+    })
+    
+    # Step 2: Create commitment for reserved name WITH .dys suffix
+    hash_result = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "name": "testreserved.dys",
+        "salt": "random_salt_123",
+        "committer": executor
+    })
+    
+    hexhash = hash_result["hex_hash"]
+    
+    _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgCommit",
+        "committer": executor,
+        "hexhash": hexhash,
+        "valuation": {"denom": "udys", "amount": "1000000"}
+    })
+    
+    # Step 3: Try reveal with reserved name - should fail (trimming should match)
+    reveal_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgReveal",
+        "committer": executor,
+        "name": "testreserved.dys",
+        "salt": "random_salt_123"
+    })
+    
+    return {
+        "reveal_result": reveal_result
+    }
+"""
+
+    kwargs = json.dumps({})
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "reveal_reserved_name_no_suffix",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    # Script should fail with exception for reserved name
+    assert (
+        query_result.get("exception") is not None
+    ), f"Expected exception for reserved name reveal, but script succeeded. Result: {json.dumps(query_result, indent=2)}"
+    
+    exception = query_result.get("exception", {})
+    assert isinstance(
+        exception, dict
+    ), f"Exception should be dict, got {type(exception)}"
+    assert (
+        "msg" in exception
+    ), f"Exception missing 'msg' key. Keys: {list(exception.keys())}"
+    
+    error_msg = exception["msg"]
+    assert isinstance(
+        error_msg, str
+    ), f"Exception msg should be string, got {type(error_msg)}"
+    assert "reserved" in error_msg.lower(), (
+        f"Expected reserved name error in exception message, got: {error_msg}. "
+        f"Full exception: {json.dumps(exception, indent=2)}"
+    )

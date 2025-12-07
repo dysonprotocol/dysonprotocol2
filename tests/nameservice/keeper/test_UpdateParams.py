@@ -419,9 +419,190 @@ def demo_reserved_names_updates():
     assert params["reserved_names"] == "new1.dys\nnew2.dys\nnew3.dys", (
         f"Expected reserved_names to be 'new1.dys\\nnew2.dys\\nnew3.dys', got: {params['reserved_names']}"
     )
+
+
+@pytest.mark.nameservice
+def test_update_params_invalid_reserved_name_format(chainnet):
+    """Test UpdateParams with invalid reserved name format fails validation."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_invalid_reserved_name_format():
+    # Try to update with invalid reserved name format (not ending with .dys)
+    # This should fail validation
+    update_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "invalid-name"  # Invalid: doesn't end with .dys
+        }
+    })
+    
+    return {
+        "update_result": update_result
+    }
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_invalid_reserved_name_format",
+        "--extra-code",
+        extra_code,
+    )
+
+    # Script should fail with exception for invalid reserved name format
     assert (
-        "invalid authority" in exception["msg"].lower()
-    ), f"error should mention invalid authority, got: {exception['msg']}"
+        query_result.get("exception") is not None
+    ), f"Expected exception for invalid reserved name format, but script succeeded. Result: {json.dumps(query_result, indent=2)}"
+    
+    exception = query_result.get("exception", {})
+    assert isinstance(
+        exception, dict
+    ), f"Exception should be dict, got {type(exception)}"
+    assert (
+        "msg" in exception
+    ), f"Exception missing 'msg' key. Keys: {list(exception.keys())}"
+    
+    error_msg = exception["msg"]
+    assert isinstance(
+        error_msg, str
+    ), f"Exception msg should be string, got {type(error_msg)}"
+    assert "invalid reserved name" in error_msg.lower(), (
+        f"Expected 'invalid reserved name' in exception message, got: {error_msg}. "
+        f"Full exception: {json.dumps(exception, indent=2)}"
+    )
+
+
+@pytest.mark.nameservice
+def test_update_params_reserved_names_with_comments_and_blank_lines(chainnet):
+    """Test UpdateParams with reserved_names containing comments and blank lines."""
+    dysond = chainnet[0]
+    gov_addr = dysond("query", "auth", "module-account", "gov")["account"]["value"][
+        "address"
+    ]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_reserved_names_with_comments():
+    # Update with reserved_names containing comments and blank lines
+    update_result = _sudo({
+        "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
+        "authority": get_executor_address(),
+        "params": {
+            "mint_fee_per_coin": "0.01",
+            "min_bid_timeout_class": "0s",
+            "max_bid_timeout_class": "7776000s",
+            "min_reject_bid_valuation_fee_percent": "0.0",
+            "max_reject_bid_valuation_fee_percent": "1.0",
+            "min_minimum_bid_percent_increase": "0.0",
+            "max_minimum_bid_percent_increase": "1.0",
+            "min_valuation_fee_pct": "0.0",
+            "max_valuation_fee_pct": "1.0",
+            "min_valuation_period": "3600s",
+            "max_valuation_period": "31536000s",
+            "reserved_names": "# This is a comment\\n\\nname1.dys\\n# Another comment\\nname2.dys\\n\\nname3.dys"
+        }
+    })
+    
+    # Query params to verify reserved_names was set correctly (comments/blank lines ignored)
+    params_query = _query({
+        "@type": "/dysonprotocol.nameservice.v1.QueryParamsRequest"
+    })
+    
+    return {
+        "update_result": update_result,
+        "params": params_query["params"]
+    }
+"""
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_reserved_names_with_comments",
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert isinstance(
+        result, dict
+    ), f"deep_parse should return dict. Got: {type(result)}"
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    demo_result = result["result"]["result"]
+    assert isinstance(
+        demo_result, dict
+    ), f"demo_result should be dict, got {type(demo_result)}"
+
+    # Verify reserved_names was set (validation should pass, comments/blank lines ignored)
+    params = demo_result["params"]
+    assert isinstance(
+        params, dict
+    ), f"params should be dict, got {type(params)}"
+    assert (
+        "reserved_names" in params
+    ), f"params missing 'reserved_names' key. Keys: {list(params.keys())}"
+    # The reserved_names should contain the valid names (comments and blank lines are ignored)
+    reserved_names = params["reserved_names"]
+    assert "name1.dys" in reserved_names, (
+        f"Expected 'name1.dys' in reserved_names, got: {reserved_names}"
+    )
+    assert "name2.dys" in reserved_names, (
+        f"Expected 'name2.dys' in reserved_names, got: {reserved_names}"
+    )
+    assert "name3.dys" in reserved_names, (
+        f"Expected 'name3.dys' in reserved_names, got: {reserved_names}"
+    )
+    # Verify comments and blank lines are not present
+    assert "#" not in reserved_names, (
+        f"Expected comments to be filtered out, got: {reserved_names}"
+    )
 
 
 def test_update_params_invalid_params_negative_mint_fee(chainnet):

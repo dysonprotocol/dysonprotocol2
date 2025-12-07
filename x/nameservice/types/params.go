@@ -1,12 +1,16 @@
 package types
 
 import (
+	_ "embed"
 	"fmt"
 	"strings"
 	"time"
 
 	"cosmossdk.io/math"
 )
+
+//go:embed reserved_dysnames.txt
+var defaultReservedNamesFile string
 
 // MinBidTimeout is the minimum allowed value for the class bid timeout parameter
 const MinBidTimeout = 0 // 0 seconds
@@ -42,9 +46,46 @@ func DefaultParams() Params {
 	p.MaxValuationFeePct = "1.0"
 	p.MinValuationPeriod = time.Hour * 1
 	p.MaxValuationPeriod = time.Hour * 24 * 365
-	// Reserved names defaults to empty (no restrictions)
+	// ReservedNames is empty by default - governance can add custom reserved names
+	// Default reserved names from the embedded file are always enforced separately
 	p.ReservedNames = ""
 	return p
+}
+
+// loadDefaultReservedNames loads and processes the default reserved names file.
+// It reads the embedded file, filters out comments and blank lines, validates names,
+// and adds .dys suffix to valid names. Invalid names are skipped.
+func loadDefaultReservedNames() string {
+	if defaultReservedNamesFile == "" {
+		return ""
+	}
+
+	lines := strings.Split(defaultReservedNamesFile, "\n")
+	var reservedNames []string
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		// Skip blank lines
+		if line == "" {
+			continue
+		}
+		// Skip comment lines
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+		// Add .dys suffix if not already present
+		nameWithSuffix := line
+		if !strings.HasSuffix(line, ".dys") {
+			nameWithSuffix = line + ".dys"
+		}
+		// Validate name format - skip invalid names (e.g., containing @ or other invalid chars)
+		if !NameRegex.MatchString(nameWithSuffix) {
+			continue
+		}
+		reservedNames = append(reservedNames, nameWithSuffix)
+	}
+
+	return strings.Join(reservedNames, "\n")
 }
 
 // Validate validates the params
@@ -199,15 +240,42 @@ func validateReservedNames(reservedNamesStr string) error {
 	return nil
 }
 
-// IsReservedName checks if a name is in the reserved names list.
-// It parses the newline-separated string, ignores blank lines and lines starting with #,
-// and returns true if the name exactly matches any reserved name (case-sensitive).
+// defaultReservedNamesCache caches the processed default reserved names for efficiency
+var defaultReservedNamesCache string
+
+func init() {
+	// Pre-process and cache default reserved names at startup
+	defaultReservedNamesCache = loadDefaultReservedNames()
+}
+
+// IsReservedName checks if a name is reserved.
+// It checks BOTH the default reserved names from the embedded file AND
+// any additional reserved names passed in reservedNamesStr (from params).
+// The name parameter should have the .dys suffix, which will be trimmed before comparison.
 func IsReservedName(name string, reservedNamesStr string) bool {
-	if reservedNamesStr == "" {
+	// Trim .dys suffix from the input name for comparison
+	nameBase := strings.TrimSuffix(name, ".dys")
+
+	// Check against default reserved names (always enforced)
+	if isNameInList(nameBase, defaultReservedNamesCache) {
+		return true
+	}
+
+	// Check against additional reserved names from params
+	if reservedNamesStr != "" && isNameInList(nameBase, reservedNamesStr) {
+		return true
+	}
+
+	return false
+}
+
+// isNameInList checks if a name (without .dys suffix) is in a newline-separated list
+func isNameInList(nameBase string, list string) bool {
+	if list == "" {
 		return false
 	}
 
-	lines := strings.Split(reservedNamesStr, "\n")
+	lines := strings.Split(list, "\n")
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		// Skip blank lines
@@ -218,8 +286,12 @@ func IsReservedName(name string, reservedNamesStr string) bool {
 		if strings.HasPrefix(line, "#") {
 			continue
 		}
-		// Exact match (case-sensitive)
-		if line == name {
+
+		// Trim .dys suffix from list entry for comparison
+		lineBase := strings.TrimSuffix(line, ".dys")
+
+		// Exact match (case-sensitive) on base names
+		if lineBase == nameBase {
 			return true
 		}
 	}
