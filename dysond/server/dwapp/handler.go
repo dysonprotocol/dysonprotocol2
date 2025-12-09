@@ -338,12 +338,9 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		if m := re.FindStringSubmatch(errMsg); len(m) == 2 {
 			name := strings.TrimSpace(m[1])
 			fmt.Printf("Failed to resolve script name: %s\n", name)
-
-			// Redirect to dys registry for other names
-			publicHost := strings.ReplaceAll(h.publicHostTemplate, "{address_or_name}", "dys")
-			// relative protocol to all https or http
-			target := "//" + publicHost + "/names/" + url.PathEscape(name)
-			http.Redirect(w, req, target, http.StatusFound)
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprintf(w, "Name \"%s\" could not be resolved.\n", name)
 			return
 		}
 		http.Error(w, fmt.Sprintf("Error querying: %v", err), http.StatusInternalServerError)
