@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -391,29 +392,64 @@ type RPCGenesisResponse struct {
 	} `json:"result"`
 }
 
+// Libp2pBootstrapResponse holds the response from /libp2p/bootstrap endpoint
+type Libp2pBootstrapResponse struct {
+	PeerID           string   `json:"peerId"`
+	Addrs            []string `json:"addrs"`
+	RelayListenAddrs []string `json:"relayListenAddrs"`
+	ChainID          string   `json:"chainId"`
+	BootstrapPeers   []string `json:"bootstrapPeers"`
+	TopicPrefix      string   `json:"topicPrefix"`
+	Version          string   `json:"version"`
+}
+
 // joinCommand creates the 'join' command for joining an existing chain via state sync
 func joinCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "join [rpc-endpoint]",
+		Use:   "join [host]",
 		Short: "Join an existing chain using state sync",
 		Long: `Join an existing Dyson Protocol chain using state sync.
 
 This command configures your local node to join an existing chain by:
-1. Fetching the genesis file from the remote RPC
+1. Fetching the genesis file from the remote node
 2. Getting network status to extract node ID and latest block info  
 3. Configuring state sync in config.toml with appropriate settings
 4. Setting up p2p.seeds to connect to the remote node
 5. Updating client.toml with the chain ID
+6. Configuring libp2p bootstrap peers in app.toml (for browser mesh)
 
-Example:
-  dysond join https://dys2-testnet-rpc.dysonprotocol.com
+By default, uses path-based routing (common with reverse proxies):
+  - RPC: {host}/rpc  (for /status, /genesis)
+  - API: {host}      (for /libp2p/bootstrap)
+
+Examples:
+  # Default path-based routing
+  dysond join https://dys2.dysonprotocol.com
+
+  # Custom RPC path
+  dysond join https://node.example.com --rpc-path /rpc
+
+  # Port-based routing (no reverse proxy)
+  dysond join https://node.example.com --rpc-port 26657 --api-port 1317
+
+  # Skip libp2p configuration
+  dysond join https://dys2.dysonprotocol.com --skip-libp2p
 
 Prerequisites:
   - Local node must be initialized: dysond init <moniker>
 `,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			rpcEndpoint := args[0]
+			baseHost := strings.TrimSuffix(args[0], "/")
+
+			// Get flags
+			rpcPath, _ := cmd.Flags().GetString("rpc-path")
+			rpcPort, _ := cmd.Flags().GetInt("rpc-port")
+			apiPort, _ := cmd.Flags().GetInt("api-port")
+			skipLibp2p, _ := cmd.Flags().GetBool("skip-libp2p")
+
+			// Build endpoints from base host
+			endpoints := buildEndpoints(baseHost, rpcPath, rpcPort, apiPort)
 
 			// Get client context for home directory
 			clientCtx := client.GetClientContextFromCmd(cmd)
@@ -426,26 +462,40 @@ Prerequisites:
 			}
 
 			fmt.Printf("Using home directory: %s\n", homeDir)
+			fmt.Printf("RPC endpoint: %s\n", endpoints.RPC)
+			fmt.Printf("API endpoint: %s\n", endpoints.API)
 
 			// Fetch genesis file
-			if err := fetchGenesis(rpcEndpoint, homeDir); err != nil {
+			if err := fetchGenesis(endpoints.RPC, homeDir); err != nil {
 				return fmt.Errorf("failed to fetch genesis: %w", err)
 			}
 
 			// Get RPC status
-			statusInfo, err := getRPCStatus(rpcEndpoint)
+			statusInfo, err := getRPCStatus(endpoints.RPC)
 			if err != nil {
 				return fmt.Errorf("failed to get RPC status: %w", err)
 			}
 
 			// Configure state sync
-			if err := configureStateSync(homeDir, rpcEndpoint, statusInfo); err != nil {
+			if err := configureStateSync(homeDir, endpoints.RPC, statusInfo); err != nil {
 				return fmt.Errorf("failed to configure state sync: %w", err)
 			}
 
 			// Configure client settings
-			if err := configureClient(homeDir, rpcEndpoint, statusInfo); err != nil {
+			if err := configureClient(homeDir, endpoints.RPC, statusInfo); err != nil {
 				return fmt.Errorf("failed to configure client: %w", err)
+			}
+
+			// Configure libp2p bootstrap peers from API endpoint
+			if !skipLibp2p {
+				if err := configureLibp2pBootstrap(homeDir, endpoints.API); err != nil {
+					// Log warning but don't fail - libp2p is optional for node operation
+					fmt.Printf("\n⚠️  Warning: Could not configure libp2p bootstrap peers: %v\n", err)
+					fmt.Println("   You can manually configure libp2p-bootstrap-peers in app.toml later.")
+					fmt.Println("   Or use --skip-libp2p to skip this step.")
+				}
+			} else {
+				fmt.Println("Skipping libp2p configuration (--skip-libp2p)")
 			}
 
 			fmt.Println("\n🎉 Node configuration complete!")
@@ -460,7 +510,61 @@ Prerequisites:
 		},
 	}
 
+	cmd.Flags().String("rpc-path", "/rpc", "Path prefix for RPC endpoints (e.g., /rpc for {host}/rpc/status)")
+	cmd.Flags().Int("rpc-port", 0, "RPC port (if set, uses port-based routing instead of path-based)")
+	cmd.Flags().Int("api-port", 0, "API port (if set, uses port-based routing instead of path-based)")
+	cmd.Flags().Bool("skip-libp2p", false, "Skip libp2p bootstrap peer configuration")
+
 	return cmd
+}
+
+// Endpoints holds the constructed endpoint URLs
+type Endpoints struct {
+	RPC string // e.g., https://dys2.dysonprotocol.com/rpc
+	API string // e.g., https://dys2.dysonprotocol.com
+}
+
+// buildEndpoints constructs RPC and API endpoints from a base host
+// Supports both path-based routing (default) and port-based routing
+func buildEndpoints(baseHost, rpcPath string, rpcPort, apiPort int) *Endpoints {
+	// If ports are specified, use port-based routing
+	if rpcPort > 0 || apiPort > 0 {
+		parsed, err := url.Parse(baseHost)
+		if err != nil {
+			return &Endpoints{
+				RPC: fmt.Sprintf("%s:%d", baseHost, rpcPort),
+				API: fmt.Sprintf("%s:%d", baseHost, apiPort),
+			}
+		}
+
+		scheme := parsed.Scheme
+		if scheme == "" {
+			scheme = "https"
+		}
+		host := parsed.Hostname()
+
+		rp := rpcPort
+		if rp == 0 {
+			rp = 26657
+		}
+		ap := apiPort
+		if ap == 0 {
+			ap = 1317
+		}
+
+		return &Endpoints{
+			RPC: fmt.Sprintf("%s://%s:%d", scheme, host, rp),
+			API: fmt.Sprintf("%s://%s:%d", scheme, host, ap),
+		}
+	}
+
+	// Default: path-based routing
+	// RPC at {host}/rpc, API at {host}
+	rpcPath = strings.TrimSuffix(rpcPath, "/")
+	return &Endpoints{
+		RPC: baseHost + rpcPath,
+		API: baseHost,
+	}
 }
 
 // StatusInfo holds the parsed status information from RPC
@@ -616,8 +720,12 @@ func configureStateSync(homeDir, rpcEndpoint string, statusInfo *StatusInfo) err
 func updateConfigValue(config, key, value string) string {
 	replacement := fmt.Sprintf(`%s = %s`, key, value)
 
-	// Special handling for quoted values
-	if !strings.HasPrefix(value, `"`) && key != "enable" && key != "trust_height" {
+	// Special handling for quoted values - don't quote if already quoted, is a bool, number, or array
+	needsQuotes := !strings.HasPrefix(value, `"`) &&
+		!strings.HasPrefix(value, `[`) &&
+		key != "enable" &&
+		key != "trust_height"
+	if needsQuotes {
 		replacement = fmt.Sprintf(`%s = "%s"`, key, value)
 	}
 
@@ -675,6 +783,130 @@ func configureClient(homeDir, rpcEndpoint string, statusInfo *StatusInfo) error 
 
 	fmt.Println("Client configuration updated successfully!")
 	return nil
+}
+
+// getLibp2pBootstrap fetches bootstrap info from the /libp2p/bootstrap endpoint
+func getLibp2pBootstrap(apiEndpoint string) (*Libp2pBootstrapResponse, error) {
+	bootstrapURL := strings.TrimSuffix(apiEndpoint, "/") + "/libp2p/bootstrap"
+	fmt.Printf("Fetching libp2p bootstrap from %s...\n", bootstrapURL)
+
+	httpClient := &http.Client{Timeout: 30 * time.Second}
+	resp, err := httpClient.Get(bootstrapURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch libp2p bootstrap: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusServiceUnavailable {
+		return nil, fmt.Errorf("libp2p is disabled on the remote node")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("bootstrap request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var bootstrapResp Libp2pBootstrapResponse
+	if err := json.NewDecoder(resp.Body).Decode(&bootstrapResp); err != nil {
+		return nil, fmt.Errorf("failed to parse bootstrap response: %w", err)
+	}
+
+	return &bootstrapResp, nil
+}
+
+// configureLibp2pBootstrap fetches bootstrap info and updates app.toml
+func configureLibp2pBootstrap(homeDir, apiEndpoint string) error {
+	// Fetch bootstrap info from remote node
+	bootstrapInfo, err := getLibp2pBootstrap(apiEndpoint)
+	if err != nil {
+		return err
+	}
+
+	if bootstrapInfo.PeerID == "" {
+		return fmt.Errorf("remote node returned empty peer ID")
+	}
+
+	fmt.Printf("Remote libp2p peer ID: %s\n", bootstrapInfo.PeerID)
+	fmt.Printf("Remote libp2p addresses: %d total\n", len(bootstrapInfo.Addrs))
+
+	// Build bootstrap peer multiaddrs
+	// Note: addresses from /libp2p/bootstrap already include /p2p/{peerID} suffix
+	var bootstrapPeers []string
+	for _, addr := range bootstrapInfo.Addrs {
+		// Only use addresses that are externally reachable (not localhost/0.0.0.0)
+		if isExternalAddress(addr) {
+			// Address already includes peer ID, use as-is
+			bootstrapPeers = append(bootstrapPeers, addr)
+		}
+	}
+
+	// Also include any pre-configured bootstrap peers from the remote node
+	bootstrapPeers = append(bootstrapPeers, bootstrapInfo.BootstrapPeers...)
+
+	if len(bootstrapPeers) == 0 {
+		return fmt.Errorf("no usable bootstrap peer addresses found")
+	}
+
+	// Update app.toml
+	appConfigPath := filepath.Join(homeDir, "config", "app.toml")
+	fmt.Printf("Configuring libp2p bootstrap peers in %s...\n", appConfigPath)
+
+	appConfigData, err := os.ReadFile(appConfigPath)
+	if err != nil {
+		return fmt.Errorf("failed to read app config file: %w", err)
+	}
+
+	appConfigStr := string(appConfigData)
+
+	// Format bootstrap peers as TOML array
+	peersFormatted := formatTOMLStringArray(bootstrapPeers)
+	appConfigStr = updateConfigValue(appConfigStr, "libp2p-bootstrap-peers", peersFormatted)
+
+	if err := os.WriteFile(appConfigPath, []byte(appConfigStr), 0644); err != nil {
+		return fmt.Errorf("failed to write app config file: %w", err)
+	}
+
+	fmt.Printf("Set libp2p-bootstrap-peers with %d peer(s)\n", len(bootstrapPeers))
+	for _, peer := range bootstrapPeers {
+		fmt.Printf("  - %s\n", peer)
+	}
+
+	return nil
+}
+
+// isExternalAddress checks if a multiaddr is externally reachable
+func isExternalAddress(addr string) bool {
+	// Skip localhost, loopback, and wildcard addresses
+	localPatterns := []string{
+		"/ip4/127.",
+		"/ip4/0.0.0.0",
+		"/ip6/::1",
+		"/ip6/::",
+		"/dns4/localhost",
+		"/dns6/localhost",
+	}
+
+	for _, pattern := range localPatterns {
+		if strings.Contains(addr, pattern) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// formatTOMLStringArray formats a string slice as a TOML array
+func formatTOMLStringArray(items []string) string {
+	if len(items) == 0 {
+		return "[]"
+	}
+
+	var quoted []string
+	for _, item := range items {
+		quoted = append(quoted, fmt.Sprintf(`"%s"`, item))
+	}
+
+	return "[" + strings.Join(quoted, ", ") + "]"
 }
 
 /*
