@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
         env.DYSONPROTOCOL_API ||
         env.VITE_DYSONPROTOCOL_API ||
         nodeEnv.DYSONPROTOCOL_API ||
-        "http://localhost:1417";
+        "https://dys2.dysonprotocol.com";
     const wsProxyTarget = proxyTarget.replace(/^http/, "ws");
 
     console.log("vite1 proxyTarget", proxyTarget);

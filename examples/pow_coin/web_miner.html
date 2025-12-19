@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>POW Coin Miner</title>
+  <style>
+    .testnet-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #a00;
+      color: #fff;
+      font-size: 12px;
+      padding: 4px 0;
+      overflow: hidden;
+      z-index: 1000;
+    }
+
+    .testnet-banner span {
+      display: inline-block;
+      white-space: nowrap;
+      animation: marquee 20s linear infinite;
+    }
+
+    @keyframes marquee {
+      0% {
+        transform: translateX(100vw);
+      }
+
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 24px 20px 0 20px;
+      background: #111;
+      color: #ddd;
+    }
+
+    h1 {
+      margin-bottom: 4px;
+    }
+
+    button {
+      padding: 10px 20px;
+      cursor: pointer;
+      background: #333;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    button:hover:not(:disabled) {
+      background: #444;
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    button.claim {
+      background: #185;
+      border-color: #2a7;
+      font-weight: bold;
+    }
+
+    button.claim:hover:not(:disabled) {
+      background: #1a6;
+    }
+
+    button.claim.ready {
+      background: #2a6;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(34, 170, 102, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(34, 170, 102, 0);
+      }
+    }
+
+    input {
+      padding: 8px 10px;
+      width: 100%;
+      box-sizing: border-box;
+      background: #1a1a1a;
+      color: #fff;
+      border: 1px solid #333;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    .row {
+      margin: 14px 0;
+    }
+
+    #error {
+      color: #f55;
+      background: #311;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    #error:not(:empty) {
+      display: block;
+    }
+
+    #result {
+      color: #4f4;
+      background: #131;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    #result:not(:empty) {
+      display: block;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      color: #666;
+      font-size: 12px;
+    }
+
+    .reward-box {
+      background: linear-gradient(135deg, #1a2a1a 0%, #112211 100%);
+      border: 1px solid #2a4;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      margin: 16px 0;
+    }
+
+    .reward-label {
+      color: #6a6;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .reward-value {
+      font-size: 36px;
+      font-weight: bold;
+      color: #4f4;
+      margin: 8px 0;
+      font-family: monospace;
+    }
+
+    .reward-sub {
+      color: #585;
+      font-size: 13px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 16px 0;
+    }
+
+    .wallet-connected {
+      color: #4f4;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="testnet-banner"><span>TESTNET — These coins have no value</span></div>
+  <h1>⛏️ POW Coin</h1>
+  <p style="color:#555; margin-top:0">Mine proof-of-work, claim coins</p>
+
+  <div class="row">
+    <button id="connect">Connect Keplr</button>
+    <span id="wallet" class="wallet-connected"></span>
+  </div>
+
+  <div class="reward-box">
+    <div class="reward-label">Claimable Reward</div>
+    <div class="reward-value" id="reward">0.000000</div>
+    <div class="reward-sub" id="reward-sub">Connect wallet to start mining</div>
+  </div>
+
+  <div class="buttons">
+    <button id="mine">Start Mining</button>
+    <button id="stop" disabled>Stop</button>
+    <button id="claim" class="claim" disabled>Claim</button>
+  </div>
+
+  <details id="proof-details" style="margin-top: 16px;" open>
+    <summary style="cursor: pointer; color: #888; font-size: 13px; margin-bottom: 8px;">Proof Details</summary>
+    <pre id="proof-breakdown"
+      style="background: #0a0a0a; padding: 12px; font-size: 12px; color: #8f8; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; line-height: 1.6;">Start mining to see the calculation...</pre>
+  </details>
+
+  <div id="result"></div>
+  <div id="error"></div>
+
+  <details style="margin-top: 16px;">
+    <summary style="cursor: pointer; color: #666; font-size: 12px;">Debug Log</summary>
+    <pre id="log"
+      style="background: #0a0a0a; padding: 10px; font-size: 11px; max-height: 200px; overflow-y: auto; color: #888; margin-top: 8px;"></pre>
+  </details>
+
+  <script>
+    // Contract constants (loaded from API via consts endpoint - no defaults!)
+    let EMISSION = null;
+    let TARGET = null;
+    let BASE_TARGET = null;
+    let DENOM = null;
+    const MAX_HASH = 2n ** 256n;  // BigInt (constant)
+
+    // Denom config
+    const DISPLAY_DENOM = "POW";
+    const DISPLAY_EXP = 6;  // 1 POW = 10^6 pow.dys
+
+    async function fetchConsts() {
+      log("fetchConsts: loading from /info...");
+      const res = await fetch("/info");
+      if (!res.ok) {
+        throw new Error("Failed to load consts: " + await res.text());
+      }
+      const info = await res.json();
+      log(`fetchConsts: ${JSON.stringify(info)}`);
+      EMISSION = info.emission;
+      TARGET = info.target_period;
+      BASE_TARGET = info.base_target;
+      DENOM = info.denom;
+      log(`fetchConsts: EMISSION=${EMISSION}, TARGET=${TARGET}, BASE_TARGET=${BASE_TARGET}`);
+    }
+
+    async function fetchState() {
+      log("fetchState: loading from storage...");
+      const res = await fetch(`/dysonprotocol/storage/v1/storage_get?owner=${encodeURIComponent(script())}&index=s`);
+      if (!res.ok) {
+        log("fetchState: no state found, using defaults");
+        prevHash = "0".repeat(64);
+        targetHashrate = BASE_TARGET;
+        serverElapsed = TARGET;
+        fetchTime = nowSeconds();
+        return;
+      }
+      const json = await res.json();
+      const data = JSON.parse(json.entry.data);
+      const oldPrev = prevHash;
+      prevHash = data[0];
+      const lastTime = data[1];
+      targetHashrate = data[2] !== undefined ? data[2] : BASE_TARGET;
+      // Calculate elapsed from lastTime
+      const now = nowSeconds();
+      serverElapsed = lastTime ? Math.max(1, now - lastTime) : TARGET;
+      fetchTime = now;
+      if (oldPrev && oldPrev !== prevHash) {
+        log(`fetchState: prevHash CHANGED! ${oldPrev.slice(0, 8)}... -> ${prevHash.slice(0, 8)}...`);
+      }
+      log(`fetchState: prevHash=${prevHash.slice(0, 16)}... elapsed=${serverElapsed}s target=${formatHashes(targetHashrate)} H/s`);
+    }
+
+    function toDisplay(baseUnits) {
+      return baseUnits / Math.pow(10, DISPLAY_EXP);
+    }
+
+    function formatPOW(baseUnits) {
+      return toDisplay(baseUnits).toFixed(6);
+    }
+
+    function formatHashes(n) {
+      if (n < 1000) return n.toFixed(0);
+      if (n < 1e6) return (n / 1e3).toFixed(1) + "K";
+      if (n < 1e9) return (n / 1e6).toFixed(1) + "M";
+      if (n < 1e12) return (n / 1e9).toFixed(1) + "B";
+      return (n / 1e12).toFixed(1) + "T";
+    }
+
+    function formatTime(seconds) {
+      if (seconds < 60) return `${seconds}s`;
+      if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      return `${h}h ${m}m`;
+    }
+
+    let chainId = "", address = "", mining = false, claiming = false, statusMsg = "Start Mining";
+    let bestNonce = "", bestHash = "", bestWork = 0, bestForPrev = "";
+    let prevHash = "0".repeat(64), targetHashrate = null;
+    let serverElapsed = 0, fetchTime = 0;  // track elapsed from server
+    let totalAttempts = 0;
+
+    const $ = id => document.getElementById(id);
+    const SCRIPT_ADDRESS = "{{SCRIPT_ADDRESS}}";  // injected by WSGI
+    const script = () => SCRIPT_ADDRESS;
+
+    function log(msg) {
+      const ts = new Date().toLocaleTimeString();
+      const line = `[${ts}] ${msg}`;
+      console.log(line);
+      const el = $("log");
+      if (el) {
+        el.textContent = line + "\n" + el.textContent;
+        if (el.textContent.length > 10000) el.textContent = el.textContent.slice(0, 8000);
+      }
+    }
+
+    async function sha256(msg) {
+      const data = new TextEncoder().encode(msg);
+      const buf = await crypto.subtle.digest("SHA-256", data);
+      return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function work(hashHex) {
+      // Expected hashes to find one this small: 2²⁵⁶ / hash
+      const h = BigInt("0x" + hashHex);
+      if (h === 0n) return Number.MAX_SAFE_INTEGER;
+      return Number(MAX_HASH / h);
+    }
+
+    function nonce() {
+      const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    }
+
+    function nowSeconds() {
+      return Math.floor(Date.now() / 1000);
+    }
+
+    function calcInfo() {
+      const now = nowSeconds();
+      // elapsed = server's elapsed + time since we fetched
+      const elapsed = serverElapsed + (fetchTime ? now - fetchTime : 0);
+      const timeRatio = elapsed / TARGET;
+      return { prevHash, targetHashrate, elapsed, timeRatio };
+    }
+
+    function rewardMult(work, difficulty) {
+      // Reward multiplier: work relative to expected work per period
+      // mult = work / expected_work
+      //      = work / (difficulty × PERIOD)
+      const expectedWork = difficulty * TARGET;  // TARGET is the period (3600s)
+      return work / expectedWork;
+    }
+
+    function calcReward(work, difficulty, elapsed) {
+      // reward = EMISSION × work / (difficulty × PERIOD)
+      //        = EMISSION × work / expected_work
+      const mult = rewardMult(work, difficulty);
+      return Math.floor(EMISSION * mult);
+    }
+
+
+    function setStatus(msg) {
+      statusMsg = msg;
+      const valid = bestNonce && bestForPrev === prevHash;
+      const info = calcInfo();
+      const reward = valid ? calcReward(work(bestHash), targetHashrate, info.elapsed) : 0;
+      if (!claiming) $("claim").textContent = reward >= 1 ? `Claim ${formatPOW(reward)} POW` : statusMsg;
+    }
+
+    // Submit mine tx
+    async function submitMine(nonceVal) {
+      log(`submitMine: nonce="${nonceVal}" executor=${address} script=${script()}`);
+      const acctRes = await fetch(`/cosmos/auth/v1beta1/account_info/${address}`);
+      let sequence = 0, accountNumber = 0;
+      if (acctRes.ok) {
+        const acctJson = await acctRes.json();
+        sequence = parseInt(acctJson.info?.sequence || "0");
+        accountNumber = parseInt(acctJson.info?.account_number || "0");
+      }
+
+      const msg = {
+        "@type": "/dysonprotocol.script.v1.MsgExec",
+        executor_address: address,
+        script_address: script(),
+        function_name: "mine",
+        args: JSON.stringify([nonceVal]),
+        kwargs: "{}",
+        extra_code: "",
+        attached_messages: [],
+      };
+
+      const key = await window.keplr.getKey(chainId);
+      const pubkeyBase64 = btoa(String.fromCharCode(...key.pubKey));
+
+      const tx = {
+        body: {
+          messages: [msg],
+          memo: "",
+          timeout_height: "0",
+          unordered: false,
+          timeout_timestamp: "0001-01-01T00:00:00Z",
+          extension_options: [],
+          non_critical_extension_options: [],
+        },
+        auth_info: {
+          signer_infos: [{
+            public_key: { "@type": "/cosmos.crypto.secp256k1.PubKey", key: pubkeyBase64 },
+            mode_info: { single: { mode: "SIGN_MODE_DIRECT" } },
+            sequence: String(sequence),
+          }],
+          fee: { amount: [{ denom: "udys", amount: "0" }], gas_limit: "3000000" },
+          tip: null,
+        },
+        signatures: [],
+      };
+
+      const encRes = await fetch(`/cosmos/tx/v1beta1/encode`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tx }),
+      });
+      if (!encRes.ok) throw new Error("Encode failed: " + await encRes.text());
+      const { tx_bytes } = await encRes.json();
+
+      const txRaw = Uint8Array.from(atob(tx_bytes), c => c.charCodeAt(0));
+      let pos = 0, bodyBytes, authInfoBytes;
+      while (pos < txRaw.length) {
+        const tag = txRaw[pos++];
+        const fieldNum = tag >> 3;
+        const wireType = tag & 0x7;
+        if (wireType === 2) {
+          let len = 0, shift = 0;
+          while (txRaw[pos] & 0x80) { len |= (txRaw[pos++] & 0x7f) << shift; shift += 7; }
+          len |= txRaw[pos++] << shift;
+          const data = txRaw.slice(pos, pos + len);
+          pos += len;
+          if (fieldNum === 1) bodyBytes = data;
+          if (fieldNum === 2) authInfoBytes = data;
+        }
+      }
+
+      const signDoc = { bodyBytes, authInfoBytes, chainId, accountNumber };
+      const signed = await window.keplr.signDirect(chainId, address, signDoc);
+      const sigBytes = Uint8Array.from(atob(signed.signature.signature), c => c.charCodeAt(0));
+
+      function encodeVarInt(n) {
+        const bytes = [];
+        while (n > 127) { bytes.push((n & 0x7f) | 0x80); n >>= 7; }
+        bytes.push(n);
+        return bytes;
+      }
+      function encodeBytes(fieldNum, data) {
+        const tag = (fieldNum << 3) | 2;
+        return [tag, ...encodeVarInt(data.length), ...data];
+      }
+      const signedBody = signed.signed.bodyBytes || bodyBytes;
+      const signedAuth = signed.signed.authInfoBytes || authInfoBytes;
+      const txRawSigned = new Uint8Array([
+        ...encodeBytes(1, signedBody),
+        ...encodeBytes(2, signedAuth),
+        ...encodeBytes(3, sigBytes),
+      ]);
+
+      const broadcastRes = await fetch(`/cosmos/tx/v1beta1/txs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tx_bytes: btoa(String.fromCharCode(...txRawSigned)), mode: "BROADCAST_MODE_SYNC" }),
+      });
+      const broadcastJson = await broadcastRes.json();
+
+      if (broadcastJson.tx_response?.code !== 0) {
+        const errMsg = broadcastJson.tx_response?.raw_log || "Broadcast failed";
+        // Sequence mismatch - extract expected and retry
+        const seqMatch = errMsg.match(/expected (\d+), got (\d+)/);
+        if (seqMatch) {
+          log(`submitMine: sequence mismatch, retrying with ${seqMatch[1]}...`);
+          await new Promise(r => setTimeout(r, 1000));
+          return submitMine(nonceVal);  // retry
+        }
+        throw new Error(errMsg);
+      }
+
+      const txHash = broadcastJson.tx_response.txhash;
+      for (let i = 0; i < 15; i++) {
+        await new Promise(r => setTimeout(r, 1000));
+        const res = await fetch(`/cosmos/tx/v1beta1/txs/${txHash}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.tx_response?.code === 0) return json;
+          if (json.tx_response?.code) throw new Error(json.tx_response?.raw_log || "Tx failed");
+        }
+      }
+      throw new Error("Tx not confirmed after 15s");
+    }
+
+    function updateStats() {
+      const info = calcInfo();
+      const valid = bestNonce && bestForPrev === prevHash;
+      const currentWork = valid && bestHash ? work(bestHash) : 0;
+      const reward = valid ? calcReward(currentWork, targetHashrate, info.elapsed) : 0;
+      const canClaim = valid && reward >= 1;
+
+      // Main reward display
+      $("reward").textContent = canClaim ? formatPOW(reward) : "0.000000";
+
+      // Sub-text under reward
+      if (!address) {
+        $("reward-sub").textContent = "Connect wallet to start mining";
+      } else if (!mining && !valid) {
+        $("reward-sub").textContent = "Click Start Mining";
+      } else if (canClaim) {
+        $("reward-sub").textContent = "Ready to claim!";
+      } else if (valid) {
+        $("reward-sub").textContent = `${formatHashes(currentWork)} work (target: ${formatHashes(targetHashrate)} H/s)`;
+      } else {
+        $("reward-sub").textContent = "Mining in progress...";
+      }
+
+      // Educational proof breakdown
+      if (valid) {
+        const timeFrac = info.elapsed / TARGET;
+
+        // Hashrates in H/s
+        const impliedRate = currentWork / info.elapsed;
+        const actualRate = totalAttempts / info.elapsed;
+        const targetRate = targetHashrate;
+        const efficiency = impliedRate / targetRate;
+
+        // Target adjustment preview (H/s)
+        const alpha = Math.min(0.5, info.elapsed / 3600);
+        const predictedNewTarget = Math.max(1, alpha * impliedRate + (1 - alpha) * targetRate);
+
+        // Luck: work / attempts (>1 = lucky, <1 = unlucky)
+        const luck = (currentWork || 1) / (totalAttempts || 1);
+
+        $("proof-breakdown").innerHTML =
+          `<span style="color:#666">// Your proof</span>
+hash            = <span style="color:#4f4">${bestHash}</span>
+
+work            = 2²⁵⁶ / hash
+                = <span style="color:#ff0">${currentWork.toLocaleString()}</span>
+
+<span style="color:#666">// Time</span>
+target_time     = <span style="color:#ff0">${TARGET}s</span>
+
+elapsed         = <span style="color:#ff0">${info.elapsed}s</span> (${(timeFrac * 100).toFixed(2)}% of target)
+
+<span style="color:#666">// Hashrates</span>
+target_rate     = <span style="color:#88f">${formatHashes(targetRate)} H/s</span>
+
+implied_rate    = work / elapsed
+                = ${currentWork.toLocaleString()} / ${info.elapsed}s
+                = <span style="color:#88f">${formatHashes(impliedRate)} H/s</span> (${(impliedRate / targetRate * 100).toFixed(2)}% of target)
+
+<span style="color:#666">// Luck</span>
+attempts        = <span style="color:#ff0">${totalAttempts.toLocaleString()}</span>
+
+actual_rate     = attempts / elapsed
+                = ${totalAttempts.toLocaleString()} / ${info.elapsed}s
+                = <span style="color:#88f">${formatHashes(actualRate)} H/s</span>
+
+luck            = work / attempts
+                = ${currentWork.toLocaleString()} / ${totalAttempts.toLocaleString()}
+                = ${luck.toFixed(2)}× ${luck > 1.5 ? '<span style="color:#4f4">(lucky)</span>' : luck < 0.67 ? '<span style="color:#f84">(unlucky)</span>' : '<span style="color:#888">(normal)</span>'}
+
+<span style="color:#666">// Reward Formula</span>
+<span style="color:#666">//   reward = EMISSION × work / expected_work</span>
+<span style="color:#666">//          = EMISSION × work / (difficulty × PERIOD)</span>
+
+difficulty      = <span style="color:#88f">${formatHashes(targetRate)} H/s</span>
+PERIOD          = <span style="color:#ff0">${TARGET}s</span>
+expected_work   = difficulty × PERIOD
+                = ${formatHashes(targetRate)} × ${TARGET}
+                = <span style="color:#ff0">${(targetRate * TARGET).toLocaleString()}</span>
+
+reward          = ${EMISSION.toLocaleString()} × ${currentWork.toLocaleString()} / ${(targetRate * TARGET).toLocaleString()}
+                = <span style="color:#4f4">${reward.toLocaleString()} pow.dys</span> (${formatPOW(reward)} POW)
+
+<span style="color:#666">// Difficulty Adjustment (EMA: max 50% weight on new data)</span>
+alpha           = min(0.5, elapsed / 3600)
+                = min(0.5, ${info.elapsed} / 3600)
+                = <span style="color:#ff0">${alpha.toFixed(4)}</span>
+
+new_difficulty  = α × implied_rate + (1 - α) × current_difficulty
+                = ${alpha.toFixed(4)} × ${formatHashes(impliedRate)} + ${(1 - alpha).toFixed(4)} × ${formatHashes(targetRate)}
+                = <span style="color:#88f">${formatHashes(predictedNewTarget)} H/s</span>`;
+      } else if (mining) {
+        $("proof-breakdown").textContent = `Searching for small hash: sha256("${prevHash.slice(0, 8)}...:nonce:${address.slice(0, 8)}...")
+The smaller the hash, the more "work" it represents.
+Target: ${formatHashes(targetHashrate)} H/s`;
+      }
+
+      // Claim button
+      $("claim").disabled = !canClaim || claiming;
+      $("claim").textContent = canClaim ? `Claim ${formatPOW(reward)} POW` : statusMsg;
+      $("claim").classList.toggle("ready", canClaim);
+    }
+
+    $("connect").onclick = async () => {
+      log("connect: clicked");
+      try {
+        $("error").textContent = "";
+        if (!window.keplr) throw new Error("Keplr not found. Install the browser extension.");
+
+        const nodeRes = await fetch(`/cosmos/base/tendermint/v1beta1/node_info`);
+        if (!nodeRes.ok) throw new Error("Cannot connect to API");
+        const nodeJson = await nodeRes.json();
+        chainId = nodeJson.default_node_info.network;
+        log(`connect: chainId=${chainId}`);
+
+        const prefix = "dys2";
+        const restUrl = window.location.origin;
+        const rpcUrl = restUrl.replace(":1317", ":26657");
+        await window.keplr.experimentalSuggestChain({
+          chainId,
+          chainName: "Dyson Protocol v2",
+          rpc: rpcUrl,
+          rest: restUrl,
+          bip44: { coinType: 118 },
+          bech32Config: {
+            bech32PrefixAccAddr: prefix,
+            bech32PrefixAccPub: prefix + "pub",
+            bech32PrefixValAddr: prefix + "valoper",
+            bech32PrefixValPub: prefix + "valoperpub",
+            bech32PrefixConsAddr: prefix + "valcons",
+            bech32PrefixConsPub: prefix + "valconspub",
+          },
+          currencies: [{ coinDenom: "DYS", coinMinimalDenom: "udys", coinDecimals: 6 }],
+          feeCurrencies: [{ coinDenom: "DYS", coinMinimalDenom: "udys", coinDecimals: 6, gasPriceStep: { low: 0, average: 0, high: 0.001 } }],
+          stakeCurrency: { coinDenom: "DYS", coinMinimalDenom: "udys", coinDecimals: 6 },
+        });
+        await window.keplr.enable(chainId);
+
+        const key = await window.keplr.getKey(chainId);
+        address = key.bech32Address;
+        log(`connect: address=${address}`);
+        $("wallet").textContent = `✓ ${address}`;
+        $("connect").textContent = "Connected";
+        $("connect").disabled = true;
+
+        // Fetch config and state
+        await fetchConsts();
+        await fetchState();
+        updateStats();
+        log("connect: done");
+      } catch (e) {
+        log(`connect: ERROR ${e.message}`);
+        $("error").textContent = e.message;
+      }
+    };
+
+    $("claim").onclick = async () => {
+      log("claim: clicked");
+      if (!bestNonce || claiming) {
+        log(`claim: skipped (bestNonce=${!!bestNonce}, claiming=${claiming})`);
+        return;
+      }
+      claiming = true;
+      $("claim").disabled = true;
+      $("error").textContent = "";
+
+      const savedBestForPrev = bestForPrev;
+      const savedBestNonce = bestNonce;
+      const savedBestHash = bestHash;
+      log(`claim: savedBestForPrev=${savedBestForPrev.slice(0, 16)}...`);
+      log(`claim: savedBestNonce=${savedBestNonce}`);
+      log(`claim: savedBestHash=${savedBestHash.slice(0, 16)}...`);
+
+      try {
+        await fetchState();
+
+        if (savedBestForPrev !== prevHash) {
+          log(`claim: prevHash mismatch! saved=${savedBestForPrev.slice(0, 16)}... current=${prevHash.slice(0, 16)}...`);
+          bestNonce = "";
+          bestHash = "";
+          bestWork = 0;
+          bestForPrev = "";
+          updateStats();
+          throw new Error("Someone else claimed first! Mining new proof...");
+        }
+
+        // Recalculate work from hash (don't trust stored value)
+        const actualWork = work(savedBestHash);
+        const info = calcInfo();
+        const reward = calcReward(actualWork, targetHashrate, info.elapsed);
+        log(`claim: actualWork=${actualWork}, target=${targetHashrate}, reward=${reward}`);
+
+        // Log the exact hash input for debugging
+        const hashInput = `${savedBestForPrev}:${savedBestNonce}:${address}`;
+        const verifyHash = await sha256(hashInput);
+        log(`claim: hashInput="${hashInput.slice(0, 40)}..."`);
+        log(`claim: verifyHash=${verifyHash.slice(0, 16)}... (saved=${savedBestHash.slice(0, 16)}...)`);
+        if (verifyHash !== savedBestHash) {
+          log(`claim: HASH MISMATCH! This is a bug.`);
+        }
+
+        if (reward < 1) {
+          throw new Error("Reward too low. Need more work or wait longer.");
+        }
+
+        setStatus(`Claiming ${formatPOW(reward)} POW...`);
+        log(`claim: submitting nonce=${savedBestNonce}`);
+        await submitMine(savedBestNonce);
+
+        $("result").textContent = `✓ Claimed ${formatPOW(reward)} POW`;
+        log(`claim: SUCCESS`);
+
+        await fetchState();
+        bestNonce = "";
+        bestHash = "";
+        bestWork = 0;
+        bestForPrev = "";
+        totalAttempts = 0;
+        updateStats();
+        setStatus(mining ? "Mining new proof..." : "Claimed!");
+      } catch (e) {
+        log(`claim: ERROR ${e.message}`);
+        $("error").textContent = e.message;
+        try {
+          await fetchState();
+          bestNonce = "";
+          bestHash = "";
+          bestWork = 0;
+          bestForPrev = "";
+          updateStats();
+        } catch (err) { log(`claim: fetchState failed: ${err.message}`); }
+      }
+
+      claiming = false;
+      updateStats();
+    };
+
+    $("mine").onclick = async () => {
+      log("mine: clicked");
+      if (!address) { $("error").textContent = "Connect wallet first"; return; }
+      if (!script()) { $("error").textContent = "Enter script address"; return; }
+
+      mining = true;
+      totalAttempts = 0;
+      $("mine").disabled = true;
+      $("stop").disabled = false;
+      $("result").textContent = "";
+      $("error").textContent = "";
+
+      try {
+        await fetchState();
+        let lastRefresh = Date.now();
+        log(`mine: starting with prevHash=${prevHash.slice(0, 16)}... target=${formatHashes(targetHashrate)} H/s`);
+
+        setStatus("Mining...");
+
+        const statsInterval = setInterval(() => {
+          if (mining) updateStats();
+        }, 1000);
+
+        while (mining) {
+          const currentPrev = prevHash;
+
+          for (let i = 0; i < 500 && mining; i++) {
+            const n = nonce();
+            const h = await sha256(`${currentPrev}:${n}:${address}`);
+            const w = work(h);
+            totalAttempts++;
+
+            if (bestForPrev && bestForPrev !== currentPrev) {
+              log(`mine: prevHash changed during mining! Resetting best.`);
+              bestNonce = "";
+              bestHash = "";
+              bestWork = 0;
+              bestForPrev = "";
+              setStatus("Chain updated, restarting...");
+            }
+
+            if (w > bestWork) {
+              bestWork = w;
+              bestNonce = n;
+              bestHash = h;
+              bestForPrev = currentPrev;
+              const info = calcInfo();
+              const reward = calcReward(w, targetHashrate, info.elapsed);
+              log(`mine: NEW BEST nonce=${n} hash=${h.slice(0, 16)}... work=${w} target=${targetHashrate} reward=${reward}`);
+              updateStats();
+
+              if (reward >= 1) {
+                setStatus(`Claim ${formatPOW(reward)} POW`);
+              } else {
+                setStatus(`Mining... ${formatHashes(w)} work`);
+              }
+            }
+          }
+
+          if (Date.now() - lastRefresh > 5000) {
+            lastRefresh = Date.now();
+            try {
+              await fetchState();
+              updateStats();
+            } catch (err) { log(`mine: fetchState error: ${err.message}`); }
+          }
+
+          await new Promise(r => setTimeout(r, 0));
+        }
+
+        clearInterval(statsInterval);
+      } catch (e) {
+        $("error").textContent = e.message;
+      }
+
+      mining = false;
+      $("mine").disabled = false;
+      $("stop").disabled = true;
+    };
+
+    $("stop").onclick = () => {
+      log("stop: clicked");
+      mining = false;
+      const info = calcInfo();
+      const reward = bestNonce && bestForPrev === prevHash ? calcReward(bestWork, targetHashrate, info.elapsed) : 0;
+      const valid = reward >= 1;
+      log(`stop: valid=${valid} bestWork=${bestWork} reward=${reward}`);
+      if (valid) {
+        setStatus(`Claim ${formatPOW(reward)} POW`);
+      } else {
+        setStatus("Stopped");
+      }
+    };
+  </script>
+</body>
+
+</html>

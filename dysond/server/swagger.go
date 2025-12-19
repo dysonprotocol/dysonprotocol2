@@ -47,6 +47,12 @@ func RegisterDysonServer(clientCtx client.Context, logger log.Logger, rtr *mux.R
 			return err
 		}
 		rtr.PathPrefix("/proto-json-schema/").Handler(http.StripPrefix("/proto-json-schema/", http.FileServer(http.FS(protoJsonSchema))))
+
+		swaggerGen, err := fs.Sub(docs.SwaggerUI, "swagger-ui/swagger-gen")
+		if err != nil {
+			return err
+		}
+		rtr.PathPrefix("/swagger-gen/").Handler(http.StripPrefix("/swagger-gen/", http.FileServer(http.FS(swaggerGen))))
 	}
 
 	if config.Enable {
@@ -111,6 +117,7 @@ func RegisterDysonServer(clientCtx client.Context, logger log.Logger, rtr *mux.R
 					strings.HasPrefix(r.URL.Path, "/ibc/") ||
 					strings.HasPrefix(r.URL.Path, "/favicon.ico") ||
 					strings.HasPrefix(r.URL.Path, "/swagger/") ||
+					strings.HasPrefix(r.URL.Path, "/swagger-gen/") ||
 					strings.HasPrefix(r.URL.Path, "/proto-json-schema/")) {
 					// Condition matched: use alternative handler
 					dwappHandler.ServeHTTP(w, r)

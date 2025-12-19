@@ -60,7 +60,7 @@ dysond tx script exec \
   -y | dysond query wait-tx
 
 # Check game status
-dysond query script exec \
+dysond query script run \
   --script-address $(dysond keys show -a alice) \
   --function-name get_game_status
 ```
@@ -98,14 +98,14 @@ dysond query storage get <script_address> --index "game/config"
 dysond query storage list <script_address> --index-prefix "game/pieces/"
 
 # Check piece info
-dysond query script exec \
+dysond query script run \
   --script-address <script_address> \
   --function-name get_piece_info \
   --args '[123]'
   # Args: [piece_id (int)]
 
 # View player stats
-dysond query script exec \
+dysond query script run \
   --script-address <script_address> \
   --function-name get_player_stats \
   --args '["<player_address>"]'

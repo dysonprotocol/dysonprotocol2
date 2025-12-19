@@ -329,12 +329,12 @@ print(json.dumps(events, indent=2))
 
 ## Create AMM pool (foo.dys / bar.dys)
 
-We’ll seed a pool with initial reserves and a per-denom fee rate (e.g., 0.3% on each side).
+We’ll seed a pool with initial reserves and a fee (e.g., 0.3%).
 
 
 ```python
-# Create the pool with two repeated --coins flags; fee rate 0.003
-create_pool_tx = %sh dysond tx whaleswap create-pool --coins "100000$FOO_NAME" --coins "100000$BAR_NAME" --fee-rate "0.003udys" --min-collateral-ratio "1.5" --max-leverage-ratio "10" --from alice --gas auto -y -o json | dysond query wait-tx -o json
+# Create the pool with two repeated --coins flags; fee 0.003
+create_pool_tx = %sh dysond tx whaleswap create-pool --coins "100000$FOO_NAME" --coins "100000$BAR_NAME" --fee-rate "0.003udys" --min-collateral-ratio "1.5" --from alice --gas auto -y -o json | dysond query wait-tx -o json
 assert create_pool_tx['code'] == 0, create_pool_tx['raw_log']
 
 # Resolve pool_id by pair
@@ -347,8 +347,6 @@ print("POOL_ID:", POOL_ID)
 %sh dysond query whaleswap pool --pool-id "$POOL_ID" -o json
 ```
 
-> **Note:** the CLI flag is still `--min-collateral-ratio`, but after the recent proto update the underlying message field is named `min_inital_collateral_ratio`.
-
     POOL_ID: 1
 
 
@@ -359,13 +357,13 @@ print("POOL_ID:", POOL_ID)
       'coins': [{'denom': 'bar.dys', 'amount': '100000'},
        {'denom': 'foo.dys', 'amount': '100000'}],
       'shares_denom': 'whaleswap.dys/pools/1',
-      'created_height': '229',
-      'created_time': '2025-11-13T18:44:40.128264Z',
-      'updated_time': '2025-11-13T18:44:40.128264Z',
-      'updated_height': '229',
+      'created_height': '128',
+      'created_time': '2025-12-18T19:18:35.106863Z',
+      'updated_time': '2025-12-18T19:18:35.106863Z',
+      'updated_height': '128',
       'interest_rate': ['0.000000000000000000bar.dys',
        '0.000000000000000000foo.dys'],
-      'min_collateral_ratio': ['1.500000000000000000bar.dys',
+      'min_initial_collateral_ratio': ['1.500000000000000000bar.dys',
        '1.500000000000000000foo.dys'],
       'liquidation_threshold': ['1.200000000000000000bar.dys',
        '1.200000000000000000foo.dys'],
@@ -556,7 +554,7 @@ print("Bob balances:")
         },
         {
           "denom": "udys",
-          "amount": "10000000121"
+          "amount": "10000000000"
         }
       ],
       "pagination": {
@@ -567,14 +565,14 @@ print("Bob balances:")
 
 
 ```python
-# Pool swap (exact-in): single leg object + min-output safety; keep intermediate output
+# Pool swap (exact-in): single op object + min-output safety; keep intermediate output
 import json, shlex
 
 max_in = f"500{FOO_NAME}"
-legs = json.dumps({"pool_id": int(POOL_ID), "swap_in": {"denom": FOO_NAME, "amount": "500"}})
-legs_q = shlex.quote(legs)
+op = json.dumps({"swap": {"pool_id": int(POOL_ID), "swap_in": {"denom": FOO_NAME, "amount": "500"}}})
+op_q = shlex.quote(op)
 
-swap_in_tx = %sh dysond tx whaleswap swap --from bob --max-input {max_in} --legs {legs_q} --min-output "1$BAR_NAME" -y -o json | dysond query wait-tx -o json
+swap_in_tx = %sh dysond tx whaleswap make-trade --from bob --max-input {max_in} --op {op_q} --min-output "1$BAR_NAME" -y -o json | dysond query wait-tx -o json
 events = [e for e in swap_in_tx['events'] if e['type'].startswith('dysonprotocol')]
 
 assert swap_in_tx['code'] == 0, swap_in_tx['raw_log']
@@ -659,13 +657,13 @@ print(json.dumps(events, indent=2))
 
 
 ```python
-# Pool swap (exact-out): single leg object + provide cap for inferred input denom; keep intermediate output
+# Pool swap (exact-out): single op object + provide cap for inferred input denom; keep intermediate output
 import json, shlex
 
-legs = json.dumps({"pool_id": int(POOL_ID), "swap_out": {"denom": BAR_NAME, "amount": "250"}})
-legs_q = shlex.quote(legs)
+op = json.dumps({"swap": {"pool_id": int(POOL_ID), "swap_out": {"denom": BAR_NAME, "amount": "250"}}})
+op_q = shlex.quote(op)
 
-swap_out_tx = %sh dysond tx whaleswap swap --from bob --max-input "100000$FOO_NAME" --legs {legs_q} -y -o json | dysond query wait-tx -o json
+swap_out_tx = %sh dysond tx whaleswap make-trade --from bob --max-input "100000$FOO_NAME" --op {op_q} -y -o json | dysond query wait-tx -o json
 assert swap_out_tx['code'] == 0, swap_out_tx['raw_log']
 
 events = [e for e in swap_out_tx['events'] if e['type'].startswith('dysonprotocol')]
@@ -802,16 +800,16 @@ print(json.dumps(events, indent=2))
           }
         ],
         "shares_denom": "whaleswap.dys/pools/1",
-        "created_height": "229",
-        "created_time": "2025-11-13T18:44:40.128264Z",
-        "updated_time": "2025-11-13T18:44:42.634612Z",
-        "updated_height": "238",
+        "created_height": "128",
+        "created_time": "2025-12-18T19:18:35.106863Z",
+        "updated_time": "2025-12-18T19:18:37.649447Z",
+        "updated_height": "137",
         "num_trades": "2",
         "interest_rate": [
           "0.000000000000000000bar.dys",
           "0.000000000000000000foo.dys"
         ],
-        "min_collateral_ratio": [
+        "min_initial_collateral_ratio": [
           "1.500000000000000000bar.dys",
           "1.500000000000000000foo.dys"
         ],
@@ -853,12 +851,15 @@ print(json.dumps(events, indent=2))
 # Find the offer id by owner
 offers_by_owner = %sh dysond query whaleswap offers-by-owner --owner "$ALICE" -o json
 assert len(offers_by_owner.get('offers', [])) > 0, "No offers found for Alice"
-OFFER_ID = offers_by_owner['offers'][0]['offer_id']
+OFFER_ID = int(offers_by_owner['offers'][0]['offer_id'])
 print("OFFER_ID:", OFFER_ID)
 print(json.dumps(offers_by_owner, indent=2))
 
-# Bob takes the offer fully (omit take_units to take remaining)
-take_tx = %sh dysond tx whaleswap take-offer --trades "offer_id=$OFFER_ID" --from bob -y -o json | dysond query wait-tx -o json
+# Bob takes the offer fully via make-trade
+import shlex
+take_op = json.dumps({"take": {"offer_id": OFFER_ID}})
+take_op_q = shlex.quote(take_op)
+take_tx = %sh dysond tx whaleswap make-trade --max-input "400$BAR_NAME" --op {take_op_q} --from bob -y -o json | dysond query wait-tx -o json
 assert take_tx['code'] == 0, take_tx['raw_log']
 print("Offer taken by Bob")
 events = [e for e in take_tx['events'] if e['type'].startswith('dysonprotocol')]
@@ -892,10 +893,10 @@ print(json.dumps(events, indent=2))
           "offer_id": "1",
           "status": "open",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "240",
-          "created_height": "240",
-          "created_time": "2025-11-13T18:44:43.190545Z",
-          "updated_time": "2025-11-13T18:44:43.190545Z",
+          "updated_height": "139",
+          "created_height": "139",
+          "created_time": "2025-12-18T19:18:38.214077Z",
+          "updated_time": "2025-12-18T19:18:38.214077Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"
@@ -998,8 +999,11 @@ mk = %sh dysond tx whaleswap make-offer --have "100$FOO_NAME" --want "90$BAR_NAM
 assert mk['code'] == 0, mk['raw_log']
 offer_id = int([a['value'] for e in mk['events'] for a in e['attributes'] if a['key']=='offer_id'][0])
 
-# Bob takes the offer fully (CLI --trades key=value)
-tk = %sh dysond tx whaleswap take-offer --trades "offer_id=$offer_id" --from bob -y -o json | dysond query wait-tx -o json
+# Bob takes the offer fully via make-trade
+import shlex
+take_op = json.dumps({"take": {"offer_id": offer_id}})
+take_op_q = shlex.quote(take_op)
+tk = %sh dysond tx whaleswap make-trade --max-input "90$BAR_NAME" --op {take_op_q} --from bob -y -o json | dysond query wait-tx -o json
 assert tk['code'] == 0, tk['raw_log']
 ```
 
@@ -1454,15 +1458,9 @@ else:
     {
       "trade": {
         "trade_id": "5",
-        "sent": {
-          "amount": "0"
-        },
-        "received": {
-          "amount": "0"
-        },
         "trader": "dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el",
-        "height": "246",
-        "timestamp": "2025-11-13T18:44:44.858362Z",
+        "height": "145",
+        "timestamp": "2025-12-18T19:18:39.909707Z",
         "operations": [
           {
             "Op": {
@@ -1487,6 +1485,10 @@ else:
             "received": {
               "denom": "bar.dys",
               "amount": "294"
+            },
+            "fees_paid": {
+              "denom": "foo.dys",
+              "amount": "0"
             }
           }
         ],
@@ -1548,16 +1550,16 @@ print("Module metrics:")
             }
           ],
           "shares_denom": "whaleswap.dys/pools/1",
-          "created_height": "229",
-          "created_time": "2025-11-13T18:44:40.128264Z",
-          "updated_time": "2025-11-13T18:44:44.858362Z",
-          "updated_height": "246",
+          "created_height": "128",
+          "created_time": "2025-12-18T19:18:35.106863Z",
+          "updated_time": "2025-12-18T19:18:39.909707Z",
+          "updated_height": "145",
           "num_trades": "3",
           "interest_rate": [
             "0.000000000000000000bar.dys",
             "0.000000000000000000foo.dys"
           ],
-          "min_collateral_ratio": [
+          "min_initial_collateral_ratio": [
             "1.500000000000000000bar.dys",
             "1.500000000000000000foo.dys"
           ],
@@ -1594,10 +1596,10 @@ print("Module metrics:")
           "offer_id": "1",
           "status": "closed",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "241",
-          "created_height": "240",
-          "created_time": "2025-11-13T18:44:43.190545Z",
-          "updated_time": "2025-11-13T18:44:43.468589Z",
+          "updated_height": "140",
+          "created_height": "139",
+          "created_time": "2025-12-18T19:18:38.214077Z",
+          "updated_time": "2025-12-18T19:18:38.497181Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"
@@ -1626,10 +1628,10 @@ print("Module metrics:")
           "offer_id": "2",
           "status": "closed",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "243",
-          "created_height": "242",
-          "created_time": "2025-11-13T18:44:43.747301Z",
-          "updated_time": "2025-11-13T18:44:44.025507Z",
+          "updated_height": "142",
+          "created_height": "141",
+          "created_time": "2025-12-18T19:18:38.781383Z",
+          "updated_time": "2025-12-18T19:18:39.062837Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "100"

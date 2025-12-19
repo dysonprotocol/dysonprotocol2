@@ -91,7 +91,7 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     * IPv6: ::1
     * IPv4: 127.0.0.1
     *   Trying [::1]:3317...
-    * connect to ::1 port 3317 from ::1 port 54454 failed: Connection refused
+    * connect to ::1 port 3317 from ::1 port 57837 failed: Connection refused
     *   Trying 127.0.0.1:3317...
     * Connected to dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost (127.0.0.1) port 3317
     > GET /hi HTTP/1.1
@@ -103,9 +103,9 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     < HTTP/1.1 200 OK
     < Content-Length: 82
     < Content-Type: text/html
-    < Date: Thu, 13 Nov 2025 18:44:01 GMT
+    < Date: Thu, 18 Dec 2025 19:18:26 GMT
     < Server: WSGIServer/0.2 CPython/3.12.11
-    < X-Server-Time: 1763059441
+    < X-Server-Time: 1766085507
     < 
     { [82 bytes data]
     * Connection #0 to host dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost left intact
@@ -133,7 +133,7 @@ print(f"✓ Script query successful for address: {address}")
 
 ```
 
-    {"script":{"address":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej","version":"1","code":"def add(a, b):\n    print(f\"Adding {a} and {b}\")\n    return {\"a\": a, \"b\": b, \"add_result\": a + b}\n\n\ndef wsgi(environ, start_response):\n    status = \"200 OK\"\n    headers = [(\"Content-type\", \"text/html\")]\n    start_response(status, headers)\n    return [\n        b\"\"\"\n\u003chtml\u003e\n    \u003cbody\u003e\n        \u003ch1\u003eHello from Dyson Protocol!\u003c/h1\u003e\n    \u003c/body\u003e\n\u003c/html\u003e\"\"\"\n    ]\n\n","update_height":"94"}}
+    {"script":{"address":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej","version":"1","code":"def add(a, b):\n    print(f\"Adding {a} and {b}\")\n    return {\"a\": a, \"b\": b, \"add_result\": a + b}\n\n\ndef wsgi(environ, start_response):\n    status = \"200 OK\"\n    headers = [(\"Content-type\", \"text/html\")]\n    start_response(status, headers)\n    return [\n        b\"\"\"\n\u003chtml\u003e\n    \u003cbody\u003e\n        \u003ch1\u003eHello from Dyson Protocol!\u003c/h1\u003e\n    \u003c/body\u003e\n\u003c/html\u003e\"\"\"\n    ]\n\n","update_height":"98"}}
     ✓ Script query successful for address: dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej
 
 
@@ -244,9 +244,9 @@ print(f"Salt: {salt}")
 print(f"Hex Hash: {hex_hash}")
 ```
 
-    Name: alice-go9cf.dys
-    Salt: 62kj663eih
-    Hex Hash: 7b34c762de4f8b21eb468ec65543dd84810adf8d7d5dc771637609cb4bec255e
+    Name: alice-oq2zj.dys
+    Salt: tdi3fh30n6
+    Hex Hash: 7f5af70af6527460b386b09ee2433dda59e8792e8ff9c1e4b405bf4b4ba50baa
 
 
 
@@ -305,18 +305,18 @@ print(output)
 assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Protocol!' in output, got: " + output
 ```
 
-    Accessing your DWapp at 'http://alice-go9cf.localhost:3317'
+    Accessing your DWapp at 'http://alice-oq2zj.localhost:3317'
 
 
-    * Host alice-go9cf.localhost:3317 was resolved.
+    * Host alice-oq2zj.localhost:3317 was resolved.
     * IPv6: ::1
     * IPv4: 127.0.0.1
     *   Trying [::1]:3317...
-    * connect to ::1 port 3317 from ::1 port 57151 failed: Connection refused
+    * connect to ::1 port 3317 from ::1 port 60524 failed: Connection refused
     *   Trying 127.0.0.1:3317...
-    * Connected to alice-go9cf.localhost (127.0.0.1) port 3317
+    * Connected to alice-oq2zj.localhost (127.0.0.1) port 3317
     > GET /hi HTTP/1.1
-    > Host: alice-go9cf.localhost:3317
+    > Host: alice-oq2zj.localhost:3317
     > User-Agent: curl/8.7.1
     > Accept: */*
     > 
@@ -324,12 +324,12 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     < HTTP/1.1 200 OK
     < Content-Length: 82
     < Content-Type: text/html
-    < Date: Thu, 13 Nov 2025 18:44:03 GMT
+    < Date: Thu, 18 Dec 2025 19:18:29 GMT
     < Server: WSGIServer/0.2 CPython/3.12.11
-    < X-Server-Time: 1763059443
+    < X-Server-Time: 1766085509
     < 
     { [82 bytes data]
-    * Connection #0 to host alice-go9cf.localhost left intact
+    * Connection #0 to host alice-oq2zj.localhost left intact
     
     <html>
         <body>

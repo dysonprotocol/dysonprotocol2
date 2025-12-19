@@ -479,9 +479,9 @@ print(f"- Time: {block_info['time']}")
 ```
 
     Block Information:
-    - Height: 19
+    - Height: 18
     - Chain ID: chain-a
-    - Time: 2025-11-13T18:43:36.454392Z
+    - Time: 2025-12-18T19:18:00.520234Z
 
 
 ## Transaction Data
@@ -602,7 +602,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
 ```
 
     {
-      "height": "22",
+      "height": "21",
       "txhash": "07CA48632DAFD22BD80387C8E3236CF6ECFBD02CBC76D254FC95988B4D1FEDFB",
       "codespace": "",
       "code": 0,
@@ -944,6 +944,7 @@ These are the available modules and functions that can be used in dyslang script
     {
       "list_functions": [
         "BytesIO.read",
+        "Datetime.astimezone",
         "Datetime.combine",
         "Datetime.ctime",
         "Datetime.date",
@@ -1154,7 +1155,7 @@ These are the available modules and functions that can be used in dyslang script
         "freezegun.api.FakeDatetime.utcfromtimestamp",
         "freezegun.api.FakeDatetime.utcnow",
         "freezegun.api.FakeDatetime.utcoffset",
-        "freezegun.api.FakeDatetime.utctimetupleDatetime.astimezone",
+        "freezegun.api.FakeDatetime.utctimetuple",
         "freezegun.api.fake_time",
         "fullmatch",
         "function_schema.core.get_function_schema",
