@@ -1,0 +1,35 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgCancelOffer",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.MsgCancelOffer": {
+                "properties": {
+                    "closer": {
+                        "type": "string",
+                        "description": "Account requesting cancellation; must be eligible (maker or authorized third party)."
+                    },
+                    "offer_id": {
+                        "type": "string",
+                        "description": "ID of the offer to cancel; offer must exist and be in open status."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Cancel Offer",
+                "description": "* CancelOffer cancels an open offer, refunding escrowed assets to the maker and releasing PFAND to the authorized closer (maker or eligible third party). Behavior: - Eligibility: maker may always cancel; for liquid-mode offers, third party   may cancel if maker's balance of the have-denom drops below one unit_have   (enables recovery when maker becomes insolvent). - State updates: sets offer status to cancelled, persists the offer, and   reindexes it for queries. - Refunds: for escrow-settlement offers, sends remaining have coins from   module to maker; sends any locked PFAND from module to closer. - Reindexing: updates reverse indexes (owner, status) via helper. Validation: - Offer must exist and be in open status. - Closer address must be valid. - Closer must be eligible (maker or authorized third party). - For third-party cancellation, unit_have_int must be valid and maker balance   must be insufficient. Emits: - EventOfferCancelled with offer_id - EventPfandReleased with amount, offer_id, trade_id=0 if PFAND was locked Returns: - MsgCancelOfferResponse (empty)."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgCancelOfferResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.MsgCancelOfferResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Cancel Offer Response"
+            }
+        }
+    }
+}

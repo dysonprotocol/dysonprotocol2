@@ -1,0 +1,179 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.crontask.v1.QueryTaskByIDRequest",
+        "definitions": {
+            "dysonprotocol.crontask.v1.QueryTaskByIDRequest": {
+                "properties": {
+                    "task_id": {
+                        "type": "string",
+                        "description": "Unique identifier of the task to retrieve; must exist in storage."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Task By ID Request",
+                "description": "QueryTaskByIDRequest is the request type for the Query/TaskByID RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.crontask.v1.QueryTaskByIDResponse",
+        "definitions": {
+            "dysonprotocol.crontask.v1.QueryTaskByIDResponse": {
+                "properties": {
+                    "task": {
+                        "$ref": "#/definitions/dysonprotocol.crontask.v1.Task",
+                        "additionalProperties": false,
+                        "description": "Complete task record including scheduling, messages, and execution status."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Task By ID Response",
+                "description": "QueryTaskByIDResponse is the response type for the Query/TaskByID RPC method."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "cosmos.base.v1beta1.DecCoin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Dec Coin",
+                "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.crontask.v1.Task": {
+                "properties": {
+                    "task_id": {
+                        "type": "string",
+                        "description": "The unique identifier for the task"
+                    },
+                    "creator": {
+                        "type": "string",
+                        "description": "Address of the creator of the task"
+                    },
+                    "scheduled_timestamp": {
+                        "type": "string",
+                        "description": "Unix timestamp when the task is scheduled to execute"
+                    },
+                    "expiry_timestamp": {
+                        "type": "string",
+                        "description": "Unix timestamp after which the task will expire if not executed"
+                    },
+                    "task_gas_limit": {
+                        "type": "string",
+                        "description": "Maximum gas limit for the task execution"
+                    },
+                    "task_gas_price": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin",
+                        "additionalProperties": false,
+                        "description": "Gas price for the task execution which is calculated automatically from task_gas_fee / task_gas_limit"
+                    },
+                    "task_gas_fee": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Gas fee for the task execution"
+                    },
+                    "msgs": {
+                        "items": {
+                            "properties": {
+                                "type_url": {
+                                    "type": "string",
+                                    "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                                },
+                                "value": {
+                                    "type": "string",
+                                    "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                    "format": "binary",
+                                    "binaryEncoding": "base64"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "type": "object",
+                            "title": "Any",
+                            "description": "Contains the serialized protocol buffer message using the response bytes from `/dysonprotocol.script.v1.QueryEncodeJsonRequest`"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Messages to execute as part of the task"
+                    },
+                    "msg_results": {
+                        "items": {
+                            "properties": {
+                                "type_url": {
+                                    "type": "string",
+                                    "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                                },
+                                "value": {
+                                    "type": "string",
+                                    "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                    "format": "binary",
+                                    "binaryEncoding": "base64"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "type": "object",
+                            "title": "Any",
+                            "description": "Contains the serialized protocol buffer message using the response bytes from `/dysonprotocol.script.v1.QueryEncodeJsonRequest`"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Results of message execution"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "Current status of the task: Scheduled, Pending, Done, Failed, Expired"
+                    },
+                    "creation_time": {
+                        "type": "string",
+                        "description": "Block timestamp when the task was created"
+                    },
+                    "error_log": {
+                        "type": "string",
+                        "description": "Error message if task execution failed"
+                    },
+                    "task_gas_consumed": {
+                        "type": "string",
+                        "description": "Actual gas consumed during task execution"
+                    },
+                    "execution_timestamp": {
+                        "type": "string",
+                        "description": "Block timestamp when the task was executed (only for DONE / FAILED)"
+                    },
+                    "creation_block_height": {
+                        "type": "string",
+                        "description": "Block height when the task was created"
+                    },
+                    "execution_block_height": {
+                        "type": "string",
+                        "description": "Block height when the task was executed (only for DONE / FAILED)"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Task",
+                "description": "Task represents a scheduled task in the crontask system"
+            }
+        }
+    }
+}

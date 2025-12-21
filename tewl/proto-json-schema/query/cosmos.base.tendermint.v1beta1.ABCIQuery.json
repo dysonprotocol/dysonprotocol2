@@ -1,0 +1,114 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.base.tendermint.v1beta1.ABCIQueryRequest",
+        "definitions": {
+            "cosmos.base.tendermint.v1beta1.ABCIQueryRequest": {
+                "properties": {
+                    "data": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "height": {
+                        "type": "string"
+                    },
+                    "prove": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "ABCI Query Request",
+                "description": "ABCIQueryRequest defines the request structure for the ABCIQuery gRPC query."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.base.tendermint.v1beta1.ABCIQueryResponse",
+        "definitions": {
+            "cosmos.base.tendermint.v1beta1.ABCIQueryResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer"
+                    },
+                    "log": {
+                        "type": "string",
+                        "description": "nondeterministic"
+                    },
+                    "info": {
+                        "type": "string",
+                        "description": "nondeterministic"
+                    },
+                    "index": {
+                        "type": "string"
+                    },
+                    "key": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "value": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "proof_ops": {
+                        "$ref": "#/definitions/cosmos.base.tendermint.v1beta1.ProofOps",
+                        "additionalProperties": false
+                    },
+                    "height": {
+                        "type": "string"
+                    },
+                    "codespace": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "ABCI Query Response",
+                "description": "ABCIQueryResponse defines the response structure for the ABCIQuery gRPC query. Note: This type is a duplicate of the ResponseQuery proto type defined in Tendermint."
+            },
+            "cosmos.base.tendermint.v1beta1.ProofOp": {
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "key": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "data": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Proof Op",
+                "description": "ProofOp defines an operation used for calculating Merkle root. The data could be arbitrary format, providing necessary data for example neighbouring node hash. Note: This type is a duplicate of the ProofOp proto type defined in Tendermint."
+            },
+            "cosmos.base.tendermint.v1beta1.ProofOps": {
+                "properties": {
+                    "ops": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.tendermint.v1beta1.ProofOp"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Proof Ops",
+                "description": "ProofOps is Merkle proof defined by the list of ProofOps. Note: This type is a duplicate of the ProofOps proto type defined in Tendermint."
+            }
+        }
+    }
+}

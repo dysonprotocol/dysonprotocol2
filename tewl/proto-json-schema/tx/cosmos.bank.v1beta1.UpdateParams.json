@@ -1,0 +1,70 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.bank.v1beta1.MsgUpdateParams",
+        "definitions": {
+            "cosmos.bank.v1beta1.MsgUpdateParams": {
+                "properties": {
+                    "authority": {
+                        "type": "string",
+                        "description": "authority is the address that controls the module (defaults to x/gov unless overwritten)."
+                    },
+                    "params": {
+                        "$ref": "#/definitions/cosmos.bank.v1beta1.Params",
+                        "additionalProperties": false,
+                        "description": "params defines the x/bank parameters to update. NOTE: All parameters must be supplied."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Update Params",
+                "description": "MsgUpdateParams is the Msg/UpdateParams request type."
+            },
+            "cosmos.bank.v1beta1.Params": {
+                "properties": {
+                    "send_enabled": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.bank.v1beta1.SendEnabled"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Deprecated: Use of SendEnabled in params is deprecated. For genesis, use the newly added send_enabled field in the genesis object. Storage, lookup, and manipulation of this information is now in the keeper. As of cosmos-sdk 0.47, this only exists for backwards compatibility of genesis files."
+                    },
+                    "default_send_enabled": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Params",
+                "description": "Params defines the parameters for the bank module."
+            },
+            "cosmos.bank.v1beta1.SendEnabled": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Send Enabled",
+                "description": "SendEnabled maps coin denom to a send_enabled status (whether a denom is sendable)."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.bank.v1beta1.MsgUpdateParamsResponse",
+        "definitions": {
+            "cosmos.bank.v1beta1.MsgUpdateParamsResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Update Params Response",
+                "description": "MsgUpdateParamsResponse defines the response structure for executing a MsgUpdateParams message."
+            }
+        }
+    }
+}

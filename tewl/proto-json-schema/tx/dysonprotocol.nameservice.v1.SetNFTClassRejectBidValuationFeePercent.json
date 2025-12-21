@@ -1,0 +1,37 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetNFTClassRejectBidValuationFeePercent",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetNFTClassRejectBidValuationFeePercent": {
+                "properties": {
+                    "name_destination": {
+                        "type": "string"
+                    },
+                    "class_id": {
+                        "type": "string"
+                    },
+                    "reject_bid_valuation_fee_percent": {
+                        "type": "string",
+                        "description": "plain string; parsed as Dec in keeper"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set NFT Class Reject Bid Valuation Fee Percent",
+                "description": "MsgSetNFTClassRejectBidValuationFeePercent sets the per-class reject fee percent."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetNFTClassRejectBidValuationFeePercentResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetNFTClassRejectBidValuationFeePercentResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set NFT Class Reject Bid Valuation Fee Percent Response"
+            }
+        }
+    }
+}

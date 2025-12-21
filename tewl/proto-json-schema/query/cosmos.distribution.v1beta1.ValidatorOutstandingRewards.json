@@ -1,0 +1,67 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryValidatorOutstandingRewardsRequest",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryValidatorOutstandingRewardsRequest": {
+                "properties": {
+                    "validator_address": {
+                        "type": "string",
+                        "description": "validator_address defines the validator address to query for."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Validator Outstanding Rewards Request",
+                "description": "QueryValidatorOutstandingRewardsRequest is the request type for the Query/ValidatorOutstandingRewards RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryValidatorOutstandingRewardsResponse",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryValidatorOutstandingRewardsResponse": {
+                "properties": {
+                    "rewards": {
+                        "$ref": "#/definitions/cosmos.distribution.v1beta1.ValidatorOutstandingRewards",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Validator Outstanding Rewards Response",
+                "description": "QueryValidatorOutstandingRewardsResponse is the response type for the Query/ValidatorOutstandingRewards RPC method."
+            },
+            "cosmos.base.v1beta1.DecCoin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Dec Coin",
+                "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
+            },
+            "cosmos.distribution.v1beta1.ValidatorOutstandingRewards": {
+                "properties": {
+                    "rewards": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Validator Outstanding Rewards",
+                "description": "ValidatorOutstandingRewards represents outstanding (un-withdrawn) rewards for a validator inexpensive to track, allows simple sanity checks."
+            }
+        }
+    }
+}

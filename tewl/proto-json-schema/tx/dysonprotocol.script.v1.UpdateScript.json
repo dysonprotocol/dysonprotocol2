@@ -1,0 +1,42 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.MsgUpdateScript",
+        "definitions": {
+            "dysonprotocol.script.v1.MsgUpdateScript": {
+                "properties": {
+                    "address": {
+                        "type": "string",
+                        "description": "Account address of the script to update; must be a valid bech32 address."
+                    },
+                    "code": {
+                        "type": "string",
+                        "description": "Python script code to store; will be automatically formatted before storage."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Update Script",
+                "description": "MsgUpdateScript updates the script code at the given address and increments its version. Behavior: - Updates or creates a script at the specified address with formatted code. - Automatically formats the provided code using DysFormat before storage. - Increments the script version on each update. - Sets update metadata including block height. - Creates new scripts with empty code if they don't exist. Validation: - Address must be a valid bech32 address. - Code must be valid Python syntax that can be formatted by DysFormat. Emits: - EventUpdateScript(version, script_address) on successful update. Returns: - updated script version."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.MsgUpdateScriptResponse",
+        "definitions": {
+            "dysonprotocol.script.v1.MsgUpdateScriptResponse": {
+                "properties": {
+                    "version": {
+                        "type": "string",
+                        "description": "Updated script version after the update operation."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Update Script Response",
+                "description": "Empty response. See EventUpdateScript for emitted details."
+            }
+        }
+    }
+}

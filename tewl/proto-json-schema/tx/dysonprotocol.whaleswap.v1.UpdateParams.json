@@ -1,0 +1,124 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgUpdateParams",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.MsgUpdateParams": {
+                "properties": {
+                    "authority": {
+                        "type": "string",
+                        "description": "Authority address that must match the module's configured authority."
+                    },
+                    "params": {
+                        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Params",
+                        "additionalProperties": false,
+                        "description": "New parameter values to set; must pass validation."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "UpdateParams is the Msg/UpdateParams request type.",
+                "description": "UpdateParams is the Msg/UpdateParams request type.  * UpdateParams updates module parameters. Behavior: - Authority-only: verifies msg.Authority matches the module's configured authority. - Parameter validation: validates all parameter constraints (pfand amounts, time durations, percentage bounds, block delays). - State update: persists validated parameters to the module's parameter store. Validation: - Authority must match the module's configured authority address. - Parameters must pass Params.Validate() which checks:   - PfandPerOffer denom set when amount > 0   - ValuationPeriod > 0   - BidTimeout > 0   - ValuationFeePct in [0,1) if set   - MinimumBidPercentIncrease in [0,1) if set   - BlockDelayBeforeClose > 0   - BlockDelayBeforeLiquidation > 0 Returns: - MsgUpdateParamsResponse (empty) on success."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.whaleswap.v1.Params": {
+                "properties": {
+                    "pfand_per_offer": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "pfand_per_offer is the PFAND coin required for liquid-mode offers."
+                    },
+                    "valuation_fee_pct": {
+                        "type": "string",
+                        "title": "Default auction knobs applied when creating auction NFT classes\n via whaleswap. These mirror nameservice per-class policy knobs.",
+                        "description": "Default auction knobs applied when creating auction NFT classes via whaleswap. These mirror nameservice per-class policy knobs.  valuation_fee_pct is the percentage applied per valuation_period."
+                    },
+                    "valuation_period": {
+                        "pattern": "^([0-9]+\\.?[0-9]*|\\.[0-9]+)s$",
+                        "type": "string",
+                        "description": "valuation_period defines the time duration to which valuation_fee_pct applies.",
+                        "format": "regex"
+                    },
+                    "bid_timeout": {
+                        "pattern": "^([0-9]+\\.?[0-9]*|\\.[0-9]+)s$",
+                        "type": "string",
+                        "description": "bid_timeout defines the minimum duration a placed bid must remain pending before it can be claimed by the bidder.",
+                        "format": "regex"
+                    },
+                    "minimum_bid_percent_increase": {
+                        "type": "string",
+                        "description": "minimum_bid_percent_increase specifies the minimum percent increase required over the current valuation for a new bid to be accepted."
+                    },
+                    "max_note_length": {
+                        "type": "integer"
+                    },
+                    "block_delay_before_close": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE PARAMETERS \u2550\u2550\u2550\u2550\u2550 Block delay before position owner can close position"
+                    },
+                    "block_delay_before_liquidation": {
+                        "type": "string",
+                        "description": "Block delay before liquidation can be finalized after initialization"
+                    },
+                    "arbitrage_mode": {
+                        "enum": [
+                            "ARBITRAGE_MODE_UNSPECIFIED",
+                            0,
+                            "ARBITRAGE_MODE_DISABLED",
+                            1,
+                            "ARBITRAGE_MODE_MANUAL",
+                            2,
+                            "ARBITRAGE_MODE_AUTO",
+                            3
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Arbitrage Mode",
+                        "description": "ArbitrageMode determines how the protocol handles arbitrage opportunities."
+                    },
+                    "arbitrage_ref_denom": {
+                        "type": "string",
+                        "description": "arbitrage_ref_denom is the reference denom for measuring arbitrage profit. Only cycles ending in this denom will be considered for auto-execution."
+                    },
+                    "affiliate_fee_pct": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 AFFILIATE PARAMETERS \u2550\u2550\u2550\u2550\u2550 affiliate_fee_pct is the percentage of arbitrage profit sent to the affiliate address resolved from tx memo dysname. E.g., \"0.10\" = 10%. Zero or empty disables affiliate payouts. Must be in range [0, 1)."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Params"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgUpdateParamsResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.MsgUpdateParamsResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Update Params Response"
+            }
+        }
+    }
+}

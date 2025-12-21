@@ -1,0 +1,84 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nft.v1beta1.QueryNFTRequest",
+        "definitions": {
+            "dysonprotocol.nft.v1beta1.QueryNFTRequest": {
+                "properties": {
+                    "class_id": {
+                        "type": "string",
+                        "description": "class_id associated with the nft"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "id is a unique identifier of the NFT"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query NFT Request",
+                "description": "QueryNFTRequest is the request type for the Query/NFT RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nft.v1beta1.QueryNFTResponse",
+        "definitions": {
+            "dysonprotocol.nft.v1beta1.QueryNFTResponse": {
+                "properties": {
+                    "nft": {
+                        "$ref": "#/definitions/dysonprotocol.nft.v1beta1.NFT",
+                        "additionalProperties": false,
+                        "description": "owner is the owner address of the nft"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query NFT Response",
+                "description": "QueryNFTResponse is the response type for the Query/NFT RPC method"
+            },
+            "dysonprotocol.nft.v1beta1.NFT": {
+                "properties": {
+                    "class_id": {
+                        "type": "string",
+                        "description": "class_id associated with the NFT, similar to the contract address of ERC721"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "id is a unique identifier of the NFT"
+                    },
+                    "uri": {
+                        "type": "string",
+                        "description": "uri for the NFT metadata stored off chain"
+                    },
+                    "uri_hash": {
+                        "type": "string",
+                        "description": "uri_hash is a hash of the document pointed by uri"
+                    },
+                    "data": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "data is an app specific data of the NFT. Optional"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "NFT",
+                "description": "NFT defines the NFT. - When used with whaleswap auctions, the (class_id, id) uniquely identifies   the escrow marker that controls redemption of the locked sell coin."
+            }
+        }
+    }
+}

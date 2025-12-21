@@ -1,0 +1,75 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgMakeOffer",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.MsgMakeOffer": {
+                "properties": {
+                    "maker": {
+                        "type": "string"
+                    },
+                    "have": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "want": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "settlement_mode": {
+                        "enum": [
+                            "SETTLEMENT_ESCROW",
+                            0,
+                            "SETTLEMENT_LIQUID",
+                            1
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Settlement Mode",
+                        "description": "SettlementMode selects how offers fund the \"have\" side: - ESCROW: Escrow base have in the module at offer creation. - LIQUID: Do not escrow base; lock PFAND and settle from maker balance at take."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Make Offer",
+                "description": "* MakeOffer creates an orderbook offer. ESCROW: base \"have\" is escrowed. LIQUID: lock PFAND; settlement draws from maker balance at take. Units are derived via GCD for partial fills. Behavior: - Validates maker address, have/want coins (different denoms, positive amounts). - For ESCROW mode: escrows base have from maker to module. - For LIQUID mode: locks PFAND from maker to module (if configured). - Computes GCD of have/want amounts to establish unit_have/unit_want ratios. - Creates offer with remaining_units = GCD, status = open. - Persists offer and indexes it for queries. Validation: - Maker address must be valid. - Have/want denoms must be valid and different. - Have/want amounts must be positive. - Maker must hold sufficient have amount (for escrow check). - For LIQUID mode: maker must hold sufficient PFAND if configured. Emits: - EventOfferCreated with offer_id - EventPfandLocked with amount, offer_id (if PFAND locked) Returns: - offer_id of the newly created offer."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgMakeOfferResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.MsgMakeOfferResponse": {
+                "properties": {
+                    "offer_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Make Offer Response"
+            }
+        }
+    }
+}

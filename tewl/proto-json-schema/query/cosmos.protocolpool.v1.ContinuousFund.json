@@ -1,0 +1,60 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.protocolpool.v1.QueryContinuousFundRequest",
+        "definitions": {
+            "cosmos.protocolpool.v1.QueryContinuousFundRequest": {
+                "properties": {
+                    "recipient": {
+                        "type": "string",
+                        "description": "recipient is the recipient address to query unclaimed budget amount for."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Continuous Fund Request",
+                "description": "QueryContinuousFundRequest is the request type for the Query/ContinuousFund RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.protocolpool.v1.QueryContinuousFundResponse",
+        "definitions": {
+            "cosmos.protocolpool.v1.QueryContinuousFundResponse": {
+                "properties": {
+                    "continuous_fund": {
+                        "$ref": "#/definitions/cosmos.protocolpool.v1.ContinuousFund",
+                        "additionalProperties": false,
+                        "description": "ContinuousFunds is the given continuous fund returned in the query."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Continuous Fund Response",
+                "description": "QueryUnclaimedBudgetResponse is the response type for the Query/ContinuousFund RPC method."
+            },
+            "cosmos.protocolpool.v1.ContinuousFund": {
+                "properties": {
+                    "recipient": {
+                        "type": "string",
+                        "description": "Recipient is the address string of the account receiving funds."
+                    },
+                    "percentage": {
+                        "type": "string",
+                        "description": "Percentage is the percentage of funds to be allocated from Community pool."
+                    },
+                    "expiry": {
+                        "type": "string",
+                        "description": "Optional, if expiry is set, removes the state object when expired.",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Continuous Fund",
+                "description": "ContinuousFund defines the fields of continuous fund proposal."
+            }
+        }
+    }
+}

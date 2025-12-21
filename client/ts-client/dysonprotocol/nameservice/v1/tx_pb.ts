@@ -2087,7 +2087,8 @@ export class MsgUpdateParams extends Message<MsgUpdateParams> {
   /**
    * params defines the x/nameservice parameters to update.
    *
-   * NOTE: All parameters must be supplied.
+   * NOTE: All parameters must be supplied, except reserved_names which is
+   * optional. If reserved_names is blank, the existing value will be preserved.
    *
    * @generated from field: dysonprotocol.nameservice.v1.Params params = 2;
    */

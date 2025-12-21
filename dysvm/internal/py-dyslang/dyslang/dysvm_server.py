@@ -97,6 +97,7 @@ def get_module_dict():
     import time
     import bencoder
     import function_schema
+    import jsonschema
 
     @forge.copy(random.seed)
     def safe_random_seed(a=None, version=2):
@@ -172,6 +173,10 @@ def get_module_dict():
         "function_schema": {
             "get_function_schema": function_schema.get_function_schema,
             "Doc": function_schema.Doc,
+        },
+        "jsonschema": {
+            "validate": jsonschema.validate,
+            "ValidationError": jsonschema.ValidationError,
         },
         "time": {
             "time": time.time,

@@ -1,0 +1,32 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.upgrade.v1beta1.MsgCancelUpgrade",
+        "definitions": {
+            "cosmos.upgrade.v1beta1.MsgCancelUpgrade": {
+                "properties": {
+                    "authority": {
+                        "type": "string",
+                        "description": "authority is the address that controls the module (defaults to x/gov unless overwritten)."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Cancel Upgrade",
+                "description": "MsgCancelUpgrade is the Msg/CancelUpgrade request type."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.upgrade.v1beta1.MsgCancelUpgradeResponse",
+        "definitions": {
+            "cosmos.upgrade.v1beta1.MsgCancelUpgradeResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Cancel Upgrade Response",
+                "description": "MsgCancelUpgradeResponse is the Msg/CancelUpgrade response type."
+            }
+        }
+    }
+}

@@ -1,0 +1,63 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.gov.v1.QueryTallyResultRequest",
+        "definitions": {
+            "cosmos.gov.v1.QueryTallyResultRequest": {
+                "properties": {
+                    "proposal_id": {
+                        "type": "string",
+                        "description": "proposal_id defines the unique id of the proposal."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Tally Result Request",
+                "description": "QueryTallyResultRequest is the request type for the Query/Tally RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.gov.v1.QueryTallyResultResponse",
+        "definitions": {
+            "cosmos.gov.v1.QueryTallyResultResponse": {
+                "properties": {
+                    "tally": {
+                        "$ref": "#/definitions/cosmos.gov.v1.TallyResult",
+                        "additionalProperties": false,
+                        "description": "tally defines the requested tally."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Tally Result Response",
+                "description": "QueryTallyResultResponse is the response type for the Query/Tally RPC method."
+            },
+            "cosmos.gov.v1.TallyResult": {
+                "properties": {
+                    "yes_count": {
+                        "type": "string",
+                        "description": "yes_count is the number of yes votes on a proposal."
+                    },
+                    "abstain_count": {
+                        "type": "string",
+                        "description": "abstain_count is the number of abstain votes on a proposal."
+                    },
+                    "no_count": {
+                        "type": "string",
+                        "description": "no_count is the number of no votes on a proposal."
+                    },
+                    "no_with_veto_count": {
+                        "type": "string",
+                        "description": "no_with_veto_count is the number of no with veto votes on a proposal."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Tally Result",
+                "description": "TallyResult defines a standard tally for a governance proposal."
+            }
+        }
+    }
+}

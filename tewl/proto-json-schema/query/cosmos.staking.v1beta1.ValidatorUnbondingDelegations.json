@@ -1,0 +1,156 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.QueryValidatorUnbondingDelegationsRequest",
+        "definitions": {
+            "cosmos.staking.v1beta1.QueryValidatorUnbondingDelegationsRequest": {
+                "properties": {
+                    "validator_addr": {
+                        "type": "string",
+                        "description": "validator_addr defines the validator address to query for."
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
+                        "additionalProperties": false,
+                        "description": "pagination defines an optional pagination for the request."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Validator Unbonding Delegations Request",
+                "description": "QueryValidatorUnbondingDelegationsRequest is required type for the Query/ValidatorUnbondingDelegations RPC method"
+            },
+            "cosmos.base.query.v1beta1.PageRequest": {
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "key is a value returned in PageResponse.next_key to begin querying the next page most efficiently. Only one of offset or key should be set.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "offset": {
+                        "type": "string",
+                        "description": "offset is a numeric offset that can be used when key is unavailable. It is less efficient than using key. Only one of offset or key should be set."
+                    },
+                    "limit": {
+                        "type": "string",
+                        "description": "limit is the total number of results to be returned in the result page. If left empty it will default to a value to be set by each app."
+                    },
+                    "count_total": {
+                        "type": "boolean",
+                        "description": "count_total is set to true  to indicate that the result set should include a count of the total number of items available for pagination in UIs. count_total is only respected when offset is used. It is ignored when key is set."
+                    },
+                    "reverse": {
+                        "type": "boolean",
+                        "description": "reverse is set to true if results are to be returned in the descending order."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Request",
+                "description": "PageRequest is to be embedded in gRPC request messages for efficient pagination. Ex:  message SomeRequest {          Foo some_parameter = 1;          PageRequest pagination = 2;  }"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.QueryValidatorUnbondingDelegationsResponse",
+        "definitions": {
+            "cosmos.staking.v1beta1.QueryValidatorUnbondingDelegationsResponse": {
+                "properties": {
+                    "unbonding_responses": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.staking.v1beta1.UnbondingDelegation"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+                        "additionalProperties": false,
+                        "description": "pagination defines the pagination in the response."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Validator Unbonding Delegations Response",
+                "description": "QueryValidatorUnbondingDelegationsResponse is response type for the Query/ValidatorUnbondingDelegations RPC method."
+            },
+            "cosmos.base.query.v1beta1.PageResponse": {
+                "properties": {
+                    "next_key": {
+                        "type": "string",
+                        "description": "next_key is the key to be passed to PageRequest.key to query the next page most efficiently. It will be empty if there are no more results.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "total": {
+                        "type": "string",
+                        "description": "total is total number of results available if PageRequest.count_total was set, its value is undefined otherwise"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Response",
+                "description": "PageResponse is to be embedded in gRPC response messages where the corresponding request message has used PageRequest.  message SomeResponse {          repeated Bar results = 1;          PageResponse page = 2;  }"
+            },
+            "cosmos.staking.v1beta1.UnbondingDelegation": {
+                "properties": {
+                    "delegator_address": {
+                        "type": "string",
+                        "description": "delegator_address is the encoded address of the delegator."
+                    },
+                    "validator_address": {
+                        "type": "string",
+                        "description": "validator_address is the encoded address of the validator."
+                    },
+                    "entries": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.staking.v1beta1.UnbondingDelegationEntry"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "entries are the unbonding delegation entries.  unbonding delegation entries"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Unbonding Delegation",
+                "description": "UnbondingDelegation stores all of a single delegator's unbonding bonds for a single validator in an time-ordered list."
+            },
+            "cosmos.staking.v1beta1.UnbondingDelegationEntry": {
+                "properties": {
+                    "creation_height": {
+                        "type": "string",
+                        "description": "creation_height is the height which the unbonding took place."
+                    },
+                    "completion_time": {
+                        "type": "string",
+                        "description": "completion_time is the unix time for unbonding completion.",
+                        "format": "date-time"
+                    },
+                    "initial_balance": {
+                        "type": "string",
+                        "description": "initial_balance defines the tokens initially scheduled to receive at completion."
+                    },
+                    "balance": {
+                        "type": "string",
+                        "description": "balance defines the tokens to receive at completion."
+                    },
+                    "unbonding_id": {
+                        "type": "string",
+                        "description": "Incrementing id that uniquely identifies this entry"
+                    },
+                    "unbonding_on_hold_ref_count": {
+                        "type": "string",
+                        "description": "Strictly positive if this entry's unbonding has been stopped by external modules"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Unbonding Delegation Entry",
+                "description": "UnbondingDelegationEntry defines an unbonding object with relevant metadata."
+            }
+        }
+    }
+}

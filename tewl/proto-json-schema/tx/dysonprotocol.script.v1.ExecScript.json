@@ -1,0 +1,108 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.MsgExec",
+        "definitions": {
+            "dysonprotocol.script.v1.MsgExec": {
+                "properties": {
+                    "executor_address": {
+                        "type": "string",
+                        "description": "Account address used to execute the script; must be a valid bech32 address."
+                    },
+                    "script_address": {
+                        "type": "string",
+                        "description": "Script bech32 address to execute; mutually exclusive with script_name."
+                    },
+                    "script_name": {
+                        "type": "string",
+                        "description": "Optional nameservice name of the script to execute (e.g., \"example.dys\")."
+                    },
+                    "extra_code": {
+                        "type": "string",
+                        "description": "Optional extra code temporarily appended to the script for this execution. Only allowed if the executor is the script owner."
+                    },
+                    "function_name": {
+                        "type": "string",
+                        "description": "Name of the function to call within the script."
+                    },
+                    "args": {
+                        "type": "string",
+                        "description": "Positional arguments (*args) encoded as a JSON array."
+                    },
+                    "kwargs": {
+                        "type": "string",
+                        "description": "Keyword arguments (**kwargs) encoded as a JSON object."
+                    },
+                    "attached_messages": {
+                        "items": {
+                            "properties": {
+                                "type_url": {
+                                    "type": "string",
+                                    "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                                },
+                                "value": {
+                                    "type": "string",
+                                    "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                    "format": "binary",
+                                    "binaryEncoding": "base64"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "type": "object",
+                            "title": "Any",
+                            "description": "Contains the serialized protocol buffer message using the response bytes from `/dysonprotocol.script.v1.QueryEncodeJsonRequest`"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Messages executed before the script; results available via dys.get_attached_messages(). If any attached message fails, script execution is aborted. Messages execute in order."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Exec",
+                "description": "MsgExec executes a script function with arguments and handles attached messages. Behavior: - Resolves script address via direct address or nameservice name resolution. - Validates that script exists or creates empty script if not found. - Executes attached messages first, collecting their results. - Runs the specified function with provided args/kwargs in isolated context. - Commits state changes only if execution succeeds. - Emits execution event with full context for monitoring. Validation: - Either script_address or script_name must be provided. - If both are provided, they must resolve to the same address. - Executor address must be valid. - Function name, args, kwargs must be valid JSON strings. - Attached messages must be valid and executable. Emits: - EventExecScript with execution details (executor, script, function, result). Returns: - function execution result and attached message results."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.MsgExecResponse",
+        "definitions": {
+            "dysonprotocol.script.v1.MsgExecResponse": {
+                "properties": {
+                    "result": {
+                        "type": "string",
+                        "description": "Final result of the script function execution."
+                    },
+                    "attached_message_results": {
+                        "items": {
+                            "properties": {
+                                "type_url": {
+                                    "type": "string",
+                                    "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                                },
+                                "value": {
+                                    "type": "string",
+                                    "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                    "format": "binary",
+                                    "binaryEncoding": "base64"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "type": "object",
+                            "title": "Any",
+                            "description": "Contains the serialized protocol buffer message using the response bytes from `/dysonprotocol.script.v1.QueryEncodeJsonRequest`"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Results of the attached messages executed before the script."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Exec Response",
+                "description": "Response containing script execution results and attached message outcomes."
+            }
+        }
+    }
+}

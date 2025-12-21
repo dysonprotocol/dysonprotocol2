@@ -1,0 +1,286 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.gov.v1.QueryProposalsRequest",
+        "definitions": {
+            "cosmos.gov.v1.QueryProposalsRequest": {
+                "properties": {
+                    "proposal_status": {
+                        "enum": [
+                            "PROPOSAL_STATUS_UNSPECIFIED",
+                            0,
+                            "PROPOSAL_STATUS_DEPOSIT_PERIOD",
+                            1,
+                            "PROPOSAL_STATUS_VOTING_PERIOD",
+                            2,
+                            "PROPOSAL_STATUS_PASSED",
+                            3,
+                            "PROPOSAL_STATUS_REJECTED",
+                            4,
+                            "PROPOSAL_STATUS_FAILED",
+                            5
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Proposal Status",
+                        "description": "ProposalStatus enumerates the valid statuses of a proposal."
+                    },
+                    "voter": {
+                        "type": "string",
+                        "description": "voter defines the voter address for the proposals."
+                    },
+                    "depositor": {
+                        "type": "string",
+                        "description": "depositor defines the deposit addresses from the proposals."
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
+                        "additionalProperties": false,
+                        "description": "pagination defines an optional pagination for the request."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Proposals Request",
+                "description": "QueryProposalsRequest is the request type for the Query/Proposals RPC method."
+            },
+            "cosmos.base.query.v1beta1.PageRequest": {
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "key is a value returned in PageResponse.next_key to begin querying the next page most efficiently. Only one of offset or key should be set.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "offset": {
+                        "type": "string",
+                        "description": "offset is a numeric offset that can be used when key is unavailable. It is less efficient than using key. Only one of offset or key should be set."
+                    },
+                    "limit": {
+                        "type": "string",
+                        "description": "limit is the total number of results to be returned in the result page. If left empty it will default to a value to be set by each app."
+                    },
+                    "count_total": {
+                        "type": "boolean",
+                        "description": "count_total is set to true  to indicate that the result set should include a count of the total number of items available for pagination in UIs. count_total is only respected when offset is used. It is ignored when key is set."
+                    },
+                    "reverse": {
+                        "type": "boolean",
+                        "description": "reverse is set to true if results are to be returned in the descending order."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Request",
+                "description": "PageRequest is to be embedded in gRPC request messages for efficient pagination. Ex:  message SomeRequest {          Foo some_parameter = 1;          PageRequest pagination = 2;  }"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.gov.v1.QueryProposalsResponse",
+        "definitions": {
+            "cosmos.gov.v1.QueryProposalsResponse": {
+                "properties": {
+                    "proposals": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.gov.v1.Proposal"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "proposals defines all the requested governance proposals."
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+                        "additionalProperties": false,
+                        "description": "pagination defines the pagination in the response."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Proposals Response",
+                "description": "QueryProposalsResponse is the response type for the Query/Proposals RPC method."
+            },
+            "cosmos.base.query.v1beta1.PageResponse": {
+                "properties": {
+                    "next_key": {
+                        "type": "string",
+                        "description": "next_key is the key to be passed to PageRequest.key to query the next page most efficiently. It will be empty if there are no more results.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "total": {
+                        "type": "string",
+                        "description": "total is total number of results available if PageRequest.count_total was set, its value is undefined otherwise"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Response",
+                "description": "PageResponse is to be embedded in gRPC response messages where the corresponding request message has used PageRequest.  message SomeResponse {          repeated Bar results = 1;          PageResponse page = 2;  }"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "cosmos.gov.v1.Proposal": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "id defines the unique id of the proposal."
+                    },
+                    "messages": {
+                        "items": {
+                            "properties": {
+                                "type_url": {
+                                    "type": "string",
+                                    "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                                },
+                                "value": {
+                                    "type": "string",
+                                    "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                    "format": "binary",
+                                    "binaryEncoding": "base64"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "type": "object",
+                            "title": "Any",
+                            "description": "Contains the serialized protocol buffer message using the response bytes from `/dysonprotocol.script.v1.QueryEncodeJsonRequest`"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "messages are the arbitrary messages to be executed if the proposal passes."
+                    },
+                    "status": {
+                        "enum": [
+                            "PROPOSAL_STATUS_UNSPECIFIED",
+                            0,
+                            "PROPOSAL_STATUS_DEPOSIT_PERIOD",
+                            1,
+                            "PROPOSAL_STATUS_VOTING_PERIOD",
+                            2,
+                            "PROPOSAL_STATUS_PASSED",
+                            3,
+                            "PROPOSAL_STATUS_REJECTED",
+                            4,
+                            "PROPOSAL_STATUS_FAILED",
+                            5
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Proposal Status",
+                        "description": "ProposalStatus enumerates the valid statuses of a proposal."
+                    },
+                    "final_tally_result": {
+                        "$ref": "#/definitions/cosmos.gov.v1.TallyResult",
+                        "additionalProperties": false,
+                        "description": "final_tally_result is the final tally result of the proposal. When querying a proposal via gRPC, this field is not populated until the proposal's voting period has ended."
+                    },
+                    "submit_time": {
+                        "type": "string",
+                        "description": "submit_time is the time of proposal submission.",
+                        "format": "date-time"
+                    },
+                    "deposit_end_time": {
+                        "type": "string",
+                        "description": "deposit_end_time is the end time for deposition.",
+                        "format": "date-time"
+                    },
+                    "total_deposit": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "total_deposit is the total deposit on the proposal."
+                    },
+                    "voting_start_time": {
+                        "type": "string",
+                        "description": "voting_start_time is the starting time to vote on a proposal.",
+                        "format": "date-time"
+                    },
+                    "voting_end_time": {
+                        "type": "string",
+                        "description": "voting_end_time is the end time of voting on a proposal.",
+                        "format": "date-time"
+                    },
+                    "metadata": {
+                        "type": "string",
+                        "description": "metadata is any arbitrary metadata attached to the proposal. the recommended format of the metadata is to be found here: https://docs.cosmos.network/v0.47/modules/gov#proposal-3"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "title is the title of the proposal"
+                    },
+                    "summary": {
+                        "type": "string",
+                        "description": "summary is a short summary of the proposal"
+                    },
+                    "proposer": {
+                        "type": "string",
+                        "description": "proposer is the address of the proposal sumbitter"
+                    },
+                    "expedited": {
+                        "type": "boolean",
+                        "description": "expedited defines if the proposal is expedited"
+                    },
+                    "failed_reason": {
+                        "type": "string",
+                        "description": "failed_reason defines the reason why the proposal failed"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Proposal",
+                "description": "Proposal defines the core field members of a governance proposal."
+            },
+            "cosmos.gov.v1.TallyResult": {
+                "properties": {
+                    "yes_count": {
+                        "type": "string",
+                        "description": "yes_count is the number of yes votes on a proposal."
+                    },
+                    "abstain_count": {
+                        "type": "string",
+                        "description": "abstain_count is the number of abstain votes on a proposal."
+                    },
+                    "no_count": {
+                        "type": "string",
+                        "description": "no_count is the number of no votes on a proposal."
+                    },
+                    "no_with_veto_count": {
+                        "type": "string",
+                        "description": "no_with_veto_count is the number of no with veto votes on a proposal."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Tally Result",
+                "description": "TallyResult defines a standard tally for a governance proposal."
+            }
+        }
+    }
+}

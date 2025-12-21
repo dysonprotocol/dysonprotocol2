@@ -1,0 +1,109 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/counter/v1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "cosmos.counter.v1.MsgIncreaseCount": {
+      "post": {
+        "summary": "IncreaseCount increments the counter by the specified amount.",
+        "operationId": "cosmos.counter.v1.MsgIncreaseCount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.counter.v1.MsgIncreaseCountResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.counter.v1.MsgIncreaseCounter"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.counter.v1.MsgIncreaseCountResponse": {
+      "type": "object",
+      "properties": {
+        "new_count": {
+          "type": "string",
+          "format": "int64",
+          "description": "new_count is the number of times the counter was incremented."
+        }
+      },
+      "description": "MsgIncreaseCountResponse is the Msg/Counter response type."
+    },
+    "cosmos.counter.v1.MsgIncreaseCounter": {
+      "type": "object",
+      "properties": {
+        "signer": {
+          "type": "string",
+          "description": "signer is the address that controls the module (defaults to x/gov unless\noverwritten)."
+        },
+        "count": {
+          "type": "string",
+          "format": "int64",
+          "description": "count is the number of times to increment the counter."
+        }
+      },
+      "description": "MsgIncreaseCounter defines a count Msg service counter."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

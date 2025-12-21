@@ -1,0 +1,38 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.upgrade.v1beta1.QueryAppliedPlanRequest",
+        "definitions": {
+            "cosmos.upgrade.v1beta1.QueryAppliedPlanRequest": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "name is the name of the applied plan to query for."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Applied Plan Request",
+                "description": "QueryCurrentPlanRequest is the request type for the Query/AppliedPlan RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.upgrade.v1beta1.QueryAppliedPlanResponse",
+        "definitions": {
+            "cosmos.upgrade.v1beta1.QueryAppliedPlanResponse": {
+                "properties": {
+                    "height": {
+                        "type": "string",
+                        "description": "height is the block height at which the plan was applied."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Applied Plan Response",
+                "description": "QueryAppliedPlanResponse is the response type for the Query/AppliedPlan RPC method."
+            }
+        }
+    }
+}

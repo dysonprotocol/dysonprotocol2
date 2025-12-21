@@ -1,0 +1,45 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.QueryUpgradedClientStateRequest",
+        "definitions": {
+            "ibc.core.client.v1.QueryUpgradedClientStateRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Upgraded Client State Request",
+                "description": "QueryUpgradedClientStateRequest is the request type for the Query/UpgradedClientState RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.QueryUpgradedClientStateResponse",
+        "definitions": {
+            "ibc.core.client.v1.QueryUpgradedClientStateResponse": {
+                "properties": {
+                    "upgraded_client_state": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "client state associated with the request identifier"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Upgraded Client State Response",
+                "description": "QueryUpgradedClientStateResponse is the response type for the Query/UpgradedClientState RPC method."
+            }
+        }
+    }
+}

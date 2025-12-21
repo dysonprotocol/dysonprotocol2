@@ -1,0 +1,57 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.evidence.v1beta1.QueryEvidenceRequest",
+        "definitions": {
+            "cosmos.evidence.v1beta1.QueryEvidenceRequest": {
+                "properties": {
+                    "evidence_hash": {
+                        "type": "string",
+                        "description": "evidence_hash defines the hash of the requested evidence. Deprecated: Use hash, a HEX encoded string, instead.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "hash": {
+                        "type": "string",
+                        "description": "hash defines the evidence hash of the requested evidence."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Evidence Request",
+                "description": "QueryEvidenceRequest is the request type for the Query/Evidence RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.evidence.v1beta1.QueryEvidenceResponse",
+        "definitions": {
+            "cosmos.evidence.v1beta1.QueryEvidenceResponse": {
+                "properties": {
+                    "evidence": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "evidence returns the requested evidence."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Evidence Response",
+                "description": "QueryEvidenceResponse is the response type for the Query/Evidence RPC method."
+            }
+        }
+    }
+}

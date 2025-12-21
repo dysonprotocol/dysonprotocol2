@@ -1,0 +1,46 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgMintNFT",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgMintNFT": {
+                "properties": {
+                    "name_destination": {
+                        "type": "string"
+                    },
+                    "class_id": {
+                        "type": "string",
+                        "description": "must exist"
+                    },
+                    "nft_id": {
+                        "type": "string",
+                        "description": "must match printable ASCII"
+                    },
+                    "uri": {
+                        "type": "string",
+                        "description": "optional"
+                    },
+                    "uri_hash": {
+                        "type": "string",
+                        "description": "optional"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Mint NFT",
+                "description": "MintNFT"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgMintNFTResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgMintNFTResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Mint NFT Response"
+            }
+        }
+    }
+}

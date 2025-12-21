@@ -1,0 +1,168 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/crisis/v1beta1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "cosmos.crisis.v1beta1.MsgUpdateParams": {
+      "post": {
+        "summary": "UpdateParams defines a governance operation for updating the x/crisis\nmodule parameters. The authority is defined in the keeper.",
+        "operationId": "cosmos.crisis.v1beta1.MsgUpdateParams",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.crisis.v1beta1.MsgUpdateParamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.crisis.v1beta1.MsgUpdateParams"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.crisis.v1beta1.MsgVerifyInvariant": {
+      "post": {
+        "summary": "VerifyInvariant defines a method to verify a particular invariant.",
+        "operationId": "cosmos.crisis.v1beta1.MsgVerifyInvariant",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.crisis.v1beta1.MsgVerifyInvariantResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.crisis.v1beta1.MsgVerifyInvariant"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.v1beta1.Coin": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "Coin defines a token with a denomination and an amount.\n\nNOTE: The amount field is an Int which implements the custom method\nsignatures required by gogoproto."
+    },
+    "cosmos.crisis.v1beta1.MsgUpdateParams": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string",
+          "description": "authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+        },
+        "constant_fee": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "constant_fee defines the x/crisis parameter."
+        }
+      },
+      "description": "MsgUpdateParams is the Msg/UpdateParams request type."
+    },
+    "cosmos.crisis.v1beta1.MsgUpdateParamsResponse": {
+      "type": "object",
+      "description": "MsgUpdateParamsResponse defines the response structure for executing a\nMsgUpdateParams message."
+    },
+    "cosmos.crisis.v1beta1.MsgVerifyInvariant": {
+      "type": "object",
+      "properties": {
+        "sender": {
+          "type": "string",
+          "description": "sender is the account address of private key to send coins to fee collector\naccount."
+        },
+        "invariant_module_name": {
+          "type": "string",
+          "description": "name of the invariant module."
+        },
+        "invariant_route": {
+          "type": "string",
+          "description": "invariant_route is the msg's invariant route."
+        }
+      },
+      "description": "MsgVerifyInvariant represents a message to verify a particular invariance."
+    },
+    "cosmos.crisis.v1beta1.MsgVerifyInvariantResponse": {
+      "type": "object",
+      "description": "MsgVerifyInvariantResponse defines the Msg/VerifyInvariant response type."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

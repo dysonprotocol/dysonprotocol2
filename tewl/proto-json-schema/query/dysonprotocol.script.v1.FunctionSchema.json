@@ -1,0 +1,46 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.QueryFunctionSchemaRequest",
+        "definitions": {
+            "dysonprotocol.script.v1.QueryFunctionSchemaRequest": {
+                "properties": {
+                    "executor_address": {
+                        "type": "string",
+                        "description": "Account address used to evaluate the script; must be a valid bech32 address."
+                    },
+                    "script_address": {
+                        "type": "string",
+                        "description": "Script bech32 address to inspect; mutually exclusive with script_name."
+                    },
+                    "script_name": {
+                        "type": "string",
+                        "description": "Optional nameservice name of the script to inspect (e.g., \"example.dys\")."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Function Schema Request",
+                "description": "QueryFunctionSchemaRequest requests function schemas for a script. Either script_address or script_name must be provided. The script will be introspected to extract schemas for all public functions."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.QueryFunctionSchemaResponse",
+        "definitions": {
+            "dysonprotocol.script.v1.QueryFunctionSchemaResponse": {
+                "properties": {
+                    "schema_json": {
+                        "type": "string",
+                        "description": "JSON array of function schemas: [{\"name\": \"func_name\", \"schema\": {...}}, ...]"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Function Schema Response",
+                "description": "QueryFunctionSchemaResponse contains function schemas extracted from a script."
+            }
+        }
+    }
+}

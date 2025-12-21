@@ -1,0 +1,55 @@
+# Development container for Vue.js dashboard on ARM
+FROM node:20-bookworm-slim
+
+# Install additional tools and Playwright dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    wget \
+    vim \
+    nano \
+    sudo \
+    socat \
+    # Playwright browser dependencies for Chrome
+    libnss3 \
+    libatk-bridge2.0-0 \
+    libdrm2 \
+    libxkbcommon0 \
+    libgtk-3-0 \
+    libgbm1 \
+    libasound2 \
+    ripgrep \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv (Python package manager) - provides uvx command
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    mv /root/.local/bin/uv /usr/local/bin/ && \
+    mv /root/.local/bin/uvx /usr/local/bin/
+
+# Install Playwright globally
+RUN npm install -g @playwright/test
+
+# Add node user to sudo group (node user already exists in base image)
+RUN usermod -a -G sudo node
+RUN echo 'node ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Set up the workspace
+WORKDIR /workspace
+
+# Change ownership of the workspace to node user
+RUN chown -R node:node /workspace
+
+# Switch to node user
+USER node
+
+# Set up git configuration
+RUN git config --global --add safe.directory /workspace
+
+# Install Playwright Chrome browser with deps
+RUN npx playwright install --with-deps firefox
+
+# Expose the development port
+EXPOSE 5173
+
+# Default command
+CMD ["sh"]

@@ -1,0 +1,51 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.protocolpool.v1.MsgCancelContinuousFund",
+        "definitions": {
+            "cosmos.protocolpool.v1.MsgCancelContinuousFund": {
+                "properties": {
+                    "authority": {
+                        "type": "string",
+                        "description": "Authority is the account address of authority."
+                    },
+                    "recipient": {
+                        "type": "string",
+                        "description": "Recipient is the account address string of the recipient whose funds are to be cancelled."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Cancel Continuous Fund",
+                "description": "MsgCancelContinuousFund defines a message to cancel continuous funds for a specific recipient."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.protocolpool.v1.MsgCancelContinuousFundResponse",
+        "definitions": {
+            "cosmos.protocolpool.v1.MsgCancelContinuousFundResponse": {
+                "properties": {
+                    "canceled_time": {
+                        "type": "string",
+                        "description": "CanceledTime is the canceled time.",
+                        "format": "date-time"
+                    },
+                    "canceled_height": {
+                        "type": "string",
+                        "description": "CanceledHeight defines the canceled block height."
+                    },
+                    "recipient": {
+                        "type": "string",
+                        "description": "Recipient is the account address string of the recipient whose funds are cancelled."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Cancel Continuous Fund Response",
+                "description": "MsgCancelContinuousFundResponse defines the response to executing a MsgCancelContinuousFund message."
+            }
+        }
+    }
+}

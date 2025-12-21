@@ -1,0 +1,38 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.QueryResolveNameRequest",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.QueryResolveNameRequest": {
+                "properties": {
+                    "name_or_address": {
+                        "type": "string",
+                        "description": "name_or_address is either a nameservice name or a valid address"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Resolve Name Request",
+                "description": "QueryResolveNameRequest is request type for the Query/ResolveName RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.QueryResolveNameResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.QueryResolveNameResponse": {
+                "properties": {
+                    "address": {
+                        "type": "string",
+                        "description": "address is the resolved address"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Resolve Name Response",
+                "description": "QueryResolveNameResponse is response type for the Query/ResolveName RPC method."
+            }
+        }
+    }
+}

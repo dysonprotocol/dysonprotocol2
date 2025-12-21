@@ -1,0 +1,267 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.QueryBidsByBidderRequest",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.QueryBidsByBidderRequest": {
+                "properties": {
+                    "bidder": {
+                        "type": "string"
+                    },
+                    "status_filter": {
+                        "items": {
+                            "enum": [
+                                "BID_STATUS_UNSPECIFIED",
+                                0,
+                                "BID_ACTIVE",
+                                1,
+                                "BID_OUTBID",
+                                2,
+                                "BID_ACCEPTED",
+                                3,
+                                "BID_REJECTED",
+                                4,
+                                "BID_CLAIMED",
+                                5
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Bid Status",
+                        "description": "BidStatus indicates the lifecycle state of a bid"
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Bids By Bidder Request",
+                "description": "QueryBidsByBidderRequest lists bids by bidder with optional status filter"
+            },
+            "cosmos.base.query.v1beta1.PageRequest": {
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "key is a value returned in PageResponse.next_key to begin querying the next page most efficiently. Only one of offset or key should be set.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "offset": {
+                        "type": "string",
+                        "description": "offset is a numeric offset that can be used when key is unavailable. It is less efficient than using key. Only one of offset or key should be set."
+                    },
+                    "limit": {
+                        "type": "string",
+                        "description": "limit is the total number of results to be returned in the result page. If left empty it will default to a value to be set by each app."
+                    },
+                    "count_total": {
+                        "type": "boolean",
+                        "description": "count_total is set to true  to indicate that the result set should include a count of the total number of items available for pagination in UIs. count_total is only respected when offset is used. It is ignored when key is set."
+                    },
+                    "reverse": {
+                        "type": "boolean",
+                        "description": "reverse is set to true if results are to be returned in the descending order."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Request",
+                "description": "PageRequest is to be embedded in gRPC request messages for efficient pagination. Ex:  message SomeRequest {          Foo some_parameter = 1;          PageRequest pagination = 2;  }"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.QueryBidsByBidderResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.QueryBidsByBidderResponse": {
+                "properties": {
+                    "bids": {
+                        "items": {
+                            "$ref": "#/definitions/dysonprotocol.nameservice.v1.BidWithNFTStatus"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Bids By Bidder Response"
+            },
+            "cosmos.base.query.v1beta1.PageResponse": {
+                "properties": {
+                    "next_key": {
+                        "type": "string",
+                        "description": "next_key is the key to be passed to PageRequest.key to query the next page most efficiently. It will be empty if there are no more results.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "total": {
+                        "type": "string",
+                        "description": "total is total number of results available if PageRequest.count_total was set, its value is undefined otherwise"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Response",
+                "description": "PageResponse is to be embedded in gRPC response messages where the corresponding request message has used PageRequest.  message SomeResponse {          repeated Bar results = 1;          PageResponse page = 2;  }"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.nameservice.v1.BidRecord": {
+                "properties": {
+                    "bid_id": {
+                        "type": "string"
+                    },
+                    "class_id": {
+                        "type": "string"
+                    },
+                    "nft_id": {
+                        "type": "string"
+                    },
+                    "bidder": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "status": {
+                        "enum": [
+                            "BID_STATUS_UNSPECIFIED",
+                            0,
+                            "BID_ACTIVE",
+                            1,
+                            "BID_OUTBID",
+                            2,
+                            "BID_ACCEPTED",
+                            3,
+                            "BID_REJECTED",
+                            4,
+                            "BID_CLAIMED",
+                            5
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Bid Status",
+                        "description": "BidStatus indicates the lifecycle state of a bid"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "height": {
+                        "type": "string"
+                    },
+                    "replaces_bid_id": {
+                        "type": "string",
+                        "description": "previous active bid replaced by this one"
+                    },
+                    "replaced_by_bid_id": {
+                        "type": "string",
+                        "description": "next bid that replaced this one (if any)"
+                    },
+                    "rejection_fee": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Bid Record",
+                "description": "BidRecord stores a single bid and its lifecycle"
+            },
+            "dysonprotocol.nameservice.v1.BidWithNFTStatus": {
+                "properties": {
+                    "bid": {
+                        "$ref": "#/definitions/dysonprotocol.nameservice.v1.BidRecord",
+                        "additionalProperties": false
+                    },
+                    "nft_owner": {
+                        "type": "string",
+                        "description": "current owner address"
+                    },
+                    "nft": {
+                        "$ref": "#/definitions/dysonprotocol.nameservice.v1.NFTData",
+                        "additionalProperties": false
+                    },
+                    "is_current_highest": {
+                        "type": "boolean",
+                        "description": "convenience: bidder == nft.current_bidder"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Bid With NFT Status",
+                "description": "BidWithNFTStatus augments a BidRecord with current on-chain NFT status"
+            },
+            "dysonprotocol.nameservice.v1.NFTData": {
+                "properties": {
+                    "listed": {
+                        "type": "boolean",
+                        "description": "Used if parent NFTClass.always_listed is false, default false"
+                    },
+                    "valuation": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "valuation_expiry": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "current_bidder": {
+                        "type": "string",
+                        "description": "Bid information  Address of the current highest bidder"
+                    },
+                    "current_bid": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "bid_timestamp": {
+                        "type": "string",
+                        "description": "Timestamp of when the bid was placed",
+                        "format": "date-time"
+                    },
+                    "bid_height": {
+                        "type": "string",
+                        "description": "Block height when the current bid was placed"
+                    },
+                    "metadata": {
+                        "type": "string",
+                        "description": "Additional metadata"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "NFT Data",
+                "description": "NFTData represents metadata for an individual NFT"
+            }
+        }
+    }
+}

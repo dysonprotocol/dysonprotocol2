@@ -1,0 +1,172 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/slashing/v1beta1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "cosmos.slashing.v1beta1.MsgUnjail": {
+      "post": {
+        "summary": "Unjail defines a method for unjailing a jailed validator, thus returning\nthem into the bonded validator set, so they can begin receiving provisions\nand rewards again.",
+        "operationId": "cosmos.slashing.v1beta1.MsgUnjail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.slashing.v1beta1.MsgUnjailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.slashing.v1beta1.MsgUnjail"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.slashing.v1beta1.MsgUpdateParams": {
+      "post": {
+        "summary": "UpdateParams defines a governance operation for updating the x/slashing\nmodule parameters. The authority defaults to the x/gov module account.",
+        "operationId": "cosmos.slashing.v1beta1.MsgUpdateParams",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.slashing.v1beta1.MsgUpdateParamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.slashing.v1beta1.MsgUpdateParams"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.slashing.v1beta1.MsgUnjail": {
+      "type": "object",
+      "properties": {
+        "validator_addr": {
+          "type": "string"
+        }
+      },
+      "title": "MsgUnjail defines the Msg/Unjail request type"
+    },
+    "cosmos.slashing.v1beta1.MsgUnjailResponse": {
+      "type": "object",
+      "title": "MsgUnjailResponse defines the Msg/Unjail response type"
+    },
+    "cosmos.slashing.v1beta1.MsgUpdateParams": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string",
+          "description": "authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+        },
+        "params": {
+          "$ref": "#/definitions/cosmos.slashing.v1beta1.Params",
+          "description": "params defines the x/slashing parameters to update.\n\nNOTE: All parameters must be supplied."
+        }
+      },
+      "description": "MsgUpdateParams is the Msg/UpdateParams request type."
+    },
+    "cosmos.slashing.v1beta1.MsgUpdateParamsResponse": {
+      "type": "object",
+      "description": "MsgUpdateParamsResponse defines the response structure for executing a\nMsgUpdateParams message."
+    },
+    "cosmos.slashing.v1beta1.Params": {
+      "type": "object",
+      "properties": {
+        "signed_blocks_window": {
+          "type": "string",
+          "format": "int64"
+        },
+        "min_signed_per_window": {
+          "type": "string",
+          "format": "byte"
+        },
+        "downtime_jail_duration": {
+          "type": "string"
+        },
+        "slash_fraction_double_sign": {
+          "type": "string",
+          "format": "byte"
+        },
+        "slash_fraction_downtime": {
+          "type": "string",
+          "format": "byte"
+        }
+      },
+      "description": "Params represents the parameters used for by the slashing module."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

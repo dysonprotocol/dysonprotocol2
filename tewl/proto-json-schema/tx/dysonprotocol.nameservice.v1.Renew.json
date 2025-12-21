@@ -1,0 +1,46 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgRenew",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgRenew": {
+                "properties": {
+                    "payer": {
+                        "type": "string",
+                        "description": "Address paying for the renewal fee."
+                    },
+                    "nft_class_id": {
+                        "type": "string",
+                        "description": "NFT class identifier."
+                    },
+                    "nft_id": {
+                        "type": "string",
+                        "description": "NFT identifier within the class."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Renew",
+                "description": "MsgRenew extends NFT valuation expiry by charging proportional annual fee. Behavior: - Extends valuation expiry by one full valuation period. - Calculates fee as: current_valuation \u00d7 fee_percent \u00d7 (period / valuation_period). - Handles retroactive renewal if expiry has already passed. - Fee is paid to the NFT class owner. Validation: - Payer address must be valid. - NFT must exist with valid valuation. - Class must have valuation period and fee percentage configured. Emits: - EventNameRenewed(name, new_expiry) on successful renewal. Returns: - New expiry timestamp."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgRenewResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgRenewResponse": {
+                "properties": {
+                    "expiry": {
+                        "type": "string",
+                        "description": "New valuation expiry timestamp after renewal.",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Renew Response"
+            }
+        }
+    }
+}

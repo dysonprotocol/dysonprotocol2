@@ -1,0 +1,146 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.QueryConsensusStatesRequest",
+        "definitions": {
+            "ibc.core.client.v1.QueryConsensusStatesRequest": {
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "client identifier"
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
+                        "additionalProperties": false,
+                        "description": "pagination request"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Consensus States Request",
+                "description": "QueryConsensusStatesRequest is the request type for the Query/ConsensusStates RPC method."
+            },
+            "cosmos.base.query.v1beta1.PageRequest": {
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "key is a value returned in PageResponse.next_key to begin querying the next page most efficiently. Only one of offset or key should be set.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "offset": {
+                        "type": "string",
+                        "description": "offset is a numeric offset that can be used when key is unavailable. It is less efficient than using key. Only one of offset or key should be set."
+                    },
+                    "limit": {
+                        "type": "string",
+                        "description": "limit is the total number of results to be returned in the result page. If left empty it will default to a value to be set by each app."
+                    },
+                    "count_total": {
+                        "type": "boolean",
+                        "description": "count_total is set to true  to indicate that the result set should include a count of the total number of items available for pagination in UIs. count_total is only respected when offset is used. It is ignored when key is set."
+                    },
+                    "reverse": {
+                        "type": "boolean",
+                        "description": "reverse is set to true if results are to be returned in the descending order."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Request",
+                "description": "PageRequest is to be embedded in gRPC request messages for efficient pagination. Ex:  message SomeRequest {          Foo some_parameter = 1;          PageRequest pagination = 2;  }"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.QueryConsensusStatesResponse",
+        "definitions": {
+            "ibc.core.client.v1.QueryConsensusStatesResponse": {
+                "properties": {
+                    "consensus_states": {
+                        "items": {
+                            "$ref": "#/definitions/ibc.core.client.v1.ConsensusStateWithHeight"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "consensus states associated with the identifier"
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+                        "additionalProperties": false,
+                        "description": "pagination response"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Consensus States Response",
+                "description": "QueryConsensusStatesResponse is the response type for the Query/ConsensusStates RPC method"
+            },
+            "cosmos.base.query.v1beta1.PageResponse": {
+                "properties": {
+                    "next_key": {
+                        "type": "string",
+                        "description": "next_key is the key to be passed to PageRequest.key to query the next page most efficiently. It will be empty if there are no more results.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "total": {
+                        "type": "string",
+                        "description": "total is total number of results available if PageRequest.count_total was set, its value is undefined otherwise"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Response",
+                "description": "PageResponse is to be embedded in gRPC response messages where the corresponding request message has used PageRequest.  message SomeResponse {          repeated Bar results = 1;          PageResponse page = 2;  }"
+            },
+            "ibc.core.client.v1.ConsensusStateWithHeight": {
+                "properties": {
+                    "height": {
+                        "$ref": "#/definitions/ibc.core.client.v1.Height",
+                        "additionalProperties": false,
+                        "description": "consensus state height"
+                    },
+                    "consensus_state": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "consensus state"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Consensus State With Height",
+                "description": "ConsensusStateWithHeight defines a consensus state with an additional height field."
+            },
+            "ibc.core.client.v1.Height": {
+                "properties": {
+                    "revision_number": {
+                        "type": "string",
+                        "description": "the revision that the client is currently on"
+                    },
+                    "revision_height": {
+                        "type": "string",
+                        "description": "the height within the given revision"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Height",
+                "description": "Height is a monotonically increasing data type that can be compared against another Height for the purposes of updating and freezing clients Normally the RevisionHeight is incremented at each height while keeping RevisionNumber the same. However some consensus algorithms may choose to reset the height in certain conditions e.g. hard forks, state-machine breaking changes In these cases, the RevisionNumber is incremented so that height continues to be monitonically increasing even as the RevisionHeight gets reset Please note that json tags for generated Go code are overridden to explicitly exclude the omitempty jsontag. This enforces the Go json marshaller to always emit zero values for both revision_number and revision_height."
+            }
+        }
+    }
+}

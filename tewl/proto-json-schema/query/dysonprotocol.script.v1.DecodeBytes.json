@@ -1,0 +1,44 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.QueryDecodeBytesRequest",
+        "definitions": {
+            "dysonprotocol.script.v1.QueryDecodeBytesRequest": {
+                "properties": {
+                    "type_url": {
+                        "type": "string",
+                        "description": "Type URL of the message type to decode (e.g., \"/cosmos.bank.v1beta1.MsgSend\")."
+                    },
+                    "bytes": {
+                        "type": "string",
+                        "description": "Protobuf-encoded bytes of the message to decode to JSON.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Decode Bytes Request",
+                "description": "QueryDecodeBytesRequest requests decoding of protobuf bytes to JSON. The type_url specifies the message type to decode, and bytes contains the protobuf-encoded data."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.QueryDecodeBytesResponse",
+        "definitions": {
+            "dysonprotocol.script.v1.QueryDecodeBytesResponse": {
+                "properties": {
+                    "json": {
+                        "type": "string",
+                        "description": "JSON representation of the decoded protobuf message."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Decode Bytes Response",
+                "description": "QueryDecodeBytesResponse contains the decoded JSON string."
+            }
+        }
+    }
+}

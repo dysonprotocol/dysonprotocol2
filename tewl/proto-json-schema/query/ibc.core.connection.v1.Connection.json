@@ -1,0 +1,170 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.connection.v1.QueryConnectionRequest",
+        "definitions": {
+            "ibc.core.connection.v1.QueryConnectionRequest": {
+                "properties": {
+                    "connection_id": {
+                        "type": "string",
+                        "description": "connection unique identifier"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Connection Request",
+                "description": "QueryConnectionRequest is the request type for the Query/Connection RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.connection.v1.QueryConnectionResponse",
+        "definitions": {
+            "ibc.core.connection.v1.QueryConnectionResponse": {
+                "properties": {
+                    "connection": {
+                        "$ref": "#/definitions/ibc.core.connection.v1.ConnectionEnd",
+                        "additionalProperties": false,
+                        "description": "connection associated with the request identifier"
+                    },
+                    "proof": {
+                        "type": "string",
+                        "description": "merkle proof of existence",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "proof_height": {
+                        "$ref": "#/definitions/ibc.core.client.v1.Height",
+                        "additionalProperties": false,
+                        "description": "height at which the proof was retrieved"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Connection Response",
+                "description": "QueryConnectionResponse is the response type for the Query/Connection RPC method. Besides the connection end, it includes a proof and the height from which the proof was retrieved."
+            },
+            "ibc.core.client.v1.Height": {
+                "properties": {
+                    "revision_number": {
+                        "type": "string",
+                        "description": "the revision that the client is currently on"
+                    },
+                    "revision_height": {
+                        "type": "string",
+                        "description": "the height within the given revision"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Height",
+                "description": "Height is a monotonically increasing data type that can be compared against another Height for the purposes of updating and freezing clients Normally the RevisionHeight is incremented at each height while keeping RevisionNumber the same. However some consensus algorithms may choose to reset the height in certain conditions e.g. hard forks, state-machine breaking changes In these cases, the RevisionNumber is incremented so that height continues to be monitonically increasing even as the RevisionHeight gets reset Please note that json tags for generated Go code are overridden to explicitly exclude the omitempty jsontag. This enforces the Go json marshaller to always emit zero values for both revision_number and revision_height."
+            },
+            "ibc.core.commitment.v1.MerklePrefix": {
+                "properties": {
+                    "key_prefix": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Merkle Prefix",
+                "description": "MerklePrefix is merkle path prefixed to the key. The constructed key from the Path and the key will be append(Path.KeyPath, append(Path.KeyPrefix, key...))"
+            },
+            "ibc.core.connection.v1.ConnectionEnd": {
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "client associated with this connection."
+                    },
+                    "versions": {
+                        "items": {
+                            "$ref": "#/definitions/ibc.core.connection.v1.Version"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "IBC version which can be utilised to determine encodings or protocols for channels or packets utilising this connection."
+                    },
+                    "state": {
+                        "enum": [
+                            "STATE_UNINITIALIZED_UNSPECIFIED",
+                            0,
+                            "STATE_INIT",
+                            1,
+                            "STATE_TRYOPEN",
+                            2,
+                            "STATE_OPEN",
+                            3
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "State",
+                        "description": "State defines if a connection is in one of the following states: INIT, TRYOPEN, OPEN or UNINITIALIZED."
+                    },
+                    "counterparty": {
+                        "$ref": "#/definitions/ibc.core.connection.v1.Counterparty",
+                        "additionalProperties": false,
+                        "description": "counterparty chain associated with this connection."
+                    },
+                    "delay_period": {
+                        "type": "string",
+                        "description": "delay period that must pass before a consensus state can be used for packet-verification NOTE: delay period logic is only implemented by some clients."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "ICS03 - Connection Data Structures as defined in\n https://github.com/cosmos/ibc/blob/master/spec/core/ics-003-connection-semantics#data-structures",
+                "description": "ICS03 - Connection Data Structures as defined in https://github.com/cosmos/ibc/blob/master/spec/core/ics-003-connection-semantics#data-structures  ConnectionEnd defines a stateful object on a chain connected to another separate one. NOTE: there must only be 2 defined ConnectionEnds to establish a connection between two chains."
+            },
+            "ibc.core.connection.v1.Counterparty": {
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "identifies the client on the counterparty chain associated with a given connection."
+                    },
+                    "connection_id": {
+                        "type": "string",
+                        "description": "identifies the connection end on the counterparty chain associated with a given connection."
+                    },
+                    "prefix": {
+                        "$ref": "#/definitions/ibc.core.commitment.v1.MerklePrefix",
+                        "additionalProperties": false,
+                        "description": "commitment merkle prefix of the counterparty chain."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Counterparty",
+                "description": "Counterparty defines the counterparty chain associated with a connection end."
+            },
+            "ibc.core.connection.v1.Version": {
+                "properties": {
+                    "identifier": {
+                        "type": "string",
+                        "description": "unique version identifier"
+                    },
+                    "features": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "list of features compatible with the specified identifier"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Version",
+                "description": "Version defines the versioning scheme used to negotiate the IBC version in the connection handshake."
+            }
+        }
+    }
+}

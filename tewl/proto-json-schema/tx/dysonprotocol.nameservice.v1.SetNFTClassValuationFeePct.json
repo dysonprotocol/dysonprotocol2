@@ -1,0 +1,37 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetNFTClassValuationFeePct",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetNFTClassValuationFeePct": {
+                "properties": {
+                    "name_destination": {
+                        "type": "string"
+                    },
+                    "class_id": {
+                        "type": "string"
+                    },
+                    "valuation_fee_pct": {
+                        "type": "string",
+                        "description": "plain string; parsed as Dec in keeper"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set NFT Class Valuation Fee Pct",
+                "description": "Set per-class valuation fee percent (cosmos.Dec string)"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetNFTClassValuationFeePctResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetNFTClassValuationFeePctResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set NFT Class Valuation Fee Pct Response"
+            }
+        }
+    }
+}

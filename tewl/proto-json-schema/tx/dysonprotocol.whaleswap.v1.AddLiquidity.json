@@ -1,0 +1,68 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgAddLiquidity",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.MsgAddLiquidity": {
+                "properties": {
+                    "signer": {
+                        "type": "string",
+                        "description": "Account adding liquidity; must be majority owner of pool shares."
+                    },
+                    "pool_id": {
+                        "type": "string",
+                        "description": "Target pool id."
+                    },
+                    "amounts": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Amounts to add: exactly two positive coins matching the pool denoms. Canonicalized to pool denom order. Full amounts are escrowed; surplus is refunded (band mode: to match \u0394L; non-concentrated: to match minted shares). For unbalanced adds, full amounts are added without refunds."
+                    },
+                    "unbalanced": {
+                        "type": "boolean",
+                        "description": "If true, add amounts directly without proportional adjustments or refunds. Price may shift outside band (rejected if so); shares minted based on proportional contribution."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "*\n Add liquidity (owner-only).\n\n Behavior:\n - Loads pool; validates signer majority ownership.\n - Escrows full provided amounts first, then refunds unused surplus.\n - Computes shares as floor(min(add1/R1, add2/R2) \u00d7 totalShares).\n - Updates pool reserves with used amounts.\n - Mints computed shares via nameservice and transfers to signer.\n - Persists pool with updated reserves/timestamp; emits events; asserts AMM\n   and module invariants.\n\n Validation:\n - Pool must exist and have exactly two positive reserves.\n - Signer must be valid address and hold majority of pool shares.\n - Amounts must contain exactly two positive coins matching pool denoms in\n   canonical order.\n\n Emits:\n - EventPoolUpdate (after persisting pool state)\n - EventPoolLiquidityAdded (on successful add)",
+                "description": "* Add liquidity (owner-only). Behavior: - Loads pool; validates signer majority ownership. - Escrows full provided amounts first, then refunds unused surplus. - Computes shares as floor(min(add1/R1, add2/R2) \u00d7 totalShares). - Updates pool reserves with used amounts. - Mints computed shares via nameservice and transfers to signer. - Persists pool with updated reserves/timestamp; emits events; asserts AMM   and module invariants. Validation: - Pool must exist and have exactly two positive reserves. - Signer must be valid address and hold majority of pool shares. - Amounts must contain exactly two positive coins matching pool denoms in   canonical order. Emits: - EventPoolUpdate (after persisting pool state) - EventPoolLiquidityAdded (on successful add)  MsgAddLiquidity"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgAddLiquidityResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.MsgAddLiquidityResponse": {
+                "properties": {
+                    "shares": {
+                        "type": "string",
+                        "description": "Shares minted to signer (sdk.Int string)."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Add Liquidity Response",
+                "description": "Empty response. See EventPoolLiquidityAdded for emitted details."
+            }
+        }
+    }
+}

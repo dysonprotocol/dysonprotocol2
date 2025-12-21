@@ -1,0 +1,82 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.MsgUpgradeClient",
+        "definitions": {
+            "ibc.core.client.v1.MsgUpgradeClient": {
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "client unique identifier"
+                    },
+                    "client_state": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "upgraded client state"
+                    },
+                    "consensus_state": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "upgraded consensus state, only contains enough information to serve as a basis of trust in update logic"
+                    },
+                    "proof_upgrade_client": {
+                        "type": "string",
+                        "description": "proof that old chain committed to new client",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "proof_upgrade_consensus_state": {
+                        "type": "string",
+                        "description": "proof that old chain committed to new consensus state",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "signer": {
+                        "type": "string",
+                        "description": "signer address"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Upgrade Client",
+                "description": "MsgUpgradeClient defines an sdk.Msg to upgrade an IBC client to a new client state"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.MsgUpgradeClientResponse",
+        "definitions": {
+            "ibc.core.client.v1.MsgUpgradeClientResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Upgrade Client Response",
+                "description": "MsgUpgradeClientResponse defines the Msg/UpgradeClient response type."
+            }
+        }
+    }
+}

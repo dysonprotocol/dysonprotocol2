@@ -1,0 +1,53 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.MsgUpdateClient",
+        "definitions": {
+            "ibc.core.client.v1.MsgUpdateClient": {
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "client unique identifier"
+                    },
+                    "client_message": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "client message to update the light client"
+                    },
+                    "signer": {
+                        "type": "string",
+                        "description": "signer address"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Update Client",
+                "description": "MsgUpdateClient defines an sdk.Msg to update a IBC client state using the given client message."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.MsgUpdateClientResponse",
+        "definitions": {
+            "ibc.core.client.v1.MsgUpdateClientResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Update Client Response",
+                "description": "MsgUpdateClientResponse defines the Msg/UpdateClient response type."
+            }
+        }
+    }
+}

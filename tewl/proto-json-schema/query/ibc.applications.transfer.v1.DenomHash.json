@@ -1,0 +1,38 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.applications.transfer.v1.QueryDenomHashRequest",
+        "definitions": {
+            "ibc.applications.transfer.v1.QueryDenomHashRequest": {
+                "properties": {
+                    "trace": {
+                        "type": "string",
+                        "description": "The denomination trace ([port_id]/[channel_id])+/[denom]"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Denom Hash Request",
+                "description": "QueryDenomHashRequest is the request type for the Query/DenomHash RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.applications.transfer.v1.QueryDenomHashResponse",
+        "definitions": {
+            "ibc.applications.transfer.v1.QueryDenomHashResponse": {
+                "properties": {
+                    "hash": {
+                        "type": "string",
+                        "description": "hash (in hex format) of the denomination trace information."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Denom Hash Response",
+                "description": "QueryDenomHashResponse is the response type for the Query/DenomHash RPC method."
+            }
+        }
+    }
+}

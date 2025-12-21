@@ -1,0 +1,109 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/evidence/v1beta1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "cosmos.evidence.v1beta1.MsgSubmitEvidence": {
+      "post": {
+        "summary": "SubmitEvidence submits an arbitrary Evidence of misbehavior such as\nequivocation or counterfactual signing.",
+        "operationId": "cosmos.evidence.v1beta1.MsgSubmitEvidence",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.evidence.v1beta1.MsgSubmitEvidenceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.evidence.v1beta1.MsgSubmitEvidence"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.evidence.v1beta1.MsgSubmitEvidence": {
+      "type": "object",
+      "properties": {
+        "submitter": {
+          "type": "string",
+          "description": "submitter is the signer account address of evidence."
+        },
+        "evidence": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "description": "evidence defines the evidence of misbehavior."
+        }
+      },
+      "description": "MsgSubmitEvidence represents a message that supports submitting arbitrary\nEvidence of misbehavior such as equivocation or counterfactual signing."
+    },
+    "cosmos.evidence.v1beta1.MsgSubmitEvidenceResponse": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string",
+          "format": "byte",
+          "description": "hash defines the hash of the evidence."
+        }
+      },
+      "description": "MsgSubmitEvidenceResponse defines the Msg/SubmitEvidence response type."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

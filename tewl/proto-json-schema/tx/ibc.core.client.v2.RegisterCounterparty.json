@@ -1,0 +1,49 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v2.MsgRegisterCounterparty",
+        "definitions": {
+            "ibc.core.client.v2.MsgRegisterCounterparty": {
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "client identifier"
+                    },
+                    "counterparty_merkle_prefix": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "counterparty merkle prefix",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "counterparty_client_id": {
+                        "type": "string",
+                        "description": "counterparty client identifier"
+                    },
+                    "signer": {
+                        "type": "string",
+                        "description": "signer address"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Register Counterparty",
+                "description": "MsgRegisterCounterparty defines a message to register a counterparty on a client"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v2.MsgRegisterCounterpartyResponse",
+        "definitions": {
+            "ibc.core.client.v2.MsgRegisterCounterpartyResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Register Counterparty Response",
+                "description": "MsgRegisterCounterpartyResponse defines the Msg/RegisterCounterparty response type."
+            }
+        }
+    }
+}

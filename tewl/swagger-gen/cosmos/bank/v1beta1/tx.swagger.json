@@ -1,0 +1,343 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/bank/v1beta1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "cosmos.bank.v1beta1.MsgMultiSend": {
+      "post": {
+        "summary": "MultiSend defines a method for sending coins from some accounts to other\naccounts.",
+        "operationId": "cosmos.bank.v1beta1.MsgMultiSend",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.bank.v1beta1.MsgMultiSendResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.bank.v1beta1.MsgMultiSend"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.bank.v1beta1.MsgSend": {
+      "post": {
+        "summary": "Send defines a method for sending coins from one account to another\naccount.",
+        "operationId": "cosmos.bank.v1beta1.MsgSend",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.bank.v1beta1.MsgSendResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.bank.v1beta1.MsgSend"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.bank.v1beta1.MsgSetSendEnabled": {
+      "post": {
+        "summary": "SetSendEnabled is a governance operation for setting the SendEnabled flag\non any number of Denoms. Only the entries to add or update should be\nincluded. Entries that already exist in the store, but that aren't\nincluded in this message, will be left unchanged.",
+        "operationId": "cosmos.bank.v1beta1.MsgSetSendEnabled",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.bank.v1beta1.MsgSetSendEnabledResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.bank.v1beta1.MsgSetSendEnabled"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.bank.v1beta1.MsgUpdateParams": {
+      "post": {
+        "summary": "UpdateParams defines a governance operation for updating the x/bank module\nparameters. The authority is defined in the keeper.",
+        "operationId": "cosmos.bank.v1beta1.MsgUpdateParams",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.bank.v1beta1.MsgUpdateParamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.bank.v1beta1.MsgUpdateParams"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.bank.v1beta1.Input": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "coins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        }
+      },
+      "description": "Input models transaction input."
+    },
+    "cosmos.bank.v1beta1.MsgMultiSend": {
+      "type": "object",
+      "properties": {
+        "inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.bank.v1beta1.Input"
+          },
+          "description": "Inputs, despite being `repeated`, only allows one sender input. This is\nchecked in MsgMultiSend's ValidateBasic."
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.bank.v1beta1.Output"
+          }
+        }
+      },
+      "description": "MsgMultiSend represents an arbitrary multi-in, multi-out send message."
+    },
+    "cosmos.bank.v1beta1.MsgMultiSendResponse": {
+      "type": "object",
+      "description": "MsgMultiSendResponse defines the Msg/MultiSend response type."
+    },
+    "cosmos.bank.v1beta1.MsgSend": {
+      "type": "object",
+      "properties": {
+        "from_address": {
+          "type": "string"
+        },
+        "to_address": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        }
+      },
+      "description": "MsgSend represents a message to send coins from one account to another."
+    },
+    "cosmos.bank.v1beta1.MsgSendResponse": {
+      "type": "object",
+      "description": "MsgSendResponse defines the Msg/Send response type."
+    },
+    "cosmos.bank.v1beta1.MsgSetSendEnabled": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string",
+          "description": "authority is the address that controls the module."
+        },
+        "send_enabled": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.bank.v1beta1.SendEnabled"
+          },
+          "description": "send_enabled is the list of entries to add or update."
+        },
+        "use_default_for": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "use_default_for is a list of denoms that should use the\nparams.default_send_enabled value. Denoms listed here will have their\nSendEnabled entries deleted. If a denom is included that doesn't have a\nSendEnabled entry, it will be ignored."
+        }
+      },
+      "description": "MsgSetSendEnabled is the Msg/SetSendEnabled request type.\n\nOnly entries to add/update/delete need to be included.\nExisting SendEnabled entries that are not included in this\nmessage are left unchanged."
+    },
+    "cosmos.bank.v1beta1.MsgSetSendEnabledResponse": {
+      "type": "object",
+      "description": "MsgSetSendEnabledResponse defines the Msg/SetSendEnabled response type."
+    },
+    "cosmos.bank.v1beta1.MsgUpdateParams": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string",
+          "description": "authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+        },
+        "params": {
+          "$ref": "#/definitions/cosmos.bank.v1beta1.Params",
+          "description": "params defines the x/bank parameters to update.\n\nNOTE: All parameters must be supplied."
+        }
+      },
+      "description": "MsgUpdateParams is the Msg/UpdateParams request type."
+    },
+    "cosmos.bank.v1beta1.MsgUpdateParamsResponse": {
+      "type": "object",
+      "description": "MsgUpdateParamsResponse defines the response structure for executing a\nMsgUpdateParams message."
+    },
+    "cosmos.bank.v1beta1.Output": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "coins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        }
+      },
+      "description": "Output models transaction outputs."
+    },
+    "cosmos.bank.v1beta1.Params": {
+      "type": "object",
+      "properties": {
+        "send_enabled": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.bank.v1beta1.SendEnabled"
+          },
+          "description": "Deprecated: Use of SendEnabled in params is deprecated.\nFor genesis, use the newly added send_enabled field in the genesis object.\nStorage, lookup, and manipulation of this information is now in the keeper.\n\nAs of cosmos-sdk 0.47, this only exists for backwards compatibility of\ngenesis files."
+        },
+        "default_send_enabled": {
+          "type": "boolean"
+        }
+      },
+      "description": "Params defines the parameters for the bank module."
+    },
+    "cosmos.bank.v1beta1.SendEnabled": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "description": "SendEnabled maps coin denom to a send_enabled status (whether a denom is\nsendable)."
+    },
+    "cosmos.base.v1beta1.Coin": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "Coin defines a token with a denomination and an amount.\n\nNOTE: The amount field is an Int which implements the custom method\nsignatures required by gogoproto."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

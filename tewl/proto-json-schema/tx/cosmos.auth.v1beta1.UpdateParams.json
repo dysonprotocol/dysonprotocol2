@@ -1,0 +1,60 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.auth.v1beta1.MsgUpdateParams",
+        "definitions": {
+            "cosmos.auth.v1beta1.MsgUpdateParams": {
+                "properties": {
+                    "authority": {
+                        "type": "string",
+                        "description": "authority is the address that controls the module (defaults to x/gov unless overwritten)."
+                    },
+                    "params": {
+                        "$ref": "#/definitions/cosmos.auth.v1beta1.Params",
+                        "additionalProperties": false,
+                        "description": "params defines the x/auth parameters to update. NOTE: All parameters must be supplied."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Update Params",
+                "description": "MsgUpdateParams is the Msg/UpdateParams request type."
+            },
+            "cosmos.auth.v1beta1.Params": {
+                "properties": {
+                    "max_memo_characters": {
+                        "type": "string"
+                    },
+                    "tx_sig_limit": {
+                        "type": "string"
+                    },
+                    "tx_size_cost_per_byte": {
+                        "type": "string"
+                    },
+                    "sig_verify_cost_ed25519": {
+                        "type": "string"
+                    },
+                    "sig_verify_cost_secp256k1": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Params",
+                "description": "Params defines the parameters for the auth module."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.auth.v1beta1.MsgUpdateParamsResponse",
+        "definitions": {
+            "cosmos.auth.v1beta1.MsgUpdateParamsResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Update Params Response",
+                "description": "MsgUpdateParamsResponse defines the response structure for executing a MsgUpdateParams message."
+            }
+        }
+    }
+}

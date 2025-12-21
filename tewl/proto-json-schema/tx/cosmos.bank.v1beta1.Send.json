@@ -1,0 +1,55 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.bank.v1beta1.MsgSend",
+        "definitions": {
+            "cosmos.bank.v1beta1.MsgSend": {
+                "properties": {
+                    "from_address": {
+                        "type": "string"
+                    },
+                    "to_address": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Send",
+                "description": "MsgSend represents a message to send coins from one account to another."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.bank.v1beta1.MsgSendResponse",
+        "definitions": {
+            "cosmos.bank.v1beta1.MsgSendResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Send Response",
+                "description": "MsgSendResponse defines the Msg/Send response type."
+            }
+        }
+    }
+}

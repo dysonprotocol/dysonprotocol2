@@ -1,0 +1,76 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.feegrant.v1beta1.QueryAllowanceRequest",
+        "definitions": {
+            "cosmos.feegrant.v1beta1.QueryAllowanceRequest": {
+                "properties": {
+                    "granter": {
+                        "type": "string",
+                        "description": "granter is the address of the user granting an allowance of their funds."
+                    },
+                    "grantee": {
+                        "type": "string",
+                        "description": "grantee is the address of the user being granted an allowance of another user's funds."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Allowance Request",
+                "description": "QueryAllowanceRequest is the request type for the Query/Allowance RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.feegrant.v1beta1.QueryAllowanceResponse",
+        "definitions": {
+            "cosmos.feegrant.v1beta1.QueryAllowanceResponse": {
+                "properties": {
+                    "allowance": {
+                        "$ref": "#/definitions/cosmos.feegrant.v1beta1.Grant",
+                        "additionalProperties": false,
+                        "description": "allowance is a allowance granted for grantee by granter."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Allowance Response",
+                "description": "QueryAllowanceResponse is the response type for the Query/Allowance RPC method."
+            },
+            "cosmos.feegrant.v1beta1.Grant": {
+                "properties": {
+                    "granter": {
+                        "type": "string",
+                        "description": "granter is the address of the user granting an allowance of their funds."
+                    },
+                    "grantee": {
+                        "type": "string",
+                        "description": "grantee is the address of the user being granted an allowance of another user's funds."
+                    },
+                    "allowance": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "allowance can be any of basic, periodic, allowed fee allowance."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Grant",
+                "description": "Grant is stored in the KVStore to record a grant with full context"
+            }
+        }
+    }
+}

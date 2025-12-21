@@ -1,0 +1,57 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.evidence.v1beta1.MsgSubmitEvidence",
+        "definitions": {
+            "cosmos.evidence.v1beta1.MsgSubmitEvidence": {
+                "properties": {
+                    "submitter": {
+                        "type": "string",
+                        "description": "submitter is the signer account address of evidence."
+                    },
+                    "evidence": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "evidence defines the evidence of misbehavior."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Submit Evidence",
+                "description": "MsgSubmitEvidence represents a message that supports submitting arbitrary Evidence of misbehavior such as equivocation or counterfactual signing."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.evidence.v1beta1.MsgSubmitEvidenceResponse",
+        "definitions": {
+            "cosmos.evidence.v1beta1.MsgSubmitEvidenceResponse": {
+                "properties": {
+                    "hash": {
+                        "type": "string",
+                        "description": "hash defines the hash of the evidence.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Submit Evidence Response",
+                "description": "MsgSubmitEvidenceResponse defines the Msg/SubmitEvidence response type."
+            }
+        }
+    }
+}

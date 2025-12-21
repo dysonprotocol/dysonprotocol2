@@ -1,0 +1,68 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryValidatorCommissionRequest",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryValidatorCommissionRequest": {
+                "properties": {
+                    "validator_address": {
+                        "type": "string",
+                        "description": "validator_address defines the validator address to query for."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Validator Commission Request",
+                "description": "QueryValidatorCommissionRequest is the request type for the Query/ValidatorCommission RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryValidatorCommissionResponse",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryValidatorCommissionResponse": {
+                "properties": {
+                    "commission": {
+                        "$ref": "#/definitions/cosmos.distribution.v1beta1.ValidatorAccumulatedCommission",
+                        "additionalProperties": false,
+                        "description": "commission defines the commission the validator received."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Validator Commission Response",
+                "description": "QueryValidatorCommissionResponse is the response type for the Query/ValidatorCommission RPC method"
+            },
+            "cosmos.base.v1beta1.DecCoin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Dec Coin",
+                "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
+            },
+            "cosmos.distribution.v1beta1.ValidatorAccumulatedCommission": {
+                "properties": {
+                    "commission": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Validator Accumulated Commission",
+                "description": "ValidatorAccumulatedCommission represents accumulated commission for a validator kept as a running counter, can be withdrawn at any time."
+            }
+        }
+    }
+}

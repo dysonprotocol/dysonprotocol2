@@ -1,0 +1,55 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryParamsRequest",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryParamsRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Params Request",
+                "description": "QueryParamsRequest is the request type for the Query/Params RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryParamsResponse",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryParamsResponse": {
+                "properties": {
+                    "params": {
+                        "$ref": "#/definitions/cosmos.distribution.v1beta1.Params",
+                        "additionalProperties": false,
+                        "description": "params defines the parameters of the module."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Params Response",
+                "description": "QueryParamsResponse is the response type for the Query/Params RPC method."
+            },
+            "cosmos.distribution.v1beta1.Params": {
+                "properties": {
+                    "community_tax": {
+                        "type": "string"
+                    },
+                    "base_proposer_reward": {
+                        "type": "string",
+                        "description": "Deprecated: The base_proposer_reward field is deprecated and is no longer used in the x/distribution module's reward mechanism."
+                    },
+                    "bonus_proposer_reward": {
+                        "type": "string",
+                        "description": "Deprecated: The bonus_proposer_reward field is deprecated and is no longer used in the x/distribution module's reward mechanism."
+                    },
+                    "withdraw_addr_enabled": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Params",
+                "description": "Params defines the set of params for the distribution module."
+            }
+        }
+    }
+}

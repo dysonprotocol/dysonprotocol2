@@ -1,0 +1,37 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.channel.v1.MsgChannelCloseInit",
+        "definitions": {
+            "ibc.core.channel.v1.MsgChannelCloseInit": {
+                "properties": {
+                    "port_id": {
+                        "type": "string"
+                    },
+                    "channel_id": {
+                        "type": "string"
+                    },
+                    "signer": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Channel Close Init",
+                "description": "MsgChannelCloseInit defines a msg sent by a Relayer to Chain A to close a channel with Chain B."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.channel.v1.MsgChannelCloseInitResponse",
+        "definitions": {
+            "ibc.core.channel.v1.MsgChannelCloseInitResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Channel Close Init Response",
+                "description": "MsgChannelCloseInitResponse defines the Msg/ChannelCloseInit response type."
+            }
+        }
+    }
+}

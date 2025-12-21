@@ -1,0 +1,40 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.base.node.v1beta1.ConfigRequest",
+        "definitions": {
+            "cosmos.base.node.v1beta1.ConfigRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Config Request",
+                "description": "ConfigRequest defines the request structure for the Config gRPC query."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.base.node.v1beta1.ConfigResponse",
+        "definitions": {
+            "cosmos.base.node.v1beta1.ConfigResponse": {
+                "properties": {
+                    "minimum_gas_price": {
+                        "type": "string"
+                    },
+                    "pruning_keep_recent": {
+                        "type": "string"
+                    },
+                    "pruning_interval": {
+                        "type": "string"
+                    },
+                    "halt_height": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Config Response",
+                "description": "ConfigResponse defines the response structure for the Config gRPC query."
+            }
+        }
+    }
+}

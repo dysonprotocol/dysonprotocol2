@@ -1,0 +1,42 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.applications.transfer.v1.QueryEscrowAddressRequest",
+        "definitions": {
+            "ibc.applications.transfer.v1.QueryEscrowAddressRequest": {
+                "properties": {
+                    "port_id": {
+                        "type": "string",
+                        "description": "unique port identifier"
+                    },
+                    "channel_id": {
+                        "type": "string",
+                        "description": "unique channel identifier"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Escrow Address Request",
+                "description": "QueryEscrowAddressRequest is the request type for the EscrowAddress RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.applications.transfer.v1.QueryEscrowAddressResponse",
+        "definitions": {
+            "ibc.applications.transfer.v1.QueryEscrowAddressResponse": {
+                "properties": {
+                    "escrow_address": {
+                        "type": "string",
+                        "description": "the escrow account address"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Escrow Address Response",
+                "description": "QueryEscrowAddressResponse is the response type of the EscrowAddress RPC method."
+            }
+        }
+    }
+}

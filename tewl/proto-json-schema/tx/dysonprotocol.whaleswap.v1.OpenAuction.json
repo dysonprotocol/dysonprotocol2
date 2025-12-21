@@ -1,0 +1,59 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgOpenAuction",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.MsgOpenAuction": {
+                "properties": {
+                    "seller": {
+                        "type": "string",
+                        "description": "Account opening the auction (receives the minted NFT)."
+                    },
+                    "bid_denom": {
+                        "type": "string",
+                        "description": "Quote denom for bids; must be a valid denom and differ from sell.denom."
+                    },
+                    "sell": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Sell coin to escrow from seller \u2192 module; amount must be > 0."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Open Auction",
+                "description": "* OpenAuction escrows the sell coin from the seller and mints an NFT under a class keyed by `bid_denom`. Class policy (always_listed, valuation fee/period, bid timeout, minimum bid percent increase, allowed denoms) is set from module params. The NFT is sent to the seller and the auction record with reverse indexes is persisted. Emits: EventAuctionCreated on success"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgOpenAuctionResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.MsgOpenAuctionResponse": {
+                "properties": {
+                    "auction_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Open Auction Response"
+            }
+        }
+    }
+}

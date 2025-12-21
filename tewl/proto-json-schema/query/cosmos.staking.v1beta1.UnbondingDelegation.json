@@ -1,0 +1,100 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.QueryUnbondingDelegationRequest",
+        "definitions": {
+            "cosmos.staking.v1beta1.QueryUnbondingDelegationRequest": {
+                "properties": {
+                    "delegator_addr": {
+                        "type": "string",
+                        "description": "delegator_addr defines the delegator address to query for."
+                    },
+                    "validator_addr": {
+                        "type": "string",
+                        "description": "validator_addr defines the validator address to query for."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Unbonding Delegation Request",
+                "description": "QueryUnbondingDelegationRequest is request type for the Query/UnbondingDelegation RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.QueryUnbondingDelegationResponse",
+        "definitions": {
+            "cosmos.staking.v1beta1.QueryUnbondingDelegationResponse": {
+                "properties": {
+                    "unbond": {
+                        "$ref": "#/definitions/cosmos.staking.v1beta1.UnbondingDelegation",
+                        "additionalProperties": false,
+                        "description": "unbond defines the unbonding information of a delegation."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Unbonding Delegation Response",
+                "description": "QueryDelegationResponse is response type for the Query/UnbondingDelegation RPC method."
+            },
+            "cosmos.staking.v1beta1.UnbondingDelegation": {
+                "properties": {
+                    "delegator_address": {
+                        "type": "string",
+                        "description": "delegator_address is the encoded address of the delegator."
+                    },
+                    "validator_address": {
+                        "type": "string",
+                        "description": "validator_address is the encoded address of the validator."
+                    },
+                    "entries": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.staking.v1beta1.UnbondingDelegationEntry"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "entries are the unbonding delegation entries.  unbonding delegation entries"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Unbonding Delegation",
+                "description": "UnbondingDelegation stores all of a single delegator's unbonding bonds for a single validator in an time-ordered list."
+            },
+            "cosmos.staking.v1beta1.UnbondingDelegationEntry": {
+                "properties": {
+                    "creation_height": {
+                        "type": "string",
+                        "description": "creation_height is the height which the unbonding took place."
+                    },
+                    "completion_time": {
+                        "type": "string",
+                        "description": "completion_time is the unix time for unbonding completion.",
+                        "format": "date-time"
+                    },
+                    "initial_balance": {
+                        "type": "string",
+                        "description": "initial_balance defines the tokens initially scheduled to receive at completion."
+                    },
+                    "balance": {
+                        "type": "string",
+                        "description": "balance defines the tokens to receive at completion."
+                    },
+                    "unbonding_id": {
+                        "type": "string",
+                        "description": "Incrementing id that uniquely identifies this entry"
+                    },
+                    "unbonding_on_hold_ref_count": {
+                        "type": "string",
+                        "description": "Strictly positive if this entry's unbonding has been stopped by external modules"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Unbonding Delegation Entry",
+                "description": "UnbondingDelegationEntry defines an unbonding object with relevant metadata."
+            }
+        }
+    }
+}

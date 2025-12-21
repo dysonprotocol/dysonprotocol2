@@ -1,0 +1,31 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.auth.v1beta1.Bech32PrefixRequest",
+        "definitions": {
+            "cosmos.auth.v1beta1.Bech32PrefixRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Bech 32 Prefix Request",
+                "description": "Bech32PrefixRequest is the request type for Bech32Prefix rpc method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.auth.v1beta1.Bech32PrefixResponse",
+        "definitions": {
+            "cosmos.auth.v1beta1.Bech32PrefixResponse": {
+                "properties": {
+                    "bech32_prefix": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Bech 32 Prefix Response",
+                "description": "Bech32PrefixResponse is the response type for Bech32Prefix rpc method."
+            }
+        }
+    }
+}

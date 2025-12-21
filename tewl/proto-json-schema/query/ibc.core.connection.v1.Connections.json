@@ -1,0 +1,224 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.connection.v1.QueryConnectionsRequest",
+        "definitions": {
+            "ibc.core.connection.v1.QueryConnectionsRequest": {
+                "properties": {
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Connections Request",
+                "description": "QueryConnectionsRequest is the request type for the Query/Connections RPC method"
+            },
+            "cosmos.base.query.v1beta1.PageRequest": {
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "key is a value returned in PageResponse.next_key to begin querying the next page most efficiently. Only one of offset or key should be set.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "offset": {
+                        "type": "string",
+                        "description": "offset is a numeric offset that can be used when key is unavailable. It is less efficient than using key. Only one of offset or key should be set."
+                    },
+                    "limit": {
+                        "type": "string",
+                        "description": "limit is the total number of results to be returned in the result page. If left empty it will default to a value to be set by each app."
+                    },
+                    "count_total": {
+                        "type": "boolean",
+                        "description": "count_total is set to true  to indicate that the result set should include a count of the total number of items available for pagination in UIs. count_total is only respected when offset is used. It is ignored when key is set."
+                    },
+                    "reverse": {
+                        "type": "boolean",
+                        "description": "reverse is set to true if results are to be returned in the descending order."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Request",
+                "description": "PageRequest is to be embedded in gRPC request messages for efficient pagination. Ex:  message SomeRequest {          Foo some_parameter = 1;          PageRequest pagination = 2;  }"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.connection.v1.QueryConnectionsResponse",
+        "definitions": {
+            "ibc.core.connection.v1.QueryConnectionsResponse": {
+                "properties": {
+                    "connections": {
+                        "items": {
+                            "$ref": "#/definitions/ibc.core.connection.v1.IdentifiedConnection"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "list of stored connections of the chain."
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+                        "additionalProperties": false,
+                        "description": "pagination response"
+                    },
+                    "height": {
+                        "$ref": "#/definitions/ibc.core.client.v1.Height",
+                        "additionalProperties": false,
+                        "description": "query block height"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Connections Response",
+                "description": "QueryConnectionsResponse is the response type for the Query/Connections RPC method."
+            },
+            "cosmos.base.query.v1beta1.PageResponse": {
+                "properties": {
+                    "next_key": {
+                        "type": "string",
+                        "description": "next_key is the key to be passed to PageRequest.key to query the next page most efficiently. It will be empty if there are no more results.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "total": {
+                        "type": "string",
+                        "description": "total is total number of results available if PageRequest.count_total was set, its value is undefined otherwise"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Response",
+                "description": "PageResponse is to be embedded in gRPC response messages where the corresponding request message has used PageRequest.  message SomeResponse {          repeated Bar results = 1;          PageResponse page = 2;  }"
+            },
+            "ibc.core.client.v1.Height": {
+                "properties": {
+                    "revision_number": {
+                        "type": "string",
+                        "description": "the revision that the client is currently on"
+                    },
+                    "revision_height": {
+                        "type": "string",
+                        "description": "the height within the given revision"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Height",
+                "description": "Height is a monotonically increasing data type that can be compared against another Height for the purposes of updating and freezing clients Normally the RevisionHeight is incremented at each height while keeping RevisionNumber the same. However some consensus algorithms may choose to reset the height in certain conditions e.g. hard forks, state-machine breaking changes In these cases, the RevisionNumber is incremented so that height continues to be monitonically increasing even as the RevisionHeight gets reset Please note that json tags for generated Go code are overridden to explicitly exclude the omitempty jsontag. This enforces the Go json marshaller to always emit zero values for both revision_number and revision_height."
+            },
+            "ibc.core.commitment.v1.MerklePrefix": {
+                "properties": {
+                    "key_prefix": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Merkle Prefix",
+                "description": "MerklePrefix is merkle path prefixed to the key. The constructed key from the Path and the key will be append(Path.KeyPath, append(Path.KeyPrefix, key...))"
+            },
+            "ibc.core.connection.v1.Counterparty": {
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "identifies the client on the counterparty chain associated with a given connection."
+                    },
+                    "connection_id": {
+                        "type": "string",
+                        "description": "identifies the connection end on the counterparty chain associated with a given connection."
+                    },
+                    "prefix": {
+                        "$ref": "#/definitions/ibc.core.commitment.v1.MerklePrefix",
+                        "additionalProperties": false,
+                        "description": "commitment merkle prefix of the counterparty chain."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Counterparty",
+                "description": "Counterparty defines the counterparty chain associated with a connection end."
+            },
+            "ibc.core.connection.v1.IdentifiedConnection": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "connection identifier."
+                    },
+                    "client_id": {
+                        "type": "string",
+                        "description": "client associated with this connection."
+                    },
+                    "versions": {
+                        "items": {
+                            "$ref": "#/definitions/ibc.core.connection.v1.Version"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "IBC version which can be utilised to determine encodings or protocols for channels or packets utilising this connection"
+                    },
+                    "state": {
+                        "enum": [
+                            "STATE_UNINITIALIZED_UNSPECIFIED",
+                            0,
+                            "STATE_INIT",
+                            1,
+                            "STATE_TRYOPEN",
+                            2,
+                            "STATE_OPEN",
+                            3
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "State",
+                        "description": "State defines if a connection is in one of the following states: INIT, TRYOPEN, OPEN or UNINITIALIZED."
+                    },
+                    "counterparty": {
+                        "$ref": "#/definitions/ibc.core.connection.v1.Counterparty",
+                        "additionalProperties": false,
+                        "description": "counterparty chain associated with this connection."
+                    },
+                    "delay_period": {
+                        "type": "string",
+                        "description": "delay period associated with this connection."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Identified Connection",
+                "description": "IdentifiedConnection defines a connection with additional connection identifier field."
+            },
+            "ibc.core.connection.v1.Version": {
+                "properties": {
+                    "identifier": {
+                        "type": "string",
+                        "description": "unique version identifier"
+                    },
+                    "features": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "list of features compatible with the specified identifier"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Version",
+                "description": "Version defines the versioning scheme used to negotiate the IBC version in the connection handshake."
+            }
+        }
+    }
+}

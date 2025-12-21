@@ -1,0 +1,64 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.authz.v1beta1.MsgExec",
+        "definitions": {
+            "cosmos.authz.v1beta1.MsgExec": {
+                "properties": {
+                    "grantee": {
+                        "type": "string"
+                    },
+                    "msgs": {
+                        "items": {
+                            "properties": {
+                                "type_url": {
+                                    "type": "string",
+                                    "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                                },
+                                "value": {
+                                    "type": "string",
+                                    "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                    "format": "binary",
+                                    "binaryEncoding": "base64"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "type": "object",
+                            "title": "Any",
+                            "description": "Contains the serialized protocol buffer message using the response bytes from `/dysonprotocol.script.v1.QueryEncodeJsonRequest`"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Execute Msg. The x/authz will try to find a grant matching (msg.signers[0], grantee, MsgTypeURL(msg)) triple and validate it."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Exec",
+                "description": "MsgExec attempts to execute the provided messages using authorizations granted to the grantee. Each message should have only one signer corresponding to the granter of the authorization."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.authz.v1beta1.MsgExecResponse",
+        "definitions": {
+            "cosmos.authz.v1beta1.MsgExecResponse": {
+                "properties": {
+                    "results": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Exec Response",
+                "description": "MsgExecResponse defines the Msg/MsgExecResponse response type."
+            }
+        }
+    }
+}

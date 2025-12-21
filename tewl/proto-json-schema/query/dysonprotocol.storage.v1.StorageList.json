@@ -1,0 +1,143 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.storage.v1.QueryStorageListRequest",
+        "definitions": {
+            "dysonprotocol.storage.v1.QueryStorageListRequest": {
+                "properties": {
+                    "owner": {
+                        "type": "string",
+                        "description": "Owner identifier to list under; accepts nameservice names (e.g. \"alice.dys\") or bech32 addresses. Resolution is performed server-side prior to building the range iterator."
+                    },
+                    "index_prefix": {
+                        "type": "string",
+                        "description": "Index prefix to filter storage entries by; only entries with indexes starting with this prefix are returned."
+                    },
+                    "filter": {
+                        "type": "string",
+                        "description": "Optional GJSON filter to further filter entries; supports comparison operators (==, !=, <, <=, >, >=) and pattern matching (% for like, !% for not like); only matching entries included in results; max 100 chars."
+                    },
+                    "extract": {
+                        "type": "string",
+                        "description": "Optional GJSON path to extract from each entry (e.g., \"user.name\" extracts \"jeff\" from {\"user\": {\"name\": \"jeff\"}}); transforms data field in response; max 100 characters."
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
+                        "additionalProperties": false,
+                        "description": "Pagination parameters for result set navigation; supports offset, limit, and key-based pagination."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Storage List Request",
+                "description": "QueryStorageListRequest lists storage entries with prefix filtering, GJSON filtering, and extraction. Supports complex queries through index_prefix for efficient range scans, GJSON filter for content-based filtering, and GJSON extract for field-level retrieval. Pagination enables efficient iteration over large result sets."
+            },
+            "cosmos.base.query.v1beta1.PageRequest": {
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "key is a value returned in PageResponse.next_key to begin querying the next page most efficiently. Only one of offset or key should be set.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "offset": {
+                        "type": "string",
+                        "description": "offset is a numeric offset that can be used when key is unavailable. It is less efficient than using key. Only one of offset or key should be set."
+                    },
+                    "limit": {
+                        "type": "string",
+                        "description": "limit is the total number of results to be returned in the result page. If left empty it will default to a value to be set by each app."
+                    },
+                    "count_total": {
+                        "type": "boolean",
+                        "description": "count_total is set to true  to indicate that the result set should include a count of the total number of items available for pagination in UIs. count_total is only respected when offset is used. It is ignored when key is set."
+                    },
+                    "reverse": {
+                        "type": "boolean",
+                        "description": "reverse is set to true if results are to be returned in the descending order."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Request",
+                "description": "PageRequest is to be embedded in gRPC request messages for efficient pagination. Ex:  message SomeRequest {          Foo some_parameter = 1;          PageRequest pagination = 2;  }"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.storage.v1.QueryStorageListResponse",
+        "definitions": {
+            "dysonprotocol.storage.v1.QueryStorageListResponse": {
+                "properties": {
+                    "entries": {
+                        "items": {
+                            "$ref": "#/definitions/dysonprotocol.storage.v1.Storage"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "List of storage entries matching owner, index_prefix, and filter criteria; data may be transformed by extract parameter."
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+                        "additionalProperties": false,
+                        "description": "Pagination metadata including next key for continued iteration and total count if requested."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Storage List Response",
+                "description": "Response containing list of storage entries matching the query criteria."
+            },
+            "cosmos.base.query.v1beta1.PageResponse": {
+                "properties": {
+                    "next_key": {
+                        "type": "string",
+                        "description": "next_key is the key to be passed to PageRequest.key to query the next page most efficiently. It will be empty if there are no more results.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "total": {
+                        "type": "string",
+                        "description": "total is total number of results available if PageRequest.count_total was set, its value is undefined otherwise"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Response",
+                "description": "PageResponse is to be embedded in gRPC response messages where the corresponding request message has used PageRequest.  message SomeResponse {          repeated Bar results = 1;          PageResponse page = 2;  }"
+            },
+            "dysonprotocol.storage.v1.Storage": {
+                "properties": {
+                    "owner": {
+                        "type": "string",
+                        "description": "owner is the account address that owns this storage entry."
+                    },
+                    "index": {
+                        "type": "string",
+                        "description": "index is the key/index for the storage entry (within the owner's namespace)."
+                    },
+                    "data": {
+                        "type": "string",
+                        "description": "data is the stored string value associated with the index."
+                    },
+                    "updated_height": {
+                        "type": "string",
+                        "description": "updated_height is block height of last modification."
+                    },
+                    "updated_timestamp": {
+                        "type": "string",
+                        "description": "updated_timestamp is the block time in UTC (RFC3339 e.g. \"2025-06-11T15:23:00Z\") when entry was modified."
+                    },
+                    "hash": {
+                        "type": "string",
+                        "description": "hash is SHA-256 hex of data field."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Storage"
+            }
+        }
+    }
+}

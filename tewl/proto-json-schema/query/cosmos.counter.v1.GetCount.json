@@ -1,0 +1,31 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.counter.v1.QueryGetCountRequest",
+        "definitions": {
+            "cosmos.counter.v1.QueryGetCountRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Get Count Request",
+                "description": "QueryGetCountRequest defines the request type for querying x/mock count."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.counter.v1.QueryGetCountResponse",
+        "definitions": {
+            "cosmos.counter.v1.QueryGetCountResponse": {
+                "properties": {
+                    "total_count": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Get Count Response",
+                "description": "QueryGetCountResponse defines the response type for querying x/mock count."
+            }
+        }
+    }
+}

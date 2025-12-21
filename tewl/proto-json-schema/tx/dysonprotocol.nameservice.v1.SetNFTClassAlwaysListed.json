@@ -1,0 +1,40 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetNFTClassAlwaysListed",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetNFTClassAlwaysListed": {
+                "properties": {
+                    "name_destination": {
+                        "type": "string",
+                        "description": "name_destination is the resolved destination address of the NFT class root name"
+                    },
+                    "class_id": {
+                        "type": "string",
+                        "description": "class_id is the identifier of the NFT class to update"
+                    },
+                    "always_listed": {
+                        "type": "boolean",
+                        "description": "always_listed determines if NFTs in this class should always be listed for sale and override the listed status of the individual NFTs"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set NFT Class Always Listed",
+                "description": "MsgSetNFTClassAlwaysListed sets the always_listed flag for an NFT class. Only the owner of the NFT class root name can update this setting."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetNFTClassAlwaysListedResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetNFTClassAlwaysListedResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set NFT Class Always Listed Response",
+                "description": "MsgSetNFTClassAlwaysListedResponse defines the response for MsgSetNFTClassAlwaysListed"
+            }
+        }
+    }
+}

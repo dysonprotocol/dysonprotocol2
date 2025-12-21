@@ -1,0 +1,16 @@
+version: v1
+plugins:
+  - name: go-pulsar
+    out: ./api
+    opt:
+     - Mcosmos/base/v1beta1/coin.proto=cosmossdk.io/api/cosmos/base/v1beta1
+     - Mcosmos/base/query/v1beta1/pagination.proto=cosmossdk.io/api/cosmos/base/query/v1beta1
+     - Mgoogle/protobuf/timestamp.proto=google.golang.org/protobuf/types/known/timestamppb
+     - Mcosmos/bank/v1beta1/bank.proto=cosmossdk.io/api/cosmos/bank/v1beta1
+  - name: go-grpc
+    out: ./api
+    opt:
+     - Mcosmos/base/v1beta1/coin.proto=cosmossdk.io/api/cosmos/base/v1beta1
+     - Mcosmos/base/query/v1beta1/pagination.proto=cosmossdk.io/api/cosmos/base/query/v1beta1
+     - Mgoogle/protobuf/timestamp.proto=google.golang.org/protobuf/types/known/timestamppb
+     - Mcosmos/bank/v1beta1/bank.proto=cosmossdk.io/api/cosmos/bank/v1beta1

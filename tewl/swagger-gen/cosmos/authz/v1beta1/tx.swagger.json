@@ -1,0 +1,231 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/authz/v1beta1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "cosmos.authz.v1beta1.MsgExec": {
+      "post": {
+        "summary": "Exec attempts to execute the provided messages using\nauthorizations granted to the grantee. Each message should have only\none signer corresponding to the granter of the authorization.",
+        "operationId": "cosmos.authz.v1beta1.MsgExec",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.authz.v1beta1.MsgExecResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.authz.v1beta1.MsgExec"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.authz.v1beta1.MsgGrant": {
+      "post": {
+        "summary": "Grant grants the provided authorization to the grantee on the granter's\naccount with the provided expiration time. If there is already a grant\nfor the given (granter, grantee, Authorization) triple, then the grant\nwill be overwritten.",
+        "operationId": "cosmos.authz.v1beta1.MsgGrant",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.authz.v1beta1.MsgGrantResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.authz.v1beta1.MsgGrant"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.authz.v1beta1.MsgRevoke": {
+      "post": {
+        "summary": "Revoke revokes any authorization corresponding to the provided method name\non the granter's account that has been granted to the grantee.",
+        "operationId": "cosmos.authz.v1beta1.MsgRevoke",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.authz.v1beta1.MsgRevokeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.authz.v1beta1.MsgRevoke"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.authz.v1beta1.Grant": {
+      "type": "object",
+      "properties": {
+        "authorization": {
+          "$ref": "#/definitions/google.protobuf.Any"
+        },
+        "expiration": {
+          "type": "string",
+          "format": "date-time",
+          "title": "time when the grant will expire and will be pruned. If null, then the grant\ndoesn't have a time expiration (other conditions  in `authorization`\nmay apply to invalidate the grant)"
+        }
+      },
+      "description": "Grant gives permissions to execute\nthe provide method with expiration time."
+    },
+    "cosmos.authz.v1beta1.MsgExec": {
+      "type": "object",
+      "properties": {
+        "grantee": {
+          "type": "string"
+        },
+        "msgs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          },
+          "description": "Execute Msg.\nThe x/authz will try to find a grant matching (msg.signers[0], grantee,\nMsgTypeURL(msg)) triple and validate it."
+        }
+      },
+      "description": "MsgExec attempts to execute the provided messages using\nauthorizations granted to the grantee. Each message should have only\none signer corresponding to the granter of the authorization."
+    },
+    "cosmos.authz.v1beta1.MsgExecResponse": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          }
+        }
+      },
+      "description": "MsgExecResponse defines the Msg/MsgExecResponse response type."
+    },
+    "cosmos.authz.v1beta1.MsgGrant": {
+      "type": "object",
+      "properties": {
+        "granter": {
+          "type": "string"
+        },
+        "grantee": {
+          "type": "string"
+        },
+        "grant": {
+          "$ref": "#/definitions/cosmos.authz.v1beta1.Grant"
+        }
+      },
+      "description": "MsgGrant is a request type for Grant method. It declares authorization to the\ngrantee on behalf of the granter with the provided expiration time."
+    },
+    "cosmos.authz.v1beta1.MsgGrantResponse": {
+      "type": "object",
+      "description": "MsgGrantResponse defines the Msg/MsgGrant response type."
+    },
+    "cosmos.authz.v1beta1.MsgRevoke": {
+      "type": "object",
+      "properties": {
+        "granter": {
+          "type": "string"
+        },
+        "grantee": {
+          "type": "string"
+        },
+        "msg_type_url": {
+          "type": "string"
+        }
+      },
+      "description": "MsgRevoke revokes any authorization with the provided sdk.Msg type on the\ngranter's account with that has been granted to the grantee."
+    },
+    "cosmos.authz.v1beta1.MsgRevokeResponse": {
+      "type": "object",
+      "description": "MsgRevokeResponse defines the Msg/MsgRevokeResponse response type."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

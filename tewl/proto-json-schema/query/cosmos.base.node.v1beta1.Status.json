@@ -1,0 +1,53 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.base.node.v1beta1.StatusRequest",
+        "definitions": {
+            "cosmos.base.node.v1beta1.StatusRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Status Request",
+                "description": "StateRequest defines the request structure for the status of a node."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.base.node.v1beta1.StatusResponse",
+        "definitions": {
+            "cosmos.base.node.v1beta1.StatusResponse": {
+                "properties": {
+                    "earliest_store_height": {
+                        "type": "string",
+                        "description": "earliest block height available in the store"
+                    },
+                    "height": {
+                        "type": "string",
+                        "description": "current block height"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "description": "block height timestamp",
+                        "format": "date-time"
+                    },
+                    "app_hash": {
+                        "type": "string",
+                        "description": "app hash of the current block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "validator_hash": {
+                        "type": "string",
+                        "description": "validator hash provided by the consensus header",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Status Response",
+                "description": "StateResponse defines the response structure for the status of a node."
+            }
+        }
+    }
+}

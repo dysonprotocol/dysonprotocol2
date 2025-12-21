@@ -1,0 +1,146 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryOffersBestRequest",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QueryOffersBestRequest": {
+                "properties": {
+                    "have_denom": {
+                        "type": "string",
+                        "description": "Have denom of the pair (denomination being sold)"
+                    },
+                    "want_denom": {
+                        "type": "string",
+                        "description": "Want denom of the pair (denomination being bought)"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of best-priced offers to return (default: 10)"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Offers Best Request"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryOffersBestResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QueryOffersBestResponse": {
+                "properties": {
+                    "offers": {
+                        "items": {
+                            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.OfferData"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Up to limit best-priced offers for the pair, ordered by price ascending"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Offers Best Response"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.whaleswap.v1.OfferData": {
+                "properties": {
+                    "offer_id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "\"open\" | \"closed\" | \"cancelled\""
+                    },
+                    "maker": {
+                        "type": "string"
+                    },
+                    "updated_height": {
+                        "type": "string"
+                    },
+                    "created_height": {
+                        "type": "string",
+                        "description": "New normalized timestamps"
+                    },
+                    "created_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "initial_have": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "initial_want": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "remaining_have": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "remaining_want": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "unit_have_int": {
+                        "type": "string",
+                        "description": "sdk.Int string"
+                    },
+                    "unit_want_int": {
+                        "type": "string",
+                        "description": "sdk.Int string"
+                    },
+                    "remaining_units": {
+                        "type": "string",
+                        "description": "sdk.Int string"
+                    },
+                    "pfand_locked": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "pfand_locked is the PFAND coin locked for liquid-mode offers."
+                    },
+                    "settlement_mode": {
+                        "enum": [
+                            "SETTLEMENT_ESCROW",
+                            0,
+                            "SETTLEMENT_LIQUID",
+                            1
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Settlement Mode",
+                        "description": "SettlementMode selects how offers fund the \"have\" side: - ESCROW: Escrow base have in the module at offer creation. - LIQUID: Do not escrow base; lock PFAND and settle from maker balance at take."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Offer Data",
+                "description": "OfferData mirrors orderbook offer state. Status values: \"open\" | \"closed\" | \"cancelled\"."
+            }
+        }
+    }
+}

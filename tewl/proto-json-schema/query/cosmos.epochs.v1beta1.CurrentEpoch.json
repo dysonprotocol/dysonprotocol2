@@ -1,0 +1,36 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.epochs.v1beta1.QueryCurrentEpochRequest",
+        "definitions": {
+            "cosmos.epochs.v1beta1.QueryCurrentEpochRequest": {
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Current Epoch Request",
+                "description": "QueryCurrentEpochRequest defines the gRPC request structure for querying an epoch by its identifier."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.epochs.v1beta1.QueryCurrentEpochResponse",
+        "definitions": {
+            "cosmos.epochs.v1beta1.QueryCurrentEpochResponse": {
+                "properties": {
+                    "current_epoch": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Current Epoch Response",
+                "description": "QueryCurrentEpochResponse defines the gRPC response structure for querying an epoch by its identifier."
+            }
+        }
+    }
+}

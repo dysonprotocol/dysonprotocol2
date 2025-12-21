@@ -1,0 +1,72 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.auth.v1beta1.QueryAccountInfoRequest",
+        "definitions": {
+            "cosmos.auth.v1beta1.QueryAccountInfoRequest": {
+                "properties": {
+                    "address": {
+                        "type": "string",
+                        "description": "address is the account address string."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Account Info Request",
+                "description": "QueryAccountInfoRequest is the Query/AccountInfo request type."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.auth.v1beta1.QueryAccountInfoResponse",
+        "definitions": {
+            "cosmos.auth.v1beta1.QueryAccountInfoResponse": {
+                "properties": {
+                    "info": {
+                        "$ref": "#/definitions/cosmos.auth.v1beta1.BaseAccount",
+                        "additionalProperties": false,
+                        "description": "info is the account info which is represented by BaseAccount."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Account Info Response",
+                "description": "QueryAccountInfoResponse is the Query/AccountInfo response type."
+            },
+            "cosmos.auth.v1beta1.BaseAccount": {
+                "properties": {
+                    "address": {
+                        "type": "string"
+                    },
+                    "pub_key": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object"
+                    },
+                    "account_number": {
+                        "type": "string"
+                    },
+                    "sequence": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Base Account",
+                "description": "BaseAccount defines a base account type. It contains all the necessary fields for basic account functionality. Any custom account type should extend this type for additional functionality (e.g. vesting)."
+            }
+        }
+    }
+}

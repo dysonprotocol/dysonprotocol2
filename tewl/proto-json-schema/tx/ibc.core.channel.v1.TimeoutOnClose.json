@@ -1,0 +1,135 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.channel.v1.MsgTimeoutOnClose",
+        "definitions": {
+            "ibc.core.channel.v1.MsgTimeoutOnClose": {
+                "properties": {
+                    "packet": {
+                        "$ref": "#/definitions/ibc.core.channel.v1.Packet",
+                        "additionalProperties": false
+                    },
+                    "proof_unreceived": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "proof_close": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "proof_height": {
+                        "$ref": "#/definitions/ibc.core.client.v1.Height",
+                        "additionalProperties": false
+                    },
+                    "next_sequence_recv": {
+                        "type": "string"
+                    },
+                    "signer": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Timeout On Close",
+                "description": "MsgTimeoutOnClose timed-out packet upon counterparty channel closure."
+            },
+            "ibc.core.channel.v1.Packet": {
+                "properties": {
+                    "sequence": {
+                        "type": "string",
+                        "description": "number corresponds to the order of sends and receives, where a Packet with an earlier sequence number must be sent and received before a Packet with a later sequence number."
+                    },
+                    "source_port": {
+                        "type": "string",
+                        "description": "identifies the port on the sending chain."
+                    },
+                    "source_channel": {
+                        "type": "string",
+                        "description": "identifies the channel end on the sending chain."
+                    },
+                    "destination_port": {
+                        "type": "string",
+                        "description": "identifies the port on the receiving chain."
+                    },
+                    "destination_channel": {
+                        "type": "string",
+                        "description": "identifies the channel end on the receiving chain."
+                    },
+                    "data": {
+                        "type": "string",
+                        "description": "actual opaque bytes transferred directly to the application module",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "timeout_height": {
+                        "$ref": "#/definitions/ibc.core.client.v1.Height",
+                        "additionalProperties": false,
+                        "description": "block height after which the packet times out"
+                    },
+                    "timeout_timestamp": {
+                        "type": "string",
+                        "description": "block timestamp (in nanoseconds) after which the packet times out"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Packet",
+                "description": "Packet defines a type that carries data across different chains through IBC"
+            },
+            "ibc.core.client.v1.Height": {
+                "properties": {
+                    "revision_number": {
+                        "type": "string",
+                        "description": "the revision that the client is currently on"
+                    },
+                    "revision_height": {
+                        "type": "string",
+                        "description": "the height within the given revision"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Height",
+                "description": "Height is a monotonically increasing data type that can be compared against another Height for the purposes of updating and freezing clients Normally the RevisionHeight is incremented at each height while keeping RevisionNumber the same. However some consensus algorithms may choose to reset the height in certain conditions e.g. hard forks, state-machine breaking changes In these cases, the RevisionNumber is incremented so that height continues to be monitonically increasing even as the RevisionHeight gets reset Please note that json tags for generated Go code are overridden to explicitly exclude the omitempty jsontag. This enforces the Go json marshaller to always emit zero values for both revision_number and revision_height."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.channel.v1.MsgTimeoutOnCloseResponse",
+        "definitions": {
+            "ibc.core.channel.v1.MsgTimeoutOnCloseResponse": {
+                "properties": {
+                    "result": {
+                        "enum": [
+                            "RESPONSE_RESULT_TYPE_UNSPECIFIED",
+                            0,
+                            "RESPONSE_RESULT_TYPE_NOOP",
+                            1,
+                            "RESPONSE_RESULT_TYPE_SUCCESS",
+                            2,
+                            "RESPONSE_RESULT_TYPE_FAILURE",
+                            3
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Response Result Type",
+                        "description": "ResponseResultType defines the possible outcomes of the execution of a message"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Timeout On Close Response",
+                "description": "MsgTimeoutOnCloseResponse defines the Msg/TimeoutOnClose response type."
+            }
+        }
+    }
+}

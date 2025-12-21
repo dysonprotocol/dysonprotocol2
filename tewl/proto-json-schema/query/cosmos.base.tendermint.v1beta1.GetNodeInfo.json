@@ -1,0 +1,156 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.base.tendermint.v1beta1.GetNodeInfoRequest",
+        "definitions": {
+            "cosmos.base.tendermint.v1beta1.GetNodeInfoRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Get Node Info Request",
+                "description": "GetNodeInfoRequest is the request type for the Query/GetNodeInfo RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.base.tendermint.v1beta1.GetNodeInfoResponse",
+        "definitions": {
+            "cosmos.base.tendermint.v1beta1.GetNodeInfoResponse": {
+                "properties": {
+                    "default_node_info": {
+                        "$ref": "#/definitions/tendermint.p2p.DefaultNodeInfo",
+                        "additionalProperties": false
+                    },
+                    "application_version": {
+                        "$ref": "#/definitions/cosmos.base.tendermint.v1beta1.VersionInfo",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Get Node Info Response",
+                "description": "GetNodeInfoResponse is the response type for the Query/GetNodeInfo RPC method."
+            },
+            "cosmos.base.tendermint.v1beta1.Module": {
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "module path"
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "module version"
+                    },
+                    "sum": {
+                        "type": "string",
+                        "description": "checksum"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Module",
+                "description": "Module is the type for VersionInfo"
+            },
+            "cosmos.base.tendermint.v1beta1.VersionInfo": {
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "app_name": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "git_commit": {
+                        "type": "string"
+                    },
+                    "build_tags": {
+                        "type": "string"
+                    },
+                    "go_version": {
+                        "type": "string"
+                    },
+                    "build_deps": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.tendermint.v1beta1.Module"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    },
+                    "cosmos_sdk_version": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Version Info",
+                "description": "VersionInfo is the type for the GetNodeInfoResponse message."
+            },
+            "tendermint.p2p.DefaultNodeInfo": {
+                "properties": {
+                    "protocol_version": {
+                        "$ref": "#/definitions/tendermint.p2p.ProtocolVersion",
+                        "additionalProperties": false
+                    },
+                    "default_node_id": {
+                        "type": "string"
+                    },
+                    "listen_addr": {
+                        "type": "string"
+                    },
+                    "network": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "channels": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "moniker": {
+                        "type": "string"
+                    },
+                    "other": {
+                        "$ref": "#/definitions/tendermint.p2p.DefaultNodeInfoOther",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Default Node Info"
+            },
+            "tendermint.p2p.DefaultNodeInfoOther": {
+                "properties": {
+                    "tx_index": {
+                        "type": "string"
+                    },
+                    "rpc_address": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Default Node Info Other"
+            },
+            "tendermint.p2p.ProtocolVersion": {
+                "properties": {
+                    "p2p": {
+                        "type": "string"
+                    },
+                    "block": {
+                        "type": "string"
+                    },
+                    "app": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Protocol Version"
+            }
+        }
+    }
+}

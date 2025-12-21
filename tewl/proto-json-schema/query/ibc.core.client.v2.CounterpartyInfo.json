@@ -1,0 +1,59 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v2.QueryCounterpartyInfoRequest",
+        "definitions": {
+            "ibc.core.client.v2.QueryCounterpartyInfoRequest": {
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "client state unique identifier"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Counterparty Info Request",
+                "description": "QueryCounterpartyInfoRequest is the request type for the Query/CounterpartyInfo RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v2.QueryCounterpartyInfoResponse",
+        "definitions": {
+            "ibc.core.client.v2.QueryCounterpartyInfoResponse": {
+                "properties": {
+                    "counterparty_info": {
+                        "$ref": "#/definitions/ibc.core.client.v2.CounterpartyInfo",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Counterparty Info Response",
+                "description": "QueryCounterpartyInfoResponse is the response type for the Query/CounterpartyInfo RPC method."
+            },
+            "ibc.core.client.v2.CounterpartyInfo": {
+                "properties": {
+                    "merkle_prefix": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "merkle prefix key is the prefix that ics provable keys are stored under",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "client_id": {
+                        "type": "string",
+                        "description": "client identifier is the identifier used to send packet messages to our client"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Counterparty Info",
+                "description": "CounterpartyInfo defines the key that the counterparty will use to message our client"
+            }
+        }
+    }
+}

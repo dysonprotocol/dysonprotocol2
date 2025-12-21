@@ -1,0 +1,45 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.protocolpool.v1.MsgCreateContinuousFund",
+        "definitions": {
+            "cosmos.protocolpool.v1.MsgCreateContinuousFund": {
+                "properties": {
+                    "authority": {
+                        "type": "string",
+                        "description": "Authority is the address that controls the module (defaults to x/gov unless overwritten)."
+                    },
+                    "recipient": {
+                        "type": "string",
+                        "description": "Recipient address of the account receiving funds."
+                    },
+                    "percentage": {
+                        "type": "string",
+                        "description": "Percentage is the percentage of funds to be allocated from Community pool."
+                    },
+                    "expiry": {
+                        "type": "string",
+                        "description": "Optional, if expiry is set, removes the state object when expired.",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Create Continuous Fund",
+                "description": "MsgCreateContinuousFund defines a message for adding continuous funds."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.protocolpool.v1.MsgCreateContinuousFundResponse",
+        "definitions": {
+            "cosmos.protocolpool.v1.MsgCreateContinuousFundResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Create Continuous Fund Response",
+                "description": "MsgCreateContinuousFundResponse defines the response to executing a MsgCreateContinuousFund message."
+            }
+        }
+    }
+}

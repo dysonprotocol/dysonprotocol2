@@ -1,0 +1,50 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryCommunityPoolRequest",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryCommunityPoolRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Community Pool Request",
+                "description": "QueryCommunityPoolRequest is the request type for the Query/CommunityPool RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryCommunityPoolResponse",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryCommunityPoolResponse": {
+                "properties": {
+                    "pool": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "pool defines community pool's coins."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Community Pool Response",
+                "description": "QueryCommunityPoolResponse is the response type for the Query/CommunityPool RPC method."
+            },
+            "cosmos.base.v1beta1.DecCoin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Dec Coin",
+                "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
+            }
+        }
+    }
+}

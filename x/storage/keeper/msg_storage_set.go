@@ -18,7 +18,7 @@ import (
 )
 
 // MaxIndexLength is the maximum allowed length for storage index keys
-const MaxIndexLength = 50
+const MaxIndexLength = 128
 
 func isPrintableASCII(s string) bool {
 	for _, r := range s {

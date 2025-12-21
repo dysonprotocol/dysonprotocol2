@@ -1,0 +1,38 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nft.v1beta1.QuerySupplyRequest",
+        "definitions": {
+            "dysonprotocol.nft.v1beta1.QuerySupplyRequest": {
+                "properties": {
+                    "class_id": {
+                        "type": "string",
+                        "description": "class_id associated with the nft"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Supply Request",
+                "description": "QuerySupplyRequest is the request type for the Query/Supply RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nft.v1beta1.QuerySupplyResponse",
+        "definitions": {
+            "dysonprotocol.nft.v1beta1.QuerySupplyResponse": {
+                "properties": {
+                    "amount": {
+                        "type": "string",
+                        "description": "amount is the number of all NFTs from the given class"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Supply Response",
+                "description": "QuerySupplyResponse is the response type for the Query/Supply RPC method"
+            }
+        }
+    }
+}

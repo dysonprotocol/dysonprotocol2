@@ -1,0 +1,86 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.crontask.v1.MsgUpdateParams",
+        "definitions": {
+            "dysonprotocol.crontask.v1.MsgUpdateParams": {
+                "properties": {
+                    "authority": {
+                        "type": "string",
+                        "description": "Authority is the address that controls the module (defaults to x/gov unless overwritten)."
+                    },
+                    "params": {
+                        "$ref": "#/definitions/dysonprotocol.crontask.v1.Params",
+                        "additionalProperties": false,
+                        "description": "Parameters defines the x/crontask parameters to update. NOTE: All parameters must be supplied."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Update Params",
+                "description": "MsgUpdateParams updates the parameters of the x/crontask module via governance proposal. Behavior: - Updates all module parameters in a single governance operation. - Authority is typically the x/gov module account. - Parameters control task scheduling limits, gas constraints, and subscription rules. Validation: - Authority must be valid (typically x/gov module account). - All parameter values must pass individual validation (Validate method). Emits: - No events are emitted for parameter updates. Returns: - Empty MsgUpdateParamsResponse."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.crontask.v1.Params": {
+                "properties": {
+                    "block_gas_limit": {
+                        "type": "string",
+                        "description": "Maximum gas allowed for executing tasks per block"
+                    },
+                    "expiry_limit": {
+                        "type": "string",
+                        "description": "Default expiry limit in seconds (24 hours)"
+                    },
+                    "max_scheduled_time": {
+                        "type": "string",
+                        "description": "Maximum allowed scheduled time in seconds from task creation (24 hours)"
+                    },
+                    "clean_up_time": {
+                        "type": "string",
+                        "description": "Retention period for completed/failed/expired tasks (seconds)"
+                    },
+                    "max_subscription_duration": {
+                        "pattern": "^([0-9]+\\.?[0-9]*|\\.[0-9]+)s$",
+                        "type": "string",
+                        "description": "Maximum subscription duration (default 7 days)",
+                        "format": "regex"
+                    },
+                    "min_stake_per_subscription": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Minimum stake required per active subscription"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Params",
+                "description": "Params defines the parameters for the crontask module"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.crontask.v1.MsgUpdateParamsResponse",
+        "definitions": {
+            "dysonprotocol.crontask.v1.MsgUpdateParamsResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Update Params Response",
+                "description": "MsgUpdateParamsResponse contains the result of parameter update. Empty response indicates successful parameter update."
+            }
+        }
+    }
+}

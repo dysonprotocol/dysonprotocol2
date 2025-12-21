@@ -1,0 +1,42 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nft.v1beta1.QueryBalanceRequest",
+        "definitions": {
+            "dysonprotocol.nft.v1beta1.QueryBalanceRequest": {
+                "properties": {
+                    "class_id": {
+                        "type": "string",
+                        "description": "class_id associated with the nft"
+                    },
+                    "owner": {
+                        "type": "string",
+                        "description": "owner is the owner address of the nft"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Balance Request",
+                "description": "QueryBalanceRequest is the request type for the Query/Balance RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nft.v1beta1.QueryBalanceResponse",
+        "definitions": {
+            "dysonprotocol.nft.v1beta1.QueryBalanceResponse": {
+                "properties": {
+                    "amount": {
+                        "type": "string",
+                        "description": "amount is the number of all NFTs of a given class owned by the owner"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Balance Response",
+                "description": "QueryBalanceResponse is the response type for the Query/Balance RPC method"
+            }
+        }
+    }
+}

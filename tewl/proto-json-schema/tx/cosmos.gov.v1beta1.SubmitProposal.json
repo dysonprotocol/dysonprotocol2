@@ -1,0 +1,77 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.gov.v1beta1.MsgSubmitProposal",
+        "definitions": {
+            "cosmos.gov.v1beta1.MsgSubmitProposal": {
+                "properties": {
+                    "content": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "content is the proposal's content."
+                    },
+                    "initial_deposit": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "initial_deposit is the deposit value that must be paid at proposal submission."
+                    },
+                    "proposer": {
+                        "type": "string",
+                        "description": "proposer is the account address of the proposer."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Submit Proposal",
+                "description": "MsgSubmitProposal defines an sdk.Msg type that supports submitting arbitrary proposal Content."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.gov.v1beta1.MsgSubmitProposalResponse",
+        "definitions": {
+            "cosmos.gov.v1beta1.MsgSubmitProposalResponse": {
+                "properties": {
+                    "proposal_id": {
+                        "type": "string",
+                        "description": "proposal_id defines the unique id of the proposal."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Submit Proposal Response",
+                "description": "MsgSubmitProposalResponse defines the Msg/SubmitProposal response type."
+            }
+        }
+    }
+}

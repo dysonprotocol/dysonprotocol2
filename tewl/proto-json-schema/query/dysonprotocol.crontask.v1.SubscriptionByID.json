@@ -1,0 +1,139 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.crontask.v1.QuerySubscriptionByIDRequest",
+        "definitions": {
+            "dysonprotocol.crontask.v1.QuerySubscriptionByIDRequest": {
+                "properties": {
+                    "subscription_id": {
+                        "type": "string",
+                        "description": "Unique identifier of the subscription to retrieve; must exist in storage."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Subscription queries",
+                "description": "Subscription queries  QuerySubscriptionByIDRequest is the request type for the Query/SubscriptionByID RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.crontask.v1.QuerySubscriptionByIDResponse",
+        "definitions": {
+            "dysonprotocol.crontask.v1.QuerySubscriptionByIDResponse": {
+                "properties": {
+                    "subscription": {
+                        "$ref": "#/definitions/dysonprotocol.crontask.v1.Subscription",
+                        "additionalProperties": false,
+                        "description": "Complete subscription record including filter criteria, script configuration, execution parameters, and current status."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Subscription By ID Response",
+                "description": "QuerySubscriptionByIDResponse is the response type for the Query/SubscriptionByID RPC method."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "cosmos.base.v1beta1.DecCoin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Dec Coin",
+                "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.crontask.v1.Subscription": {
+                "properties": {
+                    "subscription_id": {
+                        "type": "string",
+                        "description": "unique id"
+                    },
+                    "creator": {
+                        "type": "string",
+                        "description": "creator account that owns this subscription"
+                    },
+                    "filter": {
+                        "type": "string",
+                        "description": "GJSON filter to match events across the normalized block event array"
+                    },
+                    "script_address": {
+                        "type": "string",
+                        "description": "target script address"
+                    },
+                    "function": {
+                        "type": "string",
+                        "description": "function name to invoke"
+                    },
+                    "args": {
+                        "type": "string",
+                        "description": "positional args as JSON list string"
+                    },
+                    "kwargs": {
+                        "type": "string",
+                        "description": "keyword args as JSON dict string"
+                    },
+                    "task_gas_limit": {
+                        "type": "string",
+                        "description": "gas limit for the created crontask"
+                    },
+                    "task_gas_fee": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "fee for the created crontask; also charged at subscription creation/renewal"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "status: enabled|disabled|error - enabled: Active, processing events. - disabled: Recoverable pause (time expired, insufficient funds) - can be re-enabled via RenewSubscription. - error: Unrecoverable (invalid address, task creation failed) - cannot be re-enabled."
+                    },
+                    "status_message": {
+                        "type": "string",
+                        "description": "status message"
+                    },
+                    "expiry_timestamp": {
+                        "type": "string",
+                        "description": "Subscription expiry timestamp (unix seconds)"
+                    },
+                    "trigger_count": {
+                        "type": "string",
+                        "description": "total number of triggers so far (field name per requirement)"
+                    },
+                    "task_scheduled_timestamp": {
+                        "type": "string",
+                        "description": "Overrides for created crontasks"
+                    },
+                    "task_expiry_timestamp": {
+                        "type": "string"
+                    },
+                    "task_gas_price": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Subscription",
+                "description": "Subscription defines an event-triggered action to execute a script"
+            }
+        }
+    }
+}

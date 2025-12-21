@@ -1,0 +1,191 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QuerySimulateArbitrageRequest": {
+                "properties": {
+                    "trader": {
+                        "type": "string",
+                        "description": "Trader address to use for simulation; must be a valid bech32 address"
+                    },
+                    "affected_denoms": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "List of denoms affected (e.g., from a pool update). Arbitrage detection starts from pools containing these denoms."
+                    },
+                    "ref_denom": {
+                        "type": "string",
+                        "description": "Reference denom to measure profit in. Defaults to Params.ArbitrageRefDenom if empty."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "--- Arbitrage simulation ---",
+                "description": "--- Arbitrage simulation ---"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QuerySimulateArbitrageResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QuerySimulateArbitrageResponse": {
+                "properties": {
+                    "found": {
+                        "type": "boolean",
+                        "description": "Whether a profitable arbitrage opportunity was found"
+                    },
+                    "pool_count": {
+                        "type": "integer",
+                        "description": "Number of pools in the arbitrage graph"
+                    },
+                    "denoms": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "All denoms discovered in the pool graph"
+                    },
+                    "profit": {
+                        "type": "string",
+                        "description": "Simulated profit in ref_denom (only if found=true)"
+                    },
+                    "trader_inputs": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Net inputs the trader would need to provide (ideally empty for circular arb)"
+                    },
+                    "trader_outputs": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Net outputs the trader would receive"
+                    },
+                    "pool_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "Pool IDs in the arbitrage graph"
+                    },
+                    "operations": {
+                        "items": {
+                            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TradeOperation"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Trade operations to execute (used by auto-arbitrage)"
+                    },
+                    "trader": {
+                        "type": "string",
+                        "description": "Trader address used in simulation"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Simulate Arbitrage Response"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.whaleswap.v1.AuctionRedeem": {
+                "properties": {
+                    "auction_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Auction Redeem",
+                "description": "AuctionRedeem operation for recording auction redemption in Trade history"
+            },
+            "dysonprotocol.whaleswap.v1.SwapLeg": {
+                "properties": {
+                    "pool_id": {
+                        "type": "string"
+                    },
+                    "swap_in": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Exactly one of swap_in (exact-in) or swap_out (exact-out) must be set (XOR). Use message-level max_input and min_output for global constraints across legs."
+                    },
+                    "swap_out": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Swap Leg"
+            },
+            "dysonprotocol.whaleswap.v1.TakeItem": {
+                "properties": {
+                    "offer_id": {
+                        "type": "string",
+                        "description": "ID of the offer to take from; offer must exist and be in open status."
+                    },
+                    "take_units": {
+                        "type": "string",
+                        "description": "Units to take (sdk.Int string). If empty, take full remaining. Must be positive and \u2264 remaining."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Take Item"
+            },
+            "dysonprotocol.whaleswap.v1.TradeOperation": {
+                "properties": {
+                    "swap": {
+                        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.SwapLeg",
+                        "additionalProperties": false
+                    },
+                    "take": {
+                        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TakeItem",
+                        "additionalProperties": false
+                    },
+                    "auction": {
+                        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRedeem",
+                        "additionalProperties": false
+                    },
+                    "sent": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Execution results (populated when recording Trade):"
+                    },
+                    "received": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "fees_paid": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Fees paid for swap operations in the INPUT denom (populated for swaps, zero for takes/auctions)."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Trade Operation",
+                "description": "TradeOperation allows mixing pool swap legs, orderbook takes, and auction redemptions. When stored in Trade.operations, sent/received fields are populated with execution results. When used in MsgMakeTrade.operations, sent/received are empty (populated during execution)."
+            }
+        }
+    }
+}

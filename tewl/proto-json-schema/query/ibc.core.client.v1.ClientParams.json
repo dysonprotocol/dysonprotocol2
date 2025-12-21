@@ -1,0 +1,48 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.QueryClientParamsRequest",
+        "definitions": {
+            "ibc.core.client.v1.QueryClientParamsRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Client Params Request",
+                "description": "QueryClientParamsRequest is the request type for the Query/ClientParams RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.QueryClientParamsResponse",
+        "definitions": {
+            "ibc.core.client.v1.QueryClientParamsResponse": {
+                "properties": {
+                    "params": {
+                        "$ref": "#/definitions/ibc.core.client.v1.Params",
+                        "additionalProperties": false,
+                        "description": "params defines the parameters of the module."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Client Params Response",
+                "description": "QueryClientParamsResponse is the response type for the Query/ClientParams RPC method."
+            },
+            "ibc.core.client.v1.Params": {
+                "properties": {
+                    "allowed_clients": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "allowed_clients defines the list of allowed client state types which can be created and interacted with. If a client type is removed from the allowed clients list, usage of this client will be disabled until it is added again to the list."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Params",
+                "description": "Params defines the set of IBC light client parameters."
+            }
+        }
+    }
+}

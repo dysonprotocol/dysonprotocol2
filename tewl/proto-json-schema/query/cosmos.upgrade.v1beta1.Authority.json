@@ -1,0 +1,31 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.upgrade.v1beta1.QueryAuthorityRequest",
+        "definitions": {
+            "cosmos.upgrade.v1beta1.QueryAuthorityRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Authority Request",
+                "description": "QueryAuthorityRequest is the request type for Query/Authority"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.upgrade.v1beta1.QueryAuthorityResponse",
+        "definitions": {
+            "cosmos.upgrade.v1beta1.QueryAuthorityResponse": {
+                "properties": {
+                    "address": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Authority Response",
+                "description": "QueryAuthorityResponse is the response type for Query/Authority"
+            }
+        }
+    }
+}

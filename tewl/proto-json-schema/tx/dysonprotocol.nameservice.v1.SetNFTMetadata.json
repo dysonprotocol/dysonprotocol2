@@ -1,0 +1,44 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetNFTMetadata",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetNFTMetadata": {
+                "properties": {
+                    "name_destination": {
+                        "type": "string"
+                    },
+                    "class_id": {
+                        "type": "string"
+                    },
+                    "nft_id": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "string"
+                    },
+                    "uri": {
+                        "type": "string"
+                    },
+                    "uri_hash": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set NFT Metadata"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetNFTMetadataResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetNFTMetadataResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set NFT Metadata Response"
+            }
+        }
+    }
+}

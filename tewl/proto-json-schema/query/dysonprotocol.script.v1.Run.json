@@ -1,0 +1,108 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.RunScript",
+        "definitions": {
+            "dysonprotocol.script.v1.RunScript": {
+                "properties": {
+                    "executor_address": {
+                        "type": "string",
+                        "description": "Account address used to execute the script; must be a valid bech32 address."
+                    },
+                    "script_address": {
+                        "type": "string",
+                        "description": "Script bech32 address to execute; mutually exclusive with script_name."
+                    },
+                    "script_name": {
+                        "type": "string",
+                        "description": "Optional nameservice name of the script to execute (e.g., \"example.dys\")."
+                    },
+                    "extra_code": {
+                        "type": "string",
+                        "description": "Optional extra code temporarily appended to the script for this execution. Only allowed if the executor is the script owner."
+                    },
+                    "function_name": {
+                        "type": "string",
+                        "description": "Name of the function to call within the script."
+                    },
+                    "args": {
+                        "type": "string",
+                        "description": "Positional arguments (*args) encoded as a JSON array."
+                    },
+                    "kwargs": {
+                        "type": "string",
+                        "description": "Keyword arguments (**kwargs) encoded as a JSON object."
+                    },
+                    "attached_messages": {
+                        "items": {
+                            "properties": {
+                                "type_url": {
+                                    "type": "string",
+                                    "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                                },
+                                "value": {
+                                    "type": "string",
+                                    "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                    "format": "binary",
+                                    "binaryEncoding": "base64"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "type": "object",
+                            "title": "Any",
+                            "description": "Contains the serialized protocol buffer message using the response bytes from `/dysonprotocol.script.v1.QueryEncodeJsonRequest`"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Messages executed before the script; results available but state changes discarded."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Run Script",
+                "description": "RunScript requests execution of a script function in read-only mode. Similar to MsgExec but executed in a cached context with no persistent state changes. All execution results are returned but any state modifications are discarded."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.ResponseRunScript",
+        "definitions": {
+            "dysonprotocol.script.v1.ResponseRunScript": {
+                "properties": {
+                    "result": {
+                        "type": "string",
+                        "description": "Execution result returned by the script function."
+                    },
+                    "attached_message_results": {
+                        "items": {
+                            "properties": {
+                                "type_url": {
+                                    "type": "string",
+                                    "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                                },
+                                "value": {
+                                    "type": "string",
+                                    "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                    "format": "binary",
+                                    "binaryEncoding": "base64"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "type": "object",
+                            "title": "Any",
+                            "description": "Contains the serialized protocol buffer message using the response bytes from `/dysonprotocol.script.v1.QueryEncodeJsonRequest`"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Results of the attached messages executed before the script."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Response Run Script",
+                "description": "ResponseRunScript contains script execution results from read-only run."
+            }
+        }
+    }
+}

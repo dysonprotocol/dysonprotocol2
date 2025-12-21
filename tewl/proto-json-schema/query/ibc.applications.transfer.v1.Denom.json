@@ -1,0 +1,73 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.applications.transfer.v1.QueryDenomRequest",
+        "definitions": {
+            "ibc.applications.transfer.v1.QueryDenomRequest": {
+                "properties": {
+                    "hash": {
+                        "type": "string",
+                        "description": "hash (in hex format) or denom (full denom with ibc prefix) of the on chain denomination."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Denom Request",
+                "description": "QueryDenomRequest is the request type for the Query/Denom RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.applications.transfer.v1.QueryDenomResponse",
+        "definitions": {
+            "ibc.applications.transfer.v1.QueryDenomResponse": {
+                "properties": {
+                    "denom": {
+                        "$ref": "#/definitions/ibc.applications.transfer.v1.Denom",
+                        "additionalProperties": false,
+                        "description": "denom returns the requested denomination."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Denom Response",
+                "description": "QueryDenomResponse is the response type for the Query/Denom RPC method."
+            },
+            "ibc.applications.transfer.v1.Denom": {
+                "properties": {
+                    "base": {
+                        "type": "string",
+                        "description": "the base token denomination"
+                    },
+                    "trace": {
+                        "items": {
+                            "$ref": "#/definitions/ibc.applications.transfer.v1.Hop"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "the trace of the token"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Denom",
+                "description": "Denom holds the base denom of a Token and a trace of the chains it was sent through."
+            },
+            "ibc.applications.transfer.v1.Hop": {
+                "properties": {
+                    "port_id": {
+                        "type": "string"
+                    },
+                    "channel_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Hop",
+                "description": "Hop defines a port ID, channel ID pair specifying a unique \"hop\" in a trace"
+            }
+        }
+    }
+}

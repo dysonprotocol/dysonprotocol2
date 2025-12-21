@@ -1,0 +1,44 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nft.v1beta1.MsgSend",
+        "definitions": {
+            "dysonprotocol.nft.v1beta1.MsgSend": {
+                "properties": {
+                    "class_id": {
+                        "type": "string",
+                        "description": "class_id defines the unique identifier of the nft classification, similar to the contract address of ERC721"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "id defines the unique identification of nft"
+                    },
+                    "sender": {
+                        "type": "string",
+                        "description": "sender is the address of the owner of nft"
+                    },
+                    "receiver": {
+                        "type": "string",
+                        "description": "receiver is the receiver address of nft"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Send",
+                "description": "MsgSend represents a message to send a nft from one account to another account."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nft.v1beta1.MsgSendResponse",
+        "definitions": {
+            "dysonprotocol.nft.v1beta1.MsgSendResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Send Response",
+                "description": "MsgSendResponse defines the Msg/Send response type."
+            }
+        }
+    }
+}

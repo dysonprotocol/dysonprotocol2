@@ -1,0 +1,251 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAddressMetricsAllRequest",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QueryAddressMetricsAllRequest": {
+                "properties": {
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered lexicographically by address"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Address Metrics All Request"
+            },
+            "cosmos.base.query.v1beta1.PageRequest": {
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "key is a value returned in PageResponse.next_key to begin querying the next page most efficiently. Only one of offset or key should be set.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "offset": {
+                        "type": "string",
+                        "description": "offset is a numeric offset that can be used when key is unavailable. It is less efficient than using key. Only one of offset or key should be set."
+                    },
+                    "limit": {
+                        "type": "string",
+                        "description": "limit is the total number of results to be returned in the result page. If left empty it will default to a value to be set by each app."
+                    },
+                    "count_total": {
+                        "type": "boolean",
+                        "description": "count_total is set to true  to indicate that the result set should include a count of the total number of items available for pagination in UIs. count_total is only respected when offset is used. It is ignored when key is set."
+                    },
+                    "reverse": {
+                        "type": "boolean",
+                        "description": "reverse is set to true if results are to be returned in the descending order."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Request",
+                "description": "PageRequest is to be embedded in gRPC request messages for efficient pagination. Ex:  message SomeRequest {          Foo some_parameter = 1;          PageRequest pagination = 2;  }"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAddressMetricsAllResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QueryAddressMetricsAllResponse": {
+                "properties": {
+                    "metrics": {
+                        "items": {
+                            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AddressMetrics"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "List of address metrics for all addresses in the system"
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Address Metrics All Response"
+            },
+            "cosmos.base.query.v1beta1.PageResponse": {
+                "properties": {
+                    "next_key": {
+                        "type": "string",
+                        "description": "next_key is the key to be passed to PageRequest.key to query the next page most efficiently. It will be empty if there are no more results.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "total": {
+                        "type": "string",
+                        "description": "total is total number of results available if PageRequest.count_total was set, its value is undefined otherwise"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Response",
+                "description": "PageResponse is to be embedded in gRPC response messages where the corresponding request message has used PageRequest.  message SomeResponse {          repeated Bar results = 1;          PageResponse page = 2;  }"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.whaleswap.v1.AddressMetrics": {
+                "properties": {
+                    "address": {
+                        "type": "string",
+                        "description": "Core identity"
+                    },
+                    "block_height": {
+                        "type": "string"
+                    },
+                    "total_trades": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 TRADING \u2550\u2550\u2550\u2550\u2550 Total unique trades executed as trader"
+                    },
+                    "total_trade_ops": {
+                        "type": "string",
+                        "description": "Total operations across all trades (swap legs + takes + auction redeems)"
+                    },
+                    "total_volume_sent": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Lifetime aggregate coins sent (denoms with metadata only)"
+                    },
+                    "total_volume_received": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Lifetime aggregate coins received (denoms with metadata only)"
+                    },
+                    "pools_created": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 LP ACTIVITY \u2550\u2550\u2550\u2550\u2550 Total pools created by this address"
+                    },
+                    "lp_fees_earned": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Cumulative swap fees earned (denoms with metadata only)"
+                    },
+                    "lp_interest_earned": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Cumulative interest earned from leverage borrowers (denoms with metadata only)"
+                    },
+                    "liquidity_adds": {
+                        "type": "string",
+                        "description": "Count of liquidity add operations"
+                    },
+                    "liquidity_removes": {
+                        "type": "string",
+                        "description": "Count of liquidity remove operations"
+                    },
+                    "positions_opened": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE (BORROWER) \u2550\u2550\u2550\u2550\u2550 Total leverage positions opened (lifetime)"
+                    },
+                    "positions_closed": {
+                        "type": "string",
+                        "description": "Total leverage positions closed (lifetime)"
+                    },
+                    "interest_paid": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Total interest paid (denoms with metadata only)"
+                    },
+                    "profit": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Profit from closed leverage positions (denoms with metadata only)"
+                    },
+                    "losses": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Losses from closed leverage positions (denoms with metadata only)"
+                    },
+                    "liquidations": {
+                        "type": "string",
+                        "description": "Count of positions liquidated (lifetime)"
+                    },
+                    "offers_created": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 ORDERBOOK \u2550\u2550\u2550\u2550\u2550 Total offers created (lifetime)"
+                    },
+                    "offers_closed": {
+                        "type": "string",
+                        "description": "Total offers closed via full execution (lifetime)"
+                    },
+                    "offers_cancelled": {
+                        "type": "string",
+                        "description": "Total offers cancelled before completion (lifetime)"
+                    },
+                    "maker_volume": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Cumulative volume traded as maker (denoms with metadata only)"
+                    },
+                    "auctions_created": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 AUCTIONS \u2550\u2550\u2550\u2550\u2550 Total auctions created as seller (lifetime)"
+                    },
+                    "auction_volume": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Total auction volume sold (denoms with metadata only)"
+                    },
+                    "affiliate_earned": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 AFFILIATE \u2550\u2550\u2550\u2550\u2550 Cumulative earnings from affiliate referrals (denoms with metadata only)"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Address Metrics",
+                "description": "AddressMetrics aggregates lifetime whaleswap activity for a specific address. All metrics are cumulative totals, not current state snapshots. NOTE: Only coins with existing denom metadata are tracked to prevent spam and focus on relevant assets. Coins without metadata are excluded from all volume and balance aggregations."
+            }
+        }
+    }
+}

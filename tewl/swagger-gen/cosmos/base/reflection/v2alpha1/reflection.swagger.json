@@ -1,0 +1,443 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/base/reflection/v2alpha1/reflection.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/cosmos/base/reflection/v1beta1/app_descriptor/authn": {
+      "get": {
+        "summary": "GetAuthnDescriptor returns information on how to authenticate transactions\nin the application NOTE: this RPC is still experimental and might be\nsubject to breaking changes or removal in future releases of the\ncosmos-sdk.",
+        "operationId": "ReflectionService_GetAuthnDescriptor",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.GetAuthnDescriptorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "ReflectionService"
+        ]
+      }
+    },
+    "/cosmos/base/reflection/v1beta1/app_descriptor/chain": {
+      "get": {
+        "summary": "GetChainDescriptor returns the description of the chain",
+        "operationId": "ReflectionService_GetChainDescriptor",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.GetChainDescriptorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "ReflectionService"
+        ]
+      }
+    },
+    "/cosmos/base/reflection/v1beta1/app_descriptor/codec": {
+      "get": {
+        "summary": "GetCodecDescriptor returns the descriptor of the codec of the application",
+        "operationId": "ReflectionService_GetCodecDescriptor",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.GetCodecDescriptorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "ReflectionService"
+        ]
+      }
+    },
+    "/cosmos/base/reflection/v1beta1/app_descriptor/configuration": {
+      "get": {
+        "summary": "GetConfigurationDescriptor returns the descriptor for the sdk.Config of the\napplication",
+        "operationId": "ReflectionService_GetConfigurationDescriptor",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.GetConfigurationDescriptorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "ReflectionService"
+        ]
+      }
+    },
+    "/cosmos/base/reflection/v1beta1/app_descriptor/query_services": {
+      "get": {
+        "summary": "GetQueryServicesDescriptor returns the available gRPC queryable services of\nthe application",
+        "operationId": "ReflectionService_GetQueryServicesDescriptor",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.GetQueryServicesDescriptorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "ReflectionService"
+        ]
+      }
+    },
+    "/cosmos/base/reflection/v1beta1/app_descriptor/tx_descriptor": {
+      "get": {
+        "summary": "GetTxDescriptor returns information on the used transaction object and\navailable msgs that can be used",
+        "operationId": "ReflectionService_GetTxDescriptor",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.GetTxDescriptorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "ReflectionService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.reflection.v2alpha1.AuthnDescriptor": {
+      "type": "object",
+      "properties": {
+        "sign_modes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.SigningModeDescriptor"
+          },
+          "title": "sign_modes defines the supported signature algorithm"
+        }
+      },
+      "title": "AuthnDescriptor provides information on how to sign transactions without\nrelying on the online RPCs GetTxMetadata and CombineUnsignedTxAndSignatures"
+    },
+    "cosmos.base.reflection.v2alpha1.ChainDescriptor": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "id is the chain id"
+        }
+      },
+      "title": "ChainDescriptor describes chain information of the application"
+    },
+    "cosmos.base.reflection.v2alpha1.CodecDescriptor": {
+      "type": "object",
+      "properties": {
+        "interfaces": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.InterfaceDescriptor"
+          },
+          "title": "interfaces is a list of the registerted interfaces descriptors"
+        }
+      },
+      "title": "CodecDescriptor describes the registered interfaces and provides metadata\ninformation on the types"
+    },
+    "cosmos.base.reflection.v2alpha1.ConfigurationDescriptor": {
+      "type": "object",
+      "properties": {
+        "bech32_account_address_prefix": {
+          "type": "string",
+          "title": "bech32_account_address_prefix is the account address prefix"
+        }
+      },
+      "title": "ConfigurationDescriptor contains metadata information on the sdk.Config"
+    },
+    "cosmos.base.reflection.v2alpha1.GetAuthnDescriptorResponse": {
+      "type": "object",
+      "properties": {
+        "authn": {
+          "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.AuthnDescriptor",
+          "title": "authn describes how to authenticate to the application when sending\ntransactions"
+        }
+      },
+      "title": "GetAuthnDescriptorResponse is the response returned by the GetAuthnDescriptor\nRPC"
+    },
+    "cosmos.base.reflection.v2alpha1.GetChainDescriptorResponse": {
+      "type": "object",
+      "properties": {
+        "chain": {
+          "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.ChainDescriptor",
+          "title": "chain describes application chain information"
+        }
+      },
+      "title": "GetChainDescriptorResponse is the response returned by the GetChainDescriptor\nRPC"
+    },
+    "cosmos.base.reflection.v2alpha1.GetCodecDescriptorResponse": {
+      "type": "object",
+      "properties": {
+        "codec": {
+          "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.CodecDescriptor",
+          "title": "codec describes the application codec such as registered interfaces and\nimplementations"
+        }
+      },
+      "title": "GetCodecDescriptorResponse is the response returned by the GetCodecDescriptor\nRPC"
+    },
+    "cosmos.base.reflection.v2alpha1.GetConfigurationDescriptorResponse": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.ConfigurationDescriptor",
+          "title": "config describes the application's sdk.Config"
+        }
+      },
+      "title": "GetConfigurationDescriptorResponse is the response returned by the\nGetConfigurationDescriptor RPC"
+    },
+    "cosmos.base.reflection.v2alpha1.GetQueryServicesDescriptorResponse": {
+      "type": "object",
+      "properties": {
+        "queries": {
+          "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.QueryServicesDescriptor",
+          "title": "queries provides information on the available queryable services"
+        }
+      },
+      "title": "GetQueryServicesDescriptorResponse is the response returned by the\nGetQueryServicesDescriptor RPC"
+    },
+    "cosmos.base.reflection.v2alpha1.GetTxDescriptorResponse": {
+      "type": "object",
+      "properties": {
+        "tx": {
+          "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.TxDescriptor",
+          "title": "tx provides information on msgs that can be forwarded to the application\nalongside the accepted transaction protobuf type"
+        }
+      },
+      "title": "GetTxDescriptorResponse is the response returned by the GetTxDescriptor RPC"
+    },
+    "cosmos.base.reflection.v2alpha1.InterfaceAcceptingMessageDescriptor": {
+      "type": "object",
+      "properties": {
+        "fullname": {
+          "type": "string",
+          "title": "fullname is the protobuf fullname of the type containing the interface"
+        },
+        "field_descriptor_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "field_descriptor_names is a list of the protobuf name (not fullname) of the\nfield which contains the interface as google.protobuf.Any (the interface is\nthe same, but it can be in multiple fields of the same proto message)"
+        }
+      },
+      "title": "InterfaceAcceptingMessageDescriptor describes a protobuf message which\ncontains an interface represented as a google.protobuf.Any"
+    },
+    "cosmos.base.reflection.v2alpha1.InterfaceDescriptor": {
+      "type": "object",
+      "properties": {
+        "fullname": {
+          "type": "string",
+          "title": "fullname is the name of the interface"
+        },
+        "interface_accepting_messages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.InterfaceAcceptingMessageDescriptor"
+          },
+          "title": "interface_accepting_messages contains information regarding the proto\nmessages which contain the interface as google.protobuf.Any field"
+        },
+        "interface_implementers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.InterfaceImplementerDescriptor"
+          },
+          "title": "interface_implementers is a list of the descriptors of the interface\nimplementers"
+        }
+      },
+      "title": "InterfaceDescriptor describes the implementation of an interface"
+    },
+    "cosmos.base.reflection.v2alpha1.InterfaceImplementerDescriptor": {
+      "type": "object",
+      "properties": {
+        "fullname": {
+          "type": "string",
+          "title": "fullname is the protobuf queryable name of the interface implementer"
+        },
+        "type_url": {
+          "type": "string",
+          "title": "type_url defines the type URL used when marshalling the type as any\nthis is required so we can provide type safe google.protobuf.Any\nmarshalling and unmarshalling, making sure that we don't accept just 'any'\ntype in our interface fields"
+        }
+      },
+      "title": "InterfaceImplementerDescriptor describes an interface implementer"
+    },
+    "cosmos.base.reflection.v2alpha1.MsgDescriptor": {
+      "type": "object",
+      "properties": {
+        "msg_type_url": {
+          "type": "string",
+          "description": "msg_type_url contains the TypeURL of a sdk.Msg."
+        }
+      },
+      "title": "MsgDescriptor describes a cosmos-sdk message that can be delivered with a\ntransaction"
+    },
+    "cosmos.base.reflection.v2alpha1.QueryMethodDescriptor": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "name is the protobuf name (not fullname) of the method"
+        },
+        "full_query_path": {
+          "type": "string",
+          "title": "full_query_path is the path that can be used to query\nthis method via tendermint abci.Query"
+        }
+      },
+      "title": "QueryMethodDescriptor describes a queryable method of a query service\nno other info is provided beside method name and tendermint queryable path\nbecause it would be redundant with the grpc reflection service"
+    },
+    "cosmos.base.reflection.v2alpha1.QueryServiceDescriptor": {
+      "type": "object",
+      "properties": {
+        "fullname": {
+          "type": "string",
+          "title": "fullname is the protobuf fullname of the service descriptor"
+        },
+        "is_module": {
+          "type": "boolean",
+          "title": "is_module describes if this service is actually exposed by an application's\nmodule"
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.QueryMethodDescriptor"
+          },
+          "title": "methods provides a list of query service methods"
+        }
+      },
+      "title": "QueryServiceDescriptor describes a cosmos-sdk queryable service"
+    },
+    "cosmos.base.reflection.v2alpha1.QueryServicesDescriptor": {
+      "type": "object",
+      "properties": {
+        "query_services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.QueryServiceDescriptor"
+          },
+          "title": "query_services is a list of cosmos-sdk QueryServiceDescriptor"
+        }
+      },
+      "title": "QueryServicesDescriptor contains the list of cosmos-sdk queriable services"
+    },
+    "cosmos.base.reflection.v2alpha1.SigningModeDescriptor": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "name defines the unique name of the signing mode"
+        },
+        "number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "number is the unique int32 identifier for the sign_mode enum"
+        },
+        "authn_info_provider_method_fullname": {
+          "type": "string",
+          "title": "authn_info_provider_method_fullname defines the fullname of the method to\ncall to get the metadata required to authenticate using the provided\nsign_modes"
+        }
+      },
+      "title": "SigningModeDescriptor provides information on a signing flow of the\napplication NOTE(fdymylja): here we could go as far as providing an entire\nflow on how to sign a message given a SigningModeDescriptor, but it's better\nto think about this another time"
+    },
+    "cosmos.base.reflection.v2alpha1.TxDescriptor": {
+      "type": "object",
+      "properties": {
+        "fullname": {
+          "type": "string",
+          "description": "fullname is the protobuf fullname of the raw transaction type (for instance\nthe tx.Tx type) it is not meant to support polymorphism of transaction\ntypes, it is supposed to be used by reflection clients to understand if\nthey can handle a specific transaction type in an application."
+        },
+        "msgs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.reflection.v2alpha1.MsgDescriptor"
+          },
+          "title": "msgs lists the accepted application messages (sdk.Msg)"
+        }
+      },
+      "title": "TxDescriptor describes the accepted transaction type"
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

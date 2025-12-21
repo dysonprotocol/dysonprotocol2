@@ -1,0 +1,49 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.applications.transfer.v1.QueryParamsRequest",
+        "definitions": {
+            "ibc.applications.transfer.v1.QueryParamsRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Params Request",
+                "description": "QueryParamsRequest is the request type for the Query/Params RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.applications.transfer.v1.QueryParamsResponse",
+        "definitions": {
+            "ibc.applications.transfer.v1.QueryParamsResponse": {
+                "properties": {
+                    "params": {
+                        "$ref": "#/definitions/ibc.applications.transfer.v1.Params",
+                        "additionalProperties": false,
+                        "description": "params defines the parameters of the module."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Params Response",
+                "description": "QueryParamsResponse is the response type for the Query/Params RPC method."
+            },
+            "ibc.applications.transfer.v1.Params": {
+                "properties": {
+                    "send_enabled": {
+                        "type": "boolean",
+                        "description": "send_enabled enables or disables all cross-chain token transfers from this chain."
+                    },
+                    "receive_enabled": {
+                        "type": "boolean",
+                        "description": "receive_enabled enables or disables all cross-chain token transfers to this chain."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Params",
+                "description": "Params defines the set of IBC transfer parameters. NOTE: To prevent a single token from being transferred, set the TransfersEnabled parameter to true and then set the bank module's SendEnabled parameter for the denomination to false."
+            }
+        }
+    }
+}

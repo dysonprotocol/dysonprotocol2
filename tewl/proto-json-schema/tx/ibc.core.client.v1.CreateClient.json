@@ -1,0 +1,71 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.MsgCreateClient",
+        "definitions": {
+            "ibc.core.client.v1.MsgCreateClient": {
+                "properties": {
+                    "client_state": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "light client state"
+                    },
+                    "consensus_state": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "consensus state associated with the client that corresponds to a given height."
+                    },
+                    "signer": {
+                        "type": "string",
+                        "description": "signer address"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Create Client",
+                "description": "MsgCreateClient defines a message to create an IBC client"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.MsgCreateClientResponse",
+        "definitions": {
+            "ibc.core.client.v1.MsgCreateClientResponse": {
+                "properties": {
+                    "client_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Create Client Response",
+                "description": "MsgCreateClientResponse defines the Msg/CreateClient response type."
+            }
+        }
+    }
+}

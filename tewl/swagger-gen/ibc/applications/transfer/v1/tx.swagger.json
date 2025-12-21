@@ -1,0 +1,232 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ibc/applications/transfer/v1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "ibc.applications.transfer.v1.MsgTransfer": {
+      "post": {
+        "summary": "Transfer defines a rpc handler method for MsgTransfer.",
+        "operationId": "ibc.applications.transfer.v1.MsgTransfer",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.applications.transfer.v1.MsgTransferResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.applications.transfer.v1.MsgTransfer"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.applications.transfer.v1.MsgUpdateParams": {
+      "post": {
+        "summary": "UpdateParams defines a rpc handler for MsgUpdateParams.",
+        "operationId": "ibc.applications.transfer.v1.MsgUpdateParams",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.applications.transfer.v1.MsgUpdateParamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.applications.transfer.v1.MsgUpdateParams"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.v1beta1.Coin": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "Coin defines a token with a denomination and an amount.\n\nNOTE: The amount field is an Int which implements the custom method\nsignatures required by gogoproto."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    },
+    "ibc.applications.transfer.v1.MsgTransfer": {
+      "type": "object",
+      "properties": {
+        "source_port": {
+          "type": "string",
+          "title": "the port on which the packet will be sent"
+        },
+        "source_channel": {
+          "type": "string",
+          "title": "the channel by which the packet will be sent"
+        },
+        "token": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "title": "token to be transferred"
+        },
+        "sender": {
+          "type": "string",
+          "title": "the sender address"
+        },
+        "receiver": {
+          "type": "string",
+          "title": "the recipient address on the destination chain"
+        },
+        "timeout_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "description": "Timeout height relative to the current block height.\nIf you are sending with IBC v1 protocol, either timeout_height or\ntimeout_timestamp must be set. If you are sending with IBC v2 protocol,\ntimeout_timestamp must be set, and timeout_height must be omitted."
+        },
+        "timeout_timestamp": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Timeout timestamp in absolute nanoseconds since unix epoch.\nIf you are sending with IBC v1 protocol, either timeout_height or\ntimeout_timestamp must be set. If you are sending with IBC v2 protocol,\ntimeout_timestamp must be set."
+        },
+        "memo": {
+          "type": "string",
+          "title": "optional memo"
+        },
+        "encoding": {
+          "type": "string",
+          "title": "optional encoding"
+        }
+      },
+      "title": "MsgTransfer defines a msg to transfer fungible tokens (i.e Coins) between\nICS20 enabled chains. See ICS Spec here:\nhttps://github.com/cosmos/ibc/tree/master/spec/app/ics-020-fungible-token-transfer#data-structures"
+    },
+    "ibc.applications.transfer.v1.MsgTransferResponse": {
+      "type": "object",
+      "properties": {
+        "sequence": {
+          "type": "string",
+          "format": "uint64",
+          "title": "sequence number of the transfer packet sent"
+        }
+      },
+      "description": "MsgTransferResponse defines the Msg/Transfer response type."
+    },
+    "ibc.applications.transfer.v1.MsgUpdateParams": {
+      "type": "object",
+      "properties": {
+        "signer": {
+          "type": "string",
+          "title": "signer address"
+        },
+        "params": {
+          "$ref": "#/definitions/ibc.applications.transfer.v1.Params",
+          "description": "params defines the transfer parameters to update.\n\nNOTE: All parameters must be supplied."
+        }
+      },
+      "description": "MsgUpdateParams is the Msg/UpdateParams request type."
+    },
+    "ibc.applications.transfer.v1.MsgUpdateParamsResponse": {
+      "type": "object",
+      "description": "MsgUpdateParamsResponse defines the response structure for executing a\nMsgUpdateParams message."
+    },
+    "ibc.applications.transfer.v1.Params": {
+      "type": "object",
+      "properties": {
+        "send_enabled": {
+          "type": "boolean",
+          "description": "send_enabled enables or disables all cross-chain token transfers from this\nchain."
+        },
+        "receive_enabled": {
+          "type": "boolean",
+          "description": "receive_enabled enables or disables all cross-chain token transfers to this\nchain."
+        }
+      },
+      "description": "Params defines the set of IBC transfer parameters.\nNOTE: To prevent a single token from being transferred, set the\nTransfersEnabled parameter to true and then set the bank module's SendEnabled\nparameter for the denomination to false."
+    },
+    "ibc.core.client.v1.Height": {
+      "type": "object",
+      "properties": {
+        "revision_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "the revision that the client is currently on"
+        },
+        "revision_height": {
+          "type": "string",
+          "format": "uint64",
+          "title": "the height within the given revision"
+        }
+      },
+      "description": "Normally the RevisionHeight is incremented at each height while keeping\nRevisionNumber the same. However some consensus algorithms may choose to\nreset the height in certain conditions e.g. hard forks, state-machine\nbreaking changes In these cases, the RevisionNumber is incremented so that\nheight continues to be monitonically increasing even as the RevisionHeight\ngets reset\n\nPlease note that json tags for generated Go code are overridden to explicitly\nexclude the omitempty jsontag. This enforces the Go json marshaller to always\nemit zero values for both revision_number and revision_height.",
+      "title": "Height is a monotonically increasing data type\nthat can be compared against another Height for the purposes of updating and\nfreezing clients"
+    }
+  }
+}

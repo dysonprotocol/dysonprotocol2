@@ -1,0 +1,75 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.upgrade.v1beta1.QueryCurrentPlanRequest",
+        "definitions": {
+            "cosmos.upgrade.v1beta1.QueryCurrentPlanRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Current Plan Request",
+                "description": "QueryCurrentPlanRequest is the request type for the Query/CurrentPlan RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.upgrade.v1beta1.QueryCurrentPlanResponse",
+        "definitions": {
+            "cosmos.upgrade.v1beta1.QueryCurrentPlanResponse": {
+                "properties": {
+                    "plan": {
+                        "$ref": "#/definitions/cosmos.upgrade.v1beta1.Plan",
+                        "additionalProperties": false,
+                        "description": "plan is the current upgrade plan."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Current Plan Response",
+                "description": "QueryCurrentPlanResponse is the response type for the Query/CurrentPlan RPC method."
+            },
+            "cosmos.upgrade.v1beta1.Plan": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Sets the name for the upgrade. This name will be used by the upgraded version of the software to apply any special \"on-upgrade\" commands during the first BeginBlock method after the upgrade is applied. It is also used to detect whether a software version can handle a given upgrade. If no upgrade handler with this name has been set in the software, it will be assumed that the software is out-of-date when the upgrade Time or Height is reached and the software will exit."
+                    },
+                    "time": {
+                        "type": "string",
+                        "description": "Deprecated: Time based upgrades have been deprecated. Time based upgrade logic has been removed from the SDK. If this field is not empty, an error will be thrown.",
+                        "format": "date-time"
+                    },
+                    "height": {
+                        "type": "string",
+                        "description": "The height at which the upgrade must be performed."
+                    },
+                    "info": {
+                        "type": "string",
+                        "description": "Any application specific upgrade info to be included on-chain such as a git commit that validators could automatically upgrade to"
+                    },
+                    "upgraded_client_state": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "Deprecated: UpgradedClientState field has been deprecated. IBC upgrade logic has been moved to the IBC module in the sub module 02-client. If this field is not empty, an error will be thrown."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Plan",
+                "description": "Plan specifies information about a planned upgrade and when it should occur."
+            }
+        }
+    }
+}

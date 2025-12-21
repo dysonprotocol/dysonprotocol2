@@ -1,0 +1,63 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetValuation",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetValuation": {
+                "properties": {
+                    "owner": {
+                        "type": "string",
+                        "description": "NFT owner address performing the valuation update."
+                    },
+                    "nft_class_id": {
+                        "type": "string",
+                        "description": "NFT class identifier."
+                    },
+                    "nft_id": {
+                        "type": "string",
+                        "description": "NFT identifier within the class."
+                    },
+                    "valuation": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "New valuation amount for the NFT."
+                    },
+                    "max_valuation_fee_pct": {
+                        "type": "string",
+                        "description": "Maximum valuation fee percentage the user is willing to pay (e.g. \"0.025\" for 2.5%). Guards against unexpected fee amounts if class parameters change."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set Valuation",
+                "description": "MsgSetValuation updates the self-valuation of an NFT, charging Harberger tax on increases. Behavior: - Updates NFT valuation, charging fee only on incremental increases. - Fee is proportional to remaining time in current valuation period. - Fee destination depends on NFT class ownership (community pool vs class owner). - Valuation expiry remains unchanged; use MsgRenew to extend expiry. Validation: - Sender must be NFT owner. - NFT valuation must not be expired. - No active bids can exist (reject bids first). - New valuation must be valid according to class rules. - Max fee percent guard prevents unexpected fee increases. Emits: - EventNameValuationUpdated(name, new_valuation) on successful update. Returns: - Empty response on success."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetValuationResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetValuationResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set Valuation Response",
+                "description": "Empty response for successful valuation update."
+            }
+        }
+    }
+}

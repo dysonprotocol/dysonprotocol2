@@ -1,0 +1,37 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetDenomDescription",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetDenomDescription": {
+                "properties": {
+                    "name_destination": {
+                        "type": "string"
+                    },
+                    "denom": {
+                        "type": "string",
+                        "description": "base denom to modify"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set Denom Description",
+                "description": "MsgSetDenomDescription lets the name destination of the denom root set description."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetDenomDescriptionResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetDenomDescriptionResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set Denom Description Response"
+            }
+        }
+    }
+}

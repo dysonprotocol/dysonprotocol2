@@ -1,0 +1,182 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ibc/core/client/v2/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "ibc.core.client.v2.MsgRegisterCounterparty": {
+      "post": {
+        "summary": "RegisterCounterparty defines a rpc handler method for\nMsgRegisterCounterparty.",
+        "operationId": "ibc.core.client.v2.MsgRegisterCounterparty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v2.MsgRegisterCounterpartyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v2.MsgRegisterCounterparty"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.client.v2.MsgUpdateClientConfig": {
+      "post": {
+        "summary": "UpdateClientConfig defines a rpc handler method for MsgUpdateClientConfig.",
+        "operationId": "ibc.core.client.v2.MsgUpdateClientConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v2.MsgUpdateClientConfigResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v2.MsgUpdateClientConfig"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    },
+    "ibc.core.client.v2.Config": {
+      "type": "object",
+      "properties": {
+        "allowed_relayers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "allowed_relayers defines the set of allowed relayers for IBC V2 protocol\nfor the given client"
+        }
+      },
+      "title": "Config is a **per-client** configuration struct that sets which relayers are\nallowed to relay v2 IBC messages for a given client. If it is set, then only\nrelayers in the allow list can send v2 messages If it is not set, then the\nclient allows permissionless relaying of v2 messages"
+    },
+    "ibc.core.client.v2.MsgRegisterCounterparty": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "title": "client identifier"
+        },
+        "counterparty_merkle_prefix": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          },
+          "title": "counterparty merkle prefix"
+        },
+        "counterparty_client_id": {
+          "type": "string",
+          "title": "counterparty client identifier"
+        },
+        "signer": {
+          "type": "string",
+          "title": "signer address"
+        }
+      },
+      "title": "MsgRegisterCounterparty defines a message to register a counterparty on a\nclient"
+    },
+    "ibc.core.client.v2.MsgRegisterCounterpartyResponse": {
+      "type": "object",
+      "description": "MsgRegisterCounterpartyResponse defines the Msg/RegisterCounterparty response\ntype."
+    },
+    "ibc.core.client.v2.MsgUpdateClientConfig": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "title": "client identifier"
+        },
+        "config": {
+          "$ref": "#/definitions/ibc.core.client.v2.Config",
+          "description": "NOTE: All fields in the config must be supplied.",
+          "title": "allowed relayers"
+        },
+        "signer": {
+          "type": "string",
+          "title": "signer address"
+        }
+      },
+      "title": "MsgUpdateClientConfig defines the sdk.Msg type to update the configuration\nfor a given client"
+    },
+    "ibc.core.client.v2.MsgUpdateClientConfigResponse": {
+      "type": "object",
+      "description": "MsgUpdateClientConfigResponse defines the MsgUpdateClientConfig response\ntype."
+    }
+  }
+}

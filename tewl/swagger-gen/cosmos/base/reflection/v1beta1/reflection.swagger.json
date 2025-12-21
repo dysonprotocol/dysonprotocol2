@@ -1,0 +1,130 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/base/reflection/v1beta1/reflection.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/cosmos/base/reflection/v1beta1/interfaces": {
+      "get": {
+        "summary": "ListAllInterfaces lists all the interfaces registered in the interface\nregistry.",
+        "operationId": "ReflectionService_ListAllInterfaces",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.base.reflection.v1beta1.ListAllInterfacesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "ReflectionService"
+        ]
+      }
+    },
+    "/cosmos/base/reflection/v1beta1/interfaces/{interface_name}/implementations": {
+      "get": {
+        "summary": "ListImplementations list all the concrete types that implement a given\ninterface.",
+        "operationId": "ReflectionService_ListImplementations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.base.reflection.v1beta1.ListImplementationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "interface_name",
+            "description": "interface_name defines the interface to query the implementations for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ReflectionService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.reflection.v1beta1.ListAllInterfacesResponse": {
+      "type": "object",
+      "properties": {
+        "interface_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "interface_names is an array of all the registered interfaces."
+        }
+      },
+      "description": "ListAllInterfacesResponse is the response type of the ListAllInterfaces RPC."
+    },
+    "cosmos.base.reflection.v1beta1.ListImplementationsResponse": {
+      "type": "object",
+      "properties": {
+        "implementation_message_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "ListImplementationsResponse is the response type of the ListImplementations\nRPC."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgBurnNFT",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgBurnNFT": {
+                "properties": {
+                    "name_destination": {
+                        "type": "string"
+                    },
+                    "class_id": {
+                        "type": "string",
+                        "description": "must exist"
+                    },
+                    "nft_id": {
+                        "type": "string",
+                        "description": "must exist"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Burn NFT",
+                "description": "BurnNFT"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgBurnNFTResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgBurnNFTResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Burn NFT Response"
+            }
+        }
+    }
+}

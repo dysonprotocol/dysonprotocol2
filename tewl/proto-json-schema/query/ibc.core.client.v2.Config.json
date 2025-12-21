@@ -1,0 +1,53 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v2.QueryConfigRequest",
+        "definitions": {
+            "ibc.core.client.v2.QueryConfigRequest": {
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "client state unique identifier"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Config Request",
+                "description": "QueryConfigRequest is the request type for the Query/Config RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v2.QueryConfigResponse",
+        "definitions": {
+            "ibc.core.client.v2.QueryConfigResponse": {
+                "properties": {
+                    "config": {
+                        "$ref": "#/definitions/ibc.core.client.v2.Config",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Config Response",
+                "description": "QueryConfigResponse is the response type for the Query/Config RPC method"
+            },
+            "ibc.core.client.v2.Config": {
+                "properties": {
+                    "allowed_relayers": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "allowed_relayers defines the set of allowed relayers for IBC V2 protocol for the given client"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Config",
+                "description": "Config is a **per-client** configuration struct that sets which relayers are allowed to relay v2 IBC messages for a given client. If it is set, then only relayers in the allow list can send v2 messages If it is not set, then the client allows permissionless relaying of v2 messages"
+            }
+        }
+    }
+}

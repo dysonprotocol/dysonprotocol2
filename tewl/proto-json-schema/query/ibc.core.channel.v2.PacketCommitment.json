@@ -1,0 +1,71 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.channel.v2.QueryPacketCommitmentRequest",
+        "definitions": {
+            "ibc.core.channel.v2.QueryPacketCommitmentRequest": {
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "client unique identifier"
+                    },
+                    "sequence": {
+                        "type": "string",
+                        "description": "packet sequence"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Packet Commitment Request",
+                "description": "QueryPacketCommitmentRequest is the request type for the Query/PacketCommitment RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.channel.v2.QueryPacketCommitmentResponse",
+        "definitions": {
+            "ibc.core.channel.v2.QueryPacketCommitmentResponse": {
+                "properties": {
+                    "commitment": {
+                        "type": "string",
+                        "description": "packet associated with the request fields",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "proof": {
+                        "type": "string",
+                        "description": "merkle proof of existence",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "proof_height": {
+                        "$ref": "#/definitions/ibc.core.client.v1.Height",
+                        "additionalProperties": false,
+                        "description": "height at which the proof was retrieved"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Packet Commitment Response",
+                "description": "QueryPacketCommitmentResponse is the response type for the Query/PacketCommitment RPC method."
+            },
+            "ibc.core.client.v1.Height": {
+                "properties": {
+                    "revision_number": {
+                        "type": "string",
+                        "description": "the revision that the client is currently on"
+                    },
+                    "revision_height": {
+                        "type": "string",
+                        "description": "the height within the given revision"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Height",
+                "description": "Height is a monotonically increasing data type that can be compared against another Height for the purposes of updating and freezing clients Normally the RevisionHeight is incremented at each height while keeping RevisionNumber the same. However some consensus algorithms may choose to reset the height in certain conditions e.g. hard forks, state-machine breaking changes In these cases, the RevisionNumber is incremented so that height continues to be monitonically increasing even as the RevisionHeight gets reset Please note that json tags for generated Go code are overridden to explicitly exclude the omitempty jsontag. This enforces the Go json marshaller to always emit zero values for both revision_number and revision_height."
+            }
+        }
+    }
+}

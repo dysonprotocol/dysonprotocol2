@@ -1251,6 +1251,8 @@ type Params struct {
 	// Blank lines and lines starting with # are ignored.
 	// Reserved names can still be created via CreateExternalName (governance
 	// only).
+	// If this field is blank in MsgUpdateParams, the existing value is preserved
+	// and not updated.
 	ReservedNames string `protobuf:"bytes,17,opt,name=reserved_names,json=reservedNames,proto3" json:"reserved_names,omitempty"`
 }
 

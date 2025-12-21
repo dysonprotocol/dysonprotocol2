@@ -1,0 +1,45 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.QueryUpgradedConsensusStateRequest",
+        "definitions": {
+            "ibc.core.client.v1.QueryUpgradedConsensusStateRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Upgraded Consensus State Request",
+                "description": "QueryUpgradedConsensusStateRequest is the request type for the Query/UpgradedConsensusState RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.QueryUpgradedConsensusStateResponse",
+        "definitions": {
+            "ibc.core.client.v1.QueryUpgradedConsensusStateResponse": {
+                "properties": {
+                    "upgraded_consensus_state": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "Consensus state associated with the request identifier"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Upgraded Consensus State Response",
+                "description": "QueryUpgradedConsensusStateResponse is the response type for the Query/UpgradedConsensusState RPC method."
+            }
+        }
+    }
+}

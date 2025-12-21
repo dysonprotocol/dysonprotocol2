@@ -1,0 +1,65 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.mint.v1beta1.QueryParamsRequest",
+        "definitions": {
+            "cosmos.mint.v1beta1.QueryParamsRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Params Request",
+                "description": "QueryParamsRequest is the request type for the Query/Params RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.mint.v1beta1.QueryParamsResponse",
+        "definitions": {
+            "cosmos.mint.v1beta1.QueryParamsResponse": {
+                "properties": {
+                    "params": {
+                        "$ref": "#/definitions/cosmos.mint.v1beta1.Params",
+                        "additionalProperties": false,
+                        "description": "params defines the parameters of the module."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Params Response",
+                "description": "QueryParamsResponse is the response type for the Query/Params RPC method."
+            },
+            "cosmos.mint.v1beta1.Params": {
+                "properties": {
+                    "mint_denom": {
+                        "type": "string",
+                        "description": "type of coin to mint"
+                    },
+                    "inflation_rate_change": {
+                        "type": "string",
+                        "description": "maximum annual change in inflation rate"
+                    },
+                    "inflation_max": {
+                        "type": "string",
+                        "description": "maximum inflation rate"
+                    },
+                    "inflation_min": {
+                        "type": "string",
+                        "description": "minimum inflation rate"
+                    },
+                    "goal_bonded": {
+                        "type": "string",
+                        "description": "goal of percent bonded atoms"
+                    },
+                    "blocks_per_year": {
+                        "type": "string",
+                        "description": "expected blocks per year"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Params",
+                "description": "Params defines the parameters for the x/mint module."
+            }
+        }
+    }
+}

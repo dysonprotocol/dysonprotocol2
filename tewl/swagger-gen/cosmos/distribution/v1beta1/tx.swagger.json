@@ -1,0 +1,458 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/distribution/v1beta1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "cosmos.distribution.v1beta1.MsgCommunityPoolSpend": {
+      "post": {
+        "summary": "CommunityPoolSpend defines a governance operation for sending tokens from\nthe community pool in the x/distribution module to another account, which\ncould be the governance module itself. The authority is defined in the\nkeeper.",
+        "description": "WARNING: This method will fail if an external community pool is used.",
+        "operationId": "cosmos.distribution.v1beta1.MsgCommunityPoolSpend",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgCommunityPoolSpendResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgCommunityPoolSpend"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.distribution.v1beta1.MsgDepositValidatorRewardsPool": {
+      "post": {
+        "summary": "DepositValidatorRewardsPool defines a method to provide additional rewards\nto delegators to a specific validator.",
+        "operationId": "cosmos.distribution.v1beta1.MsgDepositValidatorRewardsPool",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgDepositValidatorRewardsPoolResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgDepositValidatorRewardsPool"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.distribution.v1beta1.MsgFundCommunityPool": {
+      "post": {
+        "summary": "FundCommunityPool defines a method to allow an account to directly\nfund the community pool.",
+        "description": "WARNING: This method will fail if an external community pool is used.",
+        "operationId": "cosmos.distribution.v1beta1.MsgFundCommunityPool",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgFundCommunityPoolResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgFundCommunityPool"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.distribution.v1beta1.MsgSetWithdrawAddress": {
+      "post": {
+        "summary": "SetWithdrawAddress defines a method to change the withdraw address\nfor a delegator (or validator self-delegation).",
+        "operationId": "cosmos.distribution.v1beta1.MsgSetWithdrawAddress",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgSetWithdrawAddressResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgSetWithdrawAddress"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.distribution.v1beta1.MsgUpdateParams": {
+      "post": {
+        "summary": "UpdateParams defines a governance operation for updating the x/distribution\nmodule parameters. The authority is defined in the keeper.",
+        "operationId": "cosmos.distribution.v1beta1.MsgUpdateParams",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgUpdateParamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgUpdateParams"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward": {
+      "post": {
+        "summary": "WithdrawDelegatorReward defines a method to withdraw rewards of delegator\nfrom a single validator.",
+        "operationId": "cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgWithdrawDelegatorRewardResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission": {
+      "post": {
+        "summary": "WithdrawValidatorCommission defines a method to withdraw the\nfull commission to the validator address.",
+        "operationId": "cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgWithdrawValidatorCommissionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.v1beta1.Coin": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "Coin defines a token with a denomination and an amount.\n\nNOTE: The amount field is an Int which implements the custom method\nsignatures required by gogoproto."
+    },
+    "cosmos.distribution.v1beta1.MsgCommunityPoolSpend": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string",
+          "description": "authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        }
+      },
+      "description": "MsgCommunityPoolSpend defines a message for sending tokens from the community\npool to another account. This message is typically executed via a governance\nproposal with the governance module being the executing authority."
+    },
+    "cosmos.distribution.v1beta1.MsgCommunityPoolSpendResponse": {
+      "type": "object",
+      "description": "MsgCommunityPoolSpendResponse defines the response to executing a\nMsgCommunityPoolSpend message."
+    },
+    "cosmos.distribution.v1beta1.MsgDepositValidatorRewardsPool": {
+      "type": "object",
+      "properties": {
+        "depositor": {
+          "type": "string"
+        },
+        "validator_address": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        }
+      },
+      "description": "DepositValidatorRewardsPool defines the request structure to provide\nadditional rewards to delegators from a specific validator."
+    },
+    "cosmos.distribution.v1beta1.MsgDepositValidatorRewardsPoolResponse": {
+      "type": "object",
+      "description": "MsgDepositValidatorRewardsPoolResponse defines the response to executing a\nMsgDepositValidatorRewardsPool message."
+    },
+    "cosmos.distribution.v1beta1.MsgFundCommunityPool": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        },
+        "depositor": {
+          "type": "string"
+        }
+      },
+      "description": "MsgFundCommunityPool allows an account to directly\nfund the community pool."
+    },
+    "cosmos.distribution.v1beta1.MsgFundCommunityPoolResponse": {
+      "type": "object",
+      "description": "MsgFundCommunityPoolResponse defines the Msg/FundCommunityPool response type."
+    },
+    "cosmos.distribution.v1beta1.MsgSetWithdrawAddress": {
+      "type": "object",
+      "properties": {
+        "delegator_address": {
+          "type": "string"
+        },
+        "withdraw_address": {
+          "type": "string"
+        }
+      },
+      "description": "MsgSetWithdrawAddress sets the withdraw address for\na delegator (or validator self-delegation)."
+    },
+    "cosmos.distribution.v1beta1.MsgSetWithdrawAddressResponse": {
+      "type": "object",
+      "description": "MsgSetWithdrawAddressResponse defines the Msg/SetWithdrawAddress response\ntype."
+    },
+    "cosmos.distribution.v1beta1.MsgUpdateParams": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string",
+          "description": "authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+        },
+        "params": {
+          "$ref": "#/definitions/cosmos.distribution.v1beta1.Params",
+          "description": "params defines the x/distribution parameters to update.\n\nNOTE: All parameters must be supplied."
+        }
+      },
+      "description": "MsgUpdateParams is the Msg/UpdateParams request type."
+    },
+    "cosmos.distribution.v1beta1.MsgUpdateParamsResponse": {
+      "type": "object",
+      "description": "MsgUpdateParamsResponse defines the response structure for executing a\nMsgUpdateParams message."
+    },
+    "cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward": {
+      "type": "object",
+      "properties": {
+        "delegator_address": {
+          "type": "string"
+        },
+        "validator_address": {
+          "type": "string"
+        }
+      },
+      "description": "MsgWithdrawDelegatorReward represents delegation withdrawal to a delegator\nfrom a single validator."
+    },
+    "cosmos.distribution.v1beta1.MsgWithdrawDelegatorRewardResponse": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        }
+      },
+      "description": "MsgWithdrawDelegatorRewardResponse defines the Msg/WithdrawDelegatorReward\nresponse type."
+    },
+    "cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission": {
+      "type": "object",
+      "properties": {
+        "validator_address": {
+          "type": "string"
+        }
+      },
+      "description": "MsgWithdrawValidatorCommission withdraws the full commission to the validator\naddress."
+    },
+    "cosmos.distribution.v1beta1.MsgWithdrawValidatorCommissionResponse": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        }
+      },
+      "description": "MsgWithdrawValidatorCommissionResponse defines the\nMsg/WithdrawValidatorCommission response type."
+    },
+    "cosmos.distribution.v1beta1.Params": {
+      "type": "object",
+      "properties": {
+        "community_tax": {
+          "type": "string"
+        },
+        "base_proposer_reward": {
+          "type": "string",
+          "description": "Deprecated: The base_proposer_reward field is deprecated and is no longer\nused in the x/distribution module's reward mechanism."
+        },
+        "bonus_proposer_reward": {
+          "type": "string",
+          "description": "Deprecated: The bonus_proposer_reward field is deprecated and is no longer\nused in the x/distribution module's reward mechanism."
+        },
+        "withdraw_addr_enabled": {
+          "type": "boolean"
+        }
+      },
+      "description": "Params defines the set of params for the distribution module."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

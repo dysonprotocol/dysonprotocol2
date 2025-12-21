@@ -1,0 +1,596 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ibc/core/connection/v1/query.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/ibc/core/connection/v1/client_connections/{client_id}": {
+      "get": {
+        "summary": "ClientConnections queries the connection paths associated with a client\nstate.",
+        "operationId": "ibc.core.connection.v1.QueryClientConnectionsRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.connection.v1.QueryClientConnectionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client identifier associated with a connection",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/connection/v1/connections": {
+      "get": {
+        "summary": "Connections queries all the IBC connections of a chain.",
+        "operationId": "ibc.core.connection.v1.QueryConnectionsRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.connection.v1.QueryConnectionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pagination.key",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/connection/v1/connections/{connection_id}": {
+      "get": {
+        "summary": "Connection queries an IBC connection end.",
+        "operationId": "ibc.core.connection.v1.QueryConnectionRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.connection.v1.QueryConnectionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "connection_id",
+            "description": "connection unique identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/connection/v1/connections/{connection_id}/client_state": {
+      "get": {
+        "summary": "ConnectionClientState queries the client state associated with the\nconnection.",
+        "operationId": "ibc.core.connection.v1.QueryConnectionClientStateRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.connection.v1.QueryConnectionClientStateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "connection_id",
+            "description": "connection identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/connection/v1/connections/{connection_id}/consensus_state/revision/{revision_number}/height/{revision_height}": {
+      "get": {
+        "summary": "ConnectionConsensusState queries the consensus state associated with the\nconnection.",
+        "operationId": "ibc.core.connection.v1.QueryConnectionConsensusStateRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.connection.v1.QueryConnectionConsensusStateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "connection_id",
+            "description": "connection identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "revision_number",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "revision_height",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/connection/v1/params": {
+      "get": {
+        "summary": "ConnectionParams queries all parameters of the ibc connection submodule.",
+        "operationId": "ibc.core.connection.v1.QueryConnectionParamsRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.connection.v1.QueryConnectionParamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "Query"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.query.v1beta1.PageRequest": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "format": "byte",
+          "description": "key is a value returned in PageResponse.next_key to begin\nquerying the next page most efficiently. Only one of offset or key\nshould be set."
+        },
+        "offset": {
+          "type": "string",
+          "format": "uint64",
+          "description": "offset is a numeric offset that can be used when key is unavailable.\nIt is less efficient than using key. Only one of offset or key should\nbe set."
+        },
+        "limit": {
+          "type": "string",
+          "format": "uint64",
+          "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app."
+        },
+        "count_total": {
+          "type": "boolean",
+          "description": "count_total is set to true  to indicate that the result set should include\na count of the total number of items available for pagination in UIs.\ncount_total is only respected when offset is used. It is ignored when key\nis set."
+        },
+        "reverse": {
+          "type": "boolean",
+          "description": "reverse is set to true if results are to be returned in the descending\norder."
+        }
+      },
+      "description": "message SomeRequest {\n         Foo some_parameter = 1;\n         PageRequest pagination = 2;\n }",
+      "title": "PageRequest is to be embedded in gRPC request messages for efficient\npagination. Ex:"
+    },
+    "cosmos.base.query.v1beta1.PageResponse": {
+      "type": "object",
+      "properties": {
+        "next_key": {
+          "type": "string",
+          "format": "byte",
+          "description": "next_key is the key to be passed to PageRequest.key to\nquery the next page most efficiently. It will be empty if\nthere are no more results."
+        },
+        "total": {
+          "type": "string",
+          "format": "uint64",
+          "title": "total is total number of results available if PageRequest.count_total\nwas set, its value is undefined otherwise"
+        }
+      },
+      "description": "PageResponse is to be embedded in gRPC response messages where the\ncorresponding request message has used PageRequest.\n\n message SomeResponse {\n         repeated Bar results = 1;\n         PageResponse page = 2;\n }"
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    },
+    "ibc.core.client.v1.Height": {
+      "type": "object",
+      "properties": {
+        "revision_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "the revision that the client is currently on"
+        },
+        "revision_height": {
+          "type": "string",
+          "format": "uint64",
+          "title": "the height within the given revision"
+        }
+      },
+      "description": "Normally the RevisionHeight is incremented at each height while keeping\nRevisionNumber the same. However some consensus algorithms may choose to\nreset the height in certain conditions e.g. hard forks, state-machine\nbreaking changes In these cases, the RevisionNumber is incremented so that\nheight continues to be monitonically increasing even as the RevisionHeight\ngets reset\n\nPlease note that json tags for generated Go code are overridden to explicitly\nexclude the omitempty jsontag. This enforces the Go json marshaller to always\nemit zero values for both revision_number and revision_height.",
+      "title": "Height is a monotonically increasing data type\nthat can be compared against another Height for the purposes of updating and\nfreezing clients"
+    },
+    "ibc.core.client.v1.IdentifiedClientState": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "title": "client identifier"
+        },
+        "client_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "title": "client state"
+        }
+      },
+      "description": "IdentifiedClientState defines a client state with an additional client\nidentifier field."
+    },
+    "ibc.core.commitment.v1.MerklePrefix": {
+      "type": "object",
+      "properties": {
+        "key_prefix": {
+          "type": "string",
+          "format": "byte"
+        }
+      },
+      "title": "MerklePrefix is merkle path prefixed to the key.\nThe constructed key from the Path and the key will be append(Path.KeyPath,\nappend(Path.KeyPrefix, key...))"
+    },
+    "ibc.core.connection.v1.ConnectionEnd": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "description": "client associated with this connection."
+        },
+        "versions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ibc.core.connection.v1.Version"
+          },
+          "description": "IBC version which can be utilised to determine encodings or protocols for\nchannels or packets utilising this connection."
+        },
+        "state": {
+          "$ref": "#/definitions/ibc.core.connection.v1.State",
+          "description": "current state of the connection end."
+        },
+        "counterparty": {
+          "$ref": "#/definitions/ibc.core.connection.v1.Counterparty",
+          "description": "counterparty chain associated with this connection."
+        },
+        "delay_period": {
+          "type": "string",
+          "format": "uint64",
+          "description": "delay period that must pass before a consensus state can be used for\npacket-verification NOTE: delay period logic is only implemented by some\nclients."
+        }
+      },
+      "description": "ConnectionEnd defines a stateful object on a chain connected to another\nseparate one.\nNOTE: there must only be 2 defined ConnectionEnds to establish\na connection between two chains."
+    },
+    "ibc.core.connection.v1.Counterparty": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "description": "identifies the client on the counterparty chain associated with a given\nconnection."
+        },
+        "connection_id": {
+          "type": "string",
+          "description": "identifies the connection end on the counterparty chain associated with a\ngiven connection."
+        },
+        "prefix": {
+          "$ref": "#/definitions/ibc.core.commitment.v1.MerklePrefix",
+          "description": "commitment merkle prefix of the counterparty chain."
+        }
+      },
+      "description": "Counterparty defines the counterparty chain associated with a connection end."
+    },
+    "ibc.core.connection.v1.IdentifiedConnection": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "connection identifier."
+        },
+        "client_id": {
+          "type": "string",
+          "description": "client associated with this connection."
+        },
+        "versions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ibc.core.connection.v1.Version"
+          },
+          "title": "IBC version which can be utilised to determine encodings or protocols for\nchannels or packets utilising this connection"
+        },
+        "state": {
+          "$ref": "#/definitions/ibc.core.connection.v1.State",
+          "description": "current state of the connection end."
+        },
+        "counterparty": {
+          "$ref": "#/definitions/ibc.core.connection.v1.Counterparty",
+          "description": "counterparty chain associated with this connection."
+        },
+        "delay_period": {
+          "type": "string",
+          "format": "uint64",
+          "description": "delay period associated with this connection."
+        }
+      },
+      "description": "IdentifiedConnection defines a connection with additional connection\nidentifier field."
+    },
+    "ibc.core.connection.v1.Params": {
+      "type": "object",
+      "properties": {
+        "max_expected_time_per_block": {
+          "type": "string",
+          "format": "uint64",
+          "description": "maximum expected time per block (in nanoseconds), used to enforce block\ndelay. This parameter should reflect the largest amount of time that the\nchain might reasonably take to produce the next block under normal\noperating conditions. A safe choice is 3-5x the expected time per block."
+        }
+      },
+      "description": "Params defines the set of Connection parameters."
+    },
+    "ibc.core.connection.v1.QueryClientConnectionsResponse": {
+      "type": "object",
+      "properties": {
+        "connection_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "slice of all the connection paths associated with a client."
+        },
+        "proof": {
+          "type": "string",
+          "format": "byte",
+          "title": "merkle proof of existence"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "height at which the proof was generated"
+        }
+      },
+      "title": "QueryClientConnectionsResponse is the response type for the\nQuery/ClientConnections RPC method"
+    },
+    "ibc.core.connection.v1.QueryConnectionClientStateResponse": {
+      "type": "object",
+      "properties": {
+        "identified_client_state": {
+          "$ref": "#/definitions/ibc.core.client.v1.IdentifiedClientState",
+          "title": "client state associated with the channel"
+        },
+        "proof": {
+          "type": "string",
+          "format": "byte",
+          "title": "merkle proof of existence"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "height at which the proof was retrieved"
+        }
+      },
+      "title": "QueryConnectionClientStateResponse is the response type for the\nQuery/ConnectionClientState RPC method"
+    },
+    "ibc.core.connection.v1.QueryConnectionConsensusStateResponse": {
+      "type": "object",
+      "properties": {
+        "consensus_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "title": "consensus state associated with the channel"
+        },
+        "client_id": {
+          "type": "string",
+          "title": "client ID associated with the consensus state"
+        },
+        "proof": {
+          "type": "string",
+          "format": "byte",
+          "title": "merkle proof of existence"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "height at which the proof was retrieved"
+        }
+      },
+      "title": "QueryConnectionConsensusStateResponse is the response type for the\nQuery/ConnectionConsensusState RPC method"
+    },
+    "ibc.core.connection.v1.QueryConnectionParamsResponse": {
+      "type": "object",
+      "properties": {
+        "params": {
+          "$ref": "#/definitions/ibc.core.connection.v1.Params",
+          "description": "params defines the parameters of the module."
+        }
+      },
+      "description": "QueryConnectionParamsResponse is the response type for the\nQuery/ConnectionParams RPC method."
+    },
+    "ibc.core.connection.v1.QueryConnectionResponse": {
+      "type": "object",
+      "properties": {
+        "connection": {
+          "$ref": "#/definitions/ibc.core.connection.v1.ConnectionEnd",
+          "title": "connection associated with the request identifier"
+        },
+        "proof": {
+          "type": "string",
+          "format": "byte",
+          "title": "merkle proof of existence"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "height at which the proof was retrieved"
+        }
+      },
+      "description": "QueryConnectionResponse is the response type for the Query/Connection RPC\nmethod. Besides the connection end, it includes a proof and the height from\nwhich the proof was retrieved."
+    },
+    "ibc.core.connection.v1.QueryConnectionsResponse": {
+      "type": "object",
+      "properties": {
+        "connections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ibc.core.connection.v1.IdentifiedConnection"
+          },
+          "description": "list of stored connections of the chain."
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "pagination response"
+        },
+        "height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "query block height"
+        }
+      },
+      "description": "QueryConnectionsResponse is the response type for the Query/Connections RPC\nmethod."
+    },
+    "ibc.core.connection.v1.State": {
+      "type": "string",
+      "enum": [
+        "STATE_UNINITIALIZED_UNSPECIFIED",
+        "STATE_INIT",
+        "STATE_TRYOPEN",
+        "STATE_OPEN"
+      ],
+      "default": "STATE_UNINITIALIZED_UNSPECIFIED",
+      "description": "State defines if a connection is in one of the following states:\nINIT, TRYOPEN, OPEN or UNINITIALIZED.\n\n - STATE_UNINITIALIZED_UNSPECIFIED: Default State\n - STATE_INIT: A connection end has just started the opening handshake.\n - STATE_TRYOPEN: A connection end has acknowledged the handshake step on the counterparty\nchain.\n - STATE_OPEN: A connection end has completed the handshake."
+    },
+    "ibc.core.connection.v1.Version": {
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "type": "string",
+          "title": "unique version identifier"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "list of features compatible with the specified identifier"
+        }
+      },
+      "description": "Version defines the versioning scheme used to negotiate the IBC version in\nthe connection handshake."
+    }
+  }
+}

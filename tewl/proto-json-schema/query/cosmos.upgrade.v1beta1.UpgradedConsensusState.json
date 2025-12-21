@@ -1,0 +1,39 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.upgrade.v1beta1.QueryUpgradedConsensusStateRequest",
+        "definitions": {
+            "cosmos.upgrade.v1beta1.QueryUpgradedConsensusStateRequest": {
+                "properties": {
+                    "last_height": {
+                        "type": "string",
+                        "description": "last height of the current chain must be sent in request as this is the height under which next consensus state is stored"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Upgraded Consensus State Request",
+                "description": "QueryUpgradedConsensusStateRequest is the request type for the Query/UpgradedConsensusState RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.upgrade.v1beta1.QueryUpgradedConsensusStateResponse",
+        "definitions": {
+            "cosmos.upgrade.v1beta1.QueryUpgradedConsensusStateResponse": {
+                "properties": {
+                    "upgraded_consensus_state": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Upgraded Consensus State Response",
+                "description": "QueryUpgradedConsensusStateResponse is the response type for the Query/UpgradedConsensusState RPC method."
+            }
+        }
+    }
+}

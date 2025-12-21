@@ -1,0 +1,39 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.QueryParamsRequest",
+        "definitions": {
+            "dysonprotocol.script.v1.QueryParamsRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Params Request",
+                "description": "QueryParamsRequest requests the current script module parameters. This is an empty request message - no parameters needed."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.QueryParamsResponse",
+        "definitions": {
+            "dysonprotocol.script.v1.QueryParamsResponse": {
+                "properties": {
+                    "params": {
+                        "$ref": "#/definitions/dysonprotocol.script.v1.Params",
+                        "additionalProperties": false,
+                        "description": "Current script module parameters including execution limits and configuration."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Params Response",
+                "description": "QueryParamsResponse contains the current script module parameters."
+            },
+            "dysonprotocol.script.v1.Params": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Params",
+                "description": "Params defines the parameters for the script module. Historical query-related fields have been removed; this message is currently empty."
+            }
+        }
+    }
+}

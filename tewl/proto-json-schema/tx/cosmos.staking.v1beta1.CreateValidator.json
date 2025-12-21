@@ -1,0 +1,128 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.MsgCreateValidator",
+        "definitions": {
+            "cosmos.staking.v1beta1.MsgCreateValidator": {
+                "properties": {
+                    "description": {
+                        "$ref": "#/definitions/cosmos.staking.v1beta1.Description",
+                        "additionalProperties": false
+                    },
+                    "commission": {
+                        "$ref": "#/definitions/cosmos.staking.v1beta1.CommissionRates",
+                        "additionalProperties": false
+                    },
+                    "min_self_delegation": {
+                        "type": "string"
+                    },
+                    "delegator_address": {
+                        "type": "string",
+                        "description": "Deprecated: Use of Delegator Address in MsgCreateValidator is deprecated. The validator address bytes and delegator address bytes refer to the same account while creating validator (defer only in bech32 notation)."
+                    },
+                    "validator_address": {
+                        "type": "string"
+                    },
+                    "pubkey": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object"
+                    },
+                    "value": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Create Validator",
+                "description": "MsgCreateValidator defines a SDK message for creating a new validator."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "cosmos.staking.v1beta1.CommissionRates": {
+                "properties": {
+                    "rate": {
+                        "type": "string",
+                        "description": "rate is the commission rate charged to delegators, as a fraction."
+                    },
+                    "max_rate": {
+                        "type": "string",
+                        "description": "max_rate defines the maximum commission rate which validator can ever charge, as a fraction."
+                    },
+                    "max_change_rate": {
+                        "type": "string",
+                        "description": "max_change_rate defines the maximum daily increase of the validator commission, as a fraction."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Commission Rates",
+                "description": "CommissionRates defines the initial commission rates to be used for creating a validator."
+            },
+            "cosmos.staking.v1beta1.Description": {
+                "properties": {
+                    "moniker": {
+                        "type": "string",
+                        "description": "moniker defines a human-readable name for the validator."
+                    },
+                    "identity": {
+                        "type": "string",
+                        "description": "identity defines an optional identity signature (ex. UPort or Keybase)."
+                    },
+                    "website": {
+                        "type": "string",
+                        "description": "website defines an optional website link."
+                    },
+                    "security_contact": {
+                        "type": "string",
+                        "description": "security_contact defines an optional email for security contact."
+                    },
+                    "details": {
+                        "type": "string",
+                        "description": "details define other optional details."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Description",
+                "description": "Description defines a validator description."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.MsgCreateValidatorResponse",
+        "definitions": {
+            "cosmos.staking.v1beta1.MsgCreateValidatorResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Create Validator Response",
+                "description": "MsgCreateValidatorResponse defines the Msg/CreateValidator response type."
+            }
+        }
+    }
+}

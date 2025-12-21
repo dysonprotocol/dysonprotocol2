@@ -1,0 +1,96 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryMetricsRequest",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QueryMetricsRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Metrics Request"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryMetricsResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QueryMetricsResponse": {
+                "properties": {
+                    "metrics": {
+                        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.TradeMetrics",
+                        "additionalProperties": false,
+                        "description": "Comprehensive module metrics including escrow balances and trade statistics"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Metrics Response"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.whaleswap.v1.TradeMetrics": {
+                "properties": {
+                    "num_trades": {
+                        "type": "string"
+                    },
+                    "escrowed_pool_coins": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Sum of reserves across all AMM pools"
+                    },
+                    "escrowed_offer_coins": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Sum of remaining_have over all open escrow-mode offers"
+                    },
+                    "escrowed_pfand": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Sum of pfand_locked over all open liquid-mode offers"
+                    },
+                    "escrowed_auction_coins": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Sum of auction sell escrows over all open auctions"
+                    },
+                    "fees_earned": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Sum of fees_earned across all pools (accounted inside pool reserves)"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Trade Metrics",
+                "description": "TradeMetrics reports the expected whaleswap module balances broken down by subsystem, and summary counters useful for monitoring and invariants."
+            }
+        }
+    }
+}

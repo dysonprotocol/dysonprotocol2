@@ -1,0 +1,126 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.connection.v1.MsgConnectionOpenAck",
+        "definitions": {
+            "ibc.core.connection.v1.MsgConnectionOpenAck": {
+                "properties": {
+                    "connection_id": {
+                        "type": "string"
+                    },
+                    "counterparty_connection_id": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "$ref": "#/definitions/ibc.core.connection.v1.Version",
+                        "additionalProperties": false
+                    },
+                    "client_state": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "Deprecated: this field is unused."
+                    },
+                    "proof_height": {
+                        "$ref": "#/definitions/ibc.core.client.v1.Height",
+                        "additionalProperties": false
+                    },
+                    "proof_try": {
+                        "type": "string",
+                        "description": "proof of the initialization the connection on Chain B: `UNINITIALIZED -> TRYOPEN`",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "proof_client": {
+                        "type": "string",
+                        "description": "Deprecated: this field is unused.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "proof_consensus": {
+                        "type": "string",
+                        "description": "Deprecated: this field is unused.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "consensus_height": {
+                        "$ref": "#/definitions/ibc.core.client.v1.Height",
+                        "additionalProperties": false,
+                        "description": "Deprecated: this field is unused."
+                    },
+                    "signer": {
+                        "type": "string"
+                    },
+                    "host_consensus_state_proof": {
+                        "type": "string",
+                        "description": "Deprecated: this field is unused.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Connection Open Ack",
+                "description": "MsgConnectionOpenAck defines a msg sent by a Relayer to Chain A to acknowledge the change of connection state to TRYOPEN on Chain B."
+            },
+            "ibc.core.client.v1.Height": {
+                "properties": {
+                    "revision_number": {
+                        "type": "string",
+                        "description": "the revision that the client is currently on"
+                    },
+                    "revision_height": {
+                        "type": "string",
+                        "description": "the height within the given revision"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Height",
+                "description": "Height is a monotonically increasing data type that can be compared against another Height for the purposes of updating and freezing clients Normally the RevisionHeight is incremented at each height while keeping RevisionNumber the same. However some consensus algorithms may choose to reset the height in certain conditions e.g. hard forks, state-machine breaking changes In these cases, the RevisionNumber is incremented so that height continues to be monitonically increasing even as the RevisionHeight gets reset Please note that json tags for generated Go code are overridden to explicitly exclude the omitempty jsontag. This enforces the Go json marshaller to always emit zero values for both revision_number and revision_height."
+            },
+            "ibc.core.connection.v1.Version": {
+                "properties": {
+                    "identifier": {
+                        "type": "string",
+                        "description": "unique version identifier"
+                    },
+                    "features": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "list of features compatible with the specified identifier"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Version",
+                "description": "Version defines the versioning scheme used to negotiate the IBC version in the connection handshake."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.connection.v1.MsgConnectionOpenAckResponse",
+        "definitions": {
+            "ibc.core.connection.v1.MsgConnectionOpenAckResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Connection Open Ack Response",
+                "description": "MsgConnectionOpenAckResponse defines the Msg/ConnectionOpenAck response type."
+            }
+        }
+    }
+}

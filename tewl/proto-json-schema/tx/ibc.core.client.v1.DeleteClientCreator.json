@@ -1,0 +1,36 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.MsgDeleteClientCreator",
+        "definitions": {
+            "ibc.core.client.v1.MsgDeleteClientCreator": {
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "client identifier"
+                    },
+                    "signer": {
+                        "type": "string",
+                        "description": "signer address"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Delete Client Creator",
+                "description": "MsgDeleteClientCreator defines a message to delete the client creator of a client"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.MsgDeleteClientCreatorResponse",
+        "definitions": {
+            "ibc.core.client.v1.MsgDeleteClientCreatorResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Delete Client Creator Response",
+                "description": "MsgDeleteClientCreatorResponse defines the Msg/DeleteClientCreator response type."
+            }
+        }
+    }
+}

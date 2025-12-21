@@ -1,0 +1,196 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.crontask.v1.QuerySubscriptionsAllRequest",
+        "definitions": {
+            "dysonprotocol.crontask.v1.QuerySubscriptionsAllRequest": {
+                "properties": {
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by subscription ID ascending."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Subscriptions All Request",
+                "description": "QuerySubscriptionsAllRequest is the request type for the Query/SubscriptionsAll RPC method."
+            },
+            "cosmos.base.query.v1beta1.PageRequest": {
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "key is a value returned in PageResponse.next_key to begin querying the next page most efficiently. Only one of offset or key should be set.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "offset": {
+                        "type": "string",
+                        "description": "offset is a numeric offset that can be used when key is unavailable. It is less efficient than using key. Only one of offset or key should be set."
+                    },
+                    "limit": {
+                        "type": "string",
+                        "description": "limit is the total number of results to be returned in the result page. If left empty it will default to a value to be set by each app."
+                    },
+                    "count_total": {
+                        "type": "boolean",
+                        "description": "count_total is set to true  to indicate that the result set should include a count of the total number of items available for pagination in UIs. count_total is only respected when offset is used. It is ignored when key is set."
+                    },
+                    "reverse": {
+                        "type": "boolean",
+                        "description": "reverse is set to true if results are to be returned in the descending order."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Request",
+                "description": "PageRequest is to be embedded in gRPC request messages for efficient pagination. Ex:  message SomeRequest {          Foo some_parameter = 1;          PageRequest pagination = 2;  }"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.crontask.v1.QuerySubscriptionsAllResponse",
+        "definitions": {
+            "dysonprotocol.crontask.v1.QuerySubscriptionsAllResponse": {
+                "properties": {
+                    "subscriptions": {
+                        "items": {
+                            "$ref": "#/definitions/dysonprotocol.crontask.v1.Subscription"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "List of all subscriptions in the system, ordered by subscription ID ascending."
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Subscriptions All Response",
+                "description": "QuerySubscriptionsAllResponse is the response type for the Query/SubscriptionsAll RPC method."
+            },
+            "cosmos.base.query.v1beta1.PageResponse": {
+                "properties": {
+                    "next_key": {
+                        "type": "string",
+                        "description": "next_key is the key to be passed to PageRequest.key to query the next page most efficiently. It will be empty if there are no more results.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "total": {
+                        "type": "string",
+                        "description": "total is total number of results available if PageRequest.count_total was set, its value is undefined otherwise"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Response",
+                "description": "PageResponse is to be embedded in gRPC response messages where the corresponding request message has used PageRequest.  message SomeResponse {          repeated Bar results = 1;          PageResponse page = 2;  }"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "cosmos.base.v1beta1.DecCoin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Dec Coin",
+                "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.crontask.v1.Subscription": {
+                "properties": {
+                    "subscription_id": {
+                        "type": "string",
+                        "description": "unique id"
+                    },
+                    "creator": {
+                        "type": "string",
+                        "description": "creator account that owns this subscription"
+                    },
+                    "filter": {
+                        "type": "string",
+                        "description": "GJSON filter to match events across the normalized block event array"
+                    },
+                    "script_address": {
+                        "type": "string",
+                        "description": "target script address"
+                    },
+                    "function": {
+                        "type": "string",
+                        "description": "function name to invoke"
+                    },
+                    "args": {
+                        "type": "string",
+                        "description": "positional args as JSON list string"
+                    },
+                    "kwargs": {
+                        "type": "string",
+                        "description": "keyword args as JSON dict string"
+                    },
+                    "task_gas_limit": {
+                        "type": "string",
+                        "description": "gas limit for the created crontask"
+                    },
+                    "task_gas_fee": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "fee for the created crontask; also charged at subscription creation/renewal"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "status: enabled|disabled|error - enabled: Active, processing events. - disabled: Recoverable pause (time expired, insufficient funds) - can be re-enabled via RenewSubscription. - error: Unrecoverable (invalid address, task creation failed) - cannot be re-enabled."
+                    },
+                    "status_message": {
+                        "type": "string",
+                        "description": "status message"
+                    },
+                    "expiry_timestamp": {
+                        "type": "string",
+                        "description": "Subscription expiry timestamp (unix seconds)"
+                    },
+                    "trigger_count": {
+                        "type": "string",
+                        "description": "total number of triggers so far (field name per requirement)"
+                    },
+                    "task_scheduled_timestamp": {
+                        "type": "string",
+                        "description": "Overrides for created crontasks"
+                    },
+                    "task_expiry_timestamp": {
+                        "type": "string"
+                    },
+                    "task_gas_price": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Subscription",
+                "description": "Subscription defines an event-triggered action to execute a script"
+            }
+        }
+    }
+}

@@ -1,0 +1,38 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.QueryVerifyTxRequest",
+        "definitions": {
+            "dysonprotocol.script.v1.QueryVerifyTxRequest": {
+                "properties": {
+                    "tx_json": {
+                        "type": "string",
+                        "description": "JSON representation of the transaction to verify (must contain MsgArbitraryData)."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Verify Tx Request",
+                "description": "QueryVerifyTxRequest requests verification of an arbitrary transaction signature. The transaction JSON should contain a properly signed MsgArbitraryData transaction. Verification follows ADR-036 rules with empty chain ID, account number 0, and sequence 0. See the VerifyTx RPC method documentation for a complete example transaction structure."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.QueryVerifyTxResponse",
+        "definitions": {
+            "dysonprotocol.script.v1.QueryVerifyTxResponse": {
+                "properties": {
+                    "signer": {
+                        "type": "string",
+                        "description": "Bech32 address of the verified signer of the MsgArbitraryData transaction."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Verify Tx Response",
+                "description": "QueryVerifyTxResponse contains the verified signer address."
+            }
+        }
+    }
+}

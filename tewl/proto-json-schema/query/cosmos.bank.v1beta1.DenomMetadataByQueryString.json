@@ -1,0 +1,105 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.bank.v1beta1.QueryDenomMetadataByQueryStringRequest",
+        "definitions": {
+            "cosmos.bank.v1beta1.QueryDenomMetadataByQueryStringRequest": {
+                "properties": {
+                    "denom": {
+                        "type": "string",
+                        "description": "denom is the coin denom to query the metadata for."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Denom Metadata By Query String Request",
+                "description": "QueryDenomMetadataByQueryStringRequest is the request type for the Query/DenomMetadata RPC method. Identical with QueryDenomMetadataRequest but receives denom as query string."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.bank.v1beta1.QueryDenomMetadataByQueryStringResponse",
+        "definitions": {
+            "cosmos.bank.v1beta1.QueryDenomMetadataByQueryStringResponse": {
+                "properties": {
+                    "metadata": {
+                        "$ref": "#/definitions/cosmos.bank.v1beta1.Metadata",
+                        "additionalProperties": false,
+                        "description": "metadata describes and provides all the client information for the requested token."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Denom Metadata By Query String Response",
+                "description": "QueryDenomMetadataByQueryStringResponse is the response type for the Query/DenomMetadata RPC method. Identical with QueryDenomMetadataResponse but receives denom as query string in request."
+            },
+            "cosmos.bank.v1beta1.DenomUnit": {
+                "properties": {
+                    "denom": {
+                        "type": "string",
+                        "description": "denom represents the string name of the given denom unit (e.g uatom)."
+                    },
+                    "exponent": {
+                        "type": "integer",
+                        "description": "exponent represents power of 10 exponent that one must raise the base_denom to in order to equal the given DenomUnit's denom 1 denom = 10^exponent base_denom (e.g. with a base_denom of uatom, one can create a DenomUnit of 'atom' with exponent = 6, thus: 1 atom = 10^6 uatom)."
+                    },
+                    "aliases": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "aliases is a list of string aliases for the given denom"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Denom Unit",
+                "description": "DenomUnit represents a struct that describes a given denomination unit of the basic token."
+            },
+            "cosmos.bank.v1beta1.Metadata": {
+                "properties": {
+                    "description": {
+                        "type": "string"
+                    },
+                    "denom_units": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.bank.v1beta1.DenomUnit"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "denom_units represents the list of DenomUnit's for a given coin"
+                    },
+                    "base": {
+                        "type": "string",
+                        "description": "base represents the base denom (should be the DenomUnit with exponent = 0)."
+                    },
+                    "display": {
+                        "type": "string",
+                        "description": "display indicates the suggested denom that should be displayed in clients."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "name defines the name of the token (eg: Cosmos Atom)"
+                    },
+                    "symbol": {
+                        "type": "string",
+                        "description": "symbol is the token symbol usually shown on exchanges (eg: ATOM). This can be the same as the display."
+                    },
+                    "uri": {
+                        "type": "string",
+                        "description": "URI to a document (on or off-chain) that contains additional information. Optional."
+                    },
+                    "uri_hash": {
+                        "type": "string",
+                        "description": "URIHash is a sha256 hash of a document pointed by URI. It's used to verify that the document didn't change. Optional."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Metadata",
+                "description": "Metadata represents a struct that describes a basic token."
+            }
+        }
+    }
+}

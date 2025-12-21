@@ -1,0 +1,144 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/benchmark/v1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "cosmos.benchmark.v1.MsgLoadTest": {
+      "post": {
+        "summary": "LoadTest defines a method for executing a sequence of load test operations.",
+        "operationId": "cosmos.benchmark.v1.MsgLoadTest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.benchmark.v1.MsgLoadTestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.benchmark.v1.MsgLoadTest"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.benchmark.v1.MsgLoadTest": {
+      "type": "object",
+      "properties": {
+        "caller": {
+          "type": "string",
+          "format": "byte"
+        },
+        "ops": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.benchmark.v1.Op"
+          }
+        }
+      },
+      "description": "MsgLoadTestOps defines a message containing a sequence of load test\noperations."
+    },
+    "cosmos.benchmark.v1.MsgLoadTestResponse": {
+      "type": "object",
+      "properties": {
+        "total_time": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "total_errors": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "description": "MsgLoadTestResponse defines a message containing the results of a load test\noperation."
+    },
+    "cosmos.benchmark.v1.Op": {
+      "type": "object",
+      "properties": {
+        "seed": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "key_length": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "value_length": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "iterations": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "delete": {
+          "type": "boolean"
+        },
+        "exists": {
+          "type": "boolean"
+        }
+      },
+      "description": "Op is a message describing a benchmark operation."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

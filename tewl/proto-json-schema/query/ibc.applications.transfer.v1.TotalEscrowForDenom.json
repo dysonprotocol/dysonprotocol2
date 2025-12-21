@@ -1,0 +1,51 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.applications.transfer.v1.QueryTotalEscrowForDenomRequest",
+        "definitions": {
+            "ibc.applications.transfer.v1.QueryTotalEscrowForDenomRequest": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Total Escrow For Denom Request",
+                "description": "QueryTotalEscrowForDenomRequest is the request type for TotalEscrowForDenom RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.applications.transfer.v1.QueryTotalEscrowForDenomResponse",
+        "definitions": {
+            "ibc.applications.transfer.v1.QueryTotalEscrowForDenomResponse": {
+                "properties": {
+                    "amount": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Total Escrow For Denom Response",
+                "description": "QueryTotalEscrowForDenomResponse is the response type for TotalEscrowForDenom RPC method."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    }
+}

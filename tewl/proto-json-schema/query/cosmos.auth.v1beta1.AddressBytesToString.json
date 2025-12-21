@@ -1,0 +1,38 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.auth.v1beta1.AddressBytesToStringRequest",
+        "definitions": {
+            "cosmos.auth.v1beta1.AddressBytesToStringRequest": {
+                "properties": {
+                    "address_bytes": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Address Bytes To String Request",
+                "description": "AddressBytesToStringRequest is the request type for AddressString rpc method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.auth.v1beta1.AddressBytesToStringResponse",
+        "definitions": {
+            "cosmos.auth.v1beta1.AddressBytesToStringResponse": {
+                "properties": {
+                    "address_string": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Address Bytes To String Response",
+                "description": "AddressBytesToStringResponse is the response type for AddressString rpc method."
+            }
+        }
+    }
+}

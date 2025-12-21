@@ -1,0 +1,46 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.QueryComputeHashRequest",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.QueryComputeHashRequest": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "name is the name to compute the hash for"
+                    },
+                    "salt": {
+                        "type": "string",
+                        "description": "salt is the salt to use for the hash computation"
+                    },
+                    "committer": {
+                        "type": "string",
+                        "description": "committer is the committer address"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Compute Hash Request",
+                "description": "QueryComputeHashRequest is a request to compute the hash for a name and salt"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.QueryComputeHashResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.QueryComputeHashResponse": {
+                "properties": {
+                    "hex_hash": {
+                        "type": "string",
+                        "description": "hex_hash is the computed hash as a hex string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Compute Hash Response",
+                "description": "ComputeHashResponse contains the computed hash as a hex string"
+            }
+        }
+    }
+}

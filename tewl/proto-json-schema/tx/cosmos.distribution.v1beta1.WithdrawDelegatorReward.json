@@ -1,0 +1,57 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward",
+        "definitions": {
+            "cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward": {
+                "properties": {
+                    "delegator_address": {
+                        "type": "string"
+                    },
+                    "validator_address": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Withdraw Delegator Reward",
+                "description": "MsgWithdrawDelegatorReward represents delegation withdrawal to a delegator from a single validator."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgWithdrawDelegatorRewardResponse",
+        "definitions": {
+            "cosmos.distribution.v1beta1.MsgWithdrawDelegatorRewardResponse": {
+                "properties": {
+                    "amount": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Withdraw Delegator Reward Response",
+                "description": "MsgWithdrawDelegatorRewardResponse defines the Msg/WithdrawDelegatorReward response type."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    }
+}

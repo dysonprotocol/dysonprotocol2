@@ -1,0 +1,50 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.storage.v1.QueryMetricsRequest",
+        "definitions": {
+            "dysonprotocol.storage.v1.QueryMetricsRequest": {
+                "properties": {
+                    "owner": {
+                        "type": "string",
+                        "description": "Owner identifier to query metrics for; accepts nameservice names (resolved to addresses) or bech32 addresses directly. Resolution occurs server-side before computing metrics."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Metrics Request",
+                "description": "QueryMetricsRequest retrieves storage usage metrics for an owner. Metrics include total bytes stored, calculated stake requirements, and current stake amount."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.storage.v1.QueryMetricsResponse",
+        "definitions": {
+            "dysonprotocol.storage.v1.QueryMetricsResponse": {
+                "properties": {
+                    "owner": {
+                        "type": "string",
+                        "description": "Resolved account address that owns the storage entries."
+                    },
+                    "total_bytes": {
+                        "type": "string",
+                        "description": "Total number of bytes consumed by all storage entries for this owner."
+                    },
+                    "min_stake_amount": {
+                        "type": "string",
+                        "description": "Minimum stake required in udys for current storage usage (total_bytes \u00d7 storage_stake_multiple)."
+                    },
+                    "current_stake_amount": {
+                        "type": "string",
+                        "description": "Owner's current total delegated stake in udys across all validators."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Metrics Response",
+                "description": "Response containing storage metrics and stake information for an owner."
+            }
+        }
+    }
+}

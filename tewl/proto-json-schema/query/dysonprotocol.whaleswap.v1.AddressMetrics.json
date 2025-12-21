@@ -1,0 +1,194 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAddressMetricsRequest",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QueryAddressMetricsRequest": {
+                "properties": {
+                    "address": {
+                        "type": "string",
+                        "description": "Address to compute metrics for; must be a valid bech32 address"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Address Metrics Request"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAddressMetricsResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QueryAddressMetricsResponse": {
+                "properties": {
+                    "metrics": {
+                        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AddressMetrics",
+                        "additionalProperties": false,
+                        "description": "Comprehensive lifetime metrics for the specified address"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Address Metrics Response"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.whaleswap.v1.AddressMetrics": {
+                "properties": {
+                    "address": {
+                        "type": "string",
+                        "description": "Core identity"
+                    },
+                    "block_height": {
+                        "type": "string"
+                    },
+                    "total_trades": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 TRADING \u2550\u2550\u2550\u2550\u2550 Total unique trades executed as trader"
+                    },
+                    "total_trade_ops": {
+                        "type": "string",
+                        "description": "Total operations across all trades (swap legs + takes + auction redeems)"
+                    },
+                    "total_volume_sent": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Lifetime aggregate coins sent (denoms with metadata only)"
+                    },
+                    "total_volume_received": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Lifetime aggregate coins received (denoms with metadata only)"
+                    },
+                    "pools_created": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 LP ACTIVITY \u2550\u2550\u2550\u2550\u2550 Total pools created by this address"
+                    },
+                    "lp_fees_earned": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Cumulative swap fees earned (denoms with metadata only)"
+                    },
+                    "lp_interest_earned": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Cumulative interest earned from leverage borrowers (denoms with metadata only)"
+                    },
+                    "liquidity_adds": {
+                        "type": "string",
+                        "description": "Count of liquidity add operations"
+                    },
+                    "liquidity_removes": {
+                        "type": "string",
+                        "description": "Count of liquidity remove operations"
+                    },
+                    "positions_opened": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE (BORROWER) \u2550\u2550\u2550\u2550\u2550 Total leverage positions opened (lifetime)"
+                    },
+                    "positions_closed": {
+                        "type": "string",
+                        "description": "Total leverage positions closed (lifetime)"
+                    },
+                    "interest_paid": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Total interest paid (denoms with metadata only)"
+                    },
+                    "profit": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Profit from closed leverage positions (denoms with metadata only)"
+                    },
+                    "losses": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Losses from closed leverage positions (denoms with metadata only)"
+                    },
+                    "liquidations": {
+                        "type": "string",
+                        "description": "Count of positions liquidated (lifetime)"
+                    },
+                    "offers_created": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 ORDERBOOK \u2550\u2550\u2550\u2550\u2550 Total offers created (lifetime)"
+                    },
+                    "offers_closed": {
+                        "type": "string",
+                        "description": "Total offers closed via full execution (lifetime)"
+                    },
+                    "offers_cancelled": {
+                        "type": "string",
+                        "description": "Total offers cancelled before completion (lifetime)"
+                    },
+                    "maker_volume": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Cumulative volume traded as maker (denoms with metadata only)"
+                    },
+                    "auctions_created": {
+                        "type": "string",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 AUCTIONS \u2550\u2550\u2550\u2550\u2550 Total auctions created as seller (lifetime)"
+                    },
+                    "auction_volume": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Total auction volume sold (denoms with metadata only)"
+                    },
+                    "affiliate_earned": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 AFFILIATE \u2550\u2550\u2550\u2550\u2550 Cumulative earnings from affiliate referrals (denoms with metadata only)"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Address Metrics",
+                "description": "AddressMetrics aggregates lifetime whaleswap activity for a specific address. All metrics are cumulative totals, not current state snapshots. NOTE: Only coins with existing denom metadata are tracked to prevent spam and focus on relevant assets. Coins without metadata are excluded from all volume and balance aggregations."
+            }
+        }
+    }
+}

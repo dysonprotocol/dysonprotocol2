@@ -1,0 +1,49 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.gov.v1.MsgExecLegacyContent",
+        "definitions": {
+            "cosmos.gov.v1.MsgExecLegacyContent": {
+                "properties": {
+                    "content": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "content is the proposal's content."
+                    },
+                    "authority": {
+                        "type": "string",
+                        "description": "authority must be the gov module address."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Exec Legacy Content",
+                "description": "MsgExecLegacyContent is used to wrap the legacy content field into a message. This ensures backwards compatibility with v1beta1.MsgSubmitProposal."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.gov.v1.MsgExecLegacyContentResponse",
+        "definitions": {
+            "cosmos.gov.v1.MsgExecLegacyContentResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Exec Legacy Content Response",
+                "description": "MsgExecLegacyContentResponse defines the Msg/ExecLegacyContent response type."
+            }
+        }
+    }
+}

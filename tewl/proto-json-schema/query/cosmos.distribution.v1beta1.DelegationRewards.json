@@ -1,0 +1,60 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryDelegationRewardsRequest",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryDelegationRewardsRequest": {
+                "properties": {
+                    "delegator_address": {
+                        "type": "string",
+                        "description": "delegator_address defines the delegator address to query for."
+                    },
+                    "validator_address": {
+                        "type": "string",
+                        "description": "validator_address defines the validator address to query for."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Delegation Rewards Request",
+                "description": "QueryDelegationRewardsRequest is the request type for the Query/DelegationRewards RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryDelegationRewardsResponse",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryDelegationRewardsResponse": {
+                "properties": {
+                    "rewards": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "rewards defines the rewards accrued by a delegation."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Delegation Rewards Response",
+                "description": "QueryDelegationRewardsResponse is the response type for the Query/DelegationRewards RPC method."
+            },
+            "cosmos.base.v1beta1.DecCoin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Dec Coin",
+                "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
+            }
+        }
+    }
+}

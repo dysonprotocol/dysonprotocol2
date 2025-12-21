@@ -1,0 +1,47 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.QueryPoolRequest",
+        "definitions": {
+            "cosmos.staking.v1beta1.QueryPoolRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Pool Request",
+                "description": "QueryPoolRequest is request type for the Query/Pool RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.QueryPoolResponse",
+        "definitions": {
+            "cosmos.staking.v1beta1.QueryPoolResponse": {
+                "properties": {
+                    "pool": {
+                        "$ref": "#/definitions/cosmos.staking.v1beta1.Pool",
+                        "additionalProperties": false,
+                        "description": "pool defines the pool info."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Pool Response",
+                "description": "QueryPoolResponse is response type for the Query/Pool RPC method."
+            },
+            "cosmos.staking.v1beta1.Pool": {
+                "properties": {
+                    "not_bonded_tokens": {
+                        "type": "string"
+                    },
+                    "bonded_tokens": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Pool",
+                "description": "Pool is used for tracking bonded and not-bonded token supply of the bond denomination."
+            }
+        }
+    }
+}

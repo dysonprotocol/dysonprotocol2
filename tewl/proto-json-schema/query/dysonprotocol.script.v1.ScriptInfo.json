@@ -1,0 +1,59 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.QueryScriptInfoRequest",
+        "definitions": {
+            "dysonprotocol.script.v1.QueryScriptInfoRequest": {
+                "properties": {
+                    "address": {
+                        "type": "string",
+                        "description": "Script address or nameservice name to query; supports both bech32 addresses and names."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Script Info Request",
+                "description": "QueryScriptInfoRequest requests script information by address or name. The address field accepts both bech32 addresses and nameservice names. Nameservice names will be resolved to addresses automatically."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.QueryScriptInfoResponse",
+        "definitions": {
+            "dysonprotocol.script.v1.QueryScriptInfoResponse": {
+                "properties": {
+                    "script": {
+                        "$ref": "#/definitions/dysonprotocol.script.v1.Script",
+                        "additionalProperties": false,
+                        "description": "Complete script information including code, version, and metadata."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Script Info Response",
+                "description": "QueryScriptInfoResponse contains the complete script information."
+            },
+            "dysonprotocol.script.v1.Script": {
+                "properties": {
+                    "address": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "update_height": {
+                        "type": "string",
+                        "description": "Block height at which this script was last updated"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Script"
+            }
+        }
+    }
+}

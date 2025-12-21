@@ -1,0 +1,44 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetListed",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetListed": {
+                "properties": {
+                    "nft_owner": {
+                        "type": "string",
+                        "description": "nft_owner is the address of the NFT owner"
+                    },
+                    "nft_class_id": {
+                        "type": "string",
+                        "description": "nft_class_id is the identifier of the NFT class"
+                    },
+                    "nft_id": {
+                        "type": "string",
+                        "description": "nft_id is the identifier of the specific NFT"
+                    },
+                    "listed": {
+                        "type": "boolean",
+                        "description": "listed determines if the NFT should be listed for sale but is overridden by the NFTClass.always_listed parameter."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set Listed",
+                "description": "MsgSetListed sets the listed status for a specific NFT. Only the owner of the NFT can update this setting."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetListedResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetListedResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set Listed Response",
+                "description": "MsgSetListedResponse defines the response for MsgSetListed"
+            }
+        }
+    }
+}

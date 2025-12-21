@@ -1,0 +1,63 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.slashing.v1beta1.QueryParamsRequest",
+        "definitions": {
+            "cosmos.slashing.v1beta1.QueryParamsRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Params Request",
+                "description": "QueryParamsRequest is the request type for the Query/Params RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.slashing.v1beta1.QueryParamsResponse",
+        "definitions": {
+            "cosmos.slashing.v1beta1.QueryParamsResponse": {
+                "properties": {
+                    "params": {
+                        "$ref": "#/definitions/cosmos.slashing.v1beta1.Params",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Params Response",
+                "description": "QueryParamsResponse is the response type for the Query/Params RPC method"
+            },
+            "cosmos.slashing.v1beta1.Params": {
+                "properties": {
+                    "signed_blocks_window": {
+                        "type": "string"
+                    },
+                    "min_signed_per_window": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "downtime_jail_duration": {
+                        "pattern": "^([0-9]+\\.?[0-9]*|\\.[0-9]+)s$",
+                        "type": "string",
+                        "format": "regex"
+                    },
+                    "slash_fraction_double_sign": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "slash_fraction_downtime": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Params",
+                "description": "Params represents the parameters used for by the slashing module."
+            }
+        }
+    }
+}

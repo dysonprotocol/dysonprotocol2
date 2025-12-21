@@ -1,0 +1,50 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.auth.v1beta1.QueryModuleAccountsRequest",
+        "definitions": {
+            "cosmos.auth.v1beta1.QueryModuleAccountsRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Module Accounts Request",
+                "description": "QueryModuleAccountsRequest is the request type for the Query/ModuleAccounts RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.auth.v1beta1.QueryModuleAccountsResponse",
+        "definitions": {
+            "cosmos.auth.v1beta1.QueryModuleAccountsResponse": {
+                "properties": {
+                    "accounts": {
+                        "items": {
+                            "properties": {
+                                "type_url": {
+                                    "type": "string",
+                                    "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                                },
+                                "value": {
+                                    "type": "string",
+                                    "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                    "format": "binary",
+                                    "binaryEncoding": "base64"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "type": "object",
+                            "title": "Any",
+                            "description": "Contains the serialized protocol buffer message using the response bytes from `/dysonprotocol.script.v1.QueryEncodeJsonRequest`"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Module Accounts Response",
+                "description": "QueryModuleAccountsResponse is the response type for the Query/ModuleAccounts RPC method."
+            }
+        }
+    }
+}

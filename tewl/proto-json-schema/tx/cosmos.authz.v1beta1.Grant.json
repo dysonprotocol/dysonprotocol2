@@ -1,0 +1,67 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.authz.v1beta1.MsgGrant",
+        "definitions": {
+            "cosmos.authz.v1beta1.MsgGrant": {
+                "properties": {
+                    "granter": {
+                        "type": "string"
+                    },
+                    "grantee": {
+                        "type": "string"
+                    },
+                    "grant": {
+                        "$ref": "#/definitions/cosmos.authz.v1beta1.Grant",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Grant",
+                "description": "MsgGrant is a request type for Grant method. It declares authorization to the grantee on behalf of the granter with the provided expiration time."
+            },
+            "cosmos.authz.v1beta1.Grant": {
+                "properties": {
+                    "authorization": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object"
+                    },
+                    "expiration": {
+                        "type": "string",
+                        "description": "time when the grant will expire and will be pruned. If null, then the grant doesn't have a time expiration (other conditions  in `authorization` may apply to invalidate the grant)",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Grant",
+                "description": "Grant gives permissions to execute the provide method with expiration time."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.authz.v1beta1.MsgGrantResponse",
+        "definitions": {
+            "cosmos.authz.v1beta1.MsgGrantResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Grant Response",
+                "description": "MsgGrantResponse defines the Msg/MsgGrant response type."
+            }
+        }
+    }
+}

@@ -1,0 +1,60 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.params.v1beta1.QueryParamsRequest",
+        "definitions": {
+            "cosmos.params.v1beta1.QueryParamsRequest": {
+                "properties": {
+                    "subspace": {
+                        "type": "string",
+                        "description": "subspace defines the module to query the parameter for."
+                    },
+                    "key": {
+                        "type": "string",
+                        "description": "key defines the key of the parameter in the subspace."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Params Request",
+                "description": "QueryParamsRequest is request type for the Query/Params RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.params.v1beta1.QueryParamsResponse",
+        "definitions": {
+            "cosmos.params.v1beta1.QueryParamsResponse": {
+                "properties": {
+                    "param": {
+                        "$ref": "#/definitions/cosmos.params.v1beta1.ParamChange",
+                        "additionalProperties": false,
+                        "description": "param defines the queried parameter."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Params Response",
+                "description": "QueryParamsResponse is response type for the Query/Params RPC method."
+            },
+            "cosmos.params.v1beta1.ParamChange": {
+                "properties": {
+                    "subspace": {
+                        "type": "string"
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Param Change",
+                "description": "ParamChange defines an individual parameter change, for use in ParameterChangeProposal."
+            }
+        }
+    }
+}

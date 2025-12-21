@@ -1,0 +1,602 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/gov/v1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "cosmos.gov.v1.MsgCancelProposal": {
+      "post": {
+        "summary": "CancelProposal defines a method to cancel governance proposal",
+        "operationId": "cosmos.gov.v1.MsgCancelProposal",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.gov.v1.MsgCancelProposalResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.gov.v1.MsgCancelProposal"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.gov.v1.MsgDeposit": {
+      "post": {
+        "summary": "Deposit defines a method to add deposit on a specific proposal.",
+        "operationId": "cosmos.gov.v1.MsgDeposit",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.gov.v1.MsgDepositResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.gov.v1.MsgDeposit"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.gov.v1.MsgExecLegacyContent": {
+      "post": {
+        "summary": "ExecLegacyContent defines a Msg to be in included in a MsgSubmitProposal\nto execute a legacy content-based proposal.",
+        "operationId": "cosmos.gov.v1.MsgExecLegacyContent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.gov.v1.MsgExecLegacyContentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.gov.v1.MsgExecLegacyContent"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.gov.v1.MsgSubmitProposal": {
+      "post": {
+        "summary": "SubmitProposal defines a method to create new proposal given the messages.",
+        "operationId": "cosmos.gov.v1.MsgSubmitProposal",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.gov.v1.MsgSubmitProposalResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.gov.v1.MsgSubmitProposal"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.gov.v1.MsgUpdateParams": {
+      "post": {
+        "summary": "UpdateParams defines a governance operation for updating the x/gov module\nparameters. The authority is defined in the keeper.",
+        "operationId": "cosmos.gov.v1.MsgUpdateParams",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.gov.v1.MsgUpdateParamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.gov.v1.MsgUpdateParams"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.gov.v1.MsgVote": {
+      "post": {
+        "summary": "Vote defines a method to add a vote on a specific proposal.",
+        "operationId": "cosmos.gov.v1.MsgVote",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.gov.v1.MsgVoteResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.gov.v1.MsgVote"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.gov.v1.MsgVoteWeighted": {
+      "post": {
+        "summary": "VoteWeighted defines a method to add a weighted vote on a specific\nproposal.",
+        "operationId": "cosmos.gov.v1.MsgVoteWeighted",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.gov.v1.MsgVoteWeightedResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.gov.v1.MsgVoteWeighted"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.v1beta1.Coin": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "Coin defines a token with a denomination and an amount.\n\nNOTE: The amount field is an Int which implements the custom method\nsignatures required by gogoproto."
+    },
+    "cosmos.gov.v1.MsgCancelProposal": {
+      "type": "object",
+      "properties": {
+        "proposal_id": {
+          "type": "string",
+          "format": "uint64",
+          "description": "proposal_id defines the unique id of the proposal."
+        },
+        "proposer": {
+          "type": "string",
+          "description": "proposer is the account address of the proposer."
+        }
+      },
+      "description": "MsgCancelProposal is the Msg/CancelProposal request type."
+    },
+    "cosmos.gov.v1.MsgCancelProposalResponse": {
+      "type": "object",
+      "properties": {
+        "proposal_id": {
+          "type": "string",
+          "format": "uint64",
+          "description": "proposal_id defines the unique id of the proposal."
+        },
+        "canceled_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "canceled_time is the time when proposal is canceled."
+        },
+        "canceled_height": {
+          "type": "string",
+          "format": "uint64",
+          "description": "canceled_height defines the block height at which the proposal is canceled."
+        }
+      },
+      "description": "MsgCancelProposalResponse defines the response structure for executing a\nMsgCancelProposal message."
+    },
+    "cosmos.gov.v1.MsgDeposit": {
+      "type": "object",
+      "properties": {
+        "proposal_id": {
+          "type": "string",
+          "format": "uint64",
+          "description": "proposal_id defines the unique id of the proposal."
+        },
+        "depositor": {
+          "type": "string",
+          "description": "depositor defines the deposit addresses from the proposals."
+        },
+        "amount": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "description": "amount to be deposited by depositor."
+        }
+      },
+      "description": "MsgDeposit defines a message to submit a deposit to an existing proposal."
+    },
+    "cosmos.gov.v1.MsgDepositResponse": {
+      "type": "object",
+      "description": "MsgDepositResponse defines the Msg/Deposit response type."
+    },
+    "cosmos.gov.v1.MsgExecLegacyContent": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "description": "content is the proposal's content."
+        },
+        "authority": {
+          "type": "string",
+          "description": "authority must be the gov module address."
+        }
+      },
+      "description": "MsgExecLegacyContent is used to wrap the legacy content field into a message.\nThis ensures backwards compatibility with v1beta1.MsgSubmitProposal."
+    },
+    "cosmos.gov.v1.MsgExecLegacyContentResponse": {
+      "type": "object",
+      "description": "MsgExecLegacyContentResponse defines the Msg/ExecLegacyContent response type."
+    },
+    "cosmos.gov.v1.MsgSubmitProposal": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          },
+          "description": "messages are the arbitrary messages to be executed if proposal passes."
+        },
+        "initial_deposit": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "description": "initial_deposit is the deposit value that must be paid at proposal\nsubmission."
+        },
+        "proposer": {
+          "type": "string",
+          "description": "proposer is the account address of the proposer."
+        },
+        "metadata": {
+          "type": "string",
+          "description": "metadata is any arbitrary metadata attached to the proposal."
+        },
+        "title": {
+          "type": "string",
+          "description": "title is the title of the proposal."
+        },
+        "summary": {
+          "type": "string",
+          "title": "summary is the summary of the proposal"
+        },
+        "expedited": {
+          "type": "boolean",
+          "title": "expedited defines if the proposal is expedited or not"
+        }
+      },
+      "description": "MsgSubmitProposal defines an sdk.Msg type that supports submitting arbitrary\nproposal Content."
+    },
+    "cosmos.gov.v1.MsgSubmitProposalResponse": {
+      "type": "object",
+      "properties": {
+        "proposal_id": {
+          "type": "string",
+          "format": "uint64",
+          "description": "proposal_id defines the unique id of the proposal."
+        }
+      },
+      "description": "MsgSubmitProposalResponse defines the Msg/SubmitProposal response type."
+    },
+    "cosmos.gov.v1.MsgUpdateParams": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string",
+          "description": "authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+        },
+        "params": {
+          "$ref": "#/definitions/cosmos.gov.v1.Params",
+          "description": "params defines the x/gov parameters to update.\n\nNOTE: All parameters must be supplied."
+        }
+      },
+      "description": "MsgUpdateParams is the Msg/UpdateParams request type."
+    },
+    "cosmos.gov.v1.MsgUpdateParamsResponse": {
+      "type": "object",
+      "description": "MsgUpdateParamsResponse defines the response structure for executing a\nMsgUpdateParams message."
+    },
+    "cosmos.gov.v1.MsgVote": {
+      "type": "object",
+      "properties": {
+        "proposal_id": {
+          "type": "string",
+          "format": "uint64",
+          "description": "proposal_id defines the unique id of the proposal."
+        },
+        "voter": {
+          "type": "string",
+          "description": "voter is the voter address for the proposal."
+        },
+        "option": {
+          "$ref": "#/definitions/cosmos.gov.v1.VoteOption",
+          "description": "option defines the vote option."
+        },
+        "metadata": {
+          "type": "string",
+          "description": "metadata is any arbitrary metadata attached to the Vote."
+        }
+      },
+      "description": "MsgVote defines a message to cast a vote."
+    },
+    "cosmos.gov.v1.MsgVoteResponse": {
+      "type": "object",
+      "description": "MsgVoteResponse defines the Msg/Vote response type."
+    },
+    "cosmos.gov.v1.MsgVoteWeighted": {
+      "type": "object",
+      "properties": {
+        "proposal_id": {
+          "type": "string",
+          "format": "uint64",
+          "description": "proposal_id defines the unique id of the proposal."
+        },
+        "voter": {
+          "type": "string",
+          "description": "voter is the voter address for the proposal."
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.gov.v1.WeightedVoteOption"
+          },
+          "description": "options defines the weighted vote options."
+        },
+        "metadata": {
+          "type": "string",
+          "description": "metadata is any arbitrary metadata attached to the VoteWeighted."
+        }
+      },
+      "description": "MsgVoteWeighted defines a message to cast a vote."
+    },
+    "cosmos.gov.v1.MsgVoteWeightedResponse": {
+      "type": "object",
+      "description": "MsgVoteWeightedResponse defines the Msg/VoteWeighted response type."
+    },
+    "cosmos.gov.v1.Params": {
+      "type": "object",
+      "properties": {
+        "min_deposit": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "description": "Minimum deposit for a proposal to enter voting period."
+        },
+        "max_deposit_period": {
+          "type": "string",
+          "description": "Maximum period for Atom holders to deposit on a proposal. Initial value: 2\nmonths."
+        },
+        "voting_period": {
+          "type": "string",
+          "description": "Duration of the voting period."
+        },
+        "quorum": {
+          "type": "string",
+          "description": "Minimum percentage of total stake needed to vote for a result to be\n considered valid."
+        },
+        "threshold": {
+          "type": "string",
+          "description": "Minimum proportion of Yes votes for proposal to pass. Default value: 0.5."
+        },
+        "veto_threshold": {
+          "type": "string",
+          "description": "Minimum value of Veto votes to Total votes ratio for proposal to be\n vetoed. Default value: 1/3."
+        },
+        "min_initial_deposit_ratio": {
+          "type": "string",
+          "description": "The ratio representing the proportion of the deposit value that must be\n paid at proposal submission."
+        },
+        "proposal_cancel_ratio": {
+          "type": "string",
+          "description": "The cancel ratio which will not be returned back to the depositors when a\nproposal is cancelled."
+        },
+        "proposal_cancel_dest": {
+          "type": "string",
+          "description": "The address which will receive (proposal_cancel_ratio * deposit) proposal\ndeposits. If empty, the (proposal_cancel_ratio * deposit) proposal deposits\nwill be burned."
+        },
+        "expedited_voting_period": {
+          "type": "string",
+          "description": "Duration of the voting period of an expedited proposal."
+        },
+        "expedited_threshold": {
+          "type": "string",
+          "description": "Minimum proportion of Yes votes for proposal to pass. Default value: 0.67."
+        },
+        "expedited_min_deposit": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "description": "Minimum expedited deposit for a proposal to enter voting period."
+        },
+        "burn_vote_quorum": {
+          "type": "boolean",
+          "title": "burn deposits if a proposal does not meet quorum"
+        },
+        "burn_proposal_deposit_prevote": {
+          "type": "boolean",
+          "title": "burn deposits if the proposal does not enter voting period"
+        },
+        "burn_vote_veto": {
+          "type": "boolean",
+          "title": "burn deposits if quorum with vote type no_veto is met"
+        },
+        "min_deposit_ratio": {
+          "type": "string",
+          "description": "The ratio representing the proportion of the deposit value minimum that\nmust be met when making a deposit. Default value: 0.01. Meaning that for a\nchain with a min_deposit of 100stake, a deposit of 1stake would be\nrequired."
+        }
+      },
+      "description": "Params defines the parameters for the x/gov module."
+    },
+    "cosmos.gov.v1.VoteOption": {
+      "type": "string",
+      "enum": [
+        "VOTE_OPTION_UNSPECIFIED",
+        "VOTE_OPTION_YES",
+        "VOTE_OPTION_ABSTAIN",
+        "VOTE_OPTION_NO",
+        "VOTE_OPTION_NO_WITH_VETO"
+      ],
+      "default": "VOTE_OPTION_UNSPECIFIED",
+      "description": "VoteOption enumerates the valid vote options for a given governance proposal.\n\n - VOTE_OPTION_UNSPECIFIED: VOTE_OPTION_UNSPECIFIED defines a no-op vote option.\n - VOTE_OPTION_YES: VOTE_OPTION_YES defines a yes vote option.\n - VOTE_OPTION_ABSTAIN: VOTE_OPTION_ABSTAIN defines an abstain vote option.\n - VOTE_OPTION_NO: VOTE_OPTION_NO defines a no vote option.\n - VOTE_OPTION_NO_WITH_VETO: VOTE_OPTION_NO_WITH_VETO defines a no with veto vote option."
+    },
+    "cosmos.gov.v1.WeightedVoteOption": {
+      "type": "object",
+      "properties": {
+        "option": {
+          "$ref": "#/definitions/cosmos.gov.v1.VoteOption",
+          "description": "option defines the valid vote options, it must not contain duplicate vote\noptions."
+        },
+        "weight": {
+          "type": "string",
+          "description": "weight is the vote weight associated with the vote option."
+        }
+      },
+      "description": "WeightedVoteOption defines a unit of vote for vote split."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

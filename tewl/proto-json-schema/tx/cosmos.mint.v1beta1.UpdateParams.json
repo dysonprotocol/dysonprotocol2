@@ -1,0 +1,69 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.mint.v1beta1.MsgUpdateParams",
+        "definitions": {
+            "cosmos.mint.v1beta1.MsgUpdateParams": {
+                "properties": {
+                    "authority": {
+                        "type": "string",
+                        "description": "authority is the address that controls the module (defaults to x/gov unless overwritten)."
+                    },
+                    "params": {
+                        "$ref": "#/definitions/cosmos.mint.v1beta1.Params",
+                        "additionalProperties": false,
+                        "description": "params defines the x/mint parameters to update. NOTE: All parameters must be supplied."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Update Params",
+                "description": "MsgUpdateParams is the Msg/UpdateParams request type."
+            },
+            "cosmos.mint.v1beta1.Params": {
+                "properties": {
+                    "mint_denom": {
+                        "type": "string",
+                        "description": "type of coin to mint"
+                    },
+                    "inflation_rate_change": {
+                        "type": "string",
+                        "description": "maximum annual change in inflation rate"
+                    },
+                    "inflation_max": {
+                        "type": "string",
+                        "description": "maximum inflation rate"
+                    },
+                    "inflation_min": {
+                        "type": "string",
+                        "description": "minimum inflation rate"
+                    },
+                    "goal_bonded": {
+                        "type": "string",
+                        "description": "goal of percent bonded atoms"
+                    },
+                    "blocks_per_year": {
+                        "type": "string",
+                        "description": "expected blocks per year"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Params",
+                "description": "Params defines the parameters for the x/mint module."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.mint.v1beta1.MsgUpdateParamsResponse",
+        "definitions": {
+            "cosmos.mint.v1beta1.MsgUpdateParamsResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Update Params Response",
+                "description": "MsgUpdateParamsResponse defines the response structure for executing a MsgUpdateParams message."
+            }
+        }
+    }
+}

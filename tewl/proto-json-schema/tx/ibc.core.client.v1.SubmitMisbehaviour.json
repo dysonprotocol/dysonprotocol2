@@ -1,0 +1,53 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.MsgSubmitMisbehaviour",
+        "definitions": {
+            "ibc.core.client.v1.MsgSubmitMisbehaviour": {
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "client unique identifier"
+                    },
+                    "misbehaviour": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "misbehaviour used for freezing the light client"
+                    },
+                    "signer": {
+                        "type": "string",
+                        "description": "signer address"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Submit Misbehaviour",
+                "description": "MsgSubmitMisbehaviour defines an sdk.Msg type that submits Evidence for light client misbehaviour. This message has been deprecated. Use MsgUpdateClient instead."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.MsgSubmitMisbehaviourResponse",
+        "definitions": {
+            "ibc.core.client.v1.MsgSubmitMisbehaviourResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Submit Misbehaviour Response",
+                "description": "MsgSubmitMisbehaviourResponse defines the Msg/SubmitMisbehaviour response type."
+            }
+        }
+    }
+}

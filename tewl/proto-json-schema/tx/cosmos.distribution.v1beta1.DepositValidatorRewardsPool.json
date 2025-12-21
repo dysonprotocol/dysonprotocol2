@@ -1,0 +1,55 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgDepositValidatorRewardsPool",
+        "definitions": {
+            "cosmos.distribution.v1beta1.MsgDepositValidatorRewardsPool": {
+                "properties": {
+                    "depositor": {
+                        "type": "string"
+                    },
+                    "validator_address": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Deposit Validator Rewards Pool",
+                "description": "DepositValidatorRewardsPool defines the request structure to provide additional rewards to delegators from a specific validator."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.MsgDepositValidatorRewardsPoolResponse",
+        "definitions": {
+            "cosmos.distribution.v1beta1.MsgDepositValidatorRewardsPoolResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Deposit Validator Rewards Pool Response",
+                "description": "MsgDepositValidatorRewardsPoolResponse defines the response to executing a MsgDepositValidatorRewardsPool message."
+            }
+        }
+    }
+}

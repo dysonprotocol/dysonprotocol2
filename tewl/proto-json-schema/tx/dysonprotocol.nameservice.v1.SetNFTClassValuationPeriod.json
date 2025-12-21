@@ -1,0 +1,38 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetNFTClassValuationPeriod",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetNFTClassValuationPeriod": {
+                "properties": {
+                    "name_destination": {
+                        "type": "string"
+                    },
+                    "class_id": {
+                        "type": "string"
+                    },
+                    "valuation_period": {
+                        "pattern": "^([0-9]+\\.?[0-9]*|\\.[0-9]+)s$",
+                        "type": "string",
+                        "format": "regex"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set NFT Class Valuation Period",
+                "description": "Set per-class valuation period (duration)"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetNFTClassValuationPeriodResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetNFTClassValuationPeriodResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set NFT Class Valuation Period Response"
+            }
+        }
+    }
+}

@@ -1,0 +1,795 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ibc/core/client/v1/query.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/ibc/core/client/v1/client_creator/{client_id}": {
+      "get": {
+        "summary": "ClientCreator queries the creator of a given client.",
+        "operationId": "ibc.core.client.v1.QueryClientCreatorRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.QueryClientCreatorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client unique identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/client/v1/client_states": {
+      "get": {
+        "summary": "ClientStates queries all the IBC light clients of a chain.",
+        "operationId": "ibc.core.client.v1.QueryClientStatesRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.QueryClientStatesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pagination.key",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/client/v1/client_states/{client_id}": {
+      "get": {
+        "summary": "ClientState queries an IBC light client.",
+        "operationId": "ibc.core.client.v1.QueryClientStateRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.QueryClientStateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client state unique identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/client/v1/client_status/{client_id}": {
+      "get": {
+        "summary": "Status queries the status of an IBC client.",
+        "operationId": "ibc.core.client.v1.QueryClientStatusRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.QueryClientStatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client unique identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/client/v1/consensus_states/{client_id}": {
+      "get": {
+        "summary": "ConsensusStates queries all the consensus state associated with a given\nclient.",
+        "operationId": "ibc.core.client.v1.QueryConsensusStatesRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.QueryConsensusStatesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/client/v1/consensus_states/{client_id}/heights": {
+      "get": {
+        "summary": "ConsensusStateHeights queries the height of every consensus states\nassociated with a given client.",
+        "operationId": "ibc.core.client.v1.QueryConsensusStateHeightsRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.QueryConsensusStateHeightsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/client/v1/consensus_states/{client_id}/revision/{revision_number}/height/{revision_height}": {
+      "get": {
+        "summary": "ConsensusState queries a consensus state associated with a client state at\na given height.",
+        "operationId": "ibc.core.client.v1.QueryConsensusStateRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.QueryConsensusStateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "revision_number",
+            "description": "consensus state revision number",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "revision_height",
+            "description": "consensus state revision height",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "latest_height",
+            "description": "latest_height overrides the height field and queries the latest stored\nConsensusState.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/client/v1/params": {
+      "get": {
+        "summary": "ClientParams queries all parameters of the ibc client submodule.",
+        "operationId": "ibc.core.client.v1.QueryClientParamsRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.QueryClientParamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/client/v1/upgraded_client_states": {
+      "get": {
+        "summary": "UpgradedClientState queries an Upgraded IBC light client.",
+        "operationId": "ibc.core.client.v1.QueryUpgradedClientStateRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.QueryUpgradedClientStateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/client/v1/upgraded_consensus_states": {
+      "get": {
+        "summary": "UpgradedConsensusState queries an Upgraded IBC consensus state.",
+        "operationId": "ibc.core.client.v1.QueryUpgradedConsensusStateRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.QueryUpgradedConsensusStateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/client/v1/verify_membership": {
+      "post": {
+        "summary": "VerifyMembership queries an IBC light client for proof verification of a\nvalue at a given key path.",
+        "operationId": "ibc.core.client.v1.QueryVerifyMembershipRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.QueryVerifyMembershipResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.QueryVerifyMembershipRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.query.v1beta1.PageRequest": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "format": "byte",
+          "description": "key is a value returned in PageResponse.next_key to begin\nquerying the next page most efficiently. Only one of offset or key\nshould be set."
+        },
+        "offset": {
+          "type": "string",
+          "format": "uint64",
+          "description": "offset is a numeric offset that can be used when key is unavailable.\nIt is less efficient than using key. Only one of offset or key should\nbe set."
+        },
+        "limit": {
+          "type": "string",
+          "format": "uint64",
+          "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app."
+        },
+        "count_total": {
+          "type": "boolean",
+          "description": "count_total is set to true  to indicate that the result set should include\na count of the total number of items available for pagination in UIs.\ncount_total is only respected when offset is used. It is ignored when key\nis set."
+        },
+        "reverse": {
+          "type": "boolean",
+          "description": "reverse is set to true if results are to be returned in the descending\norder."
+        }
+      },
+      "description": "message SomeRequest {\n         Foo some_parameter = 1;\n         PageRequest pagination = 2;\n }",
+      "title": "PageRequest is to be embedded in gRPC request messages for efficient\npagination. Ex:"
+    },
+    "cosmos.base.query.v1beta1.PageResponse": {
+      "type": "object",
+      "properties": {
+        "next_key": {
+          "type": "string",
+          "format": "byte",
+          "description": "next_key is the key to be passed to PageRequest.key to\nquery the next page most efficiently. It will be empty if\nthere are no more results."
+        },
+        "total": {
+          "type": "string",
+          "format": "uint64",
+          "title": "total is total number of results available if PageRequest.count_total\nwas set, its value is undefined otherwise"
+        }
+      },
+      "description": "PageResponse is to be embedded in gRPC response messages where the\ncorresponding request message has used PageRequest.\n\n message SomeResponse {\n         repeated Bar results = 1;\n         PageResponse page = 2;\n }"
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    },
+    "ibc.core.client.v1.ConsensusStateWithHeight": {
+      "type": "object",
+      "properties": {
+        "height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "consensus state height"
+        },
+        "consensus_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "title": "consensus state"
+        }
+      },
+      "description": "ConsensusStateWithHeight defines a consensus state with an additional height\nfield."
+    },
+    "ibc.core.client.v1.Height": {
+      "type": "object",
+      "properties": {
+        "revision_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "the revision that the client is currently on"
+        },
+        "revision_height": {
+          "type": "string",
+          "format": "uint64",
+          "title": "the height within the given revision"
+        }
+      },
+      "description": "Normally the RevisionHeight is incremented at each height while keeping\nRevisionNumber the same. However some consensus algorithms may choose to\nreset the height in certain conditions e.g. hard forks, state-machine\nbreaking changes In these cases, the RevisionNumber is incremented so that\nheight continues to be monitonically increasing even as the RevisionHeight\ngets reset\n\nPlease note that json tags for generated Go code are overridden to explicitly\nexclude the omitempty jsontag. This enforces the Go json marshaller to always\nemit zero values for both revision_number and revision_height.",
+      "title": "Height is a monotonically increasing data type\nthat can be compared against another Height for the purposes of updating and\nfreezing clients"
+    },
+    "ibc.core.client.v1.IdentifiedClientState": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "title": "client identifier"
+        },
+        "client_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "title": "client state"
+        }
+      },
+      "description": "IdentifiedClientState defines a client state with an additional client\nidentifier field."
+    },
+    "ibc.core.client.v1.Params": {
+      "type": "object",
+      "properties": {
+        "allowed_clients": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "allowed_clients defines the list of allowed client state types which can be\ncreated and interacted with. If a client type is removed from the allowed\nclients list, usage of this client will be disabled until it is added again\nto the list."
+        }
+      },
+      "description": "Params defines the set of IBC light client parameters."
+    },
+    "ibc.core.client.v1.QueryClientCreatorResponse": {
+      "type": "object",
+      "properties": {
+        "creator": {
+          "type": "string",
+          "title": "creator of the client"
+        }
+      },
+      "description": "QueryClientCreatorResponse is the response type for the Query/ClientCreator\nRPC method."
+    },
+    "ibc.core.client.v1.QueryClientParamsResponse": {
+      "type": "object",
+      "properties": {
+        "params": {
+          "$ref": "#/definitions/ibc.core.client.v1.Params",
+          "description": "params defines the parameters of the module."
+        }
+      },
+      "description": "QueryClientParamsResponse is the response type for the Query/ClientParams RPC\nmethod."
+    },
+    "ibc.core.client.v1.QueryClientStateResponse": {
+      "type": "object",
+      "properties": {
+        "client_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "title": "client state associated with the request identifier"
+        },
+        "proof": {
+          "type": "string",
+          "format": "byte",
+          "title": "merkle proof of existence"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "height at which the proof was retrieved"
+        }
+      },
+      "description": "QueryClientStateResponse is the response type for the Query/ClientState RPC\nmethod. Besides the client state, it includes a proof and the height from\nwhich the proof was retrieved."
+    },
+    "ibc.core.client.v1.QueryClientStatesResponse": {
+      "type": "object",
+      "properties": {
+        "client_states": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ibc.core.client.v1.IdentifiedClientState"
+          },
+          "description": "list of stored ClientStates of the chain."
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "pagination response"
+        }
+      },
+      "description": "QueryClientStatesResponse is the response type for the Query/ClientStates RPC\nmethod."
+    },
+    "ibc.core.client.v1.QueryClientStatusResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      },
+      "description": "QueryClientStatusResponse is the response type for the Query/ClientStatus RPC\nmethod. It returns the current status of the IBC client."
+    },
+    "ibc.core.client.v1.QueryConsensusStateHeightsResponse": {
+      "type": "object",
+      "properties": {
+        "consensus_state_heights": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ibc.core.client.v1.Height"
+          },
+          "title": "consensus state heights"
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "pagination response"
+        }
+      },
+      "title": "QueryConsensusStateHeightsResponse is the response type for the\nQuery/ConsensusStateHeights RPC method"
+    },
+    "ibc.core.client.v1.QueryConsensusStateResponse": {
+      "type": "object",
+      "properties": {
+        "consensus_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "title": "consensus state associated with the client identifier at the given height"
+        },
+        "proof": {
+          "type": "string",
+          "format": "byte",
+          "title": "merkle proof of existence"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "height at which the proof was retrieved"
+        }
+      },
+      "title": "QueryConsensusStateResponse is the response type for the Query/ConsensusState\nRPC method"
+    },
+    "ibc.core.client.v1.QueryConsensusStatesResponse": {
+      "type": "object",
+      "properties": {
+        "consensus_states": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ibc.core.client.v1.ConsensusStateWithHeight"
+          },
+          "title": "consensus states associated with the identifier"
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "pagination response"
+        }
+      },
+      "title": "QueryConsensusStatesResponse is the response type for the\nQuery/ConsensusStates RPC method"
+    },
+    "ibc.core.client.v1.QueryUpgradedClientStateResponse": {
+      "type": "object",
+      "properties": {
+        "upgraded_client_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "title": "client state associated with the request identifier"
+        }
+      },
+      "description": "QueryUpgradedClientStateResponse is the response type for the\nQuery/UpgradedClientState RPC method."
+    },
+    "ibc.core.client.v1.QueryUpgradedConsensusStateResponse": {
+      "type": "object",
+      "properties": {
+        "upgraded_consensus_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "title": "Consensus state associated with the request identifier"
+        }
+      },
+      "description": "QueryUpgradedConsensusStateResponse is the response type for the\nQuery/UpgradedConsensusState RPC method."
+    },
+    "ibc.core.client.v1.QueryVerifyMembershipRequest": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "description": "client unique identifier."
+        },
+        "proof": {
+          "type": "string",
+          "format": "byte",
+          "description": "the proof to be verified by the client."
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "description": "the height of the commitment root at which the proof is verified."
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "the value which is proven."
+        },
+        "time_delay": {
+          "type": "string",
+          "format": "uint64",
+          "title": "optional time delay"
+        },
+        "block_delay": {
+          "type": "string",
+          "format": "uint64",
+          "title": "optional block delay"
+        },
+        "merkle_path": {
+          "$ref": "#/definitions/ibc.core.commitment.v2.MerklePath",
+          "description": "the commitment key path."
+        }
+      },
+      "title": "QueryVerifyMembershipRequest is the request type for the\nQuery/VerifyMembership RPC method"
+    },
+    "ibc.core.client.v1.QueryVerifyMembershipResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "description": "boolean indicating success or failure of proof verification."
+        }
+      },
+      "title": "QueryVerifyMembershipResponse is the response type for the\nQuery/VerifyMembership RPC method"
+    },
+    "ibc.core.commitment.v2.MerklePath": {
+      "type": "object",
+      "properties": {
+        "key_path": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          }
+        }
+      },
+      "description": "MerklePath is the path used to verify commitment proofs, which can be an\narbitrary structured object (defined by a commitment type).\nICS-23 verification supports membership proofs for nested merkle trees.\nThe ICS-24 standard provable keys MUST be stored in the lowest level tree\nwith an optional prefix. The IC24 provable tree may then be stored in a\nhigher level tree(s) that hash up to the root hash stored in the consensus\nstate of the client. Each element of the path represents the key of a merkle\ntree from the root to the leaf. The elements of the path before the final\nelement must be the path to the tree that contains the ICS24 provable store.\nThus, it should remain constant for all ICS24 proofs. The final element of\nthe path is the key of the leaf in the ICS24 provable store, Thus IBC core\nwill append the ICS24 path to the final element of the MerklePath stored in\nthe counterparty to create the full path to the leaf for proof verification.\nExamples:\nCosmos SDK:\nThe Cosmos SDK commits to a multi-tree where each store is an IAVL tree and\nall store hashes are hashed in a simple merkle tree to get the final root\nhash. Thus, the MerklePath in the counterparty MerklePrefix has the following\nstructure: [\"ibc\", \"\"] The core IBC handler will append the ICS24 path to the\nfinal element of the MerklePath like so: [\"ibc\", \"{packetCommitmentPath}\"]\nwhich will then be used for final verification. Ethereum: The Ethereum client\ncommits to a single Patricia merkle trie. The ICS24 provable store is managed\nby the smart contract state. Each smart contract has a specific prefix\nreserved within the global trie. Thus the MerklePath in the counterparty is\nthe prefix to the smart contract state in the global trie. Since there is\nonly one tree in the commitment structure of ethereum the MerklePath in the\ncounterparty MerklePrefix has the following structure:\n[\"IBCCoreContractAddressStoragePrefix\"] The core IBC handler will append the\nICS24 path to the final element of the MerklePath like so:\n[\"IBCCoreContractAddressStoragePrefix{packetCommitmentPath}\"] which will then\nbe used for final verification. Thus the MerklePath in the counterparty\nMerklePrefix is the nested key path from the root hash of the consensus state\ndown to the ICS24 provable store. The IBC handler retrieves the counterparty\nkey path to the ICS24 provable store from the MerklePath and appends the\nICS24 path to get the final key path to the value being verified by the\nclient against the root hash in the client's consensus state."
+    }
+  }
+}

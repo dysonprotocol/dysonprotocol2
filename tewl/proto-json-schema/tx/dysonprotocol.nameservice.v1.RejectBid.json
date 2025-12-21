@@ -1,0 +1,82 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgRejectBid",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgRejectBid": {
+                "properties": {
+                    "owner": {
+                        "type": "string",
+                        "description": "Current NFT owner rejecting the bid."
+                    },
+                    "nft_class_id": {
+                        "type": "string",
+                        "description": "NFT class identifier."
+                    },
+                    "nft_id": {
+                        "type": "string",
+                        "description": "NFT identifier within the class."
+                    },
+                    "new_valuation": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "New valuation amount (must be higher than current valuation)."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Reject Bid",
+                "description": "MsgRejectBid rejects current bid and sets new valuation, charging rejection fee. Behavior: - Rejects current active bid on owned NFT. - Sets new NFT valuation, charging rejection fee proportional to new valuation. - Rejection fee routing: to NFT class owner for user-controlled classes, to community pool for governance-controlled classes. - Refunds the rejected bidder's escrowed bid amount back to them. - Clears bid state from NFT. Validation: - Sender must be current NFT owner. - NFT must have active bid to reject. - New valuation must be valid and higher than current. Emits: - EventBidRejected(class_id, nft_id, rejection_fee) on successful rejection. Returns: - Rejection fee amount collected."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgRejectBidResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgRejectBidResponse": {
+                "properties": {
+                    "rejection_fee": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Fee collected by the NFT class owner when a bid is rejected."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Reject Bid Response"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    }
+}

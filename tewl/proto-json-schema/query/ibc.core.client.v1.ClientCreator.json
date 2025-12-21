@@ -1,0 +1,38 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.QueryClientCreatorRequest",
+        "definitions": {
+            "ibc.core.client.v1.QueryClientCreatorRequest": {
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "client unique identifier"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Client Creator Request",
+                "description": "QueryClientCreatorRequest is the request type for the Query/ClientCreator RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.client.v1.QueryClientCreatorResponse",
+        "definitions": {
+            "ibc.core.client.v1.QueryClientCreatorResponse": {
+                "properties": {
+                    "creator": {
+                        "type": "string",
+                        "description": "creator of the client"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Client Creator Response",
+                "description": "QueryClientCreatorResponse is the response type for the Query/ClientCreator RPC method."
+            }
+        }
+    }
+}

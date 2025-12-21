@@ -1,0 +1,817 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ibc/core/channel/v1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "ibc.core.channel.v1.MsgAcknowledgement": {
+      "post": {
+        "summary": "Acknowledgement defines a rpc handler method for MsgAcknowledgement.",
+        "operationId": "ibc.core.channel.v1.MsgAcknowledgement",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgAcknowledgementResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgAcknowledgement"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.channel.v1.MsgChannelCloseConfirm": {
+      "post": {
+        "summary": "ChannelCloseConfirm defines a rpc handler method for\nMsgChannelCloseConfirm.",
+        "operationId": "ibc.core.channel.v1.MsgChannelCloseConfirm",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgChannelCloseConfirmResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgChannelCloseConfirm"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.channel.v1.MsgChannelCloseInit": {
+      "post": {
+        "summary": "ChannelCloseInit defines a rpc handler method for MsgChannelCloseInit.",
+        "operationId": "ibc.core.channel.v1.MsgChannelCloseInit",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgChannelCloseInitResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgChannelCloseInit"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.channel.v1.MsgChannelOpenAck": {
+      "post": {
+        "summary": "ChannelOpenAck defines a rpc handler method for MsgChannelOpenAck.",
+        "operationId": "ibc.core.channel.v1.MsgChannelOpenAck",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgChannelOpenAckResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgChannelOpenAck"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.channel.v1.MsgChannelOpenConfirm": {
+      "post": {
+        "summary": "ChannelOpenConfirm defines a rpc handler method for MsgChannelOpenConfirm.",
+        "operationId": "ibc.core.channel.v1.MsgChannelOpenConfirm",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgChannelOpenConfirmResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgChannelOpenConfirm"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.channel.v1.MsgChannelOpenInit": {
+      "post": {
+        "summary": "ChannelOpenInit defines a rpc handler method for MsgChannelOpenInit.",
+        "operationId": "ibc.core.channel.v1.MsgChannelOpenInit",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgChannelOpenInitResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgChannelOpenInit"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.channel.v1.MsgChannelOpenTry": {
+      "post": {
+        "summary": "ChannelOpenTry defines a rpc handler method for MsgChannelOpenTry.",
+        "operationId": "ibc.core.channel.v1.MsgChannelOpenTry",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgChannelOpenTryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgChannelOpenTry"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.channel.v1.MsgRecvPacket": {
+      "post": {
+        "summary": "RecvPacket defines a rpc handler method for MsgRecvPacket.",
+        "operationId": "ibc.core.channel.v1.MsgRecvPacket",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgRecvPacketResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgRecvPacket"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.channel.v1.MsgTimeout": {
+      "post": {
+        "summary": "Timeout defines a rpc handler method for MsgTimeout.",
+        "operationId": "ibc.core.channel.v1.MsgTimeout",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgTimeoutResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgTimeout"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.channel.v1.MsgTimeoutOnClose": {
+      "post": {
+        "summary": "TimeoutOnClose defines a rpc handler method for MsgTimeoutOnClose.",
+        "operationId": "ibc.core.channel.v1.MsgTimeoutOnClose",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgTimeoutOnCloseResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v1.MsgTimeoutOnClose"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    },
+    "ibc.core.channel.v1.Channel": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "$ref": "#/definitions/ibc.core.channel.v1.State",
+          "title": "current state of the channel end"
+        },
+        "ordering": {
+          "$ref": "#/definitions/ibc.core.channel.v1.Order",
+          "title": "whether the channel is ordered or unordered"
+        },
+        "counterparty": {
+          "$ref": "#/definitions/ibc.core.channel.v1.Counterparty",
+          "title": "counterparty channel end"
+        },
+        "connection_hops": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "list of connection identifiers, in order, along which packets sent on\nthis channel will travel"
+        },
+        "version": {
+          "type": "string",
+          "title": "opaque channel version, which is agreed upon during the handshake"
+        }
+      },
+      "description": "Channel defines pipeline for exactly-once packet delivery between specific\nmodules on separate blockchains, which has at least one end capable of\nsending packets and one end capable of receiving packets."
+    },
+    "ibc.core.channel.v1.Counterparty": {
+      "type": "object",
+      "properties": {
+        "port_id": {
+          "type": "string",
+          "description": "port on the counterparty chain which owns the other end of the channel."
+        },
+        "channel_id": {
+          "type": "string",
+          "title": "channel end on the counterparty chain"
+        }
+      },
+      "title": "Counterparty defines a channel end counterparty"
+    },
+    "ibc.core.channel.v1.MsgAcknowledgement": {
+      "type": "object",
+      "properties": {
+        "packet": {
+          "$ref": "#/definitions/ibc.core.channel.v1.Packet"
+        },
+        "acknowledgement": {
+          "type": "string",
+          "format": "byte"
+        },
+        "proof_acked": {
+          "type": "string",
+          "format": "byte"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height"
+        },
+        "signer": {
+          "type": "string"
+        }
+      },
+      "title": "MsgAcknowledgement receives incoming IBC acknowledgement"
+    },
+    "ibc.core.channel.v1.MsgAcknowledgementResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/ibc.core.channel.v1.ResponseResultType"
+        }
+      },
+      "description": "MsgAcknowledgementResponse defines the Msg/Acknowledgement response type."
+    },
+    "ibc.core.channel.v1.MsgChannelCloseConfirm": {
+      "type": "object",
+      "properties": {
+        "port_id": {
+          "type": "string"
+        },
+        "channel_id": {
+          "type": "string"
+        },
+        "proof_init": {
+          "type": "string",
+          "format": "byte"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height"
+        },
+        "signer": {
+          "type": "string"
+        }
+      },
+      "description": "MsgChannelCloseConfirm defines a msg sent by a Relayer to Chain B\nto acknowledge the change of channel state to CLOSED on Chain A."
+    },
+    "ibc.core.channel.v1.MsgChannelCloseConfirmResponse": {
+      "type": "object",
+      "description": "MsgChannelCloseConfirmResponse defines the Msg/ChannelCloseConfirm response\ntype."
+    },
+    "ibc.core.channel.v1.MsgChannelCloseInit": {
+      "type": "object",
+      "properties": {
+        "port_id": {
+          "type": "string"
+        },
+        "channel_id": {
+          "type": "string"
+        },
+        "signer": {
+          "type": "string"
+        }
+      },
+      "description": "MsgChannelCloseInit defines a msg sent by a Relayer to Chain A\nto close a channel with Chain B."
+    },
+    "ibc.core.channel.v1.MsgChannelCloseInitResponse": {
+      "type": "object",
+      "description": "MsgChannelCloseInitResponse defines the Msg/ChannelCloseInit response type."
+    },
+    "ibc.core.channel.v1.MsgChannelOpenAck": {
+      "type": "object",
+      "properties": {
+        "port_id": {
+          "type": "string"
+        },
+        "channel_id": {
+          "type": "string"
+        },
+        "counterparty_channel_id": {
+          "type": "string"
+        },
+        "counterparty_version": {
+          "type": "string"
+        },
+        "proof_try": {
+          "type": "string",
+          "format": "byte"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height"
+        },
+        "signer": {
+          "type": "string"
+        }
+      },
+      "description": "MsgChannelOpenAck defines a msg sent by a Relayer to Chain A to acknowledge\nthe change of channel state to TRYOPEN on Chain B."
+    },
+    "ibc.core.channel.v1.MsgChannelOpenAckResponse": {
+      "type": "object",
+      "description": "MsgChannelOpenAckResponse defines the Msg/ChannelOpenAck response type."
+    },
+    "ibc.core.channel.v1.MsgChannelOpenConfirm": {
+      "type": "object",
+      "properties": {
+        "port_id": {
+          "type": "string"
+        },
+        "channel_id": {
+          "type": "string"
+        },
+        "proof_ack": {
+          "type": "string",
+          "format": "byte"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height"
+        },
+        "signer": {
+          "type": "string"
+        }
+      },
+      "description": "MsgChannelOpenConfirm defines a msg sent by a Relayer to Chain B to\nacknowledge the change of channel state to OPEN on Chain A."
+    },
+    "ibc.core.channel.v1.MsgChannelOpenConfirmResponse": {
+      "type": "object",
+      "description": "MsgChannelOpenConfirmResponse defines the Msg/ChannelOpenConfirm response\ntype."
+    },
+    "ibc.core.channel.v1.MsgChannelOpenInit": {
+      "type": "object",
+      "properties": {
+        "port_id": {
+          "type": "string"
+        },
+        "channel": {
+          "$ref": "#/definitions/ibc.core.channel.v1.Channel"
+        },
+        "signer": {
+          "type": "string"
+        }
+      },
+      "description": "MsgChannelOpenInit defines an sdk.Msg to initialize a channel handshake. It\nis called by a relayer on Chain A."
+    },
+    "ibc.core.channel.v1.MsgChannelOpenInitResponse": {
+      "type": "object",
+      "properties": {
+        "channel_id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "description": "MsgChannelOpenInitResponse defines the Msg/ChannelOpenInit response type."
+    },
+    "ibc.core.channel.v1.MsgChannelOpenTry": {
+      "type": "object",
+      "properties": {
+        "port_id": {
+          "type": "string"
+        },
+        "previous_channel_id": {
+          "type": "string",
+          "description": "Deprecated: this field is unused. Crossing hello's are no longer supported\nin core IBC."
+        },
+        "channel": {
+          "$ref": "#/definitions/ibc.core.channel.v1.Channel",
+          "description": "NOTE: the version field within the channel has been deprecated. Its value\nwill be ignored by core IBC."
+        },
+        "counterparty_version": {
+          "type": "string"
+        },
+        "proof_init": {
+          "type": "string",
+          "format": "byte"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height"
+        },
+        "signer": {
+          "type": "string"
+        }
+      },
+      "description": "MsgChannelOpenInit defines a msg sent by a Relayer to try to open a channel\non Chain B. The version field within the Channel field has been deprecated.\nIts value will be ignored by core IBC."
+    },
+    "ibc.core.channel.v1.MsgChannelOpenTryResponse": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "channel_id": {
+          "type": "string"
+        }
+      },
+      "description": "MsgChannelOpenTryResponse defines the Msg/ChannelOpenTry response type."
+    },
+    "ibc.core.channel.v1.MsgRecvPacket": {
+      "type": "object",
+      "properties": {
+        "packet": {
+          "$ref": "#/definitions/ibc.core.channel.v1.Packet"
+        },
+        "proof_commitment": {
+          "type": "string",
+          "format": "byte"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height"
+        },
+        "signer": {
+          "type": "string"
+        }
+      },
+      "title": "MsgRecvPacket receives incoming IBC packet"
+    },
+    "ibc.core.channel.v1.MsgRecvPacketResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/ibc.core.channel.v1.ResponseResultType"
+        }
+      },
+      "description": "MsgRecvPacketResponse defines the Msg/RecvPacket response type."
+    },
+    "ibc.core.channel.v1.MsgTimeout": {
+      "type": "object",
+      "properties": {
+        "packet": {
+          "$ref": "#/definitions/ibc.core.channel.v1.Packet"
+        },
+        "proof_unreceived": {
+          "type": "string",
+          "format": "byte"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height"
+        },
+        "next_sequence_recv": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "signer": {
+          "type": "string"
+        }
+      },
+      "title": "MsgTimeout receives timed-out packet"
+    },
+    "ibc.core.channel.v1.MsgTimeoutOnClose": {
+      "type": "object",
+      "properties": {
+        "packet": {
+          "$ref": "#/definitions/ibc.core.channel.v1.Packet"
+        },
+        "proof_unreceived": {
+          "type": "string",
+          "format": "byte"
+        },
+        "proof_close": {
+          "type": "string",
+          "format": "byte"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height"
+        },
+        "next_sequence_recv": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "signer": {
+          "type": "string"
+        }
+      },
+      "description": "MsgTimeoutOnClose timed-out packet upon counterparty channel closure."
+    },
+    "ibc.core.channel.v1.MsgTimeoutOnCloseResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/ibc.core.channel.v1.ResponseResultType"
+        }
+      },
+      "description": "MsgTimeoutOnCloseResponse defines the Msg/TimeoutOnClose response type."
+    },
+    "ibc.core.channel.v1.MsgTimeoutResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/ibc.core.channel.v1.ResponseResultType"
+        }
+      },
+      "description": "MsgTimeoutResponse defines the Msg/Timeout response type."
+    },
+    "ibc.core.channel.v1.Order": {
+      "type": "string",
+      "enum": [
+        "ORDER_NONE_UNSPECIFIED",
+        "ORDER_UNORDERED",
+        "ORDER_ORDERED"
+      ],
+      "default": "ORDER_NONE_UNSPECIFIED",
+      "description": "- ORDER_NONE_UNSPECIFIED: zero-value for channel ordering\n - ORDER_UNORDERED: packets can be delivered in any order, which may differ from the order in\nwhich they were sent.\n - ORDER_ORDERED: packets are delivered exactly in the order which they were sent",
+      "title": "Order defines if a channel is ORDERED or UNORDERED"
+    },
+    "ibc.core.channel.v1.Packet": {
+      "type": "object",
+      "properties": {
+        "sequence": {
+          "type": "string",
+          "format": "uint64",
+          "description": "number corresponds to the order of sends and receives, where a Packet\nwith an earlier sequence number must be sent and received before a Packet\nwith a later sequence number."
+        },
+        "source_port": {
+          "type": "string",
+          "description": "identifies the port on the sending chain."
+        },
+        "source_channel": {
+          "type": "string",
+          "description": "identifies the channel end on the sending chain."
+        },
+        "destination_port": {
+          "type": "string",
+          "description": "identifies the port on the receiving chain."
+        },
+        "destination_channel": {
+          "type": "string",
+          "description": "identifies the channel end on the receiving chain."
+        },
+        "data": {
+          "type": "string",
+          "format": "byte",
+          "title": "actual opaque bytes transferred directly to the application module"
+        },
+        "timeout_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "block height after which the packet times out"
+        },
+        "timeout_timestamp": {
+          "type": "string",
+          "format": "uint64",
+          "title": "block timestamp (in nanoseconds) after which the packet times out"
+        }
+      },
+      "title": "Packet defines a type that carries data across different chains through IBC"
+    },
+    "ibc.core.channel.v1.ResponseResultType": {
+      "type": "string",
+      "enum": [
+        "RESPONSE_RESULT_TYPE_UNSPECIFIED",
+        "RESPONSE_RESULT_TYPE_NOOP",
+        "RESPONSE_RESULT_TYPE_SUCCESS",
+        "RESPONSE_RESULT_TYPE_FAILURE"
+      ],
+      "default": "RESPONSE_RESULT_TYPE_UNSPECIFIED",
+      "description": "- RESPONSE_RESULT_TYPE_UNSPECIFIED: Default zero value enumeration\n - RESPONSE_RESULT_TYPE_NOOP: The message did not call the IBC application callbacks (because, for\nexample, the packet had already been relayed)\n - RESPONSE_RESULT_TYPE_SUCCESS: The message was executed successfully\n - RESPONSE_RESULT_TYPE_FAILURE: The message was executed unsuccessfully",
+      "title": "ResponseResultType defines the possible outcomes of the execution of a\nmessage"
+    },
+    "ibc.core.channel.v1.State": {
+      "type": "string",
+      "enum": [
+        "STATE_UNINITIALIZED_UNSPECIFIED",
+        "STATE_INIT",
+        "STATE_TRYOPEN",
+        "STATE_OPEN",
+        "STATE_CLOSED"
+      ],
+      "default": "STATE_UNINITIALIZED_UNSPECIFIED",
+      "description": "State defines if a channel is in one of the following states:\nCLOSED, INIT, TRYOPEN, OPEN, or UNINITIALIZED.\n\n - STATE_UNINITIALIZED_UNSPECIFIED: Default State\n - STATE_INIT: A channel has just started the opening handshake.\n - STATE_TRYOPEN: A channel has acknowledged the handshake step on the counterparty chain.\n - STATE_OPEN: A channel has completed the handshake. Open channels are\nready to send and receive packets.\n - STATE_CLOSED: A channel has been closed and can no longer be used to send or receive\npackets."
+    },
+    "ibc.core.client.v1.Height": {
+      "type": "object",
+      "properties": {
+        "revision_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "the revision that the client is currently on"
+        },
+        "revision_height": {
+          "type": "string",
+          "format": "uint64",
+          "title": "the height within the given revision"
+        }
+      },
+      "description": "Normally the RevisionHeight is incremented at each height while keeping\nRevisionNumber the same. However some consensus algorithms may choose to\nreset the height in certain conditions e.g. hard forks, state-machine\nbreaking changes In these cases, the RevisionNumber is incremented so that\nheight continues to be monitonically increasing even as the RevisionHeight\ngets reset\n\nPlease note that json tags for generated Go code are overridden to explicitly\nexclude the omitempty jsontag. This enforces the Go json marshaller to always\nemit zero values for both revision_number and revision_height.",
+      "title": "Height is a monotonically increasing data type\nthat can be compared against another Height for the purposes of updating and\nfreezing clients"
+    }
+  }
+}

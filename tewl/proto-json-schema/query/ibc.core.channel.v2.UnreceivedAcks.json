@@ -1,0 +1,69 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.channel.v2.QueryUnreceivedAcksRequest",
+        "definitions": {
+            "ibc.core.channel.v2.QueryUnreceivedAcksRequest": {
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "client unique identifier"
+                    },
+                    "packet_ack_sequences": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "list of acknowledgement sequences"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Unreceived Acks Request",
+                "description": "QueryUnreceivedAcks is the request type for the Query/UnreceivedAcks RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.channel.v2.QueryUnreceivedAcksResponse",
+        "definitions": {
+            "ibc.core.channel.v2.QueryUnreceivedAcksResponse": {
+                "properties": {
+                    "sequences": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "list of unreceived acknowledgement sequences"
+                    },
+                    "height": {
+                        "$ref": "#/definitions/ibc.core.client.v1.Height",
+                        "additionalProperties": false,
+                        "description": "query block height"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Unreceived Acks Response",
+                "description": "QueryUnreceivedAcksResponse is the response type for the Query/UnreceivedAcks RPC method"
+            },
+            "ibc.core.client.v1.Height": {
+                "properties": {
+                    "revision_number": {
+                        "type": "string",
+                        "description": "the revision that the client is currently on"
+                    },
+                    "revision_height": {
+                        "type": "string",
+                        "description": "the height within the given revision"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Height",
+                "description": "Height is a monotonically increasing data type that can be compared against another Height for the purposes of updating and freezing clients Normally the RevisionHeight is incremented at each height while keeping RevisionNumber the same. However some consensus algorithms may choose to reset the height in certain conditions e.g. hard forks, state-machine breaking changes In these cases, the RevisionNumber is incremented so that height continues to be monitonically increasing even as the RevisionHeight gets reset Please note that json tags for generated Go code are overridden to explicitly exclude the omitempty jsontag. This enforces the Go json marshaller to always emit zero values for both revision_number and revision_height."
+            }
+        }
+    }
+}

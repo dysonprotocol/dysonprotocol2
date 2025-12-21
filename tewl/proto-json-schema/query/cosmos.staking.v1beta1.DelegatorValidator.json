@@ -1,0 +1,206 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.QueryDelegatorValidatorRequest",
+        "definitions": {
+            "cosmos.staking.v1beta1.QueryDelegatorValidatorRequest": {
+                "properties": {
+                    "delegator_addr": {
+                        "type": "string",
+                        "description": "delegator_addr defines the delegator address to query for."
+                    },
+                    "validator_addr": {
+                        "type": "string",
+                        "description": "validator_addr defines the validator address to query for."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Delegator Validator Request",
+                "description": "QueryDelegatorValidatorRequest is request type for the Query/DelegatorValidator RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.QueryDelegatorValidatorResponse",
+        "definitions": {
+            "cosmos.staking.v1beta1.QueryDelegatorValidatorResponse": {
+                "properties": {
+                    "validator": {
+                        "$ref": "#/definitions/cosmos.staking.v1beta1.Validator",
+                        "additionalProperties": false,
+                        "description": "validator defines the validator info."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Delegator Validator Response",
+                "description": "QueryDelegatorValidatorResponse response type for the Query/DelegatorValidator RPC method."
+            },
+            "cosmos.staking.v1beta1.Commission": {
+                "properties": {
+                    "commission_rates": {
+                        "$ref": "#/definitions/cosmos.staking.v1beta1.CommissionRates",
+                        "additionalProperties": false,
+                        "description": "commission_rates defines the initial commission rates to be used for creating a validator."
+                    },
+                    "update_time": {
+                        "type": "string",
+                        "description": "update_time is the last time the commission rate was changed.",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Commission",
+                "description": "Commission defines commission parameters for a given validator."
+            },
+            "cosmos.staking.v1beta1.CommissionRates": {
+                "properties": {
+                    "rate": {
+                        "type": "string",
+                        "description": "rate is the commission rate charged to delegators, as a fraction."
+                    },
+                    "max_rate": {
+                        "type": "string",
+                        "description": "max_rate defines the maximum commission rate which validator can ever charge, as a fraction."
+                    },
+                    "max_change_rate": {
+                        "type": "string",
+                        "description": "max_change_rate defines the maximum daily increase of the validator commission, as a fraction."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Commission Rates",
+                "description": "CommissionRates defines the initial commission rates to be used for creating a validator."
+            },
+            "cosmos.staking.v1beta1.Description": {
+                "properties": {
+                    "moniker": {
+                        "type": "string",
+                        "description": "moniker defines a human-readable name for the validator."
+                    },
+                    "identity": {
+                        "type": "string",
+                        "description": "identity defines an optional identity signature (ex. UPort or Keybase)."
+                    },
+                    "website": {
+                        "type": "string",
+                        "description": "website defines an optional website link."
+                    },
+                    "security_contact": {
+                        "type": "string",
+                        "description": "security_contact defines an optional email for security contact."
+                    },
+                    "details": {
+                        "type": "string",
+                        "description": "details define other optional details."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Description",
+                "description": "Description defines a validator description."
+            },
+            "cosmos.staking.v1beta1.Validator": {
+                "properties": {
+                    "operator_address": {
+                        "type": "string",
+                        "description": "operator_address defines the address of the validator's operator; bech encoded in JSON."
+                    },
+                    "consensus_pubkey": {
+                        "properties": {
+                            "type_url": {
+                                "type": "string",
+                                "description": "The type url prefixed with a slash, like '/cosmos.bank.v1beta1.MsgSend'"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object",
+                        "description": "consensus_pubkey is the consensus public key of the validator, as a Protobuf Any."
+                    },
+                    "jailed": {
+                        "type": "boolean",
+                        "description": "jailed defined whether the validator has been jailed from bonded status or not."
+                    },
+                    "status": {
+                        "enum": [
+                            "BOND_STATUS_UNSPECIFIED",
+                            0,
+                            "BOND_STATUS_UNBONDED",
+                            1,
+                            "BOND_STATUS_UNBONDING",
+                            2,
+                            "BOND_STATUS_BONDED",
+                            3
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Bond Status",
+                        "description": "BondStatus is the status of a validator."
+                    },
+                    "tokens": {
+                        "type": "string",
+                        "description": "tokens define the delegated tokens (incl. self-delegation)."
+                    },
+                    "delegator_shares": {
+                        "type": "string",
+                        "description": "delegator_shares defines total shares issued to a validator's delegators."
+                    },
+                    "description": {
+                        "$ref": "#/definitions/cosmos.staking.v1beta1.Description",
+                        "additionalProperties": false,
+                        "description": "description defines the description terms for the validator."
+                    },
+                    "unbonding_height": {
+                        "type": "string",
+                        "description": "unbonding_height defines, if unbonding, the height at which this validator has begun unbonding."
+                    },
+                    "unbonding_time": {
+                        "type": "string",
+                        "description": "unbonding_time defines, if unbonding, the min time for the validator to complete unbonding.",
+                        "format": "date-time"
+                    },
+                    "commission": {
+                        "$ref": "#/definitions/cosmos.staking.v1beta1.Commission",
+                        "additionalProperties": false,
+                        "description": "commission defines the commission parameters."
+                    },
+                    "min_self_delegation": {
+                        "type": "string",
+                        "description": "min_self_delegation is the validator's self declared minimum self delegation."
+                    },
+                    "unbonding_on_hold_ref_count": {
+                        "type": "string",
+                        "description": "strictly positive if this validator's unbonding has been stopped by external modules"
+                    },
+                    "unbonding_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "list of unbonding ids, each uniquely identifing an unbonding of this validator"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Validator",
+                "description": "Validator defines a validator, together with the total amount of the Validator's bond shares and their exchange rate to coins. Slashing results in a decrease in the exchange rate, allowing correct calculation of future undelegations without iterating over delegators. When coins are delegated to this validator, the validator is credited with a delegation whose number of bond shares is based on the amount of coins delegated divided by the current exchange rate. Voting power can be calculated as total bonded shares multiplied by exchange rate."
+            }
+        }
+    }
+}

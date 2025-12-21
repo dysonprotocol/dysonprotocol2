@@ -1,0 +1,58 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.upgrade.v1beta1.QueryModuleVersionsRequest",
+        "definitions": {
+            "cosmos.upgrade.v1beta1.QueryModuleVersionsRequest": {
+                "properties": {
+                    "module_name": {
+                        "type": "string",
+                        "description": "module_name is a field to query a specific module consensus version from state. Leaving this empty will fetch the full list of module versions from state"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Module Versions Request",
+                "description": "QueryModuleVersionsRequest is the request type for the Query/ModuleVersions RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.upgrade.v1beta1.QueryModuleVersionsResponse",
+        "definitions": {
+            "cosmos.upgrade.v1beta1.QueryModuleVersionsResponse": {
+                "properties": {
+                    "module_versions": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.upgrade.v1beta1.ModuleVersion"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "module_versions is a list of module names with their consensus versions."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Module Versions Response",
+                "description": "QueryModuleVersionsResponse is the response type for the Query/ModuleVersions RPC method."
+            },
+            "cosmos.upgrade.v1beta1.ModuleVersion": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "name of the app module"
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "consensus version of the app module"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Module Version",
+                "description": "ModuleVersion specifies a module and its consensus version."
+            }
+        }
+    }
+}

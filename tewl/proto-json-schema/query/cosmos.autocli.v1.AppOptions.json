@@ -1,0 +1,220 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.autocli.v1.AppOptionsRequest",
+        "definitions": {
+            "cosmos.autocli.v1.AppOptionsRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "App Options Request",
+                "description": "AppOptionsRequest is the RemoteInfoService/AppOptions request type."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.autocli.v1.AppOptionsResponse",
+        "definitions": {
+            "cosmos.autocli.v1.AppOptionsResponse": {
+                "properties": {
+                    "module_options": {
+                        "additionalProperties": {
+                            "$ref": "#/definitions/cosmos.autocli.v1.ModuleOptions",
+                            "additionalProperties": false
+                        },
+                        "type": "object",
+                        "description": "module_options is a map of module name to autocli module options."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "App Options Response",
+                "description": "AppOptionsResponse is the RemoteInfoService/AppOptions response type."
+            },
+            "cosmos.autocli.v1.FlagOptions": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "name is an alternate name to use for the field flag."
+                    },
+                    "shorthand": {
+                        "type": "string",
+                        "description": "shorthand is a one-letter abbreviated flag."
+                    },
+                    "usage": {
+                        "type": "string",
+                        "description": "usage is the help message."
+                    },
+                    "default_value": {
+                        "type": "string",
+                        "description": "default_value is the default value as text."
+                    },
+                    "deprecated": {
+                        "type": "string",
+                        "description": "deprecated is the usage text to show if this flag is deprecated."
+                    },
+                    "shorthand_deprecated": {
+                        "type": "string",
+                        "description": "shorthand_deprecated is the usage text to show if the shorthand of this flag is deprecated."
+                    },
+                    "hidden": {
+                        "type": "boolean",
+                        "description": "hidden hides the flag from help/usage text"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Flag Options",
+                "description": "FlagOptions are options for flags generated from rpc request fields. By default, all request fields are configured as flags based on the kebab-case name of the field. Fields can be turned into positional arguments instead by using RpcCommandOptions.positional_args."
+            },
+            "cosmos.autocli.v1.ModuleOptions": {
+                "properties": {
+                    "tx": {
+                        "$ref": "#/definitions/cosmos.autocli.v1.ServiceCommandDescriptor",
+                        "additionalProperties": false,
+                        "description": "tx describes the tx commands for the module."
+                    },
+                    "query": {
+                        "$ref": "#/definitions/cosmos.autocli.v1.ServiceCommandDescriptor",
+                        "additionalProperties": false,
+                        "description": "query describes the queries commands for the module."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Module Options",
+                "description": "ModuleOptions describes the CLI options for a Cosmos SDK module."
+            },
+            "cosmos.autocli.v1.PositionalArgDescriptor": {
+                "properties": {
+                    "proto_field": {
+                        "type": "string",
+                        "description": "proto_field specifies the proto field to use as the positional arg. Any fields used as positional args will not have a flag generated."
+                    },
+                    "varargs": {
+                        "type": "boolean",
+                        "description": "varargs makes a positional parameter a varargs parameter. This can only be applied to last positional parameter and the proto_field must a repeated field. Note: It is mutually exclusive with optional."
+                    },
+                    "optional": {
+                        "type": "boolean",
+                        "description": "optional makes the last positional parameter optional. Note: It is mutually exclusive with varargs."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Positional Arg Descriptor",
+                "description": "PositionalArgDescriptor describes a positional argument."
+            },
+            "cosmos.autocli.v1.RpcCommandOptions": {
+                "properties": {
+                    "rpc_method": {
+                        "type": "string",
+                        "description": "rpc_method is short name of the protobuf rpc method that this command is generated from."
+                    },
+                    "use": {
+                        "type": "string",
+                        "description": "use is the one-line usage method. It also allows specifying an alternate name for the command as the first word of the usage text. By default the name of an rpc command is the kebab-case short name of the rpc method."
+                    },
+                    "long": {
+                        "type": "string",
+                        "description": "long is the long message shown in the 'help <this-command>' output."
+                    },
+                    "short": {
+                        "type": "string",
+                        "description": "short is the short description shown in the 'help' output."
+                    },
+                    "example": {
+                        "type": "string",
+                        "description": "example is examples of how to use the command."
+                    },
+                    "alias": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "alias is an array of aliases that can be used instead of the first word in Use."
+                    },
+                    "suggest_for": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "suggest_for is an array of command names for which this command will be suggested - similar to aliases but only suggests."
+                    },
+                    "deprecated": {
+                        "type": "string",
+                        "description": "deprecated defines, if this command is deprecated and should print this string when used."
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "version defines the version for this command. If this value is non-empty and the command does not define a \"version\" flag, a \"version\" boolean flag will be added to the command and, if specified, will print content of the \"Version\" variable. A shorthand \"v\" flag will also be added if the command does not define one."
+                    },
+                    "flag_options": {
+                        "additionalProperties": {
+                            "$ref": "#/definitions/cosmos.autocli.v1.FlagOptions",
+                            "additionalProperties": false
+                        },
+                        "type": "object",
+                        "description": "flag_options are options for flags generated from rpc request fields. By default all request fields are configured as flags. They can also be configured as positional args instead using positional_args."
+                    },
+                    "positional_args": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.autocli.v1.PositionalArgDescriptor"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "positional_args specifies positional arguments for the command."
+                    },
+                    "skip": {
+                        "type": "boolean",
+                        "description": "skip specifies whether to skip this rpc method when generating commands."
+                    },
+                    "gov_proposal": {
+                        "type": "boolean",
+                        "description": "gov_proposal specifies whether autocli should generate a gov proposal transaction for this rpc method. Normally autocli generates a transaction containing the message and broadcast it. However, when true, autocli generates a proposal transaction containing the message and broadcast it. This option is ineffective for query commands."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Rpc Command Options",
+                "description": "RpcCommandOptions specifies options for commands generated from protobuf rpc methods."
+            },
+            "cosmos.autocli.v1.ServiceCommandDescriptor": {
+                "properties": {
+                    "service": {
+                        "type": "string",
+                        "description": "service is the fully qualified name of the protobuf service to build the command from. It can be left empty if sub_commands are used instead which may be the case if a module provides multiple tx and/or query services."
+                    },
+                    "rpc_command_options": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.autocli.v1.RpcCommandOptions"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "rpc_command_options are options for commands generated from rpc methods. If no options are specified for a given rpc method on the service, a command will be generated for that method with the default options."
+                    },
+                    "sub_commands": {
+                        "additionalProperties": {
+                            "$ref": "#/definitions/cosmos.autocli.v1.ServiceCommandDescriptor",
+                            "additionalProperties": false
+                        },
+                        "type": "object",
+                        "description": "sub_commands is a map of optional sub-commands for this command based on different protobuf services. The map key is used as the name of the sub-command."
+                    },
+                    "enhance_custom_command": {
+                        "type": "boolean",
+                        "description": "enhance_custom_commands specifies whether to skip the service when generating commands, if a custom command already exists, or enhance the existing command. If set to true, the custom command will be enhanced with the services from gRPC. otherwise when a custom command exists, no commands will be generated for the service."
+                    },
+                    "short": {
+                        "type": "string",
+                        "description": "short is an optional parameter used to override the short description of the auto generated command."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Service Command Descriptor",
+                "description": "ServiceCommandDescriptor describes a CLI command based on a protobuf service."
+            }
+        }
+    }
+}

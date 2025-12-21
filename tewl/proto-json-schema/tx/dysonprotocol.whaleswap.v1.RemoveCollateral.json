@@ -1,0 +1,88 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgRemoveCollateral",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.MsgRemoveCollateral": {
+                "properties": {
+                    "user": {
+                        "type": "string",
+                        "description": "Account removing collateral; must be the position owner."
+                    },
+                    "pool_id": {
+                        "type": "string",
+                        "description": "Target pool id; must match the position's pool."
+                    },
+                    "position_id": {
+                        "type": "string",
+                        "description": "Target position id to remove collateral from."
+                    },
+                    "collateral": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Collateral coin to withdraw; denom must match position collateral; amount must be positive."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Remove Collateral",
+                "description": "* RemoveCollateral withdraws excess collateral from a leveraged position while maintaining the minimum collateral ratio."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.MsgRemoveCollateralResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.MsgRemoveCollateralResponse": {
+                "properties": {
+                    "collateral_removed": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Collateral actually removed."
+                    },
+                    "new_collateral": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Remaining collateral on the position."
+                    },
+                    "new_collateral_ratio": {
+                        "type": "string",
+                        "description": "Collateral ratio after removal."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Remove Collateral Response"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    }
+}

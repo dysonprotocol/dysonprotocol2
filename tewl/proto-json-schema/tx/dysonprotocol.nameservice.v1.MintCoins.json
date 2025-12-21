@@ -1,0 +1,59 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgMintCoins",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgMintCoins": {
+                "properties": {
+                    "name_destination": {
+                        "type": "string",
+                        "description": "name_destination must be a valid address"
+                    },
+                    "amount": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Using repeated cosmos.base.v1beta1.Coin with the annotation (gogoproto.castrepeated) = \"github.com/cosmos/cosmos-sdk/types.Coins\" so that the generated Go code will have `Amount sdk.Coins` automatically."
+                    },
+                    "mint_fee": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "mint_fee is the explicit fee authorization provided by the caller. It must be in udys and be >= the required fee computed as sum(amount[i].amount) * params.mint_fee_per_coin (ceil to integer)."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Mint Coins",
+                "description": "MsgMintCoins mints coins into the owner's balance, as long as each coin's \"root name\" is owned by that owner."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgMintCoinsResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgMintCoinsResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Mint Coins Response",
+                "description": "Response for MintCoins"
+            }
+        }
+    }
+}

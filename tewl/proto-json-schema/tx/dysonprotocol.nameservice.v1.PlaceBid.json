@@ -1,0 +1,59 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgPlaceBid",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgPlaceBid": {
+                "properties": {
+                    "bidder": {
+                        "type": "string",
+                        "description": "Address placing the bid."
+                    },
+                    "nft_class_id": {
+                        "type": "string",
+                        "description": "NFT class identifier."
+                    },
+                    "nft_id": {
+                        "type": "string",
+                        "description": "NFT identifier within the class."
+                    },
+                    "bid_amount": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Bid amount to offer for the NFT."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Place Bid",
+                "description": "MsgPlaceBid places or outbids on a listed NFT, escrowing funds until acceptance or expiry. Behavior: - Places bid on listed NFT, refunding any previous bidder. - First bids must meet/exceed current valuation. - Subsequent bids must exceed current bid by minimum percentage increase. - Funds escrowed in module until bid accepted, rejected, or claimed after timeout. Validation: - Bid amount must be valid according to class rules. - NFT must be listed (directly or via class always_listed). - Cannot bid on authority-owned or module-owned NFTs. - Bid denomination must match valuation/current bid. - Bid must meet minimum increase requirements. Emits: - EventBidPlaced(class_id, nft_id, bidder, bid_amount) on successful bid. Returns: - Empty response on success."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgPlaceBidResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgPlaceBidResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Place Bid Response",
+                "description": "Empty response for successful bid placement."
+            }
+        }
+    }
+}

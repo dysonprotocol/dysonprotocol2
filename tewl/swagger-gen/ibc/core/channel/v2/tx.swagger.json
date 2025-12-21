@@ -1,0 +1,402 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ibc/core/channel/v2/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "ibc.core.channel.v2.MsgAcknowledgement": {
+      "post": {
+        "summary": "Acknowledgement defines a rpc handler method for MsgAcknowledgement.",
+        "operationId": "ibc.core.channel.v2.MsgAcknowledgement",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.MsgAcknowledgementResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.MsgAcknowledgement"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.channel.v2.MsgRecvPacket": {
+      "post": {
+        "summary": "RecvPacket defines a rpc handler method for MsgRecvPacket.",
+        "operationId": "ibc.core.channel.v2.MsgRecvPacket",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.MsgRecvPacketResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.MsgRecvPacket"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.channel.v2.MsgSendPacket": {
+      "post": {
+        "summary": "SendPacket defines a rpc handler method for MsgSendPacket.",
+        "operationId": "ibc.core.channel.v2.MsgSendPacket",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.MsgSendPacketResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.MsgSendPacket"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.channel.v2.MsgTimeout": {
+      "post": {
+        "summary": "Timeout defines a rpc handler method for MsgTimeout.",
+        "operationId": "ibc.core.channel.v2.MsgTimeout",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.MsgTimeoutResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.MsgTimeout"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    },
+    "ibc.core.channel.v2.Acknowledgement": {
+      "type": "object",
+      "properties": {
+        "app_acknowledgements": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          }
+        }
+      },
+      "description": "Acknowledgement contains a list of all ack results associated with a single\npacket. In the case of a successful receive, the acknowledgement will contain\nan app acknowledgement for each application that received a payload in the\nsame order that the payloads were sent in the packet. If the receive is not\nsuccessful, the acknowledgement will contain a single app acknowledgment\nwhich will be a constant error acknowledgment as defined by the IBC v2\nprotocol."
+    },
+    "ibc.core.channel.v2.MsgAcknowledgement": {
+      "type": "object",
+      "properties": {
+        "packet": {
+          "$ref": "#/definitions/ibc.core.channel.v2.Packet"
+        },
+        "acknowledgement": {
+          "$ref": "#/definitions/ibc.core.channel.v2.Acknowledgement"
+        },
+        "proof_acked": {
+          "type": "string",
+          "format": "byte"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height"
+        },
+        "signer": {
+          "type": "string"
+        }
+      },
+      "description": "MsgAcknowledgement receives incoming IBC acknowledgement."
+    },
+    "ibc.core.channel.v2.MsgAcknowledgementResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/ibc.core.channel.v2.ResponseResultType"
+        }
+      },
+      "description": "MsgAcknowledgementResponse defines the Msg/Acknowledgement response type."
+    },
+    "ibc.core.channel.v2.MsgRecvPacket": {
+      "type": "object",
+      "properties": {
+        "packet": {
+          "$ref": "#/definitions/ibc.core.channel.v2.Packet"
+        },
+        "proof_commitment": {
+          "type": "string",
+          "format": "byte"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height"
+        },
+        "signer": {
+          "type": "string"
+        }
+      },
+      "description": "MsgRecvPacket receives an incoming IBC packet."
+    },
+    "ibc.core.channel.v2.MsgRecvPacketResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/ibc.core.channel.v2.ResponseResultType"
+        }
+      },
+      "description": "MsgRecvPacketResponse defines the Msg/RecvPacket response type."
+    },
+    "ibc.core.channel.v2.MsgSendPacket": {
+      "type": "object",
+      "properties": {
+        "source_client": {
+          "type": "string"
+        },
+        "timeout_timestamp": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "payloads": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ibc.core.channel.v2.Payload"
+          }
+        },
+        "signer": {
+          "type": "string"
+        }
+      },
+      "description": "MsgSendPacket sends an outgoing IBC packet."
+    },
+    "ibc.core.channel.v2.MsgSendPacketResponse": {
+      "type": "object",
+      "properties": {
+        "sequence": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "description": "MsgSendPacketResponse defines the Msg/SendPacket response type."
+    },
+    "ibc.core.channel.v2.MsgTimeout": {
+      "type": "object",
+      "properties": {
+        "packet": {
+          "$ref": "#/definitions/ibc.core.channel.v2.Packet"
+        },
+        "proof_unreceived": {
+          "type": "string",
+          "format": "byte"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height"
+        },
+        "signer": {
+          "type": "string"
+        }
+      },
+      "title": "MsgTimeout receives timed-out packet"
+    },
+    "ibc.core.channel.v2.MsgTimeoutResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/ibc.core.channel.v2.ResponseResultType"
+        }
+      },
+      "description": "MsgTimeoutResponse defines the Msg/Timeout response type."
+    },
+    "ibc.core.channel.v2.Packet": {
+      "type": "object",
+      "properties": {
+        "sequence": {
+          "type": "string",
+          "format": "uint64",
+          "description": "number corresponds to the order of sends and receives, where a Packet\nwith an earlier sequence number must be sent and received before a Packet\nwith a later sequence number."
+        },
+        "source_client": {
+          "type": "string",
+          "description": "identifies the sending client on the sending chain."
+        },
+        "destination_client": {
+          "type": "string",
+          "description": "identifies the receiving client on the receiving chain."
+        },
+        "timeout_timestamp": {
+          "type": "string",
+          "format": "uint64",
+          "description": "timeout timestamp in seconds after which the packet times out."
+        },
+        "payloads": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ibc.core.channel.v2.Payload"
+          },
+          "description": "a list of payloads, each one for a specific application."
+        }
+      },
+      "title": "Packet defines a type that carries data across different chains through IBC"
+    },
+    "ibc.core.channel.v2.Payload": {
+      "type": "object",
+      "properties": {
+        "source_port": {
+          "type": "string",
+          "description": "specifies the source port of the packet."
+        },
+        "destination_port": {
+          "type": "string",
+          "description": "specifies the destination port of the packet."
+        },
+        "version": {
+          "type": "string",
+          "description": "version of the specified application."
+        },
+        "encoding": {
+          "type": "string",
+          "description": "the encoding used for the provided value."
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "the raw bytes for the payload."
+        }
+      },
+      "title": "Payload contains the source and destination ports and payload for the\napplication (version, encoding, raw bytes)"
+    },
+    "ibc.core.channel.v2.ResponseResultType": {
+      "type": "string",
+      "enum": [
+        "RESPONSE_RESULT_TYPE_UNSPECIFIED",
+        "RESPONSE_RESULT_TYPE_NOOP",
+        "RESPONSE_RESULT_TYPE_SUCCESS",
+        "RESPONSE_RESULT_TYPE_FAILURE"
+      ],
+      "default": "RESPONSE_RESULT_TYPE_UNSPECIFIED",
+      "description": "- RESPONSE_RESULT_TYPE_UNSPECIFIED: Default zero value enumeration\n - RESPONSE_RESULT_TYPE_NOOP: The message did not call the IBC application callbacks (because, for\nexample, the packet had already been relayed)\n - RESPONSE_RESULT_TYPE_SUCCESS: The message was executed successfully\n - RESPONSE_RESULT_TYPE_FAILURE: The message was executed unsuccessfully",
+      "title": "ResponseResultType defines the possible outcomes of the execution of a\nmessage"
+    },
+    "ibc.core.client.v1.Height": {
+      "type": "object",
+      "properties": {
+        "revision_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "the revision that the client is currently on"
+        },
+        "revision_height": {
+          "type": "string",
+          "format": "uint64",
+          "title": "the height within the given revision"
+        }
+      },
+      "description": "Normally the RevisionHeight is incremented at each height while keeping\nRevisionNumber the same. However some consensus algorithms may choose to\nreset the height in certain conditions e.g. hard forks, state-machine\nbreaking changes In these cases, the RevisionNumber is incremented so that\nheight continues to be monitonically increasing even as the RevisionHeight\ngets reset\n\nPlease note that json tags for generated Go code are overridden to explicitly\nexclude the omitempty jsontag. This enforces the Go json marshaller to always\nemit zero values for both revision_number and revision_height.",
+      "title": "Height is a monotonically increasing data type\nthat can be compared against another Height for the purposes of updating and\nfreezing clients"
+    }
+  }
+}

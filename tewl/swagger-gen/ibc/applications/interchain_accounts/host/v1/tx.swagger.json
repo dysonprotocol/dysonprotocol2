@@ -1,0 +1,202 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ibc/applications/interchain_accounts/host/v1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "ibc.applications.interchain_accounts.host.v1.MsgModuleQuerySafe": {
+      "post": {
+        "summary": "ModuleQuerySafe defines a rpc handler for MsgModuleQuerySafe.",
+        "operationId": "ibc.applications.interchain_accounts.host.v1.MsgModuleQuerySafe",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.applications.interchain_accounts.host.v1.MsgModuleQuerySafeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.applications.interchain_accounts.host.v1.MsgModuleQuerySafe"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.applications.interchain_accounts.host.v1.MsgUpdateParams": {
+      "post": {
+        "summary": "UpdateParams defines a rpc handler for MsgUpdateParams.",
+        "operationId": "ibc.applications.interchain_accounts.host.v1.MsgUpdateParams",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.applications.interchain_accounts.host.v1.MsgUpdateParamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.applications.interchain_accounts.host.v1.MsgUpdateParams"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    },
+    "ibc.applications.interchain_accounts.host.v1.MsgModuleQuerySafe": {
+      "type": "object",
+      "properties": {
+        "signer": {
+          "type": "string",
+          "title": "signer address"
+        },
+        "requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ibc.applications.interchain_accounts.host.v1.QueryRequest"
+          },
+          "description": "requests defines the module safe queries to execute."
+        }
+      },
+      "title": "MsgModuleQuerySafe defines the payload for Msg/ModuleQuerySafe"
+    },
+    "ibc.applications.interchain_accounts.host.v1.MsgModuleQuerySafeResponse": {
+      "type": "object",
+      "properties": {
+        "height": {
+          "type": "string",
+          "format": "uint64",
+          "title": "height at which the responses were queried"
+        },
+        "responses": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          },
+          "title": "protobuf encoded responses for each query"
+        }
+      },
+      "title": "MsgModuleQuerySafeResponse defines the response for Msg/ModuleQuerySafe"
+    },
+    "ibc.applications.interchain_accounts.host.v1.MsgUpdateParams": {
+      "type": "object",
+      "properties": {
+        "signer": {
+          "type": "string",
+          "title": "signer address"
+        },
+        "params": {
+          "$ref": "#/definitions/ibc.applications.interchain_accounts.host.v1.Params",
+          "description": "params defines the 27-interchain-accounts/host parameters to update.\n\nNOTE: All parameters must be supplied."
+        }
+      },
+      "title": "MsgUpdateParams defines the payload for Msg/UpdateParams"
+    },
+    "ibc.applications.interchain_accounts.host.v1.MsgUpdateParamsResponse": {
+      "type": "object",
+      "title": "MsgUpdateParamsResponse defines the response for Msg/UpdateParams"
+    },
+    "ibc.applications.interchain_accounts.host.v1.Params": {
+      "type": "object",
+      "properties": {
+        "host_enabled": {
+          "type": "boolean",
+          "description": "host_enabled enables or disables the host submodule."
+        },
+        "allow_messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "allow_messages defines a list of sdk message typeURLs allowed to be\nexecuted on a host chain."
+        }
+      },
+      "description": "Params defines the set of on-chain interchain accounts parameters.\nThe following parameters may be used to disable the host submodule."
+    },
+    "ibc.applications.interchain_accounts.host.v1.QueryRequest": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "title": "path defines the path of the query request as defined by ADR-021.\nhttps://github.com/cosmos/cosmos-sdk/blob/main/docs/architecture/adr-021-protobuf-query-encoding.md#custom-query-registration-and-routing"
+        },
+        "data": {
+          "type": "string",
+          "format": "byte",
+          "title": "data defines the payload of the query request as defined by ADR-021.\nhttps://github.com/cosmos/cosmos-sdk/blob/main/docs/architecture/adr-021-protobuf-query-encoding.md#custom-query-registration-and-routing"
+        }
+      },
+      "description": "QueryRequest defines the parameters for a particular query request\nby an interchain account."
+    }
+  }
+}

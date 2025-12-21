@@ -1,0 +1,45 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.connection.v1.QueryConnectionParamsRequest",
+        "definitions": {
+            "ibc.core.connection.v1.QueryConnectionParamsRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Connection Params Request",
+                "description": "QueryConnectionParamsRequest is the request type for the Query/ConnectionParams RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.connection.v1.QueryConnectionParamsResponse",
+        "definitions": {
+            "ibc.core.connection.v1.QueryConnectionParamsResponse": {
+                "properties": {
+                    "params": {
+                        "$ref": "#/definitions/ibc.core.connection.v1.Params",
+                        "additionalProperties": false,
+                        "description": "params defines the parameters of the module."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Connection Params Response",
+                "description": "QueryConnectionParamsResponse is the response type for the Query/ConnectionParams RPC method."
+            },
+            "ibc.core.connection.v1.Params": {
+                "properties": {
+                    "max_expected_time_per_block": {
+                        "type": "string",
+                        "description": "maximum expected time per block (in nanoseconds), used to enforce block delay. This parameter should reflect the largest amount of time that the chain might reasonably take to produce the next block under normal operating conditions. A safe choice is 3-5x the expected time per block."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Params",
+                "description": "Params defines the set of Connection parameters."
+            }
+        }
+    }
+}

@@ -1,0 +1,32 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.feegrant.v1beta1.MsgPruneAllowances",
+        "definitions": {
+            "cosmos.feegrant.v1beta1.MsgPruneAllowances": {
+                "properties": {
+                    "pruner": {
+                        "type": "string",
+                        "description": "pruner is the address of the user pruning expired allowances."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Prune Allowances",
+                "description": "MsgPruneAllowances prunes expired fee allowances."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.feegrant.v1beta1.MsgPruneAllowancesResponse",
+        "definitions": {
+            "cosmos.feegrant.v1beta1.MsgPruneAllowancesResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Prune Allowances Response",
+                "description": "MsgPruneAllowancesResponse defines the Msg/PruneAllowancesResponse response type."
+            }
+        }
+    }
+}

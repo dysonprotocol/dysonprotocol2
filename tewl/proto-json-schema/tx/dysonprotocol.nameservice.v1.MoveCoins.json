@@ -1,0 +1,97 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgMoveCoins",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgMoveCoins": {
+                "properties": {
+                    "name_destination": {
+                        "type": "string",
+                        "description": "Signer must be the resolved destination of the root name of each coin denom in all inputs."
+                    },
+                    "inputs": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.bank.v1beta1.Input"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "One or multiple inputs: each account holding the coins."
+                    },
+                    "outputs": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.bank.v1beta1.Output"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "One or multiple outputs: the account receiving the coins."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Move Coins",
+                "description": "MsgMoveCoins force moves custom denom coins between two accounts if signer owns the root name of each coin denom."
+            },
+            "cosmos.bank.v1beta1.Input": {
+                "properties": {
+                    "address": {
+                        "type": "string"
+                    },
+                    "coins": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Input",
+                "description": "Input models transaction input."
+            },
+            "cosmos.bank.v1beta1.Output": {
+                "properties": {
+                    "address": {
+                        "type": "string"
+                    },
+                    "coins": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Output",
+                "description": "Output models transaction outputs."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgMoveCoinsResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgMoveCoinsResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Move Coins Response"
+            }
+        }
+    }
+}

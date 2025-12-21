@@ -1,0 +1,77 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.benchmark.v1.MsgLoadTest",
+        "definitions": {
+            "cosmos.benchmark.v1.MsgLoadTest": {
+                "properties": {
+                    "caller": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "ops": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.benchmark.v1.Op"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Load Test",
+                "description": "MsgLoadTestOps defines a message containing a sequence of load test operations."
+            },
+            "cosmos.benchmark.v1.Op": {
+                "properties": {
+                    "seed": {
+                        "type": "string"
+                    },
+                    "actor": {
+                        "type": "string"
+                    },
+                    "key_length": {
+                        "type": "string"
+                    },
+                    "value_length": {
+                        "type": "string"
+                    },
+                    "iterations": {
+                        "type": "integer"
+                    },
+                    "delete": {
+                        "type": "boolean"
+                    },
+                    "exists": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Op",
+                "description": "Op is a message describing a benchmark operation."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.benchmark.v1.MsgLoadTestResponse",
+        "definitions": {
+            "cosmos.benchmark.v1.MsgLoadTestResponse": {
+                "properties": {
+                    "total_time": {
+                        "type": "string"
+                    },
+                    "total_errors": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Load Test Response",
+                "description": "MsgLoadTestResponse defines a message containing the results of a load test operation."
+            }
+        }
+    }
+}

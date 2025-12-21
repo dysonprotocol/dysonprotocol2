@@ -1,0 +1,275 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ibc/applications/interchain_accounts/controller/v1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccount": {
+      "post": {
+        "summary": "RegisterInterchainAccount defines a rpc handler for\nMsgRegisterInterchainAccount.",
+        "operationId": "ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccountResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccount"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.applications.interchain_accounts.controller.v1.MsgSendTx": {
+      "post": {
+        "summary": "SendTx defines a rpc handler for MsgSendTx.",
+        "operationId": "ibc.applications.interchain_accounts.controller.v1.MsgSendTx",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.applications.interchain_accounts.controller.v1.MsgSendTxResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.applications.interchain_accounts.controller.v1.MsgSendTx"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.applications.interchain_accounts.controller.v1.MsgUpdateParams": {
+      "post": {
+        "summary": "UpdateParams defines a rpc handler for MsgUpdateParams.",
+        "operationId": "ibc.applications.interchain_accounts.controller.v1.MsgUpdateParams",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.applications.interchain_accounts.controller.v1.MsgUpdateParamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.applications.interchain_accounts.controller.v1.MsgUpdateParams"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    },
+    "ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccount": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "string"
+        },
+        "connection_id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "ordering": {
+          "$ref": "#/definitions/ibc.core.channel.v1.Order"
+        }
+      },
+      "title": "MsgRegisterInterchainAccount defines the payload for Msg/RegisterAccount"
+    },
+    "ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccountResponse": {
+      "type": "object",
+      "properties": {
+        "channel_id": {
+          "type": "string"
+        },
+        "port_id": {
+          "type": "string"
+        }
+      },
+      "title": "MsgRegisterInterchainAccountResponse defines the response for\nMsg/RegisterAccount"
+    },
+    "ibc.applications.interchain_accounts.controller.v1.MsgSendTx": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "string"
+        },
+        "connection_id": {
+          "type": "string"
+        },
+        "packet_data": {
+          "$ref": "#/definitions/ibc.applications.interchain_accounts.v1.InterchainAccountPacketData"
+        },
+        "relative_timeout": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Relative timeout timestamp provided will be added to the current block time\nduring transaction execution. The timeout timestamp must be non-zero."
+        }
+      },
+      "title": "MsgSendTx defines the payload for Msg/SendTx"
+    },
+    "ibc.applications.interchain_accounts.controller.v1.MsgSendTxResponse": {
+      "type": "object",
+      "properties": {
+        "sequence": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "MsgSendTxResponse defines the response for MsgSendTx"
+    },
+    "ibc.applications.interchain_accounts.controller.v1.MsgUpdateParams": {
+      "type": "object",
+      "properties": {
+        "signer": {
+          "type": "string",
+          "title": "signer address"
+        },
+        "params": {
+          "$ref": "#/definitions/ibc.applications.interchain_accounts.controller.v1.Params",
+          "description": "params defines the 27-interchain-accounts/controller parameters to update.\n\nNOTE: All parameters must be supplied."
+        }
+      },
+      "title": "MsgUpdateParams defines the payload for Msg/UpdateParams"
+    },
+    "ibc.applications.interchain_accounts.controller.v1.MsgUpdateParamsResponse": {
+      "type": "object",
+      "title": "MsgUpdateParamsResponse defines the response for Msg/UpdateParams"
+    },
+    "ibc.applications.interchain_accounts.controller.v1.Params": {
+      "type": "object",
+      "properties": {
+        "controller_enabled": {
+          "type": "boolean",
+          "description": "controller_enabled enables or disables the controller submodule."
+        }
+      },
+      "description": "Params defines the set of on-chain interchain accounts parameters.\nThe following parameters may be used to disable the controller submodule."
+    },
+    "ibc.applications.interchain_accounts.v1.InterchainAccountPacketData": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/ibc.applications.interchain_accounts.v1.Type"
+        },
+        "data": {
+          "type": "string",
+          "format": "byte"
+        },
+        "memo": {
+          "type": "string"
+        }
+      },
+      "description": "InterchainAccountPacketData is comprised of a raw transaction, type of\ntransaction and optional memo field."
+    },
+    "ibc.applications.interchain_accounts.v1.Type": {
+      "type": "string",
+      "enum": [
+        "TYPE_UNSPECIFIED",
+        "TYPE_EXECUTE_TX"
+      ],
+      "default": "TYPE_UNSPECIFIED",
+      "description": "- TYPE_UNSPECIFIED: Default zero value enumeration\n - TYPE_EXECUTE_TX: Execute a transaction on an interchain accounts host chain",
+      "title": "Type defines a classification of message issued from a controller chain to\nits associated interchain accounts host"
+    },
+    "ibc.core.channel.v1.Order": {
+      "type": "string",
+      "enum": [
+        "ORDER_NONE_UNSPECIFIED",
+        "ORDER_UNORDERED",
+        "ORDER_ORDERED"
+      ],
+      "default": "ORDER_NONE_UNSPECIFIED",
+      "description": "- ORDER_NONE_UNSPECIFIED: zero-value for channel ordering\n - ORDER_UNORDERED: packets can be delivered in any order, which may differ from the order in\nwhich they were sent.\n - ORDER_ORDERED: packets are delivered exactly in the order which they were sent",
+      "title": "Order defines if a channel is ORDERED or UNORDERED"
+    }
+  }
+}

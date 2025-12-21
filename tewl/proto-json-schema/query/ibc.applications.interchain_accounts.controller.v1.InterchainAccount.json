@@ -1,0 +1,39 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.applications.interchain_accounts.controller.v1.QueryInterchainAccountRequest",
+        "definitions": {
+            "ibc.applications.interchain_accounts.controller.v1.QueryInterchainAccountRequest": {
+                "properties": {
+                    "owner": {
+                        "type": "string"
+                    },
+                    "connection_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Interchain Account Request",
+                "description": "QueryInterchainAccountRequest is the request type for the Query/InterchainAccount RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.applications.interchain_accounts.controller.v1.QueryInterchainAccountResponse",
+        "definitions": {
+            "ibc.applications.interchain_accounts.controller.v1.QueryInterchainAccountResponse": {
+                "properties": {
+                    "address": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Interchain Account Response",
+                "description": "QueryInterchainAccountResponse the response type for the Query/InterchainAccount RPC method."
+            }
+        }
+    }
+}

@@ -1,0 +1,634 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.base.tendermint.v1beta1.GetBlockByHeightRequest",
+        "definitions": {
+            "cosmos.base.tendermint.v1beta1.GetBlockByHeightRequest": {
+                "properties": {
+                    "height": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Get Block By Height Request",
+                "description": "GetBlockByHeightRequest is the request type for the Query/GetBlockByHeight RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.base.tendermint.v1beta1.GetBlockByHeightResponse",
+        "definitions": {
+            "cosmos.base.tendermint.v1beta1.GetBlockByHeightResponse": {
+                "properties": {
+                    "block_id": {
+                        "$ref": "#/definitions/tendermint.types.BlockID",
+                        "additionalProperties": false
+                    },
+                    "block": {
+                        "$ref": "#/definitions/tendermint.types.Block",
+                        "additionalProperties": false,
+                        "description": "Deprecated: please use `sdk_block` instead"
+                    },
+                    "sdk_block": {
+                        "$ref": "#/definitions/cosmos.base.tendermint.v1beta1.Block",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Get Block By Height Response",
+                "description": "GetBlockByHeightResponse is the response type for the Query/GetBlockByHeight RPC method."
+            },
+            "cosmos.base.tendermint.v1beta1.Block": {
+                "properties": {
+                    "header": {
+                        "$ref": "#/definitions/cosmos.base.tendermint.v1beta1.Header",
+                        "additionalProperties": false
+                    },
+                    "data": {
+                        "$ref": "#/definitions/tendermint.types.Data",
+                        "additionalProperties": false
+                    },
+                    "evidence": {
+                        "$ref": "#/definitions/tendermint.types.EvidenceList",
+                        "additionalProperties": false
+                    },
+                    "last_commit": {
+                        "$ref": "#/definitions/tendermint.types.Commit",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Block",
+                "description": "Block is tendermint type Block, with the Header proposer address field converted to bech32 string."
+            },
+            "cosmos.base.tendermint.v1beta1.Header": {
+                "properties": {
+                    "version": {
+                        "$ref": "#/definitions/tendermint.version.Consensus",
+                        "additionalProperties": false,
+                        "description": "basic block info"
+                    },
+                    "chain_id": {
+                        "type": "string"
+                    },
+                    "height": {
+                        "type": "string"
+                    },
+                    "time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "last_block_id": {
+                        "$ref": "#/definitions/tendermint.types.BlockID",
+                        "additionalProperties": false,
+                        "description": "prev block info"
+                    },
+                    "last_commit_hash": {
+                        "type": "string",
+                        "description": "hashes of block data  commit from validators from the last block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "data_hash": {
+                        "type": "string",
+                        "description": "transactions",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "validators_hash": {
+                        "type": "string",
+                        "description": "hashes from the app output from the prev block  validators for the current block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "next_validators_hash": {
+                        "type": "string",
+                        "description": "validators for the next block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "consensus_hash": {
+                        "type": "string",
+                        "description": "consensus params for current block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "app_hash": {
+                        "type": "string",
+                        "description": "state after txs from the previous block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "last_results_hash": {
+                        "type": "string",
+                        "description": "root hash of all results from the txs from the previous block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "evidence_hash": {
+                        "type": "string",
+                        "description": "consensus info  evidence included in the block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "proposer_address": {
+                        "type": "string",
+                        "description": "proposer_address is the original block proposer address, formatted as a Bech32 string. In Tendermint, this type is `bytes`, but in the SDK, we convert it to a Bech32 string for better UX.  original proposer of the block"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Header",
+                "description": "Header defines the structure of a Tendermint block header."
+            },
+            "tendermint.crypto.PublicKey": {
+                "properties": {
+                    "ed25519": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "secp256k1": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Public Key",
+                "description": "PublicKey defines the keys available for use with Validators"
+            },
+            "tendermint.types.Block": {
+                "properties": {
+                    "header": {
+                        "$ref": "#/definitions/tendermint.types.Header",
+                        "additionalProperties": false
+                    },
+                    "data": {
+                        "$ref": "#/definitions/tendermint.types.Data",
+                        "additionalProperties": false
+                    },
+                    "evidence": {
+                        "$ref": "#/definitions/tendermint.types.EvidenceList",
+                        "additionalProperties": false
+                    },
+                    "last_commit": {
+                        "$ref": "#/definitions/tendermint.types.Commit",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Block"
+            },
+            "tendermint.types.BlockID": {
+                "properties": {
+                    "hash": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "part_set_header": {
+                        "$ref": "#/definitions/tendermint.types.PartSetHeader",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Block ID",
+                "description": "BlockID"
+            },
+            "tendermint.types.Commit": {
+                "properties": {
+                    "height": {
+                        "type": "string"
+                    },
+                    "round": {
+                        "type": "integer"
+                    },
+                    "block_id": {
+                        "$ref": "#/definitions/tendermint.types.BlockID",
+                        "additionalProperties": false
+                    },
+                    "signatures": {
+                        "items": {
+                            "$ref": "#/definitions/tendermint.types.CommitSig"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Commit",
+                "description": "Commit contains the evidence that a block was committed by a set of validators."
+            },
+            "tendermint.types.CommitSig": {
+                "properties": {
+                    "block_id_flag": {
+                        "enum": [
+                            "BLOCK_ID_FLAG_UNKNOWN",
+                            0,
+                            "BLOCK_ID_FLAG_ABSENT",
+                            1,
+                            "BLOCK_ID_FLAG_COMMIT",
+                            2,
+                            "BLOCK_ID_FLAG_NIL",
+                            3
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Block ID Flag",
+                        "description": "BlockIdFlag indicates which BlockID the signature is for"
+                    },
+                    "validator_address": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "signature": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Commit Sig",
+                "description": "CommitSig is a part of the Vote included in a Commit."
+            },
+            "tendermint.types.Data": {
+                "properties": {
+                    "txs": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "Txs that will be applied by state @ block.Height+1. NOTE: not all txs here are valid.  We're just agreeing on the order first. This means that block.AppHash does not include these txs.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Data",
+                "description": "Data contains the set of transactions included in the block"
+            },
+            "tendermint.types.DuplicateVoteEvidence": {
+                "properties": {
+                    "vote_a": {
+                        "$ref": "#/definitions/tendermint.types.Vote",
+                        "additionalProperties": false
+                    },
+                    "vote_b": {
+                        "$ref": "#/definitions/tendermint.types.Vote",
+                        "additionalProperties": false
+                    },
+                    "total_voting_power": {
+                        "type": "string"
+                    },
+                    "validator_power": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Duplicate Vote Evidence",
+                "description": "DuplicateVoteEvidence contains evidence of a validator signed two conflicting votes."
+            },
+            "tendermint.types.Evidence": {
+                "properties": {
+                    "duplicate_vote_evidence": {
+                        "$ref": "#/definitions/tendermint.types.DuplicateVoteEvidence",
+                        "additionalProperties": false
+                    },
+                    "light_client_attack_evidence": {
+                        "$ref": "#/definitions/tendermint.types.LightClientAttackEvidence",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Evidence"
+            },
+            "tendermint.types.EvidenceList": {
+                "properties": {
+                    "evidence": {
+                        "items": {
+                            "$ref": "#/definitions/tendermint.types.Evidence"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Evidence List"
+            },
+            "tendermint.types.Header": {
+                "properties": {
+                    "version": {
+                        "$ref": "#/definitions/tendermint.version.Consensus",
+                        "additionalProperties": false,
+                        "description": "basic block info"
+                    },
+                    "chain_id": {
+                        "type": "string"
+                    },
+                    "height": {
+                        "type": "string"
+                    },
+                    "time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "last_block_id": {
+                        "$ref": "#/definitions/tendermint.types.BlockID",
+                        "additionalProperties": false,
+                        "description": "prev block info"
+                    },
+                    "last_commit_hash": {
+                        "type": "string",
+                        "description": "hashes of block data  commit from validators from the last block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "data_hash": {
+                        "type": "string",
+                        "description": "transactions",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "validators_hash": {
+                        "type": "string",
+                        "description": "hashes from the app output from the prev block  validators for the current block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "next_validators_hash": {
+                        "type": "string",
+                        "description": "validators for the next block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "consensus_hash": {
+                        "type": "string",
+                        "description": "consensus params for current block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "app_hash": {
+                        "type": "string",
+                        "description": "state after txs from the previous block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "last_results_hash": {
+                        "type": "string",
+                        "description": "root hash of all results from the txs from the previous block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "evidence_hash": {
+                        "type": "string",
+                        "description": "consensus info  evidence included in the block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "proposer_address": {
+                        "type": "string",
+                        "description": "original proposer of the block",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "--------------------------------",
+                "description": "--------------------------------  Header defines the structure of a block header."
+            },
+            "tendermint.types.LightBlock": {
+                "properties": {
+                    "signed_header": {
+                        "$ref": "#/definitions/tendermint.types.SignedHeader",
+                        "additionalProperties": false
+                    },
+                    "validator_set": {
+                        "$ref": "#/definitions/tendermint.types.ValidatorSet",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Light Block"
+            },
+            "tendermint.types.LightClientAttackEvidence": {
+                "properties": {
+                    "conflicting_block": {
+                        "$ref": "#/definitions/tendermint.types.LightBlock",
+                        "additionalProperties": false
+                    },
+                    "common_height": {
+                        "type": "string"
+                    },
+                    "byzantine_validators": {
+                        "items": {
+                            "$ref": "#/definitions/tendermint.types.Validator"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    },
+                    "total_voting_power": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Light Client Attack Evidence",
+                "description": "LightClientAttackEvidence contains evidence of a set of validators attempting to mislead a light client."
+            },
+            "tendermint.types.PartSetHeader": {
+                "properties": {
+                    "total": {
+                        "type": "integer"
+                    },
+                    "hash": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Part Set Header",
+                "description": "PartsetHeader"
+            },
+            "tendermint.types.SignedHeader": {
+                "properties": {
+                    "header": {
+                        "$ref": "#/definitions/tendermint.types.Header",
+                        "additionalProperties": false
+                    },
+                    "commit": {
+                        "$ref": "#/definitions/tendermint.types.Commit",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Signed Header"
+            },
+            "tendermint.types.Validator": {
+                "properties": {
+                    "address": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "pub_key": {
+                        "$ref": "#/definitions/tendermint.crypto.PublicKey",
+                        "additionalProperties": false
+                    },
+                    "voting_power": {
+                        "type": "string"
+                    },
+                    "proposer_priority": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Validator"
+            },
+            "tendermint.types.ValidatorSet": {
+                "properties": {
+                    "validators": {
+                        "items": {
+                            "$ref": "#/definitions/tendermint.types.Validator"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    },
+                    "proposer": {
+                        "$ref": "#/definitions/tendermint.types.Validator",
+                        "additionalProperties": false
+                    },
+                    "total_voting_power": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Validator Set"
+            },
+            "tendermint.types.Vote": {
+                "properties": {
+                    "type": {
+                        "enum": [
+                            "SIGNED_MSG_TYPE_UNKNOWN",
+                            0,
+                            "SIGNED_MSG_TYPE_PREVOTE",
+                            1,
+                            "SIGNED_MSG_TYPE_PRECOMMIT",
+                            2,
+                            "SIGNED_MSG_TYPE_PROPOSAL",
+                            32
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Signed Msg Type",
+                        "description": "SignedMsgType is a type of signed message in the consensus."
+                    },
+                    "height": {
+                        "type": "string"
+                    },
+                    "round": {
+                        "type": "integer"
+                    },
+                    "block_id": {
+                        "$ref": "#/definitions/tendermint.types.BlockID",
+                        "additionalProperties": false,
+                        "description": "zero if vote is nil."
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "validator_address": {
+                        "type": "string",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "validator_index": {
+                        "type": "integer"
+                    },
+                    "signature": {
+                        "type": "string",
+                        "description": "Vote signature by the validator if they participated in consensus for the associated block.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "extension": {
+                        "type": "string",
+                        "description": "Vote extension provided by the application. Only valid for precommit messages.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "extension_signature": {
+                        "type": "string",
+                        "description": "Vote extension signature by the validator if they participated in consensus for the associated block. Only valid for precommit messages.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Vote",
+                "description": "Vote represents a prevote or precommit vote from validators for consensus."
+            },
+            "tendermint.version.Consensus": {
+                "properties": {
+                    "block": {
+                        "type": "string"
+                    },
+                    "app": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Consensus",
+                "description": "Consensus captures the consensus rules for processing a block in the blockchain, including all blockchain data structures and the rules of the application's state transition machine."
+            }
+        }
+    }
+}

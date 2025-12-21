@@ -1,0 +1,204 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/feegrant/v1beta1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "cosmos.feegrant.v1beta1.MsgGrantAllowance": {
+      "post": {
+        "summary": "GrantAllowance grants fee allowance to the grantee on the granter's\naccount with the provided expiration time.",
+        "operationId": "cosmos.feegrant.v1beta1.MsgGrantAllowance",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.feegrant.v1beta1.MsgGrantAllowanceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.feegrant.v1beta1.MsgGrantAllowance"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.feegrant.v1beta1.MsgPruneAllowances": {
+      "post": {
+        "summary": "PruneAllowances prunes expired fee allowances, currently up to 75 at a\ntime.",
+        "operationId": "cosmos.feegrant.v1beta1.MsgPruneAllowances",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.feegrant.v1beta1.MsgPruneAllowancesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.feegrant.v1beta1.MsgPruneAllowances"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.feegrant.v1beta1.MsgRevokeAllowance": {
+      "post": {
+        "summary": "RevokeAllowance revokes any fee allowance of granter's account that\nhas been granted to the grantee.",
+        "operationId": "cosmos.feegrant.v1beta1.MsgRevokeAllowance",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.feegrant.v1beta1.MsgRevokeAllowanceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.feegrant.v1beta1.MsgRevokeAllowance"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.feegrant.v1beta1.MsgGrantAllowance": {
+      "type": "object",
+      "properties": {
+        "granter": {
+          "type": "string",
+          "description": "granter is the address of the user granting an allowance of their funds."
+        },
+        "grantee": {
+          "type": "string",
+          "description": "grantee is the address of the user being granted an allowance of another\nuser's funds."
+        },
+        "allowance": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "description": "allowance can be any of basic, periodic, allowed fee allowance."
+        }
+      },
+      "description": "MsgGrantAllowance adds permission for Grantee to spend up to Allowance\nof fees from the account of Granter."
+    },
+    "cosmos.feegrant.v1beta1.MsgGrantAllowanceResponse": {
+      "type": "object",
+      "description": "MsgGrantAllowanceResponse defines the Msg/GrantAllowanceResponse response\ntype."
+    },
+    "cosmos.feegrant.v1beta1.MsgPruneAllowances": {
+      "type": "object",
+      "properties": {
+        "pruner": {
+          "type": "string",
+          "description": "pruner is the address of the user pruning expired allowances."
+        }
+      },
+      "description": "MsgPruneAllowances prunes expired fee allowances."
+    },
+    "cosmos.feegrant.v1beta1.MsgPruneAllowancesResponse": {
+      "type": "object",
+      "description": "MsgPruneAllowancesResponse defines the Msg/PruneAllowancesResponse response\ntype."
+    },
+    "cosmos.feegrant.v1beta1.MsgRevokeAllowance": {
+      "type": "object",
+      "properties": {
+        "granter": {
+          "type": "string",
+          "description": "granter is the address of the user granting an allowance of their funds."
+        },
+        "grantee": {
+          "type": "string",
+          "description": "grantee is the address of the user being granted an allowance of another\nuser's funds."
+        }
+      },
+      "description": "MsgRevokeAllowance removes any existing Allowance from Granter to Grantee."
+    },
+    "cosmos.feegrant.v1beta1.MsgRevokeAllowanceResponse": {
+      "type": "object",
+      "description": "MsgRevokeAllowanceResponse defines the Msg/RevokeAllowanceResponse response\ntype."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

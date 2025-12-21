@@ -1,0 +1,49 @@
+{
+  "name": "tewl-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@cosmjs/crypto": "^0.32.4",
+    "@cosmjs/encoding": "^0.32.4",
+    "@cosmjs/proto-signing": "^0.32.4",
+    "@vueuse/core": "^14.1.0",
+    "axios": "^1.13.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cosmjs-types": "^0.10.1",
+    "lucide-vue-next": "^0.562.0",
+    "pinia": "^2.3.0",
+    "radix-vue": "^1.9.17",
+    "tailwind-merge": "^3.4.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vitest/browser": "^4.0.16",
+    "@vitest/browser-playwright": "^4.0.16",
+    "@vitest/coverage-v8": "^4.0.16",
+    "@vue/test-utils": "^2.4.6",
+    "autoprefixer": "^10.4.20",
+    "jsdom": "^27.3.0",
+    "playwright": "^1.57.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "~5.6.3",
+    "vite": "^6.0.5",
+    "vitest": "^4.0.16",
+    "vue-tsc": "^2.2.0"
+  }
+}

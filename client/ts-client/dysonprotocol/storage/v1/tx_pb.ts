@@ -23,7 +23,7 @@ export class MsgStorageSet extends Message<MsgStorageSet> {
   owner = "";
 
   /**
-   * Index key for the storage entry; must be non-empty, max 50 characters,
+   * Index key for the storage entry; must be non-empty, max 128 characters,
    * and printable ASCII only.
    *
    * @generated from field: string index = 2;

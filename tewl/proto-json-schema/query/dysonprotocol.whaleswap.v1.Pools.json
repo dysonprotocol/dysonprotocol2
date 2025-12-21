@@ -1,0 +1,234 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolsRequest",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QueryPoolsRequest": {
+                "properties": {
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters for listing pools"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Pools Request"
+            },
+            "cosmos.base.query.v1beta1.PageRequest": {
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "key is a value returned in PageResponse.next_key to begin querying the next page most efficiently. Only one of offset or key should be set.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "offset": {
+                        "type": "string",
+                        "description": "offset is a numeric offset that can be used when key is unavailable. It is less efficient than using key. Only one of offset or key should be set."
+                    },
+                    "limit": {
+                        "type": "string",
+                        "description": "limit is the total number of results to be returned in the result page. If left empty it will default to a value to be set by each app."
+                    },
+                    "count_total": {
+                        "type": "boolean",
+                        "description": "count_total is set to true  to indicate that the result set should include a count of the total number of items available for pagination in UIs. count_total is only respected when offset is used. It is ignored when key is set."
+                    },
+                    "reverse": {
+                        "type": "boolean",
+                        "description": "reverse is set to true if results are to be returned in the descending order."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Request",
+                "description": "PageRequest is to be embedded in gRPC request messages for efficient pagination. Ex:  message SomeRequest {          Foo some_parameter = 1;          PageRequest pagination = 2;  }"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPoolsResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QueryPoolsResponse": {
+                "properties": {
+                    "pools": {
+                        "items": {
+                            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.Pool"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "List of pools matching the query criteria"
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Pools Response"
+            },
+            "cosmos.base.query.v1beta1.PageResponse": {
+                "properties": {
+                    "next_key": {
+                        "type": "string",
+                        "description": "next_key is the key to be passed to PageRequest.key to query the next page most efficiently. It will be empty if there are no more results.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "total": {
+                        "type": "string",
+                        "description": "total is total number of results available if PageRequest.count_total was set, its value is undefined otherwise"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Response",
+                "description": "PageResponse is to be embedded in gRPC response messages where the corresponding request message has used PageRequest.  message SomeResponse {          repeated Bar results = 1;          PageResponse page = 2;  }"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "cosmos.base.v1beta1.DecCoin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Dec Coin",
+                "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.whaleswap.v1.Pool": {
+                "properties": {
+                    "pool_id": {
+                        "type": "string"
+                    },
+                    "coins": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "coins holds exactly two coins in canonical denom order (denom[0] < denom[1]). All math derives price as P = coins[1].amount / coins[0].amount."
+                    },
+                    "shares_denom": {
+                        "type": "string"
+                    },
+                    "created_height": {
+                        "type": "string",
+                        "description": "New normalized fields"
+                    },
+                    "created_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_height": {
+                        "type": "string"
+                    },
+                    "num_trades": {
+                        "type": "string"
+                    },
+                    "fees_earned": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "cumulative swap fees retained by the pool (accrue to LPs)"
+                    },
+                    "interest_rate": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 LEVERAGE FIELDS \u2550\u2550\u2550\u2550\u2550 Annual interest rates per reserve denom (exactly two, canonical order). Each amount is a decimal string representing APR (per-year accrual)."
+                    },
+                    "interest_earned": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Total accrued interest (yield for LPs)"
+                    },
+                    "total_borrowed": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Total borrowed (aggregate for cap enforcement)"
+                    },
+                    "min_initial_collateral_ratio": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 PER-POOL LEVERAGE RISK PARAMETERS (per-denom) \u2550\u2550\u2550\u2550\u2550 Minimum collateral ratio required at position open per reserve denom (exactly two, canonical order). Each amount is a decimal string (> 1)."
+                    },
+                    "liquidation_threshold": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Collateral ratio threshold below which position is liquidatable per reserve denom (exactly two, canonical order). Each amount is a decimal string (> 1)."
+                    },
+                    "max_borrow_percent": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Maximum borrow capacity per reserve denom as DecCoins (exactly two, canonical order). Each amount is a decimal in [0,1)."
+                    },
+                    "bound_percent": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Directional price-impact bounds keyed by the sold denom. Each amount must satisfy 0 < x <= 1; x == 1 disables the bound (unbounded). Missing entries default to 1 for both pool denoms. Stored in canonical pool order (coins[0], coins[1]). During swaps, selling denom D enforces that the post-trade price of D quoted in the opposite denom may drop by at most x fraction (B = 1/(1-x) multiplier). Values outside (0,1] are rejected at validation time."
+                    },
+                    "fee_rate": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "fee_rate is the per-denom pool swap fee rate (amount in [0,1)), exactly two entries in canonical pool order matching coins[0].denom and coins[1].denom. Fee is applied to the INPUT denom of each swap leg: for exact-in and exact-out, the effective input participating in the AMM curve is dx_effective = dx * (1 - fee_rate[input_denom]). The difference dx - dx_effective is the swap fee charged in the input denom and accrued to fees_earned."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Pool",
+                "description": "Pool describes AMM pool state. Notes: - coin_a.denom < coin_b.denom lexicographically (canonical order) - fee_rate is a per-denom decimal rate in [0,1) as DecCoins - coin_a.amount/coin_b.amount are sdk.Int strings. - The instantaneous price used by price-based queries is derived from   reserves as P = coin_b / coin_a, consistent with the notes above."
+            }
+        }
+    }
+}

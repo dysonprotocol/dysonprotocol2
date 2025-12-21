@@ -1,0 +1,46 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.MsgCreateNewScript",
+        "definitions": {
+            "dysonprotocol.script.v1.MsgCreateNewScript": {
+                "properties": {
+                    "creator_address": {
+                        "type": "string",
+                        "description": "Account address creating the script; must be a valid bech32 address."
+                    },
+                    "code": {
+                        "type": "string",
+                        "description": "Python script content; will be formatted and used to generate deterministic address."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Create New Script",
+                "description": "MsgCreateNewScript creates a new script with deterministic address and grants update permissions. Behavior: - Generates deterministic script address using SHA256 hash of creator + formatted code. - Creates bech32 address from first 20 bytes of hash. - Formats code using DysFormat before address generation and storage. - Grants generic authorization for MsgUpdateScript to creator via authz. - Initializes script with version 1 and formatted code. Validation: - Creator address must be valid. - Code must be valid Python syntax that can be formatted by DysFormat. - Generated address must not already exist. Emits: - EventCreateNewScript(script_address, creator_address, version) on success. Returns: - generated script address and initial version."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.MsgCreateNewScriptResponse",
+        "definitions": {
+            "dysonprotocol.script.v1.MsgCreateNewScriptResponse": {
+                "properties": {
+                    "script_address": {
+                        "type": "string",
+                        "description": "Address of the newly created script, generated deterministically."
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "Initial script version (always 1 for new scripts)."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Create New Script Response",
+                "description": "Response containing the newly created script details."
+            }
+        }
+    }
+}

@@ -1,0 +1,38 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryDelegatorWithdrawAddressRequest",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryDelegatorWithdrawAddressRequest": {
+                "properties": {
+                    "delegator_address": {
+                        "type": "string",
+                        "description": "delegator_address defines the delegator address to query for."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Delegator Withdraw Address Request",
+                "description": "QueryDelegatorWithdrawAddressRequest is the request type for the Query/DelegatorWithdrawAddress RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryDelegatorWithdrawAddressResponse",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryDelegatorWithdrawAddressResponse": {
+                "properties": {
+                    "withdraw_address": {
+                        "type": "string",
+                        "description": "withdraw_address defines the delegator address to query for."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Delegator Withdraw Address Response",
+                "description": "QueryDelegatorWithdrawAddressResponse is the response type for the Query/DelegatorWithdrawAddress RPC method."
+            }
+        }
+    }
+}

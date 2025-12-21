@@ -1,0 +1,202 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.QueryRedelegationsRequest",
+        "definitions": {
+            "cosmos.staking.v1beta1.QueryRedelegationsRequest": {
+                "properties": {
+                    "delegator_addr": {
+                        "type": "string",
+                        "description": "delegator_addr defines the delegator address to query for."
+                    },
+                    "src_validator_addr": {
+                        "type": "string",
+                        "description": "src_validator_addr defines the validator address to redelegate from."
+                    },
+                    "dst_validator_addr": {
+                        "type": "string",
+                        "description": "dst_validator_addr defines the validator address to redelegate to."
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
+                        "additionalProperties": false,
+                        "description": "pagination defines an optional pagination for the request."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Redelegations Request",
+                "description": "QueryRedelegationsRequest is request type for the Query/Redelegations RPC method."
+            },
+            "cosmos.base.query.v1beta1.PageRequest": {
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "key is a value returned in PageResponse.next_key to begin querying the next page most efficiently. Only one of offset or key should be set.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "offset": {
+                        "type": "string",
+                        "description": "offset is a numeric offset that can be used when key is unavailable. It is less efficient than using key. Only one of offset or key should be set."
+                    },
+                    "limit": {
+                        "type": "string",
+                        "description": "limit is the total number of results to be returned in the result page. If left empty it will default to a value to be set by each app."
+                    },
+                    "count_total": {
+                        "type": "boolean",
+                        "description": "count_total is set to true  to indicate that the result set should include a count of the total number of items available for pagination in UIs. count_total is only respected when offset is used. It is ignored when key is set."
+                    },
+                    "reverse": {
+                        "type": "boolean",
+                        "description": "reverse is set to true if results are to be returned in the descending order."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Request",
+                "description": "PageRequest is to be embedded in gRPC request messages for efficient pagination. Ex:  message SomeRequest {          Foo some_parameter = 1;          PageRequest pagination = 2;  }"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.QueryRedelegationsResponse",
+        "definitions": {
+            "cosmos.staking.v1beta1.QueryRedelegationsResponse": {
+                "properties": {
+                    "redelegation_responses": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.staking.v1beta1.RedelegationResponse"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+                        "additionalProperties": false,
+                        "description": "pagination defines the pagination in the response."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Redelegations Response",
+                "description": "QueryRedelegationsResponse is response type for the Query/Redelegations RPC method."
+            },
+            "cosmos.base.query.v1beta1.PageResponse": {
+                "properties": {
+                    "next_key": {
+                        "type": "string",
+                        "description": "next_key is the key to be passed to PageRequest.key to query the next page most efficiently. It will be empty if there are no more results.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "total": {
+                        "type": "string",
+                        "description": "total is total number of results available if PageRequest.count_total was set, its value is undefined otherwise"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Response",
+                "description": "PageResponse is to be embedded in gRPC response messages where the corresponding request message has used PageRequest.  message SomeResponse {          repeated Bar results = 1;          PageResponse page = 2;  }"
+            },
+            "cosmos.staking.v1beta1.Redelegation": {
+                "properties": {
+                    "delegator_address": {
+                        "type": "string",
+                        "description": "delegator_address is the bech32-encoded address of the delegator."
+                    },
+                    "validator_src_address": {
+                        "type": "string",
+                        "description": "validator_src_address is the validator redelegation source operator address."
+                    },
+                    "validator_dst_address": {
+                        "type": "string",
+                        "description": "validator_dst_address is the validator redelegation destination operator address."
+                    },
+                    "entries": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.staking.v1beta1.RedelegationEntry"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "entries are the redelegation entries.  redelegation entries"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Redelegation",
+                "description": "Redelegation contains the list of a particular delegator's redelegating bonds from a particular source validator to a particular destination validator."
+            },
+            "cosmos.staking.v1beta1.RedelegationEntry": {
+                "properties": {
+                    "creation_height": {
+                        "type": "string",
+                        "description": "creation_height  defines the height which the redelegation took place."
+                    },
+                    "completion_time": {
+                        "type": "string",
+                        "description": "completion_time defines the unix time for redelegation completion.",
+                        "format": "date-time"
+                    },
+                    "initial_balance": {
+                        "type": "string",
+                        "description": "initial_balance defines the initial balance when redelegation started."
+                    },
+                    "shares_dst": {
+                        "type": "string",
+                        "description": "shares_dst is the amount of destination-validator shares created by redelegation."
+                    },
+                    "unbonding_id": {
+                        "type": "string",
+                        "description": "Incrementing id that uniquely identifies this entry"
+                    },
+                    "unbonding_on_hold_ref_count": {
+                        "type": "string",
+                        "description": "Strictly positive if this entry's unbonding has been stopped by external modules"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Redelegation Entry",
+                "description": "RedelegationEntry defines a redelegation object with relevant metadata."
+            },
+            "cosmos.staking.v1beta1.RedelegationEntryResponse": {
+                "properties": {
+                    "redelegation_entry": {
+                        "$ref": "#/definitions/cosmos.staking.v1beta1.RedelegationEntry",
+                        "additionalProperties": false
+                    },
+                    "balance": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Redelegation Entry Response",
+                "description": "RedelegationEntryResponse is equivalent to a RedelegationEntry except that it contains a balance in addition to shares which is more suitable for client responses."
+            },
+            "cosmos.staking.v1beta1.RedelegationResponse": {
+                "properties": {
+                    "redelegation": {
+                        "$ref": "#/definitions/cosmos.staking.v1beta1.Redelegation",
+                        "additionalProperties": false
+                    },
+                    "entries": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.staking.v1beta1.RedelegationEntryResponse"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Redelegation Response",
+                "description": "RedelegationResponse is equivalent to a Redelegation except that its entries contain a balance in addition to shares which is more suitable for client responses."
+            }
+        }
+    }
+}

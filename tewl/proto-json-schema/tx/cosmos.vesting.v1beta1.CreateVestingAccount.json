@@ -1,0 +1,62 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.vesting.v1beta1.MsgCreateVestingAccount",
+        "definitions": {
+            "cosmos.vesting.v1beta1.MsgCreateVestingAccount": {
+                "properties": {
+                    "from_address": {
+                        "type": "string"
+                    },
+                    "to_address": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "description": "end of vesting as unix time (in seconds)."
+                    },
+                    "delayed": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Create Vesting Account",
+                "description": "MsgCreateVestingAccount defines a message that enables creating a vesting account."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.vesting.v1beta1.MsgCreateVestingAccountResponse",
+        "definitions": {
+            "cosmos.vesting.v1beta1.MsgCreateVestingAccountResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Create Vesting Account Response",
+                "description": "MsgCreateVestingAccountResponse defines the Msg/CreateVestingAccount response type."
+            }
+        }
+    }
+}

@@ -1,0 +1,311 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPositionsByPoolRequest",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QueryPositionsByPoolRequest": {
+                "properties": {
+                    "pool_id": {
+                        "type": "string",
+                        "description": "Pool ID to filter positions by; returns all positions in this pool"
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
+                        "additionalProperties": false,
+                        "description": "Standard pagination parameters; results ordered by position ID ascending"
+                    },
+                    "status": {
+                        "enum": [
+                            "POSITION_STATUS_UNSPECIFIED",
+                            0,
+                            "POSITION_STATUS_OPEN",
+                            1,
+                            "POSITION_STATUS_CLOSED",
+                            2,
+                            "POSITION_STATUS_LIQUIDATING",
+                            3,
+                            "POSITION_STATUS_LIQUIDATED",
+                            4
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Position Status"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Positions By Pool Request"
+            },
+            "cosmos.base.query.v1beta1.PageRequest": {
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "key is a value returned in PageResponse.next_key to begin querying the next page most efficiently. Only one of offset or key should be set.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "offset": {
+                        "type": "string",
+                        "description": "offset is a numeric offset that can be used when key is unavailable. It is less efficient than using key. Only one of offset or key should be set."
+                    },
+                    "limit": {
+                        "type": "string",
+                        "description": "limit is the total number of results to be returned in the result page. If left empty it will default to a value to be set by each app."
+                    },
+                    "count_total": {
+                        "type": "boolean",
+                        "description": "count_total is set to true  to indicate that the result set should include a count of the total number of items available for pagination in UIs. count_total is only respected when offset is used. It is ignored when key is set."
+                    },
+                    "reverse": {
+                        "type": "boolean",
+                        "description": "reverse is set to true if results are to be returned in the descending order."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Request",
+                "description": "PageRequest is to be embedded in gRPC request messages for efficient pagination. Ex:  message SomeRequest {          Foo some_parameter = 1;          PageRequest pagination = 2;  }"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryPositionsByPoolResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QueryPositionsByPoolResponse": {
+                "properties": {
+                    "positions": {
+                        "items": {
+                            "$ref": "#/definitions/dysonprotocol.whaleswap.v1.LeveragePosition"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "List of positions in the specified pool"
+                    },
+                    "pagination": {
+                        "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+                        "additionalProperties": false,
+                        "description": "Pagination metadata for result set navigation"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Positions By Pool Response"
+            },
+            "cosmos.base.query.v1beta1.PageResponse": {
+                "properties": {
+                    "next_key": {
+                        "type": "string",
+                        "description": "next_key is the key to be passed to PageRequest.key to query the next page most efficiently. It will be empty if there are no more results.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "total": {
+                        "type": "string",
+                        "description": "total is total number of results available if PageRequest.count_total was set, its value is undefined otherwise"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Page Response",
+                "description": "PageResponse is to be embedded in gRPC response messages where the corresponding request message has used PageRequest.  message SomeResponse {          repeated Bar results = 1;          PageResponse page = 2;  }"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "cosmos.base.v1beta1.DecCoin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Dec Coin",
+                "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.whaleswap.v1.LeveragePosition": {
+                "properties": {
+                    "position_id": {
+                        "type": "string"
+                    },
+                    "pool_id": {
+                        "type": "string"
+                    },
+                    "user": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "enum": [
+                            "POSITION_STATUS_UNSPECIFIED",
+                            0,
+                            "POSITION_STATUS_OPEN",
+                            1,
+                            "POSITION_STATUS_CLOSED",
+                            2,
+                            "POSITION_STATUS_LIQUIDATING",
+                            3,
+                            "POSITION_STATUS_LIQUIDATED",
+                            4
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Position Status"
+                    },
+                    "borrowed": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "held": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "collateral": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "created_height": {
+                        "type": "string"
+                    },
+                    "created_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "liquidation_initialized_block_height": {
+                        "type": "string"
+                    },
+                    "liquidation_status": {
+                        "enum": [
+                            "LIQUIDATION_STATUS_UNSPECIFIED",
+                            0,
+                            "LIQUIDATION_STATUS_NONE",
+                            1,
+                            "LIQUIDATION_STATUS_INITIALIZED",
+                            2
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n Leverage State Types\n \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
+                        "description": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 Leverage State Types \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+                    },
+                    "accrued_interest": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Unpaid interest carried forward from prior settlements (borrowed denom)."
+                    },
+                    "updated_height": {
+                        "type": "string"
+                    },
+                    "updated_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "interest_rate": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "\u2550\u2550\u2550\u2550\u2550 PER-POSITION SNAPSHOTS (sticky to this position) \u2550\u2550\u2550\u2550\u2550 Annual interest rates per reserve denom (exactly two, canonical order). Each amount is a LegacyDec string representing APR (per-year accrual)."
+                    },
+                    "min_collateral_ratio": {
+                        "type": "string",
+                        "description": "Minimum collateral ratio used for health/liquidation checks (cosmos.Dec string)."
+                    },
+                    "liquidation_threshold": {
+                        "type": "string",
+                        "description": "Liquidation threshold used for liquidation checks (cosmos.Dec string)."
+                    },
+                    "initial_borrowed": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Opening principal snapshot for analytics/limits (borrowed denom)."
+                    },
+                    "initial_held": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Opening principal snapshot for analytics/limits (held denom)."
+                    },
+                    "initial_collateral": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Opening principal snapshot for analytics/limits (collateral denom)."
+                    },
+                    "total_interest_paid": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Lifetime interest paid by the user (borrowed denom)."
+                    },
+                    "last_interest_settlement_time": {
+                        "type": "string",
+                        "description": "Timestamp of the last time interest was settled into accrued_interest.",
+                        "format": "date-time"
+                    },
+                    "accrued_interest_remainder": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin",
+                        "additionalProperties": false,
+                        "description": "Fractional interest remainder (<1 borrowed coin) preserved between settlements."
+                    },
+                    "trade_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "Trade IDs associated with this position over its lifetime. Semantics: - Includes the opening trade that created the position. - Includes all trades from partial and full closes. - Includes trades from liquidation paths. - Includes trades from MsgCoverPosition (covers) auto-close path. Values are whaleswap Trade.trade_id (uint64)."
+                    },
+                    "total_realized_profit": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "\u2550\u2550\u2550\u2550\u2550 REALIZED P&L (PER POSITION) \u2550\u2550\u2550\u2550\u2550 Cumulative realized profit from this position over its lifetime, denominated in the borrowed denom. Includes: - Profits from ClosePosition (full and partial closes) - Profits from MsgCoverPosition auto-close path"
+                    },
+                    "total_realized_loss": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "Cumulative realized loss from this position over its lifetime, denominated in the borrowed denom. Includes: - Losses realized in ClosePosition (full and partial closes) - Losses realized during liquidation flows (if any)"
+                    },
+                    "collateral_returned": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "\u2550\u2550\u2550\u2550\u2550 FINAL COLLATERAL RETURNED \u2550\u2550\u2550\u2550\u2550 The amount of collateral returned to the user when the position was fully closed. For partial closes, this accumulates the returned amount."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Leverage Position",
+                "description": "LeveragePosition represents an active leverage position for a trader."
+            }
+        }
+    }
+}

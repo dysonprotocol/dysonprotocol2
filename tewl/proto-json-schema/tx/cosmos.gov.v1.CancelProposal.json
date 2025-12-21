@@ -1,0 +1,51 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.gov.v1.MsgCancelProposal",
+        "definitions": {
+            "cosmos.gov.v1.MsgCancelProposal": {
+                "properties": {
+                    "proposal_id": {
+                        "type": "string",
+                        "description": "proposal_id defines the unique id of the proposal."
+                    },
+                    "proposer": {
+                        "type": "string",
+                        "description": "proposer is the account address of the proposer."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Cancel Proposal",
+                "description": "MsgCancelProposal is the Msg/CancelProposal request type."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.gov.v1.MsgCancelProposalResponse",
+        "definitions": {
+            "cosmos.gov.v1.MsgCancelProposalResponse": {
+                "properties": {
+                    "proposal_id": {
+                        "type": "string",
+                        "description": "proposal_id defines the unique id of the proposal."
+                    },
+                    "canceled_time": {
+                        "type": "string",
+                        "description": "canceled_time is the time when proposal is canceled.",
+                        "format": "date-time"
+                    },
+                    "canceled_height": {
+                        "type": "string",
+                        "description": "canceled_height defines the block height at which the proposal is canceled."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Cancel Proposal Response",
+                "description": "MsgCancelProposalResponse defines the response structure for executing a MsgCancelProposal message."
+            }
+        }
+    }
+}

@@ -1,0 +1,366 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/protocolpool/v1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "cosmos.protocolpool.v1.MsgCancelContinuousFund": {
+      "post": {
+        "summary": "CancelContinuousFund defines a method for cancelling continuous fund.",
+        "operationId": "cosmos.protocolpool.v1.MsgCancelContinuousFund",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.protocolpool.v1.MsgCancelContinuousFundResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.protocolpool.v1.MsgCancelContinuousFund"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.protocolpool.v1.MsgCommunityPoolSpend": {
+      "post": {
+        "summary": "CommunityPoolSpend defines a governance operation for sending tokens from\nthe community pool in the x/protocolpool module to another account, which\ncould be the governance module itself. The authority is defined in the\nkeeper.",
+        "operationId": "cosmos.protocolpool.v1.MsgCommunityPoolSpend",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.protocolpool.v1.MsgCommunityPoolSpendResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.protocolpool.v1.MsgCommunityPoolSpend"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.protocolpool.v1.MsgCreateContinuousFund": {
+      "post": {
+        "summary": "CreateContinuousFund defines a method to distribute a percentage of funds\nto an address continuously. This ContinuousFund can be indefinite or run\nuntil a given expiry time. Funds come from validator block rewards from\nx/distribution, but may also come from any user who funds the\nProtocolPoolEscrow module account directly through x/bank.",
+        "operationId": "cosmos.protocolpool.v1.MsgCreateContinuousFund",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.protocolpool.v1.MsgCreateContinuousFundResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.protocolpool.v1.MsgCreateContinuousFund"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.protocolpool.v1.MsgFundCommunityPool": {
+      "post": {
+        "summary": "FundCommunityPool defines a method to allow an account to directly\nfund the community pool.",
+        "operationId": "cosmos.protocolpool.v1.MsgFundCommunityPool",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.protocolpool.v1.MsgFundCommunityPoolResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.protocolpool.v1.MsgFundCommunityPool"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.protocolpool.v1.MsgUpdateParams": {
+      "post": {
+        "summary": "UpdateParams defines a governance operation for updating the x/protocolpool\nmodule parameters. The authority is defined in the keeper.",
+        "operationId": "cosmos.protocolpool.v1.MsgUpdateParams",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.protocolpool.v1.MsgUpdateParamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.protocolpool.v1.MsgUpdateParams"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.v1beta1.Coin": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "Coin defines a token with a denomination and an amount.\n\nNOTE: The amount field is an Int which implements the custom method\nsignatures required by gogoproto."
+    },
+    "cosmos.protocolpool.v1.MsgCancelContinuousFund": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string",
+          "description": "Authority is the account address of authority."
+        },
+        "recipient": {
+          "type": "string",
+          "description": "Recipient is the account address string of the recipient whose funds are to\nbe cancelled."
+        }
+      },
+      "description": "MsgCancelContinuousFund defines a message to cancel continuous funds for a\nspecific recipient."
+    },
+    "cosmos.protocolpool.v1.MsgCancelContinuousFundResponse": {
+      "type": "object",
+      "properties": {
+        "canceled_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "CanceledTime is the canceled time."
+        },
+        "canceled_height": {
+          "type": "string",
+          "format": "uint64",
+          "description": "CanceledHeight defines the canceled block height."
+        },
+        "recipient": {
+          "type": "string",
+          "description": "Recipient is the account address string of the recipient whose funds are\ncancelled."
+        }
+      },
+      "description": "MsgCancelContinuousFundResponse defines the response to executing a\nMsgCancelContinuousFund message."
+    },
+    "cosmos.protocolpool.v1.MsgCommunityPoolSpend": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string",
+          "description": "Authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        }
+      },
+      "description": "MsgCommunityPoolSpend defines a message for sending tokens from the community\npool to another account. This message is typically executed via a governance\nproposal with the governance module being the executing authority."
+    },
+    "cosmos.protocolpool.v1.MsgCommunityPoolSpendResponse": {
+      "type": "object",
+      "description": "MsgCommunityPoolSpendResponse defines the response to executing a\nMsgCommunityPoolSpend message."
+    },
+    "cosmos.protocolpool.v1.MsgCreateContinuousFund": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string",
+          "description": "Authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+        },
+        "recipient": {
+          "type": "string",
+          "description": "Recipient address of the account receiving funds."
+        },
+        "percentage": {
+          "type": "string",
+          "description": "Percentage is the percentage of funds to be allocated from Community pool."
+        },
+        "expiry": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional, if expiry is set, removes the state object when expired."
+        }
+      },
+      "description": "MsgCreateContinuousFund defines a message for adding continuous funds."
+    },
+    "cosmos.protocolpool.v1.MsgCreateContinuousFundResponse": {
+      "type": "object",
+      "description": "MsgCreateContinuousFundResponse defines the response to executing a\nMsgCreateContinuousFund message."
+    },
+    "cosmos.protocolpool.v1.MsgFundCommunityPool": {
+      "type": "object",
+      "properties": {
+        "depositor": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        }
+      },
+      "description": "MsgFundCommunityPool allows an account to directly\nfund the community pool."
+    },
+    "cosmos.protocolpool.v1.MsgFundCommunityPoolResponse": {
+      "type": "object",
+      "description": "MsgFundCommunityPoolResponse defines the Msg/FundCommunityPool response type."
+    },
+    "cosmos.protocolpool.v1.MsgUpdateParams": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string",
+          "description": "authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+        },
+        "params": {
+          "$ref": "#/definitions/cosmos.protocolpool.v1.Params",
+          "description": "params defines the x/protocolpool parameters to update.\n\nNOTE: All parameters must be supplied."
+        }
+      },
+      "description": "MsgUpdateParams is the Msg/UpdateParams request type."
+    },
+    "cosmos.protocolpool.v1.MsgUpdateParamsResponse": {
+      "type": "object",
+      "description": "MsgUpdateParamsResponse defines the response structure for executing a\nMsgUpdateParams message."
+    },
+    "cosmos.protocolpool.v1.Params": {
+      "type": "object",
+      "properties": {
+        "enabled_distribution_denoms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "EnabledDistributionDenoms lists the denoms that are allowed to be\ndistributed. This is to avoid spending time distributing undesired tokens\nto continuous funds and budgets."
+        },
+        "distribution_frequency": {
+          "type": "string",
+          "format": "uint64",
+          "description": "DistributionFrequency is the frequency (in terms of blocks) that funds are\ndistributed out from the x/protocolpool module."
+        }
+      },
+      "description": "Params defines the parameters for the protocolpool module."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

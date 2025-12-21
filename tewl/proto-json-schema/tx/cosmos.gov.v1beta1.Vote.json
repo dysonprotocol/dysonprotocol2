@@ -1,0 +1,60 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.gov.v1beta1.MsgVote",
+        "definitions": {
+            "cosmos.gov.v1beta1.MsgVote": {
+                "properties": {
+                    "proposal_id": {
+                        "type": "string",
+                        "description": "proposal_id defines the unique id of the proposal."
+                    },
+                    "voter": {
+                        "type": "string",
+                        "description": "voter is the voter address for the proposal."
+                    },
+                    "option": {
+                        "enum": [
+                            "VOTE_OPTION_UNSPECIFIED",
+                            0,
+                            "VOTE_OPTION_YES",
+                            1,
+                            "VOTE_OPTION_ABSTAIN",
+                            2,
+                            "VOTE_OPTION_NO",
+                            3,
+                            "VOTE_OPTION_NO_WITH_VETO",
+                            4
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Vote Option",
+                        "description": "VoteOption enumerates the valid vote options for a given governance proposal."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Vote",
+                "description": "MsgVote defines a message to cast a vote."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.gov.v1beta1.MsgVoteResponse",
+        "definitions": {
+            "cosmos.gov.v1beta1.MsgVoteResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Vote Response",
+                "description": "MsgVoteResponse defines the Msg/Vote response type."
+            }
+        }
+    }
+}

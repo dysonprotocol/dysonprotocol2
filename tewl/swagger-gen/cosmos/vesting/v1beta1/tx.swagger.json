@@ -1,0 +1,258 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/vesting/v1beta1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "cosmos.vesting.v1beta1.MsgCreatePeriodicVestingAccount": {
+      "post": {
+        "summary": "CreatePeriodicVestingAccount defines a method that enables creating a\nperiodic vesting account.",
+        "operationId": "cosmos.vesting.v1beta1.MsgCreatePeriodicVestingAccount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.vesting.v1beta1.MsgCreatePeriodicVestingAccountResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.vesting.v1beta1.MsgCreatePeriodicVestingAccount"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.vesting.v1beta1.MsgCreatePermanentLockedAccount": {
+      "post": {
+        "summary": "CreatePermanentLockedAccount defines a method that enables creating a\npermanent locked account.",
+        "operationId": "cosmos.vesting.v1beta1.MsgCreatePermanentLockedAccount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.vesting.v1beta1.MsgCreatePermanentLockedAccountResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.vesting.v1beta1.MsgCreatePermanentLockedAccount"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.vesting.v1beta1.MsgCreateVestingAccount": {
+      "post": {
+        "summary": "CreateVestingAccount defines a method that enables creating a vesting\naccount.",
+        "operationId": "cosmos.vesting.v1beta1.MsgCreateVestingAccount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.vesting.v1beta1.MsgCreateVestingAccountResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.vesting.v1beta1.MsgCreateVestingAccount"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.v1beta1.Coin": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "Coin defines a token with a denomination and an amount.\n\nNOTE: The amount field is an Int which implements the custom method\nsignatures required by gogoproto."
+    },
+    "cosmos.vesting.v1beta1.MsgCreatePeriodicVestingAccount": {
+      "type": "object",
+      "properties": {
+        "from_address": {
+          "type": "string"
+        },
+        "to_address": {
+          "type": "string"
+        },
+        "start_time": {
+          "type": "string",
+          "format": "int64",
+          "description": "start of vesting as unix time (in seconds)."
+        },
+        "vesting_periods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.vesting.v1beta1.Period"
+          }
+        }
+      },
+      "description": "MsgCreateVestingAccount defines a message that enables creating a vesting\naccount."
+    },
+    "cosmos.vesting.v1beta1.MsgCreatePeriodicVestingAccountResponse": {
+      "type": "object",
+      "description": "MsgCreateVestingAccountResponse defines the Msg/CreatePeriodicVestingAccount\nresponse type."
+    },
+    "cosmos.vesting.v1beta1.MsgCreatePermanentLockedAccount": {
+      "type": "object",
+      "properties": {
+        "from_address": {
+          "type": "string"
+        },
+        "to_address": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        }
+      },
+      "description": "MsgCreatePermanentLockedAccount defines a message that enables creating a\npermanent locked account."
+    },
+    "cosmos.vesting.v1beta1.MsgCreatePermanentLockedAccountResponse": {
+      "type": "object",
+      "description": "MsgCreatePermanentLockedAccountResponse defines the\nMsg/CreatePermanentLockedAccount response type."
+    },
+    "cosmos.vesting.v1beta1.MsgCreateVestingAccount": {
+      "type": "object",
+      "properties": {
+        "from_address": {
+          "type": "string"
+        },
+        "to_address": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        },
+        "end_time": {
+          "type": "string",
+          "format": "int64",
+          "description": "end of vesting as unix time (in seconds)."
+        },
+        "delayed": {
+          "type": "boolean"
+        }
+      },
+      "description": "MsgCreateVestingAccount defines a message that enables creating a vesting\naccount."
+    },
+    "cosmos.vesting.v1beta1.MsgCreateVestingAccountResponse": {
+      "type": "object",
+      "description": "MsgCreateVestingAccountResponse defines the Msg/CreateVestingAccount response\ntype."
+    },
+    "cosmos.vesting.v1beta1.Period": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "string",
+          "format": "int64",
+          "description": "Period duration in seconds."
+        },
+        "amount": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        }
+      },
+      "description": "Period defines a length of time and amount of coins that will vest."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

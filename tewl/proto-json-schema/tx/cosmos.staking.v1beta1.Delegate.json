@@ -1,0 +1,52 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.MsgDelegate",
+        "definitions": {
+            "cosmos.staking.v1beta1.MsgDelegate": {
+                "properties": {
+                    "delegator_address": {
+                        "type": "string"
+                    },
+                    "validator_address": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Delegate",
+                "description": "MsgDelegate defines a SDK message for performing a delegation of coins from a delegator to a validator."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.MsgDelegateResponse",
+        "definitions": {
+            "cosmos.staking.v1beta1.MsgDelegateResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Delegate Response",
+                "description": "MsgDelegateResponse defines the Msg/Delegate response type."
+            }
+        }
+    }
+}

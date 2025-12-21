@@ -1,0 +1,54 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSaveClass",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSaveClass": {
+                "properties": {
+                    "name_destination": {
+                        "type": "string"
+                    },
+                    "class_id": {
+                        "type": "string",
+                        "description": "must match regex"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "optional"
+                    },
+                    "symbol": {
+                        "type": "string",
+                        "description": "optional"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "optional"
+                    },
+                    "uri": {
+                        "type": "string",
+                        "description": "optional"
+                    },
+                    "uri_hash": {
+                        "type": "string",
+                        "description": "optional"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Save Class",
+                "description": "SaveClass"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSaveClassResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSaveClassResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Save Class Response"
+            }
+        }
+    }
+}

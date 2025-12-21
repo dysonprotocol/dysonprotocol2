@@ -1,0 +1,41 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryDelegatorValidatorsRequest",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryDelegatorValidatorsRequest": {
+                "properties": {
+                    "delegator_address": {
+                        "type": "string",
+                        "description": "delegator_address defines the delegator address to query for."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Delegator Validators Request",
+                "description": "QueryDelegatorValidatorsRequest is the request type for the Query/DelegatorValidators RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryDelegatorValidatorsResponse",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryDelegatorValidatorsResponse": {
+                "properties": {
+                    "validators": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "validators defines the validators a delegator is delegating for."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Delegator Validators Response",
+                "description": "QueryDelegatorValidatorsResponse is the response type for the Query/DelegatorValidators RPC method."
+            }
+        }
+    }
+}

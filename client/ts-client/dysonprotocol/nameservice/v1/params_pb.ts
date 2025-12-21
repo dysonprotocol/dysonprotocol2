@@ -92,6 +92,8 @@ export class Params extends Message<Params> {
    * Blank lines and lines starting with # are ignored.
    * Reserved names can still be created via CreateExternalName (governance
    * only).
+   * If this field is blank in MsgUpdateParams, the existing value is preserved
+   * and not updated.
    *
    * @generated from field: string reserved_names = 17;
    */

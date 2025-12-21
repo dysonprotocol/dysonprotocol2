@@ -1,0 +1,42 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetDenomURI",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetDenomURI": {
+                "properties": {
+                    "name_destination": {
+                        "type": "string"
+                    },
+                    "denom": {
+                        "type": "string",
+                        "description": "base denom to modify"
+                    },
+                    "uri": {
+                        "type": "string",
+                        "description": "optional"
+                    },
+                    "uri_hash": {
+                        "type": "string",
+                        "description": "optional"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set Denom URI",
+                "description": "MsgSetDenomURI lets the name destination of the denom root set URI and URI hash."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetDenomURIResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetDenomURIResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set Denom URI Response"
+            }
+        }
+    }
+}

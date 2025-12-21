@@ -1,0 +1,177 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/upgrade/v1beta1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "cosmos.upgrade.v1beta1.MsgCancelUpgrade": {
+      "post": {
+        "summary": "CancelUpgrade is a governance operation for cancelling a previously\napproved software upgrade.",
+        "operationId": "cosmos.upgrade.v1beta1.MsgCancelUpgrade",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.upgrade.v1beta1.MsgCancelUpgradeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.upgrade.v1beta1.MsgCancelUpgrade"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "cosmos.upgrade.v1beta1.MsgSoftwareUpgrade": {
+      "post": {
+        "summary": "SoftwareUpgrade is a governance operation for initiating a software\nupgrade.",
+        "operationId": "cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.upgrade.v1beta1.MsgSoftwareUpgradeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.upgrade.v1beta1.MsgCancelUpgrade": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string",
+          "description": "authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+        }
+      },
+      "description": "MsgCancelUpgrade is the Msg/CancelUpgrade request type."
+    },
+    "cosmos.upgrade.v1beta1.MsgCancelUpgradeResponse": {
+      "type": "object",
+      "description": "MsgCancelUpgradeResponse is the Msg/CancelUpgrade response type."
+    },
+    "cosmos.upgrade.v1beta1.MsgSoftwareUpgrade": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string",
+          "description": "authority is the address that controls the module (defaults to x/gov unless\noverwritten)."
+        },
+        "plan": {
+          "$ref": "#/definitions/cosmos.upgrade.v1beta1.Plan",
+          "description": "plan is the upgrade plan."
+        }
+      },
+      "description": "MsgSoftwareUpgrade is the Msg/SoftwareUpgrade request type."
+    },
+    "cosmos.upgrade.v1beta1.MsgSoftwareUpgradeResponse": {
+      "type": "object",
+      "description": "MsgSoftwareUpgradeResponse is the Msg/SoftwareUpgrade response type."
+    },
+    "cosmos.upgrade.v1beta1.Plan": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Sets the name for the upgrade. This name will be used by the upgraded\nversion of the software to apply any special \"on-upgrade\" commands during\nthe first BeginBlock method after the upgrade is applied. It is also used\nto detect whether a software version can handle a given upgrade. If no\nupgrade handler with this name has been set in the software, it will be\nassumed that the software is out-of-date when the upgrade Time or Height is\nreached and the software will exit."
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Deprecated: Time based upgrades have been deprecated. Time based upgrade\nlogic has been removed from the SDK. If this field is not empty, an error\nwill be thrown."
+        },
+        "height": {
+          "type": "string",
+          "format": "int64",
+          "description": "The height at which the upgrade must be performed."
+        },
+        "info": {
+          "type": "string",
+          "title": "Any application specific upgrade info to be included on-chain\nsuch as a git commit that validators could automatically upgrade to"
+        },
+        "upgraded_client_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "description": "Deprecated: UpgradedClientState field has been deprecated. IBC upgrade\nlogic has been moved to the IBC module in the sub module 02-client. If this\nfield is not empty, an error will be thrown."
+        }
+      },
+      "description": "Plan specifies information about a planned upgrade and when it should occur."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

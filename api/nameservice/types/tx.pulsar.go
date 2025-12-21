@@ -33198,7 +33198,8 @@ type MsgUpdateParams struct {
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
 	// params defines the x/nameservice parameters to update.
 	//
-	// NOTE: All parameters must be supplied.
+	// NOTE: All parameters must be supplied, except reserved_names which is
+	// optional. If reserved_names is blank, the existing value will be preserved.
 	Params *Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params,omitempty"`
 }
 

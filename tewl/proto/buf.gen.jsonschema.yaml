@@ -1,0 +1,5 @@
+version: v1
+plugins:
+  - name: jsonschema
+    out: ./proto-json-schema
+    opt: paths=source_relative,disallow_additional_properties,all_fields_required=false

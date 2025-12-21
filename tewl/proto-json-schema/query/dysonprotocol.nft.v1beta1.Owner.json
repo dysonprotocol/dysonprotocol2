@@ -1,0 +1,42 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nft.v1beta1.QueryOwnerRequest",
+        "definitions": {
+            "dysonprotocol.nft.v1beta1.QueryOwnerRequest": {
+                "properties": {
+                    "class_id": {
+                        "type": "string",
+                        "description": "class_id associated with the nft"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "id is a unique identifier of the NFT"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Owner Request",
+                "description": "QueryOwnerRequest is the request type for the Query/Owner RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nft.v1beta1.QueryOwnerResponse",
+        "definitions": {
+            "dysonprotocol.nft.v1beta1.QueryOwnerResponse": {
+                "properties": {
+                    "owner": {
+                        "type": "string",
+                        "description": "owner is the owner address of the nft"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Owner Response",
+                "description": "QueryOwnerResponse is the response type for the Query/Owner RPC method"
+            }
+        }
+    }
+}

@@ -1,0 +1,74 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.circuit.v1.QueryAccountRequest",
+        "definitions": {
+            "cosmos.circuit.v1.QueryAccountRequest": {
+                "properties": {
+                    "address": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Account Request",
+                "description": "QueryAccountRequest is the request type for the Query/Account RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.circuit.v1.AccountResponse",
+        "definitions": {
+            "cosmos.circuit.v1.AccountResponse": {
+                "properties": {
+                    "permission": {
+                        "$ref": "#/definitions/cosmos.circuit.v1.Permissions",
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Account Response",
+                "description": "AccountResponse is the response type for the Query/Account RPC method."
+            },
+            "cosmos.circuit.v1.Permissions": {
+                "properties": {
+                    "level": {
+                        "enum": [
+                            "LEVEL_NONE_UNSPECIFIED",
+                            0,
+                            "LEVEL_SOME_MSGS",
+                            1,
+                            "LEVEL_ALL_MSGS",
+                            2,
+                            "LEVEL_SUPER_ADMIN",
+                            3
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Level",
+                        "description": "Level is the permission level."
+                    },
+                    "limit_type_urls": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "limit_type_urls is used with LEVEL_SOME_MSGS to limit the lists of Msg type URLs that the account can trip. It is an error to use limit_type_urls with a level other than LEVEL_SOME_MSGS."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Permissions",
+                "description": "Permissions are the permissions that an account has to trip or reset the circuit breaker."
+            }
+        }
+    }
+}

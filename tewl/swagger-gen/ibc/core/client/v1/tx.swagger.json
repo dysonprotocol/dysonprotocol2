@@ -1,0 +1,542 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ibc/core/client/v1/tx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "ibc.core.client.v1.MsgCreateClient": {
+      "post": {
+        "summary": "CreateClient defines a rpc handler method for MsgCreateClient.",
+        "operationId": "ibc.core.client.v1.MsgCreateClient",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgCreateClientResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgCreateClient"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.client.v1.MsgDeleteClientCreator": {
+      "post": {
+        "summary": "DeleteClientCreator defines a rpc handler method for\nMsgDeleteClientCreator.",
+        "operationId": "ibc.core.client.v1.MsgDeleteClientCreator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgDeleteClientCreatorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgDeleteClientCreator"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.client.v1.MsgIBCSoftwareUpgrade": {
+      "post": {
+        "summary": "IBCSoftwareUpgrade defines a rpc handler method for MsgIBCSoftwareUpgrade.",
+        "operationId": "ibc.core.client.v1.MsgIBCSoftwareUpgrade",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgIBCSoftwareUpgradeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgIBCSoftwareUpgrade"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.client.v1.MsgRecoverClient": {
+      "post": {
+        "summary": "RecoverClient defines a rpc handler method for MsgRecoverClient.",
+        "operationId": "ibc.core.client.v1.MsgRecoverClient",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgRecoverClientResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgRecoverClient"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.client.v1.MsgSubmitMisbehaviour": {
+      "post": {
+        "summary": "SubmitMisbehaviour defines a rpc handler method for MsgSubmitMisbehaviour.",
+        "operationId": "ibc.core.client.v1.MsgSubmitMisbehaviour",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgSubmitMisbehaviourResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgSubmitMisbehaviour"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.client.v1.MsgUpdateClient": {
+      "post": {
+        "summary": "UpdateClient defines a rpc handler method for MsgUpdateClient.",
+        "operationId": "ibc.core.client.v1.MsgUpdateClient",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgUpdateClientResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgUpdateClient"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.client.v1.MsgUpdateClientParams": {
+      "post": {
+        "summary": "UpdateClientParams defines a rpc handler method for MsgUpdateParams.",
+        "operationId": "ibc.core.client.v1.MsgUpdateClientParams",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgUpdateParamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgUpdateParams"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    },
+    "ibc.core.client.v1.MsgUpgradeClient": {
+      "post": {
+        "summary": "UpgradeClient defines a rpc handler method for MsgUpgradeClient.",
+        "operationId": "ibc.core.client.v1.MsgUpgradeClient",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgUpgradeClientResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ibc.core.client.v1.MsgUpgradeClient"
+            }
+          }
+        ],
+        "tags": [
+          "Msg"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.upgrade.v1beta1.Plan": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Sets the name for the upgrade. This name will be used by the upgraded\nversion of the software to apply any special \"on-upgrade\" commands during\nthe first BeginBlock method after the upgrade is applied. It is also used\nto detect whether a software version can handle a given upgrade. If no\nupgrade handler with this name has been set in the software, it will be\nassumed that the software is out-of-date when the upgrade Time or Height is\nreached and the software will exit."
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Deprecated: Time based upgrades have been deprecated. Time based upgrade\nlogic has been removed from the SDK. If this field is not empty, an error\nwill be thrown."
+        },
+        "height": {
+          "type": "string",
+          "format": "int64",
+          "description": "The height at which the upgrade must be performed."
+        },
+        "info": {
+          "type": "string",
+          "title": "Any application specific upgrade info to be included on-chain\nsuch as a git commit that validators could automatically upgrade to"
+        },
+        "upgraded_client_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "description": "Deprecated: UpgradedClientState field has been deprecated. IBC upgrade\nlogic has been moved to the IBC module in the sub module 02-client. If this\nfield is not empty, an error will be thrown."
+        }
+      },
+      "description": "Plan specifies information about a planned upgrade and when it should occur."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    },
+    "ibc.core.client.v1.MsgCreateClient": {
+      "type": "object",
+      "properties": {
+        "client_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "title": "light client state"
+        },
+        "consensus_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "description": "consensus state associated with the client that corresponds to a given\nheight."
+        },
+        "signer": {
+          "type": "string",
+          "title": "signer address"
+        }
+      },
+      "title": "MsgCreateClient defines a message to create an IBC client"
+    },
+    "ibc.core.client.v1.MsgCreateClientResponse": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string"
+        }
+      },
+      "description": "MsgCreateClientResponse defines the Msg/CreateClient response type."
+    },
+    "ibc.core.client.v1.MsgDeleteClientCreator": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "title": "client identifier"
+        },
+        "signer": {
+          "type": "string",
+          "title": "signer address"
+        }
+      },
+      "title": "MsgDeleteClientCreator defines a message to delete the client creator of a\nclient"
+    },
+    "ibc.core.client.v1.MsgDeleteClientCreatorResponse": {
+      "type": "object",
+      "description": "MsgDeleteClientCreatorResponse defines the Msg/DeleteClientCreator response\ntype."
+    },
+    "ibc.core.client.v1.MsgIBCSoftwareUpgrade": {
+      "type": "object",
+      "properties": {
+        "plan": {
+          "$ref": "#/definitions/cosmos.upgrade.v1beta1.Plan"
+        },
+        "upgraded_client_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "description": "An UpgradedClientState must be provided to perform an IBC breaking upgrade.\nThis will make the chain commit to the correct upgraded (self) client state\nbefore the upgrade occurs, so that connecting chains can verify that the\nnew upgraded client is valid by verifying a proof on the previous version\nof the chain. This will allow IBC connections to persist smoothly across\nplanned chain upgrades. Correspondingly, the UpgradedClientState field has\nbeen deprecated in the Cosmos SDK to allow for this logic to exist solely\nin the 02-client module."
+        },
+        "signer": {
+          "type": "string",
+          "title": "signer address"
+        }
+      },
+      "title": "MsgIBCSoftwareUpgrade defines the message used to schedule an upgrade of an\nIBC client using a v1 governance proposal"
+    },
+    "ibc.core.client.v1.MsgIBCSoftwareUpgradeResponse": {
+      "type": "object",
+      "description": "MsgIBCSoftwareUpgradeResponse defines the Msg/IBCSoftwareUpgrade response\ntype."
+    },
+    "ibc.core.client.v1.MsgRecoverClient": {
+      "type": "object",
+      "properties": {
+        "subject_client_id": {
+          "type": "string",
+          "title": "the client identifier for the client to be updated if the proposal passes"
+        },
+        "substitute_client_id": {
+          "type": "string",
+          "title": "the substitute client identifier for the client which will replace the\nsubject client"
+        },
+        "signer": {
+          "type": "string",
+          "title": "signer address"
+        }
+      },
+      "description": "MsgRecoverClient defines the message used to recover a frozen or expired\nclient."
+    },
+    "ibc.core.client.v1.MsgRecoverClientResponse": {
+      "type": "object",
+      "description": "MsgRecoverClientResponse defines the Msg/RecoverClient response type."
+    },
+    "ibc.core.client.v1.MsgSubmitMisbehaviour": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "title": "client unique identifier"
+        },
+        "misbehaviour": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "title": "misbehaviour used for freezing the light client"
+        },
+        "signer": {
+          "type": "string",
+          "title": "signer address"
+        }
+      },
+      "description": "MsgSubmitMisbehaviour defines an sdk.Msg type that submits Evidence for\nlight client misbehaviour.\nThis message has been deprecated. Use MsgUpdateClient instead."
+    },
+    "ibc.core.client.v1.MsgSubmitMisbehaviourResponse": {
+      "type": "object",
+      "description": "MsgSubmitMisbehaviourResponse defines the Msg/SubmitMisbehaviour response\ntype."
+    },
+    "ibc.core.client.v1.MsgUpdateClient": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "title": "client unique identifier"
+        },
+        "client_message": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "title": "client message to update the light client"
+        },
+        "signer": {
+          "type": "string",
+          "title": "signer address"
+        }
+      },
+      "description": "MsgUpdateClient defines an sdk.Msg to update a IBC client state using\nthe given client message."
+    },
+    "ibc.core.client.v1.MsgUpdateClientResponse": {
+      "type": "object",
+      "description": "MsgUpdateClientResponse defines the Msg/UpdateClient response type."
+    },
+    "ibc.core.client.v1.MsgUpdateParams": {
+      "type": "object",
+      "properties": {
+        "signer": {
+          "type": "string",
+          "title": "signer address"
+        },
+        "params": {
+          "$ref": "#/definitions/ibc.core.client.v1.Params",
+          "description": "params defines the client parameters to update.\n\nNOTE: All parameters must be supplied."
+        }
+      },
+      "description": "MsgUpdateParams defines the sdk.Msg type to update the client parameters."
+    },
+    "ibc.core.client.v1.MsgUpdateParamsResponse": {
+      "type": "object",
+      "description": "MsgUpdateParamsResponse defines the MsgUpdateParams response type."
+    },
+    "ibc.core.client.v1.MsgUpgradeClient": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "title": "client unique identifier"
+        },
+        "client_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "title": "upgraded client state"
+        },
+        "consensus_state": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "title": "upgraded consensus state, only contains enough information to serve as a\nbasis of trust in update logic"
+        },
+        "proof_upgrade_client": {
+          "type": "string",
+          "format": "byte",
+          "title": "proof that old chain committed to new client"
+        },
+        "proof_upgrade_consensus_state": {
+          "type": "string",
+          "format": "byte",
+          "title": "proof that old chain committed to new consensus state"
+        },
+        "signer": {
+          "type": "string",
+          "title": "signer address"
+        }
+      },
+      "title": "MsgUpgradeClient defines an sdk.Msg to upgrade an IBC client to a new client\nstate"
+    },
+    "ibc.core.client.v1.MsgUpgradeClientResponse": {
+      "type": "object",
+      "description": "MsgUpgradeClientResponse defines the Msg/UpgradeClient response type."
+    },
+    "ibc.core.client.v1.Params": {
+      "type": "object",
+      "properties": {
+        "allowed_clients": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "allowed_clients defines the list of allowed client state types which can be\ncreated and interacted with. If a client type is removed from the allowed\nclients list, usage of this client will be disabled until it is added again\nto the list."
+        }
+      },
+      "description": "Params defines the set of IBC light client parameters."
+    }
+  }
+}

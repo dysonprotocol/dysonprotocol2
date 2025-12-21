@@ -1,0 +1,37 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetNFTClassMinimumBidPercentIncrease",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetNFTClassMinimumBidPercentIncrease": {
+                "properties": {
+                    "name_destination": {
+                        "type": "string"
+                    },
+                    "class_id": {
+                        "type": "string"
+                    },
+                    "minimum_bid_percent_increase": {
+                        "type": "string",
+                        "description": "plain string; parsed as Dec in keeper"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set NFT Class Minimum Bid Percent Increase",
+                "description": "MsgSetNFTClassMinimumBidPercentIncrease sets the per-class minimum bid increase percent."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetNFTClassMinimumBidPercentIncreaseResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetNFTClassMinimumBidPercentIncreaseResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set NFT Class Minimum Bid Percent Increase Response"
+            }
+        }
+    }
+}

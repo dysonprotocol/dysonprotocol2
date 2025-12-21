@@ -1,0 +1,154 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.channel.v1.QueryChannelRequest",
+        "definitions": {
+            "ibc.core.channel.v1.QueryChannelRequest": {
+                "properties": {
+                    "port_id": {
+                        "type": "string",
+                        "description": "port unique identifier"
+                    },
+                    "channel_id": {
+                        "type": "string",
+                        "description": "channel unique identifier"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Channel Request",
+                "description": "QueryChannelRequest is the request type for the Query/Channel RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.core.channel.v1.QueryChannelResponse",
+        "definitions": {
+            "ibc.core.channel.v1.QueryChannelResponse": {
+                "properties": {
+                    "channel": {
+                        "$ref": "#/definitions/ibc.core.channel.v1.Channel",
+                        "additionalProperties": false,
+                        "description": "channel associated with the request identifiers"
+                    },
+                    "proof": {
+                        "type": "string",
+                        "description": "merkle proof of existence",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "proof_height": {
+                        "$ref": "#/definitions/ibc.core.client.v1.Height",
+                        "additionalProperties": false,
+                        "description": "height at which the proof was retrieved"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Channel Response",
+                "description": "QueryChannelResponse is the response type for the Query/Channel RPC method. Besides the Channel end, it includes a proof and the height from which the proof was retrieved."
+            },
+            "ibc.core.channel.v1.Channel": {
+                "properties": {
+                    "state": {
+                        "enum": [
+                            "STATE_UNINITIALIZED_UNSPECIFIED",
+                            0,
+                            "STATE_INIT",
+                            1,
+                            "STATE_TRYOPEN",
+                            2,
+                            "STATE_OPEN",
+                            3,
+                            "STATE_CLOSED",
+                            4
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "State",
+                        "description": "State defines if a channel is in one of the following states: CLOSED, INIT, TRYOPEN, OPEN, or UNINITIALIZED."
+                    },
+                    "ordering": {
+                        "enum": [
+                            "ORDER_NONE_UNSPECIFIED",
+                            0,
+                            "ORDER_UNORDERED",
+                            1,
+                            "ORDER_ORDERED",
+                            2
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Order",
+                        "description": "Order defines if a channel is ORDERED or UNORDERED"
+                    },
+                    "counterparty": {
+                        "$ref": "#/definitions/ibc.core.channel.v1.Counterparty",
+                        "additionalProperties": false,
+                        "description": "counterparty channel end"
+                    },
+                    "connection_hops": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "description": "list of connection identifiers, in order, along which packets sent on this channel will travel"
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "opaque channel version, which is agreed upon during the handshake"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Channel",
+                "description": "Channel defines pipeline for exactly-once packet delivery between specific modules on separate blockchains, which has at least one end capable of sending packets and one end capable of receiving packets."
+            },
+            "ibc.core.channel.v1.Counterparty": {
+                "properties": {
+                    "port_id": {
+                        "type": "string",
+                        "description": "port on the counterparty chain which owns the other end of the channel."
+                    },
+                    "channel_id": {
+                        "type": "string",
+                        "description": "channel end on the counterparty chain"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Counterparty",
+                "description": "Counterparty defines a channel end counterparty"
+            },
+            "ibc.core.client.v1.Height": {
+                "properties": {
+                    "revision_number": {
+                        "type": "string",
+                        "description": "the revision that the client is currently on"
+                    },
+                    "revision_height": {
+                        "type": "string",
+                        "description": "the height within the given revision"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Height",
+                "description": "Height is a monotonically increasing data type that can be compared against another Height for the purposes of updating and freezing clients Normally the RevisionHeight is incremented at each height while keeping RevisionNumber the same. However some consensus algorithms may choose to reset the height in certain conditions e.g. hard forks, state-machine breaking changes In these cases, the RevisionNumber is incremented so that height continues to be monitonically increasing even as the RevisionHeight gets reset Please note that json tags for generated Go code are overridden to explicitly exclude the omitempty jsontag. This enforces the Go json marshaller to always emit zero values for both revision_number and revision_height."
+            }
+        }
+    }
+}

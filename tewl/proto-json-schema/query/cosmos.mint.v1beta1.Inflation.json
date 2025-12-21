@@ -1,0 +1,34 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.mint.v1beta1.QueryInflationRequest",
+        "definitions": {
+            "cosmos.mint.v1beta1.QueryInflationRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Inflation Request",
+                "description": "QueryInflationRequest is the request type for the Query/Inflation RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.mint.v1beta1.QueryInflationResponse",
+        "definitions": {
+            "cosmos.mint.v1beta1.QueryInflationResponse": {
+                "properties": {
+                    "inflation": {
+                        "type": "string",
+                        "description": "inflation is the current minting inflation value.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Inflation Response",
+                "description": "QueryInflationResponse is the response type for the Query/Inflation RPC method."
+            }
+        }
+    }
+}

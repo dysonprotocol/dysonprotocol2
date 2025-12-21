@@ -1,0 +1,68 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryValidatorDistributionInfoRequest",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryValidatorDistributionInfoRequest": {
+                "properties": {
+                    "validator_address": {
+                        "type": "string",
+                        "description": "validator_address defines the validator address to query for."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Validator Distribution Info Request",
+                "description": "QueryValidatorDistributionInfoRequest is the request type for the Query/ValidatorDistributionInfo RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.distribution.v1beta1.QueryValidatorDistributionInfoResponse",
+        "definitions": {
+            "cosmos.distribution.v1beta1.QueryValidatorDistributionInfoResponse": {
+                "properties": {
+                    "operator_address": {
+                        "type": "string",
+                        "description": "operator_address defines the validator operator address."
+                    },
+                    "self_bond_rewards": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "self_bond_rewards defines the self delegations rewards."
+                    },
+                    "commission": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "commission defines the commission the validator received."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Validator Distribution Info Response",
+                "description": "QueryValidatorDistributionInfoResponse is the response type for the Query/ValidatorDistributionInfo RPC method."
+            },
+            "cosmos.base.v1beta1.DecCoin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Dec Coin",
+                "description": "DecCoin defines a token with a denomination and a decimal amount. NOTE: The amount field is an Dec which implements the custom method signatures required by gogoproto."
+            }
+        }
+    }
+}

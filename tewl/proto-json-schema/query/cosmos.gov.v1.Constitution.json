@@ -1,0 +1,31 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.gov.v1.QueryConstitutionRequest",
+        "definitions": {
+            "cosmos.gov.v1.QueryConstitutionRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Constitution Request",
+                "description": "QueryConstitutionRequest is the request type for the Query/Constitution RPC method"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.gov.v1.QueryConstitutionResponse",
+        "definitions": {
+            "cosmos.gov.v1.QueryConstitutionResponse": {
+                "properties": {
+                    "constitution": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Constitution Response",
+                "description": "QueryConstitutionResponse is the response type for the Query/Constitution RPC method"
+            }
+        }
+    }
+}

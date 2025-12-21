@@ -1,0 +1,57 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.QueryGetBlockRequest",
+        "definitions": {
+            "dysonprotocol.script.v1.QueryGetBlockRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Get Block Request",
+                "description": "QueryGetBlockRequest requests current block information. This is an empty request message - no parameters needed."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.script.v1.QueryGetBlockResponse",
+        "definitions": {
+            "dysonprotocol.script.v1.QueryGetBlockResponse": {
+                "properties": {
+                    "block_height": {
+                        "type": "string",
+                        "description": "Height of the current block."
+                    },
+                    "block_time": {
+                        "type": "string",
+                        "description": "Timestamp of the current block.",
+                        "format": "date-time"
+                    },
+                    "chain_id": {
+                        "type": "string",
+                        "description": "Chain ID of the blockchain."
+                    },
+                    "block_hash": {
+                        "type": "string",
+                        "description": "Hash of the current block (app hash from header).",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "app_hash": {
+                        "type": "string",
+                        "description": "Application hash of the current block.",
+                        "format": "binary",
+                        "binaryEncoding": "base64"
+                    },
+                    "proposer_address": {
+                        "type": "string",
+                        "description": "Bech32 address of the block proposer."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Get Block Response",
+                "description": "QueryGetBlockResponse contains current block information."
+            }
+        }
+    }
+}

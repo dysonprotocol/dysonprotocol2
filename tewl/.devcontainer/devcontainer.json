@@ -1,0 +1,69 @@
+{
+  "name": "TEWL UI Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile.dev"
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Vue.volar", // Volar main extension
+        "Vue.vscode-typescript-vue-plugin", // Take Over Mode (required)
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "formulahendry.auto-rename-tag",
+        "formulahendry.auto-close-tag",
+        "mhutchie.git-graph",
+        "eamodio.gitlens",
+        "ms-playwright.playwright"
+        // Removed: ms-vscode.vscode-typescript-next (obsolete with Volar Take Over Mode)
+        // Removed: sourcegraph.amp, ms-vscode.vscode-json, christian-kohler.path-intellisense (built-in or unnecessary)
+      ],
+
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+
+        // Critical Volar + TypeScript settings
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "volar.takeOverMode.enabled": true,
+
+        // Vue-specific
+        "files.associations": {
+          "*.vue": "vue"
+        },
+        "vue.complete.normalizeComponentImportName": true,
+
+        // Tailwind & Emmet in Vue
+        "tailwindCSS.includeLanguages": {
+          "vue": "html"
+        },
+        "emmet.includeLanguages": {
+          "vue": "html"
+        }
+      }
+    }
+  },
+
+  "postCreateCommand": "npm install",
+  "postAttachCommand": "npm run dev",
+
+  "containerEnv": {
+    "NODE_ENV": "development"
+  },
+
+  "runArgs": ["--network=host"],
+
+  "portsAttributes": {
+    "5179": {
+      "label": "Vite Dev Server",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "remoteUser": "node"
+}

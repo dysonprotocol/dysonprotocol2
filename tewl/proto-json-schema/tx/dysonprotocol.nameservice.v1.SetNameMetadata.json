@@ -1,0 +1,38 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetNameMetadata",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetNameMetadata": {
+                "properties": {
+                    "owner": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "the name NFT id (in class nameservice.dys)"
+                    },
+                    "metadata": {
+                        "type": "string",
+                        "description": "new metadata string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set Name Metadata",
+                "description": "MsgSetNameMetadata allows the owner of a name (NFT in nameservice.dys) to set the metadata string for that name. Only the owner can call this."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgSetNameMetadataResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgSetNameMetadataResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Set Name Metadata Response"
+            }
+        }
+    }
+}

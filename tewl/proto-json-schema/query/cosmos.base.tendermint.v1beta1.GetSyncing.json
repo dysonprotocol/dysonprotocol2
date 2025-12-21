@@ -1,0 +1,31 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.base.tendermint.v1beta1.GetSyncingRequest",
+        "definitions": {
+            "cosmos.base.tendermint.v1beta1.GetSyncingRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Get Syncing Request",
+                "description": "GetSyncingRequest is the request type for the Query/GetSyncing RPC method."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.base.tendermint.v1beta1.GetSyncingResponse",
+        "definitions": {
+            "cosmos.base.tendermint.v1beta1.GetSyncingResponse": {
+                "properties": {
+                    "syncing": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Get Syncing Response",
+                "description": "GetSyncingResponse is the response type for the Query/GetSyncing RPC method."
+            }
+        }
+    }
+}

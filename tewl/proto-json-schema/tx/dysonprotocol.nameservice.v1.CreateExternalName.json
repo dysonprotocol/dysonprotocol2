@@ -1,0 +1,34 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgCreateExternalName",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgCreateExternalName": {
+                "properties": {
+                    "authority": {
+                        "type": "string",
+                        "description": "authority is the address that controls the module (defaults to x/gov unless overwritten)"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "name is the external name to create (e.g. \"example.com\", \"sub.domain.org\")"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Create External Name"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgCreateExternalNameResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgCreateExternalNameResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Create External Name Response"
+            }
+        }
+    }
+}

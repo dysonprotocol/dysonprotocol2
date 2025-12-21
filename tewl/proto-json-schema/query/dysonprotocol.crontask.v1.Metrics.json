@@ -1,0 +1,83 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.crontask.v1.QueryMetricsRequest",
+        "definitions": {
+            "dysonprotocol.crontask.v1.QueryMetricsRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Metrics Request",
+                "description": "QueryMetricsRequest is the request type for the Query/Metrics RPC method. Empty request body as metrics are retrieved from the latest block state."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.crontask.v1.QueryMetricsResponse",
+        "definitions": {
+            "dysonprotocol.crontask.v1.QueryMetricsResponse": {
+                "properties": {
+                    "metrics": {
+                        "$ref": "#/definitions/dysonprotocol.crontask.v1.Metrics",
+                        "additionalProperties": false,
+                        "description": "Operational metrics from the most recent block including execution counts, gas usage, subscription activity, and performance indicators."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Metrics Response",
+                "description": "QueryMetricsResponse carries last-block metrics."
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.crontask.v1.Metrics": {
+                "properties": {
+                    "executed_total_gas": {
+                        "type": "string",
+                        "description": "Sum of actual gas consumed by executed tasks"
+                    },
+                    "executed_total_fees": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+                        },
+                        "additionalProperties": false,
+                        "type": "array",
+                        "description": "Sum of fees charged for executed tasks (per denom)"
+                    },
+                    "executed_task_count": {
+                        "type": "string",
+                        "description": "Number of executed tasks (DONE or FAILED via execution path)"
+                    },
+                    "pending_task_count": {
+                        "type": "string",
+                        "description": "Pending-queue metrics captured at block start Number of tasks in PENDING at BeginBlock"
+                    },
+                    "pending_gas_requested": {
+                        "type": "string",
+                        "description": "Sum of task_gas_limit across PENDING at BeginBlock"
+                    },
+                    "pending_oldest_scheduled_ts": {
+                        "type": "string",
+                        "description": "Minimum scheduled_timestamp among PENDING at BeginBlock (0 if none)  (removed) pending_highest_gas_price"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Metrics",
+                "description": "Metrics tracks aggregate statistics for crontask executions"
+            }
+        }
+    }
+}

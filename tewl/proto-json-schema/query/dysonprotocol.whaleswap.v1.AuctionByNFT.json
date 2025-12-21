@@ -1,0 +1,82 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAuctionByNFTRequest",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QueryAuctionByNFTRequest": {
+                "properties": {
+                    "class_id": {
+                        "type": "string",
+                        "description": "NFT class ID of the escrow marker"
+                    },
+                    "nft_id": {
+                        "type": "string",
+                        "description": "NFT ID of the escrow marker"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Auction By NFT Request"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse",
+        "definitions": {
+            "dysonprotocol.whaleswap.v1.QueryAuctionByNFTResponse": {
+                "properties": {
+                    "auction": {
+                        "$ref": "#/definitions/dysonprotocol.whaleswap.v1.AuctionRecord",
+                        "additionalProperties": false,
+                        "description": "The auction associated with the specified NFT escrow markers"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Auction By NFT Response"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            },
+            "dysonprotocol.whaleswap.v1.AuctionRecord": {
+                "properties": {
+                    "auction_id": {
+                        "type": "string"
+                    },
+                    "class_id": {
+                        "type": "string"
+                    },
+                    "nft_id": {
+                        "type": "string"
+                    },
+                    "sell": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false
+                    },
+                    "bid_denom": {
+                        "type": "string"
+                    },
+                    "seller": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Auction Record",
+                "description": "AuctionRecord stores metadata for a whaleswap-created auction escrow."
+            }
+        }
+    }
+}

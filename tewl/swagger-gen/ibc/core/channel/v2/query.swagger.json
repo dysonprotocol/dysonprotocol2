@@ -1,0 +1,674 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ibc/core/channel/v2/query.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/ibc/core/channel/v2/clients/{client_id}/next_sequence_send": {
+      "get": {
+        "summary": "NextSequenceSend returns the next send sequence for a given channel.",
+        "operationId": "ibc.core.channel.v2.QueryNextSequenceSendRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.QueryNextSequenceSendResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client unique identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/channel/v2/clients/{client_id}/packet_acknowledgements": {
+      "get": {
+        "summary": "PacketAcknowledgements returns all packet acknowledgements associated with\na channel.",
+        "operationId": "ibc.core.channel.v2.QueryPacketAcknowledgementsRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.QueryPacketAcknowledgementsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client unique identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "packet_commitment_sequences",
+            "description": "list of packet sequences.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uint64"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/channel/v2/clients/{client_id}/packet_acks/{sequence}": {
+      "get": {
+        "summary": "PacketAcknowledgement queries a stored acknowledgement commitment hash.",
+        "operationId": "ibc.core.channel.v2.QueryPacketAcknowledgementRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.QueryPacketAcknowledgementResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client unique identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "sequence",
+            "description": "packet sequence",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/channel/v2/clients/{client_id}/packet_commitments": {
+      "get": {
+        "summary": "PacketCommitments queries a stored packet commitment hash.",
+        "operationId": "ibc.core.channel.v2.QueryPacketCommitmentsRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.QueryPacketCommitmentsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client unique identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/channel/v2/clients/{client_id}/packet_commitments/{packet_ack_sequences}/unreceived_acks": {
+      "get": {
+        "summary": "UnreceivedAcks returns all the unreceived IBC acknowledgements associated\nwith a channel and sequences.",
+        "operationId": "ibc.core.channel.v2.QueryUnreceivedAcksRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.QueryUnreceivedAcksResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client unique identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "packet_ack_sequences",
+            "description": "list of acknowledgement sequences",
+            "in": "path",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uint64"
+            },
+            "collectionFormat": "csv",
+            "minItems": 1
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/channel/v2/clients/{client_id}/packet_commitments/{sequences}/unreceived_packets": {
+      "get": {
+        "summary": "UnreceivedPackets returns all the unreceived IBC packets associated with a\nchannel and sequences.",
+        "operationId": "ibc.core.channel.v2.QueryUnreceivedPacketsRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.QueryUnreceivedPacketsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client unique identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "sequences",
+            "description": "list of packet sequences",
+            "in": "path",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uint64"
+            },
+            "collectionFormat": "csv",
+            "minItems": 1
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/channel/v2/clients/{client_id}/packet_commitments/{sequence}": {
+      "get": {
+        "summary": "PacketCommitment queries a stored packet commitment hash.",
+        "operationId": "ibc.core.channel.v2.QueryPacketCommitmentRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.QueryPacketCommitmentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client unique identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "sequence",
+            "description": "packet sequence",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/ibc/core/channel/v2/clients/{client_id}/packet_receipts/{sequence}": {
+      "get": {
+        "summary": "PacketReceipt queries a stored packet receipt.",
+        "operationId": "ibc.core.channel.v2.QueryPacketReceiptRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ibc.core.channel.v2.QueryPacketReceiptResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "client_id",
+            "description": "client unique identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "sequence",
+            "description": "packet sequence",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.query.v1beta1.PageRequest": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "format": "byte",
+          "description": "key is a value returned in PageResponse.next_key to begin\nquerying the next page most efficiently. Only one of offset or key\nshould be set."
+        },
+        "offset": {
+          "type": "string",
+          "format": "uint64",
+          "description": "offset is a numeric offset that can be used when key is unavailable.\nIt is less efficient than using key. Only one of offset or key should\nbe set."
+        },
+        "limit": {
+          "type": "string",
+          "format": "uint64",
+          "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app."
+        },
+        "count_total": {
+          "type": "boolean",
+          "description": "count_total is set to true  to indicate that the result set should include\na count of the total number of items available for pagination in UIs.\ncount_total is only respected when offset is used. It is ignored when key\nis set."
+        },
+        "reverse": {
+          "type": "boolean",
+          "description": "reverse is set to true if results are to be returned in the descending\norder."
+        }
+      },
+      "description": "message SomeRequest {\n         Foo some_parameter = 1;\n         PageRequest pagination = 2;\n }",
+      "title": "PageRequest is to be embedded in gRPC request messages for efficient\npagination. Ex:"
+    },
+    "cosmos.base.query.v1beta1.PageResponse": {
+      "type": "object",
+      "properties": {
+        "next_key": {
+          "type": "string",
+          "format": "byte",
+          "description": "next_key is the key to be passed to PageRequest.key to\nquery the next page most efficiently. It will be empty if\nthere are no more results."
+        },
+        "total": {
+          "type": "string",
+          "format": "uint64",
+          "title": "total is total number of results available if PageRequest.count_total\nwas set, its value is undefined otherwise"
+        }
+      },
+      "description": "PageResponse is to be embedded in gRPC response messages where the\ncorresponding request message has used PageRequest.\n\n message SomeResponse {\n         repeated Bar results = 1;\n         PageResponse page = 2;\n }"
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    },
+    "ibc.core.channel.v2.PacketState": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "description": "client unique identifier."
+        },
+        "sequence": {
+          "type": "string",
+          "format": "uint64",
+          "description": "packet sequence."
+        },
+        "data": {
+          "type": "string",
+          "format": "byte",
+          "description": "embedded data that represents packet state."
+        }
+      },
+      "description": "PacketState defines the generic type necessary to retrieve and store\npacket commitments, acknowledgements, and receipts.\nCaller is responsible for knowing the context necessary to interpret this\nstate as a commitment, acknowledgement, or a receipt."
+    },
+    "ibc.core.channel.v2.QueryNextSequenceSendResponse": {
+      "type": "object",
+      "properties": {
+        "next_sequence_send": {
+          "type": "string",
+          "format": "uint64",
+          "title": "next sequence send number"
+        },
+        "proof": {
+          "type": "string",
+          "format": "byte",
+          "title": "merkle proof of existence"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "height at which the proof was retrieved"
+        }
+      },
+      "title": "QueryNextSequenceSendResponse is the response type for the\nQuery/QueryNextSequenceSend RPC method"
+    },
+    "ibc.core.channel.v2.QueryPacketAcknowledgementResponse": {
+      "type": "object",
+      "properties": {
+        "acknowledgement": {
+          "type": "string",
+          "format": "byte",
+          "title": "acknowledgement associated with the request fields"
+        },
+        "proof": {
+          "type": "string",
+          "format": "byte",
+          "title": "merkle proof of existence"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "height at which the proof was retrieved"
+        }
+      },
+      "description": "QueryPacketAcknowledgementResponse is the response type for the\nQuery/PacketAcknowledgement RPC method."
+    },
+    "ibc.core.channel.v2.QueryPacketAcknowledgementsResponse": {
+      "type": "object",
+      "properties": {
+        "acknowledgements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ibc.core.channel.v2.PacketState"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "title": "pagination response"
+        },
+        "height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "query block height"
+        }
+      },
+      "title": "QueryPacketAcknowledgemetsResponse is the request type for the\nQuery/QueryPacketAcknowledgements RPC method"
+    },
+    "ibc.core.channel.v2.QueryPacketCommitmentResponse": {
+      "type": "object",
+      "properties": {
+        "commitment": {
+          "type": "string",
+          "format": "byte",
+          "title": "packet associated with the request fields"
+        },
+        "proof": {
+          "type": "string",
+          "format": "byte",
+          "title": "merkle proof of existence"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "height at which the proof was retrieved"
+        }
+      },
+      "description": "QueryPacketCommitmentResponse is the response type for the\nQuery/PacketCommitment RPC method."
+    },
+    "ibc.core.channel.v2.QueryPacketCommitmentsResponse": {
+      "type": "object",
+      "properties": {
+        "commitments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ibc.core.channel.v2.PacketState"
+          },
+          "description": "collection of packet commitments for the requested channel identifier."
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "description": "pagination response."
+        },
+        "height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "description": "query block height."
+        }
+      },
+      "description": "QueryPacketCommitmentResponse is the response type for the\nQuery/PacketCommitment RPC method."
+    },
+    "ibc.core.channel.v2.QueryPacketReceiptResponse": {
+      "type": "object",
+      "properties": {
+        "received": {
+          "type": "boolean",
+          "title": "success flag for if receipt exists"
+        },
+        "proof": {
+          "type": "string",
+          "format": "byte",
+          "title": "merkle proof of existence or absence"
+        },
+        "proof_height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "height at which the proof was retrieved"
+        }
+      },
+      "description": "QueryPacketReceiptResponse is the response type for the Query/PacketReceipt\nRPC method."
+    },
+    "ibc.core.channel.v2.QueryUnreceivedAcksResponse": {
+      "type": "object",
+      "properties": {
+        "sequences": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          },
+          "title": "list of unreceived acknowledgement sequences"
+        },
+        "height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "query block height"
+        }
+      },
+      "title": "QueryUnreceivedAcksResponse is the response type for the\nQuery/UnreceivedAcks RPC method"
+    },
+    "ibc.core.channel.v2.QueryUnreceivedPacketsResponse": {
+      "type": "object",
+      "properties": {
+        "sequences": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          },
+          "title": "list of unreceived packet sequences"
+        },
+        "height": {
+          "$ref": "#/definitions/ibc.core.client.v1.Height",
+          "title": "query block height"
+        }
+      },
+      "title": "QueryUnreceivedPacketsResponse is the response type for the\nQuery/UnreceivedPacketCommitments RPC method"
+    },
+    "ibc.core.client.v1.Height": {
+      "type": "object",
+      "properties": {
+        "revision_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "the revision that the client is currently on"
+        },
+        "revision_height": {
+          "type": "string",
+          "format": "uint64",
+          "title": "the height within the given revision"
+        }
+      },
+      "description": "Normally the RevisionHeight is incremented at each height while keeping\nRevisionNumber the same. However some consensus algorithms may choose to\nreset the height in certain conditions e.g. hard forks, state-machine\nbreaking changes In these cases, the RevisionNumber is incremented so that\nheight continues to be monitonically increasing even as the RevisionHeight\ngets reset\n\nPlease note that json tags for generated Go code are overridden to explicitly\nexclude the omitempty jsontag. This enforces the Go json marshaller to always\nemit zero values for both revision_number and revision_height.",
+      "title": "Height is a monotonically increasing data type\nthat can be compared against another Height for the purposes of updating and\nfreezing clients"
+    }
+  }
+}

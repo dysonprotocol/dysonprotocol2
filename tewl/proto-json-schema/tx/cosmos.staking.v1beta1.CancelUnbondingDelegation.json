@@ -1,0 +1,57 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.MsgCancelUnbondingDelegation",
+        "definitions": {
+            "cosmos.staking.v1beta1.MsgCancelUnbondingDelegation": {
+                "properties": {
+                    "delegator_address": {
+                        "type": "string"
+                    },
+                    "validator_address": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+                        "additionalProperties": false,
+                        "description": "amount is always less than or equal to unbonding delegation entry balance"
+                    },
+                    "creation_height": {
+                        "type": "string",
+                        "description": "creation_height is the height which the unbonding took place."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Cancel Unbonding Delegation",
+                "description": "MsgCancelUnbondingDelegation defines the SDK message for performing a cancel unbonding delegation for delegator"
+            },
+            "cosmos.base.v1beta1.Coin": {
+                "properties": {
+                    "denom": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Coin",
+                "description": "Coin defines a token with a denomination and an amount. NOTE: The amount field is an Int which implements the custom method signatures required by gogoproto."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.staking.v1beta1.MsgCancelUnbondingDelegationResponse",
+        "definitions": {
+            "cosmos.staking.v1beta1.MsgCancelUnbondingDelegationResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Cancel Unbonding Delegation Response",
+                "description": "MsgCancelUnbondingDelegationResponse"
+            }
+        }
+    }
+}

@@ -1,0 +1,31 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.slashing.v1beta1.MsgUnjail",
+        "definitions": {
+            "cosmos.slashing.v1beta1.MsgUnjail": {
+                "properties": {
+                    "validator_addr": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Unjail",
+                "description": "MsgUnjail defines the Msg/Unjail request type"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.slashing.v1beta1.MsgUnjailResponse",
+        "definitions": {
+            "cosmos.slashing.v1beta1.MsgUnjailResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Unjail Response",
+                "description": "MsgUnjailResponse defines the Msg/Unjail response type"
+            }
+        }
+    }
+}

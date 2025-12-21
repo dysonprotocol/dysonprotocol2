@@ -1,0 +1,40 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgReveal",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgReveal": {
+                "properties": {
+                    "committer": {
+                        "type": "string",
+                        "description": "Address that committed to this name registration (must match commitment owner)."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name to register (must match commitment hash when combined with salt)."
+                    },
+                    "salt": {
+                        "type": "string",
+                        "description": "Salt used in commitment hash calculation (revealed here)."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Reveal",
+                "description": "MsgReveal completes name registration by revealing the committed name and salt. Validates revealed data matches commitment hash and mints Name NFT. Behavior: - Validates revealed name + salt produce the committed hash. - Mints new Name NFT in nameservice.dys class with name as NFT ID. - Charges annual valuation fee to community pool based on committed valuation. - Sets NFT data with valuation, expiry, and default listing status. - Creates reverse mapping from owner address to name for resolution. - Deletes the used commitment after successful registration. Validation: - Committer address must be valid bech32. - Name must match format regex (lowercase, alphanumeric+dashes, ends with .dys). - Name must not already be registered. - Commitment must exist for computed hash (name + committer + salt). - Revealed committer must match commitment owner. - Valuation from commitment must be valid and non-zero. Emits: - EventNameRegistered(name, fee) on successful registration. Returns: - Empty response on success."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgRevealResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgRevealResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Reveal Response",
+                "description": "Empty response for successful name registration."
+            }
+        }
+    }
+}

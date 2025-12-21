@@ -1,0 +1,40 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgAcceptBid",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgAcceptBid": {
+                "properties": {
+                    "owner": {
+                        "type": "string",
+                        "description": "Current NFT owner accepting the bid."
+                    },
+                    "nft_class_id": {
+                        "type": "string",
+                        "description": "NFT class identifier."
+                    },
+                    "nft_id": {
+                        "type": "string",
+                        "description": "NFT identifier within the class."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Accept Bid",
+                "description": "MsgAcceptBid accepts current active bid, transferring NFT ownership and releasing escrowed funds. Behavior: - Accepts highest current bid on owned NFT. - Transfers escrowed bid amount to current NFT owner. - Transfers NFT ownership to bidder. - Updates NFT valuation to accepted bid amount. - Clears all bid-related state. Validation: - Sender must be current NFT owner. - NFT must have active bid (non-zero amount and bidder). Emits: - EventBidAccepted(class_id, nft_id, new_owner) on successful acceptance. Returns: - Empty response on success."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/dysonprotocol.nameservice.v1.MsgAcceptBidResponse",
+        "definitions": {
+            "dysonprotocol.nameservice.v1.MsgAcceptBidResponse": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Accept Bid Response",
+                "description": "Empty response for successful bid acceptance."
+            }
+        }
+    }
+}

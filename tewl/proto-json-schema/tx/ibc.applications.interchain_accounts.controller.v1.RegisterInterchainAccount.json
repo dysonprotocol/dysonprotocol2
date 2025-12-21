@@ -1,0 +1,65 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccount",
+        "definitions": {
+            "ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccount": {
+                "properties": {
+                    "owner": {
+                        "type": "string"
+                    },
+                    "connection_id": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "ordering": {
+                        "enum": [
+                            "ORDER_NONE_UNSPECIFIED",
+                            0,
+                            "ORDER_UNORDERED",
+                            1,
+                            "ORDER_ORDERED",
+                            2
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "title": "Order",
+                        "description": "Order defines if a channel is ORDERED or UNORDERED"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Register Interchain Account",
+                "description": "MsgRegisterInterchainAccount defines the payload for Msg/RegisterAccount"
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccountResponse",
+        "definitions": {
+            "ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccountResponse": {
+                "properties": {
+                    "channel_id": {
+                        "type": "string"
+                    },
+                    "port_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Register Interchain Account Response",
+                "description": "MsgRegisterInterchainAccountResponse defines the response for Msg/RegisterAccount"
+            }
+        }
+    }
+}

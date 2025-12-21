@@ -3890,6 +3890,11 @@ paths:
                       (governance
 
                       only).
+
+                      If this field is blank in MsgUpdateParams, the existing
+                      value is preserved
+
+                      and not updated.
             description: >-
               QueryParamsResponse is response type for the Query/Params RPC
               method.
@@ -35837,10 +35842,15 @@ paths:
 
                   overwritten).
               params:
-                description: |-
+                description: >-
                   params defines the x/nameservice parameters to update.
 
-                  NOTE: All parameters must be supplied.
+
+                  NOTE: All parameters must be supplied, except reserved_names
+                  which is
+
+                  optional. If reserved_names is blank, the existing value will
+                  be preserved.
                 type: object
                 properties:
                   mint_fee_per_coin:
@@ -35902,6 +35912,11 @@ paths:
                       (governance
 
                       only).
+
+                      If this field is blank in MsgUpdateParams, the existing
+                      value is preserved
+
+                      and not updated.
             description: MsgUpdateParams is the Msg/UpdateParams request type.
       tags:
         - Msg
@@ -39674,7 +39689,7 @@ paths:
               index:
                 type: string
                 description: >-
-                  Index key for the storage entry; must be non-empty, max 50
+                  Index key for the storage entry; must be non-empty, max 128
                   characters,
 
                   and printable ASCII only.
@@ -50319,6 +50334,11 @@ definitions:
           Reserved names can still be created via CreateExternalName (governance
 
           only).
+
+          If this field is blank in MsgUpdateParams, the existing value is
+          preserved
+
+          and not updated.
     description: Params defines the parameters for the nameservice module.
   dysonprotocol.nameservice.v1.QueryBidsByBidderResponse:
     type: object
@@ -50763,6 +50783,11 @@ definitions:
               (governance
 
               only).
+
+              If this field is blank in MsgUpdateParams, the existing value is
+              preserved
+
+              and not updated.
     description: QueryParamsResponse is response type for the Query/Params RPC method.
   dysonprotocol.nameservice.v1.QueryResolveNameResponse:
     type: object
@@ -80669,10 +80694,14 @@ definitions:
 
           overwritten).
       params:
-        description: |-
+        description: >-
           params defines the x/nameservice parameters to update.
 
-          NOTE: All parameters must be supplied.
+
+          NOTE: All parameters must be supplied, except reserved_names which is
+
+          optional. If reserved_names is blank, the existing value will be
+          preserved.
         type: object
         properties:
           mint_fee_per_coin:
@@ -80731,6 +80760,11 @@ definitions:
               (governance
 
               only).
+
+              If this field is blank in MsgUpdateParams, the existing value is
+              preserved
+
+              and not updated.
     description: MsgUpdateParams is the Msg/UpdateParams request type.
   dysonprotocol.nameservice.v1.MsgUpdateParamsResponse:
     type: object
@@ -82917,8 +82951,10 @@ definitions:
           address.
       index:
         type: string
-        description: |-
-          Index key for the storage entry; must be non-empty, max 50 characters,
+        description: >-
+          Index key for the storage entry; must be non-empty, max 128
+          characters,
+
           and printable ASCII only.
       data:
         type: string

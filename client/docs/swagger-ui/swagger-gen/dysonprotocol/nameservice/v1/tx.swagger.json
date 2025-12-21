@@ -1903,7 +1903,7 @@
         },
         "params": {
           "$ref": "#/definitions/dysonprotocol.nameservice.v1.Params",
-          "description": "params defines the x/nameservice parameters to update.\n\nNOTE: All parameters must be supplied."
+          "description": "params defines the x/nameservice parameters to update.\n\nNOTE: All parameters must be supplied, except reserved_names which is\noptional. If reserved_names is blank, the existing value will be preserved."
         }
       },
       "description": "MsgUpdateParams is the Msg/UpdateParams request type."
@@ -1956,7 +1956,7 @@
         },
         "reserved_names": {
           "type": "string",
-          "description": "reserved_names defines a newline-separated list of forbidden .dys names\nthat cannot be registered via the normal commit-reveal process.\nBlank lines and lines starting with # are ignored.\nReserved names can still be created via CreateExternalName (governance\nonly)."
+          "description": "reserved_names defines a newline-separated list of forbidden .dys names\nthat cannot be registered via the normal commit-reveal process.\nBlank lines and lines starting with # are ignored.\nReserved names can still be created via CreateExternalName (governance\nonly).\nIf this field is blank in MsgUpdateParams, the existing value is preserved\nand not updated."
         }
       },
       "description": "Params defines the parameters for the nameservice module."

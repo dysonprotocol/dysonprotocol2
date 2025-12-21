@@ -1,0 +1,52 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.params.v1beta1.QuerySubspacesRequest",
+        "definitions": {
+            "cosmos.params.v1beta1.QuerySubspacesRequest": {
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Subspaces Request",
+                "description": "QuerySubspacesRequest defines a request type for querying for all registered subspaces and all keys for a subspace."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.params.v1beta1.QuerySubspacesResponse",
+        "definitions": {
+            "cosmos.params.v1beta1.QuerySubspacesResponse": {
+                "properties": {
+                    "subspaces": {
+                        "items": {
+                            "$ref": "#/definitions/cosmos.params.v1beta1.Subspace"
+                        },
+                        "additionalProperties": false,
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Query Subspaces Response",
+                "description": "QuerySubspacesResponse defines the response types for querying for all registered subspaces and all keys for a subspace."
+            },
+            "cosmos.params.v1beta1.Subspace": {
+                "properties": {
+                    "subspace": {
+                        "type": "string"
+                    },
+                    "keys": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Subspace",
+                "description": "Subspace defines a parameter subspace name and all the keys that exist for the subspace."
+            }
+        }
+    }
+}

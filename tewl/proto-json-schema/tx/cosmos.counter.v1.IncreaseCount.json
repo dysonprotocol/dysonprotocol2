@@ -1,0 +1,42 @@
+{
+    "request": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.counter.v1.MsgIncreaseCounter",
+        "definitions": {
+            "cosmos.counter.v1.MsgIncreaseCounter": {
+                "properties": {
+                    "signer": {
+                        "type": "string",
+                        "description": "signer is the address that controls the module (defaults to x/gov unless overwritten)."
+                    },
+                    "count": {
+                        "type": "string",
+                        "description": "count is the number of times to increment the counter."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Increase Counter",
+                "description": "MsgIncreaseCounter defines a count Msg service counter."
+            }
+        }
+    },
+    "response": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$ref": "#/definitions/cosmos.counter.v1.MsgIncreaseCountResponse",
+        "definitions": {
+            "cosmos.counter.v1.MsgIncreaseCountResponse": {
+                "properties": {
+                    "new_count": {
+                        "type": "string",
+                        "description": "new_count is the number of times the counter was incremented."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "Msg Increase Count Response",
+                "description": "MsgIncreaseCountResponse is the Msg/Counter response type."
+            }
+        }
+    }
+}
