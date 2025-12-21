@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -203,6 +204,12 @@ func NewKeeper(
 		"account_keeper_set", keeper.accountKeeper != nil)
 
 	return keeper
+}
+
+// GetBondDenom returns the bond denomination from staking params.
+// This is the canonical source of truth for the native token denomination.
+func (k Keeper) GetBondDenom(ctx context.Context) (string, error) {
+	return k.stakingKeeper.BondDenom(ctx)
 }
 
 // HandleBlockEvents receives all block events (begin, txs, end) as a flat list

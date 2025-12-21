@@ -22,7 +22,7 @@ func (k Keeper) DenomByName(c context.Context, req *types.QueryDenomByNameReques
 	}
 
 	// Ensure the provided name exists as a Name NFT root
-	if !k.nftKeeper.HasNFT(c, NamesClassID, req.Name) {
+	if !k.nftKeeper.HasNFT(c, k.NamesClassID(c), req.Name) {
 		return nil, status.Error(codes.NotFound, "root name NFT not found")
 	}
 

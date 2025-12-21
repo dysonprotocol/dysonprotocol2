@@ -240,8 +240,10 @@ var (
 		},
 		{
 			Name: authtypes.ModuleName,
-			Config: appconfig.WrapAny(&authmodulev1.Module{
-				Bech32Prefix:             "dys2",
+		Config: appconfig.WrapAny(&authmodulev1.Module{
+			// NOTE: This default should match the bech32 prefix hardcoded in main.go.
+			// The depinject path (app_di.go) uses this default; the manual path (app.go) uses sdk.GetConfig().
+			Bech32Prefix:             "dys2",
 				ModuleAccountPermissions: moduleAccPerms,
 				// By default modules authority is the governance module. This is configurable with the following:
 				// Authority: "group", // A custom module authority can be set using a module name

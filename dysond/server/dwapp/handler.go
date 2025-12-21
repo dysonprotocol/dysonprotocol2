@@ -16,7 +16,9 @@ import (
 
 	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/client"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"dysonprotocol.com/chain"
 	scriptv1 "dysonprotocol.com/x/script/types"
 )
 
@@ -212,15 +214,18 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			restPath = "/" + segments[1]
 		}
 
-		// Accept either a name ending in .dys or a dys21... address
+		// Accept either a name ending in configured suffix or a bech32 address with configured prefix
+		// Name suffix uses the default (matches genesis default), bech32 prefix comes from SDK config
 		idLower := strings.ToLower(id)
+		nameSuffix := chain.DefaultNameSuffix
+		bech32Prefix := sdk.GetConfig().GetBech32AccountAddrPrefix()
 		publicID := ""
-		if strings.HasSuffix(idLower, ".dys") {
-			publicID = strings.TrimSuffix(idLower, ".dys")
-		} else if strings.HasPrefix(idLower, "dys2") {
+		if strings.HasSuffix(idLower, nameSuffix) {
+			publicID = strings.TrimSuffix(idLower, nameSuffix)
+		} else if strings.HasPrefix(idLower, bech32Prefix) {
 			publicID = idLower
 		} else {
-			http.Error(w, "address_or_name must end with .dys or be a dys2… address", http.StatusBadRequest)
+			http.Error(w, fmt.Sprintf("address_or_name must end with %s or be a %s… address", nameSuffix, bech32Prefix), http.StatusBadRequest)
 			return
 		}
 

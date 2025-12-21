@@ -44,6 +44,9 @@ type NameserviceKeeper interface {
 	MintNFT(ctx context.Context, msg *nameservicev1.MsgMintNFT) (*nameservicev1.MsgMintNFTResponse, error)
 	// Authority helper
 	GetAuthority() string
+	// Chain identity helpers
+	GetNameSuffix(ctx context.Context) string
+	NamesClassID(ctx context.Context) string
 	// NFT/Class administration used by auctions
 	SaveClass(ctx context.Context, msg *nameservicev1.MsgSaveClass) (*nameservicev1.MsgSaveClassResponse, error)
 	SetNFTClassAlwaysListed(ctx context.Context, msg *nameservicev1.MsgSetNFTClassAlwaysListed) (*nameservicev1.MsgSetNFTClassAlwaysListedResponse, error)
@@ -68,4 +71,6 @@ type CommunityPoolKeeper interface{}
 
 type StakingKeeper interface {
 	GetDelegatorBonded(ctx context.Context, delegator sdk.AccAddress) (math.Int, error)
+	// BondDenom returns the bond denomination from staking params
+	BondDenom(ctx context.Context) (string, error)
 }

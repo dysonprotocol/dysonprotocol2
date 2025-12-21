@@ -24,7 +24,7 @@ func (k Keeper) NamesByDestination(c context.Context, req *types.QueryNamesByDes
 
 	// Validate destination: allow bech32 address or existing name
 	if _, err := sdk.AccAddressFromBech32(req.Destination); err != nil {
-		if _, found := k.nftKeeper.GetNFT(c, NamesClassID, req.Destination); !found {
+		if _, found := k.nftKeeper.GetNFT(c, k.NamesClassID(c), req.Destination); !found {
 			return nil, status.Error(codes.InvalidArgument, "destination must be a valid bech32 address or existing name")
 		}
 	}

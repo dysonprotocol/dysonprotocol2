@@ -78,8 +78,13 @@ func (k Keeper) MintCoins(ctx context.Context, msg *nameservicev1.MsgMintCoins) 
 		totalFeeAmount := mintFeePerCoin.MulInt(totalUnits).Ceil().TruncateInt()
 
 		// Explicit authorization: require provided mint_fee >= required
-		if msg.MintFee.Denom != "udys" {
-			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "mint_fee denom must be 'udys', got %s", msg.MintFee.Denom)
+		// Use bond denom from staking params (canonical source of truth)
+		baseDenom, err := k.GetBondDenom(ctx)
+		if err != nil {
+			return nil, cosmossdkerrors.Wrap(err, "failed to get bond denom")
+		}
+		if msg.MintFee.Denom != baseDenom {
+			return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "mint_fee denom must be '%s', got %s", baseDenom, msg.MintFee.Denom)
 		}
 		if msg.MintFee.Amount.LT(totalFeeAmount) {
 			return nil, cosmossdkerrors.Wrapf(
@@ -90,7 +95,7 @@ func (k Keeper) MintCoins(ctx context.Context, msg *nameservicev1.MsgMintCoins) 
 		}
 
 		if !totalFeeAmount.IsZero() {
-			feeCharged = sdk.NewCoins(sdk.NewCoin("udys", totalFeeAmount))
+			feeCharged = sdk.NewCoins(sdk.NewCoin(baseDenom, totalFeeAmount))
 
 			// Collect fee to community pool before minting
 			if err := k.communityPoolKeeper.FundCommunityPool(ctx, feeCharged, ownerAddr); err != nil {

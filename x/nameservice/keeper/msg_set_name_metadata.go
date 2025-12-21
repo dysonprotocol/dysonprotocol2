@@ -15,19 +15,19 @@ func (k Keeper) SetNameMetadata(ctx context.Context, msg *nameservicev1.MsgSetNa
 	// This creates a potential race condition if NFT is deleted between the two checks.
 	// The GetNFTData() call already handles the "not found" case with proper error wrapping,
 	// so this early check is unnecessary and could cause inconsistent behavior.
-	_, found := k.nftKeeper.GetNFT(ctx, NamesClassID, msg.Name)
+	_, found := k.nftKeeper.GetNFT(ctx, k.NamesClassID(ctx), msg.Name)
 	if !found {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrNotFound, "name not found")
 	}
 
 	// Verify the signer is the NFT owner (NOT destination)
-	owner := k.nftKeeper.GetOwner(ctx, NamesClassID, msg.Name)
+	owner := k.nftKeeper.GetOwner(ctx, k.NamesClassID(ctx), msg.Name)
 	if owner.String() != msg.Owner {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only the owner can set metadata")
 	}
 
 	// Load current NFT data, set metadata string only
-	nftData, err := k.GetNFTData(ctx, NamesClassID, msg.Name)
+	nftData, err := k.GetNFTData(ctx, k.NamesClassID(ctx), msg.Name)
 	if err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to load NFT data")
 	}
@@ -36,7 +36,7 @@ func (k Keeper) SetNameMetadata(ctx context.Context, msg *nameservicev1.MsgSetNa
 	if err := nftData.ValidateBasic(); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "invalid NFT data")
 	}
-	if err := k.SetNFTData(ctx, NamesClassID, msg.Name, nftData); err != nil {
+	if err := k.SetNFTData(ctx, k.NamesClassID(ctx), msg.Name, nftData); err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to update NFT data")
 	}
 
@@ -44,7 +44,7 @@ func (k Keeper) SetNameMetadata(ctx context.Context, msg *nameservicev1.MsgSetNa
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if evErr := sdkCtx.EventManager().EmitTypedEvent(
 		&nameservicev1.EventNFTMetadataUpdated{
-			ClassId: NamesClassID,
+			ClassId: k.NamesClassID(ctx),
 			NftId:   msg.Name,
 		},
 	); evErr != nil {

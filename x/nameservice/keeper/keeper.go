@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"cosmossdk.io/collections"
@@ -54,6 +55,7 @@ type Keeper struct {
 	accountKeeper       nameservicev1.AccountKeeper
 	communityPoolKeeper nameservicev1.CommunityPoolKeeper
 	nftKeeper           nameservicev1.NFTKeeper
+	stakingKeeper       nameservicev1.StakingKeeper
 
 	// Core services
 	Logger log.Logger
@@ -92,6 +94,7 @@ func NewKeeper(
 	accountKeeper nameservicev1.AccountKeeper,
 	communityPoolKeeper nameservicev1.CommunityPoolKeeper,
 	nftKeeper nameservicev1.NFTKeeper,
+	stakingKeeper nameservicev1.StakingKeeper,
 	logger log.Logger,
 	authority string,
 ) Keeper {
@@ -105,6 +108,7 @@ func NewKeeper(
 		accountKeeper:       accountKeeper,
 		communityPoolKeeper: communityPoolKeeper,
 		nftKeeper:           nftKeeper,
+		stakingKeeper:       stakingKeeper,
 		Logger:              logger,
 		authority:           authority,
 		commitments:         collections.NewMap(sb, CommitmentsKey, "commitments", collections.StringKey, codec.CollValue[nameservicev1.Commitment](cdc)),
@@ -233,6 +237,37 @@ func (k Keeper) SetParams(ctx context.Context, params nameservicev1.Params) erro
 	return k.params.Set(ctx, params)
 }
 
+// GetNameSuffix returns the configured name suffix from params (e.g., ".dys").
+func (k Keeper) GetNameSuffix(ctx context.Context) string {
+	params := k.GetParams(ctx)
+	if params.NameSuffix == "" {
+		return nameservicev1.DefaultNameSuffix
+	}
+	return params.NameSuffix
+}
+
+// GetNameSuffixBase returns the name suffix without the leading dot (e.g., "dys" from ".dys").
+func (k Keeper) GetNameSuffixBase(ctx context.Context) string {
+	return nameservicev1.GetNameSuffixBase(k.GetNameSuffix(ctx))
+}
+
+// GetNameRegex returns a compiled regex for valid names using the current name suffix.
+func (k Keeper) GetNameRegex(ctx context.Context) *regexp.Regexp {
+	return nameservicev1.GetNameRegex(k.GetNameSuffix(ctx))
+}
+
+// IsReservedName checks if a name is reserved using the current suffix and params.
+func (k Keeper) IsReservedName(ctx context.Context, name string) bool {
+	params := k.GetParams(ctx)
+	return nameservicev1.IsReservedName(name, params.ReservedNames, params.NameSuffix)
+}
+
+// GetBondDenom returns the bond denomination from staking params.
+// This is the canonical source of truth for the native token denomination.
+func (k Keeper) GetBondDenom(ctx context.Context) (string, error) {
+	return k.stakingKeeper.BondDenom(ctx)
+}
+
 // GetNFTData gets the NFTData for an NFT with the given class ID and NFT ID
 func (k Keeper) GetNFTData(ctx context.Context, classId string, nftId string) (nameservicev1.NFTData, error) {
 	k.Logger.Info("GetNFTData: Getting NFT data", "class_id", classId, "nft_id", nftId)
@@ -269,11 +304,12 @@ func (k Keeper) GetNFTData(ctx context.Context, classId string, nftId string) (n
 
 // GetNameOwner gets the owner of a name
 func (k Keeper) GetNameOwner(ctx context.Context, name string) (string, bool) {
-	if !k.nftKeeper.HasNFT(ctx, NamesClassID, name) {
+	classID := k.NamesClassID(ctx)
+	if !k.nftKeeper.HasNFT(ctx, classID, name) {
 		return "", false
 	}
 
-	owner := k.nftKeeper.GetOwner(ctx, NamesClassID, name)
+	owner := k.nftKeeper.GetOwner(ctx, classID, name)
 	return owner.String(), true
 }
 
@@ -507,7 +543,7 @@ func (k Keeper) ResolveNameOrAddress(ctx context.Context, nameOrAddress string) 
 		visited[current] = true
 
 		// Try to resolve it as a nameservice name NFT
-		nft, found := k.nftKeeper.GetNFT(ctx, NamesClassID, current)
+		nft, found := k.nftKeeper.GetNFT(ctx, k.NamesClassID(ctx), current)
 		if !found {
 			return "", cosmossdkerrors.Wrap(sdkerrors.ErrNotFound,
 				fmt.Sprintf("name not found: %s", current))
@@ -578,8 +614,9 @@ func (k Keeper) RebuildDerivedIndexes(ctx context.Context) error {
 		}
 
 		// If this is the names class, also rebuild name->destination reverse mappings
-		if class.Id == NamesClassID {
-			nfts := k.nftKeeper.GetNFTsOfClass(ctx, NamesClassID)
+		namesClassID := k.NamesClassID(ctx)
+		if class.Id == namesClassID {
+			nfts := k.nftKeeper.GetNFTsOfClass(ctx, namesClassID)
 			for _, n := range nfts {
 				if n.Uri == "" {
 					continue
@@ -597,9 +634,9 @@ func (k Keeper) RebuildDerivedIndexes(ctx context.Context) error {
 		if meta.Base == "" {
 			continue
 		}
-		// Only track nameservice denoms (root must be a name ending in .dys)
+		// Only track nameservice denoms (root must be a name ending in configured suffix)
 		root := extractRootName(meta.Base)
-		if !strings.HasSuffix(root, ".dys") {
+		if !strings.HasSuffix(root, k.GetNameSuffix(ctx)) {
 			continue
 		}
 		if err := k.setDenomTracked(ctx, meta.Base); err != nil {

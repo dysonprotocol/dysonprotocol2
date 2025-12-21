@@ -57,19 +57,19 @@ func (k Keeper) Reveal(ctx context.Context, msg *nameservicev1.MsgReveal) (*name
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "name cannot be empty")
 	}
 
-	// Validate that the name follows the format: lowercase alphanumeric, starts with letter, may contain dashes, ends with ".dys"
-	if !nameservicev1.NameRegex.MatchString(msg.Name) {
-		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid name format: must be lowercase, start with a letter, contain only alphanumeric and dash characters, and end with .dys")
+	// Validate that the name follows the format: lowercase alphanumeric, starts with letter, may contain dashes, ends with configured suffix
+	nameSuffix := k.GetNameSuffix(ctx)
+	if !k.GetNameRegex(ctx).MatchString(msg.Name) {
+		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid name format: must be lowercase, start with a letter, contain only alphanumeric and dash characters, and end with "+nameSuffix)
 	}
 
 	// Check if name is reserved (cannot be registered via reveal)
-	params := k.GetParams(ctx)
-	if nameservicev1.IsReservedName(msg.Name, params.ReservedNames) {
+	if k.IsReservedName(ctx, msg.Name) {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "name is reserved and cannot be registered via reveal")
 	}
 
 	// Check if name is already registered
-	if k.nftKeeper.HasNFT(ctx, NamesClassID, msg.Name) {
+	if k.nftKeeper.HasNFT(ctx, k.NamesClassID(ctx), msg.Name) {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "name is already registered")
 	}
 
@@ -108,7 +108,7 @@ func (k Keeper) Reveal(ctx context.Context, msg *nameservicev1.MsgReveal) (*name
 	}
 
 	// Validate the valuation
-	err = k.ValidateValuation(ctx, NamesClassID, valuation)
+	err = k.ValidateValuation(ctx, k.NamesClassID(ctx), valuation)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func (k Keeper) Reveal(ctx context.Context, msg *nameservicev1.MsgReveal) (*name
 	var fee sdk.Coins
 
 	// Get the NFT class data for fee calculation and expiry
-	classData, err := k.GetNFTClassData(ctx, NamesClassID)
+	classData, err := k.GetNFTClassData(ctx, k.NamesClassID(ctx))
 	if err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to get nameservice NFT class data for fee calculation")
 	}
@@ -162,7 +162,7 @@ func (k Keeper) Reveal(ctx context.Context, msg *nameservicev1.MsgReveal) (*name
 	// Create NFT data with expiry based on class valuation_period
 	period := classData.ValuationPeriod
 	if period <= 0 {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "valuation_period not set for class %s", NamesClassID)
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "valuation_period not set for class %s", k.NamesClassID(ctx))
 	}
 	nftData := &nameservicev1.NFTData{
 		Listed:          true,
@@ -179,7 +179,7 @@ func (k Keeper) Reveal(ctx context.Context, msg *nameservicev1.MsgReveal) (*name
 
 	// Create the NFT
 	token := nft.NFT{
-		ClassId: NamesClassID,
+		ClassId: k.NamesClassID(ctx),
 		Id:      msg.Name,
 		Uri:     msg.Committer,
 		UriHash: "",

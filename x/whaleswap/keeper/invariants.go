@@ -87,7 +87,7 @@ func (k Keeper) checkModuleBalancesInvariant(ctx context.Context) error {
 	// Hard constraints: module must not hold pool share denoms
 	for _, c := range actual {
 		d := c.Denom
-		if strings.HasPrefix(d, whaleswapv1.PoolsDenomPrefix) && c.Amount.IsPositive() {
+		if strings.HasPrefix(d, k.PoolsDenomPrefix(ctx)) && c.Amount.IsPositive() {
 			return cosmossdkerrors.Wrapf(
 				sdkerrors.ErrLogic,
 				"module holds pool shares unexpectedly: %s=%s",

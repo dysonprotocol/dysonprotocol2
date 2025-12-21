@@ -3895,6 +3895,17 @@ paths:
                       value is preserved
 
                       and not updated.
+                  name_suffix:
+                    type: string
+                    description: >-
+                      name_suffix is the suffix for all registered names (e.g.,
+                      ".dys").
+
+                      This is set at genesis and should NOT be changed after
+                      chain launch.
+
+                      All names must end with this suffix (e.g., "alice.dys",
+                      "myapp.dys").
             description: >-
               QueryParamsResponse is response type for the Query/Params RPC
               method.
@@ -35917,6 +35928,17 @@ paths:
                       value is preserved
 
                       and not updated.
+                  name_suffix:
+                    type: string
+                    description: >-
+                      name_suffix is the suffix for all registered names (e.g.,
+                      ".dys").
+
+                      This is set at genesis and should NOT be changed after
+                      chain launch.
+
+                      All names must end with this suffix (e.g., "alice.dys",
+                      "myapp.dys").
             description: MsgUpdateParams is the Msg/UpdateParams request type.
       tags:
         - Msg
@@ -50339,6 +50361,12 @@ definitions:
           preserved
 
           and not updated.
+      name_suffix:
+        type: string
+        description: |-
+          name_suffix is the suffix for all registered names (e.g., ".dys").
+          This is set at genesis and should NOT be changed after chain launch.
+          All names must end with this suffix (e.g., "alice.dys", "myapp.dys").
     description: Params defines the parameters for the nameservice module.
   dysonprotocol.nameservice.v1.QueryBidsByBidderResponse:
     type: object
@@ -50788,6 +50816,16 @@ definitions:
               preserved
 
               and not updated.
+          name_suffix:
+            type: string
+            description: >-
+              name_suffix is the suffix for all registered names (e.g., ".dys").
+
+              This is set at genesis and should NOT be changed after chain
+              launch.
+
+              All names must end with this suffix (e.g., "alice.dys",
+              "myapp.dys").
     description: QueryParamsResponse is response type for the Query/Params RPC method.
   dysonprotocol.nameservice.v1.QueryResolveNameResponse:
     type: object
@@ -80765,6 +80803,16 @@ definitions:
               preserved
 
               and not updated.
+          name_suffix:
+            type: string
+            description: >-
+              name_suffix is the suffix for all registered names (e.g., ".dys").
+
+              This is set at genesis and should NOT be changed after chain
+              launch.
+
+              All names must end with this suffix (e.g., "alice.dys",
+              "myapp.dys").
     description: MsgUpdateParams is the Msg/UpdateParams request type.
   dysonprotocol.nameservice.v1.MsgUpdateParamsResponse:
     type: object

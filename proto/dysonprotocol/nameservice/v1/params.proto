@@ -85,4 +85,9 @@ message Params {
   // and not updated.
   string reserved_names = 17
       [ (gogoproto.moretags) = "yaml:\"reserved_names\"" ];
+
+  // name_suffix is the suffix for all registered names (e.g., ".dys").
+  // This is set at genesis and should NOT be changed after chain launch.
+  // All names must end with this suffix (e.g., "alice.dys", "myapp.dys").
+  string name_suffix = 18 [ (gogoproto.moretags) = "yaml:\"name_suffix\"" ];
 }

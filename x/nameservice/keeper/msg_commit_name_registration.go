@@ -57,7 +57,7 @@ func (k Keeper) Commit(ctx context.Context, msg *nameservicev1.MsgCommit) (*name
 	}
 
 	// Validate the valuation
-	err = k.ValidateValuation(ctx, NamesClassID, msg.Valuation)
+	err = k.ValidateValuation(ctx, k.NamesClassID(ctx), msg.Valuation)
 	if err != nil {
 		return nil, err
 	}

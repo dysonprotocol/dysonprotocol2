@@ -29,6 +29,7 @@ func NewGenesisState() *GenesisState {
 }
 
 // DefaultParams returns default parameters for the crontask module.
+// Uses sdk.DefaultBondDenom which is set at genesis init time.
 func DefaultParams() Params {
 	return Params{
 		BlockGasLimit:    3000000, // 3M gas limit per block for tasks
@@ -37,7 +38,7 @@ func DefaultParams() Params {
 		CleanUpTime:      86400,   // 24 hours in seconds
 		// MaxSubscriptionDuration is a time.Duration (nanoseconds). Use 24 hours.
 		MaxSubscriptionDuration: 24 * time.Hour,
-		MinStakePerSubscription: sdk.Coin{Denom: "udys", Amount: sdkmath.NewInt(1000)},
+		MinStakePerSubscription: sdk.Coin{Denom: sdk.DefaultBondDenom, Amount: sdkmath.NewInt(1000)},
 	}
 }
 

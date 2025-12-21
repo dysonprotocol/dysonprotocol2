@@ -14,14 +14,14 @@ func (k Keeper) SetDestination(ctx context.Context, msg *nameservicev1.MsgSetDes
 	k.Logger.Info("SetDestination: Processing request", "name", msg.Name, "owner", msg.Owner, "destination", msg.Destination)
 
 	// Get the name NFT
-	nameNFT, found := k.nftKeeper.GetNFT(ctx, NamesClassID, msg.Name)
+	nameNFT, found := k.nftKeeper.GetNFT(ctx, k.NamesClassID(ctx), msg.Name)
 	if !found {
 		k.Logger.Error("SetDestination: Name NFT not found", "name", msg.Name)
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrNotFound, "name not found")
 	}
 
 	// Get the owner of the NFT
-	owner := k.nftKeeper.GetOwner(ctx, NamesClassID, msg.Name)
+	owner := k.nftKeeper.GetOwner(ctx, k.NamesClassID(ctx), msg.Name)
 	ownerStr := owner.String()
 	k.Logger.Info("SetDestination: Found name NFT", "name", msg.Name, "owner", ownerStr)
 
@@ -42,7 +42,7 @@ func (k Keeper) SetDestination(ctx context.Context, msg *nameservicev1.MsgSetDes
 		if err != nil {
 			k.Logger.Info("SetDestination: Destination is not a valid bech32 address, checking if it's an existing name", "destination", msg.Destination, "error", err)
 			// Not a valid address, check if it's an existing name
-			_, found := k.nftKeeper.GetNFT(ctx, NamesClassID, msg.Destination)
+			_, found := k.nftKeeper.GetNFT(ctx, k.NamesClassID(ctx), msg.Destination)
 			k.Logger.Info("SetDestination: Checked for existing name", "destination", msg.Destination, "found", found)
 			if !found {
 				k.Logger.Error("SetDestination: Invalid destination - not a valid address or existing name", "destination", msg.Destination)
@@ -86,7 +86,7 @@ func (k Keeper) SetDestination(ctx context.Context, msg *nameservicev1.MsgSetDes
 				}
 
 				// Get the next hop
-				destNFT, destFound := k.nftKeeper.GetNFT(ctx, NamesClassID, current)
+				destNFT, destFound := k.nftKeeper.GetNFT(ctx, k.NamesClassID(ctx), current)
 				if !destFound {
 					k.Logger.Error("SetDestination: Name in chain not found", "name", current)
 					return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "destination chain contains unresolvable name")

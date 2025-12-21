@@ -20,7 +20,7 @@ func TestRebuildModuleInvariantsBurnsExcess(t *testing.T) {
 	pool := whaleswapv1.Pool{
 		PoolId:      1,
 		Coins:       sdk.NewCoins(sdk.NewInt64Coin("foo.dys", 1_000), sdk.NewInt64Coin("udys", 2_000)),
-		SharesDenom: whaleswapv1.PoolSharesDenom(1),
+		SharesDenom: whaleswapv1.PoolSharesDenomForSuffix(".dys", 1), // Use static suffix for test
 		FeesEarned:  sdk.NewCoins(sdk.NewInt64Coin("udys", 5)),
 	}
 	require.NoError(t, app.WhaleswapKeeper.PoolsMap.Set(ctx, pool.PoolId, pool))

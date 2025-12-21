@@ -29,6 +29,7 @@ var (
 	fd_Params_min_valuation_period                 protoreflect.FieldDescriptor
 	fd_Params_max_valuation_period                 protoreflect.FieldDescriptor
 	fd_Params_reserved_names                       protoreflect.FieldDescriptor
+	fd_Params_name_suffix                          protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -46,6 +47,7 @@ func init() {
 	fd_Params_min_valuation_period = md_Params.Fields().ByName("min_valuation_period")
 	fd_Params_max_valuation_period = md_Params.Fields().ByName("max_valuation_period")
 	fd_Params_reserved_names = md_Params.Fields().ByName("reserved_names")
+	fd_Params_name_suffix = md_Params.Fields().ByName("name_suffix")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -185,6 +187,12 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
+	if x.NameSuffix != "" {
+		value := protoreflect.ValueOfString(x.NameSuffix)
+		if !f(fd_Params_name_suffix, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -224,6 +232,8 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.MaxValuationPeriod != nil
 	case "dysonprotocol.nameservice.v1.Params.reserved_names":
 		return x.ReservedNames != ""
+	case "dysonprotocol.nameservice.v1.Params.name_suffix":
+		return x.NameSuffix != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.nameservice.v1.Params"))
@@ -264,6 +274,8 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.MaxValuationPeriod = nil
 	case "dysonprotocol.nameservice.v1.Params.reserved_names":
 		x.ReservedNames = ""
+	case "dysonprotocol.nameservice.v1.Params.name_suffix":
+		x.NameSuffix = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.nameservice.v1.Params"))
@@ -316,6 +328,9 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "dysonprotocol.nameservice.v1.Params.reserved_names":
 		value := x.ReservedNames
 		return protoreflect.ValueOfString(value)
+	case "dysonprotocol.nameservice.v1.Params.name_suffix":
+		value := x.NameSuffix
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.nameservice.v1.Params"))
@@ -360,6 +375,8 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.MaxValuationPeriod = value.Message().Interface().(*durationpb.Duration)
 	case "dysonprotocol.nameservice.v1.Params.reserved_names":
 		x.ReservedNames = value.Interface().(string)
+	case "dysonprotocol.nameservice.v1.Params.name_suffix":
+		x.NameSuffix = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.nameservice.v1.Params"))
@@ -416,6 +433,8 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field max_valuation_fee_pct of message dysonprotocol.nameservice.v1.Params is not mutable"))
 	case "dysonprotocol.nameservice.v1.Params.reserved_names":
 		panic(fmt.Errorf("field reserved_names of message dysonprotocol.nameservice.v1.Params is not mutable"))
+	case "dysonprotocol.nameservice.v1.Params.name_suffix":
+		panic(fmt.Errorf("field name_suffix of message dysonprotocol.nameservice.v1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.nameservice.v1.Params"))
@@ -456,6 +475,8 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 		m := new(durationpb.Duration)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	case "dysonprotocol.nameservice.v1.Params.reserved_names":
+		return protoreflect.ValueOfString("")
+	case "dysonprotocol.nameservice.v1.Params.name_suffix":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -574,6 +595,10 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 2 + l + runtime.Sov(uint64(l))
 		}
+		l = len(x.NameSuffix)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -602,6 +627,15 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.NameSuffix) > 0 {
+			i -= len(x.NameSuffix)
+			copy(dAtA[i:], x.NameSuffix)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NameSuffix)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0x92
 		}
 		if len(x.ReservedNames) > 0 {
 			i -= len(x.ReservedNames)
@@ -1168,6 +1202,38 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 				x.ReservedNames = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
+			case 18:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NameSuffix", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.NameSuffix = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -1254,6 +1320,10 @@ type Params struct {
 	// If this field is blank in MsgUpdateParams, the existing value is preserved
 	// and not updated.
 	ReservedNames string `protobuf:"bytes,17,opt,name=reserved_names,json=reservedNames,proto3" json:"reserved_names,omitempty"`
+	// name_suffix is the suffix for all registered names (e.g., ".dys").
+	// This is set at genesis and should NOT be changed after chain launch.
+	// All names must end with this suffix (e.g., "alice.dys", "myapp.dys").
+	NameSuffix string `protobuf:"bytes,18,opt,name=name_suffix,json=nameSuffix,proto3" json:"name_suffix,omitempty"`
 }
 
 func (x *Params) Reset() {
@@ -1360,6 +1430,13 @@ func (x *Params) GetReservedNames() string {
 	return ""
 }
 
+func (x *Params) GetNameSuffix() string {
+	if x != nil {
+		return x.NameSuffix
+	}
+	return ""
+}
+
 var File_dysonprotocol_nameservice_v1_params_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_nameservice_v1_params_proto_rawDesc = []byte{
@@ -1372,7 +1449,7 @@ var file_dysonprotocol_nameservice_v1_params_proto_rawDesc = []byte{
 	0x1e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
 	0x2f, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a,
 	0x19, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f,
-	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xe9, 0x0a, 0x0a, 0x06, 0x50,
+	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xa2, 0x0b, 0x0a, 0x06, 0x50,
 	0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x55, 0x0a, 0x11, 0x6d, 0x69, 0x6e, 0x74, 0x5f, 0x66, 0x65,
 	0x65, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x63, 0x6f, 0x69, 0x6e, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09,
 	0x42, 0x2a, 0xf2, 0xde, 0x1f, 0x18, 0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x6d, 0x69, 0x6e, 0x74,
@@ -1459,10 +1536,13 @@ var file_dysonprotocol_nameservice_v1_params_proto_rawDesc = []byte{
 	0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x18, 0x11, 0x20, 0x01, 0x28, 0x09, 0x42, 0x19, 0xf2, 0xde,
 	0x1f, 0x15, 0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x72, 0x65, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64,
 	0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x22, 0x52, 0x0d, 0x72, 0x65, 0x73, 0x65, 0x72, 0x76, 0x65,
-	0x64, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x42, 0x27, 0x5a, 0x25, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x6e, 0x61,
-	0x6d, 0x65, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x64, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x12, 0x37, 0x0a, 0x0b, 0x6e, 0x61, 0x6d, 0x65, 0x5f, 0x73,
+	0x75, 0x66, 0x66, 0x69, 0x78, 0x18, 0x12, 0x20, 0x01, 0x28, 0x09, 0x42, 0x16, 0xf2, 0xde, 0x1f,
+	0x12, 0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x6e, 0x61, 0x6d, 0x65, 0x5f, 0x73, 0x75, 0x66, 0x66,
+	0x69, 0x78, 0x22, 0x52, 0x0a, 0x6e, 0x61, 0x6d, 0x65, 0x53, 0x75, 0x66, 0x66, 0x69, 0x78, 0x42,
+	0x27, 0x5a, 0x25, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x65, 0x72, 0x76, 0x69,
+	0x63, 0x65, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (

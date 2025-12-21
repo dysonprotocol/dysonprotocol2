@@ -3,7 +3,9 @@ package types
 import (
 	_ "embed"
 	"fmt"
+	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"cosmossdk.io/math"
@@ -20,12 +22,21 @@ const MaxBidTimeout = time.Hour * 24 * 90 // 90 days
 // DefaultMintFeePerCoin is the default fee in udys charged per coin minted
 var DefaultMintFeePerCoin = "0.01" // 1 udys == 100 base denoms
 
+// DefaultNameSuffix is the default suffix for registered names.
+// This is set in genesis and should NOT be changed after chain launch.
+var DefaultNameSuffix = ".dys"
+
+// LabelRegexString matches a single DNS-like label (used for regex compilation)
+const LabelRegexString = `[a-z](?:[a-z0-9-]*[a-z0-9])?`
+
 // NewParams creates a new Params instance with given values
 func NewParams(
 	mintFeePerCoin string,
+	nameSuffix string,
 ) Params {
 	return Params{
 		MintFeePerCoin: mintFeePerCoin,
+		NameSuffix:     nameSuffix,
 	}
 }
 
@@ -33,6 +44,7 @@ func NewParams(
 func DefaultParams() Params {
 	p := NewParams(
 		DefaultMintFeePerCoin,
+		DefaultNameSuffix,
 	)
 	// Set permissive but safe defaults for class parameter bounds
 	p.MinBidTimeoutClass = time.Second * 0
@@ -52,45 +64,14 @@ func DefaultParams() Params {
 	return p
 }
 
-// loadDefaultReservedNames loads and processes the default reserved names file.
-// It reads the embedded file, filters out comments and blank lines, validates names,
-// and adds .dys suffix to valid names. Invalid names are skipped.
-func loadDefaultReservedNames() string {
-	if defaultReservedNamesFile == "" {
-		return ""
-	}
-
-	lines := strings.Split(defaultReservedNamesFile, "\n")
-	var reservedNames []string
-
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		// Skip blank lines
-		if line == "" {
-			continue
-		}
-		// Skip comment lines
-		if strings.HasPrefix(line, "#") {
-			continue
-		}
-		// Add .dys suffix if not already present
-		nameWithSuffix := line
-		if !strings.HasSuffix(line, ".dys") {
-			nameWithSuffix = line + ".dys"
-		}
-		// Validate name format - skip invalid names (e.g., containing @ or other invalid chars)
-		if !NameRegex.MatchString(nameWithSuffix) {
-			continue
-		}
-		reservedNames = append(reservedNames, nameWithSuffix)
-	}
-
-	return strings.Join(reservedNames, "\n")
-}
-
 // Validate validates the params
 func (p Params) Validate() error {
 	if err := validateMintFeePerCoin(p.MintFeePerCoin); err != nil {
+		return err
+	}
+
+	// Validate name suffix
+	if err := validateNameSuffix(p.NameSuffix); err != nil {
 		return err
 	}
 
@@ -111,40 +92,32 @@ func (p Params) Validate() error {
 		return err
 	}
 
-	// Validate reserved names
-	if err := validateReservedNames(p.ReservedNames); err != nil {
+	// Validate reserved names using the params' own suffix
+	if err := validateReservedNamesWithSuffix(p.ReservedNames, p.NameSuffix); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// removed: global bid timeout validation (now class-bounded only)
-
-func validateAllowedDenoms(denoms []string) error {
-	// Check if the denoms list is empty
-	if len(denoms) == 0 {
-		return fmt.Errorf("allowed denoms list cannot be empty, it must contain at least 'udys'")
+// validateNameSuffix validates the name suffix parameter
+func validateNameSuffix(suffix string) error {
+	if suffix == "" {
+		return fmt.Errorf("name suffix cannot be empty")
 	}
-
-	// Check if "udys" is in the allowed denoms list
-	dysDenomExists := false
-	for _, denom := range denoms {
-		// Check that no denom is empty
-		if denom == "" {
-			return fmt.Errorf("denom cannot be empty")
-		}
-
-		if denom == "udys" {
-			dysDenomExists = true
+	if !strings.HasPrefix(suffix, ".") {
+		return fmt.Errorf("name suffix must start with '.' (got %q)", suffix)
+	}
+	if len(suffix) < 2 {
+		return fmt.Errorf("name suffix must have at least one character after '.' (got %q)", suffix)
+	}
+	// Validate the suffix base (part after the dot) is valid alphanumeric
+	suffixBase := suffix[1:]
+	for _, c := range suffixBase {
+		if !((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) {
+			return fmt.Errorf("name suffix must contain only lowercase letters and digits after '.' (got %q)", suffix)
 		}
 	}
-
-	// Ensure "udys" is in the list
-	if !dysDenomExists {
-		return fmt.Errorf("allowed denoms list must contain 'udys'")
-	}
-
 	return nil
 }
 
@@ -192,8 +165,6 @@ func validateDecBounds(minStr, maxStr string) error {
 	return nil
 }
 
-// removed: legacy global percent validators and helpers (now class-bounded)
-
 func validateMintFeePerCoin(mintFeePerCoinStr string) error {
 	mintFeePerCoin, err := math.LegacyNewDecFromStr(mintFeePerCoinStr)
 	if err != nil {
@@ -212,13 +183,15 @@ func (p Params) GetMintFeePerCoinAsDec() (math.LegacyDec, error) {
 	return math.LegacyNewDecFromStr(p.MintFeePerCoin)
 }
 
-// validateReservedNames validates the reserved_names field.
+// validateReservedNamesWithSuffix validates the reserved_names field against a specific suffix.
 // It parses the newline-separated string, ignores blank lines and lines starting with #,
-// and validates that each name matches the NameRegex format.
-func validateReservedNames(reservedNamesStr string) error {
+// and validates that each name matches the NameRegex format for the given suffix.
+func validateReservedNamesWithSuffix(reservedNamesStr string, suffix string) error {
 	if reservedNamesStr == "" {
 		return nil
 	}
+
+	nameRegex := CompileNameRegex(suffix)
 
 	lines := strings.Split(reservedNamesStr, "\n")
 	for i, line := range lines {
@@ -231,9 +204,9 @@ func validateReservedNames(reservedNamesStr string) error {
 		if strings.HasPrefix(line, "#") {
 			continue
 		}
-		// Validate name format - must match NameRegex (ends with .dys)
-		if !NameRegex.MatchString(line) {
-			return fmt.Errorf("invalid reserved name at line %d: %s (must be lowercase, start with a letter, contain only alphanumeric and dash characters, and end with .dys)", i+1, line)
+		// Validate name format - must match NameRegex (ends with configured suffix)
+		if !nameRegex.MatchString(line) {
+			return fmt.Errorf("invalid reserved name at line %d: %s (must be lowercase, start with a letter, contain only alphanumeric and dash characters, and end with %s)", i+1, line, suffix)
 		}
 	}
 
@@ -266,37 +239,129 @@ func NormalizeReservedNames(reservedNamesStr string) string {
 	return strings.Join(validNames, "\n")
 }
 
-// defaultReservedNamesCache caches the processed default reserved names for efficiency
-var defaultReservedNamesCache string
+// CompileNameRegex compiles the regex for valid names with the given suffix.
+// Pattern: ^[a-z](?:[a-z0-9-]*[a-z0-9])?\.<suffix>$
+func CompileNameRegex(suffix string) *regexp.Regexp {
+	escapedSuffix := regexp.QuoteMeta(suffix)
+	nameRegexStr := `^` + LabelRegexString + escapedSuffix + `$`
+	return regexp.MustCompile(nameRegexStr)
+}
 
-func init() {
-	// Pre-process and cache default reserved names at startup
-	defaultReservedNamesCache = loadDefaultReservedNames()
+// nameRegexCache caches compiled name regexes by suffix for efficiency
+var (
+	nameRegexCache   = make(map[string]*regexp.Regexp)
+	nameRegexCacheMu sync.RWMutex
+)
+
+// GetNameRegex returns a cached compiled regex for the given suffix.
+func GetNameRegex(suffix string) *regexp.Regexp {
+	nameRegexCacheMu.RLock()
+	if r, ok := nameRegexCache[suffix]; ok {
+		nameRegexCacheMu.RUnlock()
+		return r
+	}
+	nameRegexCacheMu.RUnlock()
+
+	// Compile and cache
+	nameRegexCacheMu.Lock()
+	defer nameRegexCacheMu.Unlock()
+	// Double-check after acquiring write lock
+	if r, ok := nameRegexCache[suffix]; ok {
+		return r
+	}
+	r := CompileNameRegex(suffix)
+	nameRegexCache[suffix] = r
+	return r
+}
+
+// LoadDefaultReservedNames loads and processes the default reserved names file.
+// It reads the embedded file, filters out comments and blank lines, validates names,
+// and adds the configured name suffix to valid names. Invalid names are skipped.
+func LoadDefaultReservedNames(suffix string) string {
+	if defaultReservedNamesFile == "" {
+		return ""
+	}
+
+	nameRegex := GetNameRegex(suffix)
+
+	lines := strings.Split(defaultReservedNamesFile, "\n")
+	var reservedNames []string
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		// Skip blank lines
+		if line == "" {
+			continue
+		}
+		// Skip comment lines
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+		// Add suffix if not already present
+		nameWithSuffix := line
+		if !strings.HasSuffix(line, suffix) {
+			nameWithSuffix = line + suffix
+		}
+		// Validate name format - skip invalid names (e.g., containing @ or other invalid chars)
+		if !nameRegex.MatchString(nameWithSuffix) {
+			continue
+		}
+		reservedNames = append(reservedNames, nameWithSuffix)
+	}
+
+	return strings.Join(reservedNames, "\n")
+}
+
+// defaultReservedNamesCache caches the processed default reserved names per suffix
+var (
+	defaultReservedNamesCache   = make(map[string]string)
+	defaultReservedNamesCacheMu sync.RWMutex
+)
+
+// GetDefaultReservedNames returns the cached default reserved names for the given suffix.
+func GetDefaultReservedNames(suffix string) string {
+	defaultReservedNamesCacheMu.RLock()
+	if names, ok := defaultReservedNamesCache[suffix]; ok {
+		defaultReservedNamesCacheMu.RUnlock()
+		return names
+	}
+	defaultReservedNamesCacheMu.RUnlock()
+
+	// Load and cache
+	defaultReservedNamesCacheMu.Lock()
+	defer defaultReservedNamesCacheMu.Unlock()
+	// Double-check after acquiring write lock
+	if names, ok := defaultReservedNamesCache[suffix]; ok {
+		return names
+	}
+	names := LoadDefaultReservedNames(suffix)
+	defaultReservedNamesCache[suffix] = names
+	return names
 }
 
 // IsReservedName checks if a name is reserved.
 // It checks BOTH the default reserved names from the embedded file AND
 // any additional reserved names passed in reservedNamesStr (from params).
-// The name parameter should have the .dys suffix, which will be trimmed before comparison.
-func IsReservedName(name string, reservedNamesStr string) bool {
-	// Trim .dys suffix from the input name for comparison
-	nameBase := strings.TrimSuffix(name, ".dys")
+// The name parameter should have the configured suffix, which will be trimmed before comparison.
+func IsReservedName(name string, reservedNamesStr string, suffix string) bool {
+	// Trim suffix from the input name for comparison
+	nameBase := strings.TrimSuffix(name, suffix)
 
 	// Check against default reserved names (always enforced)
-	if isNameInList(nameBase, defaultReservedNamesCache) {
+	if isNameInList(nameBase, GetDefaultReservedNames(suffix), suffix) {
 		return true
 	}
 
 	// Check against additional reserved names from params
-	if reservedNamesStr != "" && isNameInList(nameBase, reservedNamesStr) {
+	if reservedNamesStr != "" && isNameInList(nameBase, reservedNamesStr, suffix) {
 		return true
 	}
 
 	return false
 }
 
-// isNameInList checks if a name (without .dys suffix) is in a newline-separated list
-func isNameInList(nameBase string, list string) bool {
+// isNameInList checks if a name (without suffix) is in a newline-separated list
+func isNameInList(nameBase string, list string, suffix string) bool {
 	if list == "" {
 		return false
 	}
@@ -313,8 +378,8 @@ func isNameInList(nameBase string, list string) bool {
 			continue
 		}
 
-		// Trim .dys suffix from list entry for comparison
-		lineBase := strings.TrimSuffix(line, ".dys")
+		// Trim suffix from list entry for comparison
+		lineBase := strings.TrimSuffix(line, suffix)
 
 		// Exact match (case-sensitive) on base names
 		if lineBase == nameBase {
@@ -323,4 +388,12 @@ func isNameInList(nameBase string, list string) bool {
 	}
 
 	return false
+}
+
+// GetNameSuffixBase returns the suffix without the leading dot (e.g., "dys" from ".dys").
+func GetNameSuffixBase(suffix string) string {
+	if len(suffix) > 0 && suffix[0] == '.' {
+		return suffix[1:]
+	}
+	return suffix
 }

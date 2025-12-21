@@ -151,8 +151,11 @@ import (
 
 const appName = "DysApp"
 
-// Additional constants for app configuration
-const AccountAddressPrefix = "dys2"
+// AccountAddressPrefix returns the bech32 prefix for account addresses.
+// This is set at startup in main.go before the SDK config is sealed.
+func AccountAddressPrefix() string {
+	return sdk.GetConfig().GetBech32AccountAddrPrefix()
+}
 
 var DefaultNodeHome string
 
@@ -377,13 +380,15 @@ func NewDysApp(
 	bApp.SetParamStore(app.ConsensusParamsKeeper.ParamsStore)
 
 	// add keepers
+	// Get bech32 prefix from SDK config (set in main.go before config.Seal())
+	bech32Prefix := sdk.GetConfig().GetBech32AccountAddrPrefix()
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[authtypes.StoreKey]),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
-		authcodec.NewBech32Codec("dys2"),
-		"dys2",
+		authcodec.NewBech32Codec(bech32Prefix),
+		bech32Prefix,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		authkeeper.WithUnorderedTransactions(true),
 	)
@@ -665,6 +670,7 @@ func NewDysApp(
 		app.AccountKeeper,
 		app.DistrKeeper,
 		app.NFTKeeper,
+		app.StakingKeeper,
 		logger,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
@@ -716,6 +722,7 @@ func NewDysApp(
 		app.BankKeeper,
 		app.NameserviceKeeper,
 		app.NFTKeeper,
+		app.StakingKeeper,
 		logger,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)

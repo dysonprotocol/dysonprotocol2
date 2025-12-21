@@ -8,8 +8,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Defaults: empty denom means PFAND disabled by default.
-var DefaultPfandPerOffer = sdk.Coin{Denom: "udys", Amount: math.NewInt(1)}
+// DefaultPfandPerOffer returns the default pfand per offer using the SDK's default bond denom.
+func DefaultPfandPerOffer() sdk.Coin {
+	return sdk.Coin{Denom: sdk.DefaultBondDenom, Amount: math.NewInt(1)}
+}
 
 func NewParams(pfandPerOffer sdk.Coin, valuationFeePct, minBidPctIncrease string, valuationPeriod time.Duration, bidTimeout time.Duration, maxNoteLength uint32, blockDelayBeforeClose, blockDelayBeforeLiquidation uint64, arbitrageMode ArbitrageMode, arbitrageRefDenom, affiliateFeePct string) Params {
 	return Params{
@@ -27,8 +29,10 @@ func NewParams(pfandPerOffer sdk.Coin, valuationFeePct, minBidPctIncrease string
 	}
 }
 
+// DefaultParams returns default whaleswap parameters.
+// Uses sdk.DefaultBondDenom which is set at genesis init time.
 func DefaultParams() Params {
-	p := NewParams(DefaultPfandPerOffer, "0", "0", time.Hour, time.Second*5, 128, 1, 1, ArbitrageMode_ARBITRAGE_MODE_AUTO, "udys", "0")
+	p := NewParams(DefaultPfandPerOffer(), "0", "0", time.Hour, time.Second*5, 128, 1, 1, ArbitrageMode_ARBITRAGE_MODE_AUTO, sdk.DefaultBondDenom, "0")
 	return p
 }
 

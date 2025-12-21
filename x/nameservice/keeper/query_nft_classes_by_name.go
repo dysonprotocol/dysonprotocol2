@@ -23,7 +23,7 @@ func (k Keeper) NFTClassesByName(c context.Context, req *types.QueryNFTClassesBy
 
 	// Ensure the provided name exists as a Name NFT root
 	// This verifies existence; does not require .dys suffix explicitly per spec
-	if !k.nftKeeper.HasNFT(c, NamesClassID, req.Name) {
+	if !k.nftKeeper.HasNFT(c, k.NamesClassID(c), req.Name) {
 		return nil, status.Error(codes.NotFound, "root name NFT not found")
 	}
 

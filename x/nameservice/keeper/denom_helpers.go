@@ -22,13 +22,14 @@ func (k Keeper) GetDenomOwner(ctx sdk.Context, denom string) (string, string, er
 	rootName := extractRootName(denom)
 	k.Logger.Info("Extracted root name", "rootName", rootName)
 
-	// Check if it's a valid nameservice name (must end with ".dys")
-	if !strings.HasSuffix(rootName, ".dys") {
+	// Check if it's a valid nameservice name (must end with configured suffix)
+	suffix := k.GetNameSuffix(ctx)
+	if !strings.HasSuffix(rootName, suffix) {
 		k.Logger.Error("Invalid denom format", "rootName", rootName)
 		return "", "", cosmossdkerrors.Wrapf(
 			sdkerrors.ErrInvalidRequest,
-			"invalid denom format, root name must be a valid .dys name: %s",
-			rootName,
+			"invalid denom format, root name must be a valid %s name: %s",
+			suffix, rootName,
 		)
 	}
 
@@ -155,10 +156,10 @@ func extractRootName(identifier string) string {
 // Case 1: base denom equals root name (e.g. my-name.dys)
 //
 //	description: ""
-//	denom_units: [{denom: base, exponent: 0}, {denom: display (root without .dys), exponent: 6}]
+//	denom_units: [{denom: base, exponent: 0}, {denom: display (root without suffix), exponent: 6}]
 //	base: base
-//	display: root without .dys
-//	symbol: root without .dys
+//	display: root without suffix
+//	symbol: root without suffix
 //	uri, uri_hash: ""
 //
 // Case 2: base denom is a subdenom (has '/'): display equals base, only base unit.
@@ -168,10 +169,11 @@ func (k Keeper) ensureDenomMetadata(ctx context.Context, denom string) {
 	}
 
 	root := extractRootName(denom)
+	suffix := k.GetNameSuffix(ctx)
 	metadata := banktypes.Metadata{Description: ""}
 
 	if denom == root {
-		display := strings.TrimSuffix(root, ".dys")
+		display := strings.TrimSuffix(root, suffix)
 		metadata.Base = denom
 		metadata.Display = display
 		metadata.Name = strings.ReplaceAll(cases.Title(language.English).String(display), "-", " ")

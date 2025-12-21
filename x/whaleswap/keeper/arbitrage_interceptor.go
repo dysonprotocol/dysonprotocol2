@@ -88,7 +88,7 @@ func (i *ArbitrageMsgInterceptor) Post(ctx sdk.Context, msg sdk.Msg, result *sdk
 
 	// ═════ AFFILIATE PAYMENT ═════
 	memo := i.extractMemoFromContext(ctx)
-	affiliateName := ParseAffiliateName(memo)
+	affiliateName := ParseAffiliateName(memo, i.keeper.nameSvc.GetNameSuffix(ctx))
 	if affiliateName == "" {
 		return
 	}

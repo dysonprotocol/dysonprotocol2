@@ -41,6 +41,7 @@ type ModuleInputs struct {
 	BankKeeper    whaleswaptypes.BankKeeper
 	NamesvcKeeper whaleswaptypes.NameserviceKeeper
 	NFTKeeper     whaleswaptypes.NFTKeeper
+	StakingKeeper whaleswaptypes.StakingKeeper
 
 	Config *modulev1.Module
 }
@@ -66,6 +67,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.BankKeeper,
 		in.NamesvcKeeper,
 		in.NFTKeeper,
+		in.StakingKeeper,
 		in.Logger,
 		authority,
 	)

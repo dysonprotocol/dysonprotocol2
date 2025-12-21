@@ -4,6 +4,8 @@ import (
 	"testing"
 )
 
+const testNameSuffix = ".dys"
+
 func TestParseAffiliateName(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -32,9 +34,9 @@ func TestParseAffiliateName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := ParseAffiliateName(tt.memo)
+			result := ParseAffiliateName(tt.memo, testNameSuffix)
 			if result != tt.expected {
-				t.Errorf("ParseAffiliateName(%q) = %q, want %q", tt.memo, result, tt.expected)
+				t.Errorf("ParseAffiliateName(%q, %q) = %q, want %q", tt.memo, testNameSuffix, result, tt.expected)
 			}
 		})
 	}
@@ -43,7 +45,7 @@ func TestParseAffiliateName(t *testing.T) {
 func TestParseAffiliateNameEdgeCases(t *testing.T) {
 	// Test exactly 128 chars (max allowed)
 	longName := string(make([]byte, 124)) + ".dys" // 124 + 4 = 128
-	result := ParseAffiliateName(longName)
+	result := ParseAffiliateName(longName, testNameSuffix)
 	// Returns lowercased version (null bytes become valid after ToLower)
 	if result == "" {
 		t.Errorf("ParseAffiliateName with 128 chars should return non-empty")
@@ -51,7 +53,7 @@ func TestParseAffiliateNameEdgeCases(t *testing.T) {
 
 	// Test 129 chars (too long)
 	tooLong := string(make([]byte, 125)) + ".dys" // > 128
-	result = ParseAffiliateName(tooLong)
+	result = ParseAffiliateName(tooLong, testNameSuffix)
 	if result != "" {
 		t.Errorf("ParseAffiliateName with >128 chars should fail, got %q", result)
 	}

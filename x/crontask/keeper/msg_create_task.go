@@ -152,11 +152,16 @@ func (k Keeper) CreateTask(ctx context.Context, msg *crontasktypes.MsgCreateTask
 	if !msg.TaskGasFee.IsPositive() {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "gas fee must be greater than 0")
 	}
-	if msg.TaskGasFee.Denom != "udys" {
+	// Use bond denom from staking params (canonical source of truth)
+	baseDenom, err := k.GetBondDenom(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to get bond denom")
+	}
+	if msg.TaskGasFee.Denom != baseDenom {
 		return nil, errorsmod.Wrapf(
 			sdkerrors.ErrInvalidRequest,
-			"invalid gas fee denom: [%s], only 'udys' is accepted",
-			msg.TaskGasFee.Denom,
+			"invalid gas fee denom: [%s], only '%s' is accepted",
+			msg.TaskGasFee.Denom, baseDenom,
 		)
 	}
 

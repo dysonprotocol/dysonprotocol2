@@ -24,6 +24,8 @@ type BankKeeper interface {
 type StakingKeeper interface {
 	// GetDelegatorBonded returns the total amount a delegator has bonded.
 	GetDelegatorBonded(ctx context.Context, delegator sdk.AccAddress) (sdkmath.Int, error)
+	// BondDenom returns the bond denomination from staking params
+	BondDenom(ctx context.Context) (string, error)
 }
 
 // BranchKeeper defines the expected branch keeper for atomic execution

@@ -72,6 +72,10 @@
                     "reserved_names": {
                         "type": "string",
                         "description": "reserved_names defines a newline-separated list of forbidden .dys names that cannot be registered via the normal commit-reveal process. Blank lines and lines starting with # are ignored. Reserved names can still be created via CreateExternalName (governance only). If this field is blank in MsgUpdateParams, the existing value is preserved and not updated."
+                    },
+                    "name_suffix": {
+                        "type": "string",
+                        "description": "name_suffix is the suffix for all registered names (e.g., \".dys\"). This is set at genesis and should NOT be changed after chain launch. All names must end with this suffix (e.g., \"alice.dys\", \"myapp.dys\")."
                     }
                 },
                 "additionalProperties": false,

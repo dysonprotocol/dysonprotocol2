@@ -21,6 +21,7 @@ import (
 	"cosmossdk.io/log"
 
 	"dysonprotocol.com"
+	"dysonprotocol.com/chain"
 	"dysonprotocol.com/dysond/server/dwapp"
 
 	confixcmd "cosmossdk.io/tools/confix/cmd"
@@ -96,7 +97,7 @@ func initAppConfig() (string, interface{}) {
 	//   own app.toml to override, or use this default value.
 	//
 	// In dysapp, we set the min gas prices to 0.
-	srvCfg.MinGasPrices = "0udys"
+	srvCfg.MinGasPrices = "0" + chain.DefaultBaseDenom
 	// srvCfg.BaseConfig.IAVLDisableFastNode = true // disable fastnode by default
 
 	// Set a sensible default for min-retain-blocks based on script module requirements
@@ -132,6 +133,10 @@ func initAppConfig() (string, interface{}) {
 	// We append the custom config template to the default one.
 	// And we set the default config to the custom app template.
 	customAppTemplate := serverconfig.DefaultConfigTemplate + `
+
+###############################################################################
+###                         DwApp Configuration                             ###
+###############################################################################
 
 [dwapp]
 # Regex used to extract a Dyson script identifier from the HTTP Host header.
@@ -184,6 +189,15 @@ libp2p-bootstrap-peers = {{ .Custom.DwApp.Libp2pBootstrapPeers }}
 `
 
 	return customAppTemplate, customAppConfig
+}
+
+// GetHomeDir determines the node home directory from environment or default.
+func GetHomeDir() string {
+	// Check environment variable first
+	if home := os.Getenv("DYSON_HOME"); home != "" {
+		return home
+	}
+	return dysonprotocol.DefaultNodeHome
 }
 
 // initRootCmd initializes the root command for the Dyson blockchain application.

@@ -64,7 +64,7 @@ func (k Keeper) OpenAuction(ctx context.Context, msg *whaleswapv1.MsgOpenAuction
 	}
 
 	// Prepare class id based on bid denom (one class per bid denom)
-	classID := whaleswapv1.AuctionClassID(msg.BidDenom)
+	classID := k.AuctionClassID(ctx, msg.BidDenom)
 	// Upsert class basic info
 	if _, err := k.nameSvc.SaveClass(ctx, &nameservicev1.MsgSaveClass{
 		NameDestination: k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String(),

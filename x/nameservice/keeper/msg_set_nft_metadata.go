@@ -62,7 +62,7 @@ func (k Keeper) SetNFTMetadata(ctx context.Context, msg *nameservicev1.MsgSetNFT
 	}
 
 	// Update reverse mappings for name NFTs only
-	if msg.ClassId == NamesClassID {
+	if msg.ClassId == k.NamesClassID(ctx) {
 		// Remove old mapping if it exists and is not empty
 		if oldUri != "" {
 			if err := k.RemoveNameDestinationMapping(ctx, oldUri, msg.NftId); err != nil {

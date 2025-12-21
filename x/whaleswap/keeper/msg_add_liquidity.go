@@ -194,10 +194,16 @@ func (k Keeper) AddLiquidity(ctx context.Context, msg *whaleswapv1.MsgAddLiquidi
 	}
 	logger.Info("AddLiquidity pool updated", "pool_id", pool.PoolId)
 
+	// Get bond denom from staking params (canonical source of truth)
+	bondDenom, err := k.GetBondDenom(ctx)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to get bond denom")
+	}
+
 	mintMsg := &nameservicev1.MsgMintCoins{
 		NameDestination: k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String(),
 		Amount:          sdk.NewCoins(sdk.NewCoin(pool.SharesDenom, minted)),
-		MintFee:         sdk.NewCoin(whaleswapv1.MintFeeDenom, math.NewInt(0)),
+		MintFee:         sdk.NewCoin(bondDenom, math.NewInt(0)),
 	}
 	if _, err := k.nameSvc.MintCoins(ctx, mintMsg); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to mint shares %s", sdk.NewCoin(pool.SharesDenom, minted).String())

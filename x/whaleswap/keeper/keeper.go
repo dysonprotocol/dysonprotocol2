@@ -11,7 +11,6 @@ import (
 	cosmossdk_math "cosmossdk.io/math"
 
 	cosmossdkerrors "cosmossdk.io/errors"
-	nameservicekeeper "dysonprotocol.com/x/nameservice/keeper"
 	nameservicev1 "dysonprotocol.com/x/nameservice/types"
 	whaleswap "dysonprotocol.com/x/whaleswap"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
@@ -54,13 +53,14 @@ var (
 )
 
 type Keeper struct {
-	cdc       codec.Codec
-	store     store.KVStoreService
-	accKeeper whaleswapv1.AccountKeeper
-	bank      whaleswapv1.BankKeeper
-	nameSvc   whaleswapv1.NameserviceKeeper
-	nft       whaleswapv1.NFTKeeper
-	logger    log.Logger
+	cdc           codec.Codec
+	store         store.KVStoreService
+	accKeeper     whaleswapv1.AccountKeeper
+	bank          whaleswapv1.BankKeeper
+	nameSvc       whaleswapv1.NameserviceKeeper
+	nft           whaleswapv1.NFTKeeper
+	stakingKeeper whaleswapv1.StakingKeeper
+	logger        log.Logger
 	// authority address that can update params
 	authority string
 
@@ -105,19 +105,21 @@ func NewKeeper(
 	bank whaleswapv1.BankKeeper,
 	nameSvc whaleswapv1.NameserviceKeeper,
 	nft whaleswapv1.NFTKeeper,
+	stakingKeeper whaleswapv1.StakingKeeper,
 	logger log.Logger,
 	authority string,
 ) Keeper {
 	sb := collections.NewSchemaBuilder(store)
 	k := Keeper{
-		cdc:       cdc,
-		store:     store,
-		accKeeper: acc,
-		bank:      bank,
-		nameSvc:   nameSvc,
-		nft:       nft,
-		logger:    logger,
-		authority: authority,
+		cdc:           cdc,
+		store:         store,
+		accKeeper:     acc,
+		bank:          bank,
+		nameSvc:       nameSvc,
+		nft:           nft,
+		stakingKeeper: stakingKeeper,
+		logger:        logger,
+		authority:     authority,
 		params: collections.NewItem(
 			sb,
 			ParamsKey,
@@ -438,23 +440,59 @@ func (k Keeper) gcdInt(a, b cosmossdk_math.Int) cosmossdk_math.Int {
 	return a
 }
 
-// ensureWhaleswapRootName ensures that the root name "whaleswap.dys" exists and
+// ----- Chain identity helpers -----
+// These methods derive whaleswap-specific names from the nameservice NameSuffix param.
+
+// GetBondDenom returns the bond denomination from staking params.
+// This is the canonical source of truth for the native token denomination.
+func (k Keeper) GetBondDenom(ctx context.Context) (string, error) {
+	return k.stakingKeeper.BondDenom(ctx)
+}
+
+// RootName returns the whaleswap root name (e.g., "whaleswap.dys") using the name suffix from nameservice params.
+func (k Keeper) RootName(ctx context.Context) string {
+	return whaleswapv1.RootNameForSuffix(k.nameSvc.GetNameSuffix(ctx))
+}
+
+// PoolsDenomPrefix returns the prefix for pool shares denoms (e.g., "whaleswap.dys/pools/").
+func (k Keeper) PoolsDenomPrefix(ctx context.Context) string {
+	return whaleswapv1.PoolsDenomPrefixForSuffix(k.nameSvc.GetNameSuffix(ctx))
+}
+
+// AuctionClassPrefix returns the prefix for auction NFT class IDs (e.g., "whaleswap.dys/auction/").
+func (k Keeper) AuctionClassPrefix(ctx context.Context) string {
+	return whaleswapv1.AuctionClassPrefixForSuffix(k.nameSvc.GetNameSuffix(ctx))
+}
+
+// PoolSharesDenom builds the pool shares denom for a pool id.
+func (k Keeper) PoolSharesDenom(ctx context.Context, id uint64) string {
+	return whaleswapv1.PoolSharesDenomForSuffix(k.nameSvc.GetNameSuffix(ctx), id)
+}
+
+// AuctionClassID builds the auction NFT class id for a bid denom.
+func (k Keeper) AuctionClassID(ctx context.Context, bidDenom string) string {
+	return whaleswapv1.AuctionClassIDForSuffix(k.nameSvc.GetNameSuffix(ctx), bidDenom)
+}
+
+// ensureWhaleswapRootName ensures that the root name (e.g., "whaleswap.dys") exists and
 // resolves to the whaleswap module account. This allows nameservice auth checks
 // to pass when minting shares under the denom prefix "whaleswap.dys/...".
 func (k Keeper) ensureWhaleswapRootName(ctx context.Context) error {
 	// Resolve destination if the name exists already
 	authority := k.nameSvc.GetAuthority()
+	rootName := k.RootName(ctx)
+	namesClassID := k.nameSvc.NamesClassID(ctx)
 
 	want := k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String()
-	if dest, err := k.nameSvc.ResolveNameOrAddress(ctx, whaleswapv1.RootName); err == nil {
+	if dest, err := k.nameSvc.ResolveNameOrAddress(ctx, rootName); err == nil {
 		if dest == want {
 			return nil
 		}
 		// Update destination to whaleswap module address; owner is current NFT owner
-		owner := k.nft.GetOwner(ctx, nameservicekeeper.NamesClassID, whaleswapv1.RootName).String()
-		set := &nameservicev1.MsgSetDestination{Owner: owner, Name: whaleswapv1.RootName, Destination: want}
+		owner := k.nft.GetOwner(ctx, namesClassID, rootName).String()
+		set := &nameservicev1.MsgSetDestination{Owner: owner, Name: rootName, Destination: want}
 		if _, err := k.nameSvc.SetDestination(ctx, set); err != nil {
-			return fmt.Errorf("failed to set destination for %s to module: %w", whaleswapv1.RootName, err)
+			return fmt.Errorf("failed to set destination for %s to module: %w", rootName, err)
 		}
 		return nil
 	}
@@ -462,17 +500,17 @@ func (k Keeper) ensureWhaleswapRootName(ctx context.Context) error {
 	// Name not found: mint the name NFT to nameservice authority, then set destination
 	mint := &nameservicev1.MsgMintNFT{
 		NameDestination: authority,
-		ClassId:         nameservicekeeper.NamesClassID,
-		NftId:           whaleswapv1.RootName,
+		ClassId:         namesClassID,
+		NftId:           rootName,
 		Uri:             want,
 		UriHash:         "",
 	}
 	if _, err := k.nameSvc.MintNFT(ctx, mint); err != nil {
-		return fmt.Errorf("failed to mint name NFT %s to nameservice authority: %w", whaleswapv1.RootName, err)
+		return fmt.Errorf("failed to mint name NFT %s to nameservice authority: %w", rootName, err)
 	}
-	set := &nameservicev1.MsgSetDestination{Owner: authority, Name: whaleswapv1.RootName, Destination: want}
+	set := &nameservicev1.MsgSetDestination{Owner: authority, Name: rootName, Destination: want}
 	if _, err := k.nameSvc.SetDestination(ctx, set); err != nil {
-		return fmt.Errorf("failed to set destination for %s to module after mint: %w", whaleswapv1.RootName, err)
+		return fmt.Errorf("failed to set destination for %s to module after mint: %w", rootName, err)
 	}
 	return nil
 }

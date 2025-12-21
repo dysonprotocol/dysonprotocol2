@@ -193,6 +193,12 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		return nil, cosmossdkerrors.Wrapf(err, "failed to get creator address: %s", msg.Creator)
 	}
 
+	// Get bond denom from staking params (canonical source of truth)
+	bondDenom, err := k.GetBondDenom(ctx)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to get bond denom")
+	}
+
 	moduleAddr := k.accKeeper.GetModuleAddress(whaleswap.ModuleName)
 	beforeBal1 := k.bank.GetBalance(ctx, moduleAddr, denom1).Amount
 	beforeBal2 := k.bank.GetBalance(ctx, moduleAddr, denom2).Amount
@@ -211,7 +217,7 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 		return nil, cosmossdkerrors.Wrapf(err, "failed to allocate new pool id: %+v", msg)
 	}
 	logger.Info("CreatePool allocated pool ID", "pool_id", id)
-	sharesDenom := whaleswapv1.PoolSharesDenom(id)
+	sharesDenom := k.PoolSharesDenom(ctx, id)
 
 	t := sdkCtx.BlockTime()
 	pool := whaleswapv1.Pool{
@@ -253,7 +259,7 @@ func (k Keeper) CreatePool(ctx context.Context, msg *whaleswapv1.MsgCreatePool) 
 	mintMsg := &nameservicev1.MsgMintCoins{
 		NameDestination: k.accKeeper.GetModuleAddress(whaleswap.ModuleName).String(),
 		Amount:          sdk.NewCoins(sdk.NewCoin(sharesDenom, initialShares)),
-		MintFee:         sdk.NewCoin(whaleswapv1.MintFeeDenom, math.NewInt(0)),
+		MintFee:         sdk.NewCoin(bondDenom, math.NewInt(0)),
 	}
 	if _, err := k.nameSvc.MintCoins(ctx, mintMsg); err != nil {
 		return nil, cosmossdkerrors.Wrapf(err, "failed to mint shares: %+v", msg)

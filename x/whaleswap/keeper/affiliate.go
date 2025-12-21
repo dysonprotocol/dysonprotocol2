@@ -12,15 +12,15 @@ import (
 const maxAffiliateNameLen = 128
 
 // ParseAffiliateName extracts a potential affiliate dysname from a memo.
-// Returns empty string if memo is empty, too long, or doesn't end with .dys.
+// Returns empty string if memo is empty, too long, or doesn't end with the given name suffix.
 // Resolution will determine if the name is actually valid.
-func ParseAffiliateName(memo string) string {
+func ParseAffiliateName(memo string, nameSuffix string) string {
 	memo = strings.TrimSpace(memo)
 	if memo == "" || len(memo) > maxAffiliateNameLen {
 		return ""
 	}
 	lower := strings.ToLower(memo)
-	if !strings.HasSuffix(lower, ".dys") {
+	if !strings.HasSuffix(lower, nameSuffix) {
 		return ""
 	}
 	return lower

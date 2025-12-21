@@ -98,12 +98,12 @@ func (k Keeper) SaveClass(ctx context.Context, msg *nameservicev1.MsgSaveClass) 
 	}
 
 	// Set default per-class bidding params by copying from nameservice.dys
-	if !k.nftKeeper.HasClass(ctx, NamesClassID) {
-		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrNotFound, "default class %s not found to seed params", NamesClassID)
+	if !k.nftKeeper.HasClass(ctx, k.NamesClassID(ctx)) {
+		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrNotFound, "default class %s not found to seed params", k.NamesClassID(ctx))
 	}
 
 	// Set default per-class bidding params by copying from nameservice.dys, they can be updated later
-	defaultData, err := k.GetNFTClassData(ctx, NamesClassID)
+	defaultData, err := k.GetNFTClassData(ctx, k.NamesClassID(ctx))
 	if err != nil {
 		return nil, cosmossdkerrors.Wrap(err, "failed to get default class params from nameservice.dys")
 	}

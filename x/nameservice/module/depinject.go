@@ -40,6 +40,7 @@ type ModuleInputs struct {
 	AccountKeeper       types.AccountKeeper
 	CommunityPoolKeeper types.CommunityPoolKeeper
 	NFTKeeper           types.NFTKeeper
+	StakingKeeper       types.StakingKeeper
 	Config              *modulev1.Module
 }
 
@@ -67,6 +68,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.AccountKeeper,
 		in.CommunityPoolKeeper,
 		in.NFTKeeper,
+		in.StakingKeeper,
 		in.Logger,
 		authority,
 	)

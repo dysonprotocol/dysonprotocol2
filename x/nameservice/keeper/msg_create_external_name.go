@@ -39,8 +39,10 @@ func (k Keeper) CreateExternalName(ctx context.Context, msg *nameservicev1.MsgCr
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid external name format: must be lowercase alphanumeric with optional dashes (e.g., example.com, sub.domain.org, example)")
 	}
 
+	classID := k.NamesClassID(ctx)
+
 	// Check if name is already registered
-	if k.nftKeeper.HasNFT(ctx, NamesClassID, msg.Name) {
+	if k.nftKeeper.HasNFT(ctx, classID, msg.Name) {
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "name is already registered")
 	}
 
@@ -55,10 +57,16 @@ func (k Keeper) CreateExternalName(ctx context.Context, msg *nameservicev1.MsgCr
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid authority address: %s", msg.Authority)
 	}
 
+	// Get bond denom from staking params
+	bondDenom, err := k.GetBondDenom(ctx)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "failed to get bond denom")
+	}
+
 	// Create NFT data with zero valuation (external names don't have valuation)
 	nftData := &nameservicev1.NFTData{
 		Listed:          false, // External names are not listed by default
-		Valuation:       sdk.NewCoin("dys", math.ZeroInt()),
+		Valuation:       sdk.NewCoin(bondDenom, math.ZeroInt()),
 		ValuationExpiry: sdkCtx.BlockTime().AddDate(100, 0, 0), // Far future expiry
 		Metadata:        "external_name",
 	}
@@ -71,7 +79,7 @@ func (k Keeper) CreateExternalName(ctx context.Context, msg *nameservicev1.MsgCr
 
 	// Create the NFT
 	token := nft.NFT{
-		ClassId: NamesClassID,
+		ClassId: classID,
 		Id:      msg.Name,
 		Uri:     msg.Authority,
 		UriHash: "",

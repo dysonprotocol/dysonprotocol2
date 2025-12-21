@@ -37,6 +37,12 @@ type CommunityPoolKeeper interface {
 	FundCommunityPool(ctx context.Context, amount sdk.Coins, sender sdk.AccAddress) error
 }
 
+// StakingKeeper defines the expected staking keeper
+type StakingKeeper interface {
+	// BondDenom returns the bond denomination from staking params
+	BondDenom(ctx context.Context) (string, error)
+}
+
 // NFTKeeper defines the expected NFT keeper
 type NFTKeeper interface {
 	// Class methods

@@ -99,6 +99,15 @@ export class Params extends Message<Params> {
    */
   reservedNames = "";
 
+  /**
+   * name_suffix is the suffix for all registered names (e.g., ".dys").
+   * This is set at genesis and should NOT be changed after chain launch.
+   * All names must end with this suffix (e.g., "alice.dys", "myapp.dys").
+   *
+   * @generated from field: string name_suffix = 18;
+   */
+  nameSuffix = "";
+
   constructor(data?: PartialMessage<Params>) {
     super();
     proto3.util.initPartial(data, this);
@@ -119,6 +128,7 @@ export class Params extends Message<Params> {
     { no: 15, name: "min_valuation_period", kind: "message", T: Duration },
     { no: 16, name: "max_valuation_period", kind: "message", T: Duration },
     { no: 17, name: "reserved_names", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 18, name: "name_suffix", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Params {
