@@ -18,7 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"dysonprotocol.com/chain"
+	"dysonprotocol.com/dysond/params"
 	scriptv1 "dysonprotocol.com/x/script/types"
 )
 
@@ -173,7 +173,7 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		// Accept either a name ending in configured suffix or a bech32 address with configured prefix
 		// Name suffix uses the default (matches genesis default), bech32 prefix comes from SDK config
 		idLower := strings.ToLower(id)
-		nameSuffix := chain.DefaultNameSuffix
+		nameSuffix := params.DefaultNameSuffix
 		bech32Prefix := sdk.GetConfig().GetBech32AccountAddrPrefix()
 		publicID := ""
 		if strings.HasSuffix(idLower, nameSuffix) {

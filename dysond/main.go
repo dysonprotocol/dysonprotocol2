@@ -6,6 +6,7 @@ import (
 
 	"dysonprotocol.com"
 	cmd "dysonprotocol.com/dysond/cmd"
+	"dysonprotocol.com/dysond/params"
 	"dysonprotocol.com/dysvm"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
@@ -16,7 +17,7 @@ import (
 // The base denom is set via sdk.DefaultBondDenom before DefaultGenesis() is called.
 // The name suffix is stored in nameservice genesis params.
 const (
-	Bech32PrefixAccount      = "dys2"
+	Bech32PrefixAccount      = params.DefaultBech32Prefix
 	Bech32PrefixAccountPub   = Bech32PrefixAccount + "pub"
 	Bech32PrefixValidator    = Bech32PrefixAccount + "valoper"
 	Bech32PrefixValidatorPub = Bech32PrefixAccount + "valoperpub"
@@ -26,7 +27,7 @@ const (
 
 // DefaultBaseDenom is the base denomination for the native token.
 // This is set before DefaultGenesis() is called so all modules use this denom.
-const DefaultBaseDenom = "udys"
+const DefaultBaseDenom = params.DefaultBaseDenom
 
 func main() {
 	// Configure SDK with chain identity (bech32 prefixes are hardcoded in binary)

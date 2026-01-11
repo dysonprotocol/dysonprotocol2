@@ -21,7 +21,7 @@ import (
 	"cosmossdk.io/log"
 
 	"dysonprotocol.com"
-	"dysonprotocol.com/chain"
+	"dysonprotocol.com/dysond/params"
 	"dysonprotocol.com/dysond/server/dwapp"
 
 	confixcmd "cosmossdk.io/tools/confix/cmd"
@@ -97,7 +97,7 @@ func initAppConfig() (string, interface{}) {
 	//   own app.toml to override, or use this default value.
 	//
 	// In dysapp, we set the min gas prices to 0.
-	srvCfg.MinGasPrices = "0" + chain.DefaultBaseDenom
+	srvCfg.MinGasPrices = "0" + params.DefaultBaseDenom
 	// srvCfg.BaseConfig.IAVLDisableFastNode = true // disable fastnode by default
 
 	// Set a sensible default for min-retain-blocks based on script module requirements

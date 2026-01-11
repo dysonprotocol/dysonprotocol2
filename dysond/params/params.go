@@ -6,6 +6,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 )
 
+// Chain identity constants
+const (
+	DefaultBech32Prefix = "dys2"
+	DefaultNameSuffix   = ".dys"
+	DefaultBaseDenom    = "udys"
+	DefaultDisplayDenom = "DYS2"
+)
+
 // Simulation parameters for Dyson Protocol
 const (
 	DefaultNumBlocks   = 500
