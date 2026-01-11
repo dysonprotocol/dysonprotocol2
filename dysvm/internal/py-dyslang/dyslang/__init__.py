@@ -1490,14 +1490,14 @@ class DysCoverage(DysEval):
 
 
 def dys_test_coverage(expr, scope=None, call_stack=None, module_dict=None):
-    """Run all test_* function in this expression"""
+    """Run all coverage_* functions in this expression"""
 
     modules = make_modules(module_dict or {})
 
     s = DysCoverage(scope=scope, modules=modules, call_stack=call_stack)
     s.eval(expr)
-    test_names = [n for n in s.scope if n.startswith("test_") and callable(s.scope[n])]
-    for name in test_names:
+    coverage_names = [n for n in s.scope if n.startswith("coverage_") and callable(s.scope[n])]
+    for name in coverage_names:
         s.scope[name]()
     return sorted(s.seen_nodes.items())
 

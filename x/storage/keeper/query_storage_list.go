@@ -42,7 +42,7 @@ func incrementLastByte(s string) string {
 //
 // Validation:
 //   - Owner must be resolvable to a valid account address.
-//   - Filter and extract path lengths limited to 100 characters if provided.
+//   - Filter and extract path lengths limited to 256 characters if provided.
 //   - Pagination parameters must be valid (no both offset and key specified).
 //
 // Returns:
@@ -63,11 +63,11 @@ func (k Keeper) StorageList(ctx context.Context, req *storagetypes.QueryStorageL
 		return nil, status.Errorf(codes.InvalidArgument, "failed to resolve owner: %v", err)
 	}
 
-	if len(req.Filter) > 100 {
-		return nil, status.Errorf(codes.InvalidArgument, "filter path too long: max 100 characters")
+	if len(req.Filter) > 256 {
+		return nil, status.Errorf(codes.InvalidArgument, "filter path too long: max 256 characters")
 	}
-	if len(req.Extract) > 100 {
-		return nil, status.Errorf(codes.InvalidArgument, "extract path too long: max 100 characters")
+	if len(req.Extract) > 256 {
+		return nil, status.Errorf(codes.InvalidArgument, "extract path too long: max 256 characters")
 	}
 
 	// Initialize pagination defaults
@@ -132,7 +132,17 @@ func (k Keeper) StorageList(ctx context.Context, req *storagetypes.QueryStorageL
 			return true, nil
 		}
 		wrappedData := "[" + val.Data + "]"
-		result := gjson.Get(wrappedData, "#("+req.Filter+")")
+		// If filter starts with "#" or "[", use it as raw GJSON query (advanced mode)
+		// - "#" prefix: for pipe chaining like #(cond1)#|#(cond2)# (AND logic)
+		// - "[" prefix: for multipaths like [#(cond1)#,#(cond2)#].@flatten (OR logic)
+		// Otherwise wrap it as #(<filter>) for simple field matching
+		var gjsonQuery string
+		if strings.HasPrefix(req.Filter, "#") || strings.HasPrefix(req.Filter, "[") {
+			gjsonQuery = req.Filter
+		} else {
+			gjsonQuery = "#(" + req.Filter + ")"
+		}
+		result := gjson.Get(wrappedData, gjsonQuery)
 		return result.Exists() && len(result.Array()) > 0, nil
 	}
 

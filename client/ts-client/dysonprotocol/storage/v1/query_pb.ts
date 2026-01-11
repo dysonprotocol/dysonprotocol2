@@ -39,7 +39,7 @@ export class QueryStorageGetRequest extends Message<QueryStorageGetRequest> {
 
   /**
    * Optional GJSON path to extract from the storage entry (e.g., "user.name");
-   * max 100 characters.
+   * max 256 characters.
    *
    * @generated from field: string extract = 3;
    */
@@ -150,7 +150,7 @@ export class QueryStorageListRequest extends Message<QueryStorageListRequest> {
   /**
    * Optional GJSON filter to further filter entries; supports comparison
    * operators (==, !=, <, <=, >, >=) and pattern matching (% for like, !% for
-   * not like); only matching entries included in results; max 100 chars.
+   * not like); only matching entries included in results; max 256 chars.
    *
    * @generated from field: string filter = 3;
    */
@@ -159,7 +159,7 @@ export class QueryStorageListRequest extends Message<QueryStorageListRequest> {
   /**
    * Optional GJSON path to extract from each entry (e.g., "user.name" extracts
    * "jeff" from {"user": {"name": "jeff"}}); transforms data field in response;
-   * max 100 characters.
+   * max 256 characters.
    *
    * @generated from field: string extract = 4;
    */

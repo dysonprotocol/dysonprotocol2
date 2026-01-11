@@ -30,7 +30,7 @@ High-level flow:
 
 `ValidatePubSubPayload` enforces that non-discovery publishes carry a signed transaction envelope. In TypeScript that shape is:
 
-```32:60:/Users/user/dysonprotocol2/examples/js-libp2p/src/sdk/types.ts
+```32:61:/Users/user/dysonprotocol2/examples/js-libp2p/src/sdk/types.ts
 export interface MsgArbitraryData {
   body: {
     messages: Array<{
@@ -38,6 +38,7 @@ export interface MsgArbitraryData {
       signer: string
       data: string
       app_domain: string
+      metadata: string
     }>
     memo: string
     timeout_height: string

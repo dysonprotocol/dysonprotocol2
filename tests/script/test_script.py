@@ -172,6 +172,7 @@ def test_verify_arbitrary_data_signature(chainnet, generate_account, faucet):
                         "signer": alice_address,
                         "data": "this is test data",
                         "app_domain": "fooApp/123",
+                        "metadata": "{}",
                     }
                 ],
                 "memo": "",
@@ -238,6 +239,7 @@ def test_verify_tx_fails_on_bad_data(chainnet, generate_account, faucet):
                         "signer": alice_address,
                         "data": "original test data",
                         "app_domain": "testApp/verification",
+                        "metadata": "{}",
                     }
                 ],
                 "memo": "",
@@ -347,6 +349,7 @@ def test_verify_tx_fails_on_bad_data(chainnet, generate_account, faucet):
                         "signer": alice_address,
                         "data": "test",
                         "app_domain": "test",
+                        "metadata": "{}",
                     }
                 ],
                 "memo": "",

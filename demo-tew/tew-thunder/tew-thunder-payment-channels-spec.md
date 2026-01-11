@@ -182,7 +182,9 @@ A standard Dyson Protocol `core.Tx` wrapping the `Tx Data`.
     "messages": [{
       "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
       "signer": "dys1alice...",
-      "data": "{... JSON string of Tx Data ...}"
+      "data": "{... JSON string of Tx Data ...}",
+      "app_domain": "tew/tx",
+      "metadata": "{}"
     }]
   },
   "auth_info": {...},

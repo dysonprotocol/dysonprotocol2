@@ -41,6 +41,7 @@ def test_verify_tx_success(chainnet):
                         "signer": alice_address,
                         "data": "test data for verification",
                         "app_domain": "testApp/v1.0",
+                        "metadata": "{}",
                     }
                 ],
                 "memo": "",
@@ -163,6 +164,7 @@ def test_verify_tx_invalid_signature(chainnet):
                         "signer": alice_address,
                         "data": "test data",
                         "app_domain": "testApp/v1.0",
+                        "metadata": "{}",
                     }
                 ],
                 "memo": "",

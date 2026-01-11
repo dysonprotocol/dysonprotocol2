@@ -2210,6 +2210,370 @@ def test_storage_pagination_next_key(chainnet, generate_account, faucet):
     )
 
 
+def test_storage_filter_compound_and_or(chainnet, generate_account, faucet):
+    """Test GJSON filter workarounds for AND/OR compound conditions.
+
+    GJSON does not support && or || operators in queries. However, we can use:
+    - AND: Pipe chaining `#(cond1)#|#(cond2)#` filters sequentially
+    - OR: Multipaths with @flatten `[#(cond1)#,#(cond2)#].@flatten`
+
+    If filter starts with "#", it's used as raw GJSON query (advanced mode).
+    Otherwise it's wrapped as #(<filter>) for simple field matching.
+    """
+    dysond = chainnet[0]
+
+    # Create account and fund it
+    [user_name, user_addr] = generate_account("compound_filter")
+    faucet(user_addr)
+    _stake(dysond, faucet, user_name, user_addr)
+
+    # Create test data with multiple filterable fields
+    suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
+    prefix = f"compound_{suffix}/"
+
+    # Test data:
+    # - Murphy family: Dale (44, active), Jane (47, inactive)
+    # - Craig family: Roger (68, active)
+    # - Smith family: John (25, inactive)
+    test_data = {
+        f"{prefix}dale": {"first": "Dale", "last": "Murphy", "age": 44, "active": True},
+        f"{prefix}jane": {
+            "first": "Jane",
+            "last": "Murphy",
+            "age": 47,
+            "active": False,
+        },
+        f"{prefix}roger": {
+            "first": "Roger",
+            "last": "Craig",
+            "age": 68,
+            "active": True,
+        },
+        f"{prefix}john": {"first": "John", "last": "Smith", "age": 25, "active": False},
+    }
+
+    # Set all test data
+    for key, value in test_data.items():
+        dysond(
+            "tx",
+            "storage",
+            "set",
+            "--from",
+            user_name,
+            "--index",
+            key,
+            "--data",
+            json.dumps(value),
+        )
+
+    print(f"Created test data with prefix: {prefix}")
+    print(f"Test data: {json.dumps(test_data, indent=2)}")
+
+    # === TEST 1: Simple single condition (baseline) ===
+    print("\n=== TEST 1: Single condition - last=='Murphy' ===")
+    result_murphy = dysond(
+        "query",
+        "storage",
+        "list",
+        user_addr,
+        "--index-prefix",
+        prefix,
+        "--filter",
+        'last=="Murphy"',
+        "-o",
+        "json",
+    )
+    murphy_entries = result_murphy.get("entries", [])
+    murphy_names = [json.loads(e["data"])["first"] for e in murphy_entries]
+    print(f"Murphy family: {murphy_names}")
+    assert set(murphy_names) == {
+        "Dale",
+        "Jane",
+    }, f"Expected Dale and Jane, got {murphy_names}"
+
+    # === TEST 2: AND using RAW GJSON query (starts with #) ===
+    # Goal: Find Murphy family members who are active (only Dale)
+    # Raw GJSON: #(last=="Murphy")#|#(active==true)#
+    print(
+        "\n=== TEST 2: AND condition (raw mode) - last=='Murphy' AND active==true ==="
+    )
+    and_filter_raw = '#(last=="Murphy")#|#(active==true)#'
+    result_and = dysond(
+        "query",
+        "storage",
+        "list",
+        user_addr,
+        "--index-prefix",
+        prefix,
+        "--filter",
+        and_filter_raw,
+        "-o",
+        "json",
+    )
+    and_entries = result_and.get("entries", [])
+    and_names = [json.loads(e["data"])["first"] for e in and_entries]
+    print(f"Murphy AND active: {and_names}")
+    assert and_names == [
+        "Dale"
+    ], f"Expected only Dale (Murphy AND active), got {and_names}"
+
+    # === TEST 3: AND with numeric condition (raw mode) ===
+    # Goal: Find people who are active AND age > 50 (only Roger)
+    print("\n=== TEST 3: AND condition (raw mode) - active==true AND age>50 ===")
+    and_filter_numeric = "#(active==true)#|#(age>50)#"
+    result_and_numeric = dysond(
+        "query",
+        "storage",
+        "list",
+        user_addr,
+        "--index-prefix",
+        prefix,
+        "--filter",
+        and_filter_numeric,
+        "-o",
+        "json",
+    )
+    and_numeric_entries = result_and_numeric.get("entries", [])
+    and_numeric_names = [json.loads(e["data"])["first"] for e in and_numeric_entries]
+    print(f"Active AND age>50: {and_numeric_names}")
+    assert and_numeric_names == [
+        "Roger"
+    ], f"Expected only Roger (active AND age>50), got {and_numeric_names}"
+
+    # === TEST 4: Triple AND (raw mode) ===
+    # Goal: Find Murphy family, active, age < 50 (only Dale)
+    print(
+        "\n=== TEST 4: Triple AND (raw mode) - last=='Murphy' AND active==true AND age<50 ==="
+    )
+    triple_and_filter = '#(last=="Murphy")#|#(active==true)#|#(age<50)#'
+    result_triple = dysond(
+        "query",
+        "storage",
+        "list",
+        user_addr,
+        "--index-prefix",
+        prefix,
+        "--filter",
+        triple_and_filter,
+        "-o",
+        "json",
+    )
+    triple_entries = result_triple.get("entries", [])
+    triple_names = [json.loads(e["data"])["first"] for e in triple_entries]
+    print(f"Murphy AND active AND age<50: {triple_names}")
+    assert triple_names == ["Dale"], f"Expected only Dale, got {triple_names}"
+
+    print("\n✅ All AND filter tests passed!")
+
+    # === TEST 5: OR using multipaths with @flatten ===
+    # Goal: Find Murphy OR Craig family members (Dale, Jane, Roger)
+    # Raw GJSON: [#(last=="Murphy")#,#(last=="Craig")#].@flatten
+    print('\n=== TEST 5: OR condition (raw mode) - last=="Murphy" OR last=="Craig" ===')
+    or_filter = '[#(last=="Murphy")#,#(last=="Craig")#].@flatten'
+    result_or = dysond(
+        "query",
+        "storage",
+        "list",
+        user_addr,
+        "--index-prefix",
+        prefix,
+        "--filter",
+        or_filter,
+        "-o",
+        "json",
+    )
+    or_entries = result_or.get("entries", [])
+    or_names = [json.loads(e["data"])["first"] for e in or_entries]
+    print(f"Murphy OR Craig: {or_names}")
+    assert set(or_names) == {
+        "Dale",
+        "Jane",
+        "Roger",
+    }, f"Expected Dale, Jane, Roger (Murphy OR Craig), got {or_names}"
+
+    # === TEST 6: OR with different field ===
+    # Goal: Find active OR age < 30 (Dale, Roger, John)
+    print("\n=== TEST 6: OR condition (raw mode) - active==true OR age<30 ===")
+    or_filter_mixed = "[#(active==true)#,#(age<30)#].@flatten"
+    result_or_mixed = dysond(
+        "query",
+        "storage",
+        "list",
+        user_addr,
+        "--index-prefix",
+        prefix,
+        "--filter",
+        or_filter_mixed,
+        "-o",
+        "json",
+    )
+    or_mixed_entries = result_or_mixed.get("entries", [])
+    or_mixed_names = [json.loads(e["data"])["first"] for e in or_mixed_entries]
+    print(f"Active OR age<30: {or_mixed_names}")
+    assert set(or_mixed_names) == {
+        "Dale",
+        "Roger",
+        "John",
+    }, f"Expected Dale, Roger, John (active OR age<30), got {or_mixed_names}"
+
+    # === TEST 7: Combined AND + OR ===
+    # Goal: Find (Murphy AND active) OR (Craig) = Dale, Roger
+    # First filter for Murphy+active OR Craig using nested approach
+    print("\n=== TEST 7: Combined (Murphy AND active) OR Craig ===")
+    combined_filter = '[#(last=="Murphy")#|#(active==true)#,#(last=="Craig")#].@flatten'
+    result_combined = dysond(
+        "query",
+        "storage",
+        "list",
+        user_addr,
+        "--index-prefix",
+        prefix,
+        "--filter",
+        combined_filter,
+        "-o",
+        "json",
+    )
+    combined_entries = result_combined.get("entries", [])
+    combined_names = [json.loads(e["data"])["first"] for e in combined_entries]
+    print(f"(Murphy AND active) OR Craig: {combined_names}")
+    assert set(combined_names) == {
+        "Dale",
+        "Roger",
+    }, f"Expected Dale, Roger, got {combined_names}"
+
+    print("\n✅ All AND and OR filter tests passed!")
+
+
+def test_storage_filter_compound_via_script(chainnet, generate_account, faucet):
+    """Test compound filter with raw GJSON mode via script _query."""
+    dysond = chainnet[0]
+
+    [user_name, user_addr] = generate_account("compound_script")
+    faucet(user_addr)
+
+    prefix = "compound_script/"
+
+    script_code = f'''
+import json
+from dys import _query, _msg
+
+def setup_data():
+    """Create test entries for compound filter testing."""
+    test_data = [
+        ("{prefix}dale", {{"first": "Dale", "last": "Murphy", "age": 44, "active": True}}),
+        ("{prefix}jane", {{"first": "Jane", "last": "Murphy", "age": 47, "active": False}}),
+        ("{prefix}roger", {{"first": "Roger", "last": "Craig", "age": 68, "active": True}}),
+        ("{prefix}john", {{"first": "John", "last": "Smith", "age": 25, "active": False}}),
+    ]
+    
+    for index, data in test_data:
+        _msg({{
+            "@type": "/dysonprotocol.storage.v1.MsgStorageSet",
+            "owner": "{user_addr}",
+            "index": index,
+            "data": json.dumps(data)
+        }})
+    return len(test_data)
+
+def query_with_filter(filter_expr):
+    """Query storage with given filter expression."""
+    result = _query({{
+        "@type": "/dysonprotocol.storage.v1.QueryStorageListRequest",
+        "owner": "{user_addr}",
+        "index_prefix": "{prefix}",
+        "filter": filter_expr
+    }})
+    entries = result.get("entries", [])
+    return [json.loads(e["data"])["first"] for e in entries]
+
+def run_compound_tests():
+    """Run all compound filter tests using raw GJSON mode (starts with #)."""
+    setup_data()
+    
+    results = {{}}
+    
+    # Test 1: Simple condition (auto-wrapped)
+    results["murphy_only"] = query_with_filter('last=="Murphy"')
+    
+    # Test 2: AND using raw GJSON - Murphy AND active
+    results["murphy_and_active"] = query_with_filter('#(last=="Murphy")#|#(active==true)#')
+    
+    # Test 3: AND raw - active AND age > 50
+    results["active_and_old"] = query_with_filter('#(active==true)#|#(age>50)#')
+    
+    # Test 4: Triple AND raw
+    results["triple_and"] = query_with_filter('#(last=="Murphy")#|#(active==true)#|#(age<50)#')
+    
+    # Test 5: OR using multipaths with @flatten - Murphy OR Craig
+    results["murphy_or_craig"] = query_with_filter('[#(last=="Murphy")#,#(last=="Craig")#].@flatten')
+    
+    # Test 6: OR - active OR age < 30
+    results["active_or_young"] = query_with_filter('[#(active==true)#,#(age<30)#].@flatten')
+    
+    # Test 7: Combined (Murphy AND active) OR Craig
+    results["combined_and_or"] = query_with_filter('[#(last=="Murphy")#|#(active==true)#,#(last=="Craig")#].@flatten')
+    
+    return results
+'''
+
+    result = dysond(
+        "query",
+        "script",
+        "run",
+        "--executor-address",
+        user_addr,
+        "--script-address",
+        user_addr,
+        "--function-name",
+        "run_compound_tests",
+        "--args",
+        "[]",
+        "--extra-code",
+        script_code,
+    )
+
+    assert isinstance(result, dict), f"Expected dict, got {type(result)}: {result}"
+    assert "result" in result, f"Missing 'result' key: {result}"
+
+    result_data = json.loads(result["result"])
+    script_result = result_data["result"]
+
+    print(f"Script compound filter results: {json.dumps(script_result, indent=2)}")
+
+    # Verify results
+    assert set(script_result["murphy_only"]) == {
+        "Dale",
+        "Jane",
+    }, f"Murphy filter failed: {script_result['murphy_only']}"
+    assert script_result["murphy_and_active"] == [
+        "Dale"
+    ], f"Murphy AND active failed: {script_result['murphy_and_active']}"
+    assert script_result["active_and_old"] == [
+        "Roger"
+    ], f"Active AND old failed: {script_result['active_and_old']}"
+    assert script_result["triple_and"] == [
+        "Dale"
+    ], f"Triple AND failed: {script_result['triple_and']}"
+
+    # OR assertions
+    assert set(script_result["murphy_or_craig"]) == {
+        "Dale",
+        "Jane",
+        "Roger",
+    }, f"Murphy OR Craig failed: {script_result['murphy_or_craig']}"
+    assert set(script_result["active_or_young"]) == {
+        "Dale",
+        "Roger",
+        "John",
+    }, f"Active OR young failed: {script_result['active_or_young']}"
+    assert set(script_result["combined_and_or"]) == {
+        "Dale",
+        "Roger",
+    }, f"Combined AND+OR failed: {script_result['combined_and_or']}"
+
+    print("✅ All compound filter tests (AND + OR) passed via script!")
+
+
 def test_storage_pagination_next_key_script(chainnet, generate_account, faucet):
     """Test pagination via script execution using _query with both offset and key methods."""
     dysond = chainnet[0]

@@ -1023,6 +1023,7 @@ L2_TX: SignedTewTx = {
                 "signer": "dys1..",
                 "data": "{}",
                 "app_domain": "tew/tx",
+                "metadata": "{}",
             }
         ],
         "memo": "",

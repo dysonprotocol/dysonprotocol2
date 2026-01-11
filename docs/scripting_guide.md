@@ -91,7 +91,7 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     * IPv6: ::1
     * IPv4: 127.0.0.1
     *   Trying [::1]:3317...
-    * connect to ::1 port 3317 from ::1 port 57837 failed: Connection refused
+    * connect to ::1 port 3317 from ::1 port 57703 failed: Connection refused
     *   Trying 127.0.0.1:3317...
     * Connected to dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost (127.0.0.1) port 3317
     > GET /hi HTTP/1.1
@@ -103,9 +103,9 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     < HTTP/1.1 200 OK
     < Content-Length: 82
     < Content-Type: text/html
-    < Date: Thu, 18 Dec 2025 19:18:26 GMT
+    < Date: Sat, 27 Dec 2025 14:00:00 GMT
     < Server: WSGIServer/0.2 CPython/3.12.11
-    < X-Server-Time: 1766085507
+    < X-Server-Time: 1766844001
     < 
     { [82 bytes data]
     * Connection #0 to host dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost left intact
@@ -133,7 +133,7 @@ print(f"✓ Script query successful for address: {address}")
 
 ```
 
-    {"script":{"address":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej","version":"1","code":"def add(a, b):\n    print(f\"Adding {a} and {b}\")\n    return {\"a\": a, \"b\": b, \"add_result\": a + b}\n\n\ndef wsgi(environ, start_response):\n    status = \"200 OK\"\n    headers = [(\"Content-type\", \"text/html\")]\n    start_response(status, headers)\n    return [\n        b\"\"\"\n\u003chtml\u003e\n    \u003cbody\u003e\n        \u003ch1\u003eHello from Dyson Protocol!\u003c/h1\u003e\n    \u003c/body\u003e\n\u003c/html\u003e\"\"\"\n    ]\n\n","update_height":"98"}}
+    {"script":{"address":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej","version":"2","code":"def add(a, b):\n    print(f\"Adding {a} and {b}\")\n    return {\"a\": a, \"b\": b, \"add_result\": a + b}\n\n\ndef wsgi(environ, start_response):\n    status = \"200 OK\"\n    headers = [(\"Content-type\", \"text/html\")]\n    start_response(status, headers)\n    return [\n        b\"\"\"\n\u003chtml\u003e\n    \u003cbody\u003e\n        \u003ch1\u003eHello from Dyson Protocol!\u003c/h1\u003e\n    \u003c/body\u003e\n\u003c/html\u003e\"\"\"\n    ]\n\n","update_height":"76"}}
     ✓ Script query successful for address: dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej
 
 
@@ -164,7 +164,7 @@ and observe how the function processes these values and returns the calculated s
           "attributes": [
             {
               "key": "acc_seq",
-              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/2",
+              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/17",
               "index": true
             }
           ]
@@ -174,7 +174,7 @@ and observe how the function processes these values and returns the calculated s
           "attributes": [
             {
               "key": "signature",
-              "value": "p/gN1ZADKHD9MSyN5g5yIRDSCkZNUzSYgS75D47xN4159hhg+cIe8CNEf0XVwFhyu6/OsWFTtwtbRkderxGCjg==",
+              "value": "S1fWa0oIY1w+UbxcKsory0Eo3LNUJ9nTZ+FtCkpNHoZmJ+XowbHtDS7oH7l77aZZTkZ1HDdqn8Hu0TeKT21eGw==",
               "index": true
             }
           ]
@@ -244,9 +244,9 @@ print(f"Salt: {salt}")
 print(f"Hex Hash: {hex_hash}")
 ```
 
-    Name: alice-oq2zj.dys
-    Salt: tdi3fh30n6
-    Hex Hash: 7f5af70af6527460b386b09ee2433dda59e8792e8ff9c1e4b405bf4b4ba50baa
+    Name: alice-adsqt.dys
+    Salt: 6wnbr9aovh
+    Hex Hash: 443b6bfb36802299ca797ac4c79169de98d7af03d245ca2c1332875956d55dea
 
 
 
@@ -305,18 +305,18 @@ print(output)
 assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Protocol!' in output, got: " + output
 ```
 
-    Accessing your DWapp at 'http://alice-oq2zj.localhost:3317'
+    Accessing your DWapp at 'http://alice-adsqt.localhost:3317'
 
 
-    * Host alice-oq2zj.localhost:3317 was resolved.
+    * Host alice-adsqt.localhost:3317 was resolved.
     * IPv6: ::1
     * IPv4: 127.0.0.1
     *   Trying [::1]:3317...
-    * connect to ::1 port 3317 from ::1 port 60524 failed: Connection refused
+    * connect to ::1 port 3317 from ::1 port 60361 failed: Connection refused
     *   Trying 127.0.0.1:3317...
-    * Connected to alice-oq2zj.localhost (127.0.0.1) port 3317
+    * Connected to alice-adsqt.localhost (127.0.0.1) port 3317
     > GET /hi HTTP/1.1
-    > Host: alice-oq2zj.localhost:3317
+    > Host: alice-adsqt.localhost:3317
     > User-Agent: curl/8.7.1
     > Accept: */*
     > 
@@ -324,12 +324,12 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     < HTTP/1.1 200 OK
     < Content-Length: 82
     < Content-Type: text/html
-    < Date: Thu, 18 Dec 2025 19:18:29 GMT
+    < Date: Sat, 27 Dec 2025 14:00:02 GMT
     < Server: WSGIServer/0.2 CPython/3.12.11
-    < X-Server-Time: 1766085509
+    < X-Server-Time: 1766844003
     < 
     { [82 bytes data]
-    * Connection #0 to host alice-oq2zj.localhost left intact
+    * Connection #0 to host alice-adsqt.localhost left intact
     
     <html>
         <body>

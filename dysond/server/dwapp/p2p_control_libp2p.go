@@ -44,9 +44,27 @@ func (s *P2PService) EnsurePubSub(ctx context.Context, clientCtx client.Context)
 		return s.pubsubErr
 	}
 
+	// Start with defaults, then override specific values
+	params := pubsub.DefaultGossipSubParams()
+	params.D = 6    // Target mesh degree
+	params.Dlo = 4  // Min mesh before grafting
+	params.Dhi = 12 // Max mesh before pruning
+	params.HeartbeatInterval = 2000 * time.Millisecond
+	params.FanoutTTL = 2400 * time.Second
+	params.HistoryLength = 20
+	params.HistoryGossip = 20
+
 	tracer := &autoJoinTracer{svc: s, clientCtx: clientCtx}
 	s.logger.Info("initializing GossipSub", "peer_id", s.host.ID().String())
-	ps, err := pubsub.NewGossipSub(context.Background(), s.host, pubsub.WithRawTracer(tracer))
+	ps, err := pubsub.NewGossipSub(context.Background(), s.host,
+		pubsub.WithRawTracer(tracer),
+		// Critical: flood publish to ALL connected peers, not just mesh
+		// This ensures messages reach all browsers even before mesh forms
+		pubsub.WithFloodPublish(true),
+		// Faster heartbeat for quicker mesh formation
+
+		pubsub.WithGossipSubParams(params),
+	)
 	if err != nil {
 		s.pubsubErr = fmt.Errorf("create gossip-sub: %w", err)
 		return s.pubsubErr
@@ -59,6 +77,7 @@ func (s *P2PService) EnsurePubSub(ctx context.Context, clientCtx client.Context)
 }
 
 // SubscribeTopic ensures we are part of the GossipSub mesh for the given topic.
+// Topics must begin with the chainID prefix.
 func (s *P2PService) SubscribeTopic(ctx context.Context, clientCtx client.Context, topic string) error {
 	if err := s.EnsurePubSub(ctx, clientCtx); err != nil {
 		s.logger.Error("ensure pubsub failed", "topic", topic, "err", err)
@@ -70,51 +89,23 @@ func (s *P2PService) SubscribeTopic(ctx context.Context, clientCtx client.Contex
 		return errors.New("pubsub not initialized")
 	}
 
-	// Check if topic already exists before registering validator
+	// Validate chainID prefix
+	chainID := strings.TrimSpace(clientCtx.ChainID)
+	if chainID != "" && !strings.HasPrefix(topic, chainID) && !strings.HasPrefix(topic, "/"+chainID) {
+		return fmt.Errorf("topic must begin with chainID %q", chainID)
+	}
+
+	// Hold lock through existence check and limit check to prevent races
 	s.topicsMu.Lock()
-	topicExists := false
 	if st, ok := s.topics[topic]; ok {
-		topicExists = true
+		// Topic exists - reset idle timer and return
 		if st.timer != nil {
 			st.timer.Stop()
 			st.timer = nil
 		}
-	}
-	s.topicsMu.Unlock()
-
-	if topicExists {
+		s.topicsMu.Unlock()
 		return nil
 	}
-
-	if !strings.HasSuffix(topic, "/discovery") {
-		validator := func(ctx context.Context, p peer.ID, m *pubsub.Message) pubsub.ValidationResult {
-			s.logger.Info("pubsub message received for validation",
-				"topic", topic,
-				"from_peer", p.String(),
-				"data_len", len(m.Data))
-			if _, _, err := s.ValidatePubSubPayload(ctx, clientCtx, topic, m.Data, p.String()); err != nil {
-				s.logger.Warn("pubsub message validation failed",
-					"topic", topic,
-					"from_peer", p.String(),
-					"err", err)
-				telemetry.IncrCounter(1, "libp2p", "validator", "reject")
-				s.recordPeerFailure(p)
-				return pubsub.ValidationReject
-			}
-			s.logger.Info("pubsub message validation succeeded, forwarding to mesh",
-				"topic", topic,
-				"from_peer", p.String())
-			telemetry.IncrCounter(1, "libp2p", "validator", "accept")
-			s.resetPeerFailures(p)
-			return pubsub.ValidationAccept
-		}
-		if err := ps.RegisterTopicValidator(topic, validator); err != nil {
-			s.logger.Error("register topic validator failed", "topic", topic, "err", err)
-			return err
-		}
-	}
-
-	s.topicsMu.Lock()
 	if len(s.topics) >= topicMax {
 		s.topicsMu.Unlock()
 		return fmt.Errorf("topic limit reached: %d", topicMax)
@@ -126,9 +117,13 @@ func (s *P2PService) SubscribeTopic(ctx context.Context, clientCtx client.Contex
 		s.logger.Error("failed to join topic", "topic", topic, "err", err)
 		return err
 	}
+
 	sub, err := t.Subscribe()
 	if err != nil {
 		s.logger.Error("failed to subscribe to topic", "topic", topic, "err", err)
+		if closeErr := t.Close(); closeErr != nil {
+			s.logger.Error("cleanup: failed to close topic", "topic", topic, "err", closeErr)
+		}
 		return err
 	}
 
@@ -154,14 +149,16 @@ func (s *P2PService) SubscribeTopic(ctx context.Context, clientCtx client.Contex
 	return nil
 }
 
-// UnsubscribeTopic removes the validator/subscription for a topic.
+// UnsubscribeTopic removes the subscription for a topic.
 func (s *P2PService) UnsubscribeTopic(topic string) error {
 	s.topicsMu.Lock()
 	st, ok := s.topics[topic]
 	if ok {
 		delete(s.topics, topic)
 	}
+	count := len(s.topics)
 	s.topicsMu.Unlock()
+
 	if !ok {
 		return nil
 	}
@@ -170,14 +167,10 @@ func (s *P2PService) UnsubscribeTopic(topic string) error {
 	}
 	st.sub.Cancel()
 	if st.topic != nil {
-		_ = st.topic.Close()
+		if err := st.topic.Close(); err != nil {
+			s.logger.Error("failed to close topic", "topic", topic, "err", err)
+		}
 	}
-	if s.pubsub != nil {
-		_ = s.pubsub.UnregisterTopicValidator(topic)
-	}
-	s.topicsMu.Lock()
-	count := len(s.topics)
-	s.topicsMu.Unlock()
 	telemetry.SetGauge(float32(count), "libp2p", "topics", "active")
 	return nil
 }
@@ -195,8 +188,7 @@ func (t *autoJoinTracer) Join(topic string)    {}
 func (t *autoJoinTracer) Leave(topic string)   {}
 func (t *autoJoinTracer) Graft(p peer.ID, topic string) {
 	chainID := strings.TrimSpace(t.clientCtx.ChainID)
-	prefix := "/" + chainID + "/v1/"
-	if strings.HasPrefix(topic, prefix) {
+	if strings.HasPrefix(topic, chainID) {
 		t.svc.logger.Info("auto-join triggered via Graft",
 			"topic", topic,
 			"from_peer", p.String())
@@ -235,14 +227,13 @@ func (t *autoJoinTracer) RecvRPC(rpc *pubsub.RPC) {
 		return
 	}
 	chainID := strings.TrimSpace(t.clientCtx.ChainID)
-	prefix := "/" + chainID + "/v1/"
 	for _, sub := range rpc.Subscriptions {
 		if sub == nil {
 			continue
 		}
 		topic := sub.GetTopicid()
 		subscribe := sub.GetSubscribe()
-		if subscribe && strings.HasPrefix(topic, prefix) {
+		if subscribe && (strings.HasPrefix(topic, chainID) || strings.HasPrefix(topic, "/"+chainID)) {
 			t.svc.logger.Info("auto-join triggered via RecvRPC subscription",
 				"topic", topic,
 				"is_discovery", strings.HasSuffix(topic, "/discovery"))
@@ -261,7 +252,7 @@ func (t *autoJoinTracer) RecvRPC(rpc *pubsub.RPC) {
 			continue
 		}
 		topic := sub.GetTopicid()
-		if strings.HasPrefix(topic, prefix) {
+		if strings.HasPrefix(topic, chainID) || strings.HasPrefix(topic, "/"+chainID) {
 			t.svc.logger.Debug("peer unsubscribed from topic", "topic", topic)
 			t.svc.scheduleTopicCheck(topic)
 		}
@@ -300,23 +291,4 @@ func (s *P2PService) scheduleTopicCheck(topic string) {
 		}
 	})
 	s.topicsMu.Unlock()
-}
-
-func (s *P2PService) recordPeerFailure(p peer.ID) {
-	s.peerRejectsMu.Lock()
-	defer s.peerRejectsMu.Unlock()
-
-	s.peerRejects[p]++
-	if s.peerRejects[p] >= 5 {
-		if s.pubsub != nil {
-			s.pubsub.BlacklistPeer(p)
-		}
-		delete(s.peerRejects, p)
-	}
-}
-
-func (s *P2PService) resetPeerFailures(p peer.ID) {
-	s.peerRejectsMu.Lock()
-	delete(s.peerRejects, p)
-	s.peerRejectsMu.Unlock()
 }

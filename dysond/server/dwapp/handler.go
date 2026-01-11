@@ -143,7 +143,7 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 					{"urls": []string{"stun:stun1.l.google.com:19302"}},
 				},
 			},
-			"topicPrefix": "/" + chainID + "/v1/",
+			"topicPrefix": chainID,
 			"version":     "1",
 		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -152,50 +152,6 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 		return
 	}
-
-	// POST /libp2p/verify: validate a single MsgArbitraryData envelope against a topic (utility)
-	if req.Method == http.MethodPost && req.URL.Path == "/libp2p/verify" {
-		type body struct {
-			Topic      string          `json:"topic"`
-			Body       json.RawMessage `json:"body"`
-			AuthInfo   json.RawMessage `json:"auth_info"`
-			Signatures []string        `json:"signatures"`
-		}
-		var b body
-		if err := json.NewDecoder(req.Body).Decode(&b); err != nil {
-			http.Error(w, fmt.Sprintf("invalid json: %v", err), http.StatusBadRequest)
-			return
-		}
-		if h.p2p == nil {
-			http.Error(w, "libp2p disabled", http.StatusServiceUnavailable)
-			return
-		}
-		// Reconstruct tx JSON for verification
-		txJSON := map[string]interface{}{
-			"body":       b.Body,
-			"auth_info":  b.AuthInfo,
-			"signatures": b.Signatures,
-		}
-		txJSONBytes, err := json.Marshal(txJSON)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("failed to marshal tx json: %v", err), http.StatusBadRequest)
-			return
-		}
-		signer, payload, err := h.p2p.VerifyAndExtract(req.Context(), h.clientCtx, strings.TrimSpace(b.Topic), "", string(txJSONBytes))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
-			return
-		}
-		var payloadObj any
-		if err := json.Unmarshal([]byte(payload), &payloadObj); err != nil {
-			payloadObj = json.RawMessage(payload)
-		}
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		_ = json.NewEncoder(w).Encode(map[string]any{"signer": signer, "payload": payloadObj})
-		return
-	}
-
-	// Auto-join via GossipSub tracer; no HTTP subscribe/unsubscribe endpoints
 
 	// New endpoint: /redirect-to-dwapp/{address_or_name} -> redirect or return public host
 	if strings.HasPrefix(req.URL.Path, "/redirect-to-dwapp/") {

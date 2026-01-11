@@ -15,7 +15,7 @@
                     },
                     "extract": {
                         "type": "string",
-                        "description": "Optional GJSON path to extract from the storage entry (e.g., \"user.name\"); max 100 characters."
+                        "description": "Optional GJSON path to extract from the storage entry (e.g., \"user.name\"); max 256 characters."
                     }
                 },
                 "additionalProperties": false,

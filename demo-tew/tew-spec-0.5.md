@@ -230,7 +230,9 @@ A `Signed Tx` is a standard Dyson Protocol transaction (`core.Tx`) containing a 
     "messages": [{
       "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
       "signer": "dys1alice...",
-      "data": "{... JSON string of Tx Data from 2.3.2 ...}"
+      "data": "{... JSON string of Tx Data from 2.3.2 ...}",
+      "app_domain": "tew/tx",
+      "metadata": "{}"
     }]
   },
   "auth_info": { ... },

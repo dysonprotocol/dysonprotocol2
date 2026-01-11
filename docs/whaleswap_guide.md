@@ -357,10 +357,10 @@ print("POOL_ID:", POOL_ID)
       'coins': [{'denom': 'bar.dys', 'amount': '100000'},
        {'denom': 'foo.dys', 'amount': '100000'}],
       'shares_denom': 'whaleswap.dys/pools/1',
-      'created_height': '128',
-      'created_time': '2025-12-18T19:18:35.106863Z',
-      'updated_time': '2025-12-18T19:18:35.106863Z',
-      'updated_height': '128',
+      'created_height': '103',
+      'created_time': '2025-12-27T14:00:08.336365Z',
+      'updated_time': '2025-12-27T14:00:08.336365Z',
+      'updated_height': '103',
       'interest_rate': ['0.000000000000000000bar.dys',
        '0.000000000000000000foo.dys'],
       'min_initial_collateral_ratio': ['1.500000000000000000bar.dys',
@@ -545,6 +545,10 @@ print("Bob balances:")
     {
       "balances": [
         {
+          "denom": "alice-6hrlb.dys",
+          "amount": "200"
+        },
+        {
           "denom": "bar.dys",
           "amount": "100000"
         },
@@ -554,11 +558,11 @@ print("Bob balances:")
         },
         {
           "denom": "udys",
-          "amount": "10000000000"
+          "amount": "9999999800"
         }
       ],
       "pagination": {
-        "total": "3"
+        "total": "4"
       }
     }
 
@@ -800,10 +804,10 @@ print(json.dumps(events, indent=2))
           }
         ],
         "shares_denom": "whaleswap.dys/pools/1",
-        "created_height": "128",
-        "created_time": "2025-12-18T19:18:35.106863Z",
-        "updated_time": "2025-12-18T19:18:37.649447Z",
-        "updated_height": "137",
+        "created_height": "103",
+        "created_time": "2025-12-27T14:00:08.336365Z",
+        "updated_time": "2025-12-27T14:00:10.882885Z",
+        "updated_height": "112",
         "num_trades": "2",
         "interest_rate": [
           "0.000000000000000000bar.dys",
@@ -893,10 +897,10 @@ print(json.dumps(events, indent=2))
           "offer_id": "1",
           "status": "open",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "139",
-          "created_height": "139",
-          "created_time": "2025-12-18T19:18:38.214077Z",
-          "updated_time": "2025-12-18T19:18:38.214077Z",
+          "updated_height": "114",
+          "created_height": "114",
+          "created_time": "2025-12-27T14:00:11.451308Z",
+          "updated_time": "2025-12-27T14:00:11.451308Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"
@@ -1459,8 +1463,8 @@ else:
       "trade": {
         "trade_id": "5",
         "trader": "dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el",
-        "height": "145",
-        "timestamp": "2025-12-18T19:18:39.909707Z",
+        "height": "121",
+        "timestamp": "2025-12-27T14:00:13.885447Z",
         "operations": [
           {
             "Op": {
@@ -1550,10 +1554,10 @@ print("Module metrics:")
             }
           ],
           "shares_denom": "whaleswap.dys/pools/1",
-          "created_height": "128",
-          "created_time": "2025-12-18T19:18:35.106863Z",
-          "updated_time": "2025-12-18T19:18:39.909707Z",
-          "updated_height": "145",
+          "created_height": "103",
+          "created_time": "2025-12-27T14:00:08.336365Z",
+          "updated_time": "2025-12-27T14:00:13.885447Z",
+          "updated_height": "121",
           "num_trades": "3",
           "interest_rate": [
             "0.000000000000000000bar.dys",
@@ -1596,10 +1600,10 @@ print("Module metrics:")
           "offer_id": "1",
           "status": "closed",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "140",
-          "created_height": "139",
-          "created_time": "2025-12-18T19:18:38.214077Z",
-          "updated_time": "2025-12-18T19:18:38.497181Z",
+          "updated_height": "116",
+          "created_height": "114",
+          "created_time": "2025-12-27T14:00:11.451308Z",
+          "updated_time": "2025-12-27T14:00:12.463147Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "1000"
@@ -1628,10 +1632,10 @@ print("Module metrics:")
           "offer_id": "2",
           "status": "closed",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "142",
-          "created_height": "141",
-          "created_time": "2025-12-18T19:18:38.781383Z",
-          "updated_time": "2025-12-18T19:18:39.062837Z",
+          "updated_height": "118",
+          "created_height": "117",
+          "created_time": "2025-12-27T14:00:12.746751Z",
+          "updated_time": "2025-12-27T14:00:13.029191Z",
           "initial_have": {
             "denom": "foo.dys",
             "amount": "100"

@@ -44,7 +44,7 @@ type QueryClient interface {
 	//
 	// Validation:
 	// - Owner must be resolvable to a valid account address
-	// - Extract path length limited to 100 characters if provided
+	// - Extract path length limited to 256 characters if provided
 	//
 	// Returns:
 	// - Storage entry with extracted data if extract path was provided
@@ -70,7 +70,7 @@ type QueryClient interface {
 	//
 	// Validation:
 	// - Owner must be resolvable to a valid account address
-	// - Filter and extract path lengths limited to 100 characters if provided
+	// - Filter and extract path lengths limited to 256 characters if provided
 	// - Pagination parameters must be valid (no both offset and key specified)
 	//
 	// Returns:
@@ -175,7 +175,7 @@ type QueryServer interface {
 	//
 	// Validation:
 	// - Owner must be resolvable to a valid account address
-	// - Extract path length limited to 100 characters if provided
+	// - Extract path length limited to 256 characters if provided
 	//
 	// Returns:
 	// - Storage entry with extracted data if extract path was provided
@@ -201,7 +201,7 @@ type QueryServer interface {
 	//
 	// Validation:
 	// - Owner must be resolvable to a valid account address
-	// - Filter and extract path lengths limited to 100 characters if provided
+	// - Filter and extract path lengths limited to 256 characters if provided
 	// - Pagination parameters must be valid (no both offset and key specified)
 	//
 	// Returns:

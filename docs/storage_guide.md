@@ -9,6 +9,7 @@ The Storage module provides a simple yet powerful key-value store with these key
 - **Key-Value Store**: Persistent on-chain storage of data
 - **Owner-Based Access Control**: Only owners can modify their storage entries
 - **Prefix-Based Queries**: List entries with common prefixes for efficient data organization
+- **GJSON Filtering**: Filter entries using powerful [GJSON](https://github.com/tidwall/gjson) queries with AND/OR support
 - **JSON Support**: Easy storage of complex data structures as JSON
 - **Script Integration**: Seamless interaction with on-chain Python scripts
 
@@ -37,7 +38,7 @@ Let's explore the available commands for the Storage module:
       -h, --help   help for storage
     
     Global Flags:
-          --home string         directory for config and data (default "/tmp/dyson-test.5cpCwb/test-dysonchains/chain-a-node-1")
+          --home string         directory for config and data (default "/tmp/dyson-test.dGfzNh/test-dysonchains/chain-a-node-1")
           --log_format string   The logging format (json|plain) (default "plain")
           --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
           --log_no_color        Disable colored logs
@@ -68,7 +69,7 @@ Let's explore the available commands for the Storage module:
       -h, --help   help for storage
     
     Global Flags:
-          --home string         directory for config and data (default "/tmp/dyson-test.5cpCwb/test-dysonchains/chain-a-node-1")
+          --home string         directory for config and data (default "/tmp/dyson-test.dGfzNh/test-dysonchains/chain-a-node-1")
           --log_format string   The logging format (json|plain) (default "plain")
           --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
           --log_no_color        Disable colored logs
@@ -126,7 +127,7 @@ for event in tx_result['events']:
 
 ```
 
-    {"height":"312","txhash":"5DFDB6D3EAA43CE41F31CC81531309C69F11C17CBEC707F0540195A7E28199A6","codespace":"","code":0,"data":"12310A2F2F6479736F6E70726F746F636F6C2E73746F726167652E76312E4D736753746F72616765536574526573706F6E7365","raw_log":"","logs":[],"info":"","gas_wanted":"200000","gas_used":"48889","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/9","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"uGbTow9IDmbrAn4FfElcIYwXvuqOFYySUPn52d7ZXlNwkliUVtIo0+fLp9XSaZ0j9nxxYhvNLj4ap15Y1p2doQ==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.storage.v1.MsgStorageSet","index":true},{"key":"sender","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":true},{"key":"module","value":"storage","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.storage.v1.EventStorageUpdated","attributes":[{"key":"address","value":"\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"","index":true},{"key":"index","value":"\"profile/info\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}
+    {"height":"16","txhash":"3751425073FCFD7793B1BFB5337EEC39F3E77741BF8109910EA3759A5807C14E","codespace":"","code":0,"data":"12310A2F2F6479736F6E70726F746F636F6C2E73746F726167652E76312E4D736753746F72616765536574526573706F6E7365","raw_log":"","logs":[],"info":"","gas_wanted":"200000","gas_used":"63415","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/0","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"J4iPa+rFwFmhVVk35tQtF3YK8xpi9PfzDvI33XGfMJscAFQyv+cXHNaB1gx3pMxvHVk8LDL9i7676U8srOR7Lw==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.storage.v1.MsgStorageSet","index":true},{"key":"sender","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":true},{"key":"module","value":"storage","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.storage.v1.EventStorageUpdated","attributes":[{"key":"address","value":"\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"","index":true},{"key":"index","value":"\"profile/info\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}
     {
       "type": "dysonprotocol.storage.v1.EventStorageUpdated",
       "attributes": [
@@ -171,7 +172,7 @@ for event in tx_result['events']:
         break
 ```
 
-    {"height":"313","txhash":"94970DB97C8F3125AAF66D694D3ECBA49D0945FE32A4D1C5C3063B986487A3F8","codespace":"","code":0,"data":"12310A2F2F6479736F6E70726F746F636F6C2E73746F726167652E76312E4D736753746F72616765536574526573706F6E7365","raw_log":"","logs":[],"info":"","gas_wanted":"200000","gas_used":"45869","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/10","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"JKGyZ5kzrIVJJfLLHrLCvxWVDB/7aN72HNF6P51FdzJ5Y+5LpzK0O82QSTs8GC2DPRNJ+x4isVGcyU0Y0QNk+g==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.storage.v1.MsgStorageSet","index":true},{"key":"sender","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":true},{"key":"module","value":"storage","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.storage.v1.EventStorageUpdated","attributes":[{"key":"address","value":"\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"","index":true},{"key":"index","value":"\"settings/app\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}
+    {"height":"17","txhash":"ACE1166556FD4A8FBF670038AE35712F8F234FDD9118D25C904C3A063A6ACA6E","codespace":"","code":0,"data":"12310A2F2F6479736F6E70726F746F636F6C2E73746F726167652E76312E4D736753746F72616765536574526573706F6E7365","raw_log":"","logs":[],"info":"","gas_wanted":"200000","gas_used":"45839","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/1","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"aKqO++kz3nRIojSeY3gSpCvvDGNmTQQZYcVJrpctbbIW0eCW0XZZx9utBxoLRgLXyYPEGeP2b8zLx1PqIoT4og==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.storage.v1.MsgStorageSet","index":true},{"key":"sender","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":true},{"key":"module","value":"storage","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.storage.v1.EventStorageUpdated","attributes":[{"key":"address","value":"\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"","index":true},{"key":"index","value":"\"settings/app\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}
     {
       "type": "dysonprotocol.storage.v1.EventStorageUpdated",
       "attributes": [
@@ -262,7 +263,7 @@ assert profile_data['bio'] == "Blockchain enthusiast", "Expected 'Blockchain ent
 assert profile_data['skills'] == ["Smart Contracts", "DeFi", "Web3"], "Expected ['Smart Contracts', 'DeFi', 'Web3'] in output, got: " + str(profile_data['skills'])
 ```
 
-    ['{"entry":{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\\"name\\": \\"Bob\\", \\"bio\\": \\"Blockchain enthusiast\\", \\"skills\\": [\\"Smart Contracts\\", \\"DeFi\\", \\"Web3\\"]}","updated_height":"312","updated_timestamp":"2025-12-18T19:19:28Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="}}']
+    ['{"entry":{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\\"name\\": \\"Bob\\", \\"bio\\": \\"Blockchain enthusiast\\", \\"skills\\": [\\"Smart Contracts\\", \\"DeFi\\", \\"Web3\\"]}","updated_height":"16","updated_timestamp":"2026-01-07T16:46:42Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="}}']
     {'name': 'Bob', 'bio': 'Blockchain enthusiast', 'skills': ['Smart Contracts', 'DeFi', 'Web3']}
 
 
@@ -276,7 +277,7 @@ The Storage module allows you to query entries with a common prefix, which is us
 ! dysond query storage list $ADDRESS --index-prefix "profile/" -o json 
 ```
 
-    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\"name\": \"Bob\", \"bio\": \"Blockchain enthusiast\", \"skills\": [\"Smart Contracts\", \"DeFi\", \"Web3\"]}","updated_height":"312","updated_timestamp":"2025-12-18T19:19:28Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="}],"pagination":{"next_key":null,"total":"0"}}
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\"name\": \"Bob\", \"bio\": \"Blockchain enthusiast\", \"skills\": [\"Smart Contracts\", \"DeFi\", \"Web3\"]}","updated_height":"16","updated_timestamp":"2026-01-07T16:46:42Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="}],"pagination":{"next_key":null,"total":"0"}}
 
 
 
@@ -285,7 +286,7 @@ The Storage module allows you to query entries with a common prefix, which is us
 ! dysond query storage list $ADDRESS --index-prefix "content/" -o json
 ```
 
-    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"content/posts/1","data":"{\"title\": \"Introduction to Blockchain\", \"content\": \"Blockchain is a distributed ledger technology...\", \"tags\": [\"blockchain\", \"crypto\", \"beginner\"], \"published_at\": \"2023-10-25T15:30:00Z\"}","updated_height":"314","updated_timestamp":"2025-12-18T19:19:28Z","hash":"sha256-ZHL5Y1S9UvkhTzc5u78zZ2K0Uvxp6LTpFD2T4OctMjk="}],"pagination":{"next_key":null,"total":"0"}}
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"content/posts/1","data":"{\"title\": \"Introduction to Blockchain\", \"content\": \"Blockchain is a distributed ledger technology...\", \"tags\": [\"blockchain\", \"crypto\", \"beginner\"], \"published_at\": \"2023-10-25T15:30:00Z\"}","updated_height":"18","updated_timestamp":"2026-01-07T16:46:43Z","hash":"sha256-ZHL5Y1S9UvkhTzc5u78zZ2K0Uvxp6LTpFD2T4OctMjk="}],"pagination":{"next_key":null,"total":"0"}}
 
 
 
@@ -294,7 +295,101 @@ The Storage module allows you to query entries with a common prefix, which is us
 ! dysond query storage list $ADDRESS --index-prefix "" -o json --limit 3 --count-total
 ```
 
-    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"content/posts/1","data":"{\"title\": \"Introduction to Blockchain\", \"content\": \"Blockchain is a distributed ledger technology...\", \"tags\": [\"blockchain\", \"crypto\", \"beginner\"], \"published_at\": \"2023-10-25T15:30:00Z\"}","updated_height":"314","updated_timestamp":"2025-12-18T19:19:28Z","hash":"sha256-ZHL5Y1S9UvkhTzc5u78zZ2K0Uvxp6LTpFD2T4OctMjk="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\"name\": \"Bob\", \"bio\": \"Blockchain enthusiast\", \"skills\": [\"Smart Contracts\", \"DeFi\", \"Web3\"]}","updated_height":"312","updated_timestamp":"2025-12-18T19:19:28Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"settings/app","data":"{\"theme\": \"dark\", \"notifications\": true}","updated_height":"313","updated_timestamp":"2025-12-18T19:19:28Z","hash":"sha256-W5j+Aa98S2rm66ch2QXtBLYx8yEOG08aRMp9tep/wBU="}],"pagination":{"next_key":null,"total":"3"}}
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"content/posts/1","data":"{\"title\": \"Introduction to Blockchain\", \"content\": \"Blockchain is a distributed ledger technology...\", \"tags\": [\"blockchain\", \"crypto\", \"beginner\"], \"published_at\": \"2023-10-25T15:30:00Z\"}","updated_height":"18","updated_timestamp":"2026-01-07T16:46:43Z","hash":"sha256-ZHL5Y1S9UvkhTzc5u78zZ2K0Uvxp6LTpFD2T4OctMjk="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\"name\": \"Bob\", \"bio\": \"Blockchain enthusiast\", \"skills\": [\"Smart Contracts\", \"DeFi\", \"Web3\"]}","updated_height":"16","updated_timestamp":"2026-01-07T16:46:42Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"settings/app","data":"{\"theme\": \"dark\", \"notifications\": true}","updated_height":"17","updated_timestamp":"2026-01-07T16:46:43Z","hash":"sha256-W5j+Aa98S2rm66ch2QXtBLYx8yEOG08aRMp9tep/wBU="}],"pagination":{"next_key":null,"total":"3"}}
+
+
+### Filtering with GJSON
+
+The Storage module supports powerful filtering using [GJSON](https://github.com/tidwall/gjson) syntax. This allows you to filter entries based on their JSON data content.
+
+**Filter Modes:**
+- **Simple mode**: Use `field=="value"` syntax (auto-wrapped)
+- **Raw GJSON mode**: Start filter with `#` or `[` for advanced queries
+
+**Compound Filter Syntax:**
+
+| Logic | Syntax | Example |
+|-------|--------|--------|
+| Simple | `field=="value"` | `status=="active"` |
+| AND | `#(cond1)#\|#(cond2)#` | `#(last=="Murphy")#\|#(active==true)#` |
+| OR | `[#(cond1)#,#(cond2)#].@flatten` | `[#(last=="Murphy")#,#(last=="Craig")#].@flatten` |
+
+Let's set up some test data and demonstrate filtering:
+
+
+```python
+# Create test data for filtering examples
+import json
+import shlex
+
+people = [
+    {"first": "Dale", "last": "Murphy", "age": 44, "active": True},
+    {"first": "Jane", "last": "Murphy", "age": 47, "active": False},
+    {"first": "Roger", "last": "Craig", "age": 68, "active": True},
+    {"first": "John", "last": "Smith", "age": 25, "active": False},
+]
+
+for person in people:
+    name = person['first'].lower()
+    data = shlex.quote(json.dumps(person))
+    out = ! dysond tx storage set --index "people/{name}" --data {data} --from $ADDRESS -y | dysond q wait-tx -o json
+    result = json.loads(''.join(out))
+    assert result['code'] == 0, f"Error: {result['raw_log']}"
+
+print("Test data created successfully!")
+```
+
+    Test data created successfully!
+
+
+
+```python
+# Simple filter: Find all Murphy family members
+! dysond query storage list $ADDRESS --index-prefix "people/" --filter 'last=="Murphy"' -o json
+```
+
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/dale","data":"{\"first\": \"Dale\", \"last\": \"Murphy\", \"age\": 44, \"active\": true}","updated_height":"23","updated_timestamp":"2026-01-07T16:46:44Z","hash":"sha256-BwKRcIrdkfkY+IzfXaIRswXPM7XnWM35Wx0Zd+cnnlQ="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/jane","data":"{\"first\": \"Jane\", \"last\": \"Murphy\", \"age\": 47, \"active\": false}","updated_height":"24","updated_timestamp":"2026-01-07T16:46:45Z","hash":"sha256-pw1GuEH0d6sp+Kh4Sj4wqWwFP8+xDqzN8w8x/bYmXjY="}],"pagination":{"next_key":null,"total":"0"}}
+
+
+
+```python
+# AND filter: Find Murphy family members who are active
+# Uses raw GJSON mode (starts with #) for pipe chaining
+! dysond query storage list $ADDRESS --index-prefix "people/" --filter '#(last=="Murphy")#|#(active==true)#' -o json
+```
+
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/dale","data":"{\"first\": \"Dale\", \"last\": \"Murphy\", \"age\": 44, \"active\": true}","updated_height":"23","updated_timestamp":"2026-01-07T16:46:44Z","hash":"sha256-BwKRcIrdkfkY+IzfXaIRswXPM7XnWM35Wx0Zd+cnnlQ="}],"pagination":{"next_key":null,"total":"0"}}
+
+
+
+```python
+# OR filter: Find Murphy OR Craig family members
+# Uses raw GJSON mode (starts with [) for multipaths with @flatten
+! dysond query storage list $ADDRESS --index-prefix "people/" --filter '[#(last=="Murphy")#,#(last=="Craig")#].@flatten' -o json
+```
+
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/dale","data":"{\"first\": \"Dale\", \"last\": \"Murphy\", \"age\": 44, \"active\": true}","updated_height":"23","updated_timestamp":"2026-01-07T16:46:44Z","hash":"sha256-BwKRcIrdkfkY+IzfXaIRswXPM7XnWM35Wx0Zd+cnnlQ="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/jane","data":"{\"first\": \"Jane\", \"last\": \"Murphy\", \"age\": 47, \"active\": false}","updated_height":"24","updated_timestamp":"2026-01-07T16:46:45Z","hash":"sha256-pw1GuEH0d6sp+Kh4Sj4wqWwFP8+xDqzN8w8x/bYmXjY="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/roger","data":"{\"first\": \"Roger\", \"last\": \"Craig\", \"age\": 68, \"active\": true}","updated_height":"25","updated_timestamp":"2026-01-07T16:46:45Z","hash":"sha256-UG5o+TUYI4pWhrkTQg/yjRd1Ptxy3NL8lvyG6JFxcQs="}],"pagination":{"next_key":null,"total":"0"}}
+
+
+
+```python
+# Combined AND + OR: Find (Murphy AND active) OR Craig
+! dysond query storage list $ADDRESS --index-prefix "people/" --filter '[#(last=="Murphy")#|#(active==true)#,#(last=="Craig")#].@flatten' -o json
+```
+
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/dale","data":"{\"first\": \"Dale\", \"last\": \"Murphy\", \"age\": 44, \"active\": true}","updated_height":"23","updated_timestamp":"2026-01-07T16:46:44Z","hash":"sha256-BwKRcIrdkfkY+IzfXaIRswXPM7XnWM35Wx0Zd+cnnlQ="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/roger","data":"{\"first\": \"Roger\", \"last\": \"Craig\", \"age\": 68, \"active\": true}","updated_height":"25","updated_timestamp":"2026-01-07T16:46:45Z","hash":"sha256-UG5o+TUYI4pWhrkTQg/yjRd1Ptxy3NL8lvyG6JFxcQs="}],"pagination":{"next_key":null,"total":"0"}}
+
+
+
+```python
+# Cleanup: Delete the test people entries
+out = ! dysond tx storage delete --indexes "people/dale,people/jane,people/roger,people/john" --from $ADDRESS -y | dysond q wait-tx -o json
+result = json.loads(''.join(out))
+assert result['code'] == 0, f"Error: {result['raw_log']}"
+print("Test data cleaned up!")
+```
+
+    Test data cleaned up!
 
 
 ### Deleting Storage Entries
@@ -681,8 +776,9 @@ The Dyson Protocol Storage module provides a powerful and flexible way to store 
 
 1. **Simple API**: Easy-to-use commands for setting, getting, and deleting key-value pairs
 2. **Structured Data**: Support for JSON and hierarchical data organization with prefix-based queries
-3. **Efficient Retrieval**: Pagination support for handling large datasets
-4. **Versatility**: Can store text, JSON, and even binary data (with encoding)
-5. **Access Control**: Owner-based write permissions with public read access
+3. **GJSON Filtering**: Filter entries using powerful queries with AND (`#|#`) and OR (`[...].@flatten`) logic
+4. **Efficient Retrieval**: Pagination support for handling large datasets
+5. **Versatility**: Can store text, JSON, and even binary data (with encoding)
+6. **Access Control**: Owner-based write permissions with public read access
 
 These features make the Storage module ideal for a wide range of applications, from simple key-value stores to complex data structures for dApps.

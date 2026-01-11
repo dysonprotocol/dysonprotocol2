@@ -71,7 +71,7 @@
     "/dysonprotocol/storage/v1/storage_get": {
       "get": {
         "summary": "StorageGet retrieves a single storage entry by owner and index with\noptional GJSON extraction.",
-        "description": "Supports nameservice name resolution for owner field. Extract parameter\nenables field-level data retrieval.\n\nBehavior:\n- Resolves owner identifier (supports both nameservice names and bech32\n  addresses)\n- Retrieves storage entry using composite key of resolved_owner/index\n- Applies optional GJSON path extraction to filter returned data\n- Normalizes index in response by removing owner prefix for cleaner API\n\nValidation:\n- Owner must be resolvable to a valid account address\n- Extract path length limited to 100 characters if provided\n\nReturns:\n- Storage entry with extracted data if extract path was provided",
+        "description": "Supports nameservice name resolution for owner field. Extract parameter\nenables field-level data retrieval.\n\nBehavior:\n- Resolves owner identifier (supports both nameservice names and bech32\n  addresses)\n- Retrieves storage entry using composite key of resolved_owner/index\n- Applies optional GJSON path extraction to filter returned data\n- Normalizes index in response by removing owner prefix for cleaner API\n\nValidation:\n- Owner must be resolvable to a valid account address\n- Extract path length limited to 256 characters if provided\n\nReturns:\n- Storage entry with extracted data if extract path was provided",
         "operationId": "dysonprotocol.storage.v1.QueryStorageGetRequest",
         "responses": {
           "200": {
@@ -104,7 +104,7 @@
           },
           {
             "name": "extract",
-            "description": "Optional GJSON path to extract from the storage entry (e.g., \"user.name\");\nmax 100 characters.",
+            "description": "Optional GJSON path to extract from the storage entry (e.g., \"user.name\");\nmax 256 characters.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -118,7 +118,7 @@
     "/dysonprotocol/storage/v1/storage_list": {
       "get": {
         "summary": "StorageList lists storage entries for an owner under a given index prefix\nwith optional filtering and extraction.",
-        "description": "Supports GJSON filtering for complex queries, field extraction, and full\npagination with offset/key navigation. Results ordered by composite key for\nconsistent pagination.\n\nBehavior:\n- Resolves owner identifier (supports both nameservice names and bech32\n  addresses)\n- Lists entries with composite keys starting with\nresolved_owner/index_prefix\n- Applies optional GJSON filter to include only matching entries\n- Applies optional GJSON extract to transform returned data\n- Supports full pagination with offset/key-based navigation and reverse\n  iteration\n- Normalizes index fields in response by removing owner prefix\n\nValidation:\n- Owner must be resolvable to a valid account address\n- Filter and extract path lengths limited to 100 characters if provided\n- Pagination parameters must be valid (no both offset and key specified)\n\nReturns:\n- List of storage entries matching owner, index_prefix, and filter criteria",
+        "description": "Supports GJSON filtering for complex queries, field extraction, and full\npagination with offset/key navigation. Results ordered by composite key for\nconsistent pagination.\n\nBehavior:\n- Resolves owner identifier (supports both nameservice names and bech32\n  addresses)\n- Lists entries with composite keys starting with\nresolved_owner/index_prefix\n- Applies optional GJSON filter to include only matching entries\n- Applies optional GJSON extract to transform returned data\n- Supports full pagination with offset/key-based navigation and reverse\n  iteration\n- Normalizes index fields in response by removing owner prefix\n\nValidation:\n- Owner must be resolvable to a valid account address\n- Filter and extract path lengths limited to 256 characters if provided\n- Pagination parameters must be valid (no both offset and key specified)\n\nReturns:\n- List of storage entries matching owner, index_prefix, and filter criteria",
         "operationId": "dysonprotocol.storage.v1.QueryStorageListRequest",
         "responses": {
           "200": {
@@ -151,14 +151,14 @@
           },
           {
             "name": "filter",
-            "description": "Optional GJSON filter to further filter entries; supports comparison\noperators (==, !=, <, <=, >, >=) and pattern matching (% for like, !% for\nnot like); only matching entries included in results; max 100 chars.",
+            "description": "Optional GJSON filter to further filter entries; supports comparison\noperators (==, !=, <, <=, >, >=) and pattern matching (% for like, !% for\nnot like); only matching entries included in results; max 256 chars.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "extract",
-            "description": "Optional GJSON path to extract from each entry (e.g., \"user.name\" extracts\n\"jeff\" from {\"user\": {\"name\": \"jeff\"}}); transforms data field in response;\nmax 100 characters.",
+            "description": "Optional GJSON path to extract from each entry (e.g., \"user.name\" extracts\n\"jeff\" from {\"user\": {\"name\": \"jeff\"}}); transforms data field in response;\nmax 256 characters.",
             "in": "query",
             "required": false,
             "type": "string"

@@ -22,6 +22,7 @@ import (
 	peerstore "github.com/libp2p/go-libp2p/core/peerstore"
 	rcmgr "github.com/libp2p/go-libp2p/p2p/host/resource-manager"
 	relayv2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
+	holepunch "github.com/libp2p/go-libp2p/p2p/protocol/holepunch"
 	identify "github.com/libp2p/go-libp2p/p2p/protocol/identify"
 	quic "github.com/libp2p/go-libp2p/p2p/transport/quic"
 	tcp "github.com/libp2p/go-libp2p/p2p/transport/tcp"
@@ -55,18 +56,16 @@ type P2PInfo struct {
 
 // P2PService owns the embedded libp2p host and related GossipSub state.
 type P2PService struct {
-	cfg           P2PConfig
-	host          libhost.Host
-	ctx           context.Context
-	cancel        context.CancelFunc
-	pubsub        *pubsub.PubSub
-	topicsMu      sync.Mutex
-	topics        map[string]*topicState
-	peerRejects   map[peer.ID]int
-	peerRejectsMu sync.Mutex
-	pubsubMu      sync.Mutex
-	pubsubErr     error
-	logger        log.Logger
+	cfg       P2PConfig
+	host      libhost.Host
+	ctx       context.Context
+	cancel    context.CancelFunc
+	pubsub    *pubsub.PubSub
+	topicsMu  sync.Mutex
+	topics    map[string]*topicState
+	pubsubMu  sync.Mutex
+	pubsubErr error
+	logger    log.Logger
 }
 
 // NewP2PService constructs a libp2p host, enables the relay server, and starts
@@ -97,6 +96,8 @@ func NewP2PService(cfg P2PConfig) (*P2PService, error) {
 		libp2p.ShareTCPListener(),
 		libp2p.Transport(ws.New),
 		libp2p.UserAgent("dysond/libp2p"),
+		// Enable DCUtR hole-punching for direct connections through NAT
+		libp2p.EnableHolePunching(),
 	}
 
 	if rm, err := newResourceManager(); err == nil {
@@ -119,13 +120,12 @@ func NewP2PService(cfg P2PConfig) (*P2PService, error) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	service := &P2PService{
-		cfg:         normalized,
-		host:        h,
-		ctx:         ctx,
-		cancel:      cancel,
-		topics:      make(map[string]*topicState),
-		peerRejects: make(map[peer.ID]int),
-		logger:      normalized.Logger.With("component", "dwapp_p2p"),
+		cfg:    normalized,
+		host:   h,
+		ctx:    ctx,
+		cancel: cancel,
+		topics: make(map[string]*topicState),
+		logger: normalized.Logger.With("component", "dwapp_p2p"),
 	}
 
 	// Log when identification completes to verify ID service activity
@@ -138,6 +138,20 @@ func NewP2PService(cfg P2PConfig) (*P2PService, error) {
 						"protocols", len(e.Protocols),
 						"addrs", len(e.ListenAddrs),
 						"agent", e.AgentVersion,
+					)
+				}
+			}
+		}()
+	}
+
+	// Log hole-punch (DCUtR) events for direct connection upgrades
+	if sub, err := h.EventBus().Subscribe(new(holepunch.Event)); err == nil {
+		go func() {
+			for evt := range sub.Out() {
+				if e, ok := evt.(holepunch.Event); ok {
+					service.logger.Info("holepunch event",
+						"remote", e.Remote.String(),
+						"type", e.Type,
 					)
 				}
 			}
@@ -175,13 +189,15 @@ func (s *P2PService) HostInfo() *P2PInfo {
 
 func (s *P2PService) enableRelay() error {
 	resources := s.cfg.RelayResources
-	if resources.MaxReservations == 0 {
-		resources = relayv2.DefaultResources()
-		resources.MaxReservations = 256
-		resources.MaxCircuits = 16
-		resources.BufferSize = 4096
-		resources.ReservationTTL = defaultReservationTTL
-	}
+
+	resources = relayv2.DefaultResources()
+	resources.MaxReservations = 2048
+	resources.MaxCircuits = 256
+	resources.BufferSize = 4096
+	resources.ReservationTTL = defaultReservationTTL
+	resources.MaxReservationsPerIP = 64 // Default is 8
+	//resources.MaxReservationsPerPeer = 1 // Default is 4
+	resources.MaxReservationsPerASN = 128 // Default is 32
 
 	if _, err := relayv2.New(s.host, relayv2.WithResources(resources)); err != nil {
 		return fmt.Errorf("create relay: %w", err)

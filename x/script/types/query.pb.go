@@ -1192,7 +1192,8 @@ type QueryClient interface {
 	//	        "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
 	//	        "signer": "dys1example_address",
 	//	        "data": "arbitrary data to sign",
-	//	        "app_domain": "my_app/v1.0"
+	//	        "app_domain": "my_app/v1.0",
+	//	        "metadata": "{}"
 	//	      }
 	//	    ],
 	//	    "memo": "",
@@ -1374,7 +1375,8 @@ type QueryServer interface {
 	//	        "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
 	//	        "signer": "dys1example_address",
 	//	        "data": "arbitrary data to sign",
-	//	        "app_domain": "my_app/v1.0"
+	//	        "app_domain": "my_app/v1.0",
+	//	        "metadata": "{}"
 	//	      }
 	//	    ],
 	//	    "memo": "",

@@ -889,7 +889,7 @@ def eval_script(
                                     f"function not callable: {msg['function_name']}"
                                 )
                             result = scope[msg["function_name"]](*args, **kwargs)
-                            if msg["function_name"].startswith("test_"):
+                            if msg["function_name"].startswith("coverage_"):
                                 result = sorted(
                                     sandbox._seen_nodes.items(),
                                     key=(

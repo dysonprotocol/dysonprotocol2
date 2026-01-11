@@ -22,7 +22,7 @@ import (
 //
 // Validation:
 //   - Owner must be resolvable to a valid account address.
-//   - Extract path length limited to 100 characters if provided.
+//   - Extract path length limited to 256 characters if provided.
 //
 // Returns:
 //   - *storagetypes.QueryStorageGetResponse containing the storage entry with extracted data if applicable.
@@ -35,8 +35,8 @@ func (k Keeper) StorageGet(ctx context.Context, req *storagetypes.QueryStorageGe
 		return nil, status.Errorf(codes.InvalidArgument, "failed to resolve owner: %v", err)
 	}
 
-	if len(req.Extract) > 100 {
-		return nil, status.Errorf(codes.InvalidArgument, "extract path too long: max 100 characters")
+	if len(req.Extract) > 256 {
+		return nil, status.Errorf(codes.InvalidArgument, "extract path too long: max 256 characters")
 	}
 
 	// Create the combined key (normalize incoming index to avoid redundant owner)

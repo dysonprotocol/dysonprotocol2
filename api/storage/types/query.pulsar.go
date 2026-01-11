@@ -4102,7 +4102,7 @@ type QueryStorageGetRequest struct {
 	// Index of the storage entry to retrieve.
 	Index string `protobuf:"bytes,2,opt,name=index,proto3" json:"index,omitempty"`
 	// Optional GJSON path to extract from the storage entry (e.g., "user.name");
-	// max 100 characters.
+	// max 256 characters.
 	Extract string `protobuf:"bytes,3,opt,name=extract,proto3" json:"extract,omitempty"`
 }
 
@@ -4205,11 +4205,11 @@ type QueryStorageListRequest struct {
 	IndexPrefix string `protobuf:"bytes,2,opt,name=index_prefix,json=indexPrefix,proto3" json:"index_prefix,omitempty"`
 	// Optional GJSON filter to further filter entries; supports comparison
 	// operators (==, !=, <, <=, >, >=) and pattern matching (% for like, !% for
-	// not like); only matching entries included in results; max 100 chars.
+	// not like); only matching entries included in results; max 256 chars.
 	Filter string `protobuf:"bytes,3,opt,name=filter,proto3" json:"filter,omitempty"`
 	// Optional GJSON path to extract from each entry (e.g., "user.name" extracts
 	// "jeff" from {"user": {"name": "jeff"}}); transforms data field in response;
-	// max 100 characters.
+	// max 256 characters.
 	Extract string `protobuf:"bytes,4,opt,name=extract,proto3" json:"extract,omitempty"`
 	// Pagination parameters for result set navigation; supports offset, limit,
 	// and key-based pagination.

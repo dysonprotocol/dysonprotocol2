@@ -24,6 +24,7 @@ def create_signed_tx(
                     "signer": signer_addr,
                     "data": json.dumps(tx_body_msg),
                     "app_domain": "tew/tx",
+                    "metadata": "{}",
                 }
             ],
             "memo": "",
@@ -97,6 +98,7 @@ def create_signed_block(dysond_bin, signer_name, sequence, block_data):
                     "signer": block_data["metadata"]["current_authority"],
                     "data": json.dumps(block_body_msg),
                     "app_domain": "tew/block",
+                    "metadata": "{}",
                 }
             ],
             "memo": "",

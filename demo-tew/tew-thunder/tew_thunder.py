@@ -104,7 +104,9 @@ def verify_signed_tx(signed_tx: Dict) -> dict:
                 "messages": [{
                   "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
                   "signer": "dys1...",
-                  "data": "{... JSON string of Tx Data or other payload ...}"
+                  "data": "{... JSON string of Tx Data or other payload ...}",
+                  "app_domain": "tew/tx",
+                  "metadata": "{}"
                 }]
               },
               "auth_info": {...},
@@ -229,7 +231,9 @@ def validate_tx(signed_tx: Dict) -> Dict:
                 "messages": [{
                   "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
                   "signer": "dys1alice...",
-                  "data": "{... JSON string of Tx Data ...}"
+                  "data": "{... JSON string of Tx Data ...}",
+                  "app_domain": "tew/tx",
+                  "metadata": "{}"
                 }]
               },
               "auth_info": {...},
@@ -415,7 +419,9 @@ def submit_tx(instance_id: str, signed_tx_str: str) -> dict:
                 "messages": [{
                   "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
                   "signer": "dys1alice...",
-                  "data": "{\"instance_id\": \"channel_001\", ...}"
+                  "data": "{\"instance_id\": \"channel_001\", ...}",
+                  "app_domain": "tew/tx",
+                  "metadata": "{}"
                 }]
               },
               "auth_info": {...},
@@ -1383,7 +1389,9 @@ def compute_next_block(prev_state: dict, signed_txs: Dict[str, Dict]) -> Dict:
                   "messages": [{
                     "@type": "/dysonprotocol.script.v1.MsgArbitraryData",
                     "signer": "dys1alice...",
-                    "data": "{\"instance_id\": \"channel_001\", ...}"
+                    "data": "{\"instance_id\": \"channel_001\", ...}",
+                    "app_domain": "tew/tx",
+                    "metadata": "{}"
                   }]
                 },
                 "auth_info": {...},
