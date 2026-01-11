@@ -339,7 +339,7 @@ def demo_storage_get_not_found(owner_addr, test_index):
 
 
 def test_storage_get_extract_too_long(chainnet):
-    """Test StorageGet query with extract path exceeding 100 character limit."""
+    """Test StorageGet query with extract path exceeding 256 character limit."""
     dysond = chainnet[0]
     owner_addr = "dys216vwht46aw58efaxx"
     gov_result = dysond("query", "auth", "module-account", "gov")
@@ -362,7 +362,7 @@ def demo_storage_get_extract_too_long(owner_addr, test_index, long_extract):
         return {"error": str(e)}
 """
 
-    long_extract = "a" * 101
+    long_extract = "a" * 257
     kwargs = json.dumps(
         {
             "owner_addr": owner_addr,

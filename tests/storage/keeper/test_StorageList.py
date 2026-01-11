@@ -653,7 +653,7 @@ def demo_storage_list_invalid_pagination(owner_addr, offset, page_key):
 
 
 def test_storage_list_filter_too_long(chainnet):
-    """Test StorageList query with filter path exceeding 100 character limit."""
+    """Test StorageList query with filter path exceeding 256 character limit."""
     dysond = chainnet[0]
     # Use hardcoded test address
     owner_addr = "dys216vwht46aw58efaxx"
@@ -676,7 +676,7 @@ def demo_storage_list_filter_too_long(owner_addr, long_filter):
         return {"error": str(e)}
 """
 
-    long_filter = "a" * 101
+    long_filter = "a" * 257
     kwargs = json.dumps({"owner_addr": owner_addr, "long_filter": long_filter})
 
     query_result = dysond(
@@ -709,7 +709,7 @@ def demo_storage_list_filter_too_long(owner_addr, long_filter):
 
 
 def test_storage_list_extract_too_long(chainnet):
-    """Test StorageList query with extract path exceeding 100 character limit."""
+    """Test StorageList query with extract path exceeding 256 character limit."""
     dysond = chainnet[0]
     # Use hardcoded test address
     owner_addr = "dys216vwht46aw58efaxx"
@@ -732,7 +732,7 @@ def demo_storage_list_extract_too_long(owner_addr, long_extract):
         return {"error": str(e)}
 """
 
-    long_extract = "a" * 101
+    long_extract = "a" * 257
     kwargs = json.dumps({"owner_addr": owner_addr, "long_extract": long_extract})
 
     query_result = dysond(
