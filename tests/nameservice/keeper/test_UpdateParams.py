@@ -44,7 +44,8 @@ def demo_update_params_success():
             "min_valuation_fee_pct": "0.001",
             "max_valuation_fee_pct": "0.05",
             "min_valuation_period": "7200s",  # 2 hours
-            "max_valuation_period": "2592000s"  # 30 days
+            "max_valuation_period": "2592000s",  # 30 days
+            "name_suffix": ".dys"
         }
     })
 
@@ -214,7 +215,8 @@ def demo_reserved_names_blank_preserves():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "reserved1.dys\\nreserved2.dys"
+            "reserved_names": "reserved1.dys\\nreserved2.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -239,7 +241,8 @@ def demo_reserved_names_blank_preserves():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": ""  # Blank - should preserve existing
+            "reserved_names": "",  # Blank - should preserve existing
+            "name_suffix": ".dys"
         }
     })
     
@@ -345,7 +348,8 @@ def demo_reserved_names_updates():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "old1.dys\\nold2.dys"
+            "reserved_names": "old1.dys\\nold2.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -365,7 +369,8 @@ def demo_reserved_names_updates():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys"
+            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -457,7 +462,8 @@ def demo_invalid_reserved_name_format():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "invalid-name"  # Invalid: doesn't end with .dys
+            "reserved_names": "invalid-name",  # Invalid: doesn't end with .dys
+            "name_suffix": ".dys"
         }
     })
     
@@ -538,7 +544,8 @@ def demo_reserved_names_with_comments():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "# This is a comment\\n\\nname1.dys\\n# Another comment\\nname2.dys\\n\\nname3.dys"
+            "reserved_names": "# This is a comment\\n\\nname1.dys\\n# Another comment\\nname2.dys\\n\\nname3.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -638,7 +645,8 @@ def demo_update_params_invalid_params():
             "min_valuation_fee_pct": "0.001",
             "max_valuation_fee_pct": "0.05",
             "min_valuation_period": "7200s",
-            "max_valuation_period": "2592000s"
+            "max_valuation_period": "2592000s",
+            "name_suffix": ".dys"
         }
     })
 
@@ -711,7 +719,8 @@ def demo_reserved_names_blank_preserves():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "reserved1.dys\\nreserved2.dys"
+            "reserved_names": "reserved1.dys\\nreserved2.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -736,7 +745,8 @@ def demo_reserved_names_blank_preserves():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": ""  # Blank - should preserve existing
+            "reserved_names": "",  # Blank - should preserve existing
+            "name_suffix": ".dys"
         }
     })
     
@@ -842,7 +852,8 @@ def demo_reserved_names_updates():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "old1.dys\\nold2.dys"
+            "reserved_names": "old1.dys\\nold2.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -862,7 +873,8 @@ def demo_reserved_names_updates():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys"
+            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -1027,7 +1039,8 @@ def demo_reserved_names_blank_preserves():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "reserved1.dys\\nreserved2.dys"
+            "reserved_names": "reserved1.dys\\nreserved2.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -1052,7 +1065,8 @@ def demo_reserved_names_blank_preserves():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": ""  # Blank - should preserve existing
+            "reserved_names": "",  # Blank - should preserve existing
+            "name_suffix": ".dys"
         }
     })
     
@@ -1158,7 +1172,8 @@ def demo_reserved_names_updates():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "old1.dys\\nold2.dys"
+            "reserved_names": "old1.dys\\nold2.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -1178,7 +1193,8 @@ def demo_reserved_names_updates():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys"
+            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -1343,7 +1359,8 @@ def demo_reserved_names_blank_preserves():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "reserved1.dys\\nreserved2.dys"
+            "reserved_names": "reserved1.dys\\nreserved2.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -1368,7 +1385,8 @@ def demo_reserved_names_blank_preserves():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": ""  # Blank - should preserve existing
+            "reserved_names": "",  # Blank - should preserve existing
+            "name_suffix": ".dys"
         }
     })
     
@@ -1474,7 +1492,8 @@ def demo_reserved_names_updates():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "old1.dys\\nold2.dys"
+            "reserved_names": "old1.dys\\nold2.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -1494,7 +1513,8 @@ def demo_reserved_names_updates():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys"
+            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -1647,7 +1667,8 @@ def demo_reserved_names_blank_preserves():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "reserved1.dys\\nreserved2.dys"
+            "reserved_names": "reserved1.dys\\nreserved2.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -1672,7 +1693,8 @@ def demo_reserved_names_blank_preserves():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": ""  # Blank - should preserve existing
+            "reserved_names": "",  # Blank - should preserve existing
+            "name_suffix": ".dys"
         }
     })
     
@@ -1778,7 +1800,8 @@ def demo_reserved_names_updates():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "old1.dys\\nold2.dys"
+            "reserved_names": "old1.dys\\nold2.dys",
+            "name_suffix": ".dys"
         }
     })
     
@@ -1798,7 +1821,8 @@ def demo_reserved_names_updates():
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys"
+            "reserved_names": "new1.dys\\nnew2.dys\\nnew3.dys",
+            "name_suffix": ".dys"
         }
     })
     

@@ -1586,15 +1586,6 @@ def set_bid_timeout_via_gov(dysond_bin, proposer_name, bid_timeout_value: str):
     """Set bid timeout via governance proposal"""
     # Get current params
     current_params = dysond_bin("query", "nameservice", "params")
-    current_allowed_denoms = current_params.get("params", {}).get(
-        "allowed_denoms", ["udys"]
-    )
-    current_reject_fee_percent = current_params.get("params", {}).get(
-        "reject_bid_valuation_fee_percent", "0.03"
-    )
-    current_minimum_bid_percent_increase = current_params.get("params", {}).get(
-        "minimum_bid_percent_increase", "0.01"
-    )
     current_mint_fee_per_coin = current_params.get("params", {}).get(
         "mint_fee_per_coin", "0.01"
     )
@@ -1631,18 +1622,25 @@ def set_bid_timeout_via_gov(dysond_bin, proposer_name, bid_timeout_value: str):
                 "@type": "/dysonprotocol.nameservice.v1.MsgUpdateParams",
                 "authority": gov_address,
                 "params": {
-                    "bid_timeout": bid_timeout_value,
-                    "allowed_denoms": current_allowed_denoms,
-                    "reject_bid_valuation_fee_percent": current_reject_fee_percent,
-                    "minimum_bid_percent_increase": current_minimum_bid_percent_increase,
+                    "min_bid_timeout_class": bid_timeout_value,
+                    "max_bid_timeout_class": "7776000s",
+                    "min_reject_bid_valuation_fee_percent": "0.0",
+                    "max_reject_bid_valuation_fee_percent": "1.0",
+                    "min_minimum_bid_percent_increase": "0.0",
+                    "max_minimum_bid_percent_increase": "1.0",
+                    "min_valuation_fee_pct": "0.0",
+                    "max_valuation_fee_pct": "1.0",
+                    "min_valuation_period": "3600s",
+                    "max_valuation_period": "31536000s",
                     "mint_fee_per_coin": current_mint_fee_per_coin,
+                    "name_suffix": ".dys",
                 },
             }
         ],
         "metadata": "ipfs://CID",
         "deposit": "1udys",
         "title": "Update Nameservice Parameters",
-        "summary": f"Update bid_timeout to {bid_timeout_value} for testing",
+        "summary": f"Update min_bid_timeout_class to {bid_timeout_value} for testing",
     }
 
     # Submit proposal using Alice (who now has voting power)
@@ -1709,5 +1707,5 @@ def set_bid_timeout_via_gov(dysond_bin, proposer_name, bid_timeout_value: str):
     params_result = dysond_bin("query", "nameservice", "params")
     print(f"Final nameservice params: {params_result}")
     assert (
-        params_result["params"]["bid_timeout"] == bid_timeout_value
-    ), f"Bid timeout not updated correctly"
+        params_result["params"]["min_bid_timeout_class"] == bid_timeout_value
+    ), f"Min bid timeout class not updated correctly"

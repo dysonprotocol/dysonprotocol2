@@ -653,7 +653,8 @@ def demo_reserved_name_allowed(authority):
             "max_valuation_fee_pct": "1.0",
             "min_valuation_period": "3600s",
             "max_valuation_period": "31536000s",
-            "reserved_names": "reserved-governance.dys"
+            "reserved_names": "reserved-governance.dys",
+            "name_suffix": ".dys"
         }
     })
     
