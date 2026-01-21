@@ -82,22 +82,21 @@ Versioning is handled by the topic path (`/{chainID}/v1/...`), not the envelope.
  
  `NewP2PService` normalizes the config, persists or loads an Ed25519 identity, enables the transports, installs a resource manager, starts the circuit-relay server, wires bootstrap management, and logs the resulting peer ID.
  
- ```75:133:dysond/server/dwapp/p2p_embed_libp2p.go
+ ```121:130:dysond/server/dwapp/p2p_embed_libp2p.go
  service := &P2PService{
- 	cfg:         normalized,
- 	host:        h,
- 	ctx:         ctx,
- 	cancel:      cancel,
- 	topics:      make(map[string]*topicState),
- 	peerRejects: make(map[peer.ID]int),
- 	logger:      normalized.Logger.With("component", "dwapp_p2p"),
+ 	cfg:    normalized,
+ 	host:   h,
+ 	ctx:    ctx,
+ 	cancel: cancel,
+ 	topics: make(map[string]*topicState),
+ 	logger: normalized.Logger.With("component", "dwapp_p2p"),
  }
- 
+
  if err := service.enableRelay(); err != nil {
  	cancel()
  	return nil, err
  }
- 
+
  h.Network().Notify(&networkNotifiee{logger: service.logger})
  service.startBootstrapManager()
  ```
@@ -126,61 +125,73 @@ Versioning is handled by the topic path (`/{chainID}/v1/...`), not the envelope.
  ```
  
  ### GossipSub control plane
- 
- `EnsurePubSub` boots GossipSub once and installs an auto-join tracer. `SubscribeTopic` registers per-topic validators, enforces a maximum of 512 active topics, and starts a ten-minute idle timer that cleans up unused topics.
- 
- ```28:147:dysond/server/dwapp/p2p_control_libp2p.go
+
+ `EnsurePubSub` boots GossipSub once and installs an auto-join tracer. `SubscribeTopic` registers per-topic validators for non-discovery topics, enforces a maximum of 512 active topics, and starts a ten-minute idle timer that cleans up unused topics.
+
+ ```115:135:dysond/server/dwapp/p2p_control_libp2p.go
+ // Register validator for non-discovery topics
  if !strings.HasSuffix(topic, "/discovery") {
- 	validator := func(ctx context.Context, p peer.ID, m *pubsub.Message) pubsub.ValidationResult {
- 		if _, _, err := s.ValidatePubSubPayload(ctx, clientCtx, topic, m.Data, p.String()); err != nil {
- 			telemetry.IncrCounter(1, "libp2p", "validator", "reject")
- 			s.recordPeerFailure(p)
- 			return pubsub.ValidationReject
- 		}
- 		telemetry.IncrCounter(1, "libp2p", "validator", "accept")
- 		s.resetPeerFailures(p)
- 		return pubsub.ValidationAccept
- 	}
- 	if err := ps.RegisterTopicValidator(topic, validator); err != nil {
- 		...
+ 	if err := ps.RegisterTopicValidator(topic,
+ 		func(ctx context.Context, pid peer.ID, msg *pubsub.Message) pubsub.ValidationResult {
+ 			_, _, err := s.ValidatePubSubPayload(ctx, clientCtx, topic, msg.Data, pid.String())
+ 			if err != nil {
+ 				s.logger.Debug("validator rejected message",
+ 					"topic", topic,
+ 					"peer", pid.String(),
+ 					"error", err,
+ 				)
+ 				return pubsub.ValidationReject
+ 			}
+ 			telemetry.IncrCounter(1, "libp2p", "validator", "accept")
+ 			return pubsub.ValidationAccept
+ 		},
+ 	); err != nil {
+ 		return fmt.Errorf("register topic validator: %w", err)
  	}
  }
- ...
- st.timer = time.AfterFunc(topicIdleTTL, func() {
- 	if s.pubsub == nil {
- 		return
- 	}
- 	if len(s.pubsub.ListPeers(topic)) == 0 {
- 		_ = s.UnsubscribeTopic(topic)
- 	} else {
- 		s.scheduleTopicCheck(topic)
- 	}
- })
  ```
- 
- Peered validators track rejection counts and blacklist abusive peers after five failed envelopes.
+
+ Validators are automatically unregistered when topics are unsubscribed or when join/subscribe operations fail.
  
 ### Payload verification
 
-`ValidatePubSubPayload` limits envelopes to 64 KiB, requires `body`, `auth_info`, and `signatures` fields, reconstructs the transaction JSON for verification, and delegates to the ADR-36 verifier. The verifier returns the signer address and payload JSON, which gives higher layers access to authenticated payloads.
- 
- ```14:39:dysond/server/dwapp/p2p_validate_payload.go
- if len(payload) > s.cfg.MaxEnvelope {
- 	return "", "", fmt.Errorf("envelope too large: %d bytes", len(payload))
- }
- 
- var envelope struct {
- 	ADR36TxJSON string `json:"adr36_tx_json"`
- 	V           int    `json:"v"`
- }
- 
- if err := json.Unmarshal(payload, &envelope); err != nil {
- 	return "", "", fmt.Errorf("invalid payload json: %w", err)
- }
- if envelope.ADR36TxJSON == "" {
- 	return "", "", fmt.Errorf("missing adr36_tx_json")
- }
- ```
+`ValidatePubSubPayload` enforces several validation rules for non-discovery messages:
+
+1. **Envelope size**: Maximum 64 KiB
+2. **Envelope format**: Requires `body`, `auth_info`, and `signatures` fields
+3. **ADR-36 signature**: Verified via the `VerifyTx` query
+4. **app_domain match**: The signed `app_domain` must exactly match the GossipSub topic
+5. **peerId validation**: The `metadata.peerId` must match the libp2p sender's peer ID
+
+```21:65:dysond/server/dwapp/p2p_validate_payload.go
+func (s *P2PService) ValidatePubSubPayload(ctx context.Context, clientCtx client.Context, topic string, payload []byte, senderPeerID string) (signer, data string, err error) {
+	// 1. Size check
+	if len(payload) > maxEnvelopeSize {
+		return "", "", fmt.Errorf("envelope too large: %d bytes", len(payload))
+	}
+
+	// 2. Parse flat envelope format
+	var envelope struct {
+		Body       json.RawMessage `json:"body"`
+		AuthInfo   json.RawMessage `json:"auth_info"`
+		Signatures []string        `json:"signatures"`
+	}
+	// ... reconstruct tx JSON and call VerifyADR36TxJSON ...
+
+	// 5. Validate app_domain matches topic
+	if appDomain != topic {
+		return "", "", fmt.Errorf("app_domain mismatch: %s != %s", appDomain, topic)
+	}
+
+	// 6. Extract and validate peerId from metadata
+	// ... parse metadata JSON, extract peerId ...
+	if peerID != senderPeerID {
+		return "", "", fmt.Errorf("peerId mismatch: metadata=%s sender=%s", peerID, senderPeerID)
+	}
+}
+```
+
+The ADR-36 verification is handled by `VerifyADR36TxJSON` which calls the `/dysonprotocol.script.v1.Query/VerifyTx` query to validate the signature and extract the signer address, app_domain, data, and metadata fields.
  
  ## HTTP Surface
  
@@ -242,13 +253,19 @@ Versioning is handled by the topic path (`/{chainID}/v1/...`), not the envelope.
  Multiaddrs may use IPv4, IPv6, DNS, WebSocket, QUIC, or WebTransport schemes; ensure peer IDs are appended.
  
  ## Discovery Topics & Limits
- 
- - Topic namespace: `/{chainID}/v1/*`; `discovery` suffix stays unvalidated, all other topics require ADR-36 envelopes.
- - Topic cap: 512 concurrent topics; idle topics are pruned after 10 minutes without mesh peers.
+
+- Topic namespace: `/{chainID}/v1/*`; `discovery` suffix stays unvalidated, all other topics require ADR-36 envelopes.
+- Topic cap: 512 concurrent topics; idle topics are pruned after 10 minutes without mesh peers.
 - Envelope cap: 64 KiB.
- - Peer blacklist: five rejected payloads triggers a temporary blacklist.
- 
- GossipSub metrics are emitted via Cosmos SDK telemetry counters (`libp2p.validator.{accept,reject}` and `libp2p.topics.active`).
+- Validation rules for non-discovery topics:
+  - ADR-36 signature must be valid
+  - `app_domain` must match the topic exactly
+  - `metadata.peerId` must match the sender's libp2p peer ID
+
+GossipSub metrics are emitted via Cosmos SDK telemetry counters:
+- `libp2p.validator.accept` - Messages that passed validation
+- `libp2p.validator.reject.*` - Messages rejected with specific reason (e.g., `envelope_size`, `app_domain_mismatch`, `peer_id_mismatch`)
+- `libp2p.topics.active` - Number of active topic subscriptions
  
  ## Performance Notes
  
