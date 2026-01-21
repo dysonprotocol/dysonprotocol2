@@ -123,7 +123,7 @@ func (s *P2PService) SubscribeTopic(ctx context.Context, clientCtx client.Contex
 						"peer", pid.String(),
 						"error", err,
 					)
-					telemetry.IncrCounter(1, "libp2p", "validator", "reject")
+					// Telemetry already recorded with specific reason in ValidatePubSubPayload
 					return pubsub.ValidationReject
 				}
 				telemetry.IncrCounter(1, "libp2p", "validator", "accept")
@@ -137,12 +137,20 @@ func (s *P2PService) SubscribeTopic(ctx context.Context, clientCtx client.Contex
 	t, err := ps.Join(topic)
 	if err != nil {
 		s.logger.Error("failed to join topic", "topic", topic, "err", err)
+		// Clean up validator if we registered one
+		if !strings.HasSuffix(topic, "/discovery") {
+			_ = ps.UnregisterTopicValidator(topic)
+		}
 		return err
 	}
 
 	sub, err := t.Subscribe()
 	if err != nil {
 		s.logger.Error("failed to subscribe to topic", "topic", topic, "err", err)
+		// Clean up validator if we registered one
+		if !strings.HasSuffix(topic, "/discovery") {
+			_ = ps.UnregisterTopicValidator(topic)
+		}
 		if closeErr := t.Close(); closeErr != nil {
 			s.logger.Error("cleanup: failed to close topic", "topic", topic, "err", closeErr)
 		}
