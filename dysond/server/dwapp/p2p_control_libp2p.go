@@ -112,6 +112,28 @@ func (s *P2PService) SubscribeTopic(ctx context.Context, clientCtx client.Contex
 	}
 	s.topicsMu.Unlock()
 
+	// Register validator for non-discovery topics
+	if !strings.HasSuffix(topic, "/discovery") {
+		if err := ps.RegisterTopicValidator(topic,
+			func(ctx context.Context, pid peer.ID, msg *pubsub.Message) pubsub.ValidationResult {
+				_, _, err := s.ValidatePubSubPayload(ctx, clientCtx, topic, msg.Data, pid.String())
+				if err != nil {
+					s.logger.Debug("validator rejected message",
+						"topic", topic,
+						"peer", pid.String(),
+						"error", err,
+					)
+					telemetry.IncrCounter(1, "libp2p", "validator", "reject")
+					return pubsub.ValidationReject
+				}
+				telemetry.IncrCounter(1, "libp2p", "validator", "accept")
+				return pubsub.ValidationAccept
+			},
+		); err != nil {
+			return fmt.Errorf("register topic validator: %w", err)
+		}
+	}
+
 	t, err := ps.Join(topic)
 	if err != nil {
 		s.logger.Error("failed to join topic", "topic", topic, "err", err)
@@ -165,6 +187,11 @@ func (s *P2PService) UnsubscribeTopic(topic string) error {
 	if st.timer != nil {
 		st.timer.Stop()
 	}
+	// Unregister topic validator
+	if s.pubsub != nil {
+		_ = s.pubsub.UnregisterTopicValidator(topic)
+	}
+
 	st.sub.Cancel()
 	if st.topic != nil {
 		if err := st.topic.Close(); err != nil {
