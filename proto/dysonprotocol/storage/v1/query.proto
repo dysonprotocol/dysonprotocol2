@@ -170,9 +170,13 @@ message QueryStorageListRequest {
   // "jeff" from {"user": {"name": "jeff"}}); transforms data field in response;
   // max 256 characters.
   string extract = 4;
+  // Optional GJSON path used to derive a sort key from each entry's data.
+  // When set, results are sorted by this key and pagination.key is rejected.
+  // Use pagination.reverse to invert the sorted order; max 256 characters.
+  string sort_by = 5;
   // Pagination parameters for result set navigation; supports offset, limit,
   // and key-based pagination.
-  cosmos.base.query.v1beta1.PageRequest pagination = 5;
+  cosmos.base.query.v1beta1.PageRequest pagination = 6;
 }
 
 /*

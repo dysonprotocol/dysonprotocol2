@@ -1429,3 +1429,324 @@ def demo_storage_list_filter_pattern(owner_addr, entries, filter_expr):
         "al"
     ), f"Entry name should start with 'al', got {entry_data['name']}"
     assert entry_data["name"] == "alice", f"Expected 'alice', got {entry_data['name']}"
+
+
+def test_storage_list_sort_by_numeric(chainnet):
+    """Test StorageList query with sort_by numeric ordering."""
+    dysond = chainnet[0]
+    owner_addr = "dys216vwht46aw58efaxx"
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_storage_list_sort_by(owner_addr, entries, prefix):
+    for index, data in entries:
+        _sudo({
+            "@type": "/dysonprotocol.storage.v1.MsgStorageSet",
+            "owner": owner_addr,
+            "index": index,
+            "data": data
+        })
+
+    list_response = _query({
+        "@type": "/dysonprotocol.storage.v1.QueryStorageListRequest",
+        "owner": owner_addr,
+        "index_prefix": prefix,
+        "sort_by": "age"
+    })
+
+    return {"list_response": list_response}
+"""
+
+    entries = [
+        ["people/alice", '{"age": 30, "name": "alice"}'],
+        ["people/bob", '{"age": 20, "name": "bob"}'],
+        ["people/charlie", '{"age": 40, "name": "charlie"}'],
+    ]
+    kwargs = json.dumps({"owner_addr": owner_addr, "entries": entries, "prefix": "people/"})
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_storage_list_sort_by",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    entries_list = result["result"]["result"]["list_response"]["entries"]
+    ages = [
+        (json.loads(entry["data"]) if isinstance(entry["data"], str) else entry["data"])[
+            "age"
+        ]
+        for entry in entries_list
+    ]
+    assert ages == [20, 30, 40], f"Expected ages sorted ascending, got {ages}"
+
+
+def test_storage_list_sort_by_reverse_and_tiebreaker(chainnet):
+    """Test StorageList query with sort_by reverse ordering and key tie-breaker."""
+    dysond = chainnet[0]
+    owner_addr = "dys216vwht46aw58efaxx"
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_storage_list_sort_reverse(owner_addr, entries, prefix):
+    for index, data in entries:
+        _sudo({
+            "@type": "/dysonprotocol.storage.v1.MsgStorageSet",
+            "owner": owner_addr,
+            "index": index,
+            "data": data
+        })
+
+    list_response = _query({
+        "@type": "/dysonprotocol.storage.v1.QueryStorageListRequest",
+        "owner": owner_addr,
+        "index_prefix": prefix,
+        "sort_by": "age",
+        "pagination": {
+            "reverse": True
+        }
+    })
+
+    return {"list_response": list_response}
+"""
+
+    entries = [
+        ["people/a", '{"age": 20, "name": "a"}'],
+        ["people/b", '{"age": 20, "name": "b"}'],
+        ["people/c", '{"age": 10, "name": "c"}'],
+    ]
+    kwargs = json.dumps({"owner_addr": owner_addr, "entries": entries, "prefix": "people/"})
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_storage_list_sort_reverse",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    entries_list = result["result"]["result"]["list_response"]["entries"]
+    indices = [entry["index"] for entry in entries_list]
+    assert indices == ["people/b", "people/a", "people/c"], f"Expected reverse with tie-breaker, got {indices}"
+
+
+def test_storage_list_sort_by_rejects_pagination_key(chainnet):
+    """Test StorageList query rejects pagination.key when sort_by is set."""
+    dysond = chainnet[0]
+    owner_addr = "dys216vwht46aw58efaxx"
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _query
+
+def demo_storage_list_sort_key_invalid(owner_addr):
+    try:
+        list_response = _query({
+            "@type": "/dysonprotocol.storage.v1.QueryStorageListRequest",
+            "owner": owner_addr,
+            "sort_by": "age",
+            "pagination": {
+                "key": "dGVzdC1rZXk=",
+                "limit": 1
+            }
+        })
+        return {"list_response": list_response, "error": None}
+    except Exception as e:
+        return {"error": str(e)}
+"""
+
+    kwargs = json.dumps({"owner_addr": owner_addr})
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_storage_list_sort_key_invalid",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    demo_result = result["result"]["result"]
+    error_str = str(demo_result.get("error"))
+    assert (
+        "pagination key not supported with sort_by" in error_str
+    ), f"Expected sort_by pagination key error, got: {error_str}"
+
+
+def test_storage_list_sort_by_e2e(chainnet):
+    """End-to-end test for sort_by with pagination and reverse ordering."""
+    dysond = chainnet[0]
+    owner_addr = "dys216vwht46aw58efaxx"
+    gov_result = dysond("query", "auth", "module-account", "gov")
+    gov_addr = gov_result["account"]["value"]["address"]
+
+    extra_code = """
+from dys import _msg, _query, get_executor_address
+
+def _sudo(msg_dict):
+    return _msg({
+        "@type": "/dysonprotocol.script.v1.MsgSudo",
+        "authority": get_executor_address(),
+        "messages": [msg_dict]
+    })
+
+def demo_storage_list_sort_e2e(owner_addr, entries, prefix):
+    for index, data in entries:
+        _sudo({
+            "@type": "/dysonprotocol.storage.v1.MsgStorageSet",
+            "owner": owner_addr,
+            "index": index,
+            "data": data
+        })
+
+    page_one = _query({
+        "@type": "/dysonprotocol.storage.v1.QueryStorageListRequest",
+        "owner": owner_addr,
+        "index_prefix": prefix,
+        "sort_by": "age",
+        "pagination": {
+            "offset": 0,
+            "limit": 2
+        }
+    })
+
+    page_two = _query({
+        "@type": "/dysonprotocol.storage.v1.QueryStorageListRequest",
+        "owner": owner_addr,
+        "index_prefix": prefix,
+        "sort_by": "age",
+        "pagination": {
+            "offset": 2,
+            "limit": 2
+        }
+    })
+
+    reverse_page = _query({
+        "@type": "/dysonprotocol.storage.v1.QueryStorageListRequest",
+        "owner": owner_addr,
+        "index_prefix": prefix,
+        "sort_by": "age",
+        "pagination": {
+            "limit": 3,
+            "reverse": True
+        }
+    })
+
+    return {
+        "page_one": page_one,
+        "page_two": page_two,
+        "reverse_page": reverse_page
+    }
+"""
+
+    entries = [
+        ["e2e/one", '{"age": 30, "name": "one"}'],
+        ["e2e/two", '{"age": 10, "name": "two"}'],
+        ["e2e/three", '{"age": 20, "name": "three"}'],
+        ["e2e/four", '{"age": 40, "name": "four"}'],
+    ]
+    kwargs = json.dumps({"owner_addr": owner_addr, "entries": entries, "prefix": "e2e/"})
+
+    query_result = dysond(
+        "query",
+        "script",
+        "run",
+        "--script-address",
+        gov_addr,
+        "--executor-address",
+        gov_addr,
+        "--function-name",
+        "demo_storage_list_sort_e2e",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
+    )
+
+    result = deep_parse(query_result)
+    assert (
+        query_result.get("exception") is None
+    ), f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+
+    page_one = result["result"]["result"]["page_one"]["entries"]
+    page_two = result["result"]["result"]["page_two"]["entries"]
+    reverse_page = result["result"]["result"]["reverse_page"]["entries"]
+
+    page_one_ages = [
+        (json.loads(entry["data"]) if isinstance(entry["data"], str) else entry["data"])[
+            "age"
+        ]
+        for entry in page_one
+    ]
+    page_two_ages = [
+        (json.loads(entry["data"]) if isinstance(entry["data"], str) else entry["data"])[
+            "age"
+        ]
+        for entry in page_two
+    ]
+    reverse_ages = [
+        (json.loads(entry["data"]) if isinstance(entry["data"], str) else entry["data"])[
+            "age"
+        ]
+        for entry in reverse_page
+    ]
+
+    assert page_one_ages == [10, 20], f"Expected first page ages [10, 20], got {page_one_ages}"
+    assert page_two_ages == [30, 40], f"Expected second page ages [30, 40], got {page_two_ages}"
+    assert reverse_ages == [40, 30, 20], f"Expected reverse ages [40, 30, 20], got {reverse_ages}"

@@ -21,6 +21,10 @@
                         "type": "string",
                         "description": "Optional GJSON path to extract from each entry (e.g., \"user.name\" extracts \"jeff\" from {\"user\": {\"name\": \"jeff\"}}); transforms data field in response; max 256 characters."
                     },
+                    "sort_by": {
+                        "type": "string",
+                        "description": "Optional GJSON path used to derive a sort key from each entry's data. When set, results are sorted by this key and pagination.key is rejected. Use pagination.reverse to invert the sorted order; max 256 characters."
+                    },
                     "pagination": {
                         "$ref": "#/definitions/cosmos.base.query.v1beta1.PageRequest",
                         "additionalProperties": false,

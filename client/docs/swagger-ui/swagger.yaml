@@ -1155,6 +1155,19 @@ paths:
           in: query
           required: false
           type: string
+        - name: sort_by
+          description: >-
+            Optional GJSON path used to derive a sort key from each entry's
+            data.
+
+            When set, results are sorted by this key and pagination.key is
+            rejected.
+
+            Use pagination.reverse to invert the sorted order; max 256
+            characters.
+          in: query
+          required: false
+          type: string
         - name: pagination.key
           in: query
           required: false

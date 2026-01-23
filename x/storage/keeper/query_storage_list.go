@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"sort"
 	"strings"
 
 	"cosmossdk.io/collections"
@@ -69,6 +70,9 @@ func (k Keeper) StorageList(ctx context.Context, req *storagetypes.QueryStorageL
 	if len(req.Extract) > 256 {
 		return nil, status.Errorf(codes.InvalidArgument, "extract path too long: max 256 characters")
 	}
+	if len(req.SortBy) > 256 {
+		return nil, status.Errorf(codes.InvalidArgument, "sort_by path too long: max 256 characters")
+	}
 
 	// Initialize pagination defaults
 	if req.Pagination == nil {
@@ -88,43 +92,12 @@ func (k Keeper) StorageList(ctx context.Context, req *storagetypes.QueryStorageL
 	if offset > 0 && len(pagKey) > 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid request, either offset or key is expected, got both")
 	}
+	if req.SortBy != "" && len(pagKey) > 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid request, pagination key not supported with sort_by")
+	}
 
 	ownerPrefix := resolvedOwner + "/"
 	fullPrefix := ownerPrefix + req.IndexPrefix
-
-	// Build range for iteration - either with pagination key or full prefix
-	var ranger collections.Ranger[string]
-
-	// Process pagination key if provided
-	if len(pagKey) > 0 {
-		// The pagination key is now always raw bytes:
-		// - CLI decodes base64 before sending
-		// - Script system sends raw bytes (protobuf JSON unmarshaling handles base64 automatically)
-		decodedKey := string(pagKey)
-		startKey := fullPrefix + decodedKey
-
-		if reverse {
-			// For reverse pagination, we need to iterate from ownerPrefix to the pagination key (inclusive)
-			ranger = (&collections.Range[string]{}).StartInclusive(fullPrefix).EndInclusive(startKey).Descending()
-		} else {
-			// For forward pagination, use StartInclusive range with prefix end
-			endExclusive := incrementLastByte(fullPrefix)
-			ranger = (&collections.Range[string]{}).StartInclusive(startKey).EndExclusive(endExclusive)
-		}
-	} else {
-		// No pagination key - use full prefix range
-		if reverse {
-			ranger = (&collections.Range[string]{}).Prefix(fullPrefix).Descending()
-		} else {
-			ranger = (&collections.Range[string]{}).Prefix(fullPrefix)
-		}
-	}
-
-	iter, err := k.StorageMap.Iterate(ctx, ranger)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-	defer iter.Close()
 
 	// Define predicate and transform functions
 	predicateFunc := func(key string, val storagetypes.Storage) (bool, error) {
@@ -162,6 +135,185 @@ func (k Keeper) StorageList(ctx context.Context, req *storagetypes.QueryStorageL
 		// create a copy to return its address safely
 		return &val, nil
 	}
+
+	if req.SortBy != "" {
+		type sortEntry struct {
+			key     string
+			val     storagetypes.Storage
+			rank    int
+			num     float64
+			str     string
+			boolean bool
+			raw     string
+		}
+
+		sortKey := func(res gjson.Result) (int, float64, string, bool, string) {
+			if !res.Exists() {
+				return 3, 0, "", false, ""
+			}
+			switch res.Type {
+			case gjson.Number:
+				return 0, res.Num, "", false, ""
+			case gjson.String:
+				return 1, 0, res.Str, false, ""
+			case gjson.True:
+				return 2, 0, "", true, ""
+			case gjson.False:
+				return 2, 0, "", false, ""
+			case gjson.Null:
+				return 3, 0, "", false, ""
+			default:
+				return 4, 0, "", false, res.Raw
+			}
+		}
+
+		iter, err := k.StorageMap.Iterate(ctx, (&collections.Range[string]{}).Prefix(fullPrefix))
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		defer iter.Close()
+
+		entries := []sortEntry{}
+		for iter.Valid() {
+			key, err := iter.Key()
+			if err != nil {
+				return nil, status.Error(codes.Internal, err.Error())
+			}
+			val, err := iter.Value()
+			if err != nil {
+				return nil, status.Error(codes.Internal, err.Error())
+			}
+			include, err := predicateFunc(key, val)
+			if err != nil {
+				return nil, status.Error(codes.Internal, err.Error())
+			}
+			if include {
+				rank, num, str, boolean, raw := sortKey(gjson.Get(val.Data, req.SortBy))
+				entries = append(entries, sortEntry{
+					key:     key,
+					val:     val,
+					rank:    rank,
+					num:     num,
+					str:     str,
+					boolean: boolean,
+					raw:     raw,
+				})
+			}
+			iter.Next()
+		}
+
+		compare := func(a, b sortEntry) int {
+			if a.rank != b.rank {
+				if a.rank < b.rank {
+					return -1
+				}
+				return 1
+			}
+			switch a.rank {
+			case 0:
+				if a.num < b.num {
+					return -1
+				}
+				if a.num > b.num {
+					return 1
+				}
+			case 1:
+				if a.str < b.str {
+					return -1
+				}
+				if a.str > b.str {
+					return 1
+				}
+			case 2:
+				if !a.boolean && b.boolean {
+					return -1
+				}
+				if a.boolean && !b.boolean {
+					return 1
+				}
+			case 4:
+				if a.raw < b.raw {
+					return -1
+				}
+				if a.raw > b.raw {
+					return 1
+				}
+			}
+			if a.key < b.key {
+				return -1
+			}
+			if a.key > b.key {
+				return 1
+			}
+			return 0
+		}
+
+		sort.Slice(entries, func(i, j int) bool {
+			if reverse {
+				return compare(entries[j], entries[i]) < 0
+			}
+			return compare(entries[i], entries[j]) < 0
+		})
+
+		totalCount := uint64(len(entries))
+		if offset < totalCount {
+			end := offset + limit
+			if end > totalCount {
+				end = totalCount
+			}
+			startIdx := int(offset)
+			endIdx := int(end)
+			for _, entry := range entries[startIdx:endIdx] {
+				transformed, err := transformFunc(entry.key, entry.val)
+				if err != nil {
+					return nil, status.Error(codes.Internal, err.Error())
+				}
+				resp.Entries = append(resp.Entries, transformed)
+			}
+		}
+
+		if req.Pagination != nil && req.Pagination.CountTotal {
+			resp.Pagination.Total = totalCount
+		}
+
+		k.Logger(sdkCtx).Info("StorageList", "req", req, "entries_returned", len(resp.Entries))
+		return resp, nil
+	}
+
+	// Build range for iteration - either with pagination key or full prefix.
+	// Chesterton's fence: keep this unsorted pagination logic intact.
+	var ranger collections.Ranger[string]
+
+	// Process pagination key if provided
+	if len(pagKey) > 0 {
+		// The pagination key is now always raw bytes:
+		// - CLI decodes base64 before sending
+		// - Script system sends raw bytes (protobuf JSON unmarshaling handles base64 automatically)
+		decodedKey := string(pagKey)
+		startKey := fullPrefix + decodedKey
+
+		if reverse {
+			// For reverse pagination, we need to iterate from ownerPrefix to the pagination key (inclusive)
+			ranger = (&collections.Range[string]{}).StartInclusive(fullPrefix).EndInclusive(startKey).Descending()
+		} else {
+			// For forward pagination, use StartInclusive range with prefix end
+			endExclusive := incrementLastByte(fullPrefix)
+			ranger = (&collections.Range[string]{}).StartInclusive(startKey).EndExclusive(endExclusive)
+		}
+	} else {
+		// No pagination key - use full prefix range
+		if reverse {
+			ranger = (&collections.Range[string]{}).Prefix(fullPrefix).Descending()
+		} else {
+			ranger = (&collections.Range[string]{}).Prefix(fullPrefix)
+		}
+	}
+
+	iter, err := k.StorageMap.Iterate(ctx, ranger)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	defer iter.Close()
 
 	var skipped uint64
 	var collected uint64

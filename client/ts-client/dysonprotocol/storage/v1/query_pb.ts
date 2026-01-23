@@ -166,10 +166,19 @@ export class QueryStorageListRequest extends Message<QueryStorageListRequest> {
   extract = "";
 
   /**
+   * Optional GJSON path used to derive a sort key from each entry's data.
+   * When set, results are sorted by this key and pagination.key is rejected.
+   * Use pagination.reverse to invert the sorted order; max 256 characters.
+   *
+   * @generated from field: string sort_by = 5;
+   */
+  sortBy = "";
+
+  /**
    * Pagination parameters for result set navigation; supports offset, limit,
    * and key-based pagination.
    *
-   * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 5;
+   * @generated from field: cosmos.base.query.v1beta1.PageRequest pagination = 6;
    */
   pagination?: PageRequest;
 
@@ -185,7 +194,8 @@ export class QueryStorageListRequest extends Message<QueryStorageListRequest> {
     { no: 2, name: "index_prefix", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "filter", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "extract", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 5, name: "pagination", kind: "message", T: PageRequest },
+    { no: 5, name: "sort_by", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "pagination", kind: "message", T: PageRequest },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QueryStorageListRequest {
