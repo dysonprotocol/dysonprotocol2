@@ -9,6 +9,7 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoiface "google.golang.org/protobuf/runtime/protoiface"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	anypb "google.golang.org/protobuf/types/known/anypb"
 	io "io"
 	reflect "reflect"
 	sync "sync"
@@ -60,10 +61,62 @@ func (x *_ScriptExecAuthorization_2_list) IsValid() bool {
 	return x.list != nil
 }
 
+var _ protoreflect.List = (*_ScriptExecAuthorization_3_list)(nil)
+
+type _ScriptExecAuthorization_3_list struct {
+	list *[]*anypb.Any
+}
+
+func (x *_ScriptExecAuthorization_3_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_ScriptExecAuthorization_3_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_ScriptExecAuthorization_3_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*anypb.Any)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_ScriptExecAuthorization_3_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*anypb.Any)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_ScriptExecAuthorization_3_list) AppendMutable() protoreflect.Value {
+	v := new(anypb.Any)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_ScriptExecAuthorization_3_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_ScriptExecAuthorization_3_list) NewElement() protoreflect.Value {
+	v := new(anypb.Any)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_ScriptExecAuthorization_3_list) IsValid() bool {
+	return x.list != nil
+}
+
 var (
-	md_ScriptExecAuthorization                protoreflect.MessageDescriptor
-	fd_ScriptExecAuthorization_script_address protoreflect.FieldDescriptor
-	fd_ScriptExecAuthorization_function_names protoreflect.FieldDescriptor
+	md_ScriptExecAuthorization                             protoreflect.MessageDescriptor
+	fd_ScriptExecAuthorization_script_address              protoreflect.FieldDescriptor
+	fd_ScriptExecAuthorization_function_names              protoreflect.FieldDescriptor
+	fd_ScriptExecAuthorization_attached_msg_authorizations protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -71,6 +124,7 @@ func init() {
 	md_ScriptExecAuthorization = File_dysonprotocol_script_v1_authz_proto.Messages().ByName("ScriptExecAuthorization")
 	fd_ScriptExecAuthorization_script_address = md_ScriptExecAuthorization.Fields().ByName("script_address")
 	fd_ScriptExecAuthorization_function_names = md_ScriptExecAuthorization.Fields().ByName("function_names")
+	fd_ScriptExecAuthorization_attached_msg_authorizations = md_ScriptExecAuthorization.Fields().ByName("attached_msg_authorizations")
 }
 
 var _ protoreflect.Message = (*fastReflection_ScriptExecAuthorization)(nil)
@@ -150,6 +204,12 @@ func (x *fastReflection_ScriptExecAuthorization) Range(f func(protoreflect.Field
 			return
 		}
 	}
+	if len(x.AttachedMsgAuthorizations) != 0 {
+		value := protoreflect.ValueOfList(&_ScriptExecAuthorization_3_list{list: &x.AttachedMsgAuthorizations})
+		if !f(fd_ScriptExecAuthorization_attached_msg_authorizations, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -169,6 +229,8 @@ func (x *fastReflection_ScriptExecAuthorization) Has(fd protoreflect.FieldDescri
 		return x.ScriptAddress != ""
 	case "dysonprotocol.script.v1.ScriptExecAuthorization.function_names":
 		return len(x.FunctionNames) != 0
+	case "dysonprotocol.script.v1.ScriptExecAuthorization.attached_msg_authorizations":
+		return len(x.AttachedMsgAuthorizations) != 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.script.v1.ScriptExecAuthorization"))
@@ -189,6 +251,8 @@ func (x *fastReflection_ScriptExecAuthorization) Clear(fd protoreflect.FieldDesc
 		x.ScriptAddress = ""
 	case "dysonprotocol.script.v1.ScriptExecAuthorization.function_names":
 		x.FunctionNames = nil
+	case "dysonprotocol.script.v1.ScriptExecAuthorization.attached_msg_authorizations":
+		x.AttachedMsgAuthorizations = nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.script.v1.ScriptExecAuthorization"))
@@ -213,6 +277,12 @@ func (x *fastReflection_ScriptExecAuthorization) Get(descriptor protoreflect.Fie
 			return protoreflect.ValueOfList(&_ScriptExecAuthorization_2_list{})
 		}
 		listValue := &_ScriptExecAuthorization_2_list{list: &x.FunctionNames}
+		return protoreflect.ValueOfList(listValue)
+	case "dysonprotocol.script.v1.ScriptExecAuthorization.attached_msg_authorizations":
+		if len(x.AttachedMsgAuthorizations) == 0 {
+			return protoreflect.ValueOfList(&_ScriptExecAuthorization_3_list{})
+		}
+		listValue := &_ScriptExecAuthorization_3_list{list: &x.AttachedMsgAuthorizations}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
@@ -240,6 +310,10 @@ func (x *fastReflection_ScriptExecAuthorization) Set(fd protoreflect.FieldDescri
 		lv := value.List()
 		clv := lv.(*_ScriptExecAuthorization_2_list)
 		x.FunctionNames = *clv.list
+	case "dysonprotocol.script.v1.ScriptExecAuthorization.attached_msg_authorizations":
+		lv := value.List()
+		clv := lv.(*_ScriptExecAuthorization_3_list)
+		x.AttachedMsgAuthorizations = *clv.list
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.script.v1.ScriptExecAuthorization"))
@@ -266,6 +340,12 @@ func (x *fastReflection_ScriptExecAuthorization) Mutable(fd protoreflect.FieldDe
 		}
 		value := &_ScriptExecAuthorization_2_list{list: &x.FunctionNames}
 		return protoreflect.ValueOfList(value)
+	case "dysonprotocol.script.v1.ScriptExecAuthorization.attached_msg_authorizations":
+		if x.AttachedMsgAuthorizations == nil {
+			x.AttachedMsgAuthorizations = []*anypb.Any{}
+		}
+		value := &_ScriptExecAuthorization_3_list{list: &x.AttachedMsgAuthorizations}
+		return protoreflect.ValueOfList(value)
 	case "dysonprotocol.script.v1.ScriptExecAuthorization.script_address":
 		panic(fmt.Errorf("field script_address of message dysonprotocol.script.v1.ScriptExecAuthorization is not mutable"))
 	default:
@@ -286,6 +366,9 @@ func (x *fastReflection_ScriptExecAuthorization) NewField(fd protoreflect.FieldD
 	case "dysonprotocol.script.v1.ScriptExecAuthorization.function_names":
 		list := []string{}
 		return protoreflect.ValueOfList(&_ScriptExecAuthorization_2_list{list: &list})
+	case "dysonprotocol.script.v1.ScriptExecAuthorization.attached_msg_authorizations":
+		list := []*anypb.Any{}
+		return protoreflect.ValueOfList(&_ScriptExecAuthorization_3_list{list: &list})
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: dysonprotocol.script.v1.ScriptExecAuthorization"))
@@ -365,6 +448,12 @@ func (x *fastReflection_ScriptExecAuthorization) ProtoMethods() *protoiface.Meth
 				n += 1 + l + runtime.Sov(uint64(l))
 			}
 		}
+		if len(x.AttachedMsgAuthorizations) > 0 {
+			for _, e := range x.AttachedMsgAuthorizations {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -393,6 +482,22 @@ func (x *fastReflection_ScriptExecAuthorization) ProtoMethods() *protoiface.Meth
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.AttachedMsgAuthorizations) > 0 {
+			for iNdEx := len(x.AttachedMsgAuthorizations) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.AttachedMsgAuthorizations[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x1a
+			}
 		}
 		if len(x.FunctionNames) > 0 {
 			for iNdEx := len(x.FunctionNames) - 1; iNdEx >= 0; iNdEx-- {
@@ -523,6 +628,40 @@ func (x *fastReflection_ScriptExecAuthorization) ProtoMethods() *protoiface.Meth
 				}
 				x.FunctionNames = append(x.FunctionNames, string(dAtA[iNdEx:postIndex]))
 				iNdEx = postIndex
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AttachedMsgAuthorizations", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.AttachedMsgAuthorizations = append(x.AttachedMsgAuthorizations, &anypb.Any{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.AttachedMsgAuthorizations[len(x.AttachedMsgAuthorizations)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -583,6 +722,11 @@ type ScriptExecAuthorization struct {
 	// function_names is a list of function names that can be called on this
 	// script if empty, only the script itself can be run without a function call
 	FunctionNames []string `protobuf:"bytes,2,rep,name=function_names,json=functionNames,proto3" json:"function_names,omitempty"`
+	// attached_msg_authorizations contains authorizations for attached messages.
+	// Each authorization (e.g., SendAuthorization, StakeAuthorization) controls
+	// what attached messages the grantee can include. The attached message's
+	// signer must be the granter. Authorizations are matched by MsgTypeURL.
+	AttachedMsgAuthorizations []*anypb.Any `protobuf:"bytes,3,rep,name=attached_msg_authorizations,json=attachedMsgAuthorizations,proto3" json:"attached_msg_authorizations,omitempty"`
 }
 
 func (x *ScriptExecAuthorization) Reset() {
@@ -619,6 +763,13 @@ func (x *ScriptExecAuthorization) GetFunctionNames() []string {
 	return nil
 }
 
+func (x *ScriptExecAuthorization) GetAttachedMsgAuthorizations() []*anypb.Any {
+	if x != nil {
+		return x.AttachedMsgAuthorizations
+	}
+	return nil
+}
+
 var File_dysonprotocol_script_v1_authz_proto protoreflect.FileDescriptor
 
 var file_dysonprotocol_script_v1_authz_proto_rawDesc = []byte{
@@ -628,24 +779,34 @@ var file_dysonprotocol_script_v1_authz_proto_rawDesc = []byte{
 	0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x2e, 0x76, 0x31, 0x1a, 0x11,
 	0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x1a, 0x19, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f,
-	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xe5, 0x01, 0x0a,
-	0x17, 0x53, 0x63, 0x72, 0x69, 0x70, 0x74, 0x45, 0x78, 0x65, 0x63, 0x41, 0x75, 0x74, 0x68, 0x6f,
-	0x72, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x3f, 0x0a, 0x0e, 0x73, 0x63, 0x72, 0x69,
-	0x70, 0x74, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64,
-	0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x0d, 0x73, 0x63, 0x72, 0x69,
-	0x70, 0x74, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x25, 0x0a, 0x0e, 0x66, 0x75, 0x6e,
-	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28,
-	0x09, 0x52, 0x0d, 0x66, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x4e, 0x61, 0x6d, 0x65, 0x73,
-	0x3a, 0x62, 0xca, 0xb4, 0x2d, 0x22, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x61, 0x75, 0x74,
-	0x68, 0x7a, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x6f,
-	0x72, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0xd2, 0xb4, 0x2d, 0x11, 0x64, 0x79, 0x73, 0x6f,
-	0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x20, 0x32, 0x2e, 0x30, 0x8a, 0xe7, 0xb0,
-	0x2a, 0x22, 0x64, 0x79, 0x73, 0x2f, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x2f, 0x53, 0x63, 0x72,
-	0x69, 0x70, 0x74, 0x45, 0x78, 0x65, 0x63, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x7a, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x42, 0x22, 0x5a, 0x20, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x73, 0x63, 0x72, 0x69,
-	0x70, 0x74, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x67, 0x6f,
+	0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x61, 0x6e,
+	0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xe3, 0x02, 0x0a, 0x17, 0x53, 0x63, 0x72, 0x69,
+	0x70, 0x74, 0x45, 0x78, 0x65, 0x63, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x7a, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x12, 0x3f, 0x0a, 0x0e, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x5f, 0x61, 0x64,
+	0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d,
+	0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53,
+	0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x0d, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x41, 0x64, 0x64,
+	0x72, 0x65, 0x73, 0x73, 0x12, 0x25, 0x0a, 0x0e, 0x66, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e,
+	0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0d, 0x66, 0x75,
+	0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x12, 0x7c, 0x0a, 0x1b, 0x61,
+	0x74, 0x74, 0x61, 0x63, 0x68, 0x65, 0x64, 0x5f, 0x6d, 0x73, 0x67, 0x5f, 0x61, 0x75, 0x74, 0x68,
+	0x6f, 0x72, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x14, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+	0x75, 0x66, 0x2e, 0x41, 0x6e, 0x79, 0x42, 0x26, 0xca, 0xb4, 0x2d, 0x22, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x2e, 0x61, 0x75, 0x74, 0x68, 0x7a, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31,
+	0x2e, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x19,
+	0x61, 0x74, 0x74, 0x61, 0x63, 0x68, 0x65, 0x64, 0x4d, 0x73, 0x67, 0x41, 0x75, 0x74, 0x68, 0x6f,
+	0x72, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x62, 0xca, 0xb4, 0x2d, 0x22, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x61, 0x75, 0x74, 0x68, 0x7a, 0x2e, 0x76, 0x31, 0x62, 0x65,
+	0x74, 0x61, 0x31, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0xd2, 0xb4, 0x2d, 0x11, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63,
+	0x6f, 0x6c, 0x20, 0x32, 0x2e, 0x30, 0x8a, 0xe7, 0xb0, 0x2a, 0x22, 0x64, 0x79, 0x73, 0x2f, 0x73,
+	0x63, 0x72, 0x69, 0x70, 0x74, 0x2f, 0x53, 0x63, 0x72, 0x69, 0x70, 0x74, 0x45, 0x78, 0x65, 0x63,
+	0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x42, 0x22, 0x5a,
+	0x20, 0x64, 0x79, 0x73, 0x6f, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x78, 0x2f, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x2f, 0x74, 0x79, 0x70, 0x65,
+	0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -663,13 +824,15 @@ func file_dysonprotocol_script_v1_authz_proto_rawDescGZIP() []byte {
 var file_dysonprotocol_script_v1_authz_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_dysonprotocol_script_v1_authz_proto_goTypes = []interface{}{
 	(*ScriptExecAuthorization)(nil), // 0: dysonprotocol.script.v1.ScriptExecAuthorization
+	(*anypb.Any)(nil),               // 1: google.protobuf.Any
 }
 var file_dysonprotocol_script_v1_authz_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	1, // 0: dysonprotocol.script.v1.ScriptExecAuthorization.attached_msg_authorizations:type_name -> google.protobuf.Any
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_dysonprotocol_script_v1_authz_proto_init() }

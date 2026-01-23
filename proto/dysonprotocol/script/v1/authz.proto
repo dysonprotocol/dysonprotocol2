@@ -3,6 +3,7 @@ package dysonprotocol.script.v1;
 
 import "amino/amino.proto";
 import "cosmos_proto/cosmos.proto";
+import "google/protobuf/any.proto";
 
 option go_package = "dysonprotocol.com/x/script/types";
 
@@ -20,4 +21,12 @@ message ScriptExecAuthorization {
   // function_names is a list of function names that can be called on this
   // script if empty, only the script itself can be run without a function call
   repeated string function_names = 2;
+
+  // attached_msg_authorizations contains authorizations for attached messages.
+  // Each authorization (e.g., SendAuthorization, StakeAuthorization) controls
+  // what attached messages the grantee can include. The attached message's
+  // signer must be the granter. Authorizations are matched by MsgTypeURL.
+  repeated google.protobuf.Any attached_msg_authorizations = 3
+      [ (cosmos_proto.accepts_interface) =
+            "cosmos.authz.v1beta1.Authorization" ];
 }

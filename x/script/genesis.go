@@ -5,7 +5,6 @@ import (
 
 	"dysonprotocol.com/x/script/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	gogoprotoany "github.com/cosmos/gogoproto/types/any"
 )
 
 // NewGenesisState creates a new genesis state
@@ -36,10 +35,5 @@ func ValidateGenesis(s *types.GenesisState) error {
 		}
 		seen[sc.Address] = struct{}{}
 	}
-	return nil
-}
-
-// UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
-func UnpackGenesisInterfaces(s *types.GenesisState, unpacker gogoprotoany.AnyUnpacker) error {
 	return nil
 }

@@ -12,10 +12,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authztypes "github.com/cosmos/cosmos-sdk/x/authz"
 
+	"dysonprotocol.com/x/script"
 	scripttypes "dysonprotocol.com/x/script/types"
 )
 
@@ -297,7 +297,7 @@ Examples:
 				return err
 			}
 
-			var attachedMessages []*types.Any
+			attachedMsgs := make([]sdk.Msg, 0, len(attachedMessageStrings))
 			for _, msgStr := range attachedMessageStrings {
 				if msgStr == "" {
 					continue
@@ -309,14 +309,7 @@ Examples:
 				if err != nil {
 					return fmt.Errorf("failed to unmarshal attached message JSON: %w", err)
 				}
-
-				// Create the Any message with properly encoded protobuf
-				anyMsg, err := types.NewAnyWithValue(msg)
-				if err != nil {
-					return fmt.Errorf("failed to create Any message: %w", err)
-				}
-
-				attachedMessages = append(attachedMessages, anyMsg)
+				attachedMsgs = append(attachedMsgs, msg)
 			}
 
 			msg := &scripttypes.MsgExec{
@@ -326,7 +319,12 @@ Examples:
 				FunctionName:     functionName,
 				ExtraCode:        extraCode,
 				Kwargs:           kwargs,
-				AttachedMessages: attachedMessages,
+			}
+			if len(attachedMsgs) > 0 {
+				err = script.SetMsgExecMessages(msg, attachedMsgs)
+				if err != nil {
+					return err
+				}
 			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)

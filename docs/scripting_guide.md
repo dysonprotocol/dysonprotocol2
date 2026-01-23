@@ -91,7 +91,7 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     * IPv6: ::1
     * IPv4: 127.0.0.1
     *   Trying [::1]:3317...
-    * connect to ::1 port 3317 from ::1 port 57703 failed: Connection refused
+    * connect to ::1 port 3317 from ::1 port 52123 failed: Connection refused
     *   Trying 127.0.0.1:3317...
     * Connected to dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost (127.0.0.1) port 3317
     > GET /hi HTTP/1.1
@@ -103,9 +103,9 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     < HTTP/1.1 200 OK
     < Content-Length: 82
     < Content-Type: text/html
-    < Date: Sat, 27 Dec 2025 14:00:00 GMT
+    < Date: Fri, 23 Jan 2026 13:27:32 GMT
     < Server: WSGIServer/0.2 CPython/3.12.11
-    < X-Server-Time: 1766844001
+    < X-Server-Time: 1769174853
     < 
     { [82 bytes data]
     * Connection #0 to host dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost left intact
@@ -133,7 +133,7 @@ print(f"✓ Script query successful for address: {address}")
 
 ```
 
-    {"script":{"address":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej","version":"2","code":"def add(a, b):\n    print(f\"Adding {a} and {b}\")\n    return {\"a\": a, \"b\": b, \"add_result\": a + b}\n\n\ndef wsgi(environ, start_response):\n    status = \"200 OK\"\n    headers = [(\"Content-type\", \"text/html\")]\n    start_response(status, headers)\n    return [\n        b\"\"\"\n\u003chtml\u003e\n    \u003cbody\u003e\n        \u003ch1\u003eHello from Dyson Protocol!\u003c/h1\u003e\n    \u003c/body\u003e\n\u003c/html\u003e\"\"\"\n    ]\n\n","update_height":"76"}}
+    {"script":{"address":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej","version":"1","code":"def add(a, b):\n    print(f\"Adding {a} and {b}\")\n    return {\"a\": a, \"b\": b, \"add_result\": a + b}\n\n\ndef wsgi(environ, start_response):\n    status = \"200 OK\"\n    headers = [(\"Content-type\", \"text/html\")]\n    start_response(status, headers)\n    return [\n        b\"\"\"\n\u003chtml\u003e\n    \u003cbody\u003e\n        \u003ch1\u003eHello from Dyson Protocol!\u003c/h1\u003e\n    \u003c/body\u003e\n\u003c/html\u003e\"\"\"\n    ]\n\n","update_height":"11"}}
     ✓ Script query successful for address: dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej
 
 
@@ -164,7 +164,7 @@ and observe how the function processes these values and returns the calculated s
           "attributes": [
             {
               "key": "acc_seq",
-              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/17",
+              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/1",
               "index": true
             }
           ]
@@ -174,13 +174,296 @@ and observe how the function processes these values and returns the calculated s
           "attributes": [
             {
               "key": "signature",
-              "value": "S1fWa0oIY1w+UbxcKsory0Eo3LNUJ9nTZ+FtCkpNHoZmJ+XowbHtDS7oH7l77aZZTkZ1HDdqn8Hu0TeKT21eGw==",
+              "value": "2DnquUOY4SBWMigVWZZEkQUT/ZzPXTkNx8tOZ7NjatNgexkxVG6SkgZrYnkLS5VLjFqJ4CKwYgOXu9a8BeUpaA==",
               "index": true
             }
           ]
         }
       ]
     }
+
+
+## Authz Exec With Attached Messages
+
+ScriptExecAuthorization can now include attached message authorizations. This lets a grantee execute a script on behalf of the granter and attach allowed messages (like `MsgSend`) that execute under the granter's authority. The attached message signer must be the granter, and each attached message type must be authorized by an embedded authz grant.
+
+
+
+```python
+import json
+import subprocess
+import tempfile
+from datetime import datetime, timedelta, timezone
+
+[bob_address] = ! dysond keys show bob -a
+bob_address = bob_address.strip()
+
+
+def parse_json_output(raw):
+    raw = raw.strip()
+    assert raw, f"empty command output: {raw}"
+    first = raw.find("{")
+    last = raw.rfind("}")
+    assert first != -1 and last != -1, f"no json object in output: {raw}"
+    return json.loads(raw[first : last + 1])
+
+
+def run_cmd(args):
+    result = subprocess.run(args, capture_output=True, text=True)
+    output = result.stdout + "\n" + result.stderr
+    assert result.returncode == 0, f"command failed: {args}\n{output}"
+    return output
+
+
+def wait_tx(tx_output):
+    tx = parse_json_output(tx_output)
+    assert tx.get("code", 1) == 0, f"tx failed: {tx}"
+    txhash = tx.get("txhash")
+    assert txhash, f"txhash missing: {tx}"
+    wait_output = run_cmd(["dysond", "query", "wait-tx", txhash, "-o", "json"])
+    return parse_json_output(wait_output)
+
+
+expiration = (datetime.now(timezone.utc) + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+msg_grant = {
+    "@type": "/cosmos.authz.v1beta1.MsgGrant",
+    "granter": address,
+    "grantee": bob_address,
+    "grant": {
+        "authorization": {
+            "@type": "/dysonprotocol.script.v1.ScriptExecAuthorization",
+            "script_address": address,
+            "function_names": ["add"],
+            "attached_msg_authorizations": [
+                {
+                    "@type": "/cosmos.bank.v1beta1.SendAuthorization",
+                    "spend_limit": [{"denom": "udys", "amount": "25"}],
+                }
+            ],
+        },
+        "expiration": expiration,
+    },
+}
+
+print("MsgGrant payload:")
+print(json.dumps(msg_grant, indent=2))
+
+grant_output = run_cmd(
+    [
+        "dysond",
+        "tx",
+        "script",
+        "exec",
+        "--script-address",
+        address,
+        "--function-name",
+        "add",
+        "--args",
+        "[0, 0]",
+        "--kwargs",
+        "{}",
+        "--attached-message",
+        json.dumps(msg_grant),
+        "--from",
+        "alice",
+        "--gas",
+        "2000000",
+        "-y",
+        "-o",
+        "json",
+    ]
+)
+
+grant_res = wait_tx(grant_output)
+assert grant_res.get("code", 1) == 0, f"authz grant failed: {grant_res}"
+
+balances_before = run_cmd(["dysond", "query", "bank", "balances", bob_address, "-o", "json"])
+balances_before = parse_json_output(balances_before)
+print("Balances before:")
+print(json.dumps(balances_before, indent=2))
+coins_before = balances_before.get("balances", [])
+udys_before = [c for c in coins_before if c.get("denom") == "udys"]
+assert udys_before, f"udys balance missing: {balances_before}"
+before_amount = int(udys_before[0]["amount"])
+
+msg_exec = {
+    "@type": "/dysonprotocol.script.v1.MsgExec",
+    "executor_address": address,
+    "script_address": address,
+    "function_name": "add",
+    "args": "[2, 3]",
+    "kwargs": "{}",
+    "attached_messages": [
+        {
+            "@type": "/cosmos.bank.v1beta1.MsgSend",
+            "from_address": address,
+            "to_address": bob_address,
+            "amount": [{"denom": "udys", "amount": "5"}],
+        }
+    ],
+}
+
+tx_body = {"body": {"messages": [msg_exec]}}
+
+with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=True) as tx_file:
+    json.dump(tx_body, tx_file)
+    tx_file.flush()
+    exec_output = run_cmd(
+        [
+            "dysond",
+            "tx",
+            "authz",
+            "exec",
+            tx_file.name,
+            "--from",
+            "bob",
+            "--gas",
+            "2000000",
+            "-y",
+            "-o",
+            "json",
+        ]
+    )
+
+exec_res = wait_tx(exec_output)
+assert exec_res.get("code", 1) == 0, f"authz exec failed: {exec_res}"
+
+balances_after = run_cmd(["dysond", "query", "bank", "balances", bob_address, "-o", "json"])
+balances_after = parse_json_output(balances_after)
+print("Balances after:")
+print(json.dumps(balances_after, indent=2))
+coins_after = balances_after.get("balances", [])
+udys_after = [c for c in coins_after if c.get("denom") == "udys"]
+assert udys_after, f"udys balance missing: {balances_after}"
+after_amount = int(udys_after[0]["amount"])
+assert after_amount == before_amount + 5, f"balance mismatch: {before_amount} -> {after_amount}"
+
+grant_state = run_cmd(["dysond", "query", "authz", "grants", address, bob_address, "-o", "json"])
+grant_state = parse_json_output(grant_state)
+print("MsgGrant state after exec:")
+print(json.dumps(grant_state, indent=2))
+exec_grants = []
+for grant in grant_state.get("grants", []):
+    auth = grant.get("authorization", {})
+    auth_type = auth.get("@type") or auth.get("type")
+    if auth_type == "/dysonprotocol.script.v1.ScriptExecAuthorization":
+        exec_grants.append(grant)
+
+assert exec_grants, f"ScriptExecAuthorization missing: {grant_state}"
+exec_auth = exec_grants[0].get("authorization", {})
+exec_value = exec_auth.get("value", exec_auth)
+attached_auths = exec_value.get("attached_msg_authorizations", [])
+assert isinstance(attached_auths, list), f"attached_msg_authorizations missing: {exec_value}"
+
+send_auths = []
+for auth in attached_auths:
+    auth_type = auth.get("@type") or auth.get("type")
+    if auth_type == "/cosmos.bank.v1beta1.SendAuthorization":
+        send_auths.append(auth)
+
+assert send_auths, f"SendAuthorization missing: {attached_auths}"
+send_value = send_auths[0].get("value", send_auths[0])
+spend_limit = send_value.get("spend_limit", [])
+assert spend_limit, f"spend_limit missing: {send_value}"
+udys_limit = [c for c in spend_limit if c.get("denom") == "udys"]
+assert udys_limit, f"udys spend_limit missing: {spend_limit}"
+print(f"Updated spend_limit: {udys_limit[0]}")
+assert udys_limit[0].get("amount") == "20", f"spend_limit not updated: {udys_limit[0]}"
+
+```
+
+    MsgGrant payload:
+    {
+      "@type": "/cosmos.authz.v1beta1.MsgGrant",
+      "granter": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
+      "grantee": "dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el",
+      "grant": {
+        "authorization": {
+          "@type": "/dysonprotocol.script.v1.ScriptExecAuthorization",
+          "script_address": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
+          "function_names": [
+            "add"
+          ],
+          "attached_msg_authorizations": [
+            {
+              "@type": "/cosmos.bank.v1beta1.SendAuthorization",
+              "spend_limit": [
+                {
+                  "denom": "udys",
+                  "amount": "25"
+                }
+              ]
+            }
+          ]
+        },
+        "expiration": "2026-01-23T14:27:34Z"
+      }
+    }
+
+
+    Balances before:
+    {
+      "balances": [
+        {
+          "denom": "udys",
+          "amount": "10000000000"
+        }
+      ],
+      "pagination": {
+        "total": "1"
+      }
+    }
+
+
+    Balances after:
+    {
+      "balances": [
+        {
+          "denom": "udys",
+          "amount": "10000000005"
+        }
+      ],
+      "pagination": {
+        "total": "1"
+      }
+    }
+
+
+    MsgGrant state after exec:
+    {
+      "grants": [
+        {
+          "authorization": {
+            "type": "/dysonprotocol.script.v1.ScriptExecAuthorization",
+            "value": {
+              "script_address": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
+              "function_names": [
+                "add"
+              ],
+              "attached_msg_authorizations": [
+                {
+                  "type": "/cosmos.bank.v1beta1.SendAuthorization",
+                  "value": {
+                    "spend_limit": [
+                      {
+                        "denom": "udys",
+                        "amount": "20"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "expiration": "2026-01-23T14:27:34Z"
+        }
+      ],
+      "pagination": {
+        "total": "1"
+      }
+    }
+    Updated spend_limit: {'denom': 'udys', 'amount': '20'}
 
 
 # Encoding JSON for Blockchain Operations
@@ -244,17 +527,37 @@ print(f"Salt: {salt}")
 print(f"Hex Hash: {hex_hash}")
 ```
 
-    Name: alice-adsqt.dys
-    Salt: 6wnbr9aovh
-    Hex Hash: 443b6bfb36802299ca797ac4c79169de98d7af03d245ca2c1332875956d55dea
+    Name: alice-oyuae.dys
+    Salt: khbdtzap2z
+    Hex Hash: 98b75f293b57bdbcda6374c6029b498e91b4607cda5bc04aa5ec971e34269899
 
 
 
 ```python
-valuation = '100udys'
-res = ! dysond tx nameservice commit --commitment "$hex_hash" --valuation "$valuation" --from alice -y | dysond query wait-tx -o json
-res = json.loads('\n'.join(res))
-assert res.get("code", 1) == 0, f"script update failed: {res}"
+valuation = "100udys"
+commit_output = run_cmd(
+    [
+        "dysond",
+        "tx",
+        "nameservice",
+        "commit",
+        "--commitment",
+        hex_hash,
+        "--valuation",
+        valuation,
+        "--from",
+        "alice",
+        "--gas",
+        "2000000",
+        "-y",
+        "-o",
+        "json",
+    ]
+)
+
+commit_res = wait_tx(commit_output)
+assert commit_res.get("code", 1) == 0, f"nameservice commit failed: {commit_res}"
+
 ```
 
 ## Reveal Name Registration
@@ -262,14 +565,29 @@ Reveal the name to complete registration.
 
 
 ```python
-res = ! dysond tx nameservice reveal \
-    --name "$name" \
-    --salt "$salt" \
-    --from alice \
-    -y | dysond query wait-tx -o json
+reveal_output = run_cmd(
+    [
+        "dysond",
+        "tx",
+        "nameservice",
+        "reveal",
+        "--name",
+        name,
+        "--salt",
+        salt,
+        "--from",
+        "alice",
+        "--gas",
+        "2000000",
+        "-y",
+        "-o",
+        "json",
+    ]
+)
 
-res = json.loads('\n'.join(res))
-assert res.get("code", 1) == 0, f"script update failed: {res}"
+reveal_res = wait_tx(reveal_output)
+assert reveal_res.get("code", 1) == 0, f"nameservice reveal failed: {reveal_res}"
+
 ```
 
 ## Set Destination for Name
@@ -277,14 +595,28 @@ Set the destination of the registered name to Alice's address.
 
 
 ```python
-res = ! dysond tx nameservice set-destination \
-    --name "$name" \
-    --destination "$address" \
-    --from alice \
-    -y | dysond query wait-tx -o json
+set_output = run_cmd(
+    [
+        "dysond",
+        "tx",
+        "nameservice",
+        "set-destination",
+        "--name",
+        name,
+        "--destination",
+        address,
+        "--from",
+        "alice",
+        "--gas",
+        "2000000",
+        "-y",
+        "-o",
+        "json",
+    ]
+)
 
-res = json.loads('\n'.join(res))
-assert res.get("code", 1) == 0, f"script update failed: {res}"
+set_res = wait_tx(set_output)
+assert set_res.get("code", 1) == 0, f"nameservice set-destination failed: {set_res}"
 
 ```
 
@@ -305,18 +637,18 @@ print(output)
 assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Protocol!' in output, got: " + output
 ```
 
-    Accessing your DWapp at 'http://alice-adsqt.localhost:3317'
+    Accessing your DWapp at 'http://alice-oyuae.localhost:3317'
 
 
-    * Host alice-adsqt.localhost:3317 was resolved.
+    * Host alice-oyuae.localhost:3317 was resolved.
     * IPv6: ::1
     * IPv4: 127.0.0.1
     *   Trying [::1]:3317...
-    * connect to ::1 port 3317 from ::1 port 60361 failed: Connection refused
+    * connect to ::1 port 3317 from ::1 port 56428 failed: Connection refused
     *   Trying 127.0.0.1:3317...
-    * Connected to alice-adsqt.localhost (127.0.0.1) port 3317
+    * Connected to alice-oyuae.localhost (127.0.0.1) port 3317
     > GET /hi HTTP/1.1
-    > Host: alice-adsqt.localhost:3317
+    > Host: alice-oyuae.localhost:3317
     > User-Agent: curl/8.7.1
     > Accept: */*
     > 
@@ -324,12 +656,12 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     < HTTP/1.1 200 OK
     < Content-Length: 82
     < Content-Type: text/html
-    < Date: Sat, 27 Dec 2025 14:00:02 GMT
+    < Date: Fri, 23 Jan 2026 13:27:40 GMT
     < Server: WSGIServer/0.2 CPython/3.12.11
-    < X-Server-Time: 1766844003
+    < X-Server-Time: 1769174861
     < 
     { [82 bytes data]
-    * Connection #0 to host alice-adsqt.localhost left intact
+    * Connection #0 to host alice-oyuae.localhost left intact
     
     <html>
         <body>

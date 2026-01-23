@@ -71,6 +71,7 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		&scripttypes.MsgSudoResponse{},
 		&scripttypes.RunScript{},
 		&scripttypes.ResponseRunScript{},
+		&scripttypes.ScriptExecAuthorization{},
 	)
 
 	// Register SDK message implementations

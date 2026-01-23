@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
-import { Message, proto3 } from "@bufbuild/protobuf";
+import { Any, Message, proto3 } from "@bufbuild/protobuf";
 
 /**
  * ScriptExecAuthorization allows the grantee to execute specific scripts and
@@ -28,6 +28,16 @@ export class ScriptExecAuthorization extends Message<ScriptExecAuthorization> {
    */
   functionNames: string[] = [];
 
+  /**
+   * attached_msg_authorizations contains authorizations for attached messages.
+   * Each authorization (e.g., SendAuthorization, StakeAuthorization) controls
+   * what attached messages the grantee can include. The attached message's
+   * signer must be the granter. Authorizations are matched by MsgTypeURL.
+   *
+   * @generated from field: repeated google.protobuf.Any attached_msg_authorizations = 3;
+   */
+  attachedMsgAuthorizations: Any[] = [];
+
   constructor(data?: PartialMessage<ScriptExecAuthorization>) {
     super();
     proto3.util.initPartial(data, this);
@@ -38,6 +48,7 @@ export class ScriptExecAuthorization extends Message<ScriptExecAuthorization> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "script_address", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "function_names", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 3, name: "attached_msg_authorizations", kind: "message", T: Any, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ScriptExecAuthorization {

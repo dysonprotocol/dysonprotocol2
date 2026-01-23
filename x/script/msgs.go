@@ -13,20 +13,6 @@ var (
 	_ sdk.Msg = &types.MsgSudo{}
 )
 
-// DEPRECATED: This function is no longer needed since MsgExec now implements UnpackInterfacesMessage
-// UnpackExecInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
-func UnpackExecInterfaces(msg *types.MsgExec, unpacker gogoprotoany.AnyUnpacker) error {
-	for _, x := range msg.AttachedMessages {
-		var m sdk.Msg
-		err := unpacker.UnpackAny(x, &m)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // GetMsgExecMessages unpacks the Any's into sdk.Msg's
 func GetMsgExecMessages(msg *types.MsgExec) ([]sdk.Msg, error) {
 	return tx.GetMsgs(msg.AttachedMessages, "Exec")
@@ -34,8 +20,10 @@ func GetMsgExecMessages(msg *types.MsgExec) ([]sdk.Msg, error) {
 
 // SetMsgExecMessages packs msgs into Any's in the MsgExec.AttachedMessages field
 func SetMsgExecMessages(msg *types.MsgExec, msgs []sdk.Msg) error {
-	anys, err := tx.SetMsgs(msgs)
+	anys, err := GetAnyMessages(msgs)
 	if err != nil {
+		// UNREACHABLE: attached messages are validated sdk.Msg values; packing
+		// should only fail for non-proto or nil messages.
 		return err
 	}
 	msg.AttachedMessages = anys
@@ -44,8 +32,10 @@ func SetMsgExecMessages(msg *types.MsgExec, msgs []sdk.Msg) error {
 
 // SetMsgExecResult sets the attached message results for MsgExecResponse
 func SetMsgExecResult(resp *types.MsgExecResponse, msgs []sdk.Msg) error {
-	anys, err := tx.SetMsgs(msgs)
+	anys, err := GetAnyMessages(msgs)
 	if err != nil {
+		// UNREACHABLE: attached message results are produced by Msg handlers and
+		// must be concrete sdk.Msg types; tx.SetMsgs should never fail here.
 		return err
 	}
 	resp.AttachedMessageResults = anys
