@@ -91,7 +91,7 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     * IPv6: ::1
     * IPv4: 127.0.0.1
     *   Trying [::1]:3317...
-    * connect to ::1 port 3317 from ::1 port 52123 failed: Connection refused
+    * connect to ::1 port 3317 from ::1 port 58809 failed: Connection refused
     *   Trying 127.0.0.1:3317...
     * Connected to dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost (127.0.0.1) port 3317
     > GET /hi HTTP/1.1
@@ -103,9 +103,9 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     < HTTP/1.1 200 OK
     < Content-Length: 82
     < Content-Type: text/html
-    < Date: Fri, 23 Jan 2026 13:27:32 GMT
+    < Date: Sat, 24 Jan 2026 01:00:10 GMT
     < Server: WSGIServer/0.2 CPython/3.12.11
-    < X-Server-Time: 1769174853
+    < X-Server-Time: 1769216410
     < 
     { [82 bytes data]
     * Connection #0 to host dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej.localhost left intact
@@ -133,7 +133,7 @@ print(f"✓ Script query successful for address: {address}")
 
 ```
 
-    {"script":{"address":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej","version":"1","code":"def add(a, b):\n    print(f\"Adding {a} and {b}\")\n    return {\"a\": a, \"b\": b, \"add_result\": a + b}\n\n\ndef wsgi(environ, start_response):\n    status = \"200 OK\"\n    headers = [(\"Content-type\", \"text/html\")]\n    start_response(status, headers)\n    return [\n        b\"\"\"\n\u003chtml\u003e\n    \u003cbody\u003e\n        \u003ch1\u003eHello from Dyson Protocol!\u003c/h1\u003e\n    \u003c/body\u003e\n\u003c/html\u003e\"\"\"\n    ]\n\n","update_height":"11"}}
+    {"script":{"address":"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej","version":"1","code":"def add(a, b):\n    print(f\"Adding {a} and {b}\")\n    return {\"a\": a, \"b\": b, \"add_result\": a + b}\n\n\ndef wsgi(environ, start_response):\n    status = \"200 OK\"\n    headers = [(\"Content-type\", \"text/html\")]\n    start_response(status, headers)\n    return [\n        b\"\"\"\n\u003chtml\u003e\n    \u003cbody\u003e\n        \u003ch1\u003eHello from Dyson Protocol!\u003c/h1\u003e\n    \u003c/body\u003e\n\u003c/html\u003e\"\"\"\n    ]\n\n","update_height":"149"}}
     ✓ Script query successful for address: dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej
 
 
@@ -157,14 +157,14 @@ and observe how the function processes these values and returns the calculated s
     {
       "code": 11,
       "script_result": null,
-      "raw_log": "out of gas in location: script exec base cost; gasWanted: 200000, gasUsed: 1030642: out of gas",
+      "raw_log": "out of gas in location: script exec base cost; gasWanted: 200000, gasUsed: 1030645: out of gas",
       "events": [
         {
           "type": "tx",
           "attributes": [
             {
               "key": "acc_seq",
-              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/1",
+              "value": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej/18",
               "index": true
             }
           ]
@@ -174,7 +174,7 @@ and observe how the function processes these values and returns the calculated s
           "attributes": [
             {
               "key": "signature",
-              "value": "2DnquUOY4SBWMigVWZZEkQUT/ZzPXTkNx8tOZ7NjatNgexkxVG6SkgZrYnkLS5VLjFqJ4CKwYgOXu9a8BeUpaA==",
+              "value": "Yl7amCBd4HY2xnX/ov8sduRXg47fIanb9sL3tJispYF7MxOmEbj5G2hcH50HtQMDRitsUXleQG5RW6x3T3uN5g==",
               "index": true
             }
           ]
@@ -397,7 +397,7 @@ assert udys_limit[0].get("amount") == "20", f"spend_limit not updated: {udys_lim
             }
           ]
         },
-        "expiration": "2026-01-23T14:27:34Z"
+        "expiration": "2026-01-24T02:00:12Z"
       }
     }
 
@@ -406,12 +406,20 @@ assert udys_limit[0].get("amount") == "20", f"spend_limit not updated: {udys_lim
     {
       "balances": [
         {
+          "denom": "bar-kktzty.dys",
+          "amount": "100551"
+        },
+        {
+          "denom": "foo-pfxgdk.dys",
+          "amount": "100046"
+        },
+        {
           "denom": "udys",
-          "amount": "10000000000"
+          "amount": "10000000001"
         }
       ],
       "pagination": {
-        "total": "1"
+        "total": "3"
       }
     }
 
@@ -420,16 +428,22 @@ assert udys_limit[0].get("amount") == "20", f"spend_limit not updated: {udys_lim
     {
       "balances": [
         {
+          "denom": "bar-kktzty.dys",
+          "amount": "100551"
+        },
+        {
+          "denom": "foo-pfxgdk.dys",
+          "amount": "100046"
+        },
+        {
           "denom": "udys",
-          "amount": "10000000005"
+          "amount": "10000000006"
         }
       ],
       "pagination": {
-        "total": "1"
+        "total": "3"
       }
     }
-
-
     MsgGrant state after exec:
     {
       "grants": [
@@ -456,7 +470,7 @@ assert udys_limit[0].get("amount") == "20", f"spend_limit not updated: {udys_lim
               ]
             }
           },
-          "expiration": "2026-01-23T14:27:34Z"
+          "expiration": "2026-01-24T02:00:12Z"
         }
       ],
       "pagination": {
@@ -527,9 +541,9 @@ print(f"Salt: {salt}")
 print(f"Hex Hash: {hex_hash}")
 ```
 
-    Name: alice-oyuae.dys
-    Salt: khbdtzap2z
-    Hex Hash: 98b75f293b57bdbcda6374c6029b498e91b4607cda5bc04aa5ec971e34269899
+    Name: alice-uuq3a.dys
+    Salt: 0saasred0j
+    Hex Hash: 568dfce65cb2d403d620077859f9ee08a53b75161572ff60984c42f2dfc7cde8
 
 
 
@@ -637,18 +651,18 @@ print(output)
 assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Protocol!' in output, got: " + output
 ```
 
-    Accessing your DWapp at 'http://alice-oyuae.localhost:3317'
+    Accessing your DWapp at 'http://alice-uuq3a.localhost:3317'
 
 
-    * Host alice-oyuae.localhost:3317 was resolved.
+    * Host alice-uuq3a.localhost:3317 was resolved.
     * IPv6: ::1
     * IPv4: 127.0.0.1
     *   Trying [::1]:3317...
-    * connect to ::1 port 3317 from ::1 port 56428 failed: Connection refused
+    * connect to ::1 port 3317 from ::1 port 63144 failed: Connection refused
     *   Trying 127.0.0.1:3317...
-    * Connected to alice-oyuae.localhost (127.0.0.1) port 3317
+    * Connected to alice-uuq3a.localhost (127.0.0.1) port 3317
     > GET /hi HTTP/1.1
-    > Host: alice-oyuae.localhost:3317
+    > Host: alice-uuq3a.localhost:3317
     > User-Agent: curl/8.7.1
     > Accept: */*
     > 
@@ -656,12 +670,12 @@ assert "Hello from Dyson Protocol!" in output, "Expected 'Hello from Dyson Proto
     < HTTP/1.1 200 OK
     < Content-Length: 82
     < Content-Type: text/html
-    < Date: Fri, 23 Jan 2026 13:27:40 GMT
+    < Date: Sat, 24 Jan 2026 01:00:14 GMT
     < Server: WSGIServer/0.2 CPython/3.12.11
-    < X-Server-Time: 1769174861
+    < X-Server-Time: 1769216415
     < 
     { [82 bytes data]
-    * Connection #0 to host alice-oyuae.localhost left intact
+    * Connection #0 to host alice-uuq3a.localhost left intact
     
     <html>
         <body>

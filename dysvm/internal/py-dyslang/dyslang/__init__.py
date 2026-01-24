@@ -99,10 +99,12 @@ def assert_func_allowed(func):
         if not callable(func):
             # If not callable, skip whitelist check
             return
-            
+
         modname = getattr(func, "__module__", None)
         qualname = getattr(
-            func, "__qualname__", getattr(func, "__name__", getattr(func, "_name", None))
+            func,
+            "__qualname__",
+            getattr(func, "__name__", getattr(func, "_name", None)),
         )
 
         if modname and qualname:
@@ -167,7 +169,7 @@ class DysRuntimeError(Exception):
     col_offset = None
     end_lineno = None
     end_col_offset = None
-    col = None  
+    col = None
     node = None
 
     def __init__(self, msg, node=None):
@@ -181,7 +183,7 @@ class DysRuntimeError(Exception):
         super().__init__(msg)
 
 
-UNCATCHABLE_EXCEPTIONS = (DangerousValue, MemoryError)
+UNCATCHABLE_EXCEPTIONS = (DangerousValue, MemoryError, TimeoutError)
 ########################################
 # Default simple functions to include:
 
@@ -189,7 +191,9 @@ UNCATCHABLE_EXCEPTIONS = (DangerousValue, MemoryError)
 def safe_mod(a, b):
     """only allow modulo on numbers, not string formating"""
     if isinstance(a, str):
-        raise NotImplementedError("String formating is not supported, use f-string instead")
+        raise NotImplementedError(
+            "String formating is not supported, use f-string instead"
+        )
     return a % b
 
 
@@ -554,7 +558,7 @@ class DysEval(object):
         """The internal evaluator used on each node in the parsed tree."""
         self.nodes_called += 1
         if self.nodes_called > self.max_node_calls:
-            raise Exception(
+            raise MemoryError(
                 f"This script exceeded the maximum number of allowed node calls: {self.max_node_calls}"
             )
         try:
@@ -577,10 +581,10 @@ class DysEval(object):
                 self.track(node)
                 if self.local_track_func:
                     self.local_track_func(
-                        node.lineno,
-                        node.col_offset,
-                        node.end_lineno,
-                        node.end_col_offset,
+                        getattr(node, "lineno", 0),
+                        getattr(node, "col_offset", 0),
+                        getattr(node, "end_lineno", 0),
+                        getattr(node, "end_col_offset", 0),
                         node.__class__.__name__,
                     )
         except (Return, Break, Continue, DysRuntimeError, *UNCATCHABLE_EXCEPTIONS):
@@ -589,7 +593,7 @@ class DysEval(object):
             exc = e
             if not hasattr(exc, "node"):  # pragma: no branch
                 exc.node = node
-            #raise e
+            # raise e
             raise DysRuntimeError(repr(exc), node=node) from exc
 
     def _eval_assert(self, node):
@@ -653,11 +657,11 @@ class DysEval(object):
     def _eval_importfrom(self, node):
         if not self.modules:
             raise ModuleNotFoundError("No modules loaded")
-            
+
         for alias in node.names:
             self.track(alias)
             asname = alias.asname or alias.name
-        
+
             module = self.modules
             for name in node.module.split("."):
                 if name in module.__dict__:
@@ -791,15 +795,22 @@ class DysEval(object):
     def _eval_functiondef(self, node):
 
         if node.name.startswith("__"):
-            raise DysRuntimeError(f"Defining function with the name '{node.name}' is forbidden.")
-        
+            raise DysRuntimeError(
+                f"Defining function with the name '{node.name}' is forbidden."
+            )
+
         sig_list, sig_dict = self._eval(node.args)
         _annotations = {}
-        for a in node.args.args + getattr(node.args, "posonlyargs", [None]) + getattr(node.args, "kwonlyargs", [None]) + [node.args.kwarg]:
+        for a in (
+            node.args.args
+            + getattr(node.args, "posonlyargs", [None])
+            + getattr(node.args, "kwonlyargs", [None])
+            + [node.args.kwarg]
+        ):
             self.track(a)
             if a and a.annotation:
                 _annotations[a.arg] = self._eval(a.annotation)
-        
+
         if node.returns:
             _annotations["return"] = self._eval(node.returns)
 
@@ -854,8 +865,10 @@ class DysEval(object):
 
     def _eval_classdef(self, node):
         if node.name.startswith("__"):
-            raise DysRuntimeError(f"Defining class with the name '{node.name}' is forbidden.")
-        
+            raise DysRuntimeError(
+                f"Defining class with the name '{node.name}' is forbidden."
+            )
+
         # Evaluate base classes
         bases = [self._eval(base) for base in node.bases]
 
@@ -865,7 +878,6 @@ class DysEval(object):
         for kw in node.keywords:
             kwds[kw.arg] = self._eval(kw.value)
 
-       
         def create_class_body(ns):
 
             self.scope.push(ns)
@@ -887,11 +899,10 @@ class DysEval(object):
             finally:
                 self.scope.dicts.pop()
 
-            
-        
-
         # Create the class
-        cls = types.new_class(node.name, tuple(bases), kwds=kwds, exec_body=create_class_body)
+        cls = types.new_class(
+            node.name, tuple(bases), kwds=kwds, exec_body=create_class_body
+        )
 
         # Evaluate decorators
         decorators = [self._eval(decorator) for decorator in node.decorator_list]
@@ -904,7 +915,6 @@ class DysEval(object):
         cls.__module__ = "script"
         cls.__qualname__ = node.name
         WHITELIST_FUNCTIONS.add(f"{cls.__module__}.{cls.__qualname__}")
-        
 
         # Assign the class to its name
         self.scope[node.name] = cls
@@ -968,16 +978,16 @@ class DysEval(object):
 
     def _delete(self, targets):
         if len(targets) > 1:
-            raise NotImplementedError(
-                "Cannot delete {} targets.".format(len(targets))
-            )
+            raise NotImplementedError("Cannot delete {} targets.".format(len(targets)))
         target = targets[0]
         if type(target) in self.deletions:
             handler = self.deletions[type(target)]
             handler(target)
         else:
             raise NotImplementedError(
-                "Cannot delete {}, available deletions: {}".format(type(target), self.deletions.keys())
+                "Cannot delete {}, available deletions: {}".format(
+                    type(target), self.deletions.keys()
+                )
             )
 
     def _delete_name(self, node):
@@ -998,7 +1008,7 @@ class DysEval(object):
         if node.cause is not None:
             cause = self._eval(node.cause)
             raise exc from cause
-        raise 
+        raise
 
     def _assign(self, targets, value):
         for target in targets:
@@ -1120,8 +1130,7 @@ class DysEval(object):
         else:  # pragma: no cover
             # This should never happen as there are only two bool operators And and Or
             raise NotImplementedError(
-                "{0} is not available in this "
-                "evaluator".format(type(node).__name__)
+                "{0} is not available in this " "evaluator".format(type(node).__name__)
             )
 
     def _eval_compare(self, node):
@@ -1199,15 +1208,13 @@ class DysEval(object):
             raise DysRuntimeError(f"Calling function '{node.func.id}' is forbidden.")
         elif isinstance(node.func, ast.Attribute) and node.func.attr.startswith("__"):
             raise DysRuntimeError(f"Calling method '{node.func.attr}' is forbidden.")
-        
+
         if len(self.call_stack) >= MAX_CALL_DEPTH:
             raise RecursionError("stack is to large")
 
         func = self._eval(node.func)
         if not callable(func):
-            raise TypeError(
-                "{} type is not callable".format(type(func).__name__)
-            )
+            raise TypeError("{} type is not callable".format(type(func).__name__))
 
         assert_func_allowed(func)
         kwarg_kwargs = [self._eval(k) for k in node.keywords]
@@ -1219,7 +1226,6 @@ class DysEval(object):
             func = partial(func, *args)
         for kwargs in kwarg_kwargs:
             func = partial(func, **kwargs)
-
 
         self.call_stack.append([node, self.expr])
         try:
@@ -1289,15 +1295,15 @@ class DysEval(object):
             length += len(val)
             evaluated_values.append(val)
         return "".join(evaluated_values)
-    
+
     def _eval_formattedvalue(self, node):
         val = self._eval(node.value)
 
-        if node.conversion == 114:          # !r
+        if node.conversion == 114:  # !r
             raise NotImplementedError("!r is not supported")
-        if node.conversion == 115:          # !s
+        if node.conversion == 115:  # !s
             val = str(val)
-        elif node.conversion == 97:         # !a
+        elif node.conversion == 97:  # !a
             val = ascii(val)
 
         spec = self._eval(node.format_spec) if node.format_spec else ""
@@ -1322,13 +1328,12 @@ class DysEval(object):
             if not m:
                 raise ValueError(f"Invalid format specifier {spec!r}")
 
-            width      = int(m.group("width") or 0)
-            precision  = int(m.group("prec")  or 0)
+            width = int(m.group("width") or 0)
+            precision = int(m.group("prec") or 0)
             if width > 100 or precision > 100:
                 raise MemoryError("format width / precision too long.")
 
         return format(val, spec)
-
 
     def _eval_dict(self, node):
         if len(node.keys) > MAX_STRING_LENGTH:
@@ -1362,11 +1367,15 @@ class DysEval(object):
             return
 
         self.nodes_called += 1
-        if self.nodes_called > MAX_NODE_CALLS:
-            raise TimeoutError("This program has too many evaluations")
+        if self.nodes_called > self.max_node_calls:
+            raise MemoryError(
+                f"This program has too many evaluations: Nodes called: {self.nodes_called} Max nodes allowed: {self.max_node_calls}"
+            )
         size = len(repr(self.scope)) + len(repr(self._last_eval_result))
-        if size > MAX_SCOPE_SIZE:
-            raise MemoryError("Scope has used too much memory")
+        if size > self.max_scope_size:
+            raise MemoryError(
+                f"Scope has used too much memory: Size: {size} Max scope size: {self.max_scope_size}"
+            )
 
     def _eval_comprehension(self, node):
 
@@ -1379,7 +1388,7 @@ class DysEval(object):
         elif isinstance(node, ast.SetComp):
             to_return = set()
         else:  # pragma: no cover
-            raise Exception(f"should never happen _eval_comprehension got: {node}") 
+            raise Exception(f"should never happen _eval_comprehension got: {node}")
 
         self.scope.push({})
 
@@ -1413,7 +1422,9 @@ class DysEval(object):
                         elif isinstance(node, ast.SetComp):
                             to_return.add(self._eval(node.elt))
                         else:  # pragma: no cover
-                            raise Exception(f"should never happen, do_generator: {node}")
+                            raise Exception(
+                                f"should never happen, do_generator: {node}"
+                            )
 
         do_generator()
 
@@ -1496,7 +1507,9 @@ def dys_test_coverage(expr, scope=None, call_stack=None, module_dict=None):
 
     s = DysCoverage(scope=scope, modules=modules, call_stack=call_stack)
     s.eval(expr)
-    coverage_names = [n for n in s.scope if n.startswith("coverage_") and callable(s.scope[n])]
+    coverage_names = [
+        n for n in s.scope if n.startswith("coverage_") and callable(s.scope[n])
+    ]
     for name in coverage_names:
         s.scope[name]()
     return sorted(s.seen_nodes.items())

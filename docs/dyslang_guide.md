@@ -88,7 +88,7 @@ assert 'balance' in json_result, "Balance not found in the result"
 print(json.dumps(json_result['balance'], indent=2))
 ```
 
-    {"result":"{\"cumsize\":6570,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":23,\"result\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"10000000000\",\"denom\":\"udys\"}},\"script_gas_consumed\":1013352,\"stdout\":\"\"}","attached_message_results":[]}
+    {"result":"{\"cumsize\":6570,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":0,\"result\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"10000000000\",\"denom\":\"udys\"}},\"script_gas_consumed\":1013352,\"stdout\":\"\"}","attached_message_results":[]}
     {
       "amount": "10000000000",
       "denom": "udys"
@@ -151,7 +151,7 @@ assert 'bob_balance' in json_result, "Bob's balance not found in the result"
 print(json.dumps(json_result, indent=2))
 ```
 
-    {"result":"{\"cumsize\":15368,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":39,\"result\":{\"alice_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"10000000000\",\"denom\":\"udys\"}},\"bob_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"10000000000\",\"denom\":\"udys\"}}},\"script_gas_consumed\":1023261,\"stdout\":\"\"}","attached_message_results":[]}
+    {"result":"{\"cumsize\":15368,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":0,\"result\":{\"alice_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"10000000000\",\"denom\":\"udys\"}},\"bob_balance\":{\"@type\":\"/cosmos.bank.v1beta1.QueryBalanceResponse\",\"balance\":{\"amount\":\"10000000000\",\"denom\":\"udys\"}}},\"script_gas_consumed\":1023261,\"stdout\":\"\"}","attached_message_results":[]}
     {
       "alice_balance": {
         "@type": "/cosmos.bank.v1beta1.QueryBalanceResponse",
@@ -242,7 +242,7 @@ print(f"- Total gas for iterations: {gas_metrics['iterations_gas']}")
 print(f"- Average gas per iteration: {gas_metrics['per_iteration']}")
 ```
 
-    {"result":"{\"cumsize\":75443,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":133,\"result\":{\"after_query_gas\":1017185,\"final_gas\":1061678,\"initial_gas\":1008377,\"iterations_gas\":44493,\"per_iteration\":8898.6,\"query_gas\":8808},\"script_gas_consumed\":1082225,\"stdout\":\"Iteration 1 of 5\\nIteration 2 of 5\\nIteration 3 of 5\\nIteration 4 of 5\\nIteration 5 of 5\\n\"}","attached_message_results":[]}
+    {"result":"{\"cumsize\":75443,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":0,\"result\":{\"after_query_gas\":1017185,\"final_gas\":1061678,\"initial_gas\":1008377,\"iterations_gas\":44493,\"per_iteration\":8898.6,\"query_gas\":8808},\"script_gas_consumed\":1082225,\"stdout\":\"Iteration 1 of 5\\nIteration 2 of 5\\nIteration 3 of 5\\nIteration 4 of 5\\nIteration 5 of 5\\n\"}","attached_message_results":[]}
     Gas report for benchmark operations:
     - Initial gas consumed: 1008377
     - Gas after query: 1017185
@@ -343,7 +343,7 @@ print(f"- Calculation result: {node_metrics['calculation_result']}")
 ```
 
     Node execution metrics:
-    - Nodes called: 106
+    - Nodes called: 0
     - Calculation result: 90
 
 
@@ -433,7 +433,7 @@ print(f"Executor Address: {address_info['caller_address']}")
 print(f"Self-execution: {address_info['is_self_call']}")
 ```
 
-    {"result":"{\"cumsize\":8798,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":27,\"result\":{\"caller_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"is_self_call\":true,\"script_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\"},\"script_gas_consumed\":1014469,\"stdout\":\"\"}","attached_message_results":[]}
+    {"result":"{\"cumsize\":8798,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":0,\"result\":{\"caller_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"is_self_call\":true,\"script_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\"},\"script_gas_consumed\":1014469,\"stdout\":\"\"}","attached_message_results":[]}
     Script Address: dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej
     Executor Address: dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej
     Self-execution: True
@@ -479,9 +479,9 @@ print(f"- Time: {block_info['time']}")
 ```
 
     Block Information:
-    - Height: 18
+    - Height: 19
     - Chain ID: chain-a
-    - Time: 2025-12-18T19:18:00.520234Z
+    - Time: 2026-01-24T00:59:23.004748Z
 
 
 ## Transaction Data
@@ -545,7 +545,7 @@ for m, r in zip(results['attached_messages'], results['attached_msg_results']):
     print(f"Result: {r}")
 ```
 
-    {"result":"{\"cumsize\":12601,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":18,\"result\":{\"attached_messages\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"amount\":[{\"amount\":\"12\",\"denom\":\"udys\"}],\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"},{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"amount\":[{\"amount\":\"34\",\"denom\":\"udys\"}],\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"}],\"attached_msg_results\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"},{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"}]},\"script_gas_consumed\":1054963,\"stdout\":\"\"}","attached_message_results":[{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"},{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"}]}
+    {"result":"{\"cumsize\":12601,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":0,\"result\":{\"attached_messages\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"amount\":[{\"amount\":\"12\",\"denom\":\"udys\"}],\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"},{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"amount\":[{\"amount\":\"34\",\"denom\":\"udys\"}],\"from_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"to_address\":\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"}],\"attached_msg_results\":[{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"},{\"@type\":\"/cosmos.bank.v1beta1.MsgSendResponse\"}]},\"script_gas_consumed\":1054963,\"stdout\":\"\"}","attached_message_results":[{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"},{"@type":"/cosmos.bank.v1beta1.MsgSendResponse"}]}
     {'attached_messages': [{'@type': '/cosmos.bank.v1beta1.MsgSend', 'amount': [{'amount': '12', 'denom': 'udys'}], 'from_address': 'dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej', 'to_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el'}, {'@type': '/cosmos.bank.v1beta1.MsgSend', 'amount': [{'amount': '34', 'denom': 'udys'}], 'from_address': 'dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej', 'to_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el'}], 'attached_msg_results': [{'@type': '/cosmos.bank.v1beta1.MsgSendResponse'}, {'@type': '/cosmos.bank.v1beta1.MsgSendResponse'}]}
     Message: {'@type': '/cosmos.bank.v1beta1.MsgSend', 'amount': [{'amount': '12', 'denom': 'udys'}], 'from_address': 'dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej', 'to_address': 'dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el'}
     Result: {'@type': '/cosmos.bank.v1beta1.MsgSendResponse'}
@@ -602,11 +602,11 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
 ```
 
     {
-      "height": "21",
+      "height": "22",
       "txhash": "07CA48632DAFD22BD80387C8E3236CF6ECFBD02CBC76D254FC95988B4D1FEDFB",
       "codespace": "",
       "code": 0,
-      "data": "12C2010A282F6479736F6E70726F746F636F6C2E7363726970742E76312E4D736745786563526573706F6E73651295010A92017B2263756D73697A65223A323431362C22657863657074696F6E223A6E756C6C2C226761735F6C696D6974223A31303030303030302C226E6F6465735F63616C6C6564223A31372C22726573756C74223A7B226576656E745F656D6974746564223A747275657D2C227363726970745F6761735F636F6E73756D6564223A313035323332332C227374646F7574223A22227D",
+      "data": "12C1010A282F6479736F6E70726F746F636F6C2E7363726970742E76312E4D736745786563526573706F6E73651294010A91017B2263756D73697A65223A323431362C22657863657074696F6E223A6E756C6C2C226761735F6C696D6974223A31303030303030302C226E6F6465735F63616C6C6564223A302C22726573756C74223A7B226576656E745F656D6974746564223A747275657D2C227363726970745F6761735F636F6E73756D6564223A313035323332332C227374646F7574223A22227D",
       "raw_log": "",
       "logs": [],
       "info": "",
@@ -730,7 +730,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
             },
             {
               "key": "response",
-              "value": "{\"result\":\"{\\\"cumsize\\\":2416,\\\"exception\\\":null,\\\"gas_limit\\\":10000000,\\\"nodes_called\\\":17,\\\"result\\\":{\\\"event_emitted\\\":true},\\\"script_gas_consumed\\\":1052323,\\\"stdout\\\":\\\"\\\"}\",\"attached_message_results\":[]}",
+              "value": "{\"result\":\"{\\\"cumsize\\\":2416,\\\"exception\\\":null,\\\"gas_limit\\\":10000000,\\\"nodes_called\\\":0,\\\"result\\\":{\\\"event_emitted\\\":true},\\\"script_gas_consumed\\\":1052323,\\\"stdout\\\":\\\"\\\"}\",\"attached_message_results\":[]}",
               "index": true
             },
             {
@@ -773,7 +773,7 @@ assert events['dysonprotocol.script.v1.EventScriptEvent']['value'] == '"123123"'
         "executor_address": "\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\"",
         "function_name": "\"emit_test_event\"",
         "request": "{\"executor_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"script_address\":\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\",\"script_name\":\"\",\"extra_code\":\"\\nfrom dys import emit_event\\n\\ndef emit_test_event():\\n    # Emit a custom event, none is a success or an exception is raised\\n    emit_event(\\\"payment_processed\\\", \\\"success\\\")\\n    emit_event(\\\"foo\\\", '123123')\\n    return {\\\"event_emitted\\\": True}\\n\",\"function_name\":\"emit_test_event\",\"args\":\"\",\"kwargs\":\"\",\"attached_messages\":[]}",
-        "response": "{\"result\":\"{\\\"cumsize\\\":2416,\\\"exception\\\":null,\\\"gas_limit\\\":10000000,\\\"nodes_called\\\":17,\\\"result\\\":{\\\"event_emitted\\\":true},\\\"script_gas_consumed\\\":1052323,\\\"stdout\\\":\\\"\\\"}\",\"attached_message_results\":[]}",
+        "response": "{\"result\":\"{\\\"cumsize\\\":2416,\\\"exception\\\":null,\\\"gas_limit\\\":10000000,\\\"nodes_called\\\":0,\\\"result\\\":{\\\"event_emitted\\\":true},\\\"script_gas_consumed\\\":1052323,\\\"stdout\\\":\\\"\\\"}\",\"attached_message_results\":[]}",
         "script_address": "\"dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej\"",
         "script_name": "\"\"",
         "msg_index": "0"
@@ -787,33 +787,102 @@ The `dys_eval` function allows you to evaluate Python code dynamically at runtim
 
 
 ```python
-# Create a script for dynamic code evaluation
+# Create a script for dynamic code evaluation demonstrating ALL dys_eval parameters
 dys_eval_script = '''
 from dys import dys_eval
 
 def demonstrate_dys_eval():
-    """Demonstrate different ways to use dys_eval"""
+    """
+    Demonstrate all dys_eval parameters:
+    - code: the code string to evaluate
+    - scope: dict of variables available during evaluation
+    - max_node_calls: limit AST node evaluations (prevents runaway loops)
+    - max_scope_size: limit scope size (prevents memory exhaustion)
+    - track_func: callback after each node evaluation
+    - module_dict: custom modules to make available for import
+    """
     results = {}
     
-    # Simple arithmetic
-    results["arithmetic"] = dys_eval("2 + 3 * 4")
+    # 1. BASIC: code parameter only
+    results["basic_arithmetic"] = dys_eval("2 + 3 * 4")
+    results["basic_string"] = dys_eval("'hello ' + 'world'.upper()")
     
-    # String operations
-    results["string_ops"] = dys_eval("'hello ' + 'world'.upper()")
+    # 2. SCOPE: pass variables into the evaluation context
+    local_scope = {'x': 10, 'y': 5, 'data': [1, 2, 3]}
+    results["scope_multiply"] = dys_eval("x * y", scope=local_scope)
+    results["scope_list_sum"] = dys_eval("sum(data)", scope=local_scope)
+    results["scope_complex"] = dys_eval("x + y + len(data)", scope=local_scope)
     
-    # Using variables from current scope
-    x = 10
-    y = 5
-    local_scope = {'x': x, 'y': y}
-    results["with_variables"] = dys_eval("x * y", scope=local_scope)
+    # 3. MAX_NODE_CALLS: limit computation to prevent infinite loops
+    # Small limit that allows simple operations
+    results["node_limit_ok"] = dys_eval("1 + 2 + 3", max_node_calls=100)
     
-    # Multiple statements
-    results["multi_statement"] = dys_eval("""
-a = 5
-b = 7
-result = a * b
-result + 3
-""")
+    # Attempting a loop that exceeds node limit will raise Exception
+    try:
+        dys_eval("sum([i for i in range(1000)])", max_node_calls=50)
+        results["node_limit_exceeded"] = "should have failed"
+    except Exception as e:
+        results["node_limit_exceeded"] = f"Caught: {str(e)[:30]}"
+    
+    # 4. MAX_SCOPE_SIZE: limit memory usage by restricting scope size
+    results["scope_size_ok"] = dys_eval("x = 1; y = 2; x + y", max_scope_size=1000)
+    
+    # Creating many variables exceeds scope size limit
+    try:
+        dys_eval("[i for i in range(10000)]", max_scope_size=100)
+        results["scope_size_exceeded"] = "should have failed"
+    except Exception as e:
+        results["scope_size_exceeded"] = f"Caught: {str(e)[:40]}"
+    
+    # 5. TRACK_FUNC: callback for each AST node evaluation
+    node_count = {"count": 0, "types": set()}
+    def my_tracker(lineno, col_offset, end_lineno, end_col_offset, node_type):
+        node_count["count"] += 1
+        node_count["types"].add(node_type)
+    
+    dys_eval("a = 1; b = 2; a + b", track_func=my_tracker)
+    results["track_func_count"] = node_count["count"]
+    results["track_func_types"] = list(node_count["types"])[:10]  # First 10 node types
+    
+    # 6. MODULE_DICT: inject custom modules into the sandbox
+    # Define a custom "math_utils" module with helper functions
+    custom_modules = {
+        "math_utils": {
+            "double": lambda x: x * 2,
+            "triple": lambda x: x * 3,
+            "add_ten": lambda x: x + 10,
+        },
+        "string_utils": {
+            "shout": lambda s: s.upper() + "!",
+            "whisper": lambda s: s.lower() + "...",
+        }
+    }
+    
+    results["module_math"] = dys_eval(
+        "from math_utils import double, triple; double(5) + triple(3)",
+        module_dict=custom_modules
+    )
+    results["module_string"] = dys_eval(
+        "from string_utils import shout; shout('hello')",
+        module_dict=custom_modules
+    )
+    
+    # 7. COMBINED: use multiple parameters together
+    combined_scope = {"base": 100}
+    combined_modules = {"ops": {"halve": lambda x: x // 2}}
+    combined_count = {"n": 0}
+    def combined_tracker(lineno, col_offset, end_lineno, end_col_offset, node_type):
+        combined_count["n"] += 1
+    
+    results["combined"] = dys_eval(
+        "from ops import halve; halve(base)",
+        scope=combined_scope,
+        max_node_calls=500,
+        max_scope_size=500,
+        track_func=combined_tracker,
+        module_dict=combined_modules
+    )
+    results["combined_nodes_used"] = combined_count["n"]
     
     return results
 '''
@@ -824,26 +893,77 @@ with open('/tmp/dys_eval.py', 'w') as f:
 
 out = ! dysond q script run --script-address {ALICE_ADDRESS} --executor-address {ALICE_ADDRESS} --function-name demonstrate_dys_eval --extra-code-path /tmp/dys_eval.py -o json
 out = '\n'.join(out)
-json_out = json.loads(out)
-print(json.dumps(json_out, indent=2))
+try:
+    json_out = json.loads(out)
+except json.JSONDecodeError:
+    print("Error decoding JSON:", out)
+    raise
+
 # Extract and display the evaluation results
 eval_results = json.loads(json_out['result'])['result']
-print(f"Dynamic evaluation results:")
-print(f"- Arithmetic: {eval_results['arithmetic']}")
-print(f"- String operations: {eval_results['string_ops']}")
-print(f"- With variables: {eval_results['with_variables']}")
-print(f"- Multi-statement: {eval_results['multi_statement']}")
+
+print("=== dys_eval Parameter Demonstration ===\n")
+
+print("1. BASIC (code only):")
+print(f"   arithmetic: 2 + 3 * 4 = {eval_results['basic_arithmetic']}")
+print(f"   string: 'hello ' + 'world'.upper() = {eval_results['basic_string']}")
+
+print("\n2. SCOPE (variables in evaluation context):")
+print(f"   x * y (x=10, y=5) = {eval_results['scope_multiply']}")
+print(f"   sum(data) (data=[1,2,3]) = {eval_results['scope_list_sum']}")
+print(f"   x + y + len(data) = {eval_results['scope_complex']}")
+
+print("\n3. MAX_NODE_CALLS (limit computation):")
+print(f"   1 + 2 + 3 (limit=100) = {eval_results['node_limit_ok']}")
+print(f"   large loop (limit=50) = {eval_results['node_limit_exceeded']}")
+
+print("\n4. MAX_SCOPE_SIZE (limit memory):")
+print(f"   small scope (limit=1000) = {eval_results['scope_size_ok']}")
+print(f"   large list (limit=100) = {eval_results['scope_size_exceeded']}")
+
+print("\n5. TRACK_FUNC (node callback):")
+print(f"   nodes evaluated: {eval_results['track_func_count']}")
+print(f"   node types: {eval_results['track_func_types']}")
+
+print("\n6. MODULE_DICT (custom modules):")
+print(f"   math_utils: double(5) + triple(3) = {eval_results['module_math']}")
+print(f"   string_utils: shout('hello') = {eval_results['module_string']}")
+
+print("\n7. COMBINED (all parameters):")
+print(f"   halve(base=100) = {eval_results['combined']}")
+print(f"   nodes used: {eval_results['combined_nodes_used']}")
 ```
 
-    {
-      "result": "{\"cumsize\":12729,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":84,\"result\":{\"arithmetic\":14,\"multi_statement\":38,\"string_ops\":\"hello WORLD\",\"with_variables\":50},\"script_gas_consumed\":1014997,\"stdout\":\"\"}",
-      "attached_message_results": []
-    }
-    Dynamic evaluation results:
-    - Arithmetic: 14
-    - String operations: hello WORLD
-    - With variables: 50
-    - Multi-statement: 38
+    === dys_eval Parameter Demonstration ===
+    
+    1. BASIC (code only):
+       arithmetic: 2 + 3 * 4 = 14
+       string: 'hello ' + 'world'.upper() = hello WORLD
+    
+    2. SCOPE (variables in evaluation context):
+       x * y (x=10, y=5) = 50
+       sum(data) (data=[1,2,3]) = 6
+       x + y + len(data) = 18
+    
+    3. MAX_NODE_CALLS (limit computation):
+       1 + 2 + 3 (limit=100) = 6
+       large loop (limit=50) = Caught: Exception('dys_eval error: Mem
+    
+    4. MAX_SCOPE_SIZE (limit memory):
+       small scope (limit=1000) = 3
+       large list (limit=100) = Caught: Exception('dys_eval error: MemoryError: 
+    
+    5. TRACK_FUNC (node callback):
+       nodes evaluated: 9
+       node types: ['Constant', 'BinOp', 'Module', 'Name', 'Expr', 'Assign']
+    
+    6. MODULE_DICT (custom modules):
+       math_utils: double(5) + triple(3) = 19
+       string_utils: shout('hello') = HELLO!
+    
+    7. COMBINED (all parameters):
+       halve(base=100) = 50
+       nodes used: 6
 
 
 ## Testing and Coverage
@@ -868,7 +988,7 @@ def a_or_b(a, b):
         return b
     return None
 
-def test_a_or_b():
+def coverage_a_or_b():
     # Test with different inputs
     a_or_b(1, 0)  # Should return a
     a_or_b(1, 1)  # Should still return a (first condition)
@@ -879,8 +999,9 @@ def test_a_or_b():
 with open('/tmp/coverage_test.py', 'w') as f:
     f.write(coverage_script)
 
-out = ! dysond q script run --script-address {CHARLIE_ADDRESS} --executor-address {CHARLIE_ADDRESS} --function-name test_a_or_b --extra-code-path /tmp/coverage_test.py -o json
+out = ! dysond q script run --script-address {CHARLIE_ADDRESS} --executor-address {CHARLIE_ADDRESS} --function-name coverage_a_or_b --extra-code-path /tmp/coverage_test.py -o json
 out = '\n'.join(out)
+print(out)
 json_out = json.loads(out)
 print(json.loads(json_out['result']))
 # Extract and interpret the coverage data
@@ -888,7 +1009,8 @@ coverage_data = json.loads(json_out['result'])['result']
 
 ```
 
-    {'cumsize': 2794, 'exception': None, 'gas_limit': 18446744073709551615, 'nodes_called': 23, 'result': [[[3, 0, 8, 15, 'FunctionDef', ''], [1, 68]], [[3, 11, 3, 12, 'arg', ''], [2, 96]], [[3, 14, 3, 15, 'arg', ''], [2, 96]], [[4, 4, 5, 16, 'If', ''], [2, 288]], [[4, 7, 4, 8, 'Name', ''], [2, 288]], [[5, 8, 5, 16, 'Return', ''], [2, 288]], [[5, 15, 5, 16, 'Name', ''], [2, 288]], [[6, 4, 7, 16, 'If', ''], [0, 0]], [[6, 7, 6, 8, 'Name', ''], [0, 0]], [[7, 8, 7, 16, 'Return', ''], [0, 0]], [[7, 15, 7, 16, 'Name', ''], [0, 0]], [[8, 4, 8, 15, 'Return', ''], [0, 0]], [[8, 11, 8, 15, 'Constant', ''], [0, 0]], [[10, 0, 13, 16, 'FunctionDef', ''], [1, 117]], [[12, 4, 12, 16, 'Expr', ''], [1, 128]], [[12, 4, 12, 16, 'Call', ''], [1, 128]], [[12, 4, 12, 10, 'Name', ''], [1, 154]], [[12, 11, 12, 12, 'Constant', ''], [1, 128]], [[12, 14, 12, 15, 'Constant', ''], [1, 128]], [[13, 4, 13, 16, 'Expr', ''], [1, 128]], [[13, 4, 13, 16, 'Call', ''], [1, 128]], [[13, 4, 13, 10, 'Name', ''], [1, 154]], [[13, 11, 13, 12, 'Constant', ''], [1, 128]], [[13, 14, 13, 15, 'Constant', ''], [1, 128]]], 'script_gas_consumed': 1008465, 'stdout': ''}
+    {"result":"{\"cumsize\":2946,\"exception\":null,\"gas_limit\":18446744073709551615,\"nodes_called\":0,\"result\":[[[3,0,8,15,\"FunctionDef\",\"\"],[1,68]],[[3,11,3,12,\"arg\",\"\"],[2,96]],[[3,14,3,15,\"arg\",\"\"],[2,96]],[[4,4,5,16,\"If\",\"\"],[2,304]],[[4,7,4,8,\"Name\",\"\"],[2,304]],[[5,8,5,16,\"Return\",\"\"],[2,304]],[[5,15,5,16,\"Name\",\"\"],[2,304]],[[6,4,7,16,\"If\",\"\"],[0,0]],[[6,7,6,8,\"Name\",\"\"],[0,0]],[[7,8,7,16,\"Return\",\"\"],[0,0]],[[7,15,7,16,\"Name\",\"\"],[0,0]],[[8,4,8,15,\"Return\",\"\"],[0,0]],[[8,11,8,15,\"Constant\",\"\"],[0,0]],[[10,0,13,16,\"FunctionDef\",\"\"],[1,125]],[[12,4,12,16,\"Expr\",\"\"],[1,136]],[[12,4,12,16,\"Call\",\"\"],[1,136]],[[12,4,12,10,\"Name\",\"\"],[1,162]],[[12,11,12,12,\"Constant\",\"\"],[1,136]],[[12,14,12,15,\"Constant\",\"\"],[1,136]],[[13,4,13,16,\"Expr\",\"\"],[1,136]],[[13,4,13,16,\"Call\",\"\"],[1,136]],[[13,4,13,10,\"Name\",\"\"],[1,162]],[[13,11,13,12,\"Constant\",\"\"],[1,136]],[[13,14,13,15,\"Constant\",\"\"],[1,136]]],\"script_gas_consumed\":1008617,\"stdout\":\"\"}","attached_message_results":[]}
+    {'cumsize': 2946, 'exception': None, 'gas_limit': 18446744073709551615, 'nodes_called': 0, 'result': [[[3, 0, 8, 15, 'FunctionDef', ''], [1, 68]], [[3, 11, 3, 12, 'arg', ''], [2, 96]], [[3, 14, 3, 15, 'arg', ''], [2, 96]], [[4, 4, 5, 16, 'If', ''], [2, 304]], [[4, 7, 4, 8, 'Name', ''], [2, 304]], [[5, 8, 5, 16, 'Return', ''], [2, 304]], [[5, 15, 5, 16, 'Name', ''], [2, 304]], [[6, 4, 7, 16, 'If', ''], [0, 0]], [[6, 7, 6, 8, 'Name', ''], [0, 0]], [[7, 8, 7, 16, 'Return', ''], [0, 0]], [[7, 15, 7, 16, 'Name', ''], [0, 0]], [[8, 4, 8, 15, 'Return', ''], [0, 0]], [[8, 11, 8, 15, 'Constant', ''], [0, 0]], [[10, 0, 13, 16, 'FunctionDef', ''], [1, 125]], [[12, 4, 12, 16, 'Expr', ''], [1, 136]], [[12, 4, 12, 16, 'Call', ''], [1, 136]], [[12, 4, 12, 10, 'Name', ''], [1, 162]], [[12, 11, 12, 12, 'Constant', ''], [1, 136]], [[12, 14, 12, 15, 'Constant', ''], [1, 136]], [[13, 4, 13, 16, 'Expr', ''], [1, 136]], [[13, 4, 13, 16, 'Call', ''], [1, 136]], [[13, 4, 13, 10, 'Name', ''], [1, 162]], [[13, 11, 13, 12, 'Constant', ''], [1, 136]], [[13, 14, 13, 15, 'Constant', ''], [1, 136]]], 'script_gas_consumed': 1008617, 'stdout': ''}
 
 
 
@@ -919,8 +1041,8 @@ assert len(coverage_data) > 0, "Coverage data should be greater than 0"
 
     Coverage Analysis Results:
     - FunctionDef (a_or_b): executed 1 time and used 68 bytes of memory
-    - If (line 4): executed 2 times and used 288 bytes of memory
-    - Return (line 5): executed 2 times and used 288 bytes of memory
+    - If (line 4): executed 2 times and used 304 bytes of memory
+    - Return (line 5): executed 2 times and used 304 bytes of memory
     - If (line 6): never executed and used 0 bytes of memory
     - Return (line 7): never executed and used 0 bytes of memory
     - Return (fallback): never executed and used 0 bytes of memory
@@ -1164,6 +1286,8 @@ These are the available modules and functions that can be used in dyslang script
         "json.decoder.JSONDecodeError",
         "json.dumps",
         "json.loads",
+        "jsonschema.exceptions.ValidationError",
+        "jsonschema.validators.validate",
         "list.append",
         "list.clear",
         "list.copy",
@@ -1379,7 +1503,7 @@ These are the available modules and functions that can be used in dyslang script
           "_chain": "DEPRECATED: Use _msg() and _query() functions instead.\n\n:raises DeprecationError: Always raises this error to encourage migration to _msg and _query",
           "_msg": "Wrapper function for _chain(\"Msg\") that JSON encodes the params argument.\n\n:param params: A dictionary of parameters to be JSON encoded and passed to _chain\n:returns: The response from the chain",
           "_query": "Wrapper function for _chain(\"Query\") that JSON encodes the params argument.\n\n:param params: A dictionary of parameters to be JSON encoded and passed to _chain\n:returns: The response from the chain",
-          "dys_eval": "Evaluate a string of Dsyon Protocol code.\n\n:param code: the code to evaluate\n:param scope: the scope to evaluate the code in\n:param track_func: a function to call after each node is evaluated use to track gas or scope size\n:param module_dict: a dictionary of modules to make available for import in the sandbox.\n                    Keys are module names, values are dicts of attributes.\n                    Example: {\"json\": {\"loads\": json.loads}, \"foo\": {\"bar\": my_custom_func}}\n\n:returns: the result of the evaluation",
+          "dys_eval": "Evaluate a string of Dsyon Protocol code.\n\n:param code: the code to evaluate\n:param scope: the scope to evaluate the code in\n:param track_func: a function to call after each node is evaluated use to track gas or scope size with\nthe following arguments: lineno, col_offset, end_lineno, end_col_offset, node_type\n    Example:\n    def track_func(lineno, col_offset, end_lineno, end_col_offset, node_type):\n        print(f\"Node: {node_type} at {lineno}:{col_offset}-{end_lineno}:{end_col_offset}\")\n\n:param module_dict: a dictionary of modules to make available for import in the sandbox.\n                    Keys are module names, values are dicts of attributes.\n                    Example: {\"json\": {\"loads\": json.loads}, \"foo\": {\"bar\": my_custom_func}}\n\n:returns: the result of the evaluation",
           "emit_event": "Emits an event to the blockchain.\n\n:param key: the key of the event (string)\n:param value: the value of the event (string)\n\n:returns: the response from the chain",
           "get_attached_messages": "Returns the nfts sent to this function.",
           "get_attached_msg_results": "Returns the results of the attached messages.",
@@ -1424,6 +1548,10 @@ These are the available modules and functions that can be used in dyslang script
           "JSONDecodeError": "Subclass of ValueError with the following additional properties:\n\n    msg: The unformatted error message\n    doc: The JSON document being parsed\n    pos: The start index of doc where parsing failed\n    lineno: The line corresponding to pos\n    colno: The column corresponding to pos",
           "dumps": "Serialize ``obj`` to a JSON formatted ``str``.\n\n    If ``skipkeys`` is true then ``dict`` keys that are not basic types\n    (``str``, ``int``, ``float``, ``bool``, ``None``) will be skipped\n    instead of raising a ``TypeError``.\n\n    If ``ensure_ascii`` is false, then the return value can contain non-ASCII\n    characters if they appear in strings contained in ``obj``. Otherwise, all\n    such characters are escaped in JSON strings.\n\n    If ``check_circular`` is false, then the circular reference check\n    for container types will be skipped and a circular reference will\n    result in an ``RecursionError`` (or worse).\n\n    If ``allow_nan`` is false, then it will be a ``ValueError`` to\n    serialize out of range ``float`` values (``nan``, ``inf``, ``-inf``) in\n    strict compliance of the JSON specification, instead of using the\n    JavaScript equivalents (``NaN``, ``Infinity``, ``-Infinity``).\n\n    If ``indent`` is a non-negative integer, then JSON array elements and\n    object members will be pretty-printed with that indent level. An indent\n    level of 0 will only insert newlines. ``None`` is the most compact\n    representation.\n\n    If specified, ``separators`` should be an ``(item_separator, key_separator)``\n    tuple.  The default is ``(', ', ': ')`` if *indent* is ``None`` and\n    ``(',', ': ')`` otherwise.  To get the most compact JSON representation,\n    you should specify ``(',', ':')`` to eliminate whitespace.\n\n    ``default(obj)`` is a function that should return a serializable version\n    of obj or raise TypeError. The default simply raises TypeError.\n\n    If *sort_keys* is true (default: ``False``), then the output of\n    dictionaries will be sorted by key.\n\n    To use a custom ``JSONEncoder`` subclass (e.g. one that overrides the\n    ``.default()`` method to serialize additional types), specify it with\n    the ``cls`` kwarg; otherwise ``JSONEncoder`` is used.",
           "loads": "Deserialize ``s`` (a ``str``, ``bytes`` or ``bytearray`` instance\n    containing a JSON document) to a Python object.\n\n    ``object_hook`` is an optional function that will be called with the\n    result of any object literal decode (a ``dict``). The return value of\n    ``object_hook`` will be used instead of the ``dict``. This feature\n    can be used to implement custom decoders (e.g. JSON-RPC class hinting).\n\n    ``object_pairs_hook`` is an optional function that will be called with the\n    result of any object literal decoded with an ordered list of pairs.  The\n    return value of ``object_pairs_hook`` will be used instead of the ``dict``.\n    This feature can be used to implement custom decoders.  If ``object_hook``\n    is also defined, the ``object_pairs_hook`` takes priority.\n\n    ``parse_float``, if specified, will be called with the string\n    of every JSON float to be decoded. By default this is equivalent to\n    float(num_str). This can be used to use another datatype or parser\n    for JSON floats (e.g. decimal.Decimal).\n\n    ``parse_int``, if specified, will be called with the string\n    of every JSON int to be decoded. By default this is equivalent to\n    int(num_str). This can be used to use another datatype or parser\n    for JSON integers (e.g. float).\n\n    ``parse_constant``, if specified, will be called with one of the\n    following strings: -Infinity, Infinity, NaN.\n    This can be used to raise an exception if invalid JSON numbers\n    are encountered.\n\n    To use a custom ``JSONDecoder`` subclass, specify it with the ``cls``\n    kwarg; otherwise ``JSONDecoder`` is used."
+        },
+        "jsonschema": {
+          "ValidationError": "An instance was invalid under a provided schema.",
+          "validate": "Validate an instance under the given schema.\n\n    >>> validate([2, 3, 4], {\"maxItems\": 2})\n    Traceback (most recent call last):\n        ...\n    ValidationError: [2, 3, 4] is too long\n\n:func:`~jsonschema.validators.validate` will first verify that the\nprovided schema is itself valid, since not doing so can lead to less\nobvious error messages and fail in less obvious or consistent ways.\n\nIf you know you have a valid schema already, especially\nif you intend to validate multiple instances with\nthe same schema, you likely would prefer using the\n`jsonschema.protocols.Validator.validate` method directly on a\nspecific validator (e.g. ``Draft202012Validator.validate``).\n\n\nArguments:\n\n    instance:\n\n        The instance to validate\n\n    schema:\n\n        The schema to validate with\n\n    cls (jsonschema.protocols.Validator):\n\n        The class that will be used to validate the instance.\n\nIf the ``cls`` argument is not provided, two things will happen\nin accordance with the specification. First, if the schema has a\n:kw:`$schema` keyword containing a known meta-schema [#]_ then the\nproper validator will be used. The specification recommends that\nall schemas contain :kw:`$schema` properties for this reason. If no\n:kw:`$schema` property is found, the default validator class is the\nlatest released draft.\n\nAny other provided positional and keyword arguments will be passed\non when instantiating the ``cls``.\n\nRaises:\n\n    `jsonschema.exceptions.ValidationError`:\n\n        if the instance is invalid\n\n    `jsonschema.exceptions.SchemaError`:\n\n        if the schema itself is invalid\n\n.. rubric:: Footnotes\n.. [#] known by a validator registered with\n    `jsonschema.validators.validates`"
         },
         "math": {
           "acos": "Return the arc cosine (measured in radians) of x.\n\nThe result is between 0 and pi.",

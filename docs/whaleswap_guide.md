@@ -84,7 +84,11 @@ We’ll commit with a random salt and a reasonable valuation, then reveal each n
 
 ```python
 # --- foo.dys commit-reveal ---
-FOO_NAME = "foo.dys"
+import random
+import string
+
+FOO_SUFFIX = "".join(random.choice(string.ascii_lowercase) for _ in range(6))
+FOO_NAME = f"foo-{FOO_SUFFIX}.dys"
 FOO_SALT = "this is random"
 
 out = %sh dysond query nameservice compute-hash --name "$FOO_NAME" --salt "$FOO_SALT" --committer "$ALICE" -o json
@@ -103,7 +107,7 @@ print(json.dumps(events, indent=2))
 print("Registered:", FOO_NAME)
 ```
 
-    foo hash: 388992452ccbe30bb24ca8befab89fe4d9c85577f03005e58ecb0322ae212901
+    foo hash: 9eb67a7eb19842981d054d997a8831ab2fb8f7521b0b2f9a47320f41499f480e
 
 
     [
@@ -112,7 +116,7 @@ print("Registered:", FOO_NAME)
         "attributes": [
           {
             "key": "hexhash",
-            "value": "\"388992452ccbe30bb24ca8befab89fe4d9c85577f03005e58ecb0322ae212901\"",
+            "value": "\"9eb67a7eb19842981d054d997a8831ab2fb8f7521b0b2f9a47320f41499f480e\"",
             "index": true
           },
           {
@@ -136,7 +140,7 @@ print("Registered:", FOO_NAME)
           },
           {
             "key": "id",
-            "value": "\"foo.dys\"",
+            "value": "\"foo-pfxgdk.dys\"",
             "index": true
           },
           {
@@ -161,7 +165,7 @@ print("Registered:", FOO_NAME)
           },
           {
             "key": "name",
-            "value": "\"foo.dys\"",
+            "value": "\"foo-pfxgdk.dys\"",
             "index": true
           },
           {
@@ -172,13 +176,14 @@ print("Registered:", FOO_NAME)
         ]
       }
     ]
-    Registered: foo.dys
+    Registered: foo-pfxgdk.dys
 
 
 
 ```python
 # --- bar.dys commit-reveal ---
-BAR_NAME = "bar.dys"
+BAR_SUFFIX = "".join(random.choice(string.ascii_lowercase) for _ in range(6))
+BAR_NAME = f"bar-{BAR_SUFFIX}.dys"
 BAR_SALT = "this is random"
 
 out = %sh dysond query nameservice compute-hash --name "$BAR_NAME" --salt "$BAR_SALT" --committer "$ALICE" -o json
@@ -197,7 +202,7 @@ print(json.dumps(events, indent=2))
 print("Registered:", BAR_NAME)
 ```
 
-    bar hash: a3176c48695eb8cd9204477235c64357d6337daec6b643a7e36aeb8ec5dd0d3f
+    bar hash: c3c36020aed635671933b2c1137073acb1bf491a9c0f4c219e61d74eb3306add
 
 
     [
@@ -206,7 +211,7 @@ print("Registered:", BAR_NAME)
         "attributes": [
           {
             "key": "hexhash",
-            "value": "\"a3176c48695eb8cd9204477235c64357d6337daec6b643a7e36aeb8ec5dd0d3f\"",
+            "value": "\"c3c36020aed635671933b2c1137073acb1bf491a9c0f4c219e61d74eb3306add\"",
             "index": true
           },
           {
@@ -230,7 +235,7 @@ print("Registered:", BAR_NAME)
           },
           {
             "key": "id",
-            "value": "\"bar.dys\"",
+            "value": "\"bar-kktzty.dys\"",
             "index": true
           },
           {
@@ -255,7 +260,7 @@ print("Registered:", BAR_NAME)
           },
           {
             "key": "name",
-            "value": "\"bar.dys\"",
+            "value": "\"bar-kktzty.dys\"",
             "index": true
           },
           {
@@ -266,7 +271,7 @@ print("Registered:", BAR_NAME)
         ]
       }
     ]
-    Registered: bar.dys
+    Registered: bar-kktzty.dys
 
 
 ## Mint coins for `foo.dys` and `bar.dys`
@@ -354,24 +359,25 @@ print("POOL_ID:", POOL_ID)
 
 
     {'pool': {'pool_id': '1',
-      'coins': [{'denom': 'bar.dys', 'amount': '100000'},
-       {'denom': 'foo.dys', 'amount': '100000'}],
+      'coins': [{'denom': 'bar-kktzty.dys', 'amount': '100000'},
+       {'denom': 'foo-pfxgdk.dys', 'amount': '100000'}],
       'shares_denom': 'whaleswap.dys/pools/1',
-      'created_height': '103',
-      'created_time': '2025-12-27T14:00:08.336365Z',
-      'updated_time': '2025-12-27T14:00:08.336365Z',
-      'updated_height': '103',
-      'interest_rate': ['0.000000000000000000bar.dys',
-       '0.000000000000000000foo.dys'],
-      'min_initial_collateral_ratio': ['1.500000000000000000bar.dys',
-       '1.500000000000000000foo.dys'],
-      'liquidation_threshold': ['1.200000000000000000bar.dys',
-       '1.200000000000000000foo.dys'],
-      'max_borrow_percent': ['0.800000000000000000bar.dys',
-       '0.800000000000000000foo.dys'],
-      'bound_percent': ['1.000000000000000000bar.dys',
-       '1.000000000000000000foo.dys'],
-      'fee_rate': ['0.000000000000000000bar.dys', '0.000000000000000000foo.dys']}}
+      'created_height': '115',
+      'created_time': '2026-01-24T00:59:58.395748Z',
+      'updated_time': '2026-01-24T00:59:58.395748Z',
+      'updated_height': '115',
+      'interest_rate': ['0.000000000000000000bar-kktzty.dys',
+       '0.000000000000000000foo-pfxgdk.dys'],
+      'min_initial_collateral_ratio': ['1.500000000000000000bar-kktzty.dys',
+       '1.500000000000000000foo-pfxgdk.dys'],
+      'liquidation_threshold': ['1.200000000000000000bar-kktzty.dys',
+       '1.200000000000000000foo-pfxgdk.dys'],
+      'max_borrow_percent': ['0.800000000000000000bar-kktzty.dys',
+       '0.800000000000000000foo-pfxgdk.dys'],
+      'bound_percent': ['1.000000000000000000bar-kktzty.dys',
+       '1.000000000000000000foo-pfxgdk.dys'],
+      'fee_rate': ['0.000000000000000000bar-kktzty.dys',
+       '0.000000000000000000foo-pfxgdk.dys']}}
 
 
 
@@ -545,24 +551,20 @@ print("Bob balances:")
     {
       "balances": [
         {
-          "denom": "alice-6hrlb.dys",
-          "amount": "200"
-        },
-        {
-          "denom": "bar.dys",
+          "denom": "bar-kktzty.dys",
           "amount": "100000"
         },
         {
-          "denom": "foo.dys",
+          "denom": "foo-pfxgdk.dys",
           "amount": "100000"
         },
         {
           "denom": "udys",
-          "amount": "9999999800"
+          "amount": "10000000000"
         }
       ],
       "pagination": {
-        "total": "4"
+        "total": "3"
       }
     }
 
@@ -576,7 +578,7 @@ max_in = f"500{FOO_NAME}"
 op = json.dumps({"swap": {"pool_id": int(POOL_ID), "swap_in": {"denom": FOO_NAME, "amount": "500"}}})
 op_q = shlex.quote(op)
 
-swap_in_tx = %sh dysond tx whaleswap make-trade --from bob --max-input {max_in} --op {op_q} --min-output "1$BAR_NAME" -y -o json | dysond query wait-tx -o json
+swap_in_tx = %sh dysond tx whaleswap make-trade --from bob --max-input {max_in} --op {op_q} --min-output "1$BAR_NAME" --gas auto -y -o json | dysond query wait-tx -o json
 events = [e for e in swap_in_tx['events'] if e['type'].startswith('dysonprotocol')]
 
 assert swap_in_tx['code'] == 0, swap_in_tx['raw_log']
@@ -667,7 +669,7 @@ import json, shlex
 op = json.dumps({"swap": {"pool_id": int(POOL_ID), "swap_out": {"denom": BAR_NAME, "amount": "250"}}})
 op_q = shlex.quote(op)
 
-swap_out_tx = %sh dysond tx whaleswap make-trade --from bob --max-input "100000$FOO_NAME" --op {op_q} -y -o json | dysond query wait-tx -o json
+swap_out_tx = %sh dysond tx whaleswap make-trade --from bob --max-input "100000$FOO_NAME" --op {op_q} --gas auto -y -o json | dysond query wait-tx -o json
 assert swap_out_tx['code'] == 0, swap_out_tx['raw_log']
 
 events = [e for e in swap_out_tx['events'] if e['type'].startswith('dysonprotocol')]
@@ -757,7 +759,7 @@ Adjust fee or set price bands.
 
 ```python
 # Lower fee to 0.25% (example)
-upd_tx = %sh dysond tx whaleswap update-pool-config --pool-id "$POOL_ID" --fee-rate "0.0025udys" --from alice -y -o json | dysond query wait-tx -o json
+upd_tx = %sh dysond tx whaleswap update-pool-config --pool-id "$POOL_ID" --fee-rate "0.0025udys" --from alice -y -o json --gas auto | dysond query wait-tx -o json
 assert upd_tx['code'] == 0, upd_tx['raw_log']
 print("Pool fee updated")
 
@@ -795,43 +797,43 @@ print(json.dumps(events, indent=2))
         "pool_id": "1",
         "coins": [
           {
-            "denom": "bar.dys",
+            "denom": "bar-kktzty.dys",
             "amount": "98253"
           },
           {
-            "denom": "foo.dys",
+            "denom": "foo-pfxgdk.dys",
             "amount": "99754"
           }
         ],
         "shares_denom": "whaleswap.dys/pools/1",
-        "created_height": "103",
-        "created_time": "2025-12-27T14:00:08.336365Z",
-        "updated_time": "2025-12-27T14:00:10.882885Z",
-        "updated_height": "112",
+        "created_height": "115",
+        "created_time": "2026-01-24T00:59:58.395748Z",
+        "updated_time": "2026-01-24T01:00:02.205653Z",
+        "updated_height": "127",
         "num_trades": "2",
         "interest_rate": [
-          "0.000000000000000000bar.dys",
-          "0.000000000000000000foo.dys"
+          "0.000000000000000000bar-kktzty.dys",
+          "0.000000000000000000foo-pfxgdk.dys"
         ],
         "min_initial_collateral_ratio": [
-          "1.500000000000000000bar.dys",
-          "1.500000000000000000foo.dys"
+          "1.500000000000000000bar-kktzty.dys",
+          "1.500000000000000000foo-pfxgdk.dys"
         ],
         "liquidation_threshold": [
-          "1.200000000000000000bar.dys",
-          "1.200000000000000000foo.dys"
+          "1.200000000000000000bar-kktzty.dys",
+          "1.200000000000000000foo-pfxgdk.dys"
         ],
         "max_borrow_percent": [
-          "0.800000000000000000bar.dys",
-          "0.800000000000000000foo.dys"
+          "0.800000000000000000bar-kktzty.dys",
+          "0.800000000000000000foo-pfxgdk.dys"
         ],
         "bound_percent": [
-          "1.000000000000000000bar.dys",
-          "1.000000000000000000foo.dys"
+          "1.000000000000000000bar-kktzty.dys",
+          "1.000000000000000000foo-pfxgdk.dys"
         ],
         "fee_rate": [
-          "0.000000000000000000bar.dys",
-          "0.000000000000000000foo.dys"
+          "0.000000000000000000bar-kktzty.dys",
+          "0.000000000000000000foo-pfxgdk.dys"
         ]
       }
     }
@@ -846,16 +848,24 @@ print(json.dumps(events, indent=2))
 ```python
 # Alice makes an offer: she has foo.dys and wants bar.dys
 # Autocli typically accepts coin syntax for Coin fields; adjust if your CLI differs
-mk_offer_tx = %sh dysond tx whaleswap make-offer --have "1000$FOO_NAME" --want "400$BAR_NAME" --from alice -y -o json | dysond query wait-tx -o json
+mk_offer_tx = %sh dysond tx whaleswap make-offer --have "1000$FOO_NAME" --want "400$BAR_NAME" --from alice --gas auto -y -o json | dysond query wait-tx -o json
 assert mk_offer_tx['code'] == 0, mk_offer_tx['raw_log']
 print("Offer created")
 events = [e for e in mk_offer_tx['events'] if e['type'].startswith('dysonprotocol')]
 print(json.dumps(events, indent=2))
 
-# Find the offer id by owner
+# Find the open offer id by owner
 offers_by_owner = %sh dysond query whaleswap offers-by-owner --owner "$ALICE" -o json
-assert len(offers_by_owner.get('offers', [])) > 0, "No offers found for Alice"
-OFFER_ID = int(offers_by_owner['offers'][0]['offer_id'])
+offers = offers_by_owner.get('offers', [])
+open_offers = [
+    offer
+    for offer in offers
+    if offer.get('status') == 'open'
+    and offer.get('initial_have', {}).get('denom') == FOO_NAME
+    and offer.get('initial_want', {}).get('denom') == BAR_NAME
+]
+assert len(open_offers) > 0, "No open offers found for Alice"
+OFFER_ID = int(open_offers[0]['offer_id'])
 print("OFFER_ID:", OFFER_ID)
 print(json.dumps(offers_by_owner, indent=2))
 
@@ -863,7 +873,7 @@ print(json.dumps(offers_by_owner, indent=2))
 import shlex
 take_op = json.dumps({"take": {"offer_id": OFFER_ID}})
 take_op_q = shlex.quote(take_op)
-take_tx = %sh dysond tx whaleswap make-trade --max-input "400$BAR_NAME" --op {take_op_q} --from bob -y -o json | dysond query wait-tx -o json
+take_tx = %sh dysond tx whaleswap make-trade --max-input "400$BAR_NAME" --op {take_op_q} --from bob --gas auto -y -o json | dysond query wait-tx -o json
 assert take_tx['code'] == 0, take_tx['raw_log']
 print("Offer taken by Bob")
 events = [e for e in take_tx['events'] if e['type'].startswith('dysonprotocol')]
@@ -897,24 +907,24 @@ print(json.dumps(events, indent=2))
           "offer_id": "1",
           "status": "open",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "114",
-          "created_height": "114",
-          "created_time": "2025-12-27T14:00:11.451308Z",
-          "updated_time": "2025-12-27T14:00:11.451308Z",
+          "updated_height": "129",
+          "created_height": "129",
+          "created_time": "2026-01-24T01:00:02.821098Z",
+          "updated_time": "2026-01-24T01:00:02.821098Z",
           "initial_have": {
-            "denom": "foo.dys",
+            "denom": "foo-pfxgdk.dys",
             "amount": "1000"
           },
           "initial_want": {
-            "denom": "bar.dys",
+            "denom": "bar-kktzty.dys",
             "amount": "400"
           },
           "remaining_have": {
-            "denom": "foo.dys",
+            "denom": "foo-pfxgdk.dys",
             "amount": "1000"
           },
           "remaining_want": {
-            "denom": "bar.dys",
+            "denom": "bar-kktzty.dys",
             "amount": "400"
           },
           "unit_have_int": "5",
@@ -999,7 +1009,7 @@ Create an offer with SettlementMode LIQUID (no escrow; locks PFAND) and take it.
 
 ```python
 # Alice makes a liquid-mode offer: have 100 foo.dys, want 90 bar.dys
-mk = %sh dysond tx whaleswap make-offer --have "100$FOO_NAME" --want "90$BAR_NAME" --settlement-mode settlement-liquid --from alice -y -o json | dysond query wait-tx -o json
+mk = %sh dysond tx whaleswap make-offer --have "100$FOO_NAME" --want "90$BAR_NAME" --settlement-mode settlement-liquid --from alice --gas auto -y -o json | dysond query wait-tx -o json
 assert mk['code'] == 0, mk['raw_log']
 offer_id = int([a['value'] for e in mk['events'] for a in e['attributes'] if a['key']=='offer_id'][0])
 
@@ -1007,7 +1017,7 @@ offer_id = int([a['value'] for e in mk['events'] for a in e['attributes'] if a['
 import shlex
 take_op = json.dumps({"take": {"offer_id": offer_id}})
 take_op_q = shlex.quote(take_op)
-tk = %sh dysond tx whaleswap make-trade --max-input "90$BAR_NAME" --op {take_op_q} --from bob -y -o json | dysond query wait-tx -o json
+tk = %sh dysond tx whaleswap make-trade --max-input "90$BAR_NAME" --op {take_op_q} --from bob --gas auto -y -o json | dysond query wait-tx -o json
 assert tk['code'] == 0, tk['raw_log']
 ```
 
@@ -1019,7 +1029,7 @@ assert tk['code'] == 0, tk['raw_log']
 
 ```python
 # Alice opens an auction: sell bar.dys, bid denom is foo.dys
-open_auc_tx = %sh dysond tx whaleswap open-auction --sell "200$BAR_NAME" --bid-denom "$FOO_NAME" --from alice -y --gas 300000 -o json | dysond query wait-tx -o json
+open_auc_tx = %sh dysond tx whaleswap open-auction --sell "200$BAR_NAME" --bid-denom "$FOO_NAME" --from alice --gas auto -y -o json | dysond query wait-tx -o json
 assert open_auc_tx['code'] == 0, open_auc_tx['raw_log']
 print("Auction opened")
 events = [e for e in open_auc_tx['events'] if e['type'].startswith('dysonprotocol')]
@@ -1033,7 +1043,7 @@ AUC_ID = aucs_by_seller['auctions'][-1]['auction_id']
 print("AUC_ID:", AUC_ID)
 
 # No active bid; owner redeems escrow
-redeem_tx = %sh dysond tx whaleswap redeem-auction --auction-id "$AUC_ID" --from alice -y -o json | dysond query wait-tx -o json
+redeem_tx = %sh dysond tx whaleswap redeem-auction --auction-id "$AUC_ID" --from alice --gas auto -y -o json | dysond query wait-tx -o json
 assert redeem_tx['code'] == 0, redeem_tx['raw_log']
 print("Auction redeemed and closed")
 events = [e for e in redeem_tx['events'] if e['type'].startswith('dysonprotocol')]
@@ -1048,7 +1058,7 @@ print(json.dumps(events, indent=2))
         "attributes": [
           {
             "key": "class_id",
-            "value": "\"whaleswap.dys/auction/foo.dys\"",
+            "value": "\"whaleswap.dys/auction/foo-pfxgdk.dys\"",
             "index": true
           },
           {
@@ -1063,7 +1073,7 @@ print(json.dumps(events, indent=2))
         "attributes": [
           {
             "key": "class_id",
-            "value": "\"whaleswap.dys/auction/foo.dys\"",
+            "value": "\"whaleswap.dys/auction/foo-pfxgdk.dys\"",
             "index": true
           },
           {
@@ -1078,7 +1088,7 @@ print(json.dumps(events, indent=2))
         "attributes": [
           {
             "key": "class_id",
-            "value": "\"whaleswap.dys/auction/foo.dys\"",
+            "value": "\"whaleswap.dys/auction/foo-pfxgdk.dys\"",
             "index": true
           },
           {
@@ -1093,7 +1103,7 @@ print(json.dumps(events, indent=2))
         "attributes": [
           {
             "key": "class_id",
-            "value": "\"whaleswap.dys/auction/foo.dys\"",
+            "value": "\"whaleswap.dys/auction/foo-pfxgdk.dys\"",
             "index": true
           },
           {
@@ -1108,7 +1118,7 @@ print(json.dumps(events, indent=2))
         "attributes": [
           {
             "key": "class_id",
-            "value": "\"whaleswap.dys/auction/foo.dys\"",
+            "value": "\"whaleswap.dys/auction/foo-pfxgdk.dys\"",
             "index": true
           },
           {
@@ -1123,7 +1133,7 @@ print(json.dumps(events, indent=2))
         "attributes": [
           {
             "key": "class_id",
-            "value": "\"whaleswap.dys/auction/foo.dys\"",
+            "value": "\"whaleswap.dys/auction/foo-pfxgdk.dys\"",
             "index": true
           },
           {
@@ -1138,7 +1148,7 @@ print(json.dumps(events, indent=2))
         "attributes": [
           {
             "key": "class_id",
-            "value": "\"whaleswap.dys/auction/foo.dys\"",
+            "value": "\"whaleswap.dys/auction/foo-pfxgdk.dys\"",
             "index": true
           },
           {
@@ -1153,7 +1163,7 @@ print(json.dumps(events, indent=2))
         "attributes": [
           {
             "key": "class_id",
-            "value": "\"whaleswap.dys/auction/foo.dys\"",
+            "value": "\"whaleswap.dys/auction/foo-pfxgdk.dys\"",
             "index": true
           },
           {
@@ -1178,7 +1188,7 @@ print(json.dumps(events, indent=2))
         "attributes": [
           {
             "key": "class_id",
-            "value": "\"whaleswap.dys/auction/foo.dys\"",
+            "value": "\"whaleswap.dys/auction/foo-pfxgdk.dys\"",
             "index": true
           },
           {
@@ -1198,7 +1208,7 @@ print(json.dumps(events, indent=2))
         "attributes": [
           {
             "key": "class_id",
-            "value": "\"whaleswap.dys/auction/foo.dys\"",
+            "value": "\"whaleswap.dys/auction/foo-pfxgdk.dys\"",
             "index": true
           },
           {
@@ -1245,13 +1255,13 @@ print(json.dumps(events, indent=2))
       "auctions": [
         {
           "auction_id": "1",
-          "class_id": "whaleswap.dys/auction/foo.dys",
+          "class_id": "whaleswap.dys/auction/foo-pfxgdk.dys",
           "nft_id": "0000000001",
           "sell": {
-            "denom": "bar.dys",
+            "denom": "bar-kktzty.dys",
             "amount": "200"
           },
-          "bid_denom": "foo.dys",
+          "bid_denom": "foo-pfxgdk.dys",
           "seller": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej"
         }
       ],
@@ -1269,7 +1279,7 @@ print(json.dumps(events, indent=2))
         "attributes": [
           {
             "key": "class_id",
-            "value": "\"whaleswap.dys/auction/foo.dys\"",
+            "value": "\"whaleswap.dys/auction/foo-pfxgdk.dys\"",
             "index": true
           },
           {
@@ -1294,7 +1304,7 @@ print(json.dumps(events, indent=2))
         "attributes": [
           {
             "key": "class_id",
-            "value": "\"whaleswap.dys/auction/foo.dys\"",
+            "value": "\"whaleswap.dys/auction/foo-pfxgdk.dys\"",
             "index": true
           },
           {
@@ -1360,7 +1370,7 @@ op_q = shlex.quote(op_json)
 
 note = "Demo mixed trade with note"
 
-make_trade_tx = %sh dysond tx whaleswap make-trade --from bob --max-input "100000$FOO_NAME" --op {op_q} --min-output "1$BAR_NAME" --trade-note "{note}" -y -o json | dysond query wait-tx -o json
+make_trade_tx = %sh dysond tx whaleswap make-trade --from bob --max-input "100000$FOO_NAME" --op {op_q} --min-output "1$BAR_NAME" --trade-note "{note}" --gas auto -y -o json | dysond query wait-tx -o json
 assert isinstance(make_trade_tx, dict) and make_trade_tx['code'] == 0, make_trade_tx
 
 print("MakeTrade success with note")
@@ -1463,8 +1473,8 @@ else:
       "trade": {
         "trade_id": "5",
         "trader": "dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el",
-        "height": "121",
-        "timestamp": "2025-12-27T14:00:13.885447Z",
+        "height": "137",
+        "timestamp": "2026-01-24T01:00:05.416065Z",
         "operations": [
           {
             "Op": {
@@ -1473,7 +1483,7 @@ else:
                 "swap": {
                   "pool_id": "1",
                   "swap_in": {
-                    "denom": "foo.dys",
+                    "denom": "foo-pfxgdk.dys",
                     "amount": "300"
                   },
                   "swap_out": {
@@ -1483,28 +1493,28 @@ else:
               }
             },
             "sent": {
-              "denom": "foo.dys",
+              "denom": "foo-pfxgdk.dys",
               "amount": "300"
             },
             "received": {
-              "denom": "bar.dys",
+              "denom": "bar-kktzty.dys",
               "amount": "294"
             },
             "fees_paid": {
-              "denom": "foo.dys",
+              "denom": "foo-pfxgdk.dys",
               "amount": "0"
             }
           }
         ],
         "total_sent": [
           {
-            "denom": "foo.dys",
+            "denom": "foo-pfxgdk.dys",
             "amount": "300"
           }
         ],
         "total_received": [
           {
-            "denom": "bar.dys",
+            "denom": "bar-kktzty.dys",
             "amount": "294"
           }
         ],
@@ -1545,43 +1555,43 @@ print("Module metrics:")
           "pool_id": "1",
           "coins": [
             {
-              "denom": "bar.dys",
+              "denom": "bar-kktzty.dys",
               "amount": "97959"
             },
             {
-              "denom": "foo.dys",
+              "denom": "foo-pfxgdk.dys",
               "amount": "100054"
             }
           ],
           "shares_denom": "whaleswap.dys/pools/1",
-          "created_height": "103",
-          "created_time": "2025-12-27T14:00:08.336365Z",
-          "updated_time": "2025-12-27T14:00:13.885447Z",
-          "updated_height": "121",
+          "created_height": "115",
+          "created_time": "2026-01-24T00:59:58.395748Z",
+          "updated_time": "2026-01-24T01:00:05.416065Z",
+          "updated_height": "137",
           "num_trades": "3",
           "interest_rate": [
-            "0.000000000000000000bar.dys",
-            "0.000000000000000000foo.dys"
+            "0.000000000000000000bar-kktzty.dys",
+            "0.000000000000000000foo-pfxgdk.dys"
           ],
           "min_initial_collateral_ratio": [
-            "1.500000000000000000bar.dys",
-            "1.500000000000000000foo.dys"
+            "1.500000000000000000bar-kktzty.dys",
+            "1.500000000000000000foo-pfxgdk.dys"
           ],
           "liquidation_threshold": [
-            "1.200000000000000000bar.dys",
-            "1.200000000000000000foo.dys"
+            "1.200000000000000000bar-kktzty.dys",
+            "1.200000000000000000foo-pfxgdk.dys"
           ],
           "max_borrow_percent": [
-            "0.800000000000000000bar.dys",
-            "0.800000000000000000foo.dys"
+            "0.800000000000000000bar-kktzty.dys",
+            "0.800000000000000000foo-pfxgdk.dys"
           ],
           "bound_percent": [
-            "1.000000000000000000bar.dys",
-            "1.000000000000000000foo.dys"
+            "1.000000000000000000bar-kktzty.dys",
+            "1.000000000000000000foo-pfxgdk.dys"
           ],
           "fee_rate": [
-            "0.000000000000000000bar.dys",
-            "0.000000000000000000foo.dys"
+            "0.000000000000000000bar-kktzty.dys",
+            "0.000000000000000000foo-pfxgdk.dys"
           ]
         }
       ],
@@ -1600,24 +1610,24 @@ print("Module metrics:")
           "offer_id": "1",
           "status": "closed",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "116",
-          "created_height": "114",
-          "created_time": "2025-12-27T14:00:11.451308Z",
-          "updated_time": "2025-12-27T14:00:12.463147Z",
+          "updated_height": "131",
+          "created_height": "129",
+          "created_time": "2026-01-24T01:00:02.821098Z",
+          "updated_time": "2026-01-24T01:00:03.498844Z",
           "initial_have": {
-            "denom": "foo.dys",
+            "denom": "foo-pfxgdk.dys",
             "amount": "1000"
           },
           "initial_want": {
-            "denom": "bar.dys",
+            "denom": "bar-kktzty.dys",
             "amount": "400"
           },
           "remaining_have": {
-            "denom": "foo.dys",
+            "denom": "foo-pfxgdk.dys",
             "amount": "0"
           },
           "remaining_want": {
-            "denom": "bar.dys",
+            "denom": "bar-kktzty.dys",
             "amount": "0"
           },
           "unit_have_int": "5",
@@ -1632,24 +1642,24 @@ print("Module metrics:")
           "offer_id": "2",
           "status": "closed",
           "maker": "dys21tvhkv3gqr90jpycaky02xa5ukhaxllu3jlwnej",
-          "updated_height": "118",
-          "created_height": "117",
-          "created_time": "2025-12-27T14:00:12.746751Z",
-          "updated_time": "2025-12-27T14:00:13.029191Z",
+          "updated_height": "133",
+          "created_height": "132",
+          "created_time": "2026-01-24T01:00:03.818141Z",
+          "updated_time": "2026-01-24T01:00:04.143667Z",
           "initial_have": {
-            "denom": "foo.dys",
+            "denom": "foo-pfxgdk.dys",
             "amount": "100"
           },
           "initial_want": {
-            "denom": "bar.dys",
+            "denom": "bar-kktzty.dys",
             "amount": "90"
           },
           "remaining_have": {
-            "denom": "foo.dys",
+            "denom": "foo-pfxgdk.dys",
             "amount": "0"
           },
           "remaining_want": {
-            "denom": "bar.dys",
+            "denom": "bar-kktzty.dys",
             "amount": "0"
           },
           "unit_have_int": "10",
@@ -1684,11 +1694,11 @@ print("Module metrics:")
         "num_trades": "5",
         "escrowed_pool_coins": [
           {
-            "denom": "bar.dys",
+            "denom": "bar-kktzty.dys",
             "amount": "97959"
           },
           {
-            "denom": "foo.dys",
+            "denom": "foo-pfxgdk.dys",
             "amount": "100054"
           }
         ]

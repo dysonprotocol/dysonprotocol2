@@ -450,10 +450,10 @@ def build_sandbox(
                 if hasattr(n, "col_offset"):
                     self._seen_nodes[
                         (
-                            n.lineno,
-                            n.col_offset,
-                            n.end_lineno,
-                            n.end_col_offset,
+                            getattr(n, "lineno", 0),
+                            getattr(n, "col_offset", 0),
+                            getattr(n, "end_lineno", 0),
+                            getattr(n, "end_col_offset", 0),
                             n.__class__.__name__,
                             "",
                             # ast.get_source_segment(self.expr, n, padded=False),
@@ -503,14 +503,14 @@ def build_sandbox(
                 node_info[CALLS_INDEX] += 1
                 node_info[CUM_SIZE_INDEX] += self.size
 
-                if self.size > dyslang.MAX_SCOPE_SIZE:
+                if self.size > self.max_scope_size:
                     raise MemoryError("Scope has used too much memory")
 
                 if node is not self.last_node:
                     self.last_node = node
-                    gas_state["nodes_called"] += 1
+                    # gas_state["nodes_called"] += 1
 
-                    if gas_state["nodes_called"] > dyslang.MAX_NODE_CALLS:
+                    if gas_state["nodes_called"] > self.max_node_calls:
                         raise MemoryError("This program has too many evaluations")
 
                     gas_state["cumsize"] += self.size
@@ -680,7 +680,12 @@ def build_sandbox(
 
         :param code: the code to evaluate
         :param scope: the scope to evaluate the code in
-        :param track_func: a function to call after each node is evaluated use to track gas or scope size
+        :param track_func: a function to call after each node is evaluated use to track gas or scope size with
+        the following arguments: lineno, col_offset, end_lineno, end_col_offset, node_type
+            Example:
+            def track_func(lineno, col_offset, end_lineno, end_col_offset, node_type):
+                print(f"Node: {node_type} at {lineno}:{col_offset}-{end_lineno}:{end_col_offset}")
+
         :param module_dict: a dictionary of modules to make available for import in the sandbox.
                             Keys are module names, values are dicts of attributes.
                             Example: {"json": {"loads": json.loads}, "foo": {"bar": my_custom_func}}
@@ -689,6 +694,16 @@ def build_sandbox(
 
         """
 
+        def allow_modules(value):
+            if isinstance(value, dict):
+                for child in value.values():
+                    allow_modules(child)
+                return
+            allow_func(value)
+
+        if module_dict:
+            allow_modules(module_dict)
+
         sandbox = ScopedDysonEval(
             scope=scope,
             local_track_func=track_func,
@@ -696,11 +711,18 @@ def build_sandbox(
             max_scope_size=max_scope_size,
             modules=dyslang.make_modules(module_dict or {}),
         )
-        result = sandbox.eval(code)
+        try:
+            result = sandbox.eval(code)
+        except dyslang.UNCATCHABLE_EXCEPTIONS as e:
+            raise Exception(f"dys_eval error: {e.__class__.__name__}: {str(e)}")
         sandbox.consume_gas()
-        if not result:
+        if result is None:
             return None
-        return result[-1]
+        if isinstance(result, list):
+            if len(result) == 0:
+                return None
+            return result[-1]
+        return result
 
     @allow_dys_func
     def list_functions():

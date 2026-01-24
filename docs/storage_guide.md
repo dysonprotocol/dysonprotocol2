@@ -38,7 +38,7 @@ Let's explore the available commands for the Storage module:
       -h, --help   help for storage
     
     Global Flags:
-          --home string         directory for config and data (default "/tmp/dyson-test.dGfzNh/test-dysonchains/chain-a-node-1")
+          --home string         directory for config and data (default "/tmp/dyson-test.ZpDmK2/test-dysonchains/chain-a-node-1")
           --log_format string   The logging format (json|plain) (default "plain")
           --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
           --log_no_color        Disable colored logs
@@ -69,7 +69,7 @@ Let's explore the available commands for the Storage module:
       -h, --help   help for storage
     
     Global Flags:
-          --home string         directory for config and data (default "/tmp/dyson-test.dGfzNh/test-dysonchains/chain-a-node-1")
+          --home string         directory for config and data (default "/tmp/dyson-test.ZpDmK2/test-dysonchains/chain-a-node-1")
           --log_format string   The logging format (json|plain) (default "plain")
           --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
           --log_no_color        Disable colored logs
@@ -127,7 +127,7 @@ for event in tx_result['events']:
 
 ```
 
-    {"height":"16","txhash":"3751425073FCFD7793B1BFB5337EEC39F3E77741BF8109910EA3759A5807C14E","codespace":"","code":0,"data":"12310A2F2F6479736F6E70726F746F636F6C2E73746F726167652E76312E4D736753746F72616765536574526573706F6E7365","raw_log":"","logs":[],"info":"","gas_wanted":"200000","gas_used":"63415","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/0","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"J4iPa+rFwFmhVVk35tQtF3YK8xpi9PfzDvI33XGfMJscAFQyv+cXHNaB1gx3pMxvHVk8LDL9i7676U8srOR7Lw==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.storage.v1.MsgStorageSet","index":true},{"key":"sender","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":true},{"key":"module","value":"storage","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.storage.v1.EventStorageUpdated","attributes":[{"key":"address","value":"\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"","index":true},{"key":"index","value":"\"profile/info\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}
+    {"height":"285","txhash":"4F6A13A270E016DD3B4AE5C3764B1553AFD92CC1A9184FF39345C0C6BD7FAE53","codespace":"","code":0,"data":"12310A2F2F6479736F6E70726F746F636F6C2E73746F726167652E76312E4D736753746F72616765536574526573706F6E7365","raw_log":"","logs":[],"info":"","gas_wanted":"200000","gas_used":"48889","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/11","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"VyWUDNbf7Qp6WJROuN4Uso7K/EHP37CJIReu2WP7aTYU/uxz/hwQBl00qieZj2KjR7VZMbwkbqcDovtxT9Oh3Q==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.storage.v1.MsgStorageSet","index":true},{"key":"sender","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":true},{"key":"module","value":"storage","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.storage.v1.EventStorageUpdated","attributes":[{"key":"address","value":"\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"","index":true},{"key":"index","value":"\"profile/info\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}
     {
       "type": "dysonprotocol.storage.v1.EventStorageUpdated",
       "attributes": [
@@ -172,7 +172,7 @@ for event in tx_result['events']:
         break
 ```
 
-    {"height":"17","txhash":"ACE1166556FD4A8FBF670038AE35712F8F234FDD9118D25C904C3A063A6ACA6E","codespace":"","code":0,"data":"12310A2F2F6479736F6E70726F746F636F6C2E73746F726167652E76312E4D736753746F72616765536574526573706F6E7365","raw_log":"","logs":[],"info":"","gas_wanted":"200000","gas_used":"45839","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/1","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"aKqO++kz3nRIojSeY3gSpCvvDGNmTQQZYcVJrpctbbIW0eCW0XZZx9utBxoLRgLXyYPEGeP2b8zLx1PqIoT4og==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.storage.v1.MsgStorageSet","index":true},{"key":"sender","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":true},{"key":"module","value":"storage","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.storage.v1.EventStorageUpdated","attributes":[{"key":"address","value":"\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"","index":true},{"key":"index","value":"\"settings/app\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}
+    {"height":"286","txhash":"BB456D159CE0A619137F7838E02F94275477660C967B001A6F4584BE0FCBBB88","codespace":"","code":0,"data":"12310A2F2F6479736F6E70726F746F636F6C2E73746F726167652E76312E4D736753746F72616765536574526573706F6E7365","raw_log":"","logs":[],"info":"","gas_wanted":"200000","gas_used":"45869","tx":null,"timestamp":"","events":[{"type":"tx","attributes":[{"key":"acc_seq","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el/12","index":true}]},{"type":"tx","attributes":[{"key":"signature","value":"7k98UxyMK+6kv6YI481WnzSubd2LLYSvX/LmY/ExVuVTS6lM6lguB11QOUTdw++zrsSf3VB3PerpjkQ25RYR1A==","index":true}]},{"type":"message","attributes":[{"key":"action","value":"/dysonprotocol.storage.v1.MsgStorageSet","index":true},{"key":"sender","value":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":true},{"key":"module","value":"storage","index":true},{"key":"msg_index","value":"0","index":true}]},{"type":"dysonprotocol.storage.v1.EventStorageUpdated","attributes":[{"key":"address","value":"\"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el\"","index":true},{"key":"index","value":"\"settings/app\"","index":true},{"key":"msg_index","value":"0","index":true}]}]}
     {
       "type": "dysonprotocol.storage.v1.EventStorageUpdated",
       "attributes": [
@@ -263,7 +263,7 @@ assert profile_data['bio'] == "Blockchain enthusiast", "Expected 'Blockchain ent
 assert profile_data['skills'] == ["Smart Contracts", "DeFi", "Web3"], "Expected ['Smart Contracts', 'DeFi', 'Web3'] in output, got: " + str(profile_data['skills'])
 ```
 
-    ['{"entry":{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\\"name\\": \\"Bob\\", \\"bio\\": \\"Blockchain enthusiast\\", \\"skills\\": [\\"Smart Contracts\\", \\"DeFi\\", \\"Web3\\"]}","updated_height":"16","updated_timestamp":"2026-01-07T16:46:42Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="}}']
+    ['{"entry":{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\\"name\\": \\"Bob\\", \\"bio\\": \\"Blockchain enthusiast\\", \\"skills\\": [\\"Smart Contracts\\", \\"DeFi\\", \\"Web3\\"]}","updated_height":"285","updated_timestamp":"2026-01-24T01:00:56Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="}}']
     {'name': 'Bob', 'bio': 'Blockchain enthusiast', 'skills': ['Smart Contracts', 'DeFi', 'Web3']}
 
 
@@ -277,7 +277,7 @@ The Storage module allows you to query entries with a common prefix, which is us
 ! dysond query storage list $ADDRESS --index-prefix "profile/" -o json 
 ```
 
-    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\"name\": \"Bob\", \"bio\": \"Blockchain enthusiast\", \"skills\": [\"Smart Contracts\", \"DeFi\", \"Web3\"]}","updated_height":"16","updated_timestamp":"2026-01-07T16:46:42Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="}],"pagination":{"next_key":null,"total":"0"}}
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\"name\": \"Bob\", \"bio\": \"Blockchain enthusiast\", \"skills\": [\"Smart Contracts\", \"DeFi\", \"Web3\"]}","updated_height":"285","updated_timestamp":"2026-01-24T01:00:56Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="}],"pagination":{"next_key":null,"total":"0"}}
 
 
 
@@ -286,7 +286,7 @@ The Storage module allows you to query entries with a common prefix, which is us
 ! dysond query storage list $ADDRESS --index-prefix "content/" -o json
 ```
 
-    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"content/posts/1","data":"{\"title\": \"Introduction to Blockchain\", \"content\": \"Blockchain is a distributed ledger technology...\", \"tags\": [\"blockchain\", \"crypto\", \"beginner\"], \"published_at\": \"2023-10-25T15:30:00Z\"}","updated_height":"18","updated_timestamp":"2026-01-07T16:46:43Z","hash":"sha256-ZHL5Y1S9UvkhTzc5u78zZ2K0Uvxp6LTpFD2T4OctMjk="}],"pagination":{"next_key":null,"total":"0"}}
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"content/posts/1","data":"{\"title\": \"Introduction to Blockchain\", \"content\": \"Blockchain is a distributed ledger technology...\", \"tags\": [\"blockchain\", \"crypto\", \"beginner\"], \"published_at\": \"2023-10-25T15:30:00Z\"}","updated_height":"287","updated_timestamp":"2026-01-24T01:00:57Z","hash":"sha256-ZHL5Y1S9UvkhTzc5u78zZ2K0Uvxp6LTpFD2T4OctMjk="}],"pagination":{"next_key":null,"total":"0"}}
 
 
 
@@ -295,7 +295,7 @@ The Storage module allows you to query entries with a common prefix, which is us
 ! dysond query storage list $ADDRESS --index-prefix "" -o json --limit 3 --count-total
 ```
 
-    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"content/posts/1","data":"{\"title\": \"Introduction to Blockchain\", \"content\": \"Blockchain is a distributed ledger technology...\", \"tags\": [\"blockchain\", \"crypto\", \"beginner\"], \"published_at\": \"2023-10-25T15:30:00Z\"}","updated_height":"18","updated_timestamp":"2026-01-07T16:46:43Z","hash":"sha256-ZHL5Y1S9UvkhTzc5u78zZ2K0Uvxp6LTpFD2T4OctMjk="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\"name\": \"Bob\", \"bio\": \"Blockchain enthusiast\", \"skills\": [\"Smart Contracts\", \"DeFi\", \"Web3\"]}","updated_height":"16","updated_timestamp":"2026-01-07T16:46:42Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"settings/app","data":"{\"theme\": \"dark\", \"notifications\": true}","updated_height":"17","updated_timestamp":"2026-01-07T16:46:43Z","hash":"sha256-W5j+Aa98S2rm66ch2QXtBLYx8yEOG08aRMp9tep/wBU="}],"pagination":{"next_key":null,"total":"3"}}
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"content/posts/1","data":"{\"title\": \"Introduction to Blockchain\", \"content\": \"Blockchain is a distributed ledger technology...\", \"tags\": [\"blockchain\", \"crypto\", \"beginner\"], \"published_at\": \"2023-10-25T15:30:00Z\"}","updated_height":"287","updated_timestamp":"2026-01-24T01:00:57Z","hash":"sha256-ZHL5Y1S9UvkhTzc5u78zZ2K0Uvxp6LTpFD2T4OctMjk="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"profile/info","data":"{\"name\": \"Bob\", \"bio\": \"Blockchain enthusiast\", \"skills\": [\"Smart Contracts\", \"DeFi\", \"Web3\"]}","updated_height":"285","updated_timestamp":"2026-01-24T01:00:56Z","hash":"sha256-1d2LVY9EgE8yTZQ+84JJEwikcA6JNAg8waPXRBvntUo="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"settings/app","data":"{\"theme\": \"dark\", \"notifications\": true}","updated_height":"286","updated_timestamp":"2026-01-24T01:00:57Z","hash":"sha256-W5j+Aa98S2rm66ch2QXtBLYx8yEOG08aRMp9tep/wBU="}],"pagination":{"next_key":null,"total":"3"}}
 
 
 ### Filtering with GJSON
@@ -313,6 +313,11 @@ The Storage module supports powerful filtering using [GJSON](https://github.com/
 | Simple | `field=="value"` | `status=="active"` |
 | AND | `#(cond1)#\|#(cond2)#` | `#(last=="Murphy")#\|#(active==true)#` |
 | OR | `[#(cond1)#,#(cond2)#].@flatten` | `[#(last=="Murphy")#,#(last=="Craig")#].@flatten` |
+
+**Sorting with `sort_by`:**
+- `sort_by` is a GJSON path used to derive the sort key for each entry.
+- Use `--reverse` to invert the sorted order.
+- `pagination.key` is not supported with `sort_by`; use `--offset` and `--limit`.
 
 Let's set up some test data and demonstrate filtering:
 
@@ -348,7 +353,7 @@ print("Test data created successfully!")
 ! dysond query storage list $ADDRESS --index-prefix "people/" --filter 'last=="Murphy"' -o json
 ```
 
-    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/dale","data":"{\"first\": \"Dale\", \"last\": \"Murphy\", \"age\": 44, \"active\": true}","updated_height":"23","updated_timestamp":"2026-01-07T16:46:44Z","hash":"sha256-BwKRcIrdkfkY+IzfXaIRswXPM7XnWM35Wx0Zd+cnnlQ="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/jane","data":"{\"first\": \"Jane\", \"last\": \"Murphy\", \"age\": 47, \"active\": false}","updated_height":"24","updated_timestamp":"2026-01-07T16:46:45Z","hash":"sha256-pw1GuEH0d6sp+Kh4Sj4wqWwFP8+xDqzN8w8x/bYmXjY="}],"pagination":{"next_key":null,"total":"0"}}
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/dale","data":"{\"first\": \"Dale\", \"last\": \"Murphy\", \"age\": 44, \"active\": true}","updated_height":"291","updated_timestamp":"2026-01-24T01:00:58Z","hash":"sha256-BwKRcIrdkfkY+IzfXaIRswXPM7XnWM35Wx0Zd+cnnlQ="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/jane","data":"{\"first\": \"Jane\", \"last\": \"Murphy\", \"age\": 47, \"active\": false}","updated_height":"292","updated_timestamp":"2026-01-24T01:00:58Z","hash":"sha256-pw1GuEH0d6sp+Kh4Sj4wqWwFP8+xDqzN8w8x/bYmXjY="}],"pagination":{"next_key":null,"total":"0"}}
 
 
 
@@ -358,7 +363,7 @@ print("Test data created successfully!")
 ! dysond query storage list $ADDRESS --index-prefix "people/" --filter '#(last=="Murphy")#|#(active==true)#' -o json
 ```
 
-    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/dale","data":"{\"first\": \"Dale\", \"last\": \"Murphy\", \"age\": 44, \"active\": true}","updated_height":"23","updated_timestamp":"2026-01-07T16:46:44Z","hash":"sha256-BwKRcIrdkfkY+IzfXaIRswXPM7XnWM35Wx0Zd+cnnlQ="}],"pagination":{"next_key":null,"total":"0"}}
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/dale","data":"{\"first\": \"Dale\", \"last\": \"Murphy\", \"age\": 44, \"active\": true}","updated_height":"291","updated_timestamp":"2026-01-24T01:00:58Z","hash":"sha256-BwKRcIrdkfkY+IzfXaIRswXPM7XnWM35Wx0Zd+cnnlQ="}],"pagination":{"next_key":null,"total":"0"}}
 
 
 
@@ -368,16 +373,115 @@ print("Test data created successfully!")
 ! dysond query storage list $ADDRESS --index-prefix "people/" --filter '[#(last=="Murphy")#,#(last=="Craig")#].@flatten' -o json
 ```
 
-    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/dale","data":"{\"first\": \"Dale\", \"last\": \"Murphy\", \"age\": 44, \"active\": true}","updated_height":"23","updated_timestamp":"2026-01-07T16:46:44Z","hash":"sha256-BwKRcIrdkfkY+IzfXaIRswXPM7XnWM35Wx0Zd+cnnlQ="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/jane","data":"{\"first\": \"Jane\", \"last\": \"Murphy\", \"age\": 47, \"active\": false}","updated_height":"24","updated_timestamp":"2026-01-07T16:46:45Z","hash":"sha256-pw1GuEH0d6sp+Kh4Sj4wqWwFP8+xDqzN8w8x/bYmXjY="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/roger","data":"{\"first\": \"Roger\", \"last\": \"Craig\", \"age\": 68, \"active\": true}","updated_height":"25","updated_timestamp":"2026-01-07T16:46:45Z","hash":"sha256-UG5o+TUYI4pWhrkTQg/yjRd1Ptxy3NL8lvyG6JFxcQs="}],"pagination":{"next_key":null,"total":"0"}}
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/dale","data":"{\"first\": \"Dale\", \"last\": \"Murphy\", \"age\": 44, \"active\": true}","updated_height":"291","updated_timestamp":"2026-01-24T01:00:58Z","hash":"sha256-BwKRcIrdkfkY+IzfXaIRswXPM7XnWM35Wx0Zd+cnnlQ="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/jane","data":"{\"first\": \"Jane\", \"last\": \"Murphy\", \"age\": 47, \"active\": false}","updated_height":"292","updated_timestamp":"2026-01-24T01:00:58Z","hash":"sha256-pw1GuEH0d6sp+Kh4Sj4wqWwFP8+xDqzN8w8x/bYmXjY="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/roger","data":"{\"first\": \"Roger\", \"last\": \"Craig\", \"age\": 68, \"active\": true}","updated_height":"293","updated_timestamp":"2026-01-24T01:00:59Z","hash":"sha256-UG5o+TUYI4pWhrkTQg/yjRd1Ptxy3NL8lvyG6JFxcQs="}],"pagination":{"next_key":null,"total":"0"}}
 
 
 
 ```python
 # Combined AND + OR: Find (Murphy AND active) OR Craig
 ! dysond query storage list $ADDRESS --index-prefix "people/" --filter '[#(last=="Murphy")#|#(active==true)#,#(last=="Craig")#].@flatten' -o json
+
+# Sort by age ascending
+! dysond query storage list $ADDRESS --index-prefix "people/" --sort-by "age" -o json
+
+# Sort by age descending (use pagination.reverse)
+! dysond query storage list $ADDRESS --index-prefix "people/" --sort-by "age" --reverse -o json
+
+# Sort with pagination offset/limit
+! dysond query storage list $ADDRESS --index-prefix "people/" --sort-by "age" --offset 1 --limit 2 -o json
 ```
 
-    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/dale","data":"{\"first\": \"Dale\", \"last\": \"Murphy\", \"age\": 44, \"active\": true}","updated_height":"23","updated_timestamp":"2026-01-07T16:46:44Z","hash":"sha256-BwKRcIrdkfkY+IzfXaIRswXPM7XnWM35Wx0Zd+cnnlQ="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/roger","data":"{\"first\": \"Roger\", \"last\": \"Craig\", \"age\": 68, \"active\": true}","updated_height":"25","updated_timestamp":"2026-01-07T16:46:45Z","hash":"sha256-UG5o+TUYI4pWhrkTQg/yjRd1Ptxy3NL8lvyG6JFxcQs="}],"pagination":{"next_key":null,"total":"0"}}
+    {"entries":[{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/dale","data":"{\"first\": \"Dale\", \"last\": \"Murphy\", \"age\": 44, \"active\": true}","updated_height":"291","updated_timestamp":"2026-01-24T01:00:58Z","hash":"sha256-BwKRcIrdkfkY+IzfXaIRswXPM7XnWM35Wx0Zd+cnnlQ="},{"owner":"dys21fhhxp9xveswc4yhxekr32eqe80rkwpur3vu0el","index":"people/roger","data":"{\"first\": \"Roger\", \"last\": \"Craig\", \"age\": 68, \"active\": true}","updated_height":"293","updated_timestamp":"2026-01-24T01:00:59Z","hash":"sha256-UG5o+TUYI4pWhrkTQg/yjRd1Ptxy3NL8lvyG6JFxcQs="}],"pagination":{"next_key":null,"total":"0"}}
+
+
+    Usage:
+      dysond query storage list <owner> [--index-prefix <prefix>] [flags]
+    
+    Flags:
+          --count-total           count total number of records in storage entries to query for
+          --extract string        Optional GJSON path to extract sub-field from each entry's data
+          --filter string         Optional GJSON query; entry included only if query matches. Supports ==, !=, <, <=, >, >=, %, !% operators
+          --grpc-addr string      the gRPC endpoint to use for this chain
+          --grpc-insecure         allow gRPC over insecure channels, if not the server must use TLS
+          --height int            Use a specific height to query state at (this can error if the node is pruning state)
+      -h, --help                  help for list
+          --index-prefix string   Filter entries by index prefix
+          --limit uint            pagination limit of storage entries to query for (default 100)
+          --node string           <host>:<port> to CometBFT RPC interface for this chain (default "tcp://localhost:26657")
+          --offset uint           pagination offset of storage entries to query for
+      -o, --output string         Output format (text|json) (default "text")
+          --page uint             pagination page of storage entries to query for. This sets offset to a multiple of limit (default 1)
+          --page-key string       pagination page-key of storage entries to query for
+          --reverse               results are sorted in descending order
+    
+    Global Flags:
+          --home string         directory for config and data (default "/tmp/dyson-test.ZpDmK2/test-dysonchains/chain-a-node-1")
+          --log_format string   The logging format (json|plain) (default "plain")
+          --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
+          --log_no_color        Disable colored logs
+          --trace               print out full stack trace on errors
+    
+    unknown flag: --sort-by
+
+
+    Usage:
+      dysond query storage list <owner> [--index-prefix <prefix>] [flags]
+    
+    Flags:
+          --count-total           count total number of records in storage entries to query for
+          --extract string        Optional GJSON path to extract sub-field from each entry's data
+          --filter string         Optional GJSON query; entry included only if query matches. Supports ==, !=, <, <=, >, >=, %, !% operators
+          --grpc-addr string      the gRPC endpoint to use for this chain
+          --grpc-insecure         allow gRPC over insecure channels, if not the server must use TLS
+          --height int            Use a specific height to query state at (this can error if the node is pruning state)
+      -h, --help                  help for list
+          --index-prefix string   Filter entries by index prefix
+          --limit uint            pagination limit of storage entries to query for (default 100)
+          --node string           <host>:<port> to CometBFT RPC interface for this chain (default "tcp://localhost:26657")
+          --offset uint           pagination offset of storage entries to query for
+      -o, --output string         Output format (text|json) (default "text")
+          --page uint             pagination page of storage entries to query for. This sets offset to a multiple of limit (default 1)
+          --page-key string       pagination page-key of storage entries to query for
+          --reverse               results are sorted in descending order
+    
+    Global Flags:
+          --home string         directory for config and data (default "/tmp/dyson-test.ZpDmK2/test-dysonchains/chain-a-node-1")
+          --log_format string   The logging format (json|plain) (default "plain")
+          --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
+          --log_no_color        Disable colored logs
+          --trace               print out full stack trace on errors
+    
+    unknown flag: --sort-by
+
+
+    Usage:
+      dysond query storage list <owner> [--index-prefix <prefix>] [flags]
+    
+    Flags:
+          --count-total           count total number of records in storage entries to query for
+          --extract string        Optional GJSON path to extract sub-field from each entry's data
+          --filter string         Optional GJSON query; entry included only if query matches. Supports ==, !=, <, <=, >, >=, %, !% operators
+          --grpc-addr string      the gRPC endpoint to use for this chain
+          --grpc-insecure         allow gRPC over insecure channels, if not the server must use TLS
+          --height int            Use a specific height to query state at (this can error if the node is pruning state)
+      -h, --help                  help for list
+          --index-prefix string   Filter entries by index prefix
+          --limit uint            pagination limit of storage entries to query for (default 100)
+          --node string           <host>:<port> to CometBFT RPC interface for this chain (default "tcp://localhost:26657")
+          --offset uint           pagination offset of storage entries to query for
+      -o, --output string         Output format (text|json) (default "text")
+          --page uint             pagination page of storage entries to query for. This sets offset to a multiple of limit (default 1)
+          --page-key string       pagination page-key of storage entries to query for
+          --reverse               results are sorted in descending order
+    
+    Global Flags:
+          --home string         directory for config and data (default "/tmp/dyson-test.ZpDmK2/test-dysonchains/chain-a-node-1")
+          --log_format string   The logging format (json|plain) (default "plain")
+          --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
+          --log_no_color        Disable colored logs
+          --trace               print out full stack trace on errors
+    
+    unknown flag: --sort-by
 
 
 
