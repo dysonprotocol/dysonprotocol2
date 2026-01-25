@@ -177,9 +177,13 @@ func (s *PythonServer) request(ctx context.Context, path string, payload any) (j
 		return nil, fmt.Errorf("failed to do request")
 	}
 	defer resp.Body.Close()
+	// Read full body before decoding to avoid streaming buffer issues at large response sizes
+	bodyBytes, readErr := io.ReadAll(resp.Body)
+	if readErr != nil {
+		return nil, errorsmod.Wrapf(readErr, "failed to read response body")
+	}
 	var pr pyResponse
-	dec := json.NewDecoder(resp.Body)
-	if err := dec.Decode(&pr); err != nil {
+	if err := json.Unmarshal(bodyBytes, &pr); err != nil {
 		return nil, errorsmod.Wrapf(err, "failed to decode response")
 	}
 	if !pr.Ok {
