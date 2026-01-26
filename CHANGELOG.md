@@ -38,20 +38,27 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v2.1.0] - 2026-01-26
+
 ### Features
 
 * (x/nameservice) Add MsgMoveNft to enable name owners to transfer NFTs between non-module accounts. Includes keeper logic, `EventNftMoved` event emission, CLI command `dysond tx nameservice move-nft`, and integration tests.
-* (demo-dwapp)Add /names route and Nameservice placeholder UI, including navigation link and Playwright test.
+* (x/storage) Add StorageList `sort_by` support with deterministic pagination.
+* (x/script) Add attached message authz for script exec.
+* (p2p) Add GossipSub topic validators for message authentication with ADR-36 signature verification.
+* (p2p) Bootstrap libp2p connection automatically when joining network.
+* (demo-dwapp) Add /names route and Nameservice placeholder UI, including navigation link and Playwright test.
 
 ### Improvements
 
 * (x/script) Simplified query handling to always execute at current block; removed BeginBlock historical-retention validation and logs. Tests and examples updated to use index-based lookups where needed.
 * (crontask) Deterministic JSON marshaling helper added to keeper for normalized event processing and minified args/kwargs.
+* (docs) Update README documentation and examples sections.
 
 ### Client Breaking
 
 * (x/script) Removed `query_height` support from script queries and RPC: `_query(params)` no longer accepts `query_height`. Historical queries are not supported.
-* (proto/script) `dysonprotocol.script.v1.Params` is now empty. Removed fields `max_relative_historical_blocks` and `absolute_historical_block_cutoff`. Generated files updated.
+* (proto/script) `dysonprotocol.protocol.v1.Params` is now empty. Removed fields `max_relative_historical_blocks` and `absolute_historical_block_cutoff`. Generated files updated.
 
 ### CLI Breaking
 
@@ -65,4 +72,6 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 * (x/crontask) Query responses now encode empty task lists as [] instead of null, fixing CLI pagination and API consistency. Removed deprecated proto messages and endpoints for scheduled/pending/done tasks.
 * (dysvm) Align DYSLANG_SERVER=1 script error JSON with baseline (DYSLANG_SERVER=0) to prevent consensus mismatch. Python FastAPI now returns the full eval response on error, and the Go server client surfaces the full error JSON string, matching baseline logs.
-* (dysvm)  Add missing `random.sample` to sandbox module mapping in `dysvm_server.py`.
+* (dysvm) Add missing `random.sample` to sandbox module mapping in `dysvm_server.py`.
+* (dwapp) Server now returns 404 for unresolved name or address.
+* (x/nameservice) Fix regex group for DefaultDwAppPattern.
