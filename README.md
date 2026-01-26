@@ -62,9 +62,11 @@ For more detailed information about specific modules, please refer to the follow
 - [Crontask Guide](docs/crontask_guide.md)
 - [Dyslang Guide](docs/dyslang_guide.md)
 - [Nameservice Guide](docs/nameservice_guide.md)
+- [Script Sudo Guide](docs/script_sudo_guide.md)
 - [Scripting Guide](docs/scripting_guide.md)
 - [Staking Guide](docs/staking_guide.md)
 - [Storage Guide](docs/storage_guide.md)
+- [Whaleswap Guide](docs/whaleswap_guide.md)
 
 ## Examples
 
@@ -77,9 +79,8 @@ For more detailed information about specific modules, please refer to the follow
  - [Dyslang Example](examples/dyslang_example.py)
  - [Dystorrent](examples/dystorrent/)
  - [Exec Other Script](examples/exec_other_script.py)
- - [Ica](examples/ica.py)
- - [Ica E2e](examples/ica_e2e.py)
- - [Script Query Indices](examples/script_query_height.py)
+ - [IBC InterChainAccounts](examples/ica.py)
+ - [IBC InterChainAccounts Callbacks](examples/ica_e2e.py)
  - [Simple Wsgi Example](examples/simple_wsgi_example.py)
  - [Storage Example](examples/storage_example.py)
 
