@@ -38,6 +38,14 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+### Features
+
+* (dwapp) Add content negotiation for 404 error responses. Server now returns JSON, HTML, or plain text based on the `Accept` header, with helpful error messages and WSGI example code.
+
+### Improvements
+
+* (tests) Add early subprocess health check in chainnet fixture to fail fast with clear error message when ports are already occupied by another process.
+
 ## [v2.1.0] - 2026-01-26
 
 ### Features

@@ -226,8 +226,10 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if queryReq.ScriptAddress == "" && queryReq.ScriptName == "" {
 		match := h.scriptAddressOrNameRe.FindStringSubmatch(req.Host)
 		if len(match) == 0 {
-			errorMsg := fmt.Sprintf("No match for host: `%s` using ScriptAddressOrNamePattern: `%s`", req.Host, h.scriptAddressOrNameRe.String())
-			http.Error(w, errorMsg, http.StatusNotFound)
+			writeNotFoundResponse(w, req, h.publicHostTemplate,
+				req.Host,
+				fmt.Sprintf("No match for host \"%s\" using configured pattern.", req.Host),
+				fmt.Sprintf("Host must match pattern: %s", h.scriptAddressOrNameRe.String()))
 			return
 		}
 		fmt.Printf("Match for host: `%s` using ScriptAddressOrNamePattern: `%s`\n", req.Host, h.scriptAddressOrNameRe.String())
@@ -248,8 +250,10 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 
 		if queryReq.ScriptAddress == "" && queryReq.ScriptName == "" {
-			errorMsg := fmt.Sprintf("No named capture (address/name) extracted for host: `%s` using pattern: `%s`, raw match: %v", req.Host, h.scriptAddressOrNameRe.String(), match)
-			http.Error(w, errorMsg, http.StatusNotFound)
+			writeNotFoundResponse(w, req, h.publicHostTemplate,
+				req.Host,
+				fmt.Sprintf("Could not extract address or name from host \"%s\".", req.Host),
+				"Ensure the subdomain contains a valid Dyson address or name.")
 			return
 		}
 	}
@@ -265,17 +269,10 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		// If error is "failed to resolve script name: {name}", extract and handle special case for dys.dys
 		errMsg := err.Error()
 		if strings.Contains(strings.ToLower(errMsg), "decoding bech32 failed") {
-			invalid := queryReq.ScriptAddress
-			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(w, "\"%s\" is not a valid Dys script address.\n\n", invalid)
-			fmt.Fprint(w, "Minimal Hello World example (WSGI):\n\n")
-			fmt.Fprint(w, "```python\n")
-			fmt.Fprint(w, "# wsgi.py\n")
-			fmt.Fprint(w, "def wsgi(environ, start_response):\n")
-			fmt.Fprint(w, "    start_response('200 OK', [('Content-Type', 'text/plain')])\n")
-			fmt.Fprint(w, "    return [b'Hello, world!']\n")
-			fmt.Fprint(w, "```\n")
+			writeNotFoundResponse(w, req, h.publicHostTemplate,
+				queryReq.ScriptAddress,
+				fmt.Sprintf("\"%s\" is not a valid Dys script address.", queryReq.ScriptAddress),
+				"Ensure the address is a valid bech32 address starting with 'dys1'.")
 			return
 		}
 		re := regexp.MustCompile(`failed to resolve script name:\s*([^\s:]+)`)
@@ -284,24 +281,19 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		addrRe := regexp.MustCompile(`script with address\s*([a-z0-9]+)\s*doesn't exist`)
 		if m := addrRe.FindStringSubmatch(strings.ToLower(errMsg)); len(m) == 2 {
 			addr := m[1]
-			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(w, "\"%s\" has not set up a Dys Dwapp yet.\n\n", addr)
-			fmt.Fprint(w, "Minimal Hello World example (WSGI):\n\n")
-			fmt.Fprint(w, "```python\n")
-			fmt.Fprint(w, "# wsgi.py\n")
-			fmt.Fprint(w, "def wsgi(environ, start_response):\n")
-			fmt.Fprint(w, "    start_response('200 OK', [('Content-Type', 'text/plain')])\n")
-			fmt.Fprint(w, "    return [b'Hello, world!']\n")
-			fmt.Fprint(w, "```\n")
+			writeNotFoundResponse(w, req, h.publicHostTemplate,
+				addr,
+				fmt.Sprintf("\"%s\" has not set up a Dys Dwapp yet.", addr),
+				"Deploy a script to this address to serve web content.")
 			return
 		}
 		if m := re.FindStringSubmatch(errMsg); len(m) == 2 {
 			name := strings.TrimSpace(m[1])
 			fmt.Printf("Failed to resolve script name: %s\n", name)
-			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(w, "Name \"%s\" could not be resolved.\n", name)
+			writeNotFoundResponse(w, req, h.publicHostTemplate,
+				name,
+				fmt.Sprintf("Name \"%s\" could not be resolved.", name),
+				"Register this name in the nameservice or check the spelling.")
 			return
 		}
 		http.Error(w, fmt.Sprintf("Error querying: %v", err), http.StatusInternalServerError)

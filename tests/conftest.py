@@ -422,6 +422,22 @@ def chainnet(worker_id, test_base_dir, test_config_path):
         preexec_fn=os.setsid,
     )
 
+    # Give the process a moment to start (or fail due to port conflicts)
+    time.sleep(0.5)
+
+    # Check if the process crashed immediately (e.g., port already in use)
+    if dysond_proc.poll() is not None:
+        # Process has exited - read the log to get the error message
+        network_log.flush()
+        with open(network_log_file, "r") as log_reader:
+            log_contents = log_reader.read()
+        raise RuntimeError(
+            f"Chainnet start failed immediately (exit code {dysond_proc.returncode}).\n"
+            f"This usually means ports are already in use by another process.\n"
+            f"Check if an old testnet is still running and kill it first.\n"
+            f"Log output:\n{log_contents}"
+        )
+
     # Track processes for cleanup
     processes = [dysond_proc]
 
@@ -859,49 +875,50 @@ def generate_account(chainnet, faucet):
 
 @pytest.fixture(scope="session")
 def faucet(chainnet):
-    """Fixture that returns a function to send coins from alice to a given address."""
+    """Fixture that returns a function to send coins from bob to a given address."""
     default_dysond_bin = chainnet[0]
 
     def _faucet(
         address, denom="udys", amount=10000, dysond_bin=default_dysond_bin, **kwargs
     ):
         """
-        Send coins from alice to a given address.
+        Send coins from bob to a given address.
         Args:
             address: The address to send coins to.
             denom: The denom of the coins to send.
             amount: The amount of coins to send.
         """
+        faucet_account = "bob"
 
         # Normalize amount to integer if provided as string
         if isinstance(amount, str):
             amount = int(amount)
 
-        # Check alice's balance before attempting transfer
-        alice_balances = dysond_bin("query", "bank", "balances", "alice")
-        alice_balance = 0
-        for bal in alice_balances.get("balances", []):
+        # Check faucet balance before attempting transfer
+        faucet_balances = dysond_bin("query", "bank", "balances", faucet_account)
+        faucet_balance = 0
+        for bal in faucet_balances.get("balances", []):
             if bal.get("denom") == denom:
-                alice_balance = int(bal.get("amount", 0))
+                faucet_balance = int(bal.get("amount", 0))
                 break
 
-        if alice_balance < amount:
+        if faucet_balance < amount:
             raise Exception(
-                f"Faucet insufficient funds: alice has {alice_balance} {denom} "
+                f"Faucet insufficient funds: {faucet_account} has {faucet_balance} {denom} "
                 f"but test requested {amount} {denom}. "
                 f"Consider reducing faucet_amount or running tests in isolation."
             )
 
-        # Send tx from alice (run_command already waits for tx internally)
+        # Send tx from faucet account (run_command already waits for tx internally)
         dysond_bin(
             "tx",
             "bank",
             "send",
-            "alice",
+            faucet_account,
             address,
             str(amount) + denom,
             "--from",
-            "alice",
+            faucet_account,
             "--yes",
             **kwargs,
         )
@@ -1314,8 +1331,8 @@ def ibc_setup(
 
 
 @pytest.fixture(scope="session")
-def update_crontask_params(chainnet):
-    """Ensure clean_up_time is 2 s using MsgUpdateParams (fast, single-tx)."""
+def update_crontask_params(chainnet, alice_sudo_grant):
+    """Ensure clean_up_time is 2 s using MsgUpdateParams via authz MsgSudo."""
 
     dysond = chainnet[0]
 
@@ -1338,18 +1355,46 @@ def update_crontask_params(chainnet):
             total = h * 3600 + mm * 60 + ss
             new_params["max_subscription_duration"] = f"{total}s"
 
-    # Resolve alice bech32 address for authority field
-    alice_info = dysond("keys", "show", "alice")
-    alice_address = alice_info["address"]
+    alice_addr = alice_sudo_grant["alice_addr"]
+    gov_addr = alice_sudo_grant["gov_addr"]
 
+    extra_code = """
+from dys import _msg, get_executor_address
+
+def update_crontask(gov_addr, new_params):
+    executor = get_executor_address()
+    return _msg({
+        "@type": "/cosmos.authz.v1beta1.MsgExec",
+        "grantee": executor,
+        "msgs": [
+            {
+                "@type": "/dysonprotocol.script.v1.MsgSudo",
+                "authority": gov_addr,
+                "messages": [
+                    {
+                        "@type": "/dysonprotocol.crontask.v1.MsgUpdateParams",
+                        "authority": gov_addr,
+                        "params": new_params,
+                    }
+                ],
+            }
+        ],
+    })
+"""
+
+    kwargs = json.dumps({"gov_addr": gov_addr, "new_params": new_params})
     tx = dysond(
         "tx",
-        "crontask",
-        "update-params",
-        "--authority",
-        alice_address,
-        "--params",
-        json.dumps(new_params),
+        "script",
+        "exec",
+        "--script-address",
+        alice_addr,
+        "--function-name",
+        "update_crontask",
+        "--kwargs",
+        kwargs,
+        "--extra-code",
+        extra_code,
         "--from",
         "alice",
         "--keyring-backend",
@@ -1357,7 +1402,7 @@ def update_crontask_params(chainnet):
         "--yes",
     )
 
-    assert tx.get("code", 1) == 0, f"update-params failed: {tx}"
+    assert tx.get("code", 1) == 0, f"update-params via authz failed: {tx}"
 
     def _updated():
         val = dysond("query", "crontask", "params")["params"]
