@@ -43,7 +43,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pytest-report
-          path: reports/pytest.html
+          path: |
+            reports/pytest.html
+            coverage/coverage.out
+            coverage/coverage.txt
+            coverage/coverage.html
 
       - name: Compress dysond binary
         run: |
