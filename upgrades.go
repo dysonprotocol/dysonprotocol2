@@ -14,12 +14,33 @@ import (
 // whaleswap arbitrage (protorev) feature.
 const ProtorevUpgradeName = "protorev"
 
+// V210UpgradeName defines the on-chain upgrade name for the v2.1.0 release.
+const V210UpgradeName = "v2.1.0"
+
 func (app *DysApp) RegisterUpgradeHandlers() {
 	// Register handler for protorev upgrade
 	app.UpgradeKeeper.SetUpgradeHandler(
 		ProtorevUpgradeName,
 		func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 			app.Logger().Info("Executing protorev upgrade", "name", plan.Name, "height", plan.Height)
+
+			// Run module migrations
+			newVM, err := app.ModuleManager.RunMigrations(ctx, app.Configurator(), fromVM)
+			if err != nil {
+				app.Logger().Error("Upgrade handler failed", "name", plan.Name, "height", plan.Height, "err", err)
+				return newVM, err
+			}
+
+			app.Logger().Info("Upgrade handler completed", "name", plan.Name, "height", plan.Height)
+			return newVM, nil
+		},
+	)
+
+	// Register handler for v2.1.0 upgrade
+	app.UpgradeKeeper.SetUpgradeHandler(
+		V210UpgradeName,
+		func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+			app.Logger().Info("Executing v2.1.0 upgrade", "name", plan.Name, "height", plan.Height)
 
 			// Run module migrations
 			newVM, err := app.ModuleManager.RunMigrations(ctx, app.Configurator(), fromVM)
@@ -60,10 +81,11 @@ func (app *DysApp) RegisterUpgradeHandlers() {
 	}
 
 	if !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-		if upgradeInfo.Name == ProtorevUpgradeName {
+		switch upgradeInfo.Name {
+		case ProtorevUpgradeName:
 			// Feature upgrade; no store migrations needed
+		case V210UpgradeName:
+			// v2.1.0 upgrade; no store migrations needed
 		}
-	} else if upgradeInfo.Name == ProtorevUpgradeName {
-		// Skip height is set; not configuring store loader
 	}
 }
