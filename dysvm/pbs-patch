@@ -12,7 +12,7 @@ index 577f44f..3b3e992 100644
  
  $(OUTDIR)/$(CLANG_FILENAME):
 diff --git a/pythonbuild/buildenv.py b/pythonbuild/buildenv.py
-index 4b2a0e6..dca7539 100644
+index 4b2a0e6..d6610a2 100644
 --- a/pythonbuild/buildenv.py
 +++ b/pythonbuild/buildenv.py
 @@ -143,7 +143,12 @@ class TempdirContext(object):
@@ -47,7 +47,22 @@ index 4b2a0e6..dca7539 100644
          log("extracting %s to %s" % (p, dest_path))
          extract_tar_to_directory(p, dest_path)
  
-@@ -269,12 +274,18 @@ def build_environment(client, image):
+@@ -222,7 +227,13 @@ class TempdirContext(object):
+         if isinstance(program, str) and not program.startswith("/"):
+             program = str(self.td / program)
+ 
+-        exec_and_log(program, cwd=self.td, env=environment)
++        # Merge with process environment so PATH, HOME, etc. are available.
++        # Docker exec does this implicitly; subprocess.Popen(env=) does not.
++        merged_env = dict(os.environ)
++        if environment:
++            merged_env.update(environment)
++
++        exec_and_log(program, cwd=self.td, env=merged_env)
+ 
+     def get_tools_archive(self, dest, name):
+         log("copying built files to %s" % dest)
+@@ -269,12 +280,18 @@ def build_environment(client, image):
          container = client.containers.run(
              image, command=["/bin/sleep", "86400"], detach=True
          )
@@ -69,7 +84,7 @@ index 4b2a0e6..dca7539 100644
  
      try:
          yield context
-@@ -282,5 +293,3 @@ def build_environment(client, image):
+@@ -282,5 +299,3 @@ def build_environment(client, image):
          if container:
              container.stop(timeout=0)
              container.remove()
