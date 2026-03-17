@@ -24,6 +24,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
     libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev \
     liblzma-dev \
+    # python-build-standalone build deps
+    texinfo \
     # system python/pip to bootstrap nodeenv
     python3 python3-pip \
   && rm -rf /var/lib/apt/lists/*
