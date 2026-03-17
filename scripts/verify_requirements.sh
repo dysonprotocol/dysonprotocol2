@@ -176,16 +176,29 @@ ensure_git_and_submodules() {
         fi
     fi
 
-    # After ensuring initialization, check whether submodules are at recorded commits and clean
+    # After ensuring initialization, check whether submodules are at recorded commits
     status=$(git -C "$repo_root" submodule status --recursive 2>/dev/null || true)
-    out_of_sync=$(echo "$status" | grep -E '^[+U]|dirty' || true)
-    if [ -z "$out_of_sync" ]; then
+
+    # Commit mismatch (+) or merge conflict (U): always a problem
+    commit_mismatch=$(echo "$status" | grep -E '^[+U]' || true)
+
+    # Dirty working tree: expected when submodules are patched (e.g., by dysvm-patch.sh)
+    dirty_only=$(echo "$status" | grep -v -E '^[+U]' | grep 'dirty' || true)
+
+    if [ -n "$dirty_only" ] && [ -z "$commit_mismatch" ]; then
+        echo "⚠️  Some submodules have local modifications (normal after patching):"
+        echo "$dirty_only"
+        echo "✓ Git submodules verified (dirty but at correct commits)"
+        return 0
+    fi
+
+    if [ -z "$commit_mismatch" ]; then
         echo "✓ Git submodules verified"
         return 0
     fi
 
-    echo "!  One or more submodules are not at the recorded commit or have local changes:"
-    echo "$out_of_sync"
+    echo "!  One or more submodules are not at the recorded commit or have merge conflicts:"
+    echo "$commit_mismatch"
     echo "To sync to the recorded commits, run in $repo_root:"
     echo "  git submodule sync --recursive && git submodule update --init --recursive --depth 1"
 
