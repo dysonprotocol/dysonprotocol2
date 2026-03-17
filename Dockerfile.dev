@@ -53,6 +53,10 @@ RUN nodeenv "$NODEENV_HOME" -n 22.12.0 \
   && "$NODEENV_HOME"/bin/node --version \
   && "$NODEENV_HOME"/bin/npm --version
 
+# Create directories expected by python-build-standalone shell scripts
+# (build-binutils.sh, build-musl.sh, etc. hardcode cd /build and /tools paths)
+RUN mkdir -p /build /tools
+
 WORKDIR /workspace
 
 # Default to a shell; compose will override command to run make
