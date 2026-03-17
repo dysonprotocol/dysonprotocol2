@@ -54,12 +54,21 @@ else
 
     TARGET_TRIPLE=$([ "$(uname -m)" = "aarch64" ] && echo "aarch64-unknown-linux-gnu" || echo "x86_64-unknown-linux-gnu")
 
+    # When PYBUILD_NO_DOCKER is set, build steps share a single /build and
+    # /tools directory (instead of separate Docker containers). Parallel make
+    # would cause race conditions, so force serial execution.
+    SERIAL_FLAG=""
+    if [ -n "$PYBUILD_NO_DOCKER" ]; then
+        SERIAL_FLAG="--serial"
+    fi
+
     # Run the linux build with required environment; fail fast on any error
     PYBUILD_PYTHON_VERSION="$PYTHON_VERSION" python3 build-linux.py \
         --python "cpython-${PYTHON_VERSION_SHORT}" \
         --python-source "$CPYTHON_DIR" \
         --target-triple "$TARGET_TRIPLE" \
-        --options noopt
+        --options noopt \
+        $SERIAL_FLAG
 fi
 
 echo "Python distributions built successfully"
