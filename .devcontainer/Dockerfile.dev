@@ -36,8 +36,10 @@ RUN mkdir -p /build /tools && chmod 777 /build /tools
 
 WORKDIR /workspace
 
-# Submodules are pre-checked-out by the runner (GIT_SUBMODULE_STRATEGY: recursive)
-# and available in the Kaniko build context — no git auth required here.
+# Copy the full repo including .git/ so submodule git metadata is intact.
+# The runner checks out submodules before Kaniko runs, so .git/modules/
+# contains all submodule git dirs — no auth needed inside the Dockerfile.
+COPY .git/ .git/
 COPY dysvm/ dysvm/
 COPY cosmos-sdk/ cosmos-sdk/
 COPY go.mod go.sum ./
