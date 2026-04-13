@@ -1,7 +1,7 @@
 x-common: &common
   build:
     context: .
-    dockerfile: Dockerfile.dev
+    dockerfile: .devcontainer/Dockerfile.dev
   network_mode: host
   working_dir: /workspace/dysonprotocol2
   environment:

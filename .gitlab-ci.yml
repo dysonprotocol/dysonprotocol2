@@ -51,11 +51,11 @@ build-ci-image:
   script:
     - /kaniko/executor
       --context $CI_PROJECT_DIR
-      --dockerfile $CI_PROJECT_DIR/Dockerfile.dev
+      --dockerfile $CI_PROJECT_DIR/.devcontainer/Dockerfile.dev
       --destination $CI_IMAGE
       --insecure
   rules:
-    - changes: [Dockerfile.dev]
+    - changes: [.devcontainer/Dockerfile.dev]
     - if: $BUILD_CI_IMAGE == "true"
 
 # ---------------------------------------------------------------------------
