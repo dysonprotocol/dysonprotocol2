@@ -22,8 +22,8 @@ echo "Building custom Python distributions..."
 if [ -d "/build" ]; then
     echo "Cleaning up /build directory..."
     if ! rm -rf /build 2>/dev/null; then
-        echo "⚠️  Could not remove /build; attempting chmod and retry..."
-        chmod -R 755 /build 2>/dev/null || true
+        echo "⚠️  Could not remove /build; attempting chmod 777 and retry..."
+        chmod -R 777 /build 2>/dev/null || true
         rm -rf /build 2>/dev/null || {
             echo "⚠️  /build still locked; continuing with build (may fail)"
         }
@@ -33,17 +33,18 @@ fi
 if [ -d "/tools" ]; then
     echo "Cleaning up /tools directory..."
     if ! rm -rf /tools 2>/dev/null; then
-        echo "⚠️  Could not remove /tools; attempting chmod and retry..."
-        chmod -R 755 /tools 2>/dev/null || true
+        echo "⚠️  Could not remove /tools; attempting chmod 777 and retry..."
+        chmod -R 777 /tools 2>/dev/null || true
         rm -rf /tools 2>/dev/null || {
             echo "⚠️  /tools still locked; continuing with build (may fail)"
         }
     fi
 fi
 
-# Recreate directories with proper permissions
+# Recreate directories with permissive permissions (777) so nested build processes
+# can create and clean up files without permission errors
 mkdir -p /build /tools
-chmod 755 /build /tools
+chmod 777 /build /tools
 # --- End pre-build cleanup ---
 
 # --- FP Mitigation: Set custom CFLAGS for consistency ---
@@ -96,7 +97,7 @@ else
         local exit_code=$?
         if [ $exit_code -ne 0 ]; then
             echo "⚠️  Build failed; cleaning up /build and /tools for next attempt..."
-            chmod -R 755 /build /tools 2>/dev/null || true
+            chmod -R 777 /build /tools 2>/dev/null || true
             rm -rf /build /tools 2>/dev/null || {
                 echo "⚠️  Could not fully clean /build or /tools; next build may encounter permission issues"
             }
