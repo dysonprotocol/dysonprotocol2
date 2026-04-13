@@ -1,5 +1,12 @@
 # Ignore everything — only allowlist what Dockerfile.dev COPYs
 *
 
-# Files needed by COPY instructions
+# Files needed by the final stage
 !requirements.txt
+
+# Files needed by the dysvm-builder stage
+!go.mod
+!go.sum
+!scripts/
+!dysvm/
+!cosmos-sdk/
