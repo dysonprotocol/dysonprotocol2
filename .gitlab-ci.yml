@@ -106,7 +106,7 @@ go-vet:
   variables:
     GIT_SUBMODULE_PATHS: "cosmos-sdk dysvm/go-embed-python"
   script:
-    - go vet $(go list ./... | grep -v '/api/')
+    - go vet -tags "netgo app_v1" $(go list -tags "netgo app_v1" ./... | grep -v '/api/')
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
