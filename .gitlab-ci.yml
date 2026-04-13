@@ -137,8 +137,6 @@ build-dysond:
   needs:
     - build-dysond
   script:
-    - make dev-install
-    - $VENV/bin/pip install pytest-html
     - $VENV/bin/playwright install chromium --with-deps || true
     - make test COVERAGE_PACKAGES= PYTEST_ARGS="${PYTEST_ARGS} --html=reports/pytest.html --self-contained-html --junitxml=reports/pytest.xml"
   artifacts:
