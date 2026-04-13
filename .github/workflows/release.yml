@@ -43,6 +43,10 @@ jobs:
           push: true
           tags: ${{ env.CI_IMAGE }}
 
+      - name: Clean dangling images
+        if: always()
+        run: docker image prune -f
+
   build-release:
     needs: build-ci-image
     runs-on: self-hosted
