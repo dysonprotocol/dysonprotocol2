@@ -5,7 +5,7 @@
 # Submodules are checked out by the GitLab runner before the
 # Kaniko build, so we just COPY them in — no git auth needed.
 # ============================================================
-FROM debian:bookworm AS dysvm-builder
+FROM debian:trixie AS dysvm-builder
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYENV_ROOT=/opt/pyenv \
@@ -58,7 +58,7 @@ RUN make dysvm-embed
 # ============================================================
 # Stage 2: CI / dev image
 # ============================================================
-FROM debian:bookworm
+FROM debian:trixie
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYENV_ROOT=/opt/pyenv \
@@ -119,10 +119,10 @@ RUN nodeenv "$NODEENV_HOME" -n 22.12.0 \
   && "$NODEENV_HOME"/bin/npm --version
 
 # Install Hermes IBC relayer (required for IBC tests)
-# Hermes >=1.13 requires GLIBC 2.38; bookworm ships 2.36. Pin to 1.12.0.
+# Install Hermes IBC relayer (required for IBC tests)
 RUN ARCH="$(dpkg --print-architecture)" \
   && if [ "$ARCH" = "arm64" ]; then HERMES_ARCH="aarch64"; else HERMES_ARCH="x86_64"; fi \
-  && curl -L -o /tmp/hermes.tar.gz "https://github.com/informalsystems/hermes/releases/download/v1.12.0/hermes-v1.12.0-${HERMES_ARCH}-unknown-linux-gnu.tar.gz" \
+  && curl -L -o /tmp/hermes.tar.gz "https://github.com/informalsystems/hermes/releases/download/v1.13.3/hermes-v1.13.3-${HERMES_ARCH}-unknown-linux-gnu.tar.gz" \
   && tar -xzf /tmp/hermes.tar.gz -C /usr/local/bin hermes \
   && rm /tmp/hermes.tar.gz \
   && chmod +x /usr/local/bin/hermes \
