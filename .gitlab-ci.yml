@@ -4,10 +4,11 @@
 #
 # Stages:
 #   1. image   - Build CI image from Dockerfile.dev (Kaniko, no DinD)
-#   2. prepare - Build DYSVM assets once and cache for entire pipeline
-#   3. lint    - Go vet, go mod tidy check (depends on cached DYSVM)
-#   4. build   - Build dysond binary (uses cached DYSVM assets)
-#   5. test    - pytest suite (parallel by module)
+#                DYSVM is baked into the image via multi-stage build.
+#                Submodules are checked out by the runner so Kaniko can COPY them.
+#   2. lint    - Go vet, go mod tidy check
+#   3. build   - Build dysond binary
+#   4. test    - pytest suite (parallel by module)
 #
 # The CI image is built from the same Dockerfile.dev used for local dev and
 # docker-compose, so CI and dev environments never drift.
@@ -17,7 +18,6 @@
 
 stages:
   - image
-  - prepare
   - lint
   - build
   - test
@@ -37,15 +37,14 @@ variables:
   COVERAGE_PACKAGES: "dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper,dysonprotocol.com/dysond/server/dwapp"
 
 # ---------------------------------------------------------------------------
-# Build CI image from Dockerfile.dev when it changes.
+# Build CI image from Dockerfile.dev when it or the DYSVM submodules change.
 # Uses Kaniko -- no Docker socket or DinD needed.
-# Set BUILD_CI_IMAGE=true to force a rebuild (e.g. after requirements.txt
-# changes that aren't reflected in Dockerfile.dev itself).
+# Submodules are checked out (GIT_SUBMODULE_STRATEGY: recursive) so the
+# builder stage in Dockerfile.dev can COPY them without any git auth.
+# Set BUILD_CI_IMAGE=true to force a rebuild.
 # ---------------------------------------------------------------------------
 build-ci-image:
   stage: image
-  variables:
-    GIT_SUBMODULE_STRATEGY: none
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
@@ -62,7 +61,12 @@ build-ci-image:
       --destination $CI_IMAGE
       --insecure
   rules:
-    - changes: [.devcontainer/Dockerfile.dev]
+    - changes:
+        - .devcontainer/Dockerfile.dev
+        - .gitmodules
+        - dysvm/patch
+        - dysvm/pbs-patch
+        - requirements.txt
     - if: $BUILD_CI_IMAGE == "true"
 
 # ---------------------------------------------------------------------------
@@ -80,36 +84,24 @@ default:
     - git config --global --add safe.directory /builds/dysonprotocol/dysonprotocol2/dysvm/cpython
     - git config --global --add safe.directory /builds/dysonprotocol/dysonprotocol2/dysvm/go-embed-python
     - git config --global --add safe.directory /builds/dysonprotocol/dysonprotocol2/dysvm/python-build-standalone
+    # DYSVM assets are baked into the CI image at /opt/dysvm-data/.
+    # Copy them into the workspace so make dysvm-assets finds them.
+    - |
+      if [ -d /opt/dysvm-data ] && [ "$(ls -A /opt/dysvm-data)" ]; then
+        echo "Copying pre-built DYSVM assets from image..."
+        mkdir -p ./dysvm/internal/data
+        cp -r /opt/dysvm-data/. ./dysvm/internal/data/
+        echo "✓ DYSVM assets ready"
+      else
+        echo "⚠️  /opt/dysvm-data missing or empty — image may need a rebuild"
+        exit 1
+      fi
 
 # ---------------------------------------------------------------------------
-# Stage 1.5: Prepare (Build DYSVM once, cache for entire pipeline)
-# ---------------------------------------------------------------------------
-prepare-dysvm:
-  stage: prepare
-  script:
-    - echo "Building and caching DYSVM assets (once per pipeline)..."
-    - make dev-install
-    - make dysvm
-  artifacts:
-    paths:
-      - dysvm/internal/data/
-    expire_in: 7 days
-  cache:
-    key: dysvm-$CI_COMMIT_BRANCH
-    paths:
-      - dysvm/internal/data/
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_TAG
-
-# ---------------------------------------------------------------------------
-# Stage 2: Lint
+# Stage 1: Lint
 # ---------------------------------------------------------------------------
 go-vet:
   stage: lint
-  needs:
-    - prepare-dysvm
   variables:
     GIT_SUBMODULE_PATHS: "cosmos-sdk dysvm/go-embed-python"
   script:
@@ -121,8 +113,6 @@ go-vet:
 
 go-mod-tidy:
   stage: lint
-  needs:
-    - prepare-dysvm
   variables:
     GIT_SUBMODULE_PATHS: "cosmos-sdk dysvm/go-embed-python"
   script:
@@ -133,14 +123,12 @@ go-mod-tidy:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # ---------------------------------------------------------------------------
-# Stage 3: Build
+# Stage 2: Build
 # ---------------------------------------------------------------------------
 build-dysond:
   stage: build
-  needs:
-    - prepare-dysvm
   script:
-    - echo "Building dysond binary (DYSVM assets cached from prepare stage)..."
+    - echo "Building dysond binary (DYSVM assets from image)..."
     - make build
     - ./build/dysond version --long
   artifacts:
@@ -153,7 +141,7 @@ build-dysond:
     - if: $CI_COMMIT_TAG
 
 # ---------------------------------------------------------------------------
-# Stage 4: Test (parallel by module)
+# Stage 3: Test (parallel by module)
 # ---------------------------------------------------------------------------
 # make test builds dysond with -cover independently, then runs pytest.
 # The build-dysond job gates this stage but test jobs rebuild their own
@@ -164,7 +152,6 @@ build-dysond:
   stage: test
   needs:
     - build-dysond
-    - prepare-dysvm
   script:
     - mkdir -p reports
     - make dev-install

@@ -1,5 +1,60 @@
 # syntax=docker/dockerfile:1.6
 
+# ============================================================
+# Stage 1: Build DYSVM assets
+# Submodules are checked out by the GitLab runner before the
+# Kaniko build, so we just COPY them in — no git auth needed.
+# ============================================================
+FROM debian:bookworm AS dysvm-builder
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYENV_ROOT=/opt/pyenv \
+    GOENV_ROOT=/opt/goenv \
+    PYBUILD_NO_DOCKER=1 \
+    CGO_ENABLED=1 \
+    GOFLAGS=-buildvcs=false
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates build-essential git curl make patch zstd \
+    libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
+    libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev \
+    liblzma-dev texinfo \
+  && rm -rf /var/lib/apt/lists/*
+
+# Python (needed by dysvm-build.sh / python-build-standalone)
+RUN git clone --depth 1 https://github.com/pyenv/pyenv.git "$PYENV_ROOT"
+ENV PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
+RUN pyenv install 3.12.11 && pyenv global 3.12.11
+
+# Go (needed by dysvm-embed.sh / go generate)
+RUN git clone --depth 1 https://github.com/syndbg/goenv.git "$GOENV_ROOT"
+ENV PATH="$GOENV_ROOT/bin:$GOENV_ROOT/shims:$PATH"
+RUN goenv install 1.24.6 && goenv global 1.24.6 && goenv rehash
+
+# /build and /tools are hardcoded paths inside python-build-standalone
+RUN mkdir -p /build /tools && chmod 777 /build /tools
+
+WORKDIR /workspace
+
+# Submodules are pre-checked-out by the runner (GIT_SUBMODULE_STRATEGY: recursive)
+# and available in the Kaniko build context — no git auth required here.
+COPY dysvm/ dysvm/
+COPY cosmos-sdk/ cosmos-sdk/
+COPY go.mod go.sum ./
+COPY scripts/ scripts/
+COPY requirements.txt .
+
+# Install Python build dependencies (for python-build-standalone scripts)
+RUN python -m pip install --no-cache-dir -r requirements.txt
+
+# Build DYSVM: patch → build → embed
+RUN bash scripts/dysvm-patch.sh && \
+    bash scripts/dysvm-build.sh && \
+    bash scripts/dysvm-embed.sh
+
+# ============================================================
+# Stage 2: CI / dev image
+# ============================================================
 FROM debian:bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -75,11 +130,14 @@ RUN groupadd --gid 1000 user \
 
 # Create directories expected by python-build-standalone shell scripts
 # (build-binutils.sh, build-musl.sh, etc. hardcode cd /build and /tools paths)
-# Use chmod 777 for /build to allow any process to create and remove files
-# (nested build processes may create files that need cleanup)
 RUN mkdir -p /build /tools /home/user/go/pkg/mod /home/user/.cache/go-build /home/user/.cache && \
     chown -R user:user /build /tools /home/user/go /home/user/.cache "$PYENV_ROOT" "$GOENV_ROOT" "$NODEENV_HOME" && \
     chmod -R 777 /build /tools
+
+# Pre-built DYSVM assets from builder stage — available at a stable path so CI
+# jobs can copy them into the workspace without running make dysvm.
+COPY --from=dysvm-builder --chown=user:user \
+    /workspace/dysvm/internal/data/ /opt/dysvm-data/
 
 WORKDIR /workspace/dysonprotocol2
 RUN chown user:user /workspace/dysonprotocol2
@@ -105,5 +163,3 @@ RUN "$PYENV_ROOT"/shims/python -m venv "$VENV" \
 # Default to a shell; compose will override command to run make
 ENTRYPOINT ["/bin/bash"]
 CMD ["-lc", "bash"]
-
-
