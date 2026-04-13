@@ -150,13 +150,15 @@ COVERAGE_PACKAGES ?= dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nam
 
 test: verify-requirements dysvm-assets
 
-	@echo "--> building dysond binary for tests"
 	@mkdir -p $(BUILDDIR)
 	@if [ -n "$(COVERAGE_PACKAGES)" ]; then \
-		echo "Coverage enabled (packages: $(COVERAGE_PACKAGES))"; \
+		echo "--> building dysond with coverage instrumentation"; \
 		go build -mod=readonly $(BUILD_FLAGS) -cover -o $(BUILDDIR)/dysond ./dysond; \
-	else \
+	elif [ ! -f "$(BUILDDIR)/dysond" ]; then \
+		echo "--> building dysond binary for tests"; \
 		go build -mod=readonly $(BUILD_FLAGS) -o $(BUILDDIR)/dysond ./dysond; \
+	else \
+		echo "✓ using existing $(BUILDDIR)/dysond"; \
 	fi
 	@chmod +x $(BUILDDIR)/dysond || true
 
