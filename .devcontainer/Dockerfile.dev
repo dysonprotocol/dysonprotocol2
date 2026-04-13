@@ -69,18 +69,14 @@ RUN ARCH="$(dpkg --print-architecture)" \
   && chmod +x /usr/local/bin/hermes \
   && hermes version
 
+# Create non-root user first (needed before chown)
+RUN groupadd --gid 1000 user \
+  && useradd --uid 1000 --gid user --shell /bin/bash --create-home user
+
 # Create directories expected by python-build-standalone shell scripts
 # (build-binutils.sh, build-musl.sh, etc. hardcode cd /build and /tools paths)
-RUN mkdir -p /build /tools
-
-# Create Go cache directories (persistent via .docker-home volume)
-RUN mkdir -p /home/user/go/pkg/mod /home/user/.cache/go-build /home/user/.cache && \
-    chown -R user:user /home/user/go /home/user/.cache
-
-# Create non-root user
-RUN groupadd --gid 1000 user \
-  && useradd --uid 1000 --gid user --shell /bin/bash --create-home user \
-  && chown -R user:user /build /tools "$PYENV_ROOT" "$GOENV_ROOT" "$NODEENV_HOME"
+RUN mkdir -p /build /tools /home/user/go/pkg/mod /home/user/.cache/go-build /home/user/.cache && \
+    chown -R user:user /build /tools /home/user/go /home/user/.cache "$PYENV_ROOT" "$GOENV_ROOT" "$NODEENV_HOME"
 
 WORKDIR /workspace/dysonprotocol2
 RUN chown user:user /workspace/dysonprotocol2
