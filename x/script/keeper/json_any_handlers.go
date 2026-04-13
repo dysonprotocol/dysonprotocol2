@@ -115,15 +115,16 @@ func (k Keeper) HandleJSONAnyQuery(ctx context.Context, req *QueryRequest) (stri
 
 	branch := &BranchService{sdkCtx: sdkCtx}
 	var respQuery *abci.ResponseQuery
-	gasUsed, _, execErr := branch.ExecuteWithGasLimit(ctx, childLimit, func(childCtx context.Context) error {
+	var gasUsed uint64
+	// Charge parent even if the handler panics
+	defer func() { parentCtx.GasMeter().ConsumeGas(gasUsed, "nested _query gas") }()
+	var execErr error
+	gasUsed, _, execErr = branch.ExecuteWithGasLimit(ctx, childLimit, func(childCtx context.Context) error {
 		qctx := sdk.UnwrapSDKContext(childCtx)
 		var derr error
 		respQuery, derr = handler(qctx, &abciReqQuery)
 		return derr
 	})
-
-	// Always charge parent
-	parentCtx.GasMeter().ConsumeGas(gasUsed, "nested _query gas")
 	if execErr != nil {
 		return "", cosmossdkerrors.Wrapf(execErr, "failed to execute query; message %v", req.JsonQuery)
 	}
@@ -162,15 +163,17 @@ func (k Keeper) HandleJSONAnyMsg(ctx context.Context, scriptAddress sdk.AccAddre
 
 	branch := &BranchService{sdkCtx: sdkCtx}
 
-	gasUsed, write, execErr := branch.ExecuteWithGasLimit(ctx, childLimit, func(childCtx context.Context) error {
+	var gasUsed uint64
+	// Charge parent even if the handler panics
+	defer func() { sdkCtx.GasMeter().ConsumeGas(gasUsed, "nested _msg gas") }()
+	var write func()
+	var execErr error
+	gasUsed, write, execErr = branch.ExecuteWithGasLimit(ctx, childLimit, func(childCtx context.Context) error {
 		childSdk := sdk.UnwrapSDKContext(childCtx)
 		var derr error
 		respJSONStr, derr = k.dispatchJSONMsg(childSdk, scriptAddress, req.JsonMsg)
 		return derr
 	})
-
-	// Always charge parent meter for child usage
-	sdkCtx.GasMeter().ConsumeGas(gasUsed, "nested _msg gas")
 	gasused = gasUsed
 
 	// Commit state only if successful
