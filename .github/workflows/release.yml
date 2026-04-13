@@ -7,13 +7,49 @@ on:
     tags:
       - '*'
 
+env:
+  CI_IMAGE: ghcr.io/${{ github.repository }}/ci:latest
+
 jobs:
+  # Build the CI image (same Dockerfile.dev as GitLab) and push to GHCR.
+  # Only rebuilds when Dockerfile or DYSVM inputs change.
+  build-ci-image:
+    runs-on: self-hosted
+    permissions:
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: 'recursive'
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push CI image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .devcontainer/Dockerfile.dev
+          push: true
+          tags: ${{ env.CI_IMAGE }}
+
   build-release:
+    needs: build-ci-image
     runs-on: self-hosted
     container:
-      image: gitlab.backrooms.internal/dysonprotocol/dysonprotocol2/ci:latest
+      image: ghcr.io/${{ github.repository }}/ci:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     permissions:
       contents: write
+      packages: read
     steps:
 
       - name: Checkout
