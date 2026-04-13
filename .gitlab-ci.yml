@@ -3,10 +3,11 @@
 # ============================================================================
 #
 # Stages:
-#   1. image  - Build CI image from Dockerfile.dev (Kaniko, no DinD)
-#   2. lint   - Go vet, go mod tidy check
-#   3. build  - DYSVM assets + dysond binary
-#   4. test   - pytest suite (parallel by module)
+#   1. image   - Build CI image from Dockerfile.dev (Kaniko, no DinD)
+#   2. prepare - Build DYSVM assets once and cache for entire pipeline
+#   3. lint    - Go vet, go mod tidy check (depends on cached DYSVM)
+#   4. build   - Build dysond binary (uses cached DYSVM assets)
+#   5. test    - pytest suite (parallel by module)
 #
 # The CI image is built from the same Dockerfile.dev used for local dev and
 # docker-compose, so CI and dev environments never drift.
@@ -16,6 +17,7 @@
 
 stages:
   - image
+  - prepare
   - lint
   - build
   - test
@@ -75,10 +77,34 @@ default:
     - python3 --version
 
 # ---------------------------------------------------------------------------
+# Stage 1.5: Prepare (Build DYSVM once, cache for entire pipeline)
+# ---------------------------------------------------------------------------
+prepare-dysvm:
+  stage: prepare
+  script:
+    - echo "Building and caching DYSVM assets (once per pipeline)..."
+    - make dev-install
+    - make dysvm
+  artifacts:
+    paths:
+      - dysvm/internal/data/
+    expire_in: 7 days
+  cache:
+    key: dysvm-$CI_COMMIT_BRANCH
+    paths:
+      - dysvm/internal/data/
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+# ---------------------------------------------------------------------------
 # Stage 2: Lint
 # ---------------------------------------------------------------------------
 go-vet:
   stage: lint
+  needs:
+    - prepare-dysvm
   variables:
     GIT_SUBMODULE_PATHS: "cosmos-sdk dysvm/go-embed-python"
   script:
@@ -90,6 +116,8 @@ go-vet:
 
 go-mod-tidy:
   stage: lint
+  needs:
+    - prepare-dysvm
   variables:
     GIT_SUBMODULE_PATHS: "cosmos-sdk dysvm/go-embed-python"
   script:
@@ -104,9 +132,11 @@ go-mod-tidy:
 # ---------------------------------------------------------------------------
 build-dysond:
   stage: build
+  needs:
+    - prepare-dysvm
   script:
-    - echo "Building DYSVM assets + dysond binary..."
-    - make dysvm build
+    - echo "Building dysond binary (DYSVM assets cached from prepare stage)..."
+    - make build
     - ./build/dysond version --long
   artifacts:
     paths:
@@ -129,6 +159,7 @@ build-dysond:
   stage: test
   needs:
     - build-dysond
+    - prepare-dysvm
   script:
     - mkdir -p reports
     - make dev-install
