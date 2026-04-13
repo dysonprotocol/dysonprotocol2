@@ -5,7 +5,8 @@ FROM debian:bookworm
 ENV DEBIAN_FRONTEND=noninteractive \
     PYENV_ROOT=/opt/pyenv \
     GOENV_ROOT=/opt/goenv \
-    GOMODCACHE=/tmp/gomodcache \
+    GOMODCACHE=/home/user/go/pkg/mod \
+    GOCACHE=/home/user/.cache/go-build \
     NODEENV_HOME=/opt/nodeenv \
     VENV=/tmp/venv \
     CGO_ENABLED=1 \
@@ -72,11 +73,14 @@ RUN ARCH="$(dpkg --print-architecture)" \
 # (build-binutils.sh, build-musl.sh, etc. hardcode cd /build and /tools paths)
 RUN mkdir -p /build /tools
 
+# Create Go cache directories (persistent via .docker-home volume)
+RUN mkdir -p /home/user/go/pkg/mod /home/user/.cache/go-build /home/user/.cache && \
+    chown -R user:user /home/user/go /home/user/.cache
+
 # Create non-root user
 RUN groupadd --gid 1000 user \
   && useradd --uid 1000 --gid user --shell /bin/bash --create-home user \
-  && mkdir -p "$GOMODCACHE" \
-  && chown -R user:user /build /tools "$PYENV_ROOT" "$GOENV_ROOT" "$GOMODCACHE" "$NODEENV_HOME"
+  && chown -R user:user /build /tools "$PYENV_ROOT" "$GOENV_ROOT" "$NODEENV_HOME"
 
 WORKDIR /workspace/dysonprotocol2
 RUN chown user:user /workspace/dysonprotocol2
