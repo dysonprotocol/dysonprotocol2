@@ -10,5 +10,8 @@
 !Makefile
 !scripts/
 !dysvm/
+# Exclude stale build artifacts from submodules (self-hosted runners reuse workspaces)
+dysvm/python-build-standalone/build/
+dysvm/python-build-standalone/dist/
 !cosmos-sdk/
 !.git/
