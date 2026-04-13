@@ -63,6 +63,7 @@ build-ci-image:
   rules:
     - changes:
         - .devcontainer/Dockerfile.dev
+        - .dockerignore
         - .gitmodules
         - dysvm/patch
         - dysvm/pbs-patch
