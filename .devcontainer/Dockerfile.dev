@@ -52,7 +52,7 @@ RUN python -m pip install --no-cache-dir -r requirements.txt
 # Build DYSVM in separate layers so each step has its own log budget
 # and Kaniko can cache completed layers on retry.
 RUN make dysvm-patch
-RUN make dysvm-build
+RUN make dysvm-build > /tmp/dysvm-build.log 2>&1 || { tail -200 /tmp/dysvm-build.log >&2; exit 1; }
 RUN make dysvm-embed
 
 # ============================================================
