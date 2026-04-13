@@ -99,8 +99,6 @@ default:
     - git config --global --add safe.directory $CI_PROJECT_DIR/dysvm/cpython
     - git config --global --add safe.directory $CI_PROJECT_DIR/dysvm/go-embed-python
     - git config --global --add safe.directory $CI_PROJECT_DIR/dysvm/python-build-standalone
-    # Copy DYSVM assets baked into the image, or fail loudly if the image is stale
-    - make dysvm-assets
 
 # ---------------------------------------------------------------------------
 # Stage 2: Lint
@@ -128,6 +126,7 @@ go-mod-tidy:
 build-dysond:
   stage: build
   script:
+    - make dysvm-assets
     - make build
     - ./build/dysond version --long
   artifacts:
@@ -148,6 +147,7 @@ build-dysond:
   needs:
     - build-dysond
   script:
+    - make dysvm-assets
     - make dev-install
     - $VENV/bin/pip install pytest-html
     - $VENV/bin/playwright install chromium --with-deps || true
