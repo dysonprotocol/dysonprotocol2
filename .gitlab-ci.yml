@@ -51,7 +51,8 @@ build-ci-image:
     - dyson
   before_script:
     - mkdir -p /kaniko/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"auth\":\"$(printf '%s:%s' "$CI_REGISTRY_USER" "$CI_REGISTRY_PASSWORD" | base64)\"}}}" > /kaniko/.docker/config.json
+    - AUTH=$(printf '%s:%s' "$CI_REGISTRY_USER" "$CI_REGISTRY_PASSWORD" | base64 | tr -d '\n')
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"auth\":\"$AUTH\"}}}" > /kaniko/.docker/config.json
   script:
     - /kaniko/executor
       --context $CI_PROJECT_DIR
