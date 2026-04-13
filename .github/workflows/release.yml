@@ -23,14 +23,6 @@ jobs:
       - name: Clean workspace
         run: git clean -fdx .
 
-      # python-build-standalone hardcodes /build and /tools.
-      # Try passwordless sudo first; fall back to plain mkdir if the runner
-      # user already owns the dirs (or they were pre-created by the runner setup).
-      - name: Prepare /build and /tools dirs
-        run: |
-          sudo -n mkdir -p /build /tools && sudo -n chmod 777 /build /tools \
-            || { mkdir -p /build /tools && chmod 777 /build /tools; }
-
       - name: Build DYSVM
         run: make dysvm
 

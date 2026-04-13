@@ -41,9 +41,16 @@ if [ -d "/tools" ]; then
     fi
 fi
 
-# Recreate directories with permissive permissions (777) so nested build processes
-# can create and clean up files without permission errors
-mkdir -p /build /tools
+# Recreate /build and /tools. python-build-standalone shell scripts hardcode
+# these absolute paths, so they must exist and be writable by the build user.
+# One-time runner setup (no sudo in workflow):
+#   sudo mkdir -p /build /tools && sudo chown $(whoami) /build /tools
+if ! mkdir -p /build /tools 2>/dev/null; then
+    echo "ERROR: Cannot create /build or /tools." >&2
+    echo "Run once on the runner machine as root:" >&2
+    echo "  sudo mkdir -p /build /tools && sudo chown \$(whoami) /build /tools" >&2
+    exit 1
+fi
 chmod 777 /build /tools
 # --- End pre-build cleanup ---
 
