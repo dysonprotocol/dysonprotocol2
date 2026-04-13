@@ -226,13 +226,13 @@ def test_claim_after_timeout_community_pool_fee(
     assert bid_result["code"] == 0, bid_result["raw_log"]
 
     # Wait for bid timeout to elapse
-    # Default nameservice.dys timeout is ~2s. With ~500ms block time, wait for >= 6 blocks.
+    # Default nameservice.dys timeout is ~2s. With ~250ms block time, wait for >= 10 blocks.
     bid_block_height = int(bid_result["height"])
 
     def timeout_elapsed():
         out = dysond_bin("query", "block")
         current_block = int(out["header"]["height"])
-        return (current_block - bid_block_height) >= 6
+        return (current_block - bid_block_height) >= 10
 
     utils.poll_until_condition(
         timeout_elapsed, timeout=15, error_message="Bid timeout did not elapse"

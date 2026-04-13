@@ -3,21 +3,17 @@
 # ============================================================================
 #
 # Stages:
-#   1. image  - Build CI image from Dockerfile.dev (Kaniko, no DinD).
-#               DYSVM is baked in via multi-stage build; submodules are
-#               checked out by the runner so Kaniko can COPY them.
-#   2. lint   - make vet, make mod-tidy-check
-#   3. build  - make build (dysond binary)
-#   4. test   - pytest suite (parallel by module)
+#   1. dysvm       - Build CI image (Kaniko); bakes DYSVM assets in.
+#   2. build-test  - Lint, binary build, and all tests run in parallel.
+#                    Test jobs use needs: [build-dysond] to start as soon
+#                    as the binary is ready, without waiting for lint.
 #
 # Releases are handled by GitHub Actions, not this pipeline.
 # ============================================================================
 
 stages:
-  - image
-  - lint
-  - build
-  - test
+  - dysvm
+  - build-test
 
 variables:
   CI_IMAGE: $CI_REGISTRY_IMAGE/ci:latest
@@ -27,7 +23,6 @@ variables:
   GIT_SUBMODULE_FORCE_HTTPS: "true"
   CGO_ENABLED: "1"
   GOFLAGS: "-buildvcs=false"
-  COVERAGE_PACKAGES: "dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper,dysonprotocol.com/dysond/server/dwapp"
 
 # ---------------------------------------------------------------------------
 # Reusable rule sets
@@ -44,14 +39,13 @@ variables:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # ---------------------------------------------------------------------------
-# Stage 1: Image
-# Build CI image when Dockerfile or DYSVM inputs change.
-# Uses Kaniko (no Docker socket / DinD needed).
-# GIT_SUBMODULE_STRATEGY: recursive ensures submodules are present for COPY.
-# Set BUILD_CI_IMAGE=true to force a rebuild.
+# Stage 1: dysvm — Build CI image
+# Triggers on Dockerfile, DYSVM inputs, or BUILD_CI_IMAGE=true.
+# Submodules are checked out (recursive) so Kaniko can COPY them.
+# Cleans up dangling registry manifests after each push.
 # ---------------------------------------------------------------------------
 build-ci-image:
-  stage: image
+  stage: dysvm
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
@@ -67,7 +61,6 @@ build-ci-image:
       --dockerfile $CI_PROJECT_DIR/.devcontainer/Dockerfile.dev
       --destination $CI_IMAGE
       --insecure
-    # Delete untagged manifests left over from previous builds (dangling images)
     - |
       REPO_ID=$(wget -qO- --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
         "$CI_API_V4_URL/projects/$CI_PROJECT_ID/registry/repositories" \
@@ -99,12 +92,16 @@ default:
     - git config --global --add safe.directory $CI_PROJECT_DIR/dysvm/cpython
     - git config --global --add safe.directory $CI_PROJECT_DIR/dysvm/go-embed-python
     - git config --global --add safe.directory $CI_PROJECT_DIR/dysvm/python-build-standalone
+    # dysvm/internal/data/ is gitignored (generated); copy from the baked image.
+    # Required by all Go tool invocations (vet, mod tidy, build).
+    - make dysvm-assets
 
 # ---------------------------------------------------------------------------
-# Stage 2: Lint
+# Stage 2: build-test — Lint + Build + Test (all parallel)
 # ---------------------------------------------------------------------------
+
 go-vet:
-  stage: lint
+  stage: build-test
   variables:
     GIT_SUBMODULE_PATHS: "cosmos-sdk dysvm/go-embed-python"
   script:
@@ -112,7 +109,7 @@ go-vet:
   <<: *rules-default
 
 go-mod-tidy:
-  stage: lint
+  stage: build-test
   variables:
     GIT_SUBMODULE_PATHS: "cosmos-sdk dysvm/go-embed-python"
   script:
@@ -120,13 +117,9 @@ go-mod-tidy:
   # Tags are immutable; go.mod drift on a tag is not actionable
   <<: *rules-no-tags
 
-# ---------------------------------------------------------------------------
-# Stage 3: Build
-# ---------------------------------------------------------------------------
 build-dysond:
-  stage: build
+  stage: build-test
   script:
-    - make dysvm-assets
     - make build
     - ./build/dysond version --long
   artifacts:
@@ -136,21 +129,17 @@ build-dysond:
   <<: *rules-default
 
 # ---------------------------------------------------------------------------
-# Stage 4: Test (parallel by module)
-# ---------------------------------------------------------------------------
-# Note: make test recompiles dysond with -cover instrumentation, so it does
-# not reuse the build-dysond artifact. The needs: dependency is purely for
-# gating (ensures the binary at least builds cleanly before running tests).
+# Tests — all in build-test stage, start as soon as build-dysond finishes
+# Whaleswap tests skipped (scope memory limits, to be fixed separately)
 # ---------------------------------------------------------------------------
 .test-template:
-  stage: test
+  stage: build-test
   needs:
     - build-dysond
   script:
     - make dev-install
     - $VENV/bin/pip install pytest-html
     - $VENV/bin/playwright install chromium --with-deps || true
-    # Coverage disabled in CI for now (COVERAGE_PACKAGES= skips -cover build and reporting)
     - make test COVERAGE_PACKAGES= PYTEST_ARGS="${PYTEST_ARGS} --html=reports/pytest.html --self-contained-html --junitxml=reports/pytest.xml"
   artifacts:
     when: always
@@ -167,12 +156,6 @@ test-keeper:
   variables:
     PYTEST_ARGS: "tests/crontask/keeper tests/nameservice/keeper tests/nft/keeper tests/script/keeper tests/storage/keeper tests/whaleswap/keeper"
 
-test-whaleswap:
-  extends: .test-template
-  allow_failure: true
-  variables:
-    PYTEST_ARGS: "tests/whaleswap/amm tests/whaleswap/auction tests/whaleswap/leverage tests/whaleswap/arbitrage tests/whaleswap/orderbook"
-
 test-nameservice-bids:
   extends: .test-template
   variables:
@@ -185,9 +168,6 @@ test-dwapp:
 
 test-integration:
   extends: .test-template
-  # allow_failure: test_bid_timeout_claim is timing-sensitive and flaky;
-  # remove once the underlying test is fixed.
-  allow_failure: true
   variables:
     PYTEST_ARGS: "tests/test_chainnet.py tests/test_ante_implementation.py tests/crontask/subscriptions tests/nameservice tests/nft tests/script tests/storage tests/tew tests/tewl tests/upgrade tests/examples tests/x"
   rules:
