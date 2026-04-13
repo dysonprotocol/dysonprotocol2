@@ -42,7 +42,7 @@ WORKDIR /workspace
 COPY .git/ .git/
 COPY dysvm/ dysvm/
 COPY cosmos-sdk/ cosmos-sdk/
-COPY go.mod go.sum ./
+COPY go.mod go.sum Makefile ./
 COPY scripts/ scripts/
 COPY requirements.txt .
 
