@@ -81,6 +81,14 @@ default:
 # ---------------------------------------------------------------------------
 prepare-dysvm:
   stage: prepare
+  before_script:
+    - go version
+    - python3 --version
+    # Fix Git security check for bind-mounted workspace with different ownership
+    - git config --global --add safe.directory /builds/dysonprotocol/dysonprotocol2
+    - git config --global --add safe.directory /builds/dysonprotocol/dysonprotocol2/dysvm/cpython
+    - git config --global --add safe.directory /builds/dysonprotocol/dysonprotocol2/dysvm/go-embed-python
+    - git config --global --add safe.directory /builds/dysonprotocol/dysonprotocol2/dysvm/python-build-standalone
   script:
     - echo "Building and caching DYSVM assets (once per pipeline)..."
     - make dev-install
