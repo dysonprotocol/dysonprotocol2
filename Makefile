@@ -150,9 +150,14 @@ COVERAGE_PACKAGES ?= dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nam
 
 test: verify-requirements dysvm-assets
 
-	@echo "--> building dysond binary with coverage for tests"
+	@echo "--> building dysond binary for tests"
 	@mkdir -p $(BUILDDIR)
-	@go build -mod=readonly $(BUILD_FLAGS) -cover -o $(BUILDDIR)/dysond ./dysond
+	@if [ -n "$(COVERAGE_PACKAGES)" ]; then \
+		echo "Coverage enabled (packages: $(COVERAGE_PACKAGES))"; \
+		go build -mod=readonly $(BUILD_FLAGS) -cover -o $(BUILDDIR)/dysond ./dysond; \
+	else \
+		go build -mod=readonly $(BUILD_FLAGS) -o $(BUILDDIR)/dysond ./dysond; \
+	fi
 	@chmod +x $(BUILDDIR)/dysond || true
 
 	@echo "--> running pytest"
@@ -168,16 +173,14 @@ test: verify-requirements dysvm-assets
 		fi; \
 		echo "Creating $$GOCOVERDIR"; \
 		mkdir -p "$$GOCOVERDIR"; \
-		echo "Exporting GOCOVERDIR=$$GOCOVERDIR"; \
 		export GOCOVERDIR; \
 		echo "Go coverage enabled. Writing to $$GOCOVERDIR"; \
-		echo "Coverage packages: $(COVERAGE_PACKAGES)"; \
 	fi; \
 	GOCOVERDIR=$$GOCOVERDIR DYSON_BASE_DIR=$$TMP_ROOT/test-dysonchains python -u -m pytest --ff -x --capture=fd --showlocals --durations=0 $(PYTEST_ARGS); \
 	TEST_EXIT_CODE=$$?; \
 	if [ -n "$(COVERAGE_PACKAGES)" ] && [ -d "$$GOCOVERDIR" ]; then \
 		echo "Generating go coverage reports from $$GOCOVERDIR"; \
-		PKG_FLAG=""; if [ -n "$(COVERAGE_PACKAGES)" ]; then PKG_FLAG="-pkg=$(COVERAGE_PACKAGES)"; fi; \
+		PKG_FLAG="-pkg=$(COVERAGE_PACKAGES)"; \
 		go tool covdata textfmt -i="$$GOCOVERDIR" $$PKG_FLAG -o=coverage.out; \
 		go tool cover -func=coverage.out -o=coverage.txt; \
 		go tool cover -html=coverage.out -o=coverage.html; \

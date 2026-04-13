@@ -67,6 +67,13 @@ build-ci-image:
       --dockerfile $CI_PROJECT_DIR/.devcontainer/Dockerfile.dev
       --destination $CI_IMAGE
       --insecure
+    # Delete untagged manifests left over from previous builds (dangling images)
+    - |
+      REPO_ID=$(wget -qO- --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+        "$CI_API_V4_URL/projects/$CI_PROJECT_ID/registry/repositories" \
+        | python3 -c "import sys,json; print(next(r['id'] for r in json.load(sys.stdin) if r.get('name')=='ci'))")
+      wget -qO- --method=DELETE --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+        "$CI_API_V4_URL/projects/$CI_PROJECT_ID/registry/repositories/$REPO_ID/tags?name_regex_delete=.*&keep_n=1&older_than=1d" || true
   rules:
     - changes:
         - .devcontainer/Dockerfile.dev
@@ -144,16 +151,13 @@ build-dysond:
     - make dev-install
     - $VENV/bin/pip install pytest-html
     - $VENV/bin/playwright install chromium --with-deps || true
-    - make test PYTEST_ARGS="${PYTEST_ARGS} --html=reports/pytest.html --self-contained-html --junitxml=reports/pytest.xml"
-  coverage: '/^TOTAL\s+\S+\s+\S+\s+(\d+\.\d+)%$/'
+    # Coverage disabled in CI for now (COVERAGE_PACKAGES= skips -cover build and reporting)
+    - make test COVERAGE_PACKAGES= PYTEST_ARGS="${PYTEST_ARGS} --html=reports/pytest.html --self-contained-html --junitxml=reports/pytest.xml"
   artifacts:
     when: always
     paths:
       - reports/pytest.html
       - reports/pytest.xml
-      - coverage.out
-      - coverage.txt
-      - coverage.html
     reports:
       junit: reports/pytest.xml
     expire_in: 14 days
