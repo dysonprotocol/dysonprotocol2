@@ -5,7 +5,9 @@ FROM debian:bookworm
 ENV DEBIAN_FRONTEND=noninteractive \
     PYENV_ROOT=/opt/pyenv \
     GOENV_ROOT=/opt/goenv \
+    GOMODCACHE=/tmp/gomodcache \
     NODEENV_HOME=/opt/nodeenv \
+    VENV=/tmp/venv \
     CGO_ENABLED=1 \
     GOFLAGS=-buildvcs=false \
     PYBUILD_NO_DOCKER=1
@@ -20,6 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zstd \
     make \
     patch \
+    unzip \
+    zip \
     # pyenv build deps
     libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
     libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev \
@@ -36,7 +40,7 @@ RUN git clone --depth 1 https://github.com/pyenv/pyenv.git "$PYENV_ROOT" \
   && pip3 install --no-cache-dir --break-system-packages nodeenv
 
 # Set PATH for shims and binaries
-ENV PATH="$GOENV_ROOT/bin:$GOENV_ROOT/shims:$PYENV_ROOT/bin:$PYENV_ROOT/shims:$NODEENV_HOME/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ENV PATH="$HOME/.local/bin:$VENV/bin:$GOENV_ROOT/bin:$GOENV_ROOT/shims:$PYENV_ROOT/bin:$PYENV_ROOT/shims:$NODEENV_HOME/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # Install Python 3.12.11 via pyenv (avoid login shell PATH resets)
 RUN /opt/pyenv/bin/pyenv install 3.12.11 \
@@ -55,11 +59,45 @@ RUN nodeenv "$NODEENV_HOME" -n 22.12.0 \
   && "$NODEENV_HOME"/bin/node --version \
   && "$NODEENV_HOME"/bin/npm --version
 
+# Install Hermes IBC relayer (required for IBC tests)
+RUN ARCH="$(dpkg --print-architecture)" \
+  && if [ "$ARCH" = "arm64" ]; then HERMES_ARCH="aarch64"; else HERMES_ARCH="x86_64"; fi \
+  && curl -L -o /tmp/hermes.tar.gz "https://github.com/informalsystems/hermes/releases/download/v1.13.3/hermes-v1.13.3-${HERMES_ARCH}-unknown-linux-gnu.tar.gz" \
+  && tar -xzf /tmp/hermes.tar.gz -C /usr/local/bin hermes \
+  && rm /tmp/hermes.tar.gz \
+  && chmod +x /usr/local/bin/hermes \
+  && hermes version
+
 # Create directories expected by python-build-standalone shell scripts
 # (build-binutils.sh, build-musl.sh, etc. hardcode cd /build and /tools paths)
 RUN mkdir -p /build /tools
 
-WORKDIR /workspace
+# Create non-root user
+RUN groupadd --gid 1000 user \
+  && useradd --uid 1000 --gid user --shell /bin/bash --create-home user \
+  && mkdir -p "$GOMODCACHE" \
+  && chown -R user:user /build /tools "$PYENV_ROOT" "$GOENV_ROOT" "$GOMODCACHE" "$NODEENV_HOME"
+
+WORKDIR /workspace/dysonprotocol2
+RUN chown user:user /workspace/dysonprotocol2
+
+USER user
+
+# Install Bun runtime (must be after USER so it installs to ~/.bun)
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/home/user/.bun/bin:$PATH"
+
+# go.mod has local replace directives (cosmos-sdk/, x/nft/, dysvm/) that
+# aren't in the build context, so go mod download can't run here.
+# Modules will be fetched on first build inside the container instead
+# (the full workspace is bind-mounted at runtime).
+
+# Pre-install Python dev/test dependencies into a venv so devs don't wait
+COPY --chown=user:user requirements.txt /tmp/requirements.txt
+RUN "$PYENV_ROOT"/shims/python -m venv "$VENV" \
+  && "$VENV"/bin/pip install -U pip \
+  && "$VENV"/bin/pip install --no-cache-dir -r /tmp/requirements.txt \
+  && rm /tmp/requirements.txt
 
 # Default to a shell; compose will override command to run make
 ENTRYPOINT ["/bin/bash"]

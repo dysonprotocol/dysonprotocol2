@@ -1,0 +1,26 @@
+{
+  "name": "Dyson Protocol Dev",
+  "build": {
+    "context": "..",
+    "dockerfile": "../Dockerfile.dev"
+  },
+  "workspaceFolder": "/workspace/dysonprotocol2",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/dysonprotocol2,type=bind,consistency=cached",
+  "mounts": [
+    "source=${localWorkspaceFolder}/.docker-home,target=/home/user,type=bind,consistency=cached"
+  ],
+  "containerEnv": {
+    "YES": "1",
+    "GOBIN": "/usr/local/bin"
+  },
+  "runArgs": ["--network=host"],
+  "postCreateCommand": "make install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "ms-python.python"
+      ]
+    }
+  }
+}

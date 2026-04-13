@@ -3,35 +3,27 @@
 # ============================================================================
 #
 # Stages:
-#   1. lint        - Go vet, go mod tidy check
-#   2. build       - DYSVM assets + dysond binary
-#   3. test        - pytest suite (parallel by module)
+#   1. image  - Build CI image from Dockerfile.dev (Kaniko, no DinD)
+#   2. lint   - Go vet, go mod tidy check
+#   3. build  - DYSVM assets + dysond binary
+#   4. test   - pytest suite (parallel by module)
+#
+# The CI image is built from the same Dockerfile.dev used for local dev and
+# docker-compose, so CI and dev environments never drift.
 #
 # Releases are handled by GitHub Actions, not this pipeline.
-#
-# Prerequisites:
-#   - GitLab Runner with Docker executor (docker+machine or docker runner)
-#   - The Dockerfile.ci image must be built and available in the registry
-#   - Run `make ci-build-image` once (or on Dockerfile.ci changes) to push it
-#
-# Runner tags: dyson (self-hosted runner with Docker support)
 # ============================================================================
 
 stages:
+  - image
   - lint
   - build
   - test
 
 variables:
-  # Use the project's container registry for the CI image
   CI_IMAGE: $CI_REGISTRY_IMAGE/ci:latest
-  DOCKER_DRIVER: overlay2
-  # Don't shallow-clone; submodules need full history for checkout
-  GIT_DEPTH: 0
   GIT_SUBMODULE_STRATEGY: recursive
-  # Enable Go module download caching
-  GOPATH: /go
-  GOMODCACHE: /go/pkg/mod
+  GIT_DEPTH: 0
   # Non-interactive defaults for DYSVM and verify-requirements
   YES: "1"
   VERIFY_REQS_YES: "1"
@@ -42,18 +34,44 @@ variables:
   COVERAGE_PACKAGES: "dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper,dysonprotocol.com/dysond/server/dwapp"
 
 # ---------------------------------------------------------------------------
+# Build CI image from Dockerfile.dev when it changes.
+# Uses Kaniko -- no Docker socket or DinD needed.
+# Set BUILD_CI_IMAGE=true to force a rebuild (e.g. after requirements.txt
+# changes that aren't reflected in Dockerfile.dev itself).
+# ---------------------------------------------------------------------------
+build-ci-image:
+  stage: image
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  tags:
+    - dyson
+  before_script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"auth\":\"$(printf '%s:%s' "$CI_REGISTRY_USER" "$CI_REGISTRY_PASSWORD" | base64)\"}}}" > /kaniko/.docker/config.json
+  script:
+    - /kaniko/executor
+      --context $CI_PROJECT_DIR
+      --dockerfile $CI_PROJECT_DIR/Dockerfile.dev
+      --destination $CI_IMAGE
+      --insecure
+  rules:
+    - changes: [Dockerfile.dev]
+    - if: $BUILD_CI_IMAGE == "true"
+
+# ---------------------------------------------------------------------------
 # Default job settings
 # ---------------------------------------------------------------------------
 default:
   image: $CI_IMAGE
+  tags:
+    - dyson
   before_script:
     - go version
     - python3 --version
-  tags:
-    - dyson
 
 # ---------------------------------------------------------------------------
-# Stage 1: Lint
+# Stage 2: Lint
 # ---------------------------------------------------------------------------
 go-vet:
   stage: lint
@@ -74,7 +92,7 @@ go-mod-tidy:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # ---------------------------------------------------------------------------
-# Stage 2: Build
+# Stage 3: Build
 # ---------------------------------------------------------------------------
 build-dysond:
   stage: build
@@ -92,15 +110,11 @@ build-dysond:
     - if: $CI_COMMIT_TAG
 
 # ---------------------------------------------------------------------------
-# Stage 3: Test (parallel by module)
+# Stage 4: Test (parallel by module)
 # ---------------------------------------------------------------------------
-# The test jobs share the dysond binary from the build stage and run pytest
-# against different module directories. Each job produces its own coverage
-# and JUnit report. The COVERAGE_PACKAGES var is set globally so `make test`
-# generates Go coverage alongside pytest.
-#
-# To add a new test shard: copy an existing test-* job and change PYTEST_ARGS
-# to point at the new module directory.
+# make test builds dysond with -cover independently, then runs pytest.
+# The build-dysond job gates this stage but test jobs rebuild their own
+# coverage-instrumented binary.
 # ---------------------------------------------------------------------------
 
 .test-template:
@@ -109,16 +123,11 @@ build-dysond:
     - build-dysond
   script:
     - mkdir -p reports
-    # Install Python test dependencies
     - make dev-install
-    # Install pytest-html for HTML reports
     - ./.venv/bin/pip install pytest-html
-    # Install Playwright browser for tests that use it (pytest.ini addopts
-    # includes --browser chromium; override --headed with --headless in CI)
+    # Install Playwright browser (pytest.ini addopts includes --browser chromium)
+    # Override --headed with --headless for CI.
     - ./.venv/bin/playwright install chromium --with-deps || true
-    # make test builds dysond with -cover, then runs pytest.
-    # The build-dysond artifact gates this job but make test rebuilds independently.
-    # Override --headed (from pytest.ini) with --headless for CI.
     - |
       make test PYTEST_ARGS="${PYTEST_ARGS} --headless --html=reports/pytest.html --self-contained-html --junitxml=reports/pytest.xml"
   coverage: '/^TOTAL\s+\S+\s+\S+\s+(\d+\.\d+)%$/'
@@ -151,7 +160,7 @@ test-whaleswap:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
-      allow_failure: true  # whaleswap hypothesis tests can be flaky
+      allow_failure: true
 
 test-nameservice-bids:
   extends: .test-template
@@ -171,31 +180,4 @@ test-integration:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      allow_failure: true  # integration tests can be slower / flaky on MRs
-
-# ---------------------------------------------------------------------------
-# CI Image Build Job
-# ---------------------------------------------------------------------------
-# Run this manually when Dockerfile.ci changes, or to refresh the base image.
-# The image is pushed to the project's container registry.
-# ---------------------------------------------------------------------------
-build-ci-image:
-  stage: build
-  image: docker:27
-  services:
-    - docker:27-dind
-  variables:
-    DOCKER_TLS_CERTDIR: "/certs"
-  before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-  script:
-    - docker build -t $CI_IMAGE -f Dockerfile.ci .
-    - docker push $CI_IMAGE
-  tags:
-    - dyson
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - Dockerfile.ci
-    - when: manual
-  needs: []
+      allow_failure: true
