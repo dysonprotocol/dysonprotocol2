@@ -148,7 +148,7 @@ CLEAN_COVERAGE ?= 1
 COVERAGE_PACKAGES ?= dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper,dysonprotocol.com/dysond/server/dwapp
 
 
-test: verify-requirements dysvm-assets
+test: verify-requirements
 
 	@mkdir -p $(BUILDDIR)
 	@if [ -n "$(COVERAGE_PACKAGES)" ]; then \

@@ -147,7 +147,6 @@ build-dysond:
   needs:
     - build-dysond
   script:
-    - make dysvm-assets
     - make dev-install
     - $VENV/bin/pip install pytest-html
     - $VENV/bin/playwright install chromium --with-deps || true
