@@ -121,6 +121,21 @@ install: verify-requirements dysvm-assets
 	@dysond version --long | tail -n 8
 
 ###############################################################################
+###                                 Linting                                 ###
+###############################################################################
+
+# Build tags must match what the binary uses so app.go (//go:build app_v1)
+# is included and generated /api/ packages (pulsar) are excluded.
+BUILD_TAGS_LINT := netgo app_v1
+
+vet:
+	@go vet -tags "$(BUILD_TAGS_LINT)" $$(go list -tags "$(BUILD_TAGS_LINT)" ./... | grep -v '/api/')
+
+mod-tidy-check:
+	@go mod tidy
+	@git diff --exit-code go.mod go.sum
+
+###############################################################################
 ###                                Testing                                  ###
 ###############################################################################
 
@@ -264,28 +279,30 @@ dysvm: dev-install
 	@echo "Running complete DYSVM process..."
 	@$(DYSVM_SCRIPTS_DIR)/dysvm.sh
 
-# Ensure DYSVM embedded assets exist; prompt or auto-run dysvm if missing
+# Ensure DYSVM embedded assets exist.
+# In CI the assets are baked into the image at /opt/dysvm-data/ and copied here.
+# Locally, prompts to run 'make dysvm' if missing.
 dysvm-assets:
 	@echo "Checking for DYSVM embedded assets..."
-	@if [ ! -d ./dysvm/internal/data ] || ! ls -A ./dysvm/internal/data >/dev/null 2>&1; then \
-	  echo "⚠️  DYSVM assets missing (./dysvm/internal/data)."; \
-	  if [ "$$VERIFY_REQS_YES" = "1" ] || [ "$$DYSVM_YES" = "1" ] || [ "$$YES" = "1" ]; then \
-	    echo "Consent provided via environment. Running 'make dysvm'..."; \
-	    $(MAKE) dysvm; \
-	  else \
-	    if [ -t 0 ]; then \
-	      printf "Run 'make dysvm' now? [y/N]: "; \
-	      read ans; \
-	      case "$$ans" in \
-	        y|Y|yes|YES) $(MAKE) dysvm ;; \
-	        *) echo "Declined. Please run 'make dysvm' first."; exit 1 ;; \
-	      esac; \
-	    else \
-	      echo "Non-interactive shell. Run 'make dysvm' manually or set VERIFY_REQS_YES=1."; exit 1; \
-	    fi; \
-	  fi; \
-	else \
+	@if [ -d ./dysvm/internal/data ] && ls -A ./dysvm/internal/data >/dev/null 2>&1; then \
 	  echo "✓ DYSVM assets present"; \
+	elif [ -d /opt/dysvm-data ] && ls -A /opt/dysvm-data >/dev/null 2>&1; then \
+	  echo "Copying pre-built DYSVM assets from image..."; \
+	  mkdir -p ./dysvm/internal/data; \
+	  cp -r /opt/dysvm-data/. ./dysvm/internal/data/; \
+	  echo "✓ DYSVM assets ready"; \
+	else \
+	  echo "⚠️  DYSVM assets missing (./dysvm/internal/data)."; \
+	  if [ -t 0 ]; then \
+	    printf "Run 'make dysvm' now? [y/N]: "; \
+	    read ans; \
+	    case "$$ans" in \
+	      y|Y|yes|YES) $(MAKE) dysvm ;; \
+	      *) echo "Declined. Please run 'make dysvm' first."; exit 1 ;; \
+	    esac; \
+	  else \
+	    echo "Non-interactive shell. Run 'make dysvm' manually or rebuild the CI image."; exit 1; \
+	  fi; \
 	fi
 
 # Apply patch to CPython submodule
@@ -309,4 +326,4 @@ dysvm-clean:
 	@$(DYSVM_SCRIPTS_DIR)/dysvm-clean.sh
 
 
-.PHONY:  build install test clean-coverage init localnet start watch dashboard proto-all proto-gen proto-format proto-lint proto-update proto-build-image proto-clean-image dysvm dysvm-patch dysvm-build dysvm-embed dysvm-clean verify-requirements dysvm-assets
+.PHONY: build install test clean-coverage vet mod-tidy-check init localnet start watch dashboard proto-all proto-gen proto-format proto-lint proto-update proto-build-image proto-clean-image dysvm dysvm-patch dysvm-build dysvm-embed dysvm-clean verify-requirements dysvm-assets

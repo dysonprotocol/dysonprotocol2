@@ -3,15 +3,12 @@
 # ============================================================================
 #
 # Stages:
-#   1. image   - Build CI image from Dockerfile.dev (Kaniko, no DinD)
-#                DYSVM is baked into the image via multi-stage build.
-#                Submodules are checked out by the runner so Kaniko can COPY them.
-#   2. lint    - Go vet, go mod tidy check
-#   3. build   - Build dysond binary
-#   4. test    - pytest suite (parallel by module)
-#
-# The CI image is built from the same Dockerfile.dev used for local dev and
-# docker-compose, so CI and dev environments never drift.
+#   1. image  - Build CI image from Dockerfile.dev (Kaniko, no DinD).
+#               DYSVM is baked in via multi-stage build; submodules are
+#               checked out by the runner so Kaniko can COPY them.
+#   2. lint   - make vet, make mod-tidy-check
+#   3. build  - make build (dysond binary)
+#   4. test   - pytest suite (parallel by module)
 #
 # Releases are handled by GitHub Actions, not this pipeline.
 # ============================================================================
@@ -28,19 +25,29 @@ variables:
   GIT_DEPTH: "1"
   GIT_SUBMODULE_DEPTH: "1"
   GIT_SUBMODULE_FORCE_HTTPS: "true"
-  # Non-interactive defaults for DYSVM and verify-requirements
-  VERIFY_REQS_YES: "1"
-  DYSVM_YES: "1"
   CGO_ENABLED: "1"
   GOFLAGS: "-buildvcs=false"
-  # Coverage packages (from Makefile)
   COVERAGE_PACKAGES: "dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper,dysonprotocol.com/dysond/server/dwapp"
 
 # ---------------------------------------------------------------------------
-# Build CI image from Dockerfile.dev when it or the DYSVM submodules change.
-# Uses Kaniko -- no Docker socket or DinD needed.
-# Submodules are checked out (GIT_SUBMODULE_STRATEGY: recursive) so the
-# builder stage in Dockerfile.dev can COPY them without any git auth.
+# Reusable rule sets
+# ---------------------------------------------------------------------------
+.rules-default: &rules-default
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+.rules-no-tags: &rules-no-tags
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# ---------------------------------------------------------------------------
+# Stage 1: Image
+# Build CI image when Dockerfile or DYSVM inputs change.
+# Uses Kaniko (no Docker socket / DinD needed).
+# GIT_SUBMODULE_STRATEGY: recursive ensures submodules are present for COPY.
 # Set BUILD_CI_IMAGE=true to force a rebuild.
 # ---------------------------------------------------------------------------
 build-ci-image:
@@ -71,7 +78,7 @@ build-ci-image:
     - if: $BUILD_CI_IMAGE == "true"
 
 # ---------------------------------------------------------------------------
-# Default job settings
+# Default settings for all non-Kaniko jobs
 # ---------------------------------------------------------------------------
 default:
   image: $CI_IMAGE
@@ -80,88 +87,64 @@ default:
   before_script:
     - go version
     - python3 --version
-    # Fix Git security check for bind-mounted workspace with different ownership
-    - git config --global --add safe.directory /builds/dysonprotocol/dysonprotocol2
-    - git config --global --add safe.directory /builds/dysonprotocol/dysonprotocol2/dysvm/cpython
-    - git config --global --add safe.directory /builds/dysonprotocol/dysonprotocol2/dysvm/go-embed-python
-    - git config --global --add safe.directory /builds/dysonprotocol/dysonprotocol2/dysvm/python-build-standalone
-    # DYSVM assets are baked into the CI image at /opt/dysvm-data/.
-    # Copy them into the workspace so make dysvm-assets finds them.
-    - |
-      if [ -d /opt/dysvm-data ] && [ "$(ls -A /opt/dysvm-data)" ]; then
-        echo "Copying pre-built DYSVM assets from image..."
-        mkdir -p ./dysvm/internal/data
-        cp -r /opt/dysvm-data/. ./dysvm/internal/data/
-        echo "✓ DYSVM assets ready"
-      else
-        echo "⚠️  /opt/dysvm-data missing or empty — image may need a rebuild"
-        exit 1
-      fi
+    # Fix git ownership check for the runner's bind-mounted workspace
+    - git config --global --add safe.directory $CI_PROJECT_DIR
+    - git config --global --add safe.directory $CI_PROJECT_DIR/dysvm/cpython
+    - git config --global --add safe.directory $CI_PROJECT_DIR/dysvm/go-embed-python
+    - git config --global --add safe.directory $CI_PROJECT_DIR/dysvm/python-build-standalone
+    # Copy DYSVM assets baked into the image, or fail loudly if the image is stale
+    - make dysvm-assets
 
 # ---------------------------------------------------------------------------
-# Stage 1: Lint
+# Stage 2: Lint
 # ---------------------------------------------------------------------------
 go-vet:
   stage: lint
   variables:
     GIT_SUBMODULE_PATHS: "cosmos-sdk dysvm/go-embed-python"
   script:
-    - go vet -tags "netgo app_v1" $(go list -tags "netgo app_v1" ./... | grep -v '/api/')
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_TAG
+    - make vet
+  <<: *rules-default
 
 go-mod-tidy:
   stage: lint
   variables:
     GIT_SUBMODULE_PATHS: "cosmos-sdk dysvm/go-embed-python"
   script:
-    - go mod tidy
-    - git diff --exit-code go.mod go.sum
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - make mod-tidy-check
+  # Tags are immutable; go.mod drift on a tag is not actionable
+  <<: *rules-no-tags
 
 # ---------------------------------------------------------------------------
-# Stage 2: Build
+# Stage 3: Build
 # ---------------------------------------------------------------------------
 build-dysond:
   stage: build
   script:
-    - echo "Building dysond binary (DYSVM assets from image)..."
     - make build
     - ./build/dysond version --long
   artifacts:
     paths:
       - build/dysond
     expire_in: 7 days
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_TAG
+  <<: *rules-default
 
 # ---------------------------------------------------------------------------
-# Stage 3: Test (parallel by module)
+# Stage 4: Test (parallel by module)
 # ---------------------------------------------------------------------------
-# make test builds dysond with -cover independently, then runs pytest.
-# The build-dysond job gates this stage but test jobs rebuild their own
-# coverage-instrumented binary.
+# Note: make test recompiles dysond with -cover instrumentation, so it does
+# not reuse the build-dysond artifact. The needs: dependency is purely for
+# gating (ensures the binary at least builds cleanly before running tests).
 # ---------------------------------------------------------------------------
-
 .test-template:
   stage: test
   needs:
     - build-dysond
   script:
-    - mkdir -p reports
     - make dev-install
     - ./.venv/bin/pip install pytest-html
-    # Install Playwright browser (pytest.ini addopts includes --browser chromium)
-    # Override --headed with --headless for CI.
     - ./.venv/bin/playwright install chromium --with-deps || true
-    - |
-      make test PYTEST_ARGS="${PYTEST_ARGS} --headless --html=reports/pytest.html --self-contained-html --junitxml=reports/pytest.xml"
+    - make test PYTEST_ARGS="${PYTEST_ARGS} --headless --html=reports/pytest.html --self-contained-html --junitxml=reports/pytest.xml"
   coverage: '/^TOTAL\s+\S+\s+\S+\s+(\d+\.\d+)%$/'
   artifacts:
     when: always
@@ -174,10 +157,7 @@ build-dysond:
     reports:
       junit: reports/pytest.xml
     expire_in: 14 days
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_TAG
+  <<: *rules-default
 
 test-keeper:
   extends: .test-template
@@ -186,13 +166,9 @@ test-keeper:
 
 test-whaleswap:
   extends: .test-template
+  allow_failure: true
   variables:
     PYTEST_ARGS: "tests/whaleswap/amm tests/whaleswap/auction tests/whaleswap/leverage tests/whaleswap/arbitrage tests/whaleswap/orderbook"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_TAG
-      allow_failure: true
 
 test-nameservice-bids:
   extends: .test-template
