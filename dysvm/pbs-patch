@@ -11,7 +11,7 @@ index 577f44f..3b3e992 100644
  	$(RUN_BUILD) --toolchain --docker-image $(DOCKER_IMAGE_GCC) binutils
 
  $(OUTDIR)/$(CLANG_FILENAME):
-@@ -125,7 +125,7 @@ $(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS)
+@@ -126,6 +126,6 @@ $(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS)
  	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) libffi
 
 -$(OUTDIR)/libpthread-stubs-$(LIBPTHREAD_STUBS_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libpthread-stubs.sh $(OUTDIR)/image-$(DOCKER_IMAGE_BUILD).$(HOST_PLATFORM).tar
