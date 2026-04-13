@@ -76,7 +76,7 @@ default:
 go-vet:
   stage: lint
   variables:
-    GIT_SUBMODULE_STRATEGY: none
+    GIT_SUBMODULE_PATHS: "cosmos-sdk dysvm/go-embed-python"
   script:
     - go vet ./...
   rules:
@@ -87,7 +87,7 @@ go-vet:
 go-mod-tidy:
   stage: lint
   variables:
-    GIT_SUBMODULE_STRATEGY: none
+    GIT_SUBMODULE_PATHS: "cosmos-sdk dysvm/go-embed-python"
   script:
     - go mod tidy
     - git diff --exit-code go.mod go.sum
