@@ -15,7 +15,7 @@ import (
 
 func TestRebuildModuleInvariantsBurnsExcess(t *testing.T) {
 	app := dysonprotocol.Setup(t, false)
-	ctx := app.BaseApp.NewContext(false, cmtproto.Header{})
+	ctx := app.BaseApp.NewContextLegacy(false, cmtproto.Header{})
 
 	pool := whaleswapv1.Pool{
 		PoolId:      1,

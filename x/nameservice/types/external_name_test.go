@@ -75,9 +75,9 @@ func TestNameRegex(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := NameRegex.MatchString(tt.input)
+			result := GetNameRegex(DefaultNameSuffix).MatchString(tt.input)
 			if result != tt.expected {
-				t.Errorf("NameRegex.MatchString(%q) = %v, want %v", tt.input, result, tt.expected)
+				t.Errorf("GetNameRegex(DefaultNameSuffix).MatchString(%q) = %v, want %v", tt.input, result, tt.expected)
 			}
 		})
 	}
@@ -88,8 +88,8 @@ func TestExternalNameIsSupersetOfName(t *testing.T) {
 	dysNames := []string{"foo", "a", "my-name", "xn--test", "abc123"}
 	for _, name := range dysNames {
 		// Verify it's a valid .dys name
-		if !NameRegex.MatchString(name + ".dys") {
-			t.Errorf("%q.dys should be valid NameRegex", name)
+		if !GetNameRegex(DefaultNameSuffix).MatchString(name + ".dys") {
+			t.Errorf("%q.dys should be valid GetNameRegex(DefaultNameSuffix)", name)
 			continue
 		}
 		// Verify the base name matches ExternalNameRegex

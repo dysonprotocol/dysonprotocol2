@@ -144,7 +144,6 @@ func TestMigratePool_NormalizesRiskVectors(t *testing.T) {
 		MinInitialCollateralRatio: sdk.DecCoins{
 			sdk.NewDecCoinFromDec("foo", cosmossdkmath.LegacyMustNewDecFromStr("1.4")),
 		},
-		MaxLeverageRatio:     sdk.DecCoins{},
 		LiquidationThreshold: sdk.DecCoins{},
 		MaxBorrowPercent: sdk.DecCoins{
 			sdk.NewDecCoinFromDec("foo", cosmossdkmath.LegacyMustNewDecFromStr("0.70")),
@@ -158,8 +157,6 @@ func TestMigratePool_NormalizesRiskVectors(t *testing.T) {
 
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.4"), pool.MinInitialCollateralRatio.AmountOf("foo"))
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.4"), pool.MinInitialCollateralRatio.AmountOf("bar"))
-	require.True(t, pool.MaxLeverageRatio.AmountOf("foo").IsZero())
-	require.True(t, pool.MaxLeverageRatio.AmountOf("bar").IsZero())
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.2"), pool.LiquidationThreshold.AmountOf("foo"))
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.2"), pool.LiquidationThreshold.AmountOf("bar"))
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("0.70"), pool.MaxBorrowPercent.AmountOf("foo"))
@@ -179,7 +176,6 @@ func TestMigratePool_ReplacesInvalidValues(t *testing.T) {
 			sdk.NewDecCoinFromDec("foo", cosmossdkmath.LegacyMustNewDecFromStr("0.9")),
 			sdk.NewDecCoinFromDec("bar", cosmossdkmath.LegacyMustNewDecFromStr("0.8")),
 		},
-		MaxLeverageRatio: sdk.DecCoins{},
 		LiquidationThreshold: sdk.DecCoins{
 			sdk.NewDecCoinFromDec("foo", cosmossdkmath.LegacyMustNewDecFromStr("0.95")),
 		},
@@ -193,8 +189,6 @@ func TestMigratePool_ReplacesInvalidValues(t *testing.T) {
 
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.5"), pool.MinInitialCollateralRatio.AmountOf("foo"))
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.5"), pool.MinInitialCollateralRatio.AmountOf("bar"))
-	require.True(t, pool.MaxLeverageRatio.AmountOf("foo").IsZero())
-	require.True(t, pool.MaxLeverageRatio.AmountOf("bar").IsZero())
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.2"), pool.LiquidationThreshold.AmountOf("foo"))
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("1.2"), pool.LiquidationThreshold.AmountOf("bar"))
 	require.Equal(t, cosmossdkmath.LegacyMustNewDecFromStr("0.80"), pool.MaxBorrowPercent.AmountOf("foo"))
