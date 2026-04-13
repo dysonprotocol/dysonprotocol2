@@ -17,6 +17,35 @@ source "$SCRIPT_DIR/dysvm.env"
 
 echo "Building custom Python distributions..."
 
+# --- Pre-build cleanup: Remove stale /build and /tools directories ---
+# This prevents permission errors when python-build-standalone tries to clean up
+if [ -d "/build" ]; then
+    echo "Cleaning up /build directory..."
+    if ! rm -rf /build 2>/dev/null; then
+        echo "⚠️  Could not remove /build; attempting chmod and retry..."
+        chmod -R 755 /build 2>/dev/null || true
+        rm -rf /build 2>/dev/null || {
+            echo "⚠️  /build still locked; continuing with build (may fail)"
+        }
+    fi
+fi
+
+if [ -d "/tools" ]; then
+    echo "Cleaning up /tools directory..."
+    if ! rm -rf /tools 2>/dev/null; then
+        echo "⚠️  Could not remove /tools; attempting chmod and retry..."
+        chmod -R 755 /tools 2>/dev/null || true
+        rm -rf /tools 2>/dev/null || {
+            echo "⚠️  /tools still locked; continuing with build (may fail)"
+        }
+    fi
+fi
+
+# Recreate directories with proper permissions
+mkdir -p /build /tools
+chmod 755 /build /tools
+# --- End pre-build cleanup ---
+
 # --- FP Mitigation: Set custom CFLAGS for consistency ---
 # These will be passed to CPython's configure/make.
 # Common flags: Disable fast-math and FMA for strict IEEE 754.
@@ -61,6 +90,20 @@ else
     if [ -n "$PYBUILD_NO_DOCKER" ]; then
         SERIAL_FLAG="--serial"
     fi
+
+    # Setup cleanup trap: if build fails, clean up /build to prevent permission errors on retry
+    cleanup() {
+        local exit_code=$?
+        if [ $exit_code -ne 0 ]; then
+            echo "⚠️  Build failed; cleaning up /build and /tools for next attempt..."
+            chmod -R 755 /build /tools 2>/dev/null || true
+            rm -rf /build /tools 2>/dev/null || {
+                echo "⚠️  Could not fully clean /build or /tools; next build may encounter permission issues"
+            }
+        fi
+        return $exit_code
+    }
+    trap cleanup EXIT
 
     # Run the linux build with required environment; fail fast on any error
     PYBUILD_PYTHON_VERSION="$PYTHON_VERSION" python3 build-linux.py \

@@ -75,8 +75,10 @@ RUN groupadd --gid 1000 user \
 
 # Create directories expected by python-build-standalone shell scripts
 # (build-binutils.sh, build-musl.sh, etc. hardcode cd /build and /tools paths)
+# Use chmod 755 for /build to ensure the build user can create and remove files
 RUN mkdir -p /build /tools /home/user/go/pkg/mod /home/user/.cache/go-build /home/user/.cache && \
-    chown -R user:user /build /tools /home/user/go /home/user/.cache "$PYENV_ROOT" "$GOENV_ROOT" "$NODEENV_HOME"
+    chown -R user:user /build /tools /home/user/go /home/user/.cache "$PYENV_ROOT" "$GOENV_ROOT" "$NODEENV_HOME" && \
+    chmod -R 755 /build /tools
 
 WORKDIR /workspace/dysonprotocol2
 RUN chown user:user /workspace/dysonprotocol2
