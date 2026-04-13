@@ -23,13 +23,12 @@ stages:
 variables:
   CI_IMAGE: $CI_REGISTRY_IMAGE/ci:latest
   GIT_SUBMODULE_STRATEGY: recursive
-  GIT_DEPTH: 0
+  GIT_DEPTH: "0"
   # Non-interactive defaults for DYSVM and verify-requirements
-  YES: "1"
   VERIFY_REQS_YES: "1"
   DYSVM_YES: "1"
   CGO_ENABLED: "1"
-  GOFLAGS: -buildvcs=false
+  GOFLAGS: "-buildvcs=false"
   # Coverage packages (from Makefile)
   COVERAGE_PACKAGES: "dysonprotocol.com/x/crontask/keeper,dysonprotocol.com/x/nameservice/keeper,dysonprotocol.com/x/nft/keeper,dysonprotocol.com/x/script/keeper,dysonprotocol.com/x/storage/keeper,dysonprotocol.com/x/whaleswap/keeper,dysonprotocol.com/dysond/server/dwapp"
 
