@@ -25,6 +25,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   GIT_DEPTH: "1"
   GIT_SUBMODULE_DEPTH: "1"
+  GIT_SUBMODULE_FORCE_HTTPS: "true"
   # Non-interactive defaults for DYSVM and verify-requirements
   VERIFY_REQS_YES: "1"
   DYSVM_YES: "1"
@@ -41,6 +42,8 @@ variables:
 # ---------------------------------------------------------------------------
 build-ci-image:
   stage: image
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
