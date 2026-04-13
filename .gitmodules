@@ -1,23 +1,12 @@
-
-[submodule "python-build-standalone"]
-	path = dysvm/python-build-standalone
-	url = https://github.com/astral-sh/python-build-standalone.git
-[submodule "cpython"]
-	path = dysvm/cpython
-	url = https://github.com/python/cpython.git
-[submodule "go-embed-python"]
+[submodule "cosmos-sdk"]
+	path = cosmos-sdk
+	url = ../cosmos-sdk.git
+[submodule "dysvm/go-embed-python"]
 	path = dysvm/go-embed-python
-	url = https://github.com/kluctl/go-embed-python.git
+	url = ../go-embed-python.git
+[submodule "dysvm/python-build-standalone"]
+	path = dysvm/python-build-standalone
+	url = ../python-build-standalone.git
 [submodule "dysvm/cpython"]
 	path = dysvm/cpython
 	url = https://github.com/python/cpython.git
-[submodule "dysvm/go-embed-python"]
-	path = dysvm/go-embed-python
-	url = https://github.com/kluctl/go-embed-python.git
-[submodule "dysvm/python-build-standalone"]
-	path = dysvm/python-build-standalone
-	url = https://github.com/astral-sh/python-build-standalone.git
-
-[submodule "cosmos-sdk"]
-	path = cosmos-sdk
-	url = https://github.com/dysonprotocol/cosmos-sdk
