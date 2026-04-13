@@ -144,7 +144,7 @@ build-dysond:
     - make dev-install
     - $VENV/bin/pip install pytest-html
     - $VENV/bin/playwright install chromium --with-deps || true
-    - make test PYTEST_ARGS="${PYTEST_ARGS} --headless --html=reports/pytest.html --self-contained-html --junitxml=reports/pytest.xml"
+    - make test PYTEST_ARGS="${PYTEST_ARGS} --html=reports/pytest.html --self-contained-html --junitxml=reports/pytest.xml"
   coverage: '/^TOTAL\s+\S+\s+\S+\s+(\d+\.\d+)%$/'
   artifacts:
     when: always
