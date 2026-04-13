@@ -23,40 +23,43 @@ jobs:
       - name: Clean workspace
         run: git clean -fdx .
 
-      - name: Build dysond
-        run: make dysvm 
-
-      - name: Install dev deps and run tests
+      # python-build-standalone hardcodes /build and /tools; create them
+      # with world-writable permissions so the build user can clean up.
+      - name: Prepare /build and /tools dirs
         run: |
-          make dev-install
-          ./.venv/bin/pip install pytest-html
-          mkdir -p reports
-          make test PYTEST_ARGS="tests/*/keeper --html=reports/pytest.html --self-contained-html"
+          sudo mkdir -p /build /tools
+          sudo chmod 777 /build /tools
+
+      - name: Build DYSVM
+        run: make dysvm
+
+      - name: Lint
+        run: make vet mod-tidy-check
 
       - name: Build dysond binary
-        run: make build
+        run: make build && ./build/dysond version --long
 
-      - name: Set release name env
-        run: echo "RELEASE_NAME=dysond-$(uname -m)-${GITHUB_REF_NAME//\//-}" >> $GITHUB_ENV
+      - name: Run tests
+        run: |
+          mkdir -p reports
+          make test COVERAGE_PACKAGES= PYTEST_ARGS="tests/crontask/keeper tests/nameservice/keeper tests/nft/keeper tests/script/keeper tests/storage/keeper tests/whaleswap/keeper tests/nameservice/bids --html=reports/pytest.html --self-contained-html --junitxml=reports/pytest.xml"
 
       - name: Upload pytest report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pytest-report
           path: |
             reports/pytest.html
-            coverage/coverage.out
-            coverage/coverage.txt
-            coverage/coverage.html
+            reports/pytest.xml
+
+      - name: Set release name
+        run: echo "RELEASE_NAME=dysond-$(uname -m)-${GITHUB_REF_NAME//\//-}" >> $GITHUB_ENV
 
       - name: Compress dysond binary
         run: |
           set -euo pipefail
           : "${RELEASE_NAME:?RELEASE_NAME not set}"
-          if ! command -v zip > /dev/null 2>&1; then
-            echo "zip command not found on runner" >&2
-            exit 1
-          fi
           zip -j "${RELEASE_NAME}.zip" "build/dysond"
 
       - name: Upload artifact
@@ -64,7 +67,7 @@ jobs:
         with:
           name: ${{ env.RELEASE_NAME }}.zip
           path: ./${{ env.RELEASE_NAME }}.zip
-      
+
       - name: Upload release asset
         if: startsWith(github.ref, 'refs/tags/')
         uses: svenstaro/upload-release-action@v2
