@@ -5,12 +5,20 @@ index 577f44f..3b3e992 100644
 @@ -79,7 +79,7 @@ $(OUTDIR)/image-%.$(HOST_PLATFORM).tar: $(OUTDIR)/%.Dockerfile
  	$(RUN_BUILD) --toolchain image-$*
  endif
- 
+
 -$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar: $(OUTDIR)/image-$(DOCKER_IMAGE_GCC).$(HOST_PLATFORM).tar $(HERE)/build-binutils.sh
 +$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar: $(if $(PYBUILD_NO_DOCKER),,$(OUTDIR)/image-$(DOCKER_IMAGE_GCC).$(HOST_PLATFORM).tar) $(HERE)/build-binutils.sh
  	$(RUN_BUILD) --toolchain --docker-image $(DOCKER_IMAGE_GCC) binutils
- 
+
  $(OUTDIR)/$(CLANG_FILENAME):
+@@ -125,7 +125,7 @@ $(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS)
+ 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) libffi
+
+-$(OUTDIR)/libpthread-stubs-$(LIBPTHREAD_STUBS_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libpthread-stubs.sh $(OUTDIR)/image-$(DOCKER_IMAGE_BUILD).$(HOST_PLATFORM).tar
++$(OUTDIR)/libpthread-stubs-$(LIBPTHREAD_STUBS_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libpthread-stubs.sh $(if $(PYBUILD_NO_DOCKER),,$(OUTDIR)/image-$(DOCKER_IMAGE_BUILD).$(HOST_PLATFORM).tar)
+ 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) libpthread-stubs
+
+ LIBX11_DEPENDS = \
 diff --git a/pythonbuild/buildenv.py b/pythonbuild/buildenv.py
 index 4b2a0e6..d6610a2 100644
 --- a/pythonbuild/buildenv.py
@@ -18,7 +26,7 @@ index 4b2a0e6..d6610a2 100644
 @@ -143,7 +143,12 @@ class TempdirContext(object):
      def __init__(self, td):
          self.td = pathlib.Path(td)
- 
+
 -        self.tools_path = str(self.td / "tools")
 +        # When using /build (no-Docker Linux builds), tools must go to /tools
 +        # to match shell scripts that hardcode paths like /tools/host/bin.
@@ -26,31 +34,31 @@ index 4b2a0e6..d6610a2 100644
 +            self.tools_path = "/tools"
 +        else:
 +            self.tools_path = str(self.td / "tools")
- 
+
      @property
      def is_isolated(self):
 @@ -172,7 +177,7 @@ class TempdirContext(object):
          )
- 
+
          p = build_dir / basename
 -        dest_path = self.td / "tools"
 +        dest_path = pathlib.Path(self.tools_path)
          log("extracting %s to %s" % (p, dest_path))
          extract_tar_to_directory(p, dest_path)
- 
+
 @@ -188,7 +193,7 @@ class TempdirContext(object):
          )
- 
+
          p = build_dir / basename
 -        dest_path = self.td / "tools"
 +        dest_path = pathlib.Path(self.tools_path)
          log("extracting %s to %s" % (p, dest_path))
          extract_tar_to_directory(p, dest_path)
- 
+
 @@ -222,7 +227,13 @@ class TempdirContext(object):
          if isinstance(program, str) and not program.startswith("/"):
              program = str(self.td / program)
- 
+
 -        exec_and_log(program, cwd=self.td, env=environment)
 +        # Merge with process environment so PATH, HOME, etc. are available.
 +        # Docker exec does this implicitly; subprocess.Popen(env=) does not.
@@ -59,7 +67,7 @@ index 4b2a0e6..d6610a2 100644
 +            merged_env.update(environment)
 +
 +        exec_and_log(program, cwd=self.td, env=merged_env)
- 
+
      def get_tools_archive(self, dest, name):
          log("copying built files to %s" % dest)
 @@ -269,12 +280,18 @@ def build_environment(client, image):
@@ -81,7 +89,7 @@ index 4b2a0e6..d6610a2 100644
 +                shutil.rmtree(p)
 +            p.mkdir(parents=True)
 +        context = TempdirContext("/build")
- 
+
      try:
          yield context
 @@ -282,5 +299,3 @@ def build_environment(client, image):
