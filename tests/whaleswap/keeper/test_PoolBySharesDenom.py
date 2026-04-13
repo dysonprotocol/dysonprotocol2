@@ -17,78 +17,59 @@ def test_pool_by_shares_denom_happy_path(chainnet, leverage_accounts, leverage_n
     foo_name = leverage_names_and_coins["foo_name"]
     bar_name = leverage_names_and_coins["bar_name"]
     
+    # Create pool via tx to persist state
+    create = dysond(
+        "tx",
+        "whaleswap",
+        "create-pool",
+        "--coins",
+        f"10000{foo_name}",
+        "--coins",
+        f"10000{bar_name}",
+        "--min-collateral-ratio",
+        "1.5",
+        "--max-borrow-percent",
+        "0.8",
+        "--from",
+        leverage_accounts["alice"]["name"],
+    )
+    assert create.get("code", 1) == 0, f"create-pool failed: {json.dumps(create, indent=2)}"
+    pool_events = [
+        e
+        for e in create.get("events", [])
+        if e.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    assert pool_events, f"EventPoolCreated missing: {json.dumps(create, indent=2)}"
+    pool_id_attrs = [
+        a
+        for e in pool_events
+        for a in e.get("attributes", [])
+        if a.get("key") == "pool_id"
+    ]
+    assert pool_id_attrs, f"pool_id missing: {json.dumps(pool_events, indent=2)}"
+    pool_id = pool_id_attrs[0]["value"].strip('"')
+
+    pool_query = dysond("query", "whaleswap", "pool", "--pool-id", str(pool_id))
+    shares_denom = pool_query["pool"]["shares_denom"]
+
     gov_result = dysond("query", "auth", "module-account", "gov")
     gov_addr = gov_result["account"]["value"]["address"]
 
     extra_code = """
-from dys import _msg, _query, get_executor_address
+from dys import _query
 
-def _sudo(msg_dict):
-    return _msg({
-        "@type": "/dysonprotocol.script.v1.MsgSudo",
-        "authority": get_executor_address(),
-        "messages": [msg_dict]
-    })
-
-def demo_pool_by_shares_denom(alice_addr, foo_name, bar_name):
-    # Create pool
-    base, quote = sorted([foo_name, bar_name])
-    sudo_pool_result = _sudo({
-        "@type": "/dysonprotocol.whaleswap.v1.MsgCreatePool",
-        "creator": alice_addr,
-        "coins": [
-            {"denom": foo_name, "amount": "10000"},
-            {"denom": bar_name, "amount": "10000"}
-        ],
-        "fee_rate": [
-            {"denom": base, "amount": "0.003"},
-            {"denom": quote, "amount": "0.003"}
-        ],
-        "min_initial_collateral_ratio": [
-            {"denom": base, "amount": "1.5"},
-            {"denom": quote, "amount": "1.5"}
-        ],
-        "interest_rate": [
-            {"denom": base, "amount": "0.0"},
-            {"denom": quote, "amount": "0.0"}
-        ],
-        "liquidation_threshold": [
-            {"denom": base, "amount": "1.2"},
-            {"denom": quote, "amount": "1.2"}
-        ],
-        "max_borrow_percent": [
-            {"denom": base, "amount": "0.8"},
-            {"denom": quote, "amount": "0.8"}
-        ]
-    })
-
-    pool_result = sudo_pool_result["results"][0]
-    pool_id = pool_result["pool_id"]
-    
-    # Query pool to get shares_denom
-    pool_query = _query({
-        "@type": "/dysonprotocol.whaleswap.v1.QueryPoolRequest",
-        "pool_id": pool_id
-    })
-    
-    shares_denom = pool_query["pool"]["shares_denom"]
-    
-    # Query by shares denom
+def demo_pool_by_shares_denom(shares_denom):
     shares_query = _query({
         "@type": "/dysonprotocol.whaleswap.v1.QueryPoolBySharesDenomRequest",
         "shares_denom": shares_denom
     })
-    
     return {
-        "pool_id": pool_id,
         "shares_denom": shares_denom,
         "shares_query": shares_query
     }
 """
     
-    kwargs = json.dumps(
-        {"alice_addr": alice_addr, "foo_name": foo_name, "bar_name": bar_name}
-    )
+    kwargs = json.dumps({"shares_denom": shares_denom})
     query_result = dysond(
         "query",
         "script",
@@ -111,14 +92,16 @@ def demo_pool_by_shares_denom(alice_addr, foo_name, bar_name):
     assert result is not None, f"deep_parse returned None. Full query_result: {json.dumps(query_result, indent=2)}"
     assert "result" in result, f"result missing 'result' key. Keys: {list(result.keys())}"
     
+    # Check for exceptions
+    assert query_result.get("exception") is None, f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
+    assert result.get("result") is not None, (
+        f"result['result'] is None. Full query_result: {json.dumps(query_result, indent=2)}"
+    )
+    
     # Extract nested result
     demo_result = result["result"]["result"]
     
-    # Check for exceptions
-    assert query_result.get("exception") is None, f"Script execution failed with exception: {json.dumps(query_result.get('exception'), indent=2)}"
-    
     # Validate script returned expected structure
-    assert demo_result.get("pool_id") is not None, f"Script should return pool_id. Result: {json.dumps(demo_result, indent=2)}"
     assert demo_result.get("shares_denom") is not None, f"Script should return shares_denom. Result: {json.dumps(demo_result, indent=2)}"
     assert demo_result.get("shares_query") is not None, f"Script should return shares_query. Result: {json.dumps(demo_result, indent=2)}"
     
@@ -132,7 +115,7 @@ def demo_pool_by_shares_denom(alice_addr, foo_name, bar_name):
     # Verify pool details match
     pool = shares_query["pool"]
     assert isinstance(pool, dict), f"Pool should be dict, got {type(pool)}"
-    assert str(pool["pool_id"]) == str(demo_result["pool_id"]), f"Pool ID mismatch: expected {demo_result['pool_id']}, got {pool['pool_id']}"
+    assert str(pool["pool_id"]) == str(pool_id), f"Pool ID mismatch: expected {pool_id}, got {pool['pool_id']}"
     assert pool["shares_denom"] == demo_result["shares_denom"], f"Shares denom mismatch: expected {demo_result['shares_denom']}, got {pool['shares_denom']}"
     
     # Verify shares_denom format

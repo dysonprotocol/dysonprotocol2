@@ -254,3 +254,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 .aider*
+
+# AI assistant artifacts
+context-snapshot.json

@@ -6,7 +6,6 @@ import (
 	cosmossdkerrors "cosmossdk.io/errors"
 	whaleswapv1 "dysonprotocol.com/x/whaleswap/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
 // PoolBySharesDenom queries the pool that mints a specific shares denom.
@@ -32,16 +31,21 @@ func (k Keeper) PoolBySharesDenom(ctx context.Context, req *whaleswapv1.QueryPoo
 		return nil, cosmossdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "shares_denom required")
 	}
 	var matched *whaleswapv1.Pool
-	_, _, err := query.CollectionPaginate(ctx, k.PoolsMap, nil, func(key uint64, value whaleswapv1.Pool) (*whaleswapv1.Pool, error) {
+	iter, err := k.PoolsMap.Iterate(ctx, nil)
+	if err != nil {
+		return nil, cosmossdkerrors.Wrap(err, "PoolBySharesDenom iterate failed")
+	}
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		value, vErr := iter.Value()
+		if vErr != nil {
+			return nil, cosmossdkerrors.Wrap(vErr, "PoolBySharesDenom iterate value failed")
+		}
 		if value.SharesDenom == req.SharesDenom {
 			v := value
 			matched = &v
-			return &v, nil
+			break
 		}
-		return nil, nil
-	})
-	if err != nil {
-		return nil, cosmossdkerrors.Wrap(err, "PoolBySharesDenom paginate failed")
 	}
 	if matched == nil {
 		return nil, cosmossdkerrors.Wrapf(sdkerrors.ErrNotFound, "pool not found for shares denom %s", req.SharesDenom)

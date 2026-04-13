@@ -75,8 +75,9 @@ def test_cli_invariant_bug_part1_metrics_count_closed_offer_escrow(
     assert close_tx["code"] == 0
 
     # Verify offer is closed
-    offers = dysond("query", "whaleswap", "offers")
-    closed = [o for o in offers["offers"] if o["offer_id"] == str(offer_id)][0]
+    offer_query = dysond("query", "whaleswap", "offer", "--offer-id", str(offer_id))
+    closed = offer_query.get("offer")
+    assert closed, f"Offer not found: {json.dumps(offer_query, indent=2)}"
     assert closed["status"] == "closed"
     assert closed["remaining_have"]["amount"] == "0"
 

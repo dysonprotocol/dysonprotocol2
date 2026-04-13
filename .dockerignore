@@ -1,42 +1,5 @@
-.dysonprotocol
-.dyson-data
+# Ignore everything — only allowlist what Dockerfile.dev COPYs
+*
 
-# Version control
-.git
-.gitignore
-.gitmodules
-!.git/modules
-# Build artifacts
-build/
-dist/
-*.pyc
-__pycache__/
-.pytest_cache/
-*.o
-*.a
-*.so
-
-# Environment and IDE
-.env
-.venv/
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Test directories
-tests/.dysonprotocol/
-/tmp/
-
-# Node modules and logs
-node_modules/
-*.log
-
-# Docker
-.docker/
-Dockerfile
-.dockerignore
-
-# Development tools
-.editorconfig
- 
+# Files needed by COPY instructions
+!requirements.txt

@@ -1,19 +1,26 @@
 #!/usr/bin/env python3
 """
-POW COIN MINER - Difficulty-adjusted emission
+POW COIN MINER
 
 Usage: python miner.py <script_addr> <account>
 
-Reward = EMISSION × (elapsed/TARGET) × (work / difficulty)
+Finds nonces that produce low SHA-256 hashes, then submits to claim reward.
+
+Reward = EMISSION × work / (target_hashrate × TARGET)
+where work = 2²⁵⁶ / hash_value
 """
 import hashlib
 import json
-import math
 import random
 import string
 import subprocess
 import sys
 import time
+
+# Must match pow_coin.py
+EMISSION = 1_000_000  # 1 POW per period (in micro-units)
+TARGET = 3600  # period = 1 hour
+MAX_HASH = 2**256
 
 
 def sha256(s):
@@ -25,33 +32,45 @@ def nonce(n=12):
 
 
 def work(hash_hex):
-    """Work as continuous bits: 256 - log2(hash)."""
+    """Expected hashes to find a hash this small: 2²⁵⁶ / hash."""
     h = int(hash_hex, 16)
     if h == 0:
-        return 256.0
-    return 256.0 - math.log2(h)
+        return MAX_HASH
+    return MAX_HASH // h
 
 
-def get_info(script, miner):
+def get_state(script):
+    """Read contract state from on-chain storage."""
     r = subprocess.run(
         [
             "dysond",
             "query",
-            "script",
-            "run",
-            "--script-address",
+            "storage",
+            "get",
             script,
-            "--executor-address",
-            miner,
-            "--function-name",
-            "info",
+            "--index",
+            "s",
             "-o",
             "json",
         ],
         capture_output=True,
         text=True,
     )
-    return json.loads(json.loads(r.stdout)["result"])["result"]
+    if r.returncode != 0:
+        # No state yet — return defaults
+        return "0" * 64, 0, 278  # BASE_TARGET
+    data = json.loads(r.stdout)
+    state = json.loads(data["entry"]["data"])
+    prev = state[0]
+    last_time = state[1]
+    target = state[2] if len(state) > 2 else 278
+    return prev, last_time, target
+
+
+def estimate_reward(w, target):
+    """Estimate reward (micro-units) for given work at current target hashrate."""
+    expected_work = target * TARGET
+    return int(EMISSION * w / expected_work)
 
 
 def main():
@@ -65,25 +84,21 @@ def main():
         ["dysond", "keys", "show", "-a", account], capture_output=True, text=True
     ).stdout.strip()
 
-    info = get_info(script, miner)
-    prev = info["prev_hash"]
-    diff = info["difficulty"]
-    elapsed = info["elapsed"]
-    base_reward = info["base_reward"]
+    prev, last_time, target = get_state(script)
+    now = int(time.time())
+    elapsed = max(1, now - last_time) if last_time else TARGET
+    expected_work = int(target * TARGET)
 
-    EMISSION = info["emission_per_period"]
-    TARGET = info["period"]
-
-    print(f"Difficulty: {diff} bits")
-    print(f"Elapsed: {elapsed}s, Base reward (if work=diff): {base_reward}")
+    print(f"Target hashrate: {target:.1f} H/s")
+    print(f"Expected work per period: {expected_work:,}")
+    print(f"Elapsed since last claim: {elapsed}s")
     print(f"Prev: {prev[:16]}...")
     print()
 
-    # Mine for best proof
     best_nonce, best_hash, best_work = None, None, 0
     start, attempts = time.time(), 0
 
-    print(f"Mining (target difficulty={diff} bits)...")
+    print("Mining...")
 
     while True:
         n = nonce()
@@ -93,28 +108,32 @@ def main():
 
         if w > best_work:
             best_nonce, best_hash, best_work = n, h, w
-            # Reward = EMISSION × (elapsed/TARGET) × (work/diff)
-            reward = int(EMISSION * (elapsed / TARGET) * (w / diff))
-            print(f"  New best: {w:.1f} bits (diff={diff}) → ~{reward} reward")
+            reward = estimate_reward(w, target)
+            print(
+                f"  New best: work={w:,} → ~{reward} micro-POW"
+                f" ({reward / EMISSION:.4f} POW)"
+            )
 
             if reward >= 1:
                 print(
-                    f"\nVALID PROOF in {attempts} attempts ({time.time()-start:.1f}s)"
+                    f"\nVALID PROOF in {attempts:,} attempts"
+                    f" ({time.time() - start:.1f}s)"
                 )
                 print(f"Nonce: {best_nonce}")
                 print(f"Hash:  {best_hash}")
-                print(f"Work:  {best_work:.1f} bits (diff={diff})")
-                print(f"Est reward: {reward}")
+                print(f"Work:  {best_work:,}")
+                print(f"Est reward: {reward} micro-POW ({reward / EMISSION:.4f} POW)")
                 print(
-                    f"\nSubmit:\ndysond tx script exec --script-address {script} "
-                    f"--function-name mine --args '[\"{best_nonce}\"]' "
+                    f"\nSubmit:\n"
+                    f"dysond tx script exec --script-address {script} "
+                    f'--function-name mine --args \'["{best_nonce}"]\' '
                     f"--from {account} --gas 3000000 -y"
                 )
                 break
 
         if attempts % 100000 == 0:
             rate = attempts / (time.time() - start)
-            print(f"  {attempts:,}... ({rate:.0f} H/s, best={best_work:.1f})")
+            print(f"  {attempts:,}... ({rate:.0f} H/s, best_work={best_work:,})")
 
 
 if __name__ == "__main__":

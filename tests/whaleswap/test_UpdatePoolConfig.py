@@ -44,7 +44,7 @@ def test_update_pool_config_all_fields_success(
     """Test UpdatePoolConfig with all fields updated successfully."""
     dysond = chainnet[0]
     creator_name, creator_addr = generate_account(
-        "update_all_fields", faucet_amount=5_000_000
+        "update_all_fields", faucet_amount=1_000_000
     )
     foo_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")
     bar_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")
@@ -252,7 +252,7 @@ def test_update_pool_config_deprecated_max_leverage_ignored(
     """Test that deprecated max_leverage_ratio is accepted but ignored."""
     dysond = chainnet[0]
     creator_name, creator_addr = generate_account(
-        "update_deprecated", faucet_amount=5_000_000
+        "update_deprecated", faucet_amount=1_000_000
     )
     foo_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")
     bar_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")
@@ -399,7 +399,7 @@ def test_update_pool_config_min_cr_validation_error(
     """Test UpdatePoolConfig validation error for min_collateral_ratio <= 1."""
     dysond = chainnet[0]
     creator_name, creator_addr = generate_account(
-        "update_mincr_err", faucet_amount=5_000_000
+        "update_mincr_err", faucet_amount=1_000_000
     )
     foo_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")
     bar_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")
@@ -522,7 +522,7 @@ def test_update_pool_config_liquidation_threshold_validation_error(
     """Test UpdatePoolConfig validation error for liquidation_threshold <= 1."""
     dysond = chainnet[0]
     creator_name, creator_addr = generate_account(
-        "update_liq_err", faucet_amount=5_000_000
+        "update_liq_err", faucet_amount=1_000_000
     )
     foo_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")
     bar_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")
@@ -645,7 +645,7 @@ def test_update_pool_config_fee_rate_validation_error(
     """Test UpdatePoolConfig validation error for fee_rate >= 1."""
     dysond = chainnet[0]
     creator_name, creator_addr = generate_account(
-        "update_fee_err", faucet_amount=5_000_000
+        "update_fee_err", faucet_amount=1_000_000
     )
     foo_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")
     bar_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")
@@ -770,7 +770,7 @@ def test_update_pool_config_pool_not_found(chainnet, generate_account, register_
     """Test UpdatePoolConfig error when pool doesn't exist."""
     dysond = chainnet[0]
     creator_name, creator_addr = generate_account(
-        "update_notfound", faucet_amount=5_000_000
+        "update_notfound", faucet_amount=1_000_000
     )
     foo_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")
     bar_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")

@@ -190,12 +190,13 @@ def test_storage_multi_user(chainnet, generate_account, faucet):
     """Test storage with multiple users and access control."""
     dysond = chainnet[0]
 
-    # Create accounts for Alice and Bob
-    [alice_name, alice_addr] = generate_account("alice")
-    [bob_name, bob_addr] = generate_account("bob")
+    # Use existing Alice account, create a new Bob account
+    alice_info = dysond("keys", "show", "alice", "--keyring-backend", "test", "--output", "json")
+    alice_name = "alice"
+    alice_addr = alice_info["address"]
+    [bob_name, bob_addr] = generate_account("bob", faucet_amount=0)
 
-    # Fund both accounts for transactions
-    faucet(alice_addr)
+    # Fund Bob account for transactions
     faucet(bob_addr)
 
     _stake(dysond, faucet, alice_name, alice_addr)
@@ -266,17 +267,22 @@ def test_storage_multi_user(chainnet, generate_account, faucet):
         bob_result["entry"]["index"] == bob_key
     ), f"Bob's index not correct: expected {bob_key}, got {bob_result['entry']['index']}"
 
-    # Verify that Alice cannot delete Bob's value - should fail with error code
+    # Verify that Alice cannot delete Bob's value - should not affect Bob's entry
     delete_result = dysond(
         "tx", "storage", "delete", "--from", alice_name, "--indexes", bob_key
     )
 
     assert (
-        delete_result["code"] != 0
-    ), f"Alice should not be able to delete Bob's storage, but transaction succeeded: {delete_result}"
+        delete_result["code"] == 0
+    ), f"Alice delete should be a no-op, but tx failed: {delete_result}"
+
+    bob_result_after = dysond("query", "storage", "get", bob_addr, "--index", bob_key)
     assert (
-        "no entries were deleted" in delete_result["raw_log"]
-    ), f"Expected 'no entries were deleted' error, got: {delete_result['raw_log']}"
+        bob_result_after["entry"]["data"] == bob_value
+    ), f"Bob's value should remain after Alice delete attempt: {bob_result_after}"
+    assert (
+        bob_result_after["entry"]["owner"] == bob_addr
+    ), f"Bob's owner should remain after Alice delete attempt: {bob_result_after}"
 
 
 def test_storage_binary_data(chainnet, generate_account, faucet):
@@ -843,7 +849,7 @@ def test_storage_extract_filter_too_long(chainnet, generate_account, faucet):
 
     _stake(dysond, faucet, name, addr)
 
-    long_path = "a" * 101
+    long_path = "a" * 257
     dysond(
         "tx", "storage", "set", "--from", name, "--index", "toolong/1", "--data", "{}"
     )

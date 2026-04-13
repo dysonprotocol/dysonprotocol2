@@ -146,7 +146,7 @@ def test_address_metrics_leverage_coverage(chainnet, generate_account, register_
     dysond = chainnet[0]
 
     # Create account and register names
-    alice_name, alice_addr = generate_account("lev_alice", faucet_amount=5_000_000)
+    alice_name, alice_addr = generate_account("lev_alice", faucet_amount=1_000_000)
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
 

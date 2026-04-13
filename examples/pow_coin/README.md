@@ -5,40 +5,44 @@
 ## How It Works
 
 ```
-Reward = EMISSION × (elapsed / TARGET) × (work / difficulty)
+reward = EMISSION × work / (target_hashrate × PERIOD)
 ```
 
-Three factors determine your reward:
+Where:
+- **work** = 2^256 / hash_value (expected hashes to find this proof)
+- **target_hashrate** = current difficulty in H/s, adjusted via EMA
+- **PERIOD** = 3600s (1 hour)
+- **EMISSION** = 1,000,000 micro-units (1 POW)
 
-1. **Time** - How long since last claim (elapsed / TARGET)
-2. **Work** - How much proof-of-work you found (bits)
-3. **Difficulty** - Current target that adjusts to stabilize emission
+Reward is capped at 4 POW per claim.
 
 ## Examples
 
-| Elapsed | Work | Difficulty | Reward |
-|---------|------|------------|--------|
-| 1 hour | 20 bits | 20 | 1.0 POW |
-| 1 hour | 40 bits | 20 | 2.0 POW |
-| 30 min | 20 bits | 20 | 0.5 POW |
-| 30 min | 10 bits | 20 | 0.25 POW |
-| 2 hours | 10 bits | 20 | 1.0 POW |
+At target_hashrate = 100 H/s (expected_work = 360,000):
+
+| Work | Reward |
+|------|--------|
+| 180,000 | 0.5 POW |
+| 360,000 | 1.0 POW |
+| 720,000 | 2.0 POW |
+| 1,440,000 | 4.0 POW (cap) |
 
 ## Difficulty Adjustment
 
-After each claim, difficulty adjusts using an EMA based on observed hashrate:
+After each claim, target_hashrate adjusts using an EMA based on observed hashrate:
 
 ```
-ideal_diff = work - log2(elapsed / TARGET)
-α = min(0.5, elapsed / WINDOW)
-new_diff = α × ideal + (1-α) × old_diff
+observed = work / elapsed
+observed = min(observed, target × 4)       # cap spike protection
+α = min(0.5, elapsed / WINDOW)             # WINDOW = 3600s (1 hour)
+new_target = α × observed + (1-α) × target
 ```
 
-Where `WINDOW = 48 hours` is the EMA time constant. This smoothly converges toward the actual network hashrate.
+This smoothly converges toward the actual network hashrate while resisting sudden spikes.
 
 ## Storage
 
-**1 slot**: `[prev_hash, last_time, difficulty]`
+**1 slot**: `[prev_hash, last_time, target_hashrate]`
 
 ## Deploy
 
@@ -61,12 +65,10 @@ python miner.py <script_address> <account>
 ## API
 
 - `mine(nonce)` - Submit proof and claim reward
-- `check(nonce, miner?)` - Check potential reward
-- `info()` - Current state, difficulty, and base reward
 
 ## Key Properties
 
-1. **More work = more reward** (linear scaling, no cap)
-2. **More time = more reward** (linear scaling)
-3. **Difficulty adjusts** to target 1 claim per hour
-4. **First valid proof wins** - it's a race!
+1. **More work = more reward** (linear, capped at 4 POW)
+2. **Difficulty adjusts** via EMA to maintain ~1 POW/hour emission
+3. **Serial claims** - prev_hash changes on every mine(), preventing Sybil attacks
+4. **Miner-bound proofs** - hash includes miner address, so proofs can't be stolen

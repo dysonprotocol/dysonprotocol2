@@ -32,10 +32,6 @@ from string import Template
 from dys import _msg, _query, get_script_address, get_executor_address
 
 
-class SafeString(str):
-    pass
-
-
 class SafeTemplate(Template):
     delimiter = "{{"
     pattern = r"\{\{\s*(?P<named>[a-zA-Z_][a-zA-Z_0-9-_]*)\s*\}\}"  # type: ignore
@@ -111,12 +107,12 @@ def _adjust(work, target, elapsed):
     new_target = EMA(observed, old)
     """
     observed = work / elapsed  # hashes per second
-
+    observed = min(observed, target * 4)
     # EMA weight: more time = more weight, capped at 0.5
     alpha = min(0.5, elapsed / WINDOW)
 
     new_target = alpha * observed + (1 - alpha) * target
-    return max(MIN_TARGET, int(new_target))
+    return max(MIN_TARGET, new_target)
 
 
 def mine(nonce: str):
@@ -138,9 +134,9 @@ def mine(nonce: str):
     hash_hex = hashlib.sha256(f"{prev}:{nonce}:{miner}".encode()).hexdigest()
     work = _work(hash_hex)
 
-    # Reward: work relative to expected work per period
+    # Reward: work relative to expected work per period, capped at 4× EMISSION
     mult = _reward_mult(work, target)
-    reward = int(EMISSION * mult)
+    reward = min(4 * EMISSION, int(EMISSION * mult))
 
     if reward < 1:
         raise ValueError(
@@ -185,28 +181,8 @@ def mine(nonce: str):
     }
 
 
-def store(index: str, content: str):
-    """
-    Store content at index. Only script owner can call this.
 
-    Args:
-        index: storage key (e.g. "templates/index.html")
-        content: content to store
-    """
-    if get_executor_address() != get_script_address():
-        raise ValueError("unauthorized: only script owner can store")
-    _msg(
-        {
-            "@type": "/dysonprotocol.storage.v1.MsgStorageSet",
-            "owner": get_script_address(),
-            "index": index,
-            "data": content,
-        }
-    )
-    return {"stored": index, "size": len(content)}
-
-
-def _info():
+def info():
     """Return config constants only. State is read from storage."""
     return {
         "denom": DENOM,
@@ -237,7 +213,7 @@ def wsgi(environ, start_response):
     path = environ.get("PATH_INFO", "/")
 
     if path == "/info":
-        body = json.dumps(_info()).encode()
+        body = json.dumps(info()).encode()
         start_response("200 OK", [("Content-Type", "application/json")])
         return [body]
 

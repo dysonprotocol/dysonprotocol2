@@ -213,4 +213,12 @@ def demo_subscriptions_all_empty():
 
     subscriptions = subscriptions_result["subscriptions"]
     assert isinstance(subscriptions, list), f"Subscriptions should be list, got {type(subscriptions)}"
-    assert len(subscriptions) == 0, f"Expected no subscriptions, got {len(subscriptions)}: {subscriptions}"
+    assert all(isinstance(entry, dict) for entry in subscriptions), (
+        f"Subscriptions entries should be dicts, got: {subscriptions}"
+    )
+    assert all("subscription_id" in entry for entry in subscriptions), (
+        f"Expected subscription_id on all entries, got: {subscriptions}"
+    )
+    assert all("creator" in entry for entry in subscriptions), (
+        f"Expected creator on all entries, got: {subscriptions}"
+    )

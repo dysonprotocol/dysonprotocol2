@@ -49,10 +49,22 @@ def test_trades_by_pool_lists_swaps_pagination(
     )
 
     # Extract pool_id from the create-pool transaction
-    pools = dysond("query", "whaleswap", "pools")
-    ids = [int(p.get("pool_id")) for p in pools.get("pools", [])]
-    assert ids, f"no pools found after create: {json.dumps(pools, indent=2)}"
-    pool_id = max(ids)
+    pool_events = [
+        e
+        for e in create.get("events", [])
+        if e.get("type") == "dysonprotocol.whaleswap.v1.EventPoolCreated"
+    ]
+    assert pool_events, f"EventPoolCreated missing: {json.dumps(create, indent=2)}"
+    pool_id_attrs = [
+        a
+        for e in pool_events
+        for a in e.get("attributes", [])
+        if a.get("key") == "pool_id"
+    ]
+    assert pool_id_attrs, (
+        f"pool_id attribute missing: {json.dumps(pool_events, indent=2)}"
+    )
+    pool_id = int(pool_id_attrs[0].get("value", "").strip('"'))
 
     # Taker executes two swaps against the pool
     [taker_name, taker_addr] = generate_account("amm_tr_pool_taker")

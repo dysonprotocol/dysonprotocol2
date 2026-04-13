@@ -9,9 +9,9 @@ def leverage_accounts(chainnet, generate_account, faucet):
     Session-scoped for reuse across all leverage tests.
     """
     dysond = chainnet[0]
-    alice = generate_account("leverage_alice", faucet_amount=5_000_000)
-    bob = generate_account("leverage_bob", faucet_amount=5_000_000)
-    charlie = generate_account("leverage_charlie", faucet_amount=5_000_000)
+    alice = generate_account("leverage_alice", faucet_amount=10_000_000)
+    bob = generate_account("leverage_bob", faucet_amount=1_000_000)
+    charlie = generate_account("leverage_charlie", faucet_amount=1_000_000)
 
     return {
         "alice": {"name": alice[0], "addr": alice[1]},

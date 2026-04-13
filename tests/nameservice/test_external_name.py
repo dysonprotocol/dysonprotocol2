@@ -611,7 +611,7 @@ def test_external_name_zero_valuation(chainnet, generate_account):
 
     # Check zero valuation
     valuation = nft_data.get("valuation", {})
-    assert valuation.get("denom") == "dys", "Valuation denom should be dys"
+    assert valuation.get("denom") == "udys", "Valuation denom should be udys"
     assert (
         valuation.get("amount") == "0"
     ), f"Valuation should be zero, got {valuation.get('amount')}"

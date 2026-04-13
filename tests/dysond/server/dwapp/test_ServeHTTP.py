@@ -6,11 +6,12 @@ import pytest
 import requests
 
 
-def _request(base_url, host, path, method="GET", **kwargs):
+def _request(base_url, host, path, method="GET", headers=None, **kwargs):
+    all_headers = {"Host": host} | (headers or {})
     return requests.request(
         method,
         f"{base_url}{path}",
-        headers={"Host": host},
+        headers=all_headers,
         timeout=10,
         allow_redirects=False,
         **kwargs,
@@ -244,5 +245,190 @@ def test_ServeHTTP_regex_name_redirect(dwapp_script_info):
         "foo.dwapp.localhost",
         "/",
     )
-    assert response.status_code == 302
-    assert "/names/foo.dys" in response.headers["Location"]
+    assert response.status_code == 404
+    assert 'Name "foo.dys" could not be resolved.' in response.text
+
+
+# =============================================================================
+# Content Negotiation Tests (PBI-42)
+# =============================================================================
+
+
+def test_404_missing_script_returns_json(dwapp_script_info):
+    """Verify 404 returns JSON structure when Accept: application/json."""
+    unknown_host = "dys21zzzzzzzzzzzzzzzzzz.localhost"
+    response = _request(
+        dwapp_script_info["base_url"],
+        unknown_host,
+        "/",
+        headers={"Host": unknown_host, "Accept": "application/json"},
+    )
+
+    assert response.status_code == 404, f"Expected 404, got {response.status_code}"
+    content_type = response.headers.get("Content-Type", "")
+    assert "application/json" in content_type, f"Expected JSON, got {content_type}"
+
+    body = response.json()
+    assert isinstance(body, dict), f"Expected dict, got {type(body)}"
+    assert body["error"] == "not_found", f"Wrong error: {body}"
+    assert body["code"] == 404, f"Wrong code: {body}"
+    assert "input" in body, f"Missing input: {body}"
+    assert "message" in body, f"Missing message: {body}"
+    assert "hint" in body, f"Missing hint: {body}"
+    # Verify hint includes the public host template
+    assert "yourname" in body["hint"], f"Hint should include template URL: {body['hint']}"
+
+
+def test_404_invalid_bech32_returns_json(dwapp_script_info):
+    """Verify invalid bech32 returns JSON when requested."""
+    response = _request(
+        dwapp_script_info["base_url"],
+        "dys21invalidaddress.localhost",
+        "/",
+        headers={"Host": "dys21invalidaddress.localhost", "Accept": "application/json"},
+    )
+
+    assert response.status_code == 404
+    assert "application/json" in response.headers.get("Content-Type", "")
+    body = response.json()
+    assert body["error"] == "not_found"
+    assert "dys21invalidaddress" in body["input"]
+    assert "yourname" in body["hint"]
+
+
+def test_404_unresolved_name_returns_json(dwapp_script_info):
+    """Verify unresolved name returns JSON when requested."""
+    response = _request(
+        dwapp_script_info["base_url"],
+        "foo.dwapp.localhost",
+        "/",
+        headers={"Host": "foo.dwapp.localhost", "Accept": "application/json"},
+    )
+
+    assert response.status_code == 404
+    assert "application/json" in response.headers.get("Content-Type", "")
+    body = response.json()
+    assert body["error"] == "not_found"
+    assert "foo.dys" in body["input"]
+    assert "yourname" in body["hint"]
+
+
+def test_404_invalid_host_returns_json(dwapp_script_info):
+    """Verify invalid host pattern returns JSON when requested."""
+    response = _request(
+        dwapp_script_info["base_url"],
+        "localhost",
+        "/",
+        headers={"Host": "localhost", "Accept": "application/json"},
+    )
+
+    assert response.status_code == 404
+    assert "application/json" in response.headers.get("Content-Type", "")
+    body = response.json()
+    assert body["error"] == "not_found"
+    assert "localhost" in body["input"]
+
+
+def test_404_missing_script_returns_html(dwapp_script_info):
+    """Verify 404 returns HTML when Accept: text/html."""
+    unknown_host = "dys21zzzzzzzzzzzzzzzzzz.localhost"
+    response = _request(
+        dwapp_script_info["base_url"],
+        unknown_host,
+        "/",
+        headers={"Host": unknown_host, "Accept": "text/html"},
+    )
+
+    assert response.status_code == 404, f"Expected 404, got {response.status_code}"
+    content_type = response.headers.get("Content-Type", "")
+    assert "text/html" in content_type, f"Expected HTML, got {content_type}"
+
+    body = response.text
+    assert "<!DOCTYPE html>" in body, f"Missing DOCTYPE: {body[:200]}"
+    assert "<title>404 Not Found" in body, f"Missing title: {body[:500]}"
+    assert "How to Fix" in body, f"Missing hint section: {body}"
+    assert "yourname" in body, f"Missing template URL: {body}"
+
+
+def test_404_invalid_bech32_returns_html(dwapp_script_info):
+    """Verify invalid bech32 returns HTML when requested."""
+    response = _request(
+        dwapp_script_info["base_url"],
+        "dys21invalidaddress.localhost",
+        "/",
+        headers={"Host": "dys21invalidaddress.localhost", "Accept": "text/html"},
+    )
+
+    assert response.status_code == 404
+    assert "text/html" in response.headers.get("Content-Type", "")
+    body = response.text
+    assert "<!DOCTYPE html>" in body
+    assert "dys21invalidaddress" in body
+    assert "yourname" in body
+
+
+def test_404_unresolved_name_returns_html(dwapp_script_info):
+    """Verify unresolved name returns HTML when requested."""
+    response = _request(
+        dwapp_script_info["base_url"],
+        "foo.dwapp.localhost",
+        "/",
+        headers={"Host": "foo.dwapp.localhost", "Accept": "text/html"},
+    )
+
+    assert response.status_code == 404
+    assert "text/html" in response.headers.get("Content-Type", "")
+    body = response.text
+    assert "<!DOCTYPE html>" in body
+    assert "foo.dys" in body
+    assert "yourname" in body
+
+
+def test_404_invalid_host_returns_html(dwapp_script_info):
+    """Verify invalid host pattern returns HTML when requested."""
+    response = _request(
+        dwapp_script_info["base_url"],
+        "localhost",
+        "/",
+        headers={"Host": "localhost", "Accept": "text/html"},
+    )
+
+    assert response.status_code == 404
+    assert "text/html" in response.headers.get("Content-Type", "")
+    body = response.text
+    assert "<!DOCTYPE html>" in body
+    assert "localhost" in body
+
+
+def test_404_missing_script_plain_text_default(dwapp_script_info):
+    """Verify 404 returns plain text when no Accept header."""
+    unknown_host = "dys21zzzzzzzzzzzzzzzzzz.localhost"
+    response = _request(
+        dwapp_script_info["base_url"],
+        unknown_host,
+        "/",
+        # No Accept header override
+    )
+
+    assert response.status_code == 404
+    content_type = response.headers.get("Content-Type", "")
+    assert "text/plain" in content_type, f"Expected plain text, got {content_type}"
+    assert "Hello World example" in response.text
+    assert "yourname" in response.text, f"Missing template URL: {response.text}"
+
+
+def test_404_explicit_plain_text_accept(dwapp_script_info):
+    """Verify 404 returns plain text when Accept: text/plain."""
+    unknown_host = "dys21zzzzzzzzzzzzzzzzzz.localhost"
+    response = _request(
+        dwapp_script_info["base_url"],
+        unknown_host,
+        "/",
+        headers={"Host": unknown_host, "Accept": "text/plain"},
+    )
+
+    assert response.status_code == 404
+    content_type = response.headers.get("Content-Type", "")
+    assert "text/plain" in content_type
+    assert "Hello World example" in response.text
+    assert "yourname" in response.text

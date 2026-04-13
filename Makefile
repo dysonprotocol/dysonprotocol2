@@ -88,13 +88,13 @@ endif
 ###############################################################################
 
 # Virtual environment for Python dev/test dependencies
-VENV := $(CURDIR)/.venv
+VENV ?= $(CURDIR)/.venv
 PY := $(VENV)/bin/python
 PATH := $(VENV)/bin:$(PATH)
 
 
 dev-venv:
-	@test -d $(VENV) || python3 -m venv $(VENV)
+	@test -d $(VENV) || $$(command -v pyenv >/dev/null 2>&1 && echo "$$(pyenv root)/shims/python" || echo python3) -m venv $(VENV)
 	@$(PY) -m pip install -U pip
 
 dev-install: dev-venv
@@ -158,7 +158,7 @@ test: verify-requirements dysvm-assets
 		echo "Go coverage enabled. Writing to $$GOCOVERDIR"; \
 		echo "Coverage packages: $(COVERAGE_PACKAGES)"; \
 	fi; \
-	GOCOVERDIR=$$GOCOVERDIR DYSON_BASE_DIR=$$TMP_ROOT/test-dysonchains python -u -m pytest --ff --capture=fd --showlocals --durations=0 $(PYTEST_ARGS); \
+	GOCOVERDIR=$$GOCOVERDIR DYSON_BASE_DIR=$$TMP_ROOT/test-dysonchains python -u -m pytest --ff -x --capture=fd --showlocals --durations=0 $(PYTEST_ARGS); \
 	TEST_EXIT_CODE=$$?; \
 	if [ -n "$(COVERAGE_PACKAGES)" ] && [ -d "$$GOCOVERDIR" ]; then \
 		echo "Generating go coverage reports from $$GOCOVERDIR"; \
@@ -199,8 +199,8 @@ watch:
 
 init-localnet: 
 	@echo "--> Initializing dyson local chain"
-	./scripts/chainnet.py generate --chains 1 --nodes 2 --hermes-config --base-dir $${DYSON_BASE_DIR:-$$HOME/.dysonchains}
-	./scripts/chainnet.py setup --force --config-file $${DYSON_BASE_DIR:-$$HOME/.dysonchains}/chains.json
+	@$(PY) ./scripts/chainnet.py generate --chains 1 --nodes 2 --hermes-config --base-dir $${DYSON_BASE_DIR:-$$HOME/.dysonchains}
+	@$(PY) ./scripts/chainnet.py setup --force --config-file $${DYSON_BASE_DIR:-$$HOME/.dysonchains}/chains.json
 
 
 start-localnet: 
@@ -209,7 +209,7 @@ start-localnet:
 	if [ -n "$(LOG_MODULE)" ]; then \
 		LOG_MODULE_FLAG="--log-module $(LOG_MODULE)"; \
 	fi; \
-	./scripts/chainnet.py start --block-speed 500ms --logs --no-blocks-timeout 10 $$LOG_MODULE_FLAG --config-file $${DYSON_BASE_DIR:-$$HOME/.dysonchains}/chains.json
+	$(PY) ./scripts/chainnet.py start --block-speed 500ms --logs --no-blocks-timeout 10 $$LOG_MODULE_FLAG --config-file $${DYSON_BASE_DIR:-$$HOME/.dysonchains}/chains.json
 
 ###############################################################################
 ###                               Dashboard                                 ###

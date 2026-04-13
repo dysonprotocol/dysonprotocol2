@@ -49,10 +49,10 @@ def test_make_trade_pfand_release_accounting(
     )
     assert gov_auth
 
-    # Give alice voting power by delegating
+    # Give alice voting power by delegating a small amount
     val = dysond("query", "staking", "validators")["validators"][0]["operator_address"]
     deltx = dysond(
-        "tx", "staking", "delegate", val, "50000000udys", "--from", "alice", "--yes"
+        "tx", "staking", "delegate", val, "10000udys", "--from", "alice", "--yes"
     )
     assert deltx.get("code", 1) == 0
 
@@ -92,7 +92,9 @@ def test_make_trade_pfand_release_accounting(
     with tempfile.NamedTemporaryFile(mode="w", suffix=".json") as f:
         json.dump(proposal, f)
         f.flush()
-        sp = dysond("tx", "gov", "submit-proposal", f.name, "--from", "alice", "--yes")
+        sp = dysond(
+            "tx", "gov", "submit-proposal", f.name, "--from", alice_name, "--yes"
+        )
 
     sp = dysond("query", "wait-tx", sp["txhash"])
     evs = [e for e in sp.get("events", []) if e.get("type") == "submit_proposal"]

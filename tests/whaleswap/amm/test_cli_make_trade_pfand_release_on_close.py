@@ -29,7 +29,7 @@ def _poll_until_proposal_passes(dysond, proposal_id: str, timeout: int = 30):
     )
 
 
-def test_make_trade_pfand_release_on_close(chainnet, ws_setup_env):
+def test_make_trade_pfand_release_on_close(chainnet, ws_setup_env, faucet):
     dysond = chainnet[0]
     env = ws_setup_env
 
@@ -52,7 +52,7 @@ def test_make_trade_pfand_release_on_close(chainnet, ws_setup_env):
     # Delegate to ensure voting power
     val = dysond("query", "staking", "validators")["validators"][0]["operator_address"]
     deltx = dysond(
-        "tx", "staking", "delegate", val, "50000000udys", "--from", "alice", "--yes"
+        "tx", "staking", "delegate", val, "10000udys", "--from", "alice", "--yes"
     )
     assert deltx.get("code", 1) == 0, f"delegate failed: {json.dumps(deltx, indent=2)}"
     proposal = {
@@ -109,8 +109,8 @@ def test_make_trade_pfand_release_on_close(chainnet, ws_setup_env):
     ), f"pfand denom not updated: {after}"
 
     # Ensure maker/taker have enough udys to cover pfand and fees
-    _ = dysond("tx", "bank", "send", "alice", maker_addr, "2000000udys")
-    _ = dysond("tx", "bank", "send", "alice", taker_addr, "2000000udys")
+    faucet(maker_addr, amount=2_000_000)
+    faucet(taker_addr, amount=2_000_000)
 
     # Maker creates an offer (liquid-mode): have base 'a', want 1 udys per unit (3 units total)
     mk = dysond(
@@ -226,7 +226,7 @@ def test_make_trade_pfand_release_on_close(chainnet, ws_setup_env):
     ), f"expected units 0: {json.dumps(q2, indent=2)}"
 
 
-def test_pfand_amount_stored_not_param_dependent(chainnet, ws_setup_env):
+def test_pfand_amount_stored_not_param_dependent(chainnet, ws_setup_env, faucet):
     """
     Verify pfand amount is stored in offer, not derived from parameter at cancel time.
 
@@ -256,7 +256,7 @@ def test_pfand_amount_stored_not_param_dependent(chainnet, ws_setup_env):
     assert auth
     val = dysond("query", "staking", "validators")["validators"][0]["operator_address"]
     deltx = dysond(
-        "tx", "staking", "delegate", val, "50000000udys", "--from", "alice", "--yes"
+        "tx", "staking", "delegate", val, "10000udys", "--from", "alice", "--yes"
     )
     assert deltx.get("code", 1) == 0
 
@@ -312,7 +312,7 @@ def test_pfand_amount_stored_not_param_dependent(chainnet, ws_setup_env):
     assert params1["pfand_per_offer"]["amount"] == "5"
 
     # Ensure maker has 5 udys for pfand
-    _ = dysond("tx", "bank", "send", "alice", maker_addr, "2000000udys")
+    faucet(maker_addr, amount=2_000_000)
 
     # Get maker balance before
     maker_bal_before = dysond("query", "bank", "balance", maker_addr, "udys")

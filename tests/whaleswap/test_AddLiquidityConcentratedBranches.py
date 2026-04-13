@@ -37,7 +37,7 @@ def test_add_liquidity_preserves_custom_bound_percent(
     """Ensure bound_percent survives add-liquidity operations unchanged."""
     dysond = chainnet[0]
     creator_name, creator_addr = generate_account(
-        "dir_bounds_add", faucet_amount=5_000_000
+        "dir_bounds_add", faucet_amount=1_000_000
     )
     foo_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")
     bar_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")
@@ -169,7 +169,7 @@ def test_update_pool_config_updates_bound_percent(
     """Happy path for MsgUpdatePoolConfig to change bound_percent."""
     dysond = chainnet[0]
     creator_name, creator_addr = generate_account(
-        "dir_bounds_update", faucet_amount=5_000_000
+        "dir_bounds_update", faucet_amount=1_000_000
     )
     foo_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")
     bar_name = register_name(dysond, creator_name, creator_addr, valuation="10udys")

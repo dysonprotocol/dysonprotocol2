@@ -34,7 +34,7 @@ def _mint_custom_denoms(dysond, key_name: str, denoms, amount: int = 1_000_000):
 def test_remove_liquidity_full_exit(chainnet, generate_account, register_name):
     """Removing all shares should return the entire reserve balances."""
     dysond = chainnet[0]
-    alice_name, alice_addr = generate_account("remliq_full", faucet_amount=5_000_000)
+    alice_name, alice_addr = generate_account("remliq_full", faucet_amount=1_000_000)
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
 
@@ -170,7 +170,7 @@ def demo_remove_liquidity_full(alice_addr, foo_name, bar_name):
 def test_remove_liquidity_partial(chainnet, generate_account, register_name):
     """Removing a portion of shares should return proportional reserves."""
     dysond = chainnet[0]
-    alice_name, alice_addr = generate_account("remliq_partial", faucet_amount=5_000_000)
+    alice_name, alice_addr = generate_account("remliq_partial", faucet_amount=1_000_000)
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
 

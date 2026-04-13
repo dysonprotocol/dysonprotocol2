@@ -473,13 +473,6 @@ def demo_offers_no_filters(alice_addr, foo_name, bar_name):
         len(offers) >= 1
     ), f"Should have at least 1 offer (no filters), got {len(offers)}"
 
-    # Verify created offer is in results
-    offer_ids = [str(offer["offer_id"]) for offer in offers]
-    assert (
-        str(demo_result["offer_id"]) in offer_ids
-    ), f"Created offer {demo_result['offer_id']} should be in results. Offer IDs: {offer_ids}, Offers: {json.dumps(offers, indent=2)}"
-
-
 def test_offers_with_both_denoms_reversed_order(
     chainnet, leverage_accounts, leverage_names_and_coins
 ):

@@ -14,7 +14,7 @@ def test_metrics_pool_and_liquidity_ops(chainnet, generate_account, register_nam
     """Test pool creation and liquidity operation metrics."""
     dysond = chainnet[0]
 
-    alice_name, alice_addr = generate_account("metrics_alice", faucet_amount=5_000_000)
+    alice_name, alice_addr = generate_account("metrics_alice", faucet_amount=1_000_000)
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
 
@@ -144,8 +144,8 @@ def test_metrics_offers_lifecycle(chainnet, generate_account, register_name):
     """Test offer creation, close, and cancel metrics."""
     dysond = chainnet[0]
 
-    alice_name, alice_addr = generate_account("metrics_offers", faucet_amount=5_000_000)
-    bob_name, bob_addr = generate_account("metrics_bob", faucet_amount=5_000_000)
+    alice_name, alice_addr = generate_account("metrics_offers", faucet_amount=1_000_000)
+    bob_name, bob_addr = generate_account("metrics_bob", faucet_amount=1_000_000)
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
 
@@ -301,7 +301,7 @@ def test_metrics_auction_tracking(chainnet, generate_account, register_name):
     dysond = chainnet[0]
 
     alice_name, alice_addr = generate_account(
-        "metrics_auction", faucet_amount=5_000_000
+        "metrics_auction", faucet_amount=1_000_000
     )
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")

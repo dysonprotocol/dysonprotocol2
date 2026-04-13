@@ -38,7 +38,7 @@ def _mint_custom_denoms(dysond, key_name: str, denoms, amount: int = 1_000_000):
 def test_add_liquidity_unbounded_basic(chainnet, generate_account, register_name):
     """Add liquidity to an unbounded pool (bound_percent defaults to 1)."""
     dysond = chainnet[0]
-    alice_name, alice_addr = generate_account("addliq_basic", faucet_amount=5_000_000)
+    alice_name, alice_addr = generate_account("addliq_basic", faucet_amount=1_000_000)
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
 
@@ -181,7 +181,7 @@ def test_add_liquidity_unbounded_token2_limiting(
 ):
     """Token2 limits the minted shares causing excess token1 refund."""
     dysond = chainnet[0]
-    alice_name, alice_addr = generate_account("addliq_token2", faucet_amount=5_000_000)
+    alice_name, alice_addr = generate_account("addliq_token2", faucet_amount=1_000_000)
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
 
@@ -345,7 +345,7 @@ def test_add_liquidity_with_custom_bound_percent(
 ):
     """Add liquidity to a pool configured with asymmetric bound_percent values."""
     dysond = chainnet[0]
-    alice_name, alice_addr = generate_account("addliq_bounds", faucet_amount=5_000_000)
+    alice_name, alice_addr = generate_account("addliq_bounds", faucet_amount=1_000_000)
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
 
@@ -467,7 +467,7 @@ def demo_add_liquidity_with_bounds(alice_addr, foo_name, bar_name):
 def test_add_liquidity_with_refund(chainnet, generate_account, register_name):
     """Verify refunds when contribution ratio differs from pool reserves."""
     dysond = chainnet[0]
-    alice_name, alice_addr = generate_account("addliq_refund", faucet_amount=5_000_000)
+    alice_name, alice_addr = generate_account("addliq_refund", faucet_amount=1_000_000)
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
 
@@ -592,7 +592,7 @@ def demo_add_liquidity_refund(alice_addr, foo_name, bar_name):
 def test_add_liquidity_unbalanced_basic(chainnet, generate_account, register_name):
     """Add unbalanced liquidity to an unbounded pool (adds full amounts without refunds)."""
     dysond = chainnet[0]
-    alice_name, alice_addr = generate_account("addliq_unbal", faucet_amount=5_000_000)
+    alice_name, alice_addr = generate_account("addliq_unbal", faucet_amount=1_000_000)
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
 
@@ -688,7 +688,7 @@ def test_add_liquidity_unbalanced_s2_less_than_s1(
     """
     dysond = chainnet[0]
     alice_name, alice_addr = generate_account(
-        "addliq_unbal_s2", faucet_amount=5_000_000
+        "addliq_unbal_s2", faucet_amount=1_000_000
     )
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")

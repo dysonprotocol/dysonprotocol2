@@ -19,7 +19,7 @@ def test_create_pool_unbounded_basic_success(chainnet, generate_account, registe
     """Create an AMM pool without providing bound_percent and verify defaults."""
     dysond = chainnet[0]
 
-    alice_name, alice_addr = generate_account("pool_alice", faucet_amount=5_000_000)
+    alice_name, alice_addr = generate_account("pool_alice", faucet_amount=1_000_000)
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
 
@@ -162,7 +162,7 @@ def test_create_pool_with_bound_percent(chainnet, generate_account, register_nam
     """Create an AMM pool supplying asymmetric bound_percent values."""
     dysond = chainnet[0]
 
-    alice_name, alice_addr = generate_account("pool_bounds", faucet_amount=5_000_000)
+    alice_name, alice_addr = generate_account("pool_bounds", faucet_amount=1_000_000)
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
 
@@ -300,7 +300,7 @@ def test_create_pool_with_custom_interest_rate(
     """Ensure interest_rate configuration coexists with bound_percent defaults."""
     dysond = chainnet[0]
 
-    alice_name, alice_addr = generate_account("pool_interest", faucet_amount=5_000_000)
+    alice_name, alice_addr = generate_account("pool_interest", faucet_amount=1_000_000)
     foo_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
     bar_name = register_name(dysond, alice_name, alice_addr, valuation="10udys")
 

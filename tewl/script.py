@@ -147,7 +147,7 @@ def _get_state():
     if state is None:
         state = {
             "next_request_id": 1,
-            "min_bond": "100",  # 100 udys
+            "min_bond": "1000000",  # 1000000 udys
             "active_request_id": None,  # currently active request
             "commit_timeout_seconds": 30,
             "reveal_timeout_seconds": 30,
@@ -327,6 +327,11 @@ def get_active_providers():
 # =============================================================================
 # Request Management (Task 37-2)
 # =============================================================================
+
+
+def _request_index(request_id):
+    """Index for request: r/{id}"""
+    return f"r/{request_id}"
 
 
 def _request_state_index(request_id):
