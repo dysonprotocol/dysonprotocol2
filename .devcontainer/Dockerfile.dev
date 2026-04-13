@@ -49,10 +49,11 @@ COPY requirements.txt .
 # Install Python build dependencies (for python-build-standalone scripts)
 RUN python -m pip install --no-cache-dir -r requirements.txt
 
-# Build DYSVM: patch → build → embed
-RUN bash scripts/dysvm-patch.sh && \
-    bash scripts/dysvm-build.sh && \
-    bash scripts/dysvm-embed.sh
+# Build DYSVM in separate layers so each step has its own log budget
+# and Kaniko can cache completed layers on retry.
+RUN bash scripts/dysvm-patch.sh
+RUN bash scripts/dysvm-build.sh
+RUN bash scripts/dysvm-embed.sh
 
 # ============================================================
 # Stage 2: CI / dev image
