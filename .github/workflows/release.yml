@@ -91,7 +91,9 @@ jobs:
             reports/pytest.xml
 
       - name: Set release name
-        run: echo "RELEASE_NAME=dysond-$(uname -m)-${GITHUB_REF_NAME//\//-}" >> $GITHUB_ENV
+        run: |
+          RELEASE_NAME="dysond-$(uname -m)-$(printf '%s' "$GITHUB_REF_NAME" | tr '/' '-')"
+          echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
 
       - name: Compress dysond binary
         run: |
